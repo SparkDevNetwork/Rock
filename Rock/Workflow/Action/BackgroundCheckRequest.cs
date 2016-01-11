@@ -30,6 +30,7 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sends a Background Check Request.
     /// </summary>
+    [ActionCategory( "Background Check" )]
     [Description( "Sends a Background Check Request." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Background Check Request" )]

@@ -75,7 +75,7 @@ namespace RockWeb.Blocks.Event
                     gInstances.ShowConfirmDeleteDialog = false;
 
                     // make sure they have Auth to edit the block OR edit to the Group
-                    bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _template.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
+                    bool canEditBlock = UserCanEdit || _template.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
                     gInstances.Actions.ShowAdd = canEditBlock;
                     gInstances.IsDeleteEnabled = canEditBlock;
                 }

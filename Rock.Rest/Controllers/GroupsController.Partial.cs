@@ -33,26 +33,10 @@ using Rock.Web.UI.Controls;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class GroupsController
     {
-        /// <summary>
-        /// Gets the children (obsolete, use the other GetChildren method)
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <param name="rootGroupId">The root group id.</param>
-        /// <param name="limitToSecurityRoleGroups">if set to <c>true</c> [limit to security role groups].</param>
-        /// <param name="groupTypeIds">The group type ids.</param>
-        /// <returns></returns>
-        [Authenticate, Secured]
-        [System.Web.Http.Route( "api/Groups/GetChildren/{id}/{rootGroupId}/{limitToSecurityRoleGroups}/{groupTypeIds}" )]
-        [Obsolete( "use the other GetChildren" )]
-        public IQueryable<TreeViewItem> GetChildren( int id, int rootGroupId, bool limitToSecurityRoleGroups, string groupTypeIds )
-        {
-            return GetChildren( id, rootGroupId, limitToSecurityRoleGroups, groupTypeIds, "" );
-        }
-
         /// <summary>
         /// Gets the children.
         /// </summary>
@@ -74,7 +58,7 @@ namespace Rock.Rest.Controllers
             var excludedGroupTypeIdList = excludedGroupTypeIds.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
 
             var groupService = (GroupService)Service;
-            
+
             // if specific group types are specified, show the groups regardless of ShowInNavigation
             bool limitToShowInNavigation = !includedGroupTypeIdList.Any();
 
@@ -142,7 +126,7 @@ namespace Rock.Rest.Controllers
         /// <param name="personId">The person identifier.</param>
         /// <returns></returns>
         [Authenticate, Secured]
-        [EnableQuery(MaxExpansionDepth=4)]
+        [EnableQuery( MaxExpansionDepth = 4 )]
         [HttpGet]
         [System.Web.Http.Route( "api/Groups/GetFamilies/{personId}" )]
         public IQueryable<Group> GetFamilies( int personId )
@@ -186,34 +170,35 @@ namespace Rock.Rest.Controllers
             var personResults = sortedPersonQry.AsNoTracking().ToList();
 
             List<FamilySearchResult> familyResults = new List<FamilySearchResult>();
-            foreach (var person in personResults){
+            foreach ( var person in personResults )
+            {
                 var families = personService.GetFamilies( person.Id )
                                     .Select( f => new FamilySearchResult
-                                                        { 
+                                                        {
                                                             Id = f.Id,
                                                             Name = f.Name,
                                                             FamilyMembers = f.Members.ToList(),
                                                             HomeLocation = f.GroupLocations
                                                                             .Where( l => l.GroupLocationTypeValue.Guid == homeAddressGuid )
-                                                                            .OrderByDescending( l => l.IsMailingLocation)
-                                                                            .Select(l => l.Location)
+                                                                            .OrderByDescending( l => l.IsMailingLocation )
+                                                                            .Select( l => l.Location )
                                                                             .FirstOrDefault(),
                                                             MainPhone = f.Members
-                                                                            .OrderBy(m => m.GroupRole.Order)
-                                                                            .ThenBy(m => m.Person.Gender)
+                                                                            .OrderBy( m => m.GroupRole.Order )
+                                                                            .ThenBy( m => m.Person.Gender )
                                                                             .FirstOrDefault()
-                                                                            .Person.PhoneNumbers.OrderBy( p => p.NumberTypeValue.Order).FirstOrDefault()
-                                                        })
+                                                                            .Person.PhoneNumbers.OrderBy( p => p.NumberTypeValue.Order ).FirstOrDefault()
+                                                        } )
                                                         .ToList();
 
-                foreach ( var family in families) {
+                foreach ( var family in families )
+                {
                     familyResults.Add( family );
                 }
             }
 
-            return familyResults.DistinctBy(f => f.Id).AsQueryable(); 
+            return familyResults.DistinctBy( f => f.Id ).AsQueryable();
         }
-
 
         [Authenticate, Secured]
         [HttpGet]
@@ -224,7 +209,7 @@ namespace Rock.Rest.Controllers
             Guid homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
 
             return new GroupService( rockContext ).Queryable().AsNoTracking()
-                                                    .Where( g=> g.Id == familyId)
+                                                    .Where( g => g.Id == familyId )
                                                     .Select( f => new FamilySearchResult
                                                         {
                                                             Id = f.Id,
@@ -250,42 +235,42 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
-        [System.Web.Http.Route("api/Groups/GetGuestsForFamily/{groupId}")]
-        public IQueryable<GuestFamily> GetGuestsForFamily(int groupId)
+        [System.Web.Http.Route( "api/Groups/GetGuestsForFamily/{groupId}" )]
+        public IQueryable<GuestFamily> GetGuestsForFamily( int groupId )
         {
-            Guid knownRelationshipGuid = new Guid(Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS);
-            Guid knownRelationshipOwner = new Guid(Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER);
-            Guid knownRelationshipCanCheckin = new Guid(Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN);
-            
+            Guid knownRelationshipGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
+            Guid knownRelationshipOwner = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER );
+            Guid knownRelationshipCanCheckin = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN );
+
             RockContext rockContext = new RockContext();
-            GroupMemberService groupMemberService = new GroupMemberService(rockContext);
-            PersonService personService = new PersonService(rockContext);
+            GroupMemberService groupMemberService = new GroupMemberService( rockContext );
+            PersonService personService = new PersonService( rockContext );
 
             var familyMembers = groupMemberService.Queryable()
-                                    .Where(f => f.GroupId == groupId)
-                                    .Select(f => f.PersonId);
-            
-            var familyMembersKnownRelationshipGroups = new GroupMemberService(rockContext).Queryable()
-                                    .Where(g => g.Group.GroupType.Guid == knownRelationshipGuid 
-                                                    && g.GroupRole.Guid == knownRelationshipOwner 
-                                                    && familyMembers.Contains(g.PersonId))
-                                    .Select(m => m.GroupId);
+                                    .Where( f => f.GroupId == groupId )
+                                    .Select( f => f.PersonId );
+
+            var familyMembersKnownRelationshipGroups = new GroupMemberService( rockContext ).Queryable()
+                                    .Where( g => g.Group.GroupType.Guid == knownRelationshipGuid
+                                                    && g.GroupRole.Guid == knownRelationshipOwner
+                                                    && familyMembers.Contains( g.PersonId ) )
+                                    .Select( m => m.GroupId );
             rockContext.Database.Log = s => System.Diagnostics.Debug.WriteLine( s );
             var guests = groupMemberService.Queryable()
-                                    .Where(g => g.GroupRole.Guid == knownRelationshipCanCheckin 
-                                                    && familyMembersKnownRelationshipGroups.Contains(g.GroupId))
-                                    .Select(g => g.PersonId)
+                                    .Where( g => g.GroupRole.Guid == knownRelationshipCanCheckin
+                                                    && familyMembersKnownRelationshipGroups.Contains( g.GroupId ) )
+                                    .Select( g => g.PersonId )
                                     .Distinct().ToList();
-            
+
             var guestFamilies = new List<GuestFamily>();
             rockContext.Database.Log = null;
             foreach ( var guestPersonId in guests )
             {
-                var families = personService.GetFamilies(guestPersonId);
+                var families = personService.GetFamilies( guestPersonId );
 
                 foreach ( var family in families )
                 {
-                    if ( !guestFamilies.Select(f => f.Id).Contains(family.Id) )
+                    if ( !guestFamilies.Select( f => f.Id ).Contains( family.Id ) )
                     {
                         GuestFamily guestFamily = new GuestFamily();
                         guestFamily.Id = family.Id;
@@ -302,15 +287,15 @@ namespace Rock.Rest.Controllers
                             guestFamilyMember.FirstName = familyMember.Person.NickName;
                             guestFamilyMember.LastName = familyMember.Person.LastName;
                             guestFamilyMember.PhotoUrl = familyMember.Person.PhotoUrl;
-                            guestFamilyMember.CanCheckin = guests.Contains(familyMember.PersonId);
+                            guestFamilyMember.CanCheckin = guests.Contains( familyMember.PersonId );
                             guestFamilyMember.Role = familyMember.GroupRole.Name;
                             guestFamilyMember.Age = familyMember.Person.Age;
                             guestFamilyMember.Gender = familyMember.Person.Gender;
 
-                            guestFamily.FamilyMembers.Add(guestFamilyMember);
+                            guestFamily.FamilyMembers.Add( guestFamilyMember );
                         }
 
-                        guestFamilies.Add(guestFamily);
+                        guestFamilies.Add( guestFamily );
                     }
                 }
             }
@@ -343,7 +328,7 @@ namespace Rock.Rest.Controllers
                 // where the geofence surrounds the location
                 var groupLocationService = new GroupLocationService( rockContext );
                 foreach ( var fenceGroupLocation in groupLocationService
-                    .Queryable("Group,Location").AsNoTracking()
+                    .Queryable( "Group,Location" ).AsNoTracking()
                     .Where( gl =>
                         gl.Group.GroupTypeId == geofenceGroupTypeId &&
                         gl.Location.GeoFence != null &&
@@ -359,7 +344,7 @@ namespace Rock.Rest.Controllers
                     fenceGroupLocation.Group = null;
 
                     // Find all the group groupLocation records ( with group of the "groupTypeId" ) that have a location
-                    // within the fence 
+                    // within the fence
                     foreach ( var group in Service
                         .Queryable( "Schedule,GroupLocations.Location" ).AsNoTracking()
                         .Where( g =>
@@ -388,31 +373,10 @@ namespace Rock.Rest.Controllers
                     }
                 }
             }
-            
+
             // manually apply any OData parameters to the InMemory Query
             var qryResults = queryOptions.ApplyTo( fenceGroups.AsQueryable() );
             return qryResults;
-        }
-
-        /// <summary>
-        /// Saves a group address.
-        /// </summary>
-        /// <param name="groupId">The group identifier.</param>
-        /// <param name="locationTypeId">The location type identifier.</param>
-        /// <param name="street1">The street1.</param>
-        /// <param name="city">The city.</param>
-        /// <param name="state">The state.</param>
-        /// <param name="postalCode">The postal code.</param>
-        /// <param name="country">The country.</param>
-        /// <param name="street2">The street2.</param>
-        [Authenticate, Secured]
-        [HttpPut]
-        [System.Web.Http.Route( "api/Groups/SaveAddress/{groupId}/{locationTypeId}/{street1}/{city}/{state}/{postalCode}/{country}" )]
-        [Obsolete( "Use ~api/Groups/SaveAddress/{groupId}/{locationTypeId}?street1={street1}&city={city}&state={state}&postalCode={postalCode}&country={country}" )]
-        public virtual void SaveAddress2( int groupId, int locationTypeId,
-            string street1, string city, string state, string postalCode, string country, string street2 = ""  )
-        {
-            this.SaveAddress( groupId, locationTypeId, street1, street2, city, state, postalCode, country );
         }
 
         /// <summary>
@@ -446,7 +410,7 @@ namespace Rock.Rest.Controllers
 
             System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
 
-            GroupService.AddNewFamilyAddress( rockContext, group, locationType.Guid.ToString(),
+            GroupService.AddNewGroupAddress( rockContext, group, locationType.Guid.ToString(),
                 street1, street2, city, state, postalCode, country, true );
         }
 
@@ -469,7 +433,7 @@ namespace Rock.Rest.Controllers
                     var changes = new List<string>();
                     string oldCampus = existingGroup.Campus != null ? existingGroup.Campus.Name : string.Empty;
                     string newCampus = group.Campus != null ? group.Campus.Name : string.Empty;
-                    if ( group.CampusId.HasValue && string.IsNullOrWhiteSpace( newCampus ))
+                    if ( group.CampusId.HasValue && string.IsNullOrWhiteSpace( newCampus ) )
                     {
                         var campus = CampusCache.Read( group.CampusId.Value );
                         newCampus = campus != null ? campus.Name : string.Empty;
@@ -844,7 +808,6 @@ namespace Rock.Rest.Controllers
             }
         }
 
-
         /// <summary>
         ///
         /// </summary>
@@ -863,7 +826,6 @@ namespace Rock.Rest.Controllers
             public Guid Guid { get; set; }
 
             public List<GuestFamilyMember> FamilyMembers { get; set; }
-
         }
 
         public class GuestFamilyMember

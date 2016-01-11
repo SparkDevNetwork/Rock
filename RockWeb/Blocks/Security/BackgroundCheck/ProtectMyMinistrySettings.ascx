@@ -29,7 +29,7 @@
                     <div class="col-md-6">
                         <asp:Image ID="imgPromotion" runat="server" CssClass="img-responsive" />
                         <div class="actions">
-                            <asp:HyperLink ID="hlGetStarted" runat="server" Text="Get Started Now" CssClass="btn btn-primary btn-block margin-b-lg" />
+                            <asp:HyperLink ID="hlGetStarted" runat="server" Text="Register For An Account" CssClass="btn btn-primary btn-block margin-b-lg" />
                         </div>
                     </div>
                     <div class="col-md-1">

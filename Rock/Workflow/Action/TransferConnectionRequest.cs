@@ -31,6 +31,7 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Creates a new connection request.
     /// </summary>
+    [ActionCategory( "Connection Request" )]
     [Description( "Transfers a connection request to a different opportunity type." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Create Connection Request" )]

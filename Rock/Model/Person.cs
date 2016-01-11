@@ -1789,19 +1789,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates the checkin relationship.
-        /// </summary>
-        /// <param name="personId">The person identifier.</param>
-        /// <param name="relatedPersonId">The related person identifier.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
-        /// <param name="rockContext">The rock context.</param>
-        [Obsolete( "Use the other CreateCheckinRelationship" )]
-        public static void CreateCheckinRelationship( int personId, int relatedPersonId, PersonAlias currentPersonAlias, RockContext rockContext = null )
-        {
-            CreateCheckinRelationship( personId, relatedPersonId, rockContext );
-        }
-
-        /// <summary>
         /// Adds the related person to the selected person's known relationships with a role of 'Can check in' which
         /// is typically configured to allow check-in.  If an inverse relationship is configured for 'Can check in'
         /// (i.e. 'Allow check in by'), that relationship will also be created.
@@ -2029,6 +2016,18 @@ namespace Rock.Model
             return new PersonService( rockContext ?? new RockContext() ).GetFamilyMembers( person != null ? person.Id : 0, includeSelf );
         }
 
+        /// <summary>
+        /// Gets the group members.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <param name="includeSelf">if set to <c>true</c> [include self].</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static IQueryable<GroupMember> GetGroupMembers( this Person person, int groupTypeId, bool includeSelf = false, RockContext rockContext = null )
+        {
+            return new PersonService( rockContext ?? new RockContext() ).GetGroupMembers( groupTypeId, person != null ? person.Id : 0, includeSelf );
+        }
         /// <summary>
         /// Gets any previous last names for this person sorted alphabetically by LastName
         /// </summary>

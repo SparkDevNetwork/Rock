@@ -27,6 +27,7 @@ namespace Rock.Workflow.Action.CheckIn
     /// <summary>
     /// Removes any person that does not have any group types
     /// </summary>
+    [ActionCategory( "Check-In" )]
     [Description( "Removes any person that does not have any group types" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Remove Empty People" )]

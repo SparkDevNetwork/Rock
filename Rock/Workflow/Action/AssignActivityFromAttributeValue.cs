@@ -30,7 +30,8 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Assign Activity to a Person or Group attribute value.
     /// </summary>
-    [Description( "Assign Activity to a Person or Group attribute value." )]
+    [ActionCategory( "Workflow Control" )]
+    [Description( "Assigns Activity to a Person or Group attribute value." )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Assign Activity from Attribute Value." )]
 

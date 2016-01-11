@@ -63,7 +63,7 @@ namespace Rock.PersonProfile.Badge
                 Guid groupTypeGuid = GetAttributeValue( badge, "GroupType" ).AsGuid();
                 if ( groupTypeGuid != Guid.Empty )
                 {
-                    writer.Write( String.Format( "<div class='badge badge-ingroupoftype badge-id-{0}' data-original-title=''>", badge.Id ) );
+                    writer.Write( String.Format( "<div class='badge badge-ingroupoftype badge-id-{0}' data-toggle='tooltip' data-original-title=''>", badge.Id ) );
 
                     writer.Write( "</div>" );
 
@@ -87,7 +87,7 @@ namespace Rock.PersonProfile.Badge
                             badgeHtml = '<i class=\'badge-icon ' + groupIcon + '\' style=\'color: {2}\'></i>';
                             var labelText = data.NickName + ' is in a ' + data.GroupTypeName + '.';
                         }} else {{
-                            badgeHtml = '<i class=\'badge-icon badge-disabled ' + groupIcon + '\' style=\'color: {2}\'></i>';
+                            badgeHtml = '<i class=\'badge-icon badge-disabled ' + groupIcon + '\'></i>';
                             var labelText = data.NickName + ' is not in a ' + data.GroupTypeName + '.';
                         }}
                         $('.badge-ingroupoftype.badge-id-{3}').html(badgeHtml);

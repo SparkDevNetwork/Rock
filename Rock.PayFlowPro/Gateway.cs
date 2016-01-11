@@ -209,6 +209,8 @@ namespace Rock.PayFlowPro
         /// Credits (Refunds) the specified transaction.
         /// </summary>
         /// <param name="origTransaction">The original transaction.</param>
+        /// <param name="amount">The amount.</param>
+        /// <param name="comment">The comment.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
         public override FinancialTransaction Credit( FinancialTransaction origTransaction, decimal amount, string comment, out string errorMessage )
@@ -833,7 +835,6 @@ namespace Rock.PayFlowPro
                 var ach = paymentInfo as ACHPaymentInfo;
                 var ppBankAccount = new BankAcct( ach.BankAccountNumber, ach.BankRoutingNumber );
                 ppBankAccount.AcctType = ach.AccountType == BankAccountType.Checking ? "C" : "S";
-                ppBankAccount.Name = ach.BankName;
                 return new ACHTender( ppBankAccount );
             }
 

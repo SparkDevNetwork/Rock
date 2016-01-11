@@ -36,11 +36,11 @@ namespace RockWeb.Blocks.Core
     /// </summary>
     [DisplayName( "Date Range Context Setter" )]
     [Category( "Core" )]
-    [Description( "Block that can be used to set the default date range for the site." )]
-    [CustomRadioListField( "Context Scope", "The scope of context to set", "Site,Page", true, "Site", order: 0 )]
-    [TextField( "No Date Range Text", "The text to show when there is no date range in the context.", true, "Select Date Range", order: 1 )]
-    [SlidingDateRangeField("Default Date Range","The default range to start with if context and query string have not been set", order: 2 )]
-    [BooleanField( "Display Query Strings", "Select to always display query strings. Default behavior will only display the query string when it's passed to the page.", order: 3 )]
+    [Description( "Block that can be used to set a user specific date range preference." )]
+
+    [TextField( "No Date Range Text", "The text to show when there is no date range in the context.", true, "Select Date Range", order: 0 )]
+    [SlidingDateRangeField("Default Date Range","The default range to start with if context and query string have not been set", order: 1 )]
+    [BooleanField( "Display Query Strings", "Select to always display query strings. Default behavior will only display the query string when it's passed to the page.", order: 2 )]
     public partial class DateRangeContextSetter : Rock.Web.UI.RockBlock
     {
         /// <summary>
@@ -123,8 +123,6 @@ namespace RockWeb.Blocks.Core
         /// <returns></returns>
         protected void SetDateRangeContext( string dateRangeValues, bool refreshPage = false )
         {
-            bool pageScope = GetAttributeValue( "ContextScope" ) == "Page";
-            
             // set context and refresh below with the correct query string if needed
             RockPage.SetUserPreference( ContextPreferenceName, dateRangeValues, true );
 

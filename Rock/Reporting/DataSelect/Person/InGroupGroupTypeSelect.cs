@@ -144,6 +144,17 @@ namespace Rock.Reporting.DataSelect.Person
                     groupMemberServiceQry = groupMemberServiceQry.Where( xx => groupRoleGuids.Contains( xx.GroupRole.Guid ) );
                 }
 
+                GroupMemberStatus? groupMemberStatus = null;
+                if ( selectionValues.Length >= 3 )
+                {
+                    groupMemberStatus = selectionValues[2].ConvertToEnumOrNull<GroupMemberStatus>();
+                }
+
+                if ( groupMemberStatus.HasValue )
+                {
+                    groupMemberServiceQry = groupMemberServiceQry.Where( xx => xx.GroupMemberStatus == groupMemberStatus.Value );
+                }
+
                 var qry = new PersonService( context ).Queryable()
                     .Select( p => groupMemberServiceQry.Any( xx => xx.PersonId == p.Id ) );
 
@@ -180,7 +191,16 @@ namespace Rock.Reporting.DataSelect.Person
 
             PopulateGroupRolesCheckList( groupTypePicker.SelectedGroupTypeId ?? 0, cblRole );
 
-            return new Control[2] { groupTypePicker, cblRole };
+            RockDropDownList ddlGroupMemberStatus = new RockDropDownList();
+            ddlGroupMemberStatus.CssClass = "js-group-member-status";
+            ddlGroupMemberStatus.ID = parentControl.ID + "_ddlGroupMemberStatus";
+            ddlGroupMemberStatus.Label = "with Group Member Status";
+            ddlGroupMemberStatus.Help = "Select a specific group member status only include to only show true for group members with that status. Leaving this blank will return true for all members.";
+            ddlGroupMemberStatus.BindToEnum<GroupMemberStatus>( true );
+            ddlGroupMemberStatus.SetValue( GroupMemberStatus.Active.ConvertToInt() );
+            parentControl.Controls.Add( ddlGroupMemberStatus );
+
+            return new Control[3] { groupTypePicker, cblRole, ddlGroupMemberStatus };
         }
 
         /// <summary>
@@ -244,23 +264,23 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override string GetSelection( System.Web.UI.Control[] controls )
         {
-            // Get the selected Group Type as a Guid.
             var groupTypePicker = ( controls[0] as GroupTypePicker );
-            var groupTypeId = groupTypePicker.SelectedValueAsId().GetValueOrDefault( 0 );
+            var cblRoles = ( controls[1] as RockCheckBoxList );
+            var ddlMemberStatus = ( controls[2] as RockDropDownList );
 
-            string value1 = string.Empty;
-
-            if ( groupTypeId > 0 )
+            int groupTypeId = groupTypePicker.SelectedValueAsId() ?? 0;
+            Guid? groupTypeGuid = null;
+            var groupType = Rock.Web.Cache.GroupTypeCache.Read( groupTypeId );
+            if ( groupType != null )
             {
-                var groupType = GroupTypeCache.Read( groupTypeId );
-                value1 = ( groupType == null ) ? string.Empty : groupType.Guid.ToString();
+                groupTypeGuid = groupType.Guid;
             }
 
-            // Get the selected Roles
-            var cblRoles = ( controls[1] as RockCheckBoxList );
-            var value2 = cblRoles.SelectedValues.AsDelimited( "," );
+            var rolesGuidCommaList = cblRoles.SelectedValues.AsDelimited( "," );
 
-            return value1 + "|" + value2;
+            var memberStatusValue = ddlMemberStatus.SelectedValue;
+
+            return groupTypeGuid.ToString() + "|" + rolesGuidCommaList + "|" + memberStatusValue;
         }
 
         /// <summary>
@@ -286,6 +306,16 @@ namespace Rock.Reporting.DataSelect.Person
                 foreach ( var item in cblRole.Items.OfType<ListItem>() )
                 {
                     item.Selected = selectedRoleGuids.Contains( item.Value );
+                }
+
+                RockDropDownList ddlGroupMemberStatus = controls[2] as RockDropDownList;
+                if ( selectionValues.Length >= 3 )
+                {
+                    ddlGroupMemberStatus.SetValue( selectionValues[2] );
+                }
+                else
+                {
+                    ddlGroupMemberStatus.SetValue( string.Empty );
                 }
             }
         }

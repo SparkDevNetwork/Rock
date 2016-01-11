@@ -255,7 +255,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     }
 
                     var attendances = new AttendanceService( rockContext )
-                        .Queryable( "Schedule,Group,Location" )
+                        .Queryable( "Schedule,Group,Location,AttendanceCode" )
                         .Where( a =>
                             a.PersonAliasId.HasValue &&
                             a.PersonAliasId == personAliasId &&
@@ -280,7 +280,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                             Schedule = a.Schedule.Name,
                             IsActive =
                                 a.StartDateTime > DateTime.Today &&
-                                activeScheduleIds.Contains( a.ScheduleId.Value )
+                                activeScheduleIds.Contains( a.ScheduleId.Value ),
+                            Code = a.AttendanceCode != null ? a.AttendanceCode.Code : ""
                         } ).ToList();
 
                     // Set active locations to be a link to the room in manager page
@@ -315,6 +316,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             public string Location { get; set; }
             public string Schedule { get; set; }
             public bool IsActive { get; set; }
+            public string Code { get; set; }
         }
 
         #endregion

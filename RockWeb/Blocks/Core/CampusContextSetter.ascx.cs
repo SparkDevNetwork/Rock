@@ -31,11 +31,11 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.Core
 {
     /// <summary>
-    /// Block that can be used to set the default campus context for the site
+    /// Block that can be used to set the default campus context for the site or page
     /// </summary>
     [DisplayName( "Campus Context Setter" )]
     [Category( "Core" )]
-    [Description( "Block that can be used to set the default campus context for the site." )]
+    [Description( "Block that can be used to set the default campus context for the site or page." )]
     [CustomRadioListField( "Context Scope", "The scope of context to set", "Site,Page", true, "Site", order: 0 )]
     [TextField( "Current Item Template", "Lava template for the current item. The only merge field is {{ CampusName }}.", true, "{{ CampusName }}", order: 1 )]
     [TextField( "Dropdown Item Template", "Lava template for items in the dropdown. The only merge field is {{ CampusName }}.", true, "{{ CampusName }}", order: 2 )]

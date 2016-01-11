@@ -267,30 +267,26 @@ namespace Rock.Model
         public int? PageViewRetentionPeriodDays { get; set; }
 
         /// <summary>
-        /// Gets or sets the Site's Facebook AppId for utilizing the Facebook SDK.
+        /// Gets or sets the content of the page header.
         /// </summary>
-        /// <remarks>
-        /// Each site that utilizes the Facebook SDK requires a different AppId. More info is available at http://developer.facebook.com
-        /// </remarks>
         /// <value>
-        /// Facebook App Id.
+        /// The content of the page header.
         /// </value>
-        [MaxLength( 25 )]
         [DataMember]
-        [Obsolete( "Attribute value of Facebook Authentication provider are used instead." )]
-        public string FacebookAppId { get; set; }
+        public string PageHeaderContent { get; set; }
 
         /// <summary>
-        /// Gets or sets the site's App Secret for the Facebook API
+        /// Gets or sets a value indicating whether [allow indexing].
         /// </summary>
         /// <value>
-        /// Facebook App Secret.
+        ///   <c>true</c> if [allow indexing]; otherwise, <c>false</c>.
         /// </value>
-        [MaxLength( 50 )]
         [DataMember]
-        [Obsolete( "Attribute value of Facebook Authentication provider are used instead." )]
-        public string FacebookAppSecret { get; set; }
-
+        public bool AllowIndexing {
+            get { return _allowIndexing; }
+            set { _allowIndexing = value; }
+        }
+        private bool _allowIndexing = true;
         #endregion
 
         #region Virtual Properties

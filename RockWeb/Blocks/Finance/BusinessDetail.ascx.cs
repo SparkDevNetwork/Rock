@@ -123,6 +123,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     business = new Person();
                     personService.Add( business );
+                    tbBusinessName.Text = tbBusinessName.Text.FixCase();
                 }
 
                 // Business Name

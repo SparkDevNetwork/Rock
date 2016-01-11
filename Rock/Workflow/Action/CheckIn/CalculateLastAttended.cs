@@ -29,6 +29,7 @@ namespace Rock.Workflow.Action.CheckIn
     /// <summary>
     /// Calculates and updates the LastCheckIn property on check-in objects
     /// </summary>
+    [ActionCategory( "Check-In" )]
     [Description( "Calculates and updates the LastCheckIn property on check-in objects" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Calculate Last Attended" )]

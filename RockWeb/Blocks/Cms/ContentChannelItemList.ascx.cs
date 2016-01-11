@@ -38,13 +38,18 @@ namespace RockWeb.Blocks.Cms
     [Category("CMS")]
     [Description("Lists content channel items.")]
 
-    [LinkedPage("Detail Page")]
+    [ContextAware]
+    [LinkedPage("Detail Page", order:0)]
+    [BooleanField("Filter Items For Current User", "Filters the items by those created by the current logged in user.", false, order: 1)]
+    [BooleanField("Show Filters", "Allows you to show/hide the grids filters.", true, order: 2)]
     public partial class ContentChannelItemList : RockBlock, ISecondaryBlock
     {
         #region Fields
 
         private int? _channelId = null;
         private int _typeId = 0;
+        private Person _person = null;
+
         #endregion
 
         #region Control Methods
@@ -57,80 +62,101 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
 
+            // set person context
+            var contextEntity = this.ContextEntity();
+            if ( contextEntity != null )
+            {
+                if ( contextEntity is Person )
+                {
+                    _person = contextEntity as Person;
+                }
+            }
+
+            // set person if grid should be filtered by the current person
+            if ( GetAttributeValue( "FilterItemsForCurrentUser" ).AsBoolean() )
+            {
+                _person = CurrentPerson;
+            }
+
+            gfFilter.Visible = GetAttributeValue( "ShowFilters" ).AsBoolean();
+            
             _channelId = PageParameter( "contentChannelId" ).AsIntegerOrNull();
-            string cssIcon = "fa fa-bullhorn";
-            var contentChannel = new ContentChannelService( new RockContext() ).Get( _channelId.Value );
-            if ( contentChannel != null )
+            if ( _channelId != null )
             {
-                string startHeading = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Active";
-                bool isRange = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange;
-
-                gItems.Columns[1].HeaderText = startHeading;
-                gItems.Columns[3].HeaderText = startHeading;
-
-                if ( contentChannel.ContentChannelType.IncludeTime )
+                string cssIcon = "fa fa-bullhorn";
+                var contentChannel = new ContentChannelService( new RockContext() ).Get( _channelId.Value );
+                if ( contentChannel != null )
                 {
-                    gItems.Columns[1].Visible = true;
-                    gItems.Columns[2].Visible = isRange;
-                    gItems.Columns[3].Visible = false;
-                    gItems.Columns[4].Visible = false;
-                }
-                else
-                {
-                    gItems.Columns[1].Visible = false;
-                    gItems.Columns[2].Visible = false;
-                    gItems.Columns[3].Visible = true;
-                    gItems.Columns[4].Visible = isRange;
+                    string startHeading = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Active";
+                    bool isRange = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange;
+
+                    gItems.Columns[1].HeaderText = startHeading;
+                    gItems.Columns[3].HeaderText = startHeading;
+
+                    if ( contentChannel.ContentChannelType.IncludeTime )
+                    {
+                        gItems.Columns[1].Visible = true;
+                        gItems.Columns[2].Visible = isRange;
+                        gItems.Columns[3].Visible = false;
+                        gItems.Columns[4].Visible = false;
+                    }
+                    else
+                    {
+                        gItems.Columns[1].Visible = false;
+                        gItems.Columns[2].Visible = false;
+                        gItems.Columns[3].Visible = true;
+                        gItems.Columns[4].Visible = isRange;
+                    }
+
+                    gItems.Columns[5].Visible = !contentChannel.ContentChannelType.DisablePriority;
+                    lContentChannel.Text = contentChannel.Name;
+                    _typeId = contentChannel.ContentChannelTypeId;
+
+                    if ( !string.IsNullOrWhiteSpace( contentChannel.IconCssClass ) )
+                    {
+                        cssIcon = contentChannel.IconCssClass;
+                    }
                 }
 
-                gItems.Columns[5].Visible = !contentChannel.ContentChannelType.DisablePriority;
-                lContentChannel.Text = contentChannel.Name;
-                _typeId = contentChannel.ContentChannelTypeId;
+                lIcon.Text = string.Format( "<i class='{0}'></i>", cssIcon );
 
-                if ( !string.IsNullOrWhiteSpace( contentChannel.IconCssClass ) )
+                // Block Security and special attributes (RockPage takes care of View)
+                bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
+
+                gfFilter.ApplyFilterClick += gfFilter_ApplyFilterClick;
+                gfFilter.DisplayFilterValue += gfFilter_DisplayFilterValue;
+
+                gItems.DataKeyNames = new string[] { "Id" };
+                gItems.Actions.ShowAdd = canAddEditDelete;
+                gItems.IsDeleteEnabled = canAddEditDelete;
+                gItems.Actions.AddClick += gItems_Add;
+                gItems.GridRebind += gItems_GridRebind;
+
+                AddAttributeColumns();
+
+                if ( contentChannel != null && contentChannel.RequiresApproval )
                 {
-                    cssIcon = contentChannel.IconCssClass;
+                    var statusField = new BoundField();
+                    gItems.Columns.Add( statusField );
+                    statusField.DataField = "Status";
+                    statusField.HeaderText = "Status";
+                    statusField.SortExpression = "Status";
+                    statusField.HtmlEncode = false;
                 }
+
+                var securityField = new SecurityField();
+                gItems.Columns.Add( securityField );
+                securityField.TitleField = "Title";
+                securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentChannelItem ) ).Id;
+
+                var deleteField = new DeleteField();
+                gItems.Columns.Add( deleteField );
+                deleteField.Click += gItems_Delete;
+
+                // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+                this.BlockUpdated += Block_BlockUpdated;
+                this.AddConfigurationUpdateTrigger( upnlContent );
             }
-
-            lIcon.Text = string.Format( "<i class='{0}'></i>", cssIcon );
-
-            // Block Security and special attributes (RockPage takes care of View)
-            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
-
-            gfFilter.ApplyFilterClick += gfFilter_ApplyFilterClick;
-            gfFilter.DisplayFilterValue += gfFilter_DisplayFilterValue;
-
-            gItems.DataKeyNames = new string[] { "Id" };
-            gItems.Actions.ShowAdd = canAddEditDelete;
-            gItems.IsDeleteEnabled = canAddEditDelete;
-            gItems.Actions.AddClick += gItems_Add;
-            gItems.GridRebind += gItems_GridRebind;
-
-            AddAttributeColumns();
-
-            if ( contentChannel != null && contentChannel.RequiresApproval )
-            {
-                var statusField = new BoundField();
-                gItems.Columns.Add( statusField );
-                statusField.DataField = "Status";
-                statusField.HeaderText = "Status";
-                statusField.SortExpression = "Status";
-                statusField.HtmlEncode = false;
-            }
-           
-            var securityField = new SecurityField();
-            gItems.Columns.Add( securityField );
-            securityField.TitleField = "Title";
-            securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentChannelItem ) ).Id;
-
-            var deleteField = new DeleteField();
-            gItems.Columns.Add( deleteField );
-            deleteField.Click += gItems_Delete;
-
-            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
-            this.BlockUpdated += Block_BlockUpdated;
-            this.AddConfigurationUpdateTrigger( upnlContent );
         }
 
         /// <summary>
@@ -370,6 +396,12 @@ namespace RockWeb.Blocks.Cms
                 if ( !string.IsNullOrWhiteSpace( title ) )
                 {
                     contentItems = contentItems.Where( i => i.Title.Contains( title ) );
+                }
+
+                // if the block has a person context filter requests for just them
+                if ( _person != null )
+                {
+                    contentItems = contentItems.Where( i => i.CreatedByPersonAlias != null && i.CreatedByPersonAlias.PersonId == _person.Id );
                 }
 
                 // TODO: Checking security of every item will take longer and longer as more items are added.  

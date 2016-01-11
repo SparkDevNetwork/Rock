@@ -1287,7 +1287,7 @@ namespace RockWeb.Blocks.Connection
                                 .Where( g => g.GroupTypeId == placementGroupTypeId
                                              && ( g.Campus == null || g.CampusId == connectionRequest.CampusId ) )
                                 .ToList();
-                    
+
             }
             else
             {
@@ -1302,11 +1302,19 @@ namespace RockWeb.Blocks.Connection
                                     .Select( g => g.Group )
                                     .ToList();
             }
-                
+
+            if ( connectionRequest.AssignedGroup != null &&
+                !groups.Any( g => g.Id == connectionRequest.AssignedGroup.Id ) )
+            {
+                groups.Add( connectionRequest.AssignedGroup );
+            }
+
             foreach ( var g in groups.OrderBy( g => g.Name ) )
             {
                 ddlPlacementGroup.Items.Add( new ListItem( String.Format( "{0} ({1})", g.Name, g.Campus != null ? g.Campus.Name : "No Campus" ), g.Id.ToString().ToUpper() ) );
             }
+
+            ddlPlacementGroup.SetValue( connectionRequest.AssignedGroupId );
 
             if ( connectionRequest.PersonAlias != null )
             {
@@ -1322,19 +1330,6 @@ namespace RockWeb.Blocks.Connection
             rblStatus.Enabled = true;
             rblStatus.Label = "Status";
 
-            if ( connectionRequest.AssignedGroupId != null )
-            {
-                try
-                {
-                    ddlPlacementGroup.SelectedValue = connectionRequest.AssignedGroupId.ToString();
-                }
-                catch
-                {
-
-                }
-            }
-            ddlPlacementGroup.DataBind();
-
             ddlCampus.Items.Clear();
             foreach ( var campus in CampusCache.All() )
             {
@@ -1344,7 +1339,7 @@ namespace RockWeb.Blocks.Connection
             {
                 ddlCampus.SelectedValue = connectionRequest.CampusId.ToString();
             }
-            else 
+            else
             {
                 ddlCampus.SelectedIndex = 0;
             }

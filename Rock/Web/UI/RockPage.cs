@@ -1152,9 +1152,19 @@ namespace Rock.Web.UI
                     AddMetaTag( this.Page, metaTag );
                 }
 
+                if (!string.IsNullOrWhiteSpace( _pageCache.Layout.Site.PageHeaderContent ))
+                {
+                    Page.Header.Controls.Add( new LiteralControl( _pageCache.Layout.Site.PageHeaderContent ) );
+                }
+
                 if ( !string.IsNullOrWhiteSpace( _pageCache.HeaderContent ) )
                 {
                     Page.Header.Controls.Add( new LiteralControl( _pageCache.HeaderContent ) );
+                }
+
+                if ( !_pageCache.AllowIndexing || !_pageCache.Layout.Site.AllowIndexing )
+                {
+                    Page.Header.Controls.Add( new LiteralControl( "<meta name=\"robots\" content=\"noindex, nofollow\">" ) );
                 }
                 
                 if ( showDebugTimings )
@@ -1182,7 +1192,7 @@ namespace Rock.Web.UI
         {
             var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
             string keyParameter = string.IsNullOrWhiteSpace( googleAPIKey ) ? "" : string.Format( "key={0}&", googleAPIKey );
-            string scriptUrl = string.Format( "https://maps.googleapis.com/maps/api/js?{0}sensor=false&libraries=drawing,visualization", keyParameter );
+            string scriptUrl = string.Format( "https://maps.googleapis.com/maps/api/js?{0}sensor=false&libraries=drawing,visualization,geometry", keyParameter );
 
             // first, add it to the page to handle cases where the api is needed on first page load
             if ( this.Page != null && this.Page.Header != null )

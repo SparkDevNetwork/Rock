@@ -31,6 +31,7 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sets an attribute value to the entity that workflow is being acted on (Action's entity parameter).
     /// </summary>
+    [ActionCategory("Set Attribute")]
     [Description( "Sets an attribute value to the entity that workflow is being acted on (Action's entity parameter)." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Set Attribute From Entity" )]

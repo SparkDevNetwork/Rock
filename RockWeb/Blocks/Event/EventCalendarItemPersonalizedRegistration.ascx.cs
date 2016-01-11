@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Event
     /// <summary>
     /// Template block for developers to use to start a new block.
     /// </summary>
-    [DisplayName( "Event Calendar Item Personalized Registration" )]
+    [DisplayName( "Event Item Personalized Registration" )]
     [Category( "Event" )]
     [Description( "Simplifies the registration process for a given person and event calendar item." )]
 
@@ -44,6 +44,7 @@ namespace RockWeb.Blocks.Event
     [IntegerField("Days In Range", "The number of days in the future to show events for.", true, 60, "", 1)]
     [IntegerField("Max Display Events", "The maximum number of events to display.", true, 4, "", 2)]
     [LinkedPage("Registration Page", "The registration page to redirect to.", true, "", "", 3)]
+    [BooleanField("Start Registration At Beginning", "Should the registration start at the beginning (true) or start at the confirmation page (false). This will depend on whether you would like the registrar to have to walk through the registration process to complete any required items.", true, order: 4)]
     public partial class EventCalendarItemPersonalizedRegistration : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -170,6 +171,7 @@ namespace RockWeb.Blocks.Event
             registration.PersonAliasId = person.PrimaryAliasId;
             registration.FirstName = person.NickName;
             registration.LastName = person.LastName;
+            registration.IsTemporary = true;
 
             // add registrants
             foreach ( int registrantId in cblRegistrants.SelectedValuesAsInt )
@@ -185,7 +187,7 @@ namespace RockWeb.Blocks.Event
             var queryParams = new Dictionary<string, string>();
             queryParams.Add( "RegistrationInstanceId", registrationLinkage.RegistrationInstanceId.ToString());
             queryParams.Add( "RegistrationId", registration.Id.ToString() );
-            queryParams.Add( "StartAtBeginning", "True" );
+            queryParams.Add( "StartAtBeginning", GetAttributeValue( "StartRegistrationAtBeginning" ) );
 
             if ( !string.IsNullOrWhiteSpace( registrationLinkage.UrlSlug ) )
             {

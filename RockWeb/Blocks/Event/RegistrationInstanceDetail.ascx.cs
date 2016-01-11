@@ -318,21 +318,26 @@ namespace RockWeb.Blocks.Event
                 {
                     int registrationTemplateId = registrationInstance.RegistrationTemplateId;
 
-                    if ( !registrationInstance.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                    if ( UserCanEdit ||
+                         registrationInstance.IsAuthorized( Authorization.EDIT, CurrentPerson ) ||
+                         registrationInstance.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                    {
+                        rockContext.WrapTransaction( () =>
+                        {
+                            new RegistrationService( rockContext ).DeleteRange( registrationInstance.Registrations );
+                            service.Delete( registrationInstance );
+                            rockContext.SaveChanges();
+                        } );
+
+                        var qryParams = new Dictionary<string, string> { { "RegistrationTemplateId", registrationTemplateId.ToString() } };
+                        NavigateToParentPage( qryParams );
+                    }
+                    else
                     {
                         mdDeleteWarning.Show( "You are not authorized to delete this registration instance.", ModalAlertType.Information );
                         return;
                     }
 
-                    rockContext.WrapTransaction( () =>
-                    {
-                        new RegistrationService( rockContext ).DeleteRange( registrationInstance.Registrations );
-                        service.Delete( registrationInstance );
-                        rockContext.SaveChanges();
-                    } );
-
-                    var qryParams = new Dictionary<string, string> { { "RegistrationTemplateId", registrationTemplateId.ToString() } };
-                    NavigateToParentPage( qryParams );
                 }
             }
         }
@@ -636,7 +641,9 @@ namespace RockWeb.Blocks.Event
                 {
                     int registrationInstanceId = registration.RegistrationInstanceId;
 
-                    if ( !registration.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                    if ( !UserCanEdit && 
+                        !registration.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) &&
+                        !registration.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
                     {
                         mdDeleteWarning.Show( "You are not authorized to delete this registration.", ModalAlertType.Information );
                         return;
@@ -1519,7 +1526,7 @@ namespace RockWeb.Blocks.Event
 
                 nbEditModeMessage.Text = string.Empty;
 
-                // User must have 'Edit' rights to block, or 'Administrate' rights to instance
+                // User must have 'Edit' rights to block, or 'Edit' or 'Administrate' rights to instance
                 if ( !canEdit )
                 {
                     readOnly = true;
@@ -1530,11 +1537,13 @@ namespace RockWeb.Blocks.Event
                 if ( readOnly )
                 {
                     btnEdit.Visible = false;
+                    btnDelete.Visible = false;
                     ShowReadonlyDetails( registrationInstance );
                 }
                 else
                 {
                     btnEdit.Visible = true;
+                    btnDelete.Visible = true;
 
                     if ( registrationInstance.Id > 0 )
                     {
@@ -2492,13 +2501,13 @@ namespace RockWeb.Blocks.Event
                                     ddlCampus.SetValue( fRegistrants.GetUserPreference( "Home Campus" ) );
                                     phRegistrantFormFieldFilters.Controls.Add( ddlCampus );
 
-                                    var templateField = new TemplateField();
-                                    templateField.ItemTemplate = new LiteralFieldTemplate( "lCampus" );
+                                    var templateField = new RockLiteralField();
+                                    templateField.ID = "lCampus";
                                     templateField.HeaderText = "Campus";
                                     gRegistrants.Columns.Add( templateField );
 
-                                    var templateField2 = new TemplateField();
-                                    templateField2.ItemTemplate = new LiteralFieldTemplate( "lCampus" );
+                                    var templateField2 = new RockLiteralField();
+                                    templateField2.ID = "lCampus";
                                     templateField2.HeaderText = "Campus";
                                     gGroupPlacements.Columns.Add( templateField2 );
 
@@ -2514,13 +2523,13 @@ namespace RockWeb.Blocks.Event
                                     phRegistrantFormFieldFilters.Controls.Add( tbEmailFilter );
 
                                     string dataFieldExpression = "PersonAlias.Person.Email";
-                                    var emailField = new BoundField();
+                                    var emailField = new RockBoundField();
                                     emailField.DataField = dataFieldExpression;
                                     emailField.HeaderText = "Email";
                                     emailField.SortExpression = dataFieldExpression;
                                     gRegistrants.Columns.Add( emailField );
 
-                                    var emailField2 = new BoundField();
+                                    var emailField2 = new RockBoundField();
                                     emailField2.DataField = dataFieldExpression;
                                     emailField2.HeaderText = "Email";
                                     emailField2.SortExpression = dataFieldExpression;
@@ -2587,13 +2596,13 @@ namespace RockWeb.Blocks.Event
                                     phRegistrantFormFieldFilters.Controls.Add( ddlMaritalStatusFilter );
 
                                     string dataFieldExpression = "PersonAlias.Person.MaritalStatusValue.Value";
-                                    var maritalStatusField = new BoundField();
+                                    var maritalStatusField = new RockBoundField();
                                     maritalStatusField.DataField = dataFieldExpression;
                                     maritalStatusField.HeaderText = "MaritalStatus";
                                     maritalStatusField.SortExpression = dataFieldExpression;
                                     gRegistrants.Columns.Add( maritalStatusField );
 
-                                    var maritalStatusField2 = new BoundField();
+                                    var maritalStatusField2 = new RockBoundField();
                                     maritalStatusField2.DataField = dataFieldExpression;
                                     maritalStatusField2.HeaderText = "MaritalStatus";
                                     maritalStatusField2.SortExpression = dataFieldExpression;
@@ -2610,15 +2619,15 @@ namespace RockWeb.Blocks.Event
                                     tbPhoneFilter.Text = fRegistrants.GetUserPreference( "Phone" );
                                     phRegistrantFormFieldFilters.Controls.Add( tbPhoneFilter );
 
-                                    var templateField = new TemplateField();
-                                    templateField.ItemTemplate = new LiteralFieldTemplate( "lPhone" );
-                                    templateField.HeaderText = "Phone(s)";
-                                    gRegistrants.Columns.Add( templateField );
+                                    var literalField = new RockLiteralField( );
+                                    literalField.ID = "lPhone";
+                                    literalField.HeaderText = "Phone(s)";
+                                    gRegistrants.Columns.Add( literalField );
 
-                                    var templateField2 = new TemplateField();
-                                    templateField2.ItemTemplate = new LiteralFieldTemplate( "lPhone" );
-                                    templateField2.HeaderText = "Phone(s)";
-                                    gGroupPlacements.Columns.Add( templateField2 );
+                                    var literalField2 = new RockLiteralField();
+                                    literalField2.ID = "lPhone";
+                                    literalField2.HeaderText = "Phone(s)";
+                                    gGroupPlacements.Columns.Add( literalField2 );
 
                                     break;
                                 }
@@ -2689,9 +2698,9 @@ namespace RockWeb.Blocks.Event
             }
 
             // Add fee column
-            var feeField = new TemplateField();
+            var feeField = new RockLiteralField();
+            feeField.ID = "lFees";
             feeField.HeaderText = "Fees";
-            feeField.ItemTemplate = new LiteralFieldTemplate( "lFees" );
             gRegistrants.Columns.Add( feeField );
 
             var deleteField = new DeleteField();
@@ -3148,30 +3157,6 @@ namespace RockWeb.Blocks.Event
             /// The attribute.
             /// </value>
             public AttributeCache Attribute { get; set; }
-        }
-
-        /// <summary>
-        /// TemplateField template with one literal control
-        /// </summary>
-        public class LiteralFieldTemplate : ITemplate
-        {
-            private string LiteralId { get; set; }
-
-            /// <summary>
-            /// Instantiates the in.
-            /// </summary>
-            /// <param name="container">The container.</param>
-            public void InstantiateIn( Control container )
-            {
-                var literal = new Literal();
-                literal.ID = LiteralId;
-                container.Controls.Add( literal );
-            }
-
-            public LiteralFieldTemplate( string literalId )
-            {
-                LiteralId = literalId;
-            }
         }
 
         #endregion

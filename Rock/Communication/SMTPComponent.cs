@@ -258,9 +258,6 @@ namespace Rock.Communication.Transport
                                         // convert any special microsoft word characters to normal chars so they don't look funny (for example "Hey â€œdouble-quotesâ€ from â€˜single quoteâ€™")
                                         message.Subject = message.Subject.ReplaceWordChars();
 
-                                        // Add any additional headers that specific SMTP provider needs
-                                        AddAdditionalHeaders( message, recipient );
-
                                         // Add text view first as last view is usually treated as the preferred view by email readers (gmail)
                                         string plainTextBody = Rock.Communication.Medium.Email.ProcessTextBody( communication, globalAttributes, mergeObjects, currentPerson );
 
@@ -284,6 +281,11 @@ namespace Rock.Communication.Transport
                                             AlternateView htmlView = AlternateView.CreateAlternateViewFromString( htmlBody, new System.Net.Mime.ContentType( MediaTypeNames.Text.Html ) );
                                             message.AlternateViews.Add( htmlView );
                                         }
+
+                                        // Add any additional headers that specific SMTP provider needs
+                                        var metaData = new Dictionary<string, string>();
+                                        metaData.Add( "communication_recipient_guid", recipient.Guid.ToString() );
+                                        AddAdditionalHeaders( message, metaData );
 
                                         smtpClient.Send( message );
                                         recipient.Status = CommunicationRecipientStatus.Delivered;
@@ -449,6 +451,8 @@ namespace Rock.Communication.Transport
                             message.Subject = subject;
                             message.Body = body;
 
+                            AddAdditionalHeaders( message, null );
+
                             smtpClient.Send( message );
 
                             if ( createCommunicationHistory )
@@ -484,6 +488,20 @@ namespace Rock.Communication.Transport
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
         public void Send( Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot, bool createCommunicationHistory )
+        {
+            Send( mediumData, recipients, appRoot, themeRoot, createCommunicationHistory, null );
+        }
+
+        /// <summary>
+        /// Sends the specified medium data to the specified list of recipients.
+        /// </summary>
+        /// <param name="mediumData">The medium data.</param>
+        /// <param name="recipients">The recipients.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
+        /// <param name="metaData">The meta data.</param>
+        public void Send( Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot, bool createCommunicationHistory, Dictionary<string, string> metaData )
         {
             try
             {
@@ -546,6 +564,8 @@ namespace Rock.Communication.Transport
                     message.Subject = subject;
                     message.Body = body;
 
+                    AddAdditionalHeaders( message, metaData );
+
                     using ( var smtpClient = GetSmtpClient() )
                     {
                         smtpClient.Send( message );
@@ -566,7 +586,6 @@ namespace Rock.Communication.Transport
                 ExceptionLogService.LogException( ex, null );
             }
         }
-
 
         /// <summary>
         /// Sends the specified recipients.
@@ -695,6 +714,8 @@ namespace Rock.Communication.Transport
                         }
                     }
 
+                    AddAdditionalHeaders( message, null );
+
                     using ( var smtpClient = GetSmtpClient() )
                     {
                         smtpClient.Send( message );
@@ -718,9 +739,16 @@ namespace Rock.Communication.Transport
         /// Adds any additional headers.
         /// </summary>
         /// <param name="message">The message.</param>
-        /// <param name="recipient">The recipient.</param>
-        public virtual void AddAdditionalHeaders( MailMessage message, CommunicationRecipient recipient )
+        /// <param name="headers">The headers.</param>
+        public virtual void AddAdditionalHeaders( MailMessage message, Dictionary<string, string> headers )
         {
+            if ( headers != null )
+            {
+                foreach ( var header in headers )
+                {
+                    message.Headers.Add( header.Key, header.Value );
+                }
+            }
         }
 
         /// <summary>
