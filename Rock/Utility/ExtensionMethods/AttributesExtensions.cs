@@ -68,6 +68,7 @@ namespace Rock
         /// <summary>
         /// Sets the value of an attribute key in memory.  Note, this will not persist value to database
         /// </summary>
+        /// <param name="entity">The entity.</param>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
         public static void SetAttributeValue( this Rock.Attribute.IHasAttributes entity, string key, int? value )
@@ -78,6 +79,7 @@ namespace Rock
         /// <summary>
         /// Sets the value of an attribute key in memory.  Note, this will not persist value to database
         /// </summary>
+        /// <param name="entity">The entity.</param>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
         public static void SetAttributeValue( this Rock.Attribute.IHasAttributes entity, string key, decimal? value )
@@ -88,6 +90,7 @@ namespace Rock
         /// <summary>
         /// Sets the value of an attribute key in memory.  Note, this will not persist value to database
         /// </summary>
+        /// <param name="entity">The entity.</param>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
         public static void SetAttributeValue( this Rock.Attribute.IHasAttributes entity, string key, Guid? value )
@@ -98,6 +101,7 @@ namespace Rock
         /// <summary>
         /// Sets the value of an attribute key in memory.  Note, this will not persist value to database
         /// </summary>
+        /// <param name="entity">The entity.</param>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
         public static void SetAttributeValue( this Rock.Attribute.IHasAttributes entity, string key, DateTime? value )
