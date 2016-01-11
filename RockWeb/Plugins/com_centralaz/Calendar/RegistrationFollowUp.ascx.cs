@@ -1933,7 +1933,7 @@ namespace RockWeb.Plugins.com_centralaz.Calendar
                                     l.GroupLocationTypeValueId.HasValue &&
                                     l.GroupLocationTypeValueId.Value == homeLocationType.Id ) )
                             {
-                                GroupService.AddNewFamilyAddress(
+                                GroupService.AddNewGroupAddress(
                                     rockContext,
                                     familyGroup,
                                     Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
@@ -1952,7 +1952,7 @@ namespace RockWeb.Plugins.com_centralaz.Calendar
                     {
                         if ( location != null )
                         {
-                            GroupService.AddNewFamilyAddress(
+                            GroupService.AddNewGroupAddress(
                                 rockContext,
                                 familyGroup,
                                 Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
