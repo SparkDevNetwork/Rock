@@ -62,6 +62,35 @@
 
                 </fieldset>
 
+                <asp:Panel ID="pnlAddress" runat="server">
+                    <fieldset>
+                        <legend><asp:Literal ID="lAddressTitle" runat="server" /></legend>
+
+                        <div class="clearfix">
+                            <div class="pull-left margin-b-md">
+                                <asp:Literal ID="lPreviousAddress" runat="server" />
+                            </div>
+                            <div class="pull-right">
+                                <asp:LinkButton ID="lbMoved" CssClass="btn btn-default btn-xs" runat="server" OnClick="lbMoved_Click"><i class="fa fa-truck"></i> Moved</asp:LinkButton>
+                            </div>
+                        </div>
+
+                        <asp:HiddenField ID="hfStreet1" runat="server" />
+                        <asp:HiddenField ID="hfStreet2" runat="server" />
+                        <asp:HiddenField ID="hfCity" runat="server" />
+                        <asp:HiddenField ID="hfState" runat="server" />
+                        <asp:HiddenField ID="hfPostalCode" runat="server" />
+                        <asp:HiddenField ID="hfCountry" runat="server" />
+
+                        <Rock:AddressControl id="acAddress" runat="server" RequiredErrorMessage="Your Address is Required" />
+                        
+                        <div class="margin-b-sm">
+                            <Rock:RockCheckBox ID="cbIsMailingAddress" runat="server" Text="This is my mailing address" Checked="true" />
+                            <Rock:RockCheckBox ID="cbIsPhysicalAddress" runat="server" Text="This is my physical address" Checked="true" />
+                        </div>
+                    </fieldset>
+                </asp:Panel>
+
                 <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                     <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />

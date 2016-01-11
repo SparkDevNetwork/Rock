@@ -226,6 +226,9 @@ namespace RockWeb.Blocks.Cms
                 site.EnablePageViews = cbEnablePageViews.Checked;
                 site.PageViewRetentionPeriodDays = nbPageViewRetentionPeriodDays.Text.AsIntegerOrNull();
 
+                site.AllowIndexing = cbAllowIndexing.Checked;
+                site.PageHeaderContent = cePageHeaderContent.Text;
+
                 var currentDomains = tbSiteDomains.Text.SplitDelimitedValues().ToList<string>();
                 site.SiteDomains = site.SiteDomains ?? new List<SiteDomain>();
 
@@ -406,6 +409,9 @@ namespace RockWeb.Blocks.Cms
 
             pnlDetails.Visible = true;
             hfSiteId.Value = site.Id.ToString();
+
+            cePageHeaderContent.Text = site.PageHeaderContent;
+            cbAllowIndexing.Checked = site.AllowIndexing;
 
             bool readOnly = false;
 

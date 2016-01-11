@@ -3,8 +3,6 @@
 <asp:UpdatePanel ID="upPayment" runat="server">
     <ContentTemplate>
 
-        <h1>Some Test Content to Act as a Hook</h1>
-
         <asp:Panel ID="pnlPaymentInfo" CssClass="panel panel-block" runat="server">
 
             <div class="panel-heading">
@@ -128,7 +126,6 @@
                                 <fieldset>
                                     <Rock:RockRadioButtonList ID="rblSavedAch" runat="server" Label=" " CssClass="radio-list" RepeatDirection="Vertical" DataValueField="Id" DataTextField="Name" />
                                     <div id="divNewBank" runat="server" class="radio-content">                                    
-                                        <Rock:RockTextBox ID="txtBankName" runat="server" Label="Bank Name" />
                                         <Rock:RockTextBox ID="txtRoutingNumber" runat="server" Label="Routing #" />
                                         <Rock:RockTextBox ID="txtAccountNumber" runat="server" Label="Account #" />
                                         <Rock:RockRadioButtonList ID="rblAccountType" runat="server" RepeatDirection="Horizontal" Label="Account Type">

@@ -595,27 +595,6 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Adds a new PageContext to the given page.
-        /// </summary>
-        /// <param name="pageGuid">The page GUID.</param>
-        /// <param name="entity">The entity.</param>
-        /// <param name="idParameter">The id parameter.</param>
-        [Obsolete( "Use UpdatePageContext" )]
-        public void AddPageContext( string pageGuid, string entity, string idParameter )
-        {
-            Migration.Sql( string.Format( @"
-
-                DECLARE @PageId int
-                SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '{0}')
-
-                INSERT INTO [PageContext] (
-                    [IsSystem],[PageId],[Entity],[IdParameter],[Guid])
-                VALUES(
-                    1, @PageId, '{1}', '{2}', newid())
-", pageGuid, entity, idParameter ) );
-        }
-
-        /// <summary>
         /// Adds or Updates PageContext to the given page, entity, idParameter
         /// </summary>
         /// <param name="pageGuid">The page GUID.</param>
@@ -1876,6 +1855,37 @@ namespace Rock.Data
                     description.Replace( "'", "''" ),
                     guid,
                     ( isSystem ? "1" : "0" )
+                    ) );
+        }
+
+        /// <summary>
+        /// Adds the defined value.
+        /// </summary>
+        /// <param name="definedTypeGuid">The defined type unique identifier.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="description">The description.</param>
+        public void AddDefinedValue( string definedTypeGuid, string value, string description )
+        {
+            Migration.Sql( string.Format( @"
+
+                DECLARE @DefinedTypeId int
+                SET @DefinedTypeId = (SELECT [Id] FROM [DefinedType] WHERE [Guid] = '{0}')
+
+                DECLARE @Order int
+                SELECT @Order = ISNULL(MAX([order])+1,0) FROM [DefinedValue] WHERE [DefinedTypeId] = @DefinedTypeId
+
+                INSERT INTO [DefinedValue] (
+                    [IsSystem],[DefinedTypeId],[Order],
+                    [Value],[Description],
+                    [Guid])
+                VALUES(
+                    0,@DefinedTypeId,@Order,
+                    '{1}','{2}',
+                    NEWID() )
+",
+                    definedTypeGuid,
+                    value,
+                    description.Replace( "'", "''" )
                     ) );
         }
 
@@ -4072,6 +4082,7 @@ END
                     AND [Key] = '{2}' )
                 BEGIN
                     UPDATE [Attribute] SET
+                        [FieldTypeId] = @FieldTypeId,
                         [Name] = '{3}',
                         [Description] = '{4}',
                         [Order] = {5},

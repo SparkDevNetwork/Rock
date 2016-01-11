@@ -1321,16 +1321,30 @@ namespace Rock.Model
                 {
                     rockUrlRoot.EnsureTrailingBackslash();
 
+                    // get email link preference (new communication/mailto)
+                    var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                    string emailLinkPreference = globalAttributes.GetValue( "PreferredEmailLinkType" );
+
+                    string emailLink = string.Empty;
+
+                    // create link
+                    if ( string.IsNullOrWhiteSpace(emailLinkPreference) || emailLinkPreference == "1" )
+                    {
+                        emailLink = string.Format( "{0}Communication?person={1}", rockUrlRoot, Id );
+                    } else
+                    {
+                        emailLink = string.Format( "mailto:{0}", Email );
+                    }
+                    
                     switch ( EmailPreference )
                     {
                         case EmailPreference.EmailAllowed:
                             {
                                 return string.Format(
-                                    "<a class='{0}' style='{1}' href='{2}Communication?person={3}'>{4} {5} {6}</a>",
+                                    "<a class='{0}' style='{1}' href='{2}'>{3} {4} {5}</a>",
                                     cssClass,
                                     styles,
-                                    rockUrlRoot,
-                                    Id,
+                                    emailLink,
                                     preText,
                                     Email,
                                     postText );
@@ -1339,10 +1353,9 @@ namespace Rock.Model
                         case EmailPreference.NoMassEmails:
                             {
                                 return string.Format(
-                                    "<span class='js-email-status email-status no-mass-email' data-toggle='tooltip' data-placement='top' title='Email Preference is set to \"No Mass Emails\"'><a class='{0}' href='{1}Communication?person={2}'>{3} {4} {5} <i class='fa fa-exchange'></i></a> </span>",
+                                    "<span class='js-email-status email-status no-mass-email' data-toggle='tooltip' data-placement='top' title='Email Preference is set to \"No Mass Emails\"'><a class='{0}' href='{1}'>{2} {3} {4} <i class='fa fa-exchange'></i></a> </span>",
                                     cssClass,
-                                    rockUrlRoot,
-                                    Id,
+                                    emailLink,
                                     preText,
                                     Email,
                                     postText );
@@ -1776,19 +1789,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates the checkin relationship.
-        /// </summary>
-        /// <param name="personId">The person identifier.</param>
-        /// <param name="relatedPersonId">The related person identifier.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
-        /// <param name="rockContext">The rock context.</param>
-        [Obsolete( "Use the other CreateCheckinRelationship" )]
-        public static void CreateCheckinRelationship( int personId, int relatedPersonId, PersonAlias currentPersonAlias, RockContext rockContext = null )
-        {
-            CreateCheckinRelationship( personId, relatedPersonId, rockContext );
-        }
-
-        /// <summary>
         /// Adds the related person to the selected person's known relationships with a role of 'Can check in' which
         /// is typically configured to allow check-in.  If an inverse relationship is configured for 'Can check in'
         /// (i.e. 'Allow check in by'), that relationship will also be created.
@@ -2016,6 +2016,18 @@ namespace Rock.Model
             return new PersonService( rockContext ?? new RockContext() ).GetFamilyMembers( person != null ? person.Id : 0, includeSelf );
         }
 
+        /// <summary>
+        /// Gets the group members.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <param name="includeSelf">if set to <c>true</c> [include self].</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static IQueryable<GroupMember> GetGroupMembers( this Person person, int groupTypeId, bool includeSelf = false, RockContext rockContext = null )
+        {
+            return new PersonService( rockContext ?? new RockContext() ).GetGroupMembers( groupTypeId, person != null ? person.Id : 0, includeSelf );
+        }
         /// <summary>
         /// Gets any previous last names for this person sorted alphabetically by LastName
         /// </summary>

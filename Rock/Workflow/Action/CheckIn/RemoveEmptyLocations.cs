@@ -27,6 +27,7 @@ namespace Rock.Workflow.Action.CheckIn
     /// <summary>
     /// Removes locations (from groups) if the location has no schedule.  If location contains schedules, but they are all excluded by filter, will also mark the location as excluded by filter.
     /// </summary>
+    [ActionCategory( "Check-In" )]
     [Description( "Removes locations (from groups) if the location has no schedule.  If location contains schedules, but they are all excluded by filter, will also mark the location as excluded by filter." )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Remove Empty Locations" )]

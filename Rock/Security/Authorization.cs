@@ -229,43 +229,10 @@ namespace Rock.Security
         /// <param name="entity">The entity.</param>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        [Obsolete( "Use Authorized( ISecured, action, Person) instead. RockContext parameter is no longer needed." )]
-        public static bool Authorized( ISecured entity, string action, Rock.Model.Person person, RockContext rockContext )
-        {
-            return Authorized( entity, action, person );
-        }
-
-        /// <summary>
-        /// Evaluates whether a selected person is allowed to perform the selected action on the selected
-        /// entity.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <param name="action">The action.</param>
-        /// <param name="person">The person.</param>
         /// <returns></returns>
         public static bool Authorized( ISecured entity, string action, Rock.Model.Person person )
         {
             return ItemAuthorized( entity, action, person ) ?? entity.IsAllowedByDefault( action );
-        }
-
-        /// <summary>
-        /// Determines whether the specified entity is private. Entity is considered private if only the current user
-        /// has access.  In this scenario, the first rule would give current user access, and second rule would deny
-        /// all users.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <param name="action">The action.</param>
-        /// <param name="person">The person.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>
-        ///   <c>true</c> if the specified entity is private; otherwise, <c>false</c>.
-        /// </returns>
-        [Obsolete("Use IsPrivate( ISecured, string, Person ) instead. RockContext is no longer needed.")]
-        public static bool IsPrivate( ISecured entity, string action, Person person, RockContext rockContext )
-        {
-            return IsPrivate( entity, action, person );
         }
 
         /// <summary>
@@ -394,29 +361,37 @@ namespace Rock.Security
         {
             if ( rockContext != null )
             {
-                MyAllowPerson( entity, action, person, rockContext );
+                MyAllow( entity, action, person, null, SpecialRole.None, rockContext );
             }
             else
             {
                 using ( var myRockContext = new RockContext() )
                 {
-                    MyAllowPerson( entity, action, person, myRockContext );
+                    MyAllow( entity, action, person, null, SpecialRole.None, myRockContext );
                 }
             }
         }
 
-       /// <summary>
-        /// Returns the authorization rules for the specified entity and action.
+        /// <summary>
+        /// Allows the security role.
         /// </summary>
-        /// <param name="entityTypeId">The entity type id.</param>
-        /// <param name="entityId">The entity id.</param>
+        /// <param name="entity">The entity.</param>
         /// <param name="action">The action.</param>
+        /// <param name="group">The group.</param>
         /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        [Obsolete("Use AuthRules( int, int, string ) instead. RockContext is no longer needed.")]
-        public static List<AuthRule> AuthRules( int entityTypeId, int entityId, string action, RockContext rockContext )
+        public static void AllowSecurityRole( ISecured entity, string action, Group group, RockContext rockContext = null )
         {
-            return AuthRules( entityTypeId, entityId, action );
+            if ( rockContext != null )
+            {
+                MyAllow( entity, action, null, group, SpecialRole.None, rockContext );
+            }
+            else
+            {
+                using ( var myRockContext = new RockContext() )
+                {
+                    MyAllow( entity, action, null, group, SpecialRole.None, myRockContext );
+                }
+            }
         }
 
         /// <summary>
@@ -933,43 +908,59 @@ namespace Rock.Security
         /// <param name="entity">The entity.</param>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
+        /// <param name="group">The group.</param>
+        /// <param name="specialRole">The special role.</param>
         /// <param name="rockContext">The rock context.</param>
-        private static void MyAllowPerson( ISecured entity, string action, Person person, RockContext rockContext )
+        private static void MyAllow( ISecured entity, string action, 
+            Person person = null, Group group = null, SpecialRole specialRole = SpecialRole.None, 
+            RockContext rockContext = null )
         {
+            rockContext = rockContext ?? new RockContext();
+
+            PersonAlias personAlias = null;
             if ( person != null )
             {
-                rockContext = rockContext ?? new RockContext();
+                personAlias = new PersonAliasService( rockContext ).GetPrimaryAlias( person.Id );
+            }
 
-                var personAlias = new PersonAliasService( rockContext ).GetPrimaryAlias( person.Id );
+            if ( personAlias != null || group != null || specialRole != SpecialRole.None )
+            {
+                var authService = new AuthService( rockContext );
+
+                // Update the order for any existing rules in database
+                int order = 1;
+                foreach ( Auth existingAuth in authService
+                    .GetAuths( entity.TypeId, entity.Id, action ) )
+                {
+                    existingAuth.Order = order++;
+                }
+
+                // Add the new auth (with order of zero)
+                Auth auth = new Auth();
+                auth.EntityTypeId = entity.TypeId;
+                auth.EntityId = entity.Id;
+                auth.Order = 0;
+                auth.Action = action;
+                auth.AllowOrDeny = "A";
+                auth.SpecialRole = specialRole;
                 if ( personAlias != null )
                 {
-                    var authService = new AuthService( rockContext );
-
-                    // Update the order for any existing rules in database
-                    int order = 1;
-                    foreach ( Auth existingAuth in authService
-                        .GetAuths( entity.TypeId, entity.Id, action ) )
-                    {
-                        existingAuth.Order = order++;
-                    }
-
-                    // Add the new auth (with order of zero)
-                    Auth auth = new Auth();
-                    auth.EntityTypeId = entity.TypeId;
-                    auth.EntityId = entity.Id;
-                    auth.Order = 0;
-                    auth.Action = action;
-                    auth.AllowOrDeny = "A";
-                    auth.SpecialRole = SpecialRole.None;
                     auth.PersonAlias = personAlias;
                     auth.PersonAliasId = personAlias.Id;
-                    authService.Add( auth );
-
-                    rockContext.SaveChanges();
-
-                    // Reload the static dictionary for this action
-                    ReloadAction( entity.TypeId, entity.Id, action, rockContext );
                 }
+
+                if ( group != null )
+                {
+                    auth.Group = group;
+                    auth.GroupId = group.Id;
+                }
+
+                authService.Add( auth );
+
+                rockContext.SaveChanges();
+
+                // Reload the static dictionary for this action
+                ReloadAction( entity.TypeId, entity.Id, action, rockContext );
             }
         }
 

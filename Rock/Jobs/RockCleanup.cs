@@ -134,6 +134,15 @@ namespace Rock.Jobs
                 rockCleanupExceptions.Add( new Exception( "Exception in PersonCleanup", ex ) );
             }
 
+            try
+            {
+                CleanUpTemporaryRegistrations();
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanUpTemporaryRegistrations", ex ) );
+            }
+
             if ( rockCleanupExceptions.Count > 0 )
             {
                 throw new AggregateException( "One or more exceptions occurred in RockCleanup.", rockCleanupExceptions );
@@ -213,6 +222,28 @@ namespace Rock.Jobs
                     {
                         binaryFileService.Delete( binaryFile );
                         binaryFileRockContext.SaveChanges();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Cleans up temporary registrations.
+        /// </summary>
+        private void CleanUpTemporaryRegistrations()
+        {
+            var registrationRockContext = new Rock.Data.RockContext();
+            // clean out any temporary registrations
+            RegistrationService registrationService = new RegistrationService( registrationRockContext );
+            foreach ( var registration in registrationService.Queryable().Where( bf => bf.IsTemporary == true ).ToList() )
+            {
+                if ( registration.ModifiedDateTime < RockDateTime.Now.AddHours( -1 ) )
+                {
+                    string errorMessage;
+                    if ( registrationService.CanDelete( registration, out errorMessage ) )
+                    {
+                        registrationService.Delete( registration );
+                        registrationRockContext.SaveChanges();
                     }
                 }
             }

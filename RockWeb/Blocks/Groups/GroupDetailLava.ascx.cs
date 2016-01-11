@@ -17,20 +17,18 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Data.Entity;
-using Newtonsoft.Json;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.Attribute;
-using Rock.Security;
 
 namespace RockWeb.Blocks.Groups
 {
@@ -46,66 +44,96 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage( "Roster Page", "The page to link to to view the roster.", true, "", "", 2 )]
     [LinkedPage( "Attendance Page", "The page to link to to manage the group's attendance.", true, "", "", 3 )]
     [LinkedPage( "Communication Page", "The communication page to use for sending emails to the group members.", true, "", "", 4 )]
-    [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupDetail.lava' %}", "", 5 )]
-    [BooleanField("Enable Location Edit", "Enables changing locations when editing a group.", false, "", 6)]
-    [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 7 )]
-    [CodeEditorField("Edit Group Pre-HTML", "HTML to display before the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 8)]
-    [CodeEditorField( "Edit Group Post-HTML", "HTML to display after the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 9 )]
-    [CodeEditorField( "Edit Group Member Pre-HTML", "HTML to display before the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 10 )]
-    [CodeEditorField( "Edit Group Member Post-HTML", "HTML to display after the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 11 )]
+    [BooleanField( "Hide the 'Active' Group checkbox", "Set this to false to hide the checkbox for 'Active' for the group.", false, key: "HideActiveGroupCheckbox", order: 5 )]
+    [BooleanField( "Hide Inactive Group Member Status", "Set this to false to hide the radiobox for the 'Inactive' group member status.", false, order: 6 )]
+    [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupDetail.lava' %}", "", 7 )]
+    [BooleanField( "Enable Location Edit", "Enables changing locations when editing a group.", false, "", 8 )]
+    [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 9 )]
+    [CodeEditorField( "Edit Group Pre-HTML", "HTML to display before the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 10 )]
+    [CodeEditorField( "Edit Group Post-HTML", "HTML to display after the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 11 )]
+    [CodeEditorField( "Edit Group Member Pre-HTML", "HTML to display before the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 12 )]
+    [CodeEditorField( "Edit Group Member Post-HTML", "HTML to display after the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 13 )]
     public partial class GroupDetailLava : Rock.Web.UI.RockBlock
     {
         #region Fields
 
         // used for private variables
-        int _groupId = 0;
+        private int _groupId = 0;
         private const string MEMBER_LOCATION_TAB_TITLE = "Member Location";
         private const string OTHER_LOCATION_TAB_TITLE = "Other Location";
 
         private readonly List<string> _tabs = new List<string> { MEMBER_LOCATION_TAB_TITLE, OTHER_LOCATION_TAB_TITLE };
+
         #endregion
 
         #region Properties
 
-        // used for public / protected properties
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is editing group.
+        /// used for public / protected properties
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is editing group; otherwise, <c>false</c>.
+        /// </value>
         public bool IsEditingGroup
         {
             get
             {
                 return ViewState["IsEditingGroup"] as bool? ?? false;
             }
+
             set
             {
                 ViewState["IsEditingGroup"] = value;
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is editing group member.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is editing group member; otherwise, <c>false</c>.
+        /// </value>
         public bool IsEditingGroupMember
         {
             get
             {
                 return ViewState["IsEditingGroupMember"] as bool? ?? false;
             }
+
             set
             {
                 ViewState["IsEditingGroupMember"] = value;
             }
         }
 
+        /// <summary>
+        /// Gets or sets the current group member identifier.
+        /// </summary>
+        /// <value>
+        /// The current group member identifier.
+        /// </value>
         public int CurrentGroupMemberId
         {
             get
             {
                 int groupMemberId = 0;
-                int.TryParse( ViewState["CurrentGroupMemberId"].ToString(), out groupMemberId);
+                int.TryParse( ViewState["CurrentGroupMemberId"].ToString(), out groupMemberId );
                 return groupMemberId;
             }
+
             set
             {
                 ViewState["CurrentGroupMemberId"] = value;
             }
         }
 
+        /// <summary>
+        /// Gets or sets the location type tab.
+        /// </summary>
+        /// <value>
+        /// The location type tab.
+        /// </value>
         private string LocationTypeTab
         {
             get
@@ -124,15 +152,12 @@ namespace RockWeb.Blocks.Groups
 
         #region Base Control Methods
 
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
-
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            
             base.OnInit( e );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
@@ -146,6 +171,10 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
         protected override void LoadViewState( object savedState )
         {
             base.LoadViewState( savedState );
@@ -178,7 +207,7 @@ namespace RockWeb.Blocks.Groups
                 // set attributes
                 groupMember.LoadAttributes();
                 phGroupMemberAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( groupMember, phGroupMemberAttributes, true, "", true );
+                Rock.Attribute.Helper.AddEditControls( groupMember, phGroupMemberAttributes, true, string.Empty, true );
             }
         }
 
@@ -189,7 +218,7 @@ namespace RockWeb.Blocks.Groups
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-            
+
             RouteAction();
 
             if ( !IsPostBack )
@@ -201,10 +230,14 @@ namespace RockWeb.Blocks.Groups
             var sm = ScriptManager.GetCurrent( Page );
             sm.EnableSecureHistoryState = false;
             sm.Navigate += sm_Navigate;
-
         }
 
-        void sm_Navigate( object sender, HistoryEventArgs e )
+        /// <summary>
+        /// Handles the Navigate event of the sm control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="HistoryEventArgs"/> instance containing the event data.</param>
+        public void sm_Navigate( object sender, HistoryEventArgs e )
         {
             // show the view mode
             pnlGroupEdit.Visible = false;
@@ -230,6 +263,11 @@ namespace RockWeb.Blocks.Groups
             BlockSetup();
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnSaveGroup control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSaveGroup_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
@@ -250,6 +288,7 @@ namespace RockWeb.Blocks.Groups
                         group.Schedule = new Schedule();
                         group.Schedule.iCalendarContent = null;
                     }
+
                     group.Schedule.WeeklyDayOfWeek = dowWeekly.SelectedDayOfWeek;
                     group.Schedule.WeeklyTimeOfDay = timeWeekly.SelectedTime;
                 }
@@ -307,11 +346,8 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
-                //rockContext.WrapTransaction( () =>
-                //{
-                    rockContext.SaveChanges();
-                    group.SaveAttributeValues( rockContext );
-                //} );
+                rockContext.SaveChanges();
+                group.SaveAttributeValues( rockContext );
             }
 
             this.IsEditingGroup = false;
@@ -322,6 +358,11 @@ namespace RockWeb.Blocks.Groups
             DisplayViewGroup();
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbCancelGroup control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbCancelGroup_Click( object sender, EventArgs e )
         {
             pnlGroupEdit.Visible = false;
@@ -332,8 +373,13 @@ namespace RockWeb.Blocks.Groups
             sm.AddHistoryPoint( "Action", "ViewGroup" );
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnSaveGroupMember control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSaveGroupMember_Click( object sender, EventArgs e )
-        {                        
+        {
             var rockContext = new RockContext();
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
 
@@ -369,11 +415,42 @@ namespace RockWeb.Blocks.Groups
 
             groupMember.PersonId = ppGroupMemberPerson.PersonId.Value;
             groupMember.GroupRoleId = role.Id;
-            groupMember.GroupMemberStatus = rblStatus.SelectedValueAsEnum<GroupMemberStatus>();
+
+            // set their status.  If HideInactiveGroupMemberStatus is True, and they are already Inactive, keep their status as Inactive;
+            bool hideGroupMemberInactiveStatus = this.GetAttributeValue( "HideInactiveGroupMemberStatus" ).AsBooleanOrNull() ?? false;
+            var selectedStatus = rblStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>();
+            if ( !selectedStatus.HasValue )
+            {
+                if ( hideGroupMemberInactiveStatus )
+                {
+                    selectedStatus = GroupMemberStatus.Inactive;
+                }
+                else
+                {
+                    selectedStatus = GroupMemberStatus.Active;
+                }
+            }
+
+            groupMember.GroupMemberStatus = selectedStatus.Value;
 
             groupMember.LoadAttributes();
 
             Rock.Attribute.Helper.GetEditValues( phAttributes, groupMember );
+
+            if ( !Page.IsValid )
+            {
+                return;
+            }
+
+            // if the groupMember IsValid is false, and the UI controls didn't report any errors, it is probably because the custom rules of GroupMember didn't pass.
+            // So, make sure a message is displayed in the validation summary
+            cvEditGroupMember.IsValid = groupMember.IsValid;
+
+            if ( !cvEditGroupMember.IsValid )
+            {
+                cvEditGroupMember.ErrorMessage = groupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                return;
+            }
 
             // using WrapTransaction because there are two Saves
             rockContext.WrapTransaction( () =>
@@ -400,6 +477,11 @@ namespace RockWeb.Blocks.Groups
             this.IsEditingGroupMember = false;
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnCancelGroupMember control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCancelGroupMember_Click( object sender, EventArgs e )
         {
             pnlEditGroupMember.Visible = false;
@@ -410,6 +492,11 @@ namespace RockWeb.Blocks.Groups
             sm.AddHistoryPoint( "Action", "ViewGroup" );
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbLocationType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbLocationType_Click( object sender, EventArgs e )
         {
             LinkButton lb = sender as LinkButton;
@@ -428,10 +515,9 @@ namespace RockWeb.Blocks.Groups
 
         #region Methods
 
-        //
-        // Block Methods
-
-        // route the request to the correct panel
+        /// <summary>
+        /// Route the request to the correct panel
+        /// </summary>
         private void RouteAction()
         {
             int groupMemberId = 0;
@@ -439,7 +525,6 @@ namespace RockWeb.Blocks.Groups
 
             if ( Request.Form["__EVENTARGUMENT"] != null )
             {
-
                 string[] eventArgs = Request.Form["__EVENTARGUMENT"].Split( '^' );
 
                 if ( eventArgs.Length == 2 )
@@ -457,7 +542,7 @@ namespace RockWeb.Blocks.Groups
                             pnlGroupView.Visible = false;
                             pnlEditGroupMember.Visible = false;
                             DisplayEditGroup();
-                            sm.AddHistoryPoint("Action", "EditGroup");
+                            sm.AddHistoryPoint( "Action", "EditGroup" );
                             break;
 
                         case "AddGroupMember":
@@ -491,23 +576,32 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
-        // setup block
+        /// <summary>
+        /// setup block
+        /// </summary>
         private void BlockSetup()
         {
-            lGroupEditPreHtml.Text = GetAttributeValue("EditGroupPre-HTML");
+            lGroupEditPreHtml.Text = GetAttributeValue( "EditGroupPre-HTML" );
             lGroupEditPostHtml.Text = GetAttributeValue( "EditGroupPost-HTML" );
 
             lGroupMemberEditPreHtml.Text = GetAttributeValue( "EditGroupMemberPre-HTML" );
             lGroupMemberEditPostHtml.Text = GetAttributeValue( "EditGroupMemberPost-HTML" );
+
+            bool hideActiveGroupCheckbox = this.GetAttributeValue( "HideActiveGroupCheckbox" ).AsBooleanOrNull() ?? false;
+            if ( hideActiveGroupCheckbox )
+            {
+                cbIsActive.Visible = false;
+            }
         }
 
-        //
-        // Group Methods
+        ////
+        //// Group Methods
 
-        // displays the group info using a lava template
+        /// <summary>
+        /// Displays the view group  using a lava template
+        /// </summary>
         private void DisplayViewGroup()
         {
-
             if ( _groupId > 0 )
             {
                 RockContext rockContext = new RockContext();
@@ -523,6 +617,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     qry = qry.AsNoTracking();
                 }
+
                 var group = qry.FirstOrDefault();
 
                 // order group members by name
@@ -550,7 +645,7 @@ namespace RockWeb.Blocks.Groups
                 mergeFields.Add( "AllowedActions", securityActions );
 
                 mergeFields.Add( "CurrentPerson", CurrentPerson );
-                
+
                 var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
                 globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
 
@@ -574,24 +669,24 @@ namespace RockWeb.Blocks.Groups
                                                 </ul>";
 
                     lDebug.Visible = true;
-                    lDebug.Text = mergeFields.lavaDebugInfo( null, "", postbackCommands );
+                    lDebug.Text = mergeFields.lavaDebugInfo( null, string.Empty, postbackCommands );
                 }
 
                 lContent.Text = template.ResolveMergeFields( mergeFields ).ResolveClientIds( upnlContent.ClientID );
-
             }
             else
             {
                 lContent.Text = "<div class='alert alert-warning'>No group was available from the querystring.</div>";
             }
-
         }
 
-        // displays the group edit panel
+        /// <summary>
+        /// Displays the edit group panel.
+        /// </summary>
         private void DisplayEditGroup()
         {
             this.IsEditingGroup = true;
-            
+
             if ( _groupId != -1 )
             {
                 RockContext rockContext = new RockContext();
@@ -654,7 +749,10 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
-        // logic to setup the groups location entry panel
+        /// <summary>
+        /// logic to setup the groups location entry panel
+        /// </summary>
+        /// <param name="group">The group.</param>
         private void ConfigureGroupLocationControls( Group group )
         {
             var rockContext = new RockContext();
@@ -671,27 +769,27 @@ namespace RockWeb.Blocks.Groups
                     {
                         // Set the location picker modes allowed based on the group type's allowed modes
                         LocationPickerMode modes = LocationPickerMode.None;
-                        if ( (groupTypeModes & GroupLocationPickerMode.Named) == GroupLocationPickerMode.Named )
+                        if ( ( groupTypeModes & GroupLocationPickerMode.Named ) == GroupLocationPickerMode.Named )
                         {
                             modes = modes | LocationPickerMode.Named;
                         }
 
-                        if ( (groupTypeModes & GroupLocationPickerMode.Address) == GroupLocationPickerMode.Address )
+                        if ( ( groupTypeModes & GroupLocationPickerMode.Address ) == GroupLocationPickerMode.Address )
                         {
                             modes = modes | LocationPickerMode.Address;
                         }
 
-                        if ( (groupTypeModes & GroupLocationPickerMode.Point) == GroupLocationPickerMode.Point )
+                        if ( ( groupTypeModes & GroupLocationPickerMode.Point ) == GroupLocationPickerMode.Point )
                         {
                             modes = modes | LocationPickerMode.Point;
                         }
 
-                        if ( (groupTypeModes & GroupLocationPickerMode.Polygon) == GroupLocationPickerMode.Polygon )
+                        if ( ( groupTypeModes & GroupLocationPickerMode.Polygon ) == GroupLocationPickerMode.Polygon )
                         {
                             modes = modes | LocationPickerMode.Polygon;
                         }
 
-                        bool displayMemberTab = (groupTypeModes & GroupLocationPickerMode.GroupMember) == GroupLocationPickerMode.GroupMember;
+                        bool displayMemberTab = ( groupTypeModes & GroupLocationPickerMode.GroupMember ) == GroupLocationPickerMode.GroupMember;
                         bool displayOtherTab = modes != LocationPickerMode.None;
 
                         ulNav.Visible = displayOtherTab && displayMemberTab;
@@ -728,7 +826,7 @@ namespace RockWeb.Blocks.Groups
                         ddlLocationType.DataSource = groupType.LocationTypeValues.ToList();
                         ddlLocationType.DataBind();
 
-                        LocationTypeTab = (displayMemberTab && ddlMember.Items.Count > 0) ? MEMBER_LOCATION_TAB_TITLE : OTHER_LOCATION_TAB_TITLE;
+                        LocationTypeTab = ( displayMemberTab && ddlMember.Items.Count > 0 ) ? MEMBER_LOCATION_TAB_TITLE : OTHER_LOCATION_TAB_TITLE;
 
                         var groupLocation = group.GroupLocations.FirstOrDefault();
                         if ( groupLocation != null && groupLocation.Location != null )
@@ -766,7 +864,6 @@ namespace RockWeb.Blocks.Groups
                             LocationTypeTab = ( displayMemberTab && ddlMember.Items.Count > 0 ) ? MEMBER_LOCATION_TAB_TITLE : OTHER_LOCATION_TAB_TITLE;
                         }
 
-
                         rptLocationTypes.DataSource = _tabs;
                         rptLocationTypes.DataBind();
 
@@ -778,10 +875,13 @@ namespace RockWeb.Blocks.Groups
                     lContent.Text = "<div class='alert alert-warning'>This editor only allows editing groups with a single location.</div>";
                 }
             }
-            
         }
 
-        // helper method to toggle the group location tabs
+        /// <summary>
+        /// helper method to toggle the group location tabs
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns></returns>
         protected string GetLocationTabClass( object property )
         {
             if ( property.ToString() == LocationTypeTab )
@@ -792,6 +892,9 @@ namespace RockWeb.Blocks.Groups
             return string.Empty;
         }
 
+        /// <summary>
+        /// Shows the selected pane.
+        /// </summary>
         private void ShowSelectedPane()
         {
             if ( LocationTypeTab.Equals( MEMBER_LOCATION_TAB_TITLE ) )
@@ -806,9 +909,12 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
-        //
-        // Group Member Methods
+        ////
+        //// Group Member Methods
 
+        /// <summary>
+        /// Adds the group member.
+        /// </summary>
         private void AddGroupMember()
         {
             this.IsEditingGroupMember = true;
@@ -831,12 +937,16 @@ namespace RockWeb.Blocks.Groups
                 }
             }
         }
-        
+
+        /// <summary>
+        /// Displays the edit group member.
+        /// </summary>
+        /// <param name="groupMemberId">The group member identifier.</param>
         private void DisplayEditGroupMember( int groupMemberId )
         {
             // persist the group member id for use in partial postbacks
             this.CurrentGroupMemberId = groupMemberId;
-            
+
             pnlGroupEdit.Visible = false;
             pnlGroupView.Visible = false;
             pnlEditGroupMember.Visible = true;
@@ -862,15 +972,28 @@ namespace RockWeb.Blocks.Groups
             ppGroupMemberPerson.SetValue( groupMember.Person );
             ddlGroupRole.SetValue( groupMember.GroupRoleId );
             rblStatus.SetValue( (int)groupMember.GroupMemberStatus );
+            bool hideGroupMemberInactiveStatus = this.GetAttributeValue( "HideInactiveGroupMemberStatus" ).AsBooleanOrNull() ?? false;
+            if ( hideGroupMemberInactiveStatus )
+            {
+                var inactiveItem = rblStatus.Items.FindByValue( ( (int)GroupMemberStatus.Inactive ).ToString() );
+                if ( inactiveItem != null )
+                {
+                    rblStatus.Items.Remove( inactiveItem );
+                }
+            }
 
             // set attributes
             groupMember.LoadAttributes();
             phGroupMemberAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( groupMember, phGroupMemberAttributes, true, "", true );
+            Rock.Attribute.Helper.AddEditControls( groupMember, phGroupMemberAttributes, true, string.Empty, true );
 
             this.IsEditingGroupMember = true;
         }
 
+        /// <summary>
+        /// Loads the group member drop downs.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
         private void LoadGroupMemberDropDowns( int groupId )
         {
             Group group = new GroupService( new RockContext() ).Get( groupId );
@@ -883,6 +1006,10 @@ namespace RockWeb.Blocks.Groups
             rblStatus.BindToEnum<GroupMemberStatus>();
         }
 
+        /// <summary>
+        /// Deletes the group member.
+        /// </summary>
+        /// <param name="groupMemberId">The group member identifier.</param>
         private void DeleteGroupMember( int groupMemberId )
         {
             RockContext rockContext = new RockContext();
@@ -897,6 +1024,9 @@ namespace RockWeb.Blocks.Groups
             rockContext.SaveChanges();
         }
 
+        /// <summary>
+        /// Sends the communication.
+        /// </summary>
         private void SendCommunication()
         {
             // create communication
@@ -907,7 +1037,7 @@ namespace RockWeb.Blocks.Groups
                 var communication = new Rock.Model.Communication();
                 communication.IsBulkCommunication = false;
                 communication.Status = Rock.Model.CommunicationStatus.Transient;
-            
+
                 communication.SenderPersonAliasId = this.CurrentPersonAliasId;
 
                 service.Add( communication );
@@ -934,6 +1064,6 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
-        #endregion 
+        #endregion
     }
 }

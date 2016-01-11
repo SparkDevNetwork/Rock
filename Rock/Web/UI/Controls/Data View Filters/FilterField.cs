@@ -354,26 +354,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the selection.
-        /// </summary>
-        /// <value>
-        /// The selection.
-        /// </value>
-        [Obsolete("Use GetSelection or SetSelection instead")]
-        public string Selection
-        {
-            get
-            {
-                return GetSelection();
-            }
-            
-            set
-            {
-                SetSelection( value );
-            }
-        }
-
-        /// <summary>
         /// Sets the selection.
         /// </summary>
         /// <param name="value">The value.</param>

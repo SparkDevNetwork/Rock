@@ -42,15 +42,6 @@ namespace Rock.Transactions
         public DateTime LastActivityDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the rock user id in session.
-        /// </summary>
-        /// <value>
-        /// The rock user id in session.
-        /// </value>
-        [Obsolete( "No longer used" )]
-        public int? SessionUserId { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [is on line].
         /// </summary>
         /// <value>

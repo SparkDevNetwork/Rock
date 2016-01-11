@@ -30,6 +30,7 @@ namespace Rock.Workflow.Action.CheckIn
     /// <summary>
     /// Adds the locations for each members group types
     /// </summary>
+    [ActionCategory( "Check-In" )]
     [Description( "Adds the locations for each members group types" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Load Locations" )]

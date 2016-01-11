@@ -222,7 +222,8 @@ namespace RockWeb.Blocks.Event
 
                 if ( registration != null )
                 {
-                    if ( !registration.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                    if ( !UserCanEdit &&
+                        !registration.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
                     {
                         mdDeleteWarning.Show( "You are not authorized to delete this registration.", ModalAlertType.Information );
                         return;
@@ -315,7 +316,7 @@ namespace RockWeb.Blocks.Event
                     History.EvaluateChange( changes, "First Name", registration.FirstName, tbFirstName.Text );
                     registration.FirstName = tbFirstName.Text;
 
-                    History.EvaluateChange( changes, "Last Name", registration.FirstName, tbLastName.Text );
+                    History.EvaluateChange( changes, "Last Name", registration.LastName, tbLastName.Text );
                     registration.LastName = tbLastName.Text;
 
                     History.EvaluateChange( changes, "Confirmation Email", registration.ConfirmationEmail, ebConfirmationEmail.Text );
@@ -491,6 +492,61 @@ namespace RockWeb.Blocks.Event
 
         #region Registration Detail Events
 
+        protected void lbShowMoveRegistrationDialog_Click( object sender, EventArgs e )
+        {
+            if ( RegistrationId.HasValue )
+            {
+                // add current registration instance name
+                lCurrentRegistrationInstance.Text = Registration.RegistrationInstance.Name;
+
+                // list other registration instances
+                using ( var rockContext = new RockContext() )
+                {
+                    var otherRegistrationInstances = new RegistrationInstanceService( rockContext ).Queryable()
+                            .Where( i =>
+                                i.RegistrationTemplateId == Registration.RegistrationInstance.RegistrationTemplateId
+                                && i.IsActive == true
+                                && i.Id != Registration.RegistrationInstanceId
+                                && (i.EndDateTime >= RockDateTime.Now || i.EndDateTime == null) )
+                            .Select( i => new
+                            {
+                                Value = i.Id,
+                                Text = i.Name
+                            } )
+                            .ToList();
+                    ddlNewRegistrationInstance.DataValueField = "Value";
+                    ddlNewRegistrationInstance.DataTextField = "Text";
+                    ddlNewRegistrationInstance.DataSource = otherRegistrationInstances;
+                    ddlNewRegistrationInstance.DataBind();
+
+                    ddlNewRegistrationInstance.Items.Insert( 0, new ListItem( String.Empty, String.Empty ) );
+                    ddlNewRegistrationInstance.SelectedIndex = 0;
+
+                }
+                mdMoveRegistration.Show();
+            }
+        }
+
+        protected void btnMoveRegistration_Click( object sender, EventArgs e )
+        {
+            // set the new registration id
+            using ( var rockContext = new RockContext() )
+            {
+                var registrationService = new RegistrationService( rockContext );
+
+                var registration = registrationService.Get( Registration.Id );
+                registration.RegistrationInstanceId = ddlNewRegistrationInstance.SelectedValue.AsInteger();
+                rockContext.SaveChanges();
+
+                // Reload registration
+                Registration = GetRegistration( Registration.Id );
+
+                lWizardInstanceName.Text = Registration.RegistrationInstance.Name;
+            }
+            
+            mdMoveRegistration.Hide();
+        }
+
         protected void ppPerson_SelectPerson( object sender, EventArgs e )
         {
             if ( ppPerson.PersonId.HasValue )
@@ -558,6 +614,19 @@ namespace RockWeb.Blocks.Event
                 confirmation.AppRoot = appRoot;
                 confirmation.ThemeRoot = themeRoot;
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( confirmation );
+
+                var changes = new List<string>();
+                changes.Add( "Resent Confirmation" );
+                using ( var rockContext = new RockContext() )
+                {
+                    HistoryService.SaveChanges(
+                        rockContext,
+                        typeof( Registration ),
+                        Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
+                        RegistrationId.Value,
+                        changes
+                    );
+                }
 
                 nbConfirmationQueued.Visible = true;
             }
@@ -808,7 +877,8 @@ namespace RockWeb.Blocks.Event
 
                     if ( registrant != null )
                     {
-                        if ( !registrant.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                        if ( !UserCanEdit &&
+                            !registrant.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
                         {
                             mdDeleteWarning.Show( "You are not authorized to delete this registrant.", ModalAlertType.Information );
                             return;
@@ -884,6 +954,8 @@ namespace RockWeb.Blocks.Event
 
         private void LoadState()
         {
+            EditAllowed = UserCanEdit;
+
             if ( !RegistrationInstanceId.HasValue )
             {
                 Title = "New Registration";
@@ -903,10 +975,10 @@ namespace RockWeb.Blocks.Event
                         lWizardTemplateName.Text = Registration.RegistrationInstance.RegistrationTemplate.Name;
                         lWizardInstanceName.Text = Registration.RegistrationInstance.Name;
                         lWizardRegistrationName.Text = Registration.ToString();
+
+                        EditAllowed = EditAllowed || Registration.RegistrationInstance.IsAuthorized( Authorization.EDIT, CurrentPerson );
                     }
                 }
-
-                EditAllowed = IsUserAuthorized( Authorization.EDIT ) || ( Registration != null && Registration.IsAuthorized( Authorization.EDIT, CurrentPerson ) );
 
                 if ( RegistrationTemplateState == null && RegistrationInstanceId.HasValue )
                 {
@@ -920,7 +992,8 @@ namespace RockWeb.Blocks.Event
                         lWizardInstanceName.Text = registrationInstance.Name;
                         lWizardRegistrationName.Text = "New Registration";
                         RegistrationTemplateState = registrationInstance.RegistrationTemplate;
-                        EditAllowed = EditAllowed || registrationInstance.RegistrationTemplate.IsAuthorized( Authorization.EDIT, CurrentPerson );
+
+                        EditAllowed = EditAllowed || registrationInstance.IsAuthorized( Authorization.EDIT, CurrentPerson );
                     }
                 }
             }
@@ -1242,6 +1315,8 @@ namespace RockWeb.Blocks.Event
             var txnChanges = new List<string>();
             txnChanges.Add( "Created Transaction" );
 
+            var registrationChanges = new List<string>();
+
             DefinedValueCache dvCurrencyType = null;
             DefinedValueCache dvCredCardType = null;
 
@@ -1296,6 +1371,8 @@ namespace RockWeb.Blocks.Event
 
                     dvCurrencyType = paymentInfo.CurrencyTypeValue;
                     dvCredCardType = paymentInfo.CreditCardTypeValue;
+
+                    registrationChanges.Add( string.Format( "Processed payment of {0}.", amount.FormatAsCurrency() ) );
                 }
             }
             else
@@ -1306,6 +1383,8 @@ namespace RockWeb.Blocks.Event
                 transaction.FinancialPaymentDetail.CurrencyTypeValueId = ddlCurrencyType.SelectedValueAsInt();
                 transaction.FinancialPaymentDetail.CreditCardTypeValueId = ddlCreditCardType.SelectedValueAsInt();
                 transaction.TransactionCode = tbTransactionCode.Text;
+
+                registrationChanges.Add( string.Format( "Manually added payment of {0}.", amount.FormatAsCurrency() ) );
             }
 
             transaction.Summary = tbSummary.Text;
@@ -1397,6 +1476,14 @@ namespace RockWeb.Blocks.Event
                     transaction.Id
                 );
 
+                HistoryService.SaveChanges(
+                    rockContext,
+                    typeof( Registration ),
+                    Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
+                    registration.Id,
+                    registrationChanges
+                );
+                    
                 return true;
             }
             else
@@ -1744,9 +1831,9 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
-            foreach( var form in RegistrationTemplateState.Forms )
+            foreach( var form in RegistrationTemplateState.Forms.OrderBy( f => f.Order ) )
             {
-                foreach( var field in form.Fields )
+                foreach( var field in form.Fields.OrderBy( f => f.Order ) )
                 {
                     var fieldControl = BuildRegistrantFieldControl( field, registrant, setValues );
                     if ( fieldControl != null )
@@ -1871,7 +1958,7 @@ namespace RockWeb.Blocks.Event
 
                         case RegistrationPersonFieldType.Address:
                             {
-                                var location = fieldValue.ToString().FromJsonOrNull<Location>();
+                                var location = fieldValue.ToString();
                                 rlField.Text = location != null ? location.ToString() : string.Empty;
                                 break;
                             }
@@ -1941,6 +2028,5 @@ namespace RockWeb.Blocks.Event
         #endregion
 
         #endregion
-
-}
+    }
 }

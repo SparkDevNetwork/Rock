@@ -1358,6 +1358,33 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Persons the by unique identifier.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static Person PersonByGuid( DotLiquid.Context context, object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            Guid? personGuid = input.ToString().AsGuidOrNull();
+
+            if ( personGuid.HasValue )
+            {
+                var rockContext = new RockContext();
+
+                return new PersonService( rockContext ).Get( personGuid.Value );
+            } else
+            {
+                return null;
+            }
+
+        }
+
+        /// <summary>
         /// Persons the by alias identifier.
         /// </summary>
         /// <param name="context">The context.</param>
@@ -1509,6 +1536,9 @@ namespace Rock.Lava
                                     break;
                                 case "City":
                                     qualifier = qualifier.Replace( match.ToString(), location.City );
+                                    break;
+                                case "County":
+                                    qualifier = qualifier.Replace( match.ToString(), location.County );
                                     break;
                                 case "State":
                                     qualifier = qualifier.Replace( match.ToString(), location.State );
@@ -1803,6 +1833,48 @@ namespace Rock.Lava
             return new List<Model.GroupMember>();
         }
 
+
+        /// <summary>
+        /// Groups the specified context.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="status">The status.</param>
+        /// <returns></returns>
+        public static List<Rock.Model.GroupMember> Group( DotLiquid.Context context, object input, string groupId, string status = "Active" )
+        {
+            var person = GetPerson( input );
+            int? numericalGroupId = groupId.AsIntegerOrNull();
+
+            if (string.IsNullOrWhiteSpace( status ) )
+            {
+                status = "All";
+            }
+
+            if ( person != null && numericalGroupId.HasValue )
+            {
+                var groupQuery = new GroupMemberService( GetRockContext( context ) )
+                    .Queryable( "Group, GroupRole" ).AsNoTracking()
+                    .Where( m =>
+                        m.PersonId == person.Id &&
+                        m.Group.Id == numericalGroupId.Value &&
+                        m.Group.IsActive );
+
+                if ( status != "All" )
+                {
+                    GroupMemberStatus queryStatus = GroupMemberStatus.Active;
+                    queryStatus = (GroupMemberStatus)Enum.Parse( typeof( GroupMemberStatus ), status, true );
+
+                    groupQuery = groupQuery.Where( m => m.GroupMemberStatus == queryStatus );
+                }
+
+                return groupQuery.ToList();
+            }
+
+            return new List<Model.GroupMember>();
+        }
+
         /// <summary>
         /// Gets the groups of selected type that person is a member of which they have attended at least once
         /// </summary>
@@ -2082,7 +2154,7 @@ namespace Rock.Lava
         /// <param name="input">The input.</param>
         /// <param name="parm">The parm.</param>
         /// <returns></returns>
-        public static string Page( string input, string parm )
+        public static object Page( string input, string parm )
         {
             RockPage page = HttpContext.Current.Handler as RockPage;
 
@@ -2137,6 +2209,11 @@ namespace Rock.Lava
                     case "Scheme":
                         {
                             return HttpContext.Current.Request.Url.Scheme;
+                        }
+                    case "QueryString":
+                        {
+                            var test = page.PageParameters();
+                            return page.PageParameters();
                         }
                 }
             }

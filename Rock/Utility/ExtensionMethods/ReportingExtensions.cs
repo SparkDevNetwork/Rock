@@ -33,92 +33,58 @@ namespace Rock
         /// <returns></returns>
         public static bool CompareTo( this string value, string compareValue, ComparisonType compareType )
         {
-            if ( compareType == ComparisonType.Contains )
+            // Evaluate compare types that are not type specific
+            switch ( compareType )
             {
-                return value.Contains( compareValue );
+                case ComparisonType.Contains: return value.Contains( compareValue );
+                case ComparisonType.DoesNotContain: return !value.Contains( compareValue );
+                case ComparisonType.StartsWith: return value.StartsWith( compareValue, StringComparison.OrdinalIgnoreCase );
+                case ComparisonType.EndsWith: return value.EndsWith( compareValue, StringComparison.OrdinalIgnoreCase );
+                case ComparisonType.IsBlank: return string.IsNullOrWhiteSpace( value );
+                case ComparisonType.IsNotBlank: return !string.IsNullOrWhiteSpace( value );
             }
 
-            if ( compareType == ComparisonType.DoesNotContain )
-            {
-                return !value.Contains( compareValue );
-            }
-
-            if ( compareType == ComparisonType.StartsWith )
-            {
-                return value.StartsWith( compareValue, StringComparison.OrdinalIgnoreCase );
-            }
-
-            if ( compareType == ComparisonType.EndsWith )
-            {
-                return value.EndsWith( compareValue, StringComparison.OrdinalIgnoreCase );
-            }
-
-            if ( compareType == ComparisonType.IsBlank )
-            {
-                return string.IsNullOrWhiteSpace( value );
-            }
-
-            if ( compareType == ComparisonType.IsNotBlank )
-            {
-                return !string.IsNullOrWhiteSpace( value );
-            }
-
-            // Following compares could be numeric
+            // numeric compares
             decimal? decimalValue = value.AsDecimalOrNull();
             decimal? decimalCompareValue = compareValue.AsDecimalOrNull();
-
-            if ( compareType == ComparisonType.EqualTo )
-            {
-                if ( decimalValue.HasValue && decimalCompareValue.HasValue )
+            if ( decimalValue.HasValue && decimalCompareValue.HasValue )
+            { 
+                switch ( compareType )
                 {
-                    return decimalValue.Value == decimalCompareValue.Value;
+                    case ComparisonType.EqualTo: return decimalValue == decimalCompareValue;
+                    case ComparisonType.GreaterThan: return decimalValue.Value > decimalCompareValue.Value;
+                    case ComparisonType.GreaterThanOrEqualTo: return decimalValue.Value >= decimalCompareValue.Value;
+                    case ComparisonType.LessThan: return decimalValue.Value < decimalCompareValue.Value;
+                    case ComparisonType.LessThanOrEqualTo: return decimalValue.Value <= decimalCompareValue.Value;
+                    case ComparisonType.NotEqualTo: return decimalValue.Value != decimalCompareValue.Value;
                 }
-                return value.Equals( compareValue, StringComparison.OrdinalIgnoreCase );
             }
 
-            if ( compareType == ComparisonType.GreaterThan )
+            // date time compares
+            DateTime? datetimeValue = value.AsDateTime();
+            DateTime? datetimeCompareValue = compareValue.AsDateTime();
+            if ( datetimeValue.HasValue && datetimeCompareValue.HasValue )
             {
-                if ( decimalValue.HasValue && decimalCompareValue.HasValue )
+                switch ( compareType )
                 {
-                    return decimalValue.Value > decimalCompareValue.Value;
+                    case ComparisonType.EqualTo: return datetimeValue == datetimeCompareValue;
+                    case ComparisonType.GreaterThan: return datetimeValue.Value > datetimeCompareValue.Value;
+                    case ComparisonType.GreaterThanOrEqualTo: return datetimeValue.Value >= datetimeCompareValue.Value;
+                    case ComparisonType.LessThan: return datetimeValue.Value < datetimeCompareValue.Value;
+                    case ComparisonType.LessThanOrEqualTo: return datetimeValue.Value <= datetimeCompareValue.Value;
+                    case ComparisonType.NotEqualTo: return datetimeValue.Value != datetimeCompareValue.Value;
                 }
-                return value.CompareTo( compareValue ) > 0;
             }
-
-            if ( compareType == ComparisonType.GreaterThanOrEqualTo )
+            
+            // string compares
+            switch ( compareType )
             {
-                if ( decimalValue.HasValue && decimalCompareValue.HasValue )
-                {
-                    return decimalValue.Value >= decimalCompareValue.Value;
-                }
-                return value.CompareTo( compareValue ) >= 0;
-            }
-
-            if ( compareType == ComparisonType.LessThan )
-            {
-                if ( decimalValue.HasValue && decimalCompareValue.HasValue )
-                {
-                    return decimalValue.Value < decimalCompareValue.Value;
-                }
-                return value.CompareTo( compareValue ) < 0;
-            }
-
-            if ( compareType == ComparisonType.LessThanOrEqualTo )
-            {
-                if ( decimalValue.HasValue && decimalCompareValue.HasValue )
-                {
-                    return decimalValue.Value >= decimalCompareValue.Value;
-                }
-                return value.CompareTo( compareValue ) <= 0;
-            }
-
-            if ( compareType == ComparisonType.NotEqualTo )
-            {
-                if ( decimalValue.HasValue && decimalCompareValue.HasValue )
-                {
-                    return decimalValue.Value != decimalCompareValue.Value;
-                }
-                return !value.Equals( compareValue, StringComparison.OrdinalIgnoreCase );
+                case ComparisonType.EqualTo: return value.Equals( compareValue, StringComparison.OrdinalIgnoreCase );
+                case ComparisonType.GreaterThan: return value.CompareTo( compareValue ) > 0;
+                case ComparisonType.GreaterThanOrEqualTo: return value.CompareTo( compareValue ) >= 0;
+                case ComparisonType.LessThan: return value.CompareTo( compareValue ) < 0;
+                case ComparisonType.LessThanOrEqualTo: return value.CompareTo( compareValue ) <= 0;
+                case ComparisonType.NotEqualTo: return !value.Equals( compareValue, StringComparison.OrdinalIgnoreCase );
             }
 
             return false;

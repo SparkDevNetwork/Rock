@@ -54,18 +54,6 @@ namespace Rock.Follow
         }
 
         /// <summary>
-        /// Loads the attributes.
-        /// </summary>
-        /// <exception cref="System.Exception">Suggestion Component attributes are saved specific to the following suggestion, which requires that the current following suggestion is included in order to load or retrieve values. Use the LoadAttributes( FollowingSuggestion followingSuggestion ) method instead.</exception>
-        [Obsolete( "Use LoadAttributes( FollowingSuggestion followingSuggestion ) instead", true )]
-        public void LoadAttributes()
-        {
-            // Compiler should generate error if referencing this method, so exception should never be thrown
-            // but method is needed to "override" the extension method for IHasAttributes objects
-            throw new Exception( "Suggestion Component attributes are saved specific to the following suggestion, which requires that the current following suggestion is included in order to load or retrieve values. Use the LoadAttributes( FollowingSuggestion followingSuggestion ) method instead." );
-        }
-
-        /// <summary>
         /// Loads the attributes for the following suggestion.
         /// </summary>
         /// <param name="followingSuggestion">The following suggestion.</param>

@@ -27,8 +27,8 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <Rock:PersonPicker ID="ppRequestor" runat="server" Label="Requested By" EnableSelfSelection="true" OnSelectPerson="ppRequestor_SelectPerson" />
-                                    <Rock:DataTextBox ID="dtbFirstName" runat="server" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="FirstName" />
-                                    <Rock:DataTextBox ID="dtbLastName" runat="server" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="LastName" />
+                                    <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" />
+                                    <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" />
                                     <Rock:DatePicker ID="dpExpirationDate" Text="Expires On" runat="server" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="ExpirationDate" />
                                 </div>
 

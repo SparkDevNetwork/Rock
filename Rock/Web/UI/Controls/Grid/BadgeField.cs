@@ -36,17 +36,11 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The minimum value to be considered Important.
         /// </value>
+        [Obsolete( "Use DangerMin instead." )]
         public int ImportantMin
         {
-            get
-            {
-                int? i = ViewState["ImportantMin"] as int?;
-                return ( i == null ) ? int.MaxValue : i.Value;
-            }
-            set
-            {
-                ViewState["ImportantMin"] = value;
-            }
+            get { return DangerMin; }
+            set { DangerMin = value; }
         }
 
         /// <summary>
@@ -55,16 +49,48 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The maximum value to be considered Important.
         /// </value>
+        [Obsolete( "Use DangerMax instead." )]
         public int ImportantMax
+        {
+            get { return DangerMax; }
+            set { DangerMax = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the danger minimum value rule.
+        /// </summary>
+        /// <value>
+        /// The minimum value to be considered Danger.
+        /// </value>
+        public int DangerMin
         {
             get
             {
-                int? i = ViewState["ImportantMax"] as int?;
+                int? i = ViewState["DangerMin"] as int?;
                 return ( i == null ) ? int.MaxValue : i.Value;
             }
             set
             {
-                ViewState["ImportantMax"] = value;
+                ViewState["DangerMin"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the danger max.
+        /// </summary>
+        /// <value>
+        /// The maximum value to be considered Danger.
+        /// </value>
+        public int DangerMax
+        {
+            get
+            {
+                int? i = ViewState["DangerMax"] as int?;
+                return ( i == null ) ? int.MaxValue : i.Value;
+            }
+            set
+            {
+                ViewState["DangerMax"] = value;
             }
         }
 
@@ -272,9 +298,10 @@ namespace Rock.Web.UI.Controls
 
             int count = (int)e.FieldValue;
 
-            if ( ImportantMin <= count && count <= ImportantMax )
+            // Remove ImportantMin and ImportanMax once after deprecation period.
+            if ( DangerMin <= count && count <= DangerMax ) 
             {
-                e.BadgeType = "Important";
+                e.BadgeType = "Danger";
             }
             else if ( WarningMin <= count && count <= WarningMax )
             {

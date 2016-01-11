@@ -44,7 +44,8 @@ namespace Rock.Web.UI.Controls
         private RockTextOrDropDownList _tbddlCriteriaValue;
 
         private RockTextBox _tbActionTypeName;
-        private RockDropDownList _ddlEntityType;
+        private WorkflowActionTypePicker  _wfatpEntityType;
+        private RockLiteral _rlEntityTypeOverview;
         private RockCheckBox _cbIsActionCompletedOnSuccess;
         private RockCheckBox _cbIsActivityCompletedOnSuccess;
         private WorkflowFormEditor _formEditor;
@@ -240,7 +241,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             result.CriteriaValue = _tbddlCriteriaValue.SelectedValue;
 
             result.Name = _tbActionTypeName.Text;
-            result.EntityTypeId = _ddlEntityType.SelectedValueAsInt() ?? 0;
+            result.EntityTypeId = _wfatpEntityType.SelectedValueAsInt() ?? 0;
             result.IsActionCompletedOnSuccess = _cbIsActionCompletedOnSuccess.Checked;
             result.IsActivityCompletedOnSuccess = _cbIsActivityCompletedOnSuccess.Checked;
 
@@ -303,7 +304,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             _tbddlCriteriaValue.SelectedValue = value.CriteriaValue;
 
             _tbActionTypeName.Text = value.Name;
-            _ddlEntityType.SetValue( value.EntityTypeId );
+            _wfatpEntityType.SetValue( EntityTypeCache.Read( value.EntityTypeId ) );
             _cbIsActivityCompletedOnSuccess.Checked = value.IsActivityCompletedOnSuccess;
 
             var entityType = EntityTypeCache.Read( value.EntityTypeId );
@@ -394,41 +395,16 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             _tbActionTypeName.Required = true;
             _tbActionTypeName.Attributes["onblur"] = string.Format( "javascript: $('#{0}').text($(this).val());", _lblActionTypeName.ID );
 
-            _ddlEntityType = new RockDropDownList();
-            Controls.Add( _ddlEntityType );
-            _ddlEntityType.ID = this.ID + "_ddlEntityType";
-            _ddlEntityType.Label = "Action Type";
+            _wfatpEntityType = new WorkflowActionTypePicker();
+            _wfatpEntityType.SelectItem += wfatpEntityType_SelectItem;
+            Controls.Add( _wfatpEntityType );
+            _wfatpEntityType.ID = this.ID + "_wfatpEntityType";
+            _wfatpEntityType.Label = "Action Type";
 
-            // make it autopostback since Attributes are dependant on which EntityType is selected
-            _ddlEntityType.AutoPostBack = true;
-            _ddlEntityType.SelectedIndexChanged += ddlEntityType_SelectedIndexChanged;
-
-            foreach ( var item in ActionContainer.Instance.Components.Values.OrderBy( a => a.Value.EntityType.FriendlyName ) )
-            {
-                var type = item.Value.GetType();
-                if (type != null)
-                {
-                    var entityType = EntityTypeCache.Read( type );
-                    var li = new ListItem( entityType.FriendlyName, entityType.Id.ToString() );
-
-                    // Get description
-                    string description = string.Empty;
-                    var descAttributes = type.GetCustomAttributes( typeof( System.ComponentModel.DescriptionAttribute ), false );
-                    if ( descAttributes != null )
-                    {
-                        foreach ( System.ComponentModel.DescriptionAttribute descAttribute in descAttributes )
-                        {
-                            description = descAttribute.Description;
-                        }
-                    }
-                    if ( !string.IsNullOrWhiteSpace( description ) )
-                    {
-                        li.Attributes.Add( "title", description );
-                    }
-
-                    _ddlEntityType.Items.Add( li );
-                }
-            }
+            _rlEntityTypeOverview = new RockLiteral();
+            Controls.Add( _rlEntityTypeOverview );
+            _rlEntityTypeOverview.ID = this.ID + "";
+            _rlEntityTypeOverview.Label = "Action Type Overview";
 
             _cbIsActionCompletedOnSuccess = new RockCheckBox { Text = "Action is Completed on Success" };
             Controls.Add( _cbIsActionCompletedOnSuccess );
@@ -448,15 +424,10 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
 
         }
 
-        /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddlEntityType control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void ddlEntityType_SelectedIndexChanged( object sender, EventArgs e )
+        void wfatpEntityType_SelectItem( object sender, EventArgs e )
         {
             var workflowActionType = GetWorkflowActionType( false );
-            workflowActionType.EntityTypeId = _ddlEntityType.SelectedValueAsInt() ?? 0;
+            workflowActionType.EntityTypeId = _wfatpEntityType.SelectedValueAsInt() ?? 0;
 
             _hfActionTypeGuid.Value = workflowActionType.Guid.ToString();
 
@@ -568,8 +539,6 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _tbActionTypeName.ValidationGroup = ValidationGroup;
             _tbActionTypeName.RenderControl( writer );
-            _ddlEntityType.ValidationGroup = ValidationGroup;
-            _ddlEntityType.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
@@ -580,7 +549,49 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             _cbIsActivityCompletedOnSuccess.RenderControl( writer );
             writer.RenderEndTag();
 
+            writer.RenderEndTag();  // row
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-lg-4" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _wfatpEntityType.ValidationGroup = ValidationGroup;
+            _wfatpEntityType.RenderControl( writer );
             writer.RenderEndTag();
+
+            // Add an overview(description) of the selected action type
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-lg-8" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            int? entityTypeId = _wfatpEntityType.SelectedValueAsInt();
+            if ( entityTypeId.HasValue )
+            {
+                var entityType = EntityTypeCache.Read( entityTypeId.Value );
+                if ( entityType != null )
+                {
+                    var component = ActionContainer.GetComponent( entityType.Name );
+                    if ( component != null )
+                    {
+                        string description = string.Empty;
+                        var propAttribute = component.GetType().GetCustomAttributes( typeof( System.ComponentModel.DescriptionAttribute ), false ).FirstOrDefault();
+                        if ( propAttribute != null )
+                        {
+                            var descAttribute = propAttribute as System.ComponentModel.DescriptionAttribute;
+                            if ( descAttribute != null )
+                            {
+                                _rlEntityTypeOverview.Label = string.Format( "'{0}' Overview", entityType.FriendlyName );
+                                _rlEntityTypeOverview.Text = descAttribute.Description;
+                                _rlEntityTypeOverview.RenderControl( writer );
+                            }
+                        }
+                    }
+                }
+            }
+            writer.RenderEndTag();  // col-md-8
+
+            writer.RenderEndTag();  // row
+
 
             _formEditor.ValidationGroup = ValidationGroup;
             _formEditor.RenderControl( writer );

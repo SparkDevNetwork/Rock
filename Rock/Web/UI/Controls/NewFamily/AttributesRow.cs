@@ -31,7 +31,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Displays a bootstrap badge
     /// </summary>
-    public class NewFamilyAttributesRow : CompositeControl
+    public class NewGroupAttributesRow : CompositeControl
     {
         /// <summary>
         /// Gets or sets the person GUID.

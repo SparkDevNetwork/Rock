@@ -33,6 +33,7 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Parse Zebra Label
     /// </summary>
+    [ActionCategory( "Check-In" )]
     [Description( "Parses an uploaded Zebra Label for any available merge codes" )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata("ComponentName", "Parse Zebra Label")]
@@ -65,7 +66,7 @@ namespace Rock.Workflow.Action
                 var contentString = binaryFile.ContentsToString();
                 foreach ( Match match in Regex.Matches( 
                     contentString,
-                    @"(?<=\^FD)[^\^FS]*(?=\^FS)" ) )
+                    @"(?<=\^FD)((?!\^FS).)*(?=\^FS)" ) )
                 {
                     sb.AppendFormat( "{0}^|", match.Value );
                 }

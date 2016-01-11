@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Core
         IEnumerable<IPackage> _availablePackages = null;
         SemanticVersion _installedVersion = new SemanticVersion( "0.0.0" );
         private int _numberOfAvailablePackages = 0;
-
+        private bool _isOkToProceed = false;
         #endregion
 
         #region Properties
@@ -134,6 +134,16 @@ namespace RockWeb.Blocks.Core
                 {
                     try
                     {
+                        if ( CheckSqlServerVersion() )
+                        {
+                            _isOkToProceed = true;
+                        }
+                        else
+                        {
+                            nbVersionIssue.Visible = true;
+                            nbBackupMessage.Visible = false;
+                        }
+
                         _availablePackages = NuGetService.SourceRepository.FindPackagesById( _rockPackageId ).OrderByDescending( p => p.Version );
                         if ( IsUpdateAvailable() )
                         {
@@ -165,7 +175,7 @@ namespace RockWeb.Blocks.Core
             rptPackageVersions.DataSource = _availablePackages;
             rptPackageVersions.DataBind();
         }
-        
+
         /// <summary>
         /// Wraps the install or update process in some guarded code while putting the app in "offline"
         /// mode and then back "online" when it's complete.
@@ -178,7 +188,7 @@ namespace RockWeb.Blocks.Core
             {
                 pnlUpdatesAvailable.Visible = false;
 
-                if ( ! UpdateRockPackage( version ) )
+                if ( !UpdateRockPackage( version ) )
                 {
                     pnlError.Visible = true;
                     pnlUpdateSuccess.Visible = false;
@@ -193,7 +203,7 @@ namespace RockWeb.Blocks.Core
             catch ( Exception ex )
             {
                 pnlError.Visible = true;
-                pnlUpdateSuccess.Visible = false; 
+                pnlUpdateSuccess.Visible = false;
                 nbErrors.Text = string.Format( "Something went wrong.  Although the errors were written to the error log, they are listed for your review:<br/>{0}", ex.Message );
                 LogException( ex );
             }
@@ -229,6 +239,15 @@ namespace RockWeb.Blocks.Core
                         lbInstall.AddCssClass( "btn-default" );
                         divPanel.AddCssClass( "panel-block" );
                     }
+
+                    if ( !_isOkToProceed )
+                    {
+                        lbInstall.Enabled = false;
+                        lbInstall.AddCssClass( "btn-danger" );
+                        lbInstall.AddCssClass( "small" );
+                        lbInstall.AddCssClass( "btn-xs" );
+                        lbInstall.Text = "Requirements not met";
+                    }
                 }
             }
         }
@@ -247,6 +266,38 @@ namespace RockWeb.Blocks.Core
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Checks the SQL server version and returns false if not at the needed
+        /// level to proceed.
+        /// </summary>
+        /// <returns></returns>
+        private bool CheckSqlServerVersion()
+        {
+            bool isOk = false;
+            string sqlVersion = "";
+            try
+            {
+                sqlVersion = Rock.Data.DbService.ExecuteScaler( "SELECT SERVERPROPERTY('productversion')" ).ToString();
+                string[] versionParts = sqlVersion.Split( '.' );
+
+                int majorVersion = -1;
+                Int32.TryParse( versionParts[0], out majorVersion );
+
+                if ( majorVersion >= 11 )
+                {
+                    isOk = true;
+                }
+            }
+            catch
+            {
+                // This would be pretty bad, but regardless we'll just
+                // return the isOk (not) and let the caller proceed.
+            }
+
+            return isOk;
+        }
+
         /// <summary>
         /// Updates an existing Rock package to the given version and returns true if successful.
         /// </summary>
@@ -259,7 +310,7 @@ namespace RockWeb.Blocks.Core
             {
                 var update = NuGetService.SourceRepository.FindPackage( _rockPackageId, ( version != null ) ? SemanticVersion.Parse( version ) : null, false, false );
                 var installed = NuGetService.GetInstalledPackage( _rockPackageId );
-                
+
                 if ( installed == null )
                 {
                     errors = NuGetService.InstallPackage( update );
@@ -292,7 +343,7 @@ namespace RockWeb.Blocks.Core
                 errors = errors.Concat( new[] { string.Format( "There is a problem installing v{0}. It looks like your website ran out of memory. Check out <a href='http://www.rockrms.com/Rock/UpdateIssues#outofmemory'>this page for some assistance</a>", version ) } );
                 LogException( ex );
             }
-            catch( System.Xml.XmlException ex )
+            catch ( System.Xml.XmlException ex )
             {
                 errors = errors.Concat( new[] { string.Format( "There is a problem installing v{0}. It looks one of the standard XML files ({1}) may have been customized which prevented us from updating it. Check out <a href='http://www.rockrms.com/Rock/UpdateIssues#customizedxml'>this page for some assistance</a>", version, ex.Message ) } );
                 LogException( ex );
@@ -330,7 +381,7 @@ namespace RockWeb.Blocks.Core
             lRockVersion.Text = string.Format( "<b>Current Version: </b> {0}", VersionInfo.GetRockProductVersionFullName() );
             lNoUpdateVersion.Text = VersionInfo.GetRockProductVersionFullName();
         }
-        
+
         /// <summary>
         /// Determines if there is an update available to install and
         /// puts the valid ones (that is those that meet the requirements)
@@ -368,7 +419,7 @@ namespace RockWeb.Blocks.Core
                     //    // so we clear it out and keep processing.
                     //    if ( requiredVersion > _installedVersion )
                     //    {
-                            
+
                     //        verifiedPackages.Clear();
                     //    }
                     //}
@@ -388,7 +439,7 @@ namespace RockWeb.Blocks.Core
                 lMessage.Text = string.Format( "<div class='alert alert-danger'>There is a problem with the packaging system. {0}</p>", ex.Message );
             }
 
-            if (verifiedPackages.Count > 0 )
+            if ( verifiedPackages.Count > 0 )
             {
                 return true;
             }
@@ -451,7 +502,7 @@ namespace RockWeb.Blocks.Core
             }
             catch ( Exception )
             {
-                if ( ! File.Exists( offlineFile ) )
+                if ( !File.Exists( offlineFile ) )
                 {
                     CreateOfflineFileFromScratch( offlineFile );
                 }
@@ -596,7 +647,7 @@ namespace RockWeb.Blocks.Core
                 int numberOfActiveRecords = new PersonService( rockContext ).Queryable( includeDeceased: false, includeBusinesses: false ).Count();
 
                 if ( numberOfActiveRecords > 100 || !Rock.Web.SystemSettings.GetValue( SystemSettingKeys.SAMPLEDATA_DATE ).AsDateTime().HasValue )
-                { 
+                {
                     string organizationName = string.Empty;
                     ImpactLocation organizationLocation = null;
                     string publicUrl = string.Empty;
@@ -663,7 +714,7 @@ namespace RockWeb.Blocks.Core
             EnvData envData = new EnvData()
             {
                 AppRoot = ResolveRockUrl( "~/" ),
-                Architecture = (IntPtr.Size == 4) ? "32bit" : "64bit",
+                Architecture = ( IntPtr.Size == 4 ) ? "32bit" : "64bit",
                 AspNetVersion = Environment.Version.ToString(),
                 IisVersion = Request.ServerVariables["SERVER_SOFTWARE"],
                 //Ram = new Microsoft.VisualBasic.Devices.ComputerInfo().TotalPhysicalMemory,
@@ -734,7 +785,7 @@ namespace RockWeb.Blocks.Core
             }
         }
         #endregion
-}
+    }
 
     [Serializable]
     public class EnvData

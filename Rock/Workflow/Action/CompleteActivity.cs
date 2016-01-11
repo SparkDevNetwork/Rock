@@ -27,6 +27,7 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Marks an activity as complete
     /// </summary>
+    [ActionCategory( "Workflow Control" )]
     [Description( "Marks the activity as complete" )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Complete Activity" )]

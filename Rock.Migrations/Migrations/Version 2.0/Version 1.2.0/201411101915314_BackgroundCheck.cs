@@ -222,7 +222,7 @@ SET @DefinedValueId = (SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = 'F03
             RockMigrationHelper.AddAttributeValue( "9F7CBDDA-D9DC-4452-935A-F394C7B0434F", 0, "", "9A42913F-26FB-471D-AA53-161E2999D439" );
             RockMigrationHelper.AddAttributeValue( "8510691C-BCD0-44FA-80B7-1605B2AE5EE7", 0, "", "DCA0E366-9F17-4E03-8C2A-6A48D789F370" );
             RockMigrationHelper.AddAttributeValue( "DE76945E-3C90-4971-986F-A086DADA2CC9", 0, "", "18472FC3-F4A9-4B4A-AD0C-295F3879ED61" );
-            RockMigrationHelper.AddAttributeValue( "6C3B2C5C-B8C0-4740-8F77-521C7D267EA2", 0, "True", "40A59878-1417-4811-BC5C-6C39729C1A98" );
+            RockMigrationHelper.AddAttributeValue( "6C3B2C5C-B8C0-4740-8F77-521C7D267EA2", 0, "False", "40A59878-1417-4811-BC5C-6C39729C1A98" );
             RockMigrationHelper.AddAttributeValue( "941D2262-303E-4EC2-8588-7AE3C1DDA2AF", 0, "https://services.priorityresearch.com/webservice/default.cfm", "1B20D927-6812-4489-937D-7CA322B7777C" );
             RockMigrationHelper.AddAttributeValue( "B875B054-6046-496A-A521-D0D3DD62BDD0", 0, "http://www.yourchurch.com/Webhooks/ProtectMyMinistry.ashx", "B3A0CD1B-E2A9-47FA-B05B-D171405AFDEA" );
 
