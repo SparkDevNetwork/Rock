@@ -12457,6 +12457,7 @@ fieldset .actions {
   margin-bottom: 15px;
   min-width: 160px;
   border-radius: 4px;
+  min-height: 90px;
 }
 .groupmembers .member .person-image {
   border: 1px solid #92bce0;
