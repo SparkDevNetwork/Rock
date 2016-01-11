@@ -2562,14 +2562,7 @@ USE [master]
 
 /* ====================================================== 
 
--- set personalias foreign id's
-update pa
-set ForeignId = p.foreignid
-from rock..person p
-inner join rock..personalias pa
-on p.id = pa.personid
-and p.foreignid is not null
-	
+
 
 -- get hard-coded rlcs to insert
 select '(' + ltrim(str(RLC_ID, 25, 0)) + ', ' + '''' + GroupType + ''', ''' + GroupName + '''),'
@@ -2596,17 +2589,8 @@ order by count(1) desc
 
 
 
-declare @msg nvarchar(500)
-select @msg = '' + ltrim(str(@GroupMemberId, 25, 0)) + ', ' + @GroupTypeName + ', ' + @GroupName
-RAISERROR ( @msg, 0, 0 ) WITH NOWAIT
-
-
 select * from #rlcMap
 
-select count(1) from Rock..attendance
 
-select top 100 p.* from Rock..person p
-inner join rock..attendance a
-on p.id = a.personaliasid
 
  ====================================================== */
