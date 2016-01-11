@@ -24,6 +24,8 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using Rock.Data;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -762,7 +764,7 @@ Registration By: {0} Total Cost/Fees:{1}
         /// <value>
         /// The field values.
         /// </value>
-        public Dictionary<int, object> FieldValues { get; set; }
+        public Dictionary<int, FieldValueObject> FieldValues { get; set; }
 
         /// <summary>
         /// Gets or sets the fee values.
@@ -783,7 +785,7 @@ Registration By: {0} Total Cost/Fees:{1}
             GroupMemberId = null;
             GroupName = string.Empty;
             FamilyGuid = Guid.Empty;
-            FieldValues = new Dictionary<int, object>();
+            FieldValues = new Dictionary<int, FieldValueObject>();
             FeeValues = new Dictionary<int, List<FeeInfo>>();
         }
 
@@ -816,7 +818,7 @@ Registration By: {0} Total Cost/Fees:{1}
                             object dbValue = GetRegistrantValue( null, person, family, field, rockContext );
                             if ( dbValue != null )
                             {
-                                FieldValues.Add( field.Id, dbValue );
+                                FieldValues.Add( field.Id, new FieldValueObject( field, dbValue ) );
                             }
                         }
                     }
@@ -873,7 +875,7 @@ Registration By: {0} Total Cost/Fees:{1}
                         object dbValue = GetRegistrantValue( registrant, person, family, field, rockContext );
                         if ( dbValue != null )
                         {
-                            FieldValues.Add( field.Id, dbValue );
+                            FieldValues.Add( field.Id, new FieldValueObject( field, dbValue ) );
                         }
                     }
 
@@ -1055,11 +1057,102 @@ Registration By: {0} Total Cost/Fees:{1}
                         .Select( f => f.Id ) )
                     .FirstOrDefault();
 
-                return FieldValues.ContainsKey( fieldId ) ? FieldValues[fieldId] : null;
+                return FieldValues.ContainsKey( fieldId ) ? FieldValues[fieldId].FieldValue : null;
             }
 
             return null;
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Serializable]
+    [Newtonsoft.Json.JsonConverter( typeof( FieldValueConverter ) )]
+    public class FieldValueObject
+    {
+        /// <summary>
+        /// Gets or sets the field source.
+        /// </summary>
+        /// <value>
+        /// The field source.
+        /// </value>
+        public RegistrationFieldSource FieldSource { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the person field.
+        /// </summary>
+        /// <value>
+        /// The type of the person field.
+        /// </value>
+        public RegistrationPersonFieldType PersonFieldType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the field value.
+        /// </summary>
+        /// <value>
+        /// The field value.
+        /// </value>
+        public object FieldValue { get; set; }
+
+        /// <summary>
+        /// Gets the type of the field value.
+        /// </summary>
+        /// <value>
+        /// The type of the field value.
+        /// </value>
+        public Type FieldValueType
+        {
+            get
+            {
+                Type valueType = typeof( string );
+                if ( FieldSource == RegistrationFieldSource.PersonField )
+                {
+                    switch ( PersonFieldType )
+                    {
+                        case RegistrationPersonFieldType.Campus:
+                        case RegistrationPersonFieldType.MaritalStatus:
+                                return typeof( int? );
+
+                        case RegistrationPersonFieldType.Address:
+                                return typeof( Location );
+
+                        case RegistrationPersonFieldType.Birthdate:
+                                return typeof( DateTime? );
+
+                        case RegistrationPersonFieldType.Gender:
+                                return  typeof( Gender );
+
+                        case RegistrationPersonFieldType.MobilePhone:
+                        case RegistrationPersonFieldType.HomePhone:
+                        case RegistrationPersonFieldType.WorkPhone:
+                                return typeof( PhoneNumber );
+                    }
+                }
+                return typeof( string );
+            }
+        }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FieldValueObject"/> class.
+        /// </summary>
+        public FieldValueObject()
+        {
+
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FieldValueObject"/> class.
+        /// </summary>
+        /// <param name="field">The field.</param>
+        /// <param name="fieldValue">The field value.</param>
+        public FieldValueObject( RegistrationTemplateFormField field, object fieldValue)
+        {
+            FieldSource = field.FieldSource;
+            PersonFieldType = field.PersonFieldType;
+            FieldValue = fieldValue;
+        }
+
+        
     }
 
     /// <summary>
@@ -1190,6 +1283,103 @@ Registration By: {0} Total Cost/Fees:{1}
         /// The minimum payment.
         /// </value>
         public decimal MinPayment { get; set; }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class FieldValueConverter : JsonConverter
+    {
+        /// <summary>
+        /// Determines whether this instance can convert the specified object type.
+        /// </summary>
+        /// <param name="objectType">Type of the object.</param>
+        /// <returns>
+        ///   <c>true</c> if this instance can convert the specified object type; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool CanConvert( Type objectType )
+        {
+            return objectType.IsAssignableFrom( typeof( string ) );
+        }
+
+        /// <summary>
+        /// Reads the JSON representation of the object.
+        /// </summary>
+        /// <param name="reader">The <see cref="T:Newtonsoft.Json.JsonReader" /> to read from.</param>
+        /// <param name="objectType">Type of the object.</param>
+        /// <param name="existingValue">The existing value of object being read.</param>
+        /// <param name="serializer">The calling serializer.</param>
+        /// <returns>
+        /// The object value.
+        /// </returns>
+        public override object ReadJson( JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer )
+        {
+            if ( reader.TokenType == JsonToken.Null )
+            {
+                return null;
+            }
+
+            FieldValueObject fieldValueObject = new FieldValueObject();
+
+            try
+            {
+                reader.Read();
+                while ( reader.TokenType == JsonToken.PropertyName )
+                {
+                    string str = reader.Value.ToString();
+                    if ( string.Equals( str, "FieldSource", StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        reader.Read();
+                        fieldValueObject.FieldSource = (RegistrationFieldSource)serializer.Deserialize( reader, typeof( RegistrationFieldSource ) );
+                    }
+                    else if ( string.Equals( str, "PersonFieldType", StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        reader.Read();
+                        fieldValueObject.PersonFieldType = (RegistrationPersonFieldType)serializer.Deserialize( reader, typeof( RegistrationPersonFieldType ) );
+                    }
+                    else if ( string.Equals( str, "FieldValue", StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        reader.Read();
+                        fieldValueObject.FieldValue = serializer.Deserialize( reader, fieldValueObject.FieldValueType );
+                    }
+                    reader.Read();
+                }
+            }
+            catch { }
+
+            return fieldValueObject;
+        }
+
+        /// <summary>
+        /// Writes the JSON representation of the object.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:Newtonsoft.Json.JsonWriter" /> to write to.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="serializer">The calling serializer.</param>
+        public override void WriteJson( JsonWriter writer, object value, JsonSerializer serializer )
+        {
+            var fieldValueObject = value as FieldValueObject;
+            if ( fieldValueObject != null )
+            {
+                DefaultContractResolver contractResolver = serializer.ContractResolver as DefaultContractResolver;
+                writer.WriteStartObject();
+                
+                writer.WritePropertyName( ( contractResolver != null ? contractResolver.GetResolvedPropertyName( "FieldSource" ) : "FieldSource" ) );
+                serializer.Serialize( writer, fieldValueObject.FieldSource );
+
+                writer.WritePropertyName( ( contractResolver != null ? contractResolver.GetResolvedPropertyName( "PersonFieldType" ) : "PersonFieldType" ) );
+                serializer.Serialize( writer, fieldValueObject.PersonFieldType );
+
+                writer.WritePropertyName( ( contractResolver != null ? contractResolver.GetResolvedPropertyName( "FieldValue" ) : "FieldValue" ) );
+                serializer.Serialize( writer, fieldValueObject.FieldValue, fieldValueObject.FieldValueType );
+
+                writer.WriteEndObject();
+            }
+            else
+            {
+                serializer.Serialize( writer, value );
+            }
+        }
     }
 
     /// <summary>

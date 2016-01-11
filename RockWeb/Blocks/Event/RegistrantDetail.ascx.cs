@@ -204,7 +204,7 @@ namespace RockWeb.Blocks.Event
                 foreach ( var dbFee in registrant.Fees.ToList() )
                 {
                     if ( !RegistrantState.FeeValues.Keys.Contains( dbFee.RegistrationTemplateFeeId ) ||
-                        RegistrantState.FeeValues[dbFee.RegistrationTemplateFeeId] != null ||
+                        RegistrantState.FeeValues[dbFee.RegistrationTemplateFeeId] == null ||
                         !RegistrantState.FeeValues[dbFee.RegistrationTemplateFeeId]
                             .Any( f =>
                                 f.Option == dbFee.Option &&
@@ -319,44 +319,48 @@ namespace RockWeb.Blocks.Event
 
                 if ( newRegistrant && TemplateState.GroupTypeId.HasValue && ppPerson.PersonId.HasValue )
                 {
-                    var registration = new RegistrationService( rockContext ).Get( registrant.RegistrationId );
-                    if ( registration != null &&
-                        registration.Group != null &&
-                        registration.Group.GroupTypeId == TemplateState.GroupTypeId.Value )
+                    using ( var newRockContext = new RockContext() )
                     {
-                        int? groupRoleId = TemplateState.GroupMemberRoleId.HasValue ?
-                            TemplateState.GroupMemberRoleId.Value :
-                            registration.Group.GroupType.DefaultGroupRoleId;
-                        if ( groupRoleId.HasValue )
+                        var reloadedRegistrant = new RegistrationRegistrantService( newRockContext ).Get( registrant.Id );
+                        if ( reloadedRegistrant != null &&
+                            reloadedRegistrant.Registration != null &&
+                            reloadedRegistrant.Registration.Group != null &&
+                            reloadedRegistrant.Registration.Group.GroupTypeId == TemplateState.GroupTypeId.Value )
                         {
-                            var groupMemberService = new GroupMemberService( rockContext );
-                            var groupMember = groupMemberService
-                                .Queryable().AsNoTracking()
-                                .Where( m =>
-                                    m.GroupId == registration.Group.Id &&
-                                    m.PersonId == registrant.PersonId &&
-                                    m.GroupRoleId == groupRoleId.Value )
-                                .FirstOrDefault();
-                            if ( groupMember == null )
+                            int? groupRoleId = TemplateState.GroupMemberRoleId.HasValue ?
+                                TemplateState.GroupMemberRoleId.Value :
+                                reloadedRegistrant.Registration.Group.GroupType.DefaultGroupRoleId;
+                            if ( groupRoleId.HasValue )
                             {
-                                groupMember = new GroupMember();
-                                groupMemberService.Add( groupMember );
-                                groupMember.GroupId = registration.Group.Id;
-                                groupMember.PersonId = ppPerson.PersonId.Value;
-                                groupMember.GroupRoleId = groupRoleId.Value;
-                                groupMember.GroupMemberStatus = TemplateState.GroupMemberStatus;
+                                var groupMemberService = new GroupMemberService( newRockContext );
+                                var groupMember = groupMemberService
+                                    .Queryable().AsNoTracking()
+                                    .Where( m =>
+                                        m.GroupId == reloadedRegistrant.Registration.Group.Id &&
+                                        m.PersonId == reloadedRegistrant.PersonId &&
+                                        m.GroupRoleId == groupRoleId.Value )
+                                    .FirstOrDefault();
+                                if ( groupMember == null )
+                                {
+                                    groupMember = new GroupMember();
+                                    groupMemberService.Add( groupMember );
+                                    groupMember.GroupId = reloadedRegistrant.Registration.Group.Id;
+                                    groupMember.PersonId = ppPerson.PersonId.Value;
+                                    groupMember.GroupRoleId = groupRoleId.Value;
+                                    groupMember.GroupMemberStatus = TemplateState.GroupMemberStatus;
 
-                                rockContext.SaveChanges();
+                                    newRockContext.SaveChanges();
 
-                                registrantChanges.Add( string.Format( "Registrant added to {0} group", registration.Group.Name ) );
+                                    registrantChanges.Add( string.Format( "Registrant added to {0} group", reloadedRegistrant.Registration.Group.Name ) );
+                                }
+                                else
+                                {
+                                    registrantChanges.Add( string.Format( "Registrant group member reference updated to existing person in {0} group", reloadedRegistrant.Registration.Group.Name ) );
+                                }
+
+                                reloadedRegistrant.GroupMemberId = groupMember.Id;
+                                newRockContext.SaveChanges();
                             }
-                            else
-                            {
-                                registrantChanges.Add( string.Format( "Registrant group member reference updated to existing person in {0} group", registration.Group.Name ) );
-                            }
-
-                            registrant.GroupMemberId = groupMember.Id;
-                            rockContext.SaveChanges();
                         }
                     }
                 }
@@ -749,7 +753,7 @@ namespace RockWeb.Blocks.Event
 
                                 if ( value != null )
                                 {
-                                    RegistrantState.FieldValues.AddOrReplace( field.Id, value );
+                                    RegistrantState.FieldValues.AddOrReplace( field.Id, new FieldValueObject( field, value ) );
                                 }
                                 else
                                 {
