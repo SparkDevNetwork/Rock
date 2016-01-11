@@ -97,12 +97,18 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
         /// </summary>
         protected void ShowQuestions()
         {
+            var rockContext = new RockContext();
             lBlockTitle.Text = "Current Statistics through " + DateTime.Today.ToShortDateString();
             int groupId = int.Parse( PageParameter( "GroupId" ) );
             int personId = (int)CurrentPersonId;
-            GroupMemberService groupMemberService = new GroupMemberService( new RockContext() );
+            GroupMemberService groupMemberService = new GroupMemberService( rockContext );
             _groupMember = groupMemberService.GetByGroupIdAndPersonId( groupId, personId ).FirstOrDefault();
             List<Question> questions = new QuestionService( new AccountabilityContext() ).GetQuestionsFromGroupTypeID( _groupMember.Group.GroupTypeId );
+
+            Group group = new GroupService( rockContext ).Get( groupId );
+            group.LoadAttributes();
+            var reportStartDate = DateTime.Parse( group.GetAttributeValue( "ReportStartDate" ) );
+
             if ( questions.Count > 0 )
             {
                 HtmlGenericControl questionRow = new HtmlGenericControl();
@@ -122,7 +128,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
                     questionRow.Controls.Add( questionScore );
 
                     //The question percentage
-                    responsePercent = new ResponseService( new AccountabilityContext() ).ResponsePercentage( personId, groupId, questions[i].Id );
+                    responsePercent = new ResponseService( new AccountabilityContext() ).ResponsePercentage( personId, groupId, questions[i].Id, reportStartDate );
                     questionScore = new Literal();
                     questionScore.ID = "lblquestionPercent" + i.ToString();
                     if ( responsePercent[1] == 0 )
@@ -146,7 +152,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
                         questionRow.Controls.Add( questionScore );
 
                         //The seccond question percentage
-                        responsePercent = new ResponseService( new AccountabilityContext() ).ResponsePercentage( personId, groupId, questions[i].Id );
+                        responsePercent = new ResponseService( new AccountabilityContext() ).ResponsePercentage( personId, groupId, questions[i].Id, reportStartDate );
                         questionScore = new Literal();
                         questionScore.ID = "lblquestionPercent" + i.ToString();
                         if ( responsePercent[1] == 0 )
