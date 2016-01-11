@@ -1087,6 +1087,12 @@ Registration By: {0} Total Cost/Fees:{1}
         /// </value>
         public object FieldValue { get; set; }
 
+        /// <summary>
+        /// Gets the type of the field value.
+        /// </summary>
+        /// <value>
+        /// The type of the field value.
+        /// </value>
         public Type FieldValueType
         {
             get
@@ -1271,6 +1277,9 @@ Registration By: {0} Total Cost/Fees:{1}
         public decimal MinPayment { get; set; }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class FieldValueConverter : JsonConverter
     {
         /// <summary>
