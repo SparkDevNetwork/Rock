@@ -1305,6 +1305,11 @@ namespace Rock.Model
         /// <returns>Family Group</returns>
         public static Group SaveNewPerson( Person person, RockContext rockContext, int? campusId = null, bool savePersonAttributes = false )
         {
+            person.FirstName = person.FirstName.FixCase();
+            person.NickName = person.NickName.FixCase();
+            person.MiddleName = person.MiddleName.FixCase();
+            person.LastName = person.LastName.FixCase();
+
             // Create/Save Known Relationship Group
             var knownRelationshipGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
             if ( knownRelationshipGroupType != null )
@@ -1442,6 +1447,11 @@ namespace Rock.Model
 
             if ( newPerson )
             {
+                person.FirstName = person.FirstName.FixCase();
+                person.NickName = person.NickName.FixCase();
+                person.MiddleName = person.MiddleName.FixCase();
+                person.LastName = person.LastName.FixCase();
+
                 // new person that hasn't be saved to database yet
                 History.EvaluateChange( demographicChanges, "Title", string.Empty, DefinedValueCache.GetName( person.TitleValueId ) );
                 History.EvaluateChange( demographicChanges, "First Name", string.Empty, person.FirstName );

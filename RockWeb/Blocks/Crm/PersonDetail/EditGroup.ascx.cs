@@ -1211,7 +1211,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var groupMemberService = new GroupMemberService( rockContext );
             var groupMembers = groupMemberService.GetByGroupId( groupId, true );
 
-            if ( groupMembers.Count() == 1 )
+            if ( !_isFamilyGroupType || groupMembers.Count() == 1 )
             {
                 var groupMember = groupMembers.FirstOrDefault();
 
@@ -1304,24 +1304,31 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             int i = 0;
             GroupMembers.ForEach( m => m.Index = i++ );
 
-            // only show the Delete Group button if there is only one member (or less ) in the group, and that member is in at least one other group
-            btnDelete.Visible = false;
-            if ( GroupMembers.Count <= 1 )
+            // Do not allow deleting of person's family group unless they are in multiple families, and they are the only one in this family
+            if ( _isFamilyGroupType )
             {
-                var groupMemberInfo = GroupMembers.FirstOrDefault();
-                if ( groupMemberInfo != null )
+                btnDelete.Visible = false;
+                if ( GroupMembers.Count <= 1 )
                 {
-                    if ( groupMemberInfo.IsInOtherGroups )
+                    var groupMemberInfo = GroupMembers.FirstOrDefault();
+                    if ( groupMemberInfo != null )
                     {
-                        // person is only person in the current group, and they are also in at least one other group, so let them delete this group
+                        if ( groupMemberInfo.IsInOtherGroups )
+                        {
+                            // person is only person in the current group, and they are also in at least one other group, so let them delete this group
+                            btnDelete.Visible = true;
+                        }
+                    }
+                    else
+                    {
+                        // somehow there are no people in this group at all, so let them delete this group
                         btnDelete.Visible = true;
                     }
                 }
-                else
-                {
-                    // somehow there are no people in this group at all, so let them delete this group
-                    btnDelete.Visible = true;
-                }
+            }
+            else
+            {
+                btnDelete.Visible = true;
             }
 
             lvMembers.DataSource = GetMembersOrdered();

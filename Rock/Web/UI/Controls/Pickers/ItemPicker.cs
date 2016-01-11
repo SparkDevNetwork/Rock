@@ -720,7 +720,7 @@ namespace Rock.Web.UI.Controls
                 return null;
             }
 
-            int result = int.Parse( ItemId );
+            int result = ItemId.AsInteger();
             if ( noneAsNull )
             {
                 if ( result == Constants.None.Id )
@@ -744,8 +744,7 @@ namespace Rock.Web.UI.Controls
                 return null;
             }
 
-            int result = int.Parse( ItemId );
-
+            int result = ItemId.AsInteger();
             if ( result == Constants.None.Id )
             {
                 return null;

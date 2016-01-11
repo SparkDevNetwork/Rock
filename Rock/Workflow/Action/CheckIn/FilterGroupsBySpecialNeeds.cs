@@ -30,6 +30,7 @@ namespace Rock.Workflow.Action.CheckIn
     /// if the person is not "special needs".  The filter can ALSO be configured to
     /// remove normal (non-special needs) groups when the person is "special needs".
     /// </summary>
+    [ActionCategory( "Check-In" )]
     [Description( "Removes (or excludes) the groups for each selected family member that are not specific to their special needs attribute." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Groups By Special Needs" )]

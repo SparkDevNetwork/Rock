@@ -312,10 +312,10 @@ namespace RockWeb.Blocks.Groups
                         {
                             spouse = new Person();
 
-                            spouse.FirstName = tbSpouseFirstName.Text;
+                            spouse.FirstName = tbSpouseFirstName.Text.FixCase();
                             History.EvaluateChange( spouseChanges, "First Name", string.Empty, spouse.FirstName );
 
-                            spouse.LastName = tbSpouseLastName.Text;
+                            spouse.LastName = tbSpouseLastName.Text.FixCase();
                             History.EvaluateChange( spouseChanges, "Last Name", string.Empty, spouse.LastName );
 
                             spouse.ConnectionStatusValueId = _dvcConnectionStatus.Id;

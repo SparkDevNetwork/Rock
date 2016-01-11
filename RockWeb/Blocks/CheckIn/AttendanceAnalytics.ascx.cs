@@ -1029,13 +1029,8 @@ function(item) {
                         a.AttendanceSummary
                     } );
             }
-
-            var qryGroup = new GroupService( rockContext ).Queryable();
-            var qryResult = qrySummary.Join(
-                qryGroup,
-                k1 => k1.LastAttendance.GroupId,
-                k2 => k2.Id,
-                ( k1, k2 ) => new {
+            
+            var qryResult = qrySummary.Select( k1 => new {
                     k1.PersonId,
                     k1.ParentId,
                     k1.ChildId,
@@ -1050,9 +1045,9 @@ function(item) {
                     {
                         CampusId = k1.LastAttendance.CampusId,
                         GroupId = k1.LastAttendance.GroupId,
-                        GroupName = k2.Name,
-                        InGroup = k2.Members.Any( m => m.PersonId == k1.PersonId ),
-                        GroupRoles = k2.Members.Where( m => m.PersonId == k1.PersonId ).OrderBy( m => m.GroupRole.Order ).Select( m => m.GroupRole.Name ).ToList(),
+                        GroupName = k1.LastAttendance.Group.Name,
+                        InGroup = k1.LastAttendance.Group.Members.Any( m => m.PersonId == k1.PersonId ),
+                        GroupRoles = k1.LastAttendance.Group.Members.Where( m => m.PersonId == k1.PersonId ).OrderBy( m => m.GroupRole.Order ).Select( m => m.GroupRole.Name ).ToList(),
                         ScheduleId = k1.LastAttendance.ScheduleId,
                         StartDateTime = k1.LastAttendance.StartDateTime
                     }

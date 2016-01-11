@@ -28,6 +28,7 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Assigns the current activity to the selected group.
     /// </summary>
+    [ActionCategory( "Workflow Control" )]
     [Description( "Assigns the current activity to the selected group." )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Assign Activity to Group" )]

@@ -33,6 +33,7 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Parse Zebra Label
     /// </summary>
+    [ActionCategory( "Check-In" )]
     [Description( "Parses an uploaded Zebra Label for any available merge codes" )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata("ComponentName", "Parse Zebra Label")]

@@ -582,6 +582,11 @@ namespace Rock.Model
                     var person = groupMember.Person;
                     if ( person != null )
                     {
+                        person.FirstName = person.FirstName.FixCase();
+                        person.NickName = person.NickName.FixCase();
+                        person.MiddleName = person.MiddleName.FixCase();
+                        person.LastName = person.LastName.FixCase();
+
                         group.Members.Add( groupMember );
 
                         var demographicChanges = new List<string>();
