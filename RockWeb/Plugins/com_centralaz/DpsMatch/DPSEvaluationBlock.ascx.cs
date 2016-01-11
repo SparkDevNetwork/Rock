@@ -57,7 +57,7 @@ namespace RockWeb.Plugins.com_centralaz.DpsMatch
 
             if ( !Page.IsPostBack )
             {
-                if ( _matchList == null )
+                if ( _matchList == null || _matchList.Count <= 0 )
                 {
                     PopulateMatchList();
                 }
