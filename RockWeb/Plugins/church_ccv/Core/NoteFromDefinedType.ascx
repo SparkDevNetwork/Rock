@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <Rock:RockDropDownList ID="ddlNoteType" runat="server" Label="Note Type" />
+        <asp:HiddenField ID="hfNoteTypeId" runat="server" />
         <Rock:RockDropDownList ID="ddlNoteValueList" runat="server" Label="Select Note" AutoPostBack="true" OnSelectedIndexChanged="ddlNoteValueList_SelectedIndexChanged" />
         <Rock:RockTextBox ID="tbOtherText" runat="server" Label="Other" TextMode="MultiLine" Rows="3" Required="true" />
 

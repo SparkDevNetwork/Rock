@@ -37,13 +37,14 @@ namespace RockWeb.Plugins.church_ccv.Core
     /// </summary>
     [DisplayName( "Note Entry from Defined Type " )]
     [Category( "CCV > Core" )]
-    [Description( "Context aware block for adding predefined notes to an entity" )]
+    [Description( "Block for adding predefined notes to a person" )]
 
     [ContextAware]
     [DefinedTypeField( "DefinedType", "Defined Type to get the values from. Values can contain Lava fields.", true )]
     [BooleanField( "Show History", "Show list of notes", true )]
     [TextField( "History Title", "", false, "History" )]
     [BooleanField( "Enable Debug", "Show lava merge fields.", false, "" )]
+    [NoteTypeField( "Note Type", "The Person Note Type", false, "Rock.Model.Person" )]
     public partial class NoteFromDefinedType : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -89,21 +90,28 @@ namespace RockWeb.Plugins.church_ccv.Core
                 mergeFields.Add( "CurrentPerson", CurrentPerson );
             }
 
-            ddlNoteType.Items.Clear();
             var contextEntity = this.ContextEntity();
             if ( contextEntity != null )
             {
-                var noteTypes = NoteTypeCache.GetByEntity( contextEntity.TypeId, string.Empty, string.Empty, true );
-                foreach ( var noteType in noteTypes.OrderBy( a => a.Name ) )
+                if ( contextEntity is Rock.Model.GroupMember )
                 {
-                    ddlNoteType.Items.Add( new ListItem( noteType.Name, noteType.Id.ToString() ) );
+                    contextEntity = ( contextEntity as Rock.Model.GroupMember ).Person;
                 }
 
-                noteList.NoteTypes = noteTypes;
+                var noteTypeGuid = this.GetAttributeValue( "NoteType" ).AsGuidOrNull();
+                if ( noteTypeGuid.HasValue )
+                {
+                    var noteType = NoteTypeCache.Read( noteTypeGuid.Value );
+                    if ( noteType != null )
+                    {
+                        hfNoteTypeId.Value = noteType.Id.ToString();
+                        var noteTypeList = new List<NoteTypeCache>();
+                        noteTypeList.Add( noteType );
+                        noteList.NoteTypes = noteTypeList;
+                    }
+                }
+
                 noteList.EntityId = contextEntity.Id;
-
-                ddlNoteType.Visible = ddlNoteType.Items.Count > 1;
-
                 mergeFields.Add( "Context", contextEntity );
             }
 
@@ -164,8 +172,12 @@ namespace RockWeb.Plugins.church_ccv.Core
             }
 
             var entity = this.ContextEntity();
+            if ( entity is Rock.Model.GroupMember )
+            {
+                entity = ( entity as Rock.Model.GroupMember ).Person;
+            }
 
-            note.NoteTypeId = ddlNoteType.SelectedValue.AsInteger();
+            note.NoteTypeId = hfNoteTypeId.Value.AsInteger();
             note.EntityId = entity.Id;
             noteService.Add( note );
             rockContext.SaveChanges();
