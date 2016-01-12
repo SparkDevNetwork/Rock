@@ -14,8 +14,6 @@
                     dateFormat = options.format;
                 }
 
-                debugger;
-
                 var $textBox = $('#' + options.id);
 
                 var $datePickerContainer = $textBox.closest('.js-date-picker-container');
