@@ -1735,7 +1735,7 @@ namespace RockWeb.Blocks.Event
                     // Find the registrant's value
                     var fieldValue = registrantInfo.FieldValues
                         .Where( f => f.Key == field.Id )
-                        .Select( f => f.Value )
+                        .Select( f => f.Value.FieldValue )
                         .FirstOrDefault();
 
                     if ( fieldValue != null )
@@ -1817,7 +1817,7 @@ namespace RockWeb.Blocks.Event
                         // Find the registrant's value
                         var fieldValue = registrantInfo.FieldValues
                             .Where( f => f.Key == field.Id )
-                            .Select( f => f.Value )
+                            .Select( f => f.Value.FieldValue )
                             .FirstOrDefault();
 
                         if ( fieldValue != null )
@@ -1939,7 +1939,7 @@ namespace RockWeb.Blocks.Event
                     // Find the registrant's value
                     var fieldValue = registrantInfo.FieldValues
                         .Where( f => f.Key == field.Id )
-                        .Select( f => f.Value )
+                        .Select( f => f.Value.FieldValue )
                         .FirstOrDefault();
 
                     if ( fieldValue != null )
@@ -2159,29 +2159,33 @@ namespace RockWeb.Blocks.Event
             var phoneNumber = fieldValue as PhoneNumber;
             if ( phoneNumber != null )
             {
-                var numberType = DefinedValueCache.Read( phoneTypeGuid );
-                if ( numberType != null )
+                string cleanNumber = PhoneNumber.CleanNumber( phoneNumber.Number );
+                if ( !string.IsNullOrWhiteSpace( cleanNumber ) )
                 {
-                    var phone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberType.Id );
-                    string oldPhoneNumber = string.Empty;
-                    if ( phone == null )
+                    var numberType = DefinedValueCache.Read( phoneTypeGuid );
+                    if ( numberType != null )
                     {
-                        phone = new PhoneNumber();
-                        person.PhoneNumbers.Add( phone );
-                        phone.NumberTypeValueId = numberType.Id;
-                    }
-                    else
-                    {
-                        oldPhoneNumber = phone.NumberFormattedWithCountryCode;
-                    }
-                    phone.CountryCode = PhoneNumber.CleanNumber( phoneNumber.CountryCode );
-                    phone.Number = PhoneNumber.CleanNumber( phoneNumber.Number );
+                        var phone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberType.Id );
+                        string oldPhoneNumber = string.Empty;
+                        if ( phone == null )
+                        {
+                            phone = new PhoneNumber();
+                            person.PhoneNumbers.Add( phone );
+                            phone.NumberTypeValueId = numberType.Id;
+                        }
+                        else
+                        {
+                            oldPhoneNumber = phone.NumberFormattedWithCountryCode;
+                        }
+                        phone.CountryCode = PhoneNumber.CleanNumber( phoneNumber.CountryCode );
+                        phone.Number = cleanNumber;
 
-                    History.EvaluateChange(
-                        changes,
-                        string.Format( "{0} Phone", numberType.Value ),
-                        oldPhoneNumber,
-                        phoneNumber.NumberFormattedWithCountryCode );
+                        History.EvaluateChange(
+                            changes,
+                            string.Format( "{0} Phone", numberType.Value ),
+                            oldPhoneNumber,
+                            phoneNumber.NumberFormattedWithCountryCode );
+                    }
                 }
             }
         }
