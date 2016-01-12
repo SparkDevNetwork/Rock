@@ -286,7 +286,7 @@ namespace RockWeb.Blocks.Event
                             string originalValue = registrant.GetAttributeValue( attribute.Key );
                             var fieldValue = RegistrantState.FieldValues
                                 .Where( f => f.Key == field.Id )
-                                .Select( f => f.Value )
+                                .Select( f => f.Value.FieldValue )
                                 .FirstOrDefault();
                             string newValue = fieldValue != null ? fieldValue.ToString() : string.Empty;
 
@@ -558,7 +558,7 @@ namespace RockWeb.Blocks.Event
                                 object fieldValue = null;
                                 if ( RegistrantState.FieldValues.ContainsKey( field.Id ) )
                                 {
-                                    fieldValue = RegistrantState.FieldValues[field.Id];
+                                    fieldValue = RegistrantState.FieldValues[field.Id].FieldValue;
                                 }
 
                                 if ( field.AttributeId.HasValue )
