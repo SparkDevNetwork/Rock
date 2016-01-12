@@ -480,7 +480,7 @@ namespace Rock.Rest.Controllers
                 personSearchResult.Name = showFullNameReversed ? person.FullNameReversed : person.FullName;
                 if ( person.RecordStatusValueId.HasValue )
                 {
-                    var recordStatus = DefinedValueCache.Read( person.RecordStatusValueId.Value, rockContext );
+                    var recordStatus = DefinedValueCache.Read( person.RecordStatusValueId.Value );
                     personSearchResult.RecordStatus = recordStatus.Value;
                     personSearchResult.IsActive = recordStatus.Guid.Equals( activeRecord );
                 }
@@ -517,10 +517,10 @@ namespace Rock.Rest.Controllers
 </div>
 ";
 
-            var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid(), rockContext );
+            var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
             int adultRoleId = familyGroupType.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
 
-            int groupTypeFamilyId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid(), rockContext ).Id;
+            int groupTypeFamilyId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Id;
 
             // figure out Family, Address, Spouse
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
@@ -528,12 +528,12 @@ namespace Rock.Rest.Controllers
             Guid? recordTypeValueGuid = null;
             if ( person.RecordTypeValueId.HasValue )
             {
-                recordTypeValueGuid = DefinedValueCache.Read( person.RecordTypeValueId.Value, rockContext ).Guid;
+                recordTypeValueGuid = DefinedValueCache.Read( person.RecordTypeValueId.Value ).Guid;
             }
 
             personSearchResult.ImageHtmlTag = Person.GetPhotoImageTag( person.PhotoId, person.Age, person.Gender, recordTypeValueGuid, 50, 50 );
             personSearchResult.Age = person.Age.HasValue ? person.Age.Value : -1;
-            personSearchResult.ConnectionStatus = person.ConnectionStatusValueId.HasValue ? DefinedValueCache.Read( person.ConnectionStatusValueId.Value, rockContext ).Value : string.Empty;
+            personSearchResult.ConnectionStatus = person.ConnectionStatusValueId.HasValue ? DefinedValueCache.Read( person.ConnectionStatusValueId.Value ).Value : string.Empty;
             personSearchResult.Gender = person.Gender.ConvertToString();
             personSearchResult.Email = person.Email;
 
@@ -628,7 +628,7 @@ namespace Rock.Rest.Controllers
                 string phoneNumberList = string.Empty;
                 foreach ( var phoneNumber in person.PhoneNumbers )
                 {
-                    var phoneType = DefinedValueCache.Read( phoneNumber.NumberTypeValueId ?? 0, rockContext );
+                    var phoneType = DefinedValueCache.Read( phoneNumber.NumberTypeValueId ?? 0 );
                     phoneNumberList += string.Format(
                         "<br>{0} <small>{1}</small>",
                         phoneNumber.IsUnlisted ? "Unlisted" : phoneNumber.NumberFormatted,
