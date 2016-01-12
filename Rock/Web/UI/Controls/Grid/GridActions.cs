@@ -145,6 +145,20 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets the add button.
+        /// </summary>
+        /// <value>
+        /// The add button.
+        /// </value>
+        public LinkButton AddButton
+        {
+            get
+            {
+                EnsureChildControls();
+                return _lbAdd;
+            }
+        }
+        /// <summary>
         /// Gets or sets a value indicating whether [show excel export].
         /// </summary>
         /// <value>

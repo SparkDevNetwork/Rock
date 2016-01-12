@@ -181,8 +181,8 @@ namespace RockWeb.Blocks.Finance
         {
             switch ( e.Key )
             {
-                case "Row Limit": 
-                    {                    
+                case "Row Limit":
+                    {
                         // row limit filter was removed, so hide it just in case
                         e.Value = null;
                         break;
@@ -287,8 +287,8 @@ namespace RockWeb.Blocks.Finance
 
                     rockContext.WrapTransaction( () =>
                     {
-                        foreach( var txn in transactionService.Queryable()
-                            .Where( t => t.BatchId == batch.Id ))
+                        foreach ( var txn in transactionService.Queryable()
+                            .Where( t => t.BatchId == batch.Id ) )
                         {
                             transactionService.Delete( txn );
                         }
@@ -332,7 +332,7 @@ namespace RockWeb.Blocks.Finance
                     // Hide delete button if the batch is closed.
                     if ( batchRow.Status == BatchStatus.Closed && cell != null )
                     {
-                    cell.Visible = false;
+                        cell.Visible = false;
                     }
                 }
             }
@@ -480,7 +480,7 @@ namespace RockWeb.Blocks.Finance
 
             ddlStatus.SetValue( statusFilter );
 
-            var definedTypeTransactionTypes = DefinedTypeCache.Read(Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE.AsGuid());
+            var definedTypeTransactionTypes = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE.AsGuid() );
             ddlTransactionType.BindToDefinedType( definedTypeTransactionTypes, true );
             ddlTransactionType.SetValue( gfBatchFilter.GetUserPreference( "Contains Transaction Type" ) );
 
@@ -507,8 +507,10 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindGrid()
         {
-            var qry = GetQuery().AsNoTracking();
-            var batchRowQry = qry.Select( b => new BatchRow
+            try
+            {
+                var qry = GetQuery().AsNoTracking();
+                var batchRowQry = qry.Select( b => new BatchRow
                 {
                     Id = b.Id,
                     BatchStartDateTime = b.BatchStartDateTime.Value,
@@ -527,43 +529,52 @@ namespace RockWeb.Blocks.Finance
                         .Select( s => new BatchAccountSummary
                         {
                             AccountId = s.Key,
-                            AccountOrder = s.Max( d => d.Account.Order),
+                            AccountOrder = s.Max( d => d.Account.Order ),
                             AccountName = s.Max( d => d.Account.Name ),
-                            Amount =  s.Sum( d => (decimal?)d.Amount ) ?? 0.0M
+                            Amount = s.Sum( d => (decimal?)d.Amount ) ?? 0.0M
                         } )
                         .OrderBy( s => s.AccountOrder )
                         .ToList()
                 } );
 
-            gBatchList.SetLinqDataSource( batchRowQry.AsNoTracking() );
-            gBatchList.EntityTypeId = EntityTypeCache.Read<Rock.Model.FinancialBatch>().Id;
-            gBatchList.DataBind();
+                gBatchList.SetLinqDataSource( batchRowQry.AsNoTracking() );
+                gBatchList.EntityTypeId = EntityTypeCache.Read<Rock.Model.FinancialBatch>().Id;
+                gBatchList.DataBind();
 
-            RegisterJavaScriptForGridActions();
+                RegisterJavaScriptForGridActions();
 
-            var qryTransactionDetails = qry.SelectMany( a => a.Transactions ).SelectMany( a => a.TransactionDetails );
-            var accountSummaryQry = qryTransactionDetails.GroupBy( a => a.Account ).Select( a => new
+                var qryTransactionDetails = qry.SelectMany( a => a.Transactions ).SelectMany( a => a.TransactionDetails );
+                var accountSummaryQry = qryTransactionDetails.GroupBy( a => a.Account ).Select( a => new
+                {
+                    a.Key.Name,
+                    a.Key.Order,
+                    TotalAmount = (decimal?)a.Sum( d => d.Amount )
+                } ).OrderBy( a => a.Order );
+
+                var summaryList = accountSummaryQry.ToList();
+                var grandTotalAmount = ( summaryList.Count > 0 ) ? summaryList.Sum( a => a.TotalAmount ?? 0 ) : 0;
+                string currencyFormat = GlobalAttributesCache.Value( "CurrencySymbol" ) + "{0:n}";
+                lGrandTotal.Text = string.Format( currencyFormat, grandTotalAmount );
+                rptAccountSummary.DataSource = summaryList.Select( a => new { a.Name, TotalAmount = string.Format( currencyFormat, a.TotalAmount ) } ).ToList();
+                rptAccountSummary.DataBind();
+            }
+            catch ( Exception ex )
             {
-                a.Key.Name,
-                a.Key.Order,
-                TotalAmount = (decimal?)a.Sum( d => d.Amount )
-            } ).OrderBy( a => a.Order );
-
-            var summaryList = accountSummaryQry.ToList();
-            var grandTotalAmount = ( summaryList.Count > 0 ) ? summaryList.Sum( a => a.TotalAmount ?? 0 ) : 0;
-            string currencyFormat = GlobalAttributesCache.Value( "CurrencySymbol" ) + "{0:n}";
-            lGrandTotal.Text = string.Format( currencyFormat, grandTotalAmount );
-            rptAccountSummary.DataSource = summaryList.Select( a => new { a.Name, TotalAmount = string.Format( currencyFormat, a.TotalAmount ) } ).ToList();
-            rptAccountSummary.DataBind();
+                nbWarningMessage.Text = ex.Message;
+            }
         }
 
         /// <summary>
-        /// Gets the query.
+        /// Gets the query.  Set the timeout to 90 seconds in case the user
+        /// has not set any filters and they've imported N years worth of
+        /// batch data into Rock.
         /// </summary>
         /// <returns></returns>
         private IOrderedQueryable<FinancialBatch> GetQuery()
         {
-            var batchService = new FinancialBatchService( new RockContext() );
+            var rockContext = new RockContext();
+            var batchService = new FinancialBatchService( rockContext );
+            rockContext.Database.CommandTimeout = 90;
             var qry = batchService.Queryable()
                 .Where( b => b.BatchStartDateTime.HasValue );
 
@@ -681,10 +692,10 @@ namespace RockWeb.Blocks.Finance
 
         public class BatchAccountSummary
         {
-            public int AccountId {get; set;}
+            public int AccountId { get; set; }
             public int AccountOrder { get; set; }
             public string AccountName { get; set; }
-            public decimal Amount {get; set;}
+            public decimal Amount { get; set; }
             public override string ToString()
             {
                 return string.Format( "{0}: {1}", AccountName, Amount.FormatAsCurrency() );
@@ -716,7 +727,7 @@ namespace RockWeb.Blocks.Finance
 
             public string AccountSummaryText
             {
-                get 
+                get
                 {
                     var summary = new List<string>();
                     AccountSummaryList.ForEach( a => summary.Add( a.ToString() ) );

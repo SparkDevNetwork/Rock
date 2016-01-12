@@ -1,3 +1,8 @@
+{% comment %}
+  Allow overriding of the detail page parameter. Rock passes existing query
+  string params attached, breaking the more info buttons on the mobile app.
+{% endcomment %}
+{% assign detailPage = detailPage | Default: DetailPage %}
 
 {% assign opportunityCount = Opportunities | Size %}
 
@@ -16,7 +21,7 @@
     </div>
     <div class="panel-body">
       <p>{{opportunity.Summary}}</p>
-      <a class="btn btn-default" href="{{ DetailPage }}?OpportunityId={{ opportunity.Id }}" role="button">More Info</a>
+      <a class="btn btn-default" href="{{ detailPage }}?OpportunityId={{ opportunity.Id }}" role="button">More Info</a>
     </div>
   </div>
 {% endfor %}
