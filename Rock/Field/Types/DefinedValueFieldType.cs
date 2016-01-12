@@ -440,6 +440,23 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
+        /// Gets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            string value = base.GetFilterValueValue( control, configurationValues );
+            bool allowMultiple = configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
+            if ( allowMultiple && string.IsNullOrWhiteSpace( value ) )
+            {
+                return null;
+            }
+            return value;
+        }
+
+        /// <summary>
         /// Formats the filter value value.
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
