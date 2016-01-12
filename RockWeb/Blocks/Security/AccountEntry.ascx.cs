@@ -45,8 +45,8 @@ namespace RockWeb.Blocks.Security
     [TextField( "Sent Login Caption", "", false, "Your username has been emailed to you.  If you've forgotten your password, the email includes a link to reset your password.", "Captions", 3 )]
     [TextField( "Confirm Caption", "", false, "Because you've selected an existing person, we need to have you confirm the email address you entered belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue.", "Captions", 4 )]
     [TextField( "Success Caption", "", false, "{0}, Your account has been created", "Captions", 5 )]
-    [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)", true, "", "Pages", 6 )]
-    [LinkedPage( "Login Page", "Page to navigate to when user elects to login (if blank will use 'Login' page route)", true, "", "Pages", 7 )]
+    [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)", false, "", "Pages", 6 )]
+    [LinkedPage( "Login Page", "Page to navigate to when user elects to login (if blank will use 'Login' page route)", false, "", "Pages", 7 )]
     [SystemEmailField( "Forgot Username", "Forgot Username Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_FORGOT_USERNAME, "Email Templates", 8, "ForgotUsernameTemplate" )]
     [SystemEmailField( "Confirm Account", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "Email Templates", 9, "ConfirmAccountTemplate" )]
     [SystemEmailField( "Account Created", "Account Created Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_ACCOUNT_CREATED, "Email Templates", 10, "AccountCreatedTemplate" )]
@@ -58,11 +58,13 @@ namespace RockWeb.Blocks.Security
     [BooleanField("Address Required", "Whether the address is required.", false, order:15)]
     [BooleanField("Show Phone Numbers", "Allows hiding the phone numbers.", false, order:16)]
     [DefinedValueField(Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Types", "The phone numbers to display for editing.", false, true, order:17 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Types Required", "The phone numbers that are required.", false, true, order: 18 )]
     public partial class AccountEntry : Rock.Web.UI.RockBlock
     {
         #region Fields
 
         private PlaceHolder[] PagePanels = new PlaceHolder[6];
+        private List<Guid> _RequiredPhoneNumberGuids = new List<Guid>();
 
         #endregion
 
@@ -89,6 +91,8 @@ namespace RockWeb.Blocks.Security
             lFoundDuplicateCaption.Text = GetAttributeValue( "FoundDuplicateCaption" );
             lSentLoginCaption.Text = GetAttributeValue( "SentLoginCaption" );
             lConfirmCaption.Text = GetAttributeValue( "ConfirmCaption" );
+
+            rPhoneNumbers.ItemDataBound += rPhoneNumbers_ItemDataBound;
         }
 
         /// <summary>
@@ -128,17 +132,25 @@ namespace RockWeb.Blocks.Security
                     if (!string.IsNullOrWhiteSpace( GetAttributeValue( "PhoneTypes" ) ) )
                     {
                         var selectedPhoneTypeGuids = GetAttributeValue( "PhoneTypes" ).Split( ',' ).Select( Guid.Parse ).ToList();
-                        var selectedPhoneTypes = phoneNumberTypeDefinedType.DefinedValues.Where( v => selectedPhoneTypeGuids.Contains( v.Guid ) ).ToList();
+                        var selectedPhoneTypes = phoneNumberTypeDefinedType.DefinedValues
+                            .Where( v => selectedPhoneTypeGuids.Contains( v.Guid ) )
+                            .ToList();
 
                         foreach ( var phoneNumberType in selectedPhoneTypes )
                         {
                             var numberType = new DefinedValue();
                             numberType.Id = phoneNumberType.Id;
                             numberType.Value = phoneNumberType.Value;
+                            numberType.Guid = phoneNumberType.Guid;
 
                             var phoneNumber = new PhoneNumber { NumberTypeValueId = numberType.Id, NumberTypeValue = numberType };
 
                             phoneNumbers.Add( phoneNumber );
+                        }
+
+                        if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PhoneTypesRequired" ) ) )
+                        {
+                            _RequiredPhoneNumberGuids = GetAttributeValue( "PhoneTypesRequired" ).Split( ',' ).Select( Guid.Parse ).ToList();
                         }
 
                         rPhoneNumbers.DataSource = phoneNumbers;
@@ -153,6 +165,26 @@ namespace RockWeb.Blocks.Security
         #region Events
 
         #region User Info Panel
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rPhoneNumbers control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        void rPhoneNumbers_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            var pnbPhone = e.Item.FindControl( "pnbPhone" ) as PhoneNumberBox;
+            if ( pnbPhone != null )
+            {
+                pnbPhone.ValidationGroup = BlockValidationGroup;
+                var phoneNumber = e.Item.DataItem as PhoneNumber;
+                if ( phoneNumber != null )
+                {
+                    pnbPhone.Required = _RequiredPhoneNumberGuids.Contains( phoneNumber.NumberTypeValue.Guid );
+                    pnbPhone.RequiredErrorMessage = string.Format( "{0} phone is required", phoneNumber.NumberTypeValue.Value );
+                }
+            }
+        }
 
         /// <summary>
         /// Handles the Click event of the btnUserInfoNext control.
