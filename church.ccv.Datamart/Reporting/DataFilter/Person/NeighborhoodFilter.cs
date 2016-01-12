@@ -44,7 +44,7 @@ namespace church.ccv.Datamart.Reporting.DataFilter.Person
         /// </value>
         public override string Section
         {
-            get { return "Additional Filters"; }
+            get { return "Datamart Filters"; }
         }
 
         #endregion
