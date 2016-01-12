@@ -89,6 +89,7 @@ namespace RockWeb.Plugins.com_centralaz.Finance
                 }
 
                 tbBatchName.Text = GetAttributeValue( "BatchName" );
+                BindCampusPicker();
                 BindGrid();
                 BindErrorGrid();
             }
@@ -133,6 +134,18 @@ namespace RockWeb.Plugins.com_centralaz.Finance
                 _financialBatch = new FinancialBatch();
                 _financialBatch.Name = tbBatchName.Text;
                 _financialBatch.BatchStartDateTime = Rock.RockDateTime.Now;
+
+                int? campusId = cpCampus.SelectedCampusId;
+
+                if ( campusId != null )
+                {
+                    _financialBatch.CampusId = campusId;
+                }
+                else
+                {
+                    var campuses = CampusCache.All();
+                    _financialBatch.CampusId = campuses.FirstOrDefault().Id;
+                }
 
                 financialBatchService.Add( _financialBatch );
                 rockContext.SaveChanges();
@@ -539,6 +552,17 @@ namespace RockWeb.Plugins.com_centralaz.Finance
                 _errorElements.Add( elemGift );
                 return;
             }
+        }
+
+        /// <summary>
+        /// Binds the campus picker.
+        /// </summary>
+        private void BindCampusPicker()
+        {
+            // load campus dropdown
+            var campuses = CampusCache.All();
+            cpCampus.Campuses = campuses;
+            cpCampus.Visible = campuses.Count > 1;
         }
 
         /// <summary>

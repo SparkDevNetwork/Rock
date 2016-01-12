@@ -13,6 +13,7 @@
                 <Rock:NotificationBox ID="nbMessage" runat="server" NotificationBoxType="Danger" />
 
                 <Rock:RockTextBox runat="server" ID="tbBatchName" Label="Batch Name" ToolTip="The name you wish to use for this batch import."></Rock:RockTextBox>
+                <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" Required="true" ToolTip="The campus you are assigning to the batch." />
 
                 <p>
                     <asp:FileUpload runat="server" ID="fuImport" CssClass="input-small" />
