@@ -24,6 +24,7 @@ namespace RockWeb.Plugins.com_centralaz.DpsMatch
     [Description( "Block to manually evaluate Person entries similar to known sexual offenders" )]
     [TextField( "Note Text", "The text for the alert note that is placed on the person's timeline", true, "Known Sex Offender" )]
     [TextField( "Completion Text", "The text for the notification box at completion", true, "There are no unprocessed matches at this time." )]
+    [GroupField("Offender Group", "The Group for Offenders", true)]
     public partial class DPSEvaluationBlock : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -89,24 +90,36 @@ namespace RockWeb.Plugins.com_centralaz.DpsMatch
         {
             DpsMatchContext dpsMatchContext = new DpsMatchContext();
             RockContext rockContext = new RockContext();
+            GroupService groupService = new GroupService( rockContext );
+            var groupMemberService = new GroupMemberService( rockContext );
             MatchService matchService = new MatchService( dpsMatchContext );
             TaggedItemService taggedItemService = new TaggedItemService( rockContext );
             NoteService noteService = new NoteService( rockContext );
 
             var offenderTag = new TagService( rockContext ).Get( new Guid( "A585EC28-64D7-463F-98E9-B0D957D0DBBC" ) );
-            var noteType = new NoteTypeService( rockContext ).Get( Rock.SystemGuid.NoteType.PERSON_TIMELINE_NOTE.AsGuid() );
+            var noteType = new NoteTypeService( rockContext ).Get( "961F352B-40A0-4446-8D56-4C570522F7EB".AsGuid() );
 
             foreach ( MatchField matchfield in gValues.Columns.OfType<MatchField>() )
             {
                 Match match = matchService.Queryable().Where( m => m.Id == matchfield.MatchId ).FirstOrDefault();
                 if ( match.IsMatch == true )
                 {
-                    if ( taggedItemService.Get( offenderTag.Id, match.PersonAlias.Person.Guid ) == null )
+                    var offenderGroupGuid = GetAttributeValue( "OffenderGroup" ).AsGuidOrNull();
+                    if ( offenderGroupGuid != null )
                     {
-                        TaggedItem taggedOffender = new TaggedItem();
-                        taggedOffender.EntityGuid = match.PersonAlias.Person.Guid;
-                        taggedOffender.TagId = offenderTag.Id;
-                        taggedItemService.Add( taggedOffender );
+                        var offenderGroup = groupService.Get( offenderGroupGuid.Value );
+                        if ( offenderGroup != null )
+                        {
+                            if ( !offenderGroup.Members.Any( m => m.PersonId == match.PersonAlias.PersonId ) )
+                            {
+                                var groupMember = new GroupMember();
+                                groupMember.PersonId = match.PersonAlias.PersonId;
+                                groupMember.GroupId = offenderGroup.Id;
+                                groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+                                groupMember.GroupRole = offenderGroup.GroupType.DefaultGroupRole;
+                                groupMemberService.Add( groupMember );
+                            }
+                        }
                     }
 
                     Note note = new Note();
