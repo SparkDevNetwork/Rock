@@ -512,7 +512,7 @@ namespace Rock.Rest.Controllers
             var rockContext = (RockContext)Service.Context;
             var group = new GroupService( rockContext ).Get( groupId );
 
-            var locationType = DefinedValueCache.Read( locationTypeId, rockContext );
+            var locationType = DefinedValueCache.Read( locationTypeId );
             if ( group == null || locationType == null )
             {
                 throw new HttpResponseException( HttpStatusCode.NotFound );
