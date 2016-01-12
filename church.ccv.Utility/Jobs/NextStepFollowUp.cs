@@ -60,7 +60,7 @@ namespace church.ccv.Utility.Jobs
 
                 var groupMemberEntityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( typeof( GroupMember ) );
 
-                var followUpGroupMembers = new AttributeValueService( rockContext ).Queryable()
+                var followUpDateGroupMemberIds = new AttributeValueService( rockContext ).Queryable()
                     .Where( a => a.Attribute.Key == "FollowUpDate" &&
                             a.Attribute.EntityTypeId == groupMemberEntityTypeId &&
                             a.ValueAsDateTime <= RockDateTime.Now )
@@ -70,13 +70,22 @@ namespace church.ccv.Utility.Jobs
                     .Where( g =>
                             g.Group.GroupTypeId == groupType.Id &&
                             g.GroupMemberStatus == GroupMemberStatus.Inactive &&
-                            followUpGroupMembers.Contains( ( g as GroupMember ).Id ) );
+                            followUpDateGroupMemberIds.Contains( g.Id ) );
 
                 foreach ( var groupMember in groupMembers )
                 {
+                    groupMember.LoadAttributes();
 
                     // set status to pending
                     groupMember.GroupMemberStatus = GroupMemberStatus.Pending;
+
+                    // remove follow up date
+                    groupMember.SetAttributeValue( "FollowUpDate", null );
+
+                    // remove opt out reason
+                    groupMember.SetAttributeValue( "OptOutReason", null );
+
+                    groupMember.SaveAttributeValues( new RockContext() );
 
                     // get coach
                     var coach = new GroupMemberService( rockContext )
@@ -88,9 +97,7 @@ namespace church.ccv.Utility.Jobs
                     if ( coach != null )
                     {
                         var recipients = new List<string>();
-                        var mergeFields = new Dictionary<string, object>();
-
-                        recipients.Add( groupMember.Person.Email );
+                        recipients.Add( coach.Email );
 
                         var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
                         Email.Send( systemEmail.From, systemEmail.FromName, systemEmail.Subject, recipients, systemEmail.Body, appRoot );
