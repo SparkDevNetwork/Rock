@@ -98,7 +98,7 @@ namespace com.centralaz.DpsMatch.Migrations
 
             RockMigrationHelper.UpdateWorkflowActivityType("EDB241A0-FD88-4D75-966E-CF590C1D24AA",true,"Process CSV File","Processes the CSV file to find potential matches.",false,1,"C4ACDF66-A296-4060-823F-E83C766ABFE0"); // Offender Matching Request:Process CSV File
 
-            RockMigrationHelper.UpdateWorkflowActionForm(@"<h2>Request</h2>
+            RockMigrationHelper.UpdateWorkflowActionForm( @"<h2>Request</h2>
 <p>
 Attach the Sexual Offender .csv file below.
 </p>
@@ -108,8 +108,8 @@ Attach the Sexual Offender .csv file below.
         <div class='row'>
             <div class='col-md-6'>
                 <ul>
-                    <li>First Name</li>
-                    <li>Last Name</li>
+                    <li>First_Name</li>
+                    <li>Last_Name</li>
                     <li>MI</li>
                     <li>Age</li>
                     <li>HT</li>
@@ -126,18 +126,17 @@ Attach the Sexual Offender .csv file below.
                     <li>Res_City</li>
                     <li>Res_State</li>
                     <li>Res_Zip</li>
-                    <li>Verification Date</li>
                     <li>Offense</li>
+                    <li>Date_Convicted</li>
                     <li>Level</li>
                     <li>Absconder</li>
-                    <li>Convicting Jurisdiction</li>
-                    <li>Unverified</li>
+                    <li>Conviction_State</li>
                 </ul>
             </div>
         </div>
     </small>
 </div>
-<br/>",@"","Submit^fdc397cd-8b4a-436e-bea1-bce2e6717c03^C4ACDF66-A296-4060-823F-E83C766ABFE0^Your information has been submitted successfully.|","88C7D1CC-3478-4562-A301-AE7D4D7FFF6D",true,"","FF883052-A75F-44AA-A37F-B3D3DDD30732"); // Offender Matching Request:Request:Prompt User
+<br/>", @"","Submit^fdc397cd-8b4a-436e-bea1-bce2e6717c03^C4ACDF66-A296-4060-823F-E83C766ABFE0^Your information has been submitted successfully.|","88C7D1CC-3478-4562-A301-AE7D4D7FFF6D",true,"","FF883052-A75F-44AA-A37F-B3D3DDD30732"); // Offender Matching Request:Request:Prompt User
 
             RockMigrationHelper.UpdateWorkflowActionFormAttribute("FF883052-A75F-44AA-A37F-B3D3DDD30732","E20E064A-80DF-4460-A7EE-476EC9F3CBDD",0,true,false,true,"458CB4BF-0426-4881-8A0C-2B4BD2C94C39"); // Offender Matching Request:Request:Prompt User:Offender CSV File
 

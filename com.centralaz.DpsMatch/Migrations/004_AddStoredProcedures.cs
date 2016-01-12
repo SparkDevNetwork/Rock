@@ -149,11 +149,11 @@ CREATE PROCEDURE [dbo].[_com_centralaz_spDpsMatch_Match]
                 -- Scores
                 -- ones marked /**/ only added to score if already a potential match
                 DECLARE @cScoreWeightPartialName INT = 10
-                    ,@cScoreWeightFullFirstName INT = 15 /**/
-			        ,@cScoreWeightFullLastName INT = 20 /**/
-                    ,@cScoreWeightPostalCode INT = 20
-                    ,@cScoreWeightGender INT = 30 /**/
-                DECLARE @TotalCapacity INT = @cScoreWeightPartialName + @cScoreWeightFullFirstName + @cScoreWeightFullFirstName + @cScoreWeightPostalCode + @cScoreWeightGender
+                    ,@cScoreWeightFullFirstName INT = 20 /**/
+			        ,@cScoreWeightFullLastName INT = 30 /**/
+                    ,@cScoreWeightPostalCode INT = 30
+                    ,@cScoreWeightGender INT = -5 /**/
+					,@cScoreWeightAge INT = -15
                 --
                 -- Guids that this proc uses
                 DECLARE @cGROUPTYPE_FAMILY_GUID UNIQUEIDENTIFIER = '790E3215-3B10-442B-AF69-616C0DCB998E'
@@ -398,7 +398,7 @@ CREATE PROCEDURE [dbo].[_com_centralaz_spDpsMatch_Match]
                         FROM @updatedIdsLastName
                         )
 
-                -- Increment the score on potential matches that have the same gender
+                -- Decrease the score on potential matches that have a different gender
                 -- put the updated ids into a temp list first to speed things up
                 DECLARE @updatedIdsGender TABLE (id INT);
 
@@ -413,9 +413,28 @@ CREATE PROCEDURE [dbo].[_com_centralaz_spDpsMatch_Match]
 
                 UPDATE [_com_centralaz_DpsMatch_Match]
                 SET [MatchPercentage] = [MatchPercentage] + @cScoreWeightGender
-                WHERE Id IN (
+                WHERE Id NOT IN (
                         SELECT Id
                         FROM @updatedIdsGender
+                        )
+
+				-- Decrease the score on potential matches that have an age difference of 15 years or greater
+                -- put the updated ids into a temp list first to speed things up
+                DECLARE @updatedIdsAge TABLE (id INT);
+
+                INSERT INTO @updatedIdsAge
+                SELECT pm.Id
+					FROM _com_centralaz_DpsMatch_Match pm
+					JOIN PersonAlias pa ON pa.Id = pm.PersonAliasId
+					JOIN _com_centralaz_DpsMatch_Offender so ON so.Id = pm.OffenderId
+					JOIN Person p ON p.Id = pa.PersonId
+					WHERE ABS((YEAR(GETDATE()) - p.BirthYear) - so.Age) >= 15
+
+                UPDATE [_com_centralaz_DpsMatch_Match]
+                SET [MatchPercentage] = [MatchPercentage] + @cScoreWeightAge
+                WHERE Id IN (
+                        SELECT Id
+                        FROM @updatedIdsAge
                         )
                 /*
                 Explicitly clean up temp tables before the proc exits (vs. have SQL Server do it for us after the proc is done)

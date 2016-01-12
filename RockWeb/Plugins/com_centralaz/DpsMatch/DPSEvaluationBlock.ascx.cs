@@ -57,7 +57,7 @@ namespace RockWeb.Plugins.com_centralaz.DpsMatch
 
             if ( !Page.IsPostBack )
             {
-                if ( _matchList == null || _matchList.Count <= 0 )
+                if ( _matchList == null )
                 {
                     PopulateMatchList();
                 }
@@ -113,13 +113,12 @@ namespace RockWeb.Plugins.com_centralaz.DpsMatch
                     note.NoteTypeId = noteType.Id;
                     note.EntityId = match.PersonAlias.PersonId;
                     note.IsAlert = true;
-                    note.Text = String.Format( "<a href='http://www.icrimewatch.net/results.php?AgencyID=55662&SubmitNameSearch=1&OfndrLast={0}&OfndrFirst={1}&OfndrCity='>{2}</a>", match.Offender.LastName, match.Offender.FirstName, GetAttributeValue( "NoteText" ) );
+                    note.Text = String.Format( GetAttributeValue( "NoteText" ), match.Offender.LastName, match.Offender.FirstName );
                     noteService.Add( note );
-
                 }
 
                 match.VerifiedDate = DateTime.Now;
-                dpsMatchContext.SaveChanges();
+                dpsMatchContext.SaveChanges( disablePrePostProcessing: true );
 
                 // The change to the person is done after the DPS MAtch context has saved changes because the person model's PreSaveChanges function can't cast a custom context to a rock context.
                 if ( match.PersonAlias.Person.ModifiedDateTime == null || match.PersonAlias.Person.ModifiedDateTime < DateTime.Now.Date )
@@ -181,7 +180,7 @@ namespace RockWeb.Plugins.com_centralaz.DpsMatch
                 var personService = new PersonService( new RockContext() );
                 List<Match> matchSubList = _matchList.ElementAt( _dictionaryIndex ).Value;
                 Person person = new Person();
-                foreach ( Match match in _matchList.ElementAt( _dictionaryIndex ).Value )
+                foreach ( Match match in matchSubList.OrderByDescending( m => m.MatchPercentage ) )
                 {
                     person = match.PersonAlias.Person;
                     var personCol = new MatchField();
@@ -217,10 +216,10 @@ namespace RockWeb.Plugins.com_centralaz.DpsMatch
         protected void PopulateMatchList()
         {
             _matchList = new Dictionary<int, List<Match>>();
-            List<Match> matchList = new MatchService( new DpsMatchContext() ).Queryable().ToList();
+            List<Match> matchList = new MatchService( new DpsMatchContext() ).Queryable().Where( m => m.MatchPercentage >= 60 ).ToList();
             foreach ( Match match in matchList )
             {
-                if ( !match.VerifiedDate.HasValue || match.IsMatch == null || match.IsMatch == true || !match.Offender.VerificationDate.HasValue || match.VerifiedDate < match.Offender.VerificationDate || match.VerifiedDate < match.PersonAlias.Person.ModifiedDateTime )
+                if ( !match.VerifiedDate.HasValue || match.IsMatch == null || match.IsMatch == true || ( match.PersonAlias.Person.ModifiedDateTime.HasValue && match.VerifiedDate.Value.Date < match.PersonAlias.Person.ModifiedDateTime.Value.Date ) || match.VerifiedDate.Value.Date < match.Offender.ModifiedDateTime.Value.Date )
                 {
                     if ( _matchList.ContainsKey( match.OffenderId ) )
                     {
@@ -275,11 +274,11 @@ namespace RockWeb.Plugins.com_centralaz.DpsMatch
                 var person = match.PersonAlias.Person;
                 if ( person.NickName != person.FirstName )
                 {
-                    rowValues.Add( String.Format( "{0}({1}) {2}", person.FirstName, person.NickName, person.LastName ) );
+                    rowValues.Add( String.Format( "<a target='_blank' href='{0}'>{1} ({2}) {3}</a>", ResolveRockUrlIncludeRoot( "~/Person/" + person.Id ), person.FirstName, person.NickName, person.LastName ) );
                 }
                 else
                 {
-                    rowValues.Add( person.FullName );
+                    rowValues.Add( String.Format( "<a target='_blank' href='{0}'>{1} </a>", ResolveRockUrlIncludeRoot( "~/Person/" + person.Id ), person.FullName ) );
                 }
             }
             tbl.Rows.Add( rowValues.ToArray() );
