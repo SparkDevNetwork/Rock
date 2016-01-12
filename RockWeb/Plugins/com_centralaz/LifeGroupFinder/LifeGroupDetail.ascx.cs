@@ -43,8 +43,8 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
     [CustomRadioListField( "Group Member Status", "The group member status to use when adding person to group (default: 'Pending'.)", "2^Pending,1^Active,0^Inactive", true, "2", "", 1 )]
     [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", "", 2 )]
     [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49", "", 3 )]
-    [WorkflowTypeField( "Workflow", "An optional workflow to start when registration is created. The GroupMember will set as the workflow 'Entity' when processing is started.", false, false, "", "", 4 )]
-    [WorkflowTypeField( "Email Workflow", "An optional workflow to start when an email request is created. The GroupMember will set as the workflow 'Entity' when processing is started.", false, false, "", "", 5 )]
+    [WorkflowTypeField( "Workflow", "An optional workflow to start when registration is created. The following workflow Attribute keys will be set: GroupId (Int), GroupLeader (Person), GroupMember (Person).", false, false, "", "", 4 )]
+    [WorkflowTypeField( "Email Workflow", "An optional workflow to start when an email request is created. The following workflow Attribute keys will be set: GroupId (Int), GroupLeader (Person), GroupMember (Person).", false, false, "", "", 5 )]
     [LinkedPage( "Result Page", "An optional page to redirect user to after they have been registered for the group.", false, "", "", 6 )]
     [CodeEditorField( "Lava Template", "Lava template to use to display the group photos.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"", "", 7 )]
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 8 )]
@@ -806,6 +806,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                             var workflowService = new WorkflowService( rockContext );
                             var workflow = Workflow.Activate( workflowType, person.FullName );
                             workflow.LoadAttributes();
+                            workflow.SetAttributeValue( "GroupId", _group.Id.ToString() );
                             workflow.SetAttributeValue( "GroupLeader", _group.Members.FirstOrDefault( m => m.GroupRole.IsLeader == true ).Person.PrimaryAlias.Guid.ToString() );
                             workflow.SetAttributeValue( "GroupMember", person.PrimaryAlias.Guid.ToString() );
                             List<string> workflowErrors;
