@@ -46,6 +46,10 @@ SELECT @SmallGroupTypeId = Id,
 FROM [GroupType]
 WHERE [Name] = 'Small Group'
 
+UPDATE [GroupType]
+SET IconCssClass = 'fa fa-home' 
+WHERE Id = @SmallGroupTypeId
+
 -- create a Leader role for Small Group 
 SELECT @SmallGroupLeaderId = Id
 FROM [GroupTypeRole]
@@ -105,9 +109,9 @@ WHERE [Name] = 'Fuse Group'
 
 IF @FuseGroupTypeId is null
 BEGIN
-	INSERT [GroupType] ( [IsSystem], [Name], [Description], [GroupTerm], [GroupMemberTerm], [AllowMultipleLocations], [ShowInGroupList], [ShowInNavigation], [TakesAttendance], 
+	INSERT [GroupType] ( [IsSystem], [Name], [Description], [GroupTerm], [GroupMemberTerm], [AllowMultipleLocations], [ShowInGroupList], [ShowInNavigation], [IconCssClass], [TakesAttendance], 
 		[AttendanceRule], [AttendancePrintTo], [Order], [InheritedGroupTypeId], [LocationSelectionMode], [AllowedScheduleTypes], [SendAttendanceReminder], [Guid] ) 
-	VALUES ( @IsSystem, 'Fuse Group', 'Grouptype for Fuse groups.', 'Group', 'Member', @True, @True, @True, @True, 1, 0, 0, @CheckInByGradeId, 19, 3, 0, NEWID() )
+	VALUES ( @IsSystem, 'Fuse Group', 'Grouptype for Fuse groups.', 'Group', 'Member', @True, @True, @True, 'fa fa-fire', @True, 1, 0, 0, @CheckInByGradeId, 19, 3, 0, NEWID() )
 
 	SET @FuseGroupTypeId = SCOPE_IDENTITY()
 
