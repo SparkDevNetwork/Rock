@@ -19,7 +19,7 @@ namespace com.centralaz.DpsMatch.Workflow.Action
     /// <summary>
     /// Imports offenders from a CSV file into our custom _com_centralaz_DpsMatch_Offender table.  Uses the custom stored procedure called _com_centralaz_spDpsMatch_Offender.
     /// </summary>
-    [ActionCategory( "com_centralaz: Dept Public Saftey" )]
+    [ActionCategory( "com_centralaz: Dept Public Safety" )]
     [Description( "Imports offenders from a CSV file into our custom _com_centralaz_DpsMatch_Offender table.  Uses the custom stored procedure called _com_centralaz_spDpsMatch_Offender." )]
     [Export( typeof( Rock.Workflow.ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Import Offenders CSV" )]
