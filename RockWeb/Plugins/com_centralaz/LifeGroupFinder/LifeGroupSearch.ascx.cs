@@ -242,6 +242,11 @@ $('.groupsearch-filter > .panel-body').on('validation-error', function() {
             {
                 ddlCampus.Items.Add( new ListItem( campus.Name, campus.Id.ToString().ToUpper() ) );
             }
+
+            if ( CurrentPerson != null && CurrentPerson.GetCampus() != null )
+            {
+                ddlCampus.SetValue( CurrentPerson.GetCampus().Id.ToString().ToUpper() );
+            }
         }
 
         #endregion
