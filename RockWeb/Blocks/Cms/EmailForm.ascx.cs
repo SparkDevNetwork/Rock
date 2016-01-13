@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Block that takes and HTML form and emails the contents to an address of your choosing." )]
 
-    [EmailField("Receipient Email(s)", "Email addresses (comma delimited) to send the contents to.", true, "", "", 0, "RecipientEmail")]
+    [TextField("Receipient Email(s)", "Email addresses (comma delimited) to send the contents to.", true, "", "", 0, "RecipientEmail")]
     [TextField("Subject", "The subject line for the email.", true, "", "", 1)]
     [EmailField("From Email", "The email address to use for the from.", true, "", "", 2)]
     [TextField("From Name", "The name to use for the from address.", true, "", "", 3)]

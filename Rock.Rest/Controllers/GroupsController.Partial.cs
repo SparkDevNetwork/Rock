@@ -335,6 +335,7 @@ namespace Rock.Rest.Controllers
 
         /// <summary>
         /// Gets a list of groups surrounding the specified the location, optionally limited to the specified geofenceGroupTypeId
+        /// If geofenceGroupTypeId is specified, the list of GeoFence groups will be returned with the groups as child groups of that geofence group.
         /// </summary>
         /// <param name="groupTypeId">The group type identifier.</param>
         /// <param name="locationId">The location identifier.</param>
@@ -360,6 +361,7 @@ namespace Rock.Rest.Controllers
 
         /// <summary>
         /// Gets a list of groups surrounding the specified lat/long, optionally limited to the specified geofenceGroupTypeId
+        /// If geofenceGroupTypeId is specified, the list of GeoFence groups will be returned with the groups as child groups of that geofence group.
         /// </summary>
         /// <param name="groupTypeId">The group type identifier.</param>
         /// <param name="latitude">The latitude.</param>
@@ -469,6 +471,9 @@ namespace Rock.Rest.Controllers
                 }
             }
 
+            // remove groups that don't have a GeoPoint
+            resultGroups = resultGroups.Where( a => a.GroupLocations.Any( x => x.Location.GeoPoint != null ) );
+
             // remove groups that don't have a location within the specified radius
             if ( maxDistanceMiles.HasValue )
             {
@@ -512,7 +517,7 @@ namespace Rock.Rest.Controllers
             var rockContext = (RockContext)Service.Context;
             var group = new GroupService( rockContext ).Get( groupId );
 
-            var locationType = DefinedValueCache.Read( locationTypeId, rockContext );
+            var locationType = DefinedValueCache.Read( locationTypeId );
             if ( group == null || locationType == null )
             {
                 throw new HttpResponseException( HttpStatusCode.NotFound );
