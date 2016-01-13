@@ -13,14 +13,16 @@ using Rock.Web.Cache;
 using LumenWorks.Framework.IO.Csv;
 
 using System.IO;
+using Rock.Workflow;
 namespace com.centralaz.DpsMatch.Workflow.Action
 {
     /// <summary>
-    /// Sets the name of the workflow
+    /// Imports offenders from a CSV file into our custom _com_centralaz_DpsMatch_Offender table.  Uses the custom stored procedure called _com_centralaz_spDpsMatch_Offender.
     /// </summary>
-    [Description( "Sets the name of the workflow" )]
+    [ActionCategory( "com_centralaz: Dept Public Saftey" )]
+    [Description( "Imports offenders from a CSV file into our custom _com_centralaz_DpsMatch_Offender table.  Uses the custom stored procedure called _com_centralaz_spDpsMatch_Offender." )]
     [Export( typeof( Rock.Workflow.ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Set Workflow Name" )]
+    [ExportMetadata( "ComponentName", "Import Offenders CSV" )]
     public class ImportOffenders : Rock.Workflow.ActionComponent
     {
         public override bool Execute( RockContext rockContext, WorkflowAction action, Object entity, out List<string> errorMessages )
