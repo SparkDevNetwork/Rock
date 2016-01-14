@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -16,10 +17,10 @@ namespace church.ccv.Datamart.Reporting.DataFilter.Person
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Filter people that are associated with a specific campus using Datamart." )]
+    [Description( "Filter people that are associated with any of the selected campuses using Datamart." )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Person Datamart Campus Filter" )]
-    public class DatamartCampusFilter : Rock.Reporting.DataFilter.Person.CampusFilter
+    [ExportMetadata( "ComponentName", "Person Datamart Campuses Filter" )]
+    public class DatamartCampusesFilter : Rock.Reporting.DataFilter.Person.CampusesFilter
     {
         #region Properties
 
@@ -53,16 +54,24 @@ namespace church.ccv.Datamart.Reporting.DataFilter.Person
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 1 )
             {
-                var campus = CampusCache.Read( selectionValues[0].AsGuid() );
-                if ( campus == null )
+                var campusGuidList = selectionValues[0].Split( ',' ).AsGuidList();
+                List<int> campusIds = new List<int>();
+                foreach ( var campusGuid in campusGuidList )
+                {
+                    var campus = CampusCache.Read( campusGuid );
+                    if ( campus != null )
+                    {
+                        campusIds.Add( campus.Id );
+                    }
+                }
+
+                if ( !campusIds.Any() )
                 {
                     return null;
                 }
 
-                string campusName = campus.Name;
-
                 var datamartPersonService = new Service<DatamartPerson>( rockContext );
-                var qryDatamartPerson = datamartPersonService.Queryable().Where( a => a.CampusName == campusName );
+                var qryDatamartPerson = datamartPersonService.Queryable().Where( a => a.CampusId.HasValue && campusIds.Contains( a.CampusId.Value ) );
 
                 var qry = new PersonService( rockContext ).Queryable()
                     .Where( p => qryDatamartPerson.Any( xx => xx.PersonId == p.Id ) );
