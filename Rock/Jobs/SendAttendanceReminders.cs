@@ -54,6 +54,7 @@ namespace Rock.Jobs
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
             var groupType = GroupTypeCache.Read( dataMap.GetString( "GroupType" ).AsGuid() );
+            int attendanceRemindersSent = 0;
             if ( groupType.TakesAttendance && groupType.SendAttendanceReminder )
             {
 
@@ -209,10 +210,13 @@ namespace Rock.Jobs
                         recipients.Add( new RecipientData( leader.Person.Email, mergeObjects ) );
 
                         Email.Send( dataMap.GetString( "SystemEmail" ).AsGuid(), recipients );
+                        attendanceRemindersSent++;
 
                     }
                 }
             }
+
+            context.Result = string.Format( "{0} attendance reminders sent", attendanceRemindersSent );
         }
     }
 }

@@ -59,6 +59,7 @@ namespace Rock.Jobs
         public virtual void Execute( IJobExecutionContext context )
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
+            int groupsSynced = 0;
 
             try
             {
@@ -84,7 +85,7 @@ namespace Rock.Jobs
                         List<string> errorMessages = new List<string>();
 
                         var sourceItems = syncSource.GetQuery( sortById, 180, out errorMessages ).Select( q => q.Id ).ToList();
-                        var targetItems = groupMemberService.Queryable("Person").Where( gm => gm.GroupId == syncGroup.Id ).ToList();
+                        var targetItems = groupMemberService.Queryable( "Person" ).Where( gm => gm.GroupId == syncGroup.Id ).ToList();
 
                         // delete items from the target not in the source
                         foreach ( var targetItem in targetItems.Where( t => !sourceItems.Contains( t.PersonId ) ) )
@@ -122,6 +123,19 @@ namespace Rock.Jobs
 
                         rockContext.SaveChanges();
                     }
+                }
+
+                if ( groupsSynced == 0 )
+                {
+                    context.Result = "No groups to sync";
+                }
+                else if ( groupsSynced == 1 )
+                {
+                    context.Result = "1 group was sync'ed";
+                }
+                else
+                {
+                    context.Result = string.Format( "{0} groups were sync'ed", groupsSynced );
                 }
             }
             catch ( System.Exception ex )

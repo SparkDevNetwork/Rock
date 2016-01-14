@@ -69,6 +69,9 @@ namespace Rock.Jobs
 
             try
             {
+                int notificationsSent = 0;
+                int pendingMembersCount = 0;
+                
                 // get groups set to sync
                 RockContext rockContext = new RockContext();
 
@@ -162,6 +165,8 @@ namespace Rock.Jobs
                         if ( pendingIndividuals.Count() > 0 )
                         {
                             Email.Send( systemEmail.Guid, recipients, appRoot );
+                            pendingMembersCount += pendingIndividuals.Count();
+                            notificationsSent += recipients.Count();
                         }
 
                         // mark pending members as notified as we go in case the job fails
@@ -176,7 +181,7 @@ namespace Rock.Jobs
                     }
                 }
 
-
+                context.Result = string.Format( "Sent {0} emails to leaders for {1} pending individuals", notificationsSent, pendingMembersCount );
             }
             catch ( System.Exception ex )
             {
