@@ -122,7 +122,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// 
         /// </summary>
-        private class DataFieldInfo
+        internal class DataFieldInfo
         {
             /// <summary>
             /// Gets or sets the property information.
