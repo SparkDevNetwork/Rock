@@ -187,12 +187,12 @@ namespace Rock.Jobs
 
             if ( jobsDeleted > 0 )
             {
-                context.Result += "Deleted {0} job schedule(s)";
+                context.Result += string.Format( "Deleted {0} job schedule(s)", jobsDeleted );
             }
 
             if ( jobsScheduleUpdated > 0 )
             {
-                context.Result += ( string.IsNullOrEmpty( context.Result as string ) ? "" : " and " ) + "Updated {0} schedule(s)";
+                context.Result += ( string.IsNullOrEmpty( context.Result as string ) ? "" : " and " ) + string.Format( "Updated {0} schedule(s)", jobsScheduleUpdated );
             }
         }
     }
