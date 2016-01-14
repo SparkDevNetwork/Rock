@@ -6,7 +6,7 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
             <div class="panel-body">
 
-                <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error:" NotificationBoxType="Danger" Visible="false" Text="Please select a campus" />
+                <Rock:NotificationBox ID="nbMessage" runat="server" NotificationBoxType="Danger" Visible="false" Text="Please select a campus" />
 
                 <div class="text-center">
                     <h2>
