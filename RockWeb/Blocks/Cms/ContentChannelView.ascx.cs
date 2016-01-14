@@ -592,11 +592,11 @@ $(document).ready(function() {
 
             if ( attributeEntityType == "C" )
             {
-                attributeValue = content.FirstOrDefault().ContentChannel.AttributeValues.Where( a => a.Key == attributeKey ).Select( a => a.Value.ToString() ).FirstOrDefault();
+                attributeValue = content.FirstOrDefault().ContentChannel.AttributeValues.Where( a => a.Key == attributeKey ).Select( a => a.Value.ValueFormatted ).FirstOrDefault();
             }
             else
             {
-                attributeValue = content.FirstOrDefault().AttributeValues.Where( a => a.Key == attributeKey ).Select( a => a.Value.ToString() ).FirstOrDefault();
+                attributeValue = content.FirstOrDefault().AttributeValues.Where( a => a.Key == attributeKey ).Select( a => a.Value.ValueFormatted ).FirstOrDefault();
             }
 
             return attributeValue;
