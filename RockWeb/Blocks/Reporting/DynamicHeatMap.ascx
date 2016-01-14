@@ -366,10 +366,16 @@
                         var degreesInc = 360 / pieSliceCount;
                         for (; i < pieSliceCount; i++) {
                             var startDegrees = i*degreesInc;
+                            var endDegrees = startDegrees+degreesInc;
 
                             var pieSlicePath = Array();
-                            pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, startDegrees));
-                            pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, startDegrees+degreesInc));
+                            
+                            while (startDegrees < endDegrees)
+                            {
+                                pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, startDegrees));
+                                startDegrees++;
+                            }
+                            
                             pieSlicePath.unshift(centerPt);
                             pieSlicePath.push(centerPt);
                             var pieSlicePoly = new google.maps.Polygon({
@@ -378,7 +384,7 @@
                                 fillColor: map.GetNextColor(),
                                 fillOpacity: 0.6,
                                 draggable: true,
-                                editable: true,
+                                editable: false,
                             });
 
                             google.maps.event.trigger(drawingManager, 'polygoncomplete', pieSlicePoly);

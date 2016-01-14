@@ -171,6 +171,17 @@ namespace Rock.Web.Cache
             }
         }
 
+        /// <summary>
+        /// Returns the Formatted Value of this Attribute Value
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.ValueFormatted;
+        }
+
         #endregion
 
     }

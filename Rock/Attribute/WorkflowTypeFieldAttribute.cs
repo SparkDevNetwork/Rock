@@ -22,7 +22,7 @@ using System.Web;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute to select a workflow type
+    /// Field Attribute to select a workflow type. Stored as either a single WorkflowType Guid or a comma-delimited list of WorkflowType Guids
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class WorkflowTypeFieldAttribute : FieldAttribute

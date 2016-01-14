@@ -61,6 +61,8 @@ namespace Rock.Jobs
             JobDataMap dataMap = context.JobDetail.JobDataMap;
             Guid? groupGuid = dataMap.GetString( "EligibleFollowers" ).AsGuidOrNull();
             Guid? systemEmailGuid = dataMap.GetString( "EmailTemplate" ).AsGuidOrNull();
+            int followingSuggestionsEmailsSent = 0;
+            int followingSuggestionsSuggestionsTotal = 0;
 
             if ( groupGuid.HasValue && systemEmailGuid.HasValue )
             {
@@ -339,6 +341,8 @@ namespace Rock.Jobs
                                     mergeFields.Add( "Suggestions", personSuggestionNotices.OrderBy( s => s.SuggestionType.Order ).ToList() );
                                     recipients.Add( new RecipientData( person.Email, mergeFields ) );
                                     Email.Send( systemEmailGuid.Value, recipients, appRoot );
+                                    followingSuggestionsEmailsSent += recipients.Count();
+                                    followingSuggestionsSuggestionsTotal += personSuggestionNotices.Count();
                                 }
 
                                 rockContext.SaveChanges();
@@ -354,6 +358,8 @@ namespace Rock.Jobs
                     }
                 }
             }
+
+            context.Result = string.Format( "A total of {0} following suggestions sent to {1} people", followingSuggestionsSuggestionsTotal, followingSuggestionsEmailsSent );
 
             if ( exceptionMsgs.Any() )
             {

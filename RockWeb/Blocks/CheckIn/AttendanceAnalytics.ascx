@@ -231,6 +231,7 @@
                                         <Rock:CampusField DataField="LastVisit.CampusId" HeaderText="Campus" SortExpression="LastVisit.Campus.Name" />
                                         <Rock:RockLiteralField HeaderText="Service Time" ID="lServiceTime" />
                                         <Rock:RockBoundField DataField="LastVisit.GroupName" HeaderText="Check-in Area" SortExpression="LastVisit.GroupName" />
+                                        <Rock:RockBoundField DataField="LastVisit.LocationName" HeaderText="Location" SortExpression="LastVisit.LocationName" />
                                         <Rock:RockBoundField DataField="LastVisit.InGroup" HeaderText="In Group" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockLiteralField HeaderText="Group Role" ID="lGroupRoles" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockLiteralField HeaderText="Home Address" ID="lHomeAddress" ItemStyle-Wrap="false" />
