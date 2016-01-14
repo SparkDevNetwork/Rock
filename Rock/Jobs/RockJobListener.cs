@@ -133,7 +133,10 @@ namespace Rock.Jobs
             {
                 job.LastSuccessfulRunDateTime = job.LastRunDateTime;
                 job.LastStatus = "Success";
-                job.LastStatusMessage = string.Empty;
+                if ( context.Result is string )
+                {
+                    job.LastStatusMessage = context.Result as string;
+                }
 
                 message.Append( "Result: Success" );
 
