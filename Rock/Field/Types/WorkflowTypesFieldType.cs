@@ -26,7 +26,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field Type used to display a workflow type picker with option to select multiple
+    /// Field Type used to display a workflow type picker with option to select multiple. Stored as a comma-delimited list of WorkflowType Guids
     /// </summary>
     [Serializable]
     public class WorkflowTypesFieldType : FieldType
