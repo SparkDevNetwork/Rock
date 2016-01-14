@@ -68,15 +68,17 @@ namespace Rock.Jobs
                     ) );
 
             var exceptionMsgs = new List<string>();
+            int communicationsSent = 0;
 
             foreach ( var comm in qry.AsNoTracking().ToList() )
             {
-                try 
-                { 
+                try
+                {
                     var medium = comm.Medium;
                     if ( medium != null )
                     {
                         medium.Send( comm );
+                        communicationsSent++;
                     }
                 }
 
@@ -85,6 +87,15 @@ namespace Rock.Jobs
                     exceptionMsgs.Add( string.Format( "Exception occurred sending communication ID:{0}:{1}    {2}", comm.Id, Environment.NewLine, ex.Messages().AsDelimited( Environment.NewLine + "   " ) ) );
                     ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
                 }
+            }
+
+            if ( communicationsSent > 0 )
+            {
+                context.Result = string.Format( "Sent {0} {1}", communicationsSent, "communication".PluralizeIf( communicationsSent > 1 ) );
+            }
+            else
+            {
+                context.Result = "No communications to send";
             }
 
             if ( exceptionMsgs.Any() )

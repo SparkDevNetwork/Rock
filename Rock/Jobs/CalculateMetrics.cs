@@ -62,6 +62,8 @@ namespace Rock.Jobs
             var metricsList = metricsQry.OrderBy( a => a.Title ).ThenBy( a => a.Subtitle ).ToList();
 
             var metricExceptions = new List<Exception>();
+            int metricsCalculated = 0;
+            int metricValuesCalculated = 0;
 
             foreach ( var metric in metricsList )
             {
@@ -133,6 +135,8 @@ namespace Rock.Jobs
                             }
 
                             metric.LastRunDateTime = scheduleDateTime;
+                            metricsCalculated++;
+                            metricValuesCalculated += resultValues.Count();
 
                             if ( resultValues.Any() )
                             {
@@ -158,6 +162,8 @@ namespace Rock.Jobs
                     metricExceptions.Add( new Exception( string.Format( "Exception when calculating metric for {0} ", metric ), ex ) );
                 }
             }
+
+            context.Result = string.Format( "Calculated a total of {0} metric values for {1} metrics", metricValuesCalculated, metricsCalculated );
 
             if ( metricExceptions.Any() )
             {

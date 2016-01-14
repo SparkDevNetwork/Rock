@@ -64,6 +64,7 @@ namespace Rock.Jobs
             {
                 // get the job map
                 JobDataMap dataMap = context.JobDetail.JobDataMap;
+                int scheduledPaymentsProcessed = 0;
 
                 using ( var rockContext = new RockContext() )
                 {
@@ -92,6 +93,7 @@ namespace Rock.Jobs
                                 Guid? systemEmailGuid = dataMap.GetString( "ReceiptEmail" ).AsGuidOrNull();
                                 string batchNamePrefix = dataMap.GetString( "BatchNamePrefix" );
                                 FinancialScheduledTransactionService.ProcessPayments( financialGateway, batchNamePrefix, payments, string.Empty, systemEmailGuid );
+                                scheduledPaymentsProcessed += payments.Count();
                             }
                             else
                             {
@@ -100,6 +102,8 @@ namespace Rock.Jobs
                         }
                     }
                 }
+
+                context.Result = string.Format( "{0} payments processed", scheduledPaymentsProcessed );
             }
 
             catch ( Exception ex )

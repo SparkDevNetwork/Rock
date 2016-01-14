@@ -59,6 +59,7 @@ namespace Rock.Jobs
                 .AsNoTracking();
 
             var calculationExceptions = new List<Exception>();
+            int groupRequirementsCalculatedMemberCount = 0;
 
             foreach ( var groupRequirement in groupRequirementQry.Include( i => i.GroupRequirementType ).AsNoTracking().ToList() )
             {
@@ -81,8 +82,9 @@ namespace Rock.Jobs
 
                     var groupMemberQry = groupMemberService.Queryable().Where( a => a.GroupId == groupRequirement.GroupId ).AsNoTracking();
                     var personQry = groupMemberQry.Where( a => !qryGroupMemberRequirementsAlreadyOK.Any( r => r.GroupMemberId == a.Id ) ).Select( a => a.Person );
-
+                    
                     var results = groupRequirement.PersonQueryableMeetsGroupRequirement( rockContext, personQry, groupRequirement.GroupRoleId ).ToList();
+                    groupRequirementsCalculatedMemberCount += results.Select( a => a.PersonId ).Distinct().Count();
                     foreach ( var result in results )
                     {
                         // use a fresh rockContext per Update so that ChangeTracker doesn't get bogged down
@@ -96,6 +98,8 @@ namespace Rock.Jobs
                     calculationExceptions.Add( new Exception( string.Format( "Exception when calculating group requirement: {0} ", groupRequirement ), ex ) );
                 }
             }
+
+            context.Result = string.Format( "Group member requirements re-calculated for {0} group members", groupRequirementsCalculatedMemberCount );
 
             if ( calculationExceptions.Any() )
             {
