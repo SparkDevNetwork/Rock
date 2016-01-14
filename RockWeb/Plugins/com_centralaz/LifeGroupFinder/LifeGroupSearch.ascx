@@ -73,19 +73,19 @@
                     <div class="panel-body" style="display: none;">
                         <div class="row">
                             <div class="col-md-6">
-                                If you would have children and want to find groups with children their age please select all that apply                           
+                                Day the group meets?
                             </div>
                             <div class="col-md-6">
-                                <Rock:RockCheckBoxList ID="cblChildren" runat="server" RepeatColumns="2" RepeatDirection="Horizontal" />
+                                <Rock:RockCheckBoxList ID="cblDays" runat="server" RepeatDirection="Horizontal" />
                             </div>
                         </div>
                         <hr />
                         <div class="row">
                             <div class="col-md-6">
-                                Day the group meets?
+                                If you would have children and want to find groups with children their age please select all that apply                           
                             </div>
                             <div class="col-md-6">
-                                <Rock:RockCheckBoxList ID="cblDays" runat="server" RepeatDirection="Horizontal" />
+                                <Rock:RockCheckBoxList ID="cblChildren" runat="server" RepeatColumns="2" RepeatDirection="Horizontal" />
                             </div>
                         </div>
                         <hr />
