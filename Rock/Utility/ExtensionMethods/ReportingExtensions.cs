@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Text.RegularExpressions;
 using Rock.Model;
 
 namespace Rock
@@ -42,6 +43,7 @@ namespace Rock
                 case ComparisonType.EndsWith: return value.EndsWith( compareValue, StringComparison.OrdinalIgnoreCase );
                 case ComparisonType.IsBlank: return string.IsNullOrWhiteSpace( value );
                 case ComparisonType.IsNotBlank: return !string.IsNullOrWhiteSpace( value );
+                case ComparisonType.RegularExpression: return Regex.IsMatch( value, compareValue );
             }
 
             // numeric compares
