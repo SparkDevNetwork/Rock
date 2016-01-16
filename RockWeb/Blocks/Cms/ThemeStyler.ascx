@@ -14,6 +14,14 @@
             </div>
             <div class="panel-body">
 
+
+                <Rock:RockDropDownList ID="ddlTheme" runat="server" Label="Theme" OnSelectedIndexChanged="ddlTheme_SelectedIndexChanged" AutoPostBack="true" />
+
+                <Rock:NotificationBox ID="nbMessages" runat="server" />
+
+                <asp:PlaceHolder ID="phThemeControls" runat="server" />
+                <asp:Literal ID="lTest" runat="server" />
+
                 <Rock:ColorPicker ID="cpColor" runat="server" Value="#000" Label="My Color" />
 
             </div>

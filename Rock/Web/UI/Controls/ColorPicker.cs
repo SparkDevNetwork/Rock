@@ -17,6 +17,15 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string Value { get; set; }
 
+
+        /// <summary>
+        /// Gets or sets the original value.
+        /// </summary>
+        /// <value>
+        /// The original value.
+        /// </value>
+        public string OriginalValue { get; set; }
+
         /// <summary>
         /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
