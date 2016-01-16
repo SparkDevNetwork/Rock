@@ -14,7 +14,7 @@
             </div>
             <div class="panel-body">
 
-                <Rock:ColorPicker ID="cpColor" runat="server" />
+                <Rock:ColorPicker ID="cpColor" runat="server" Value="#000" Label="My Color" />
 
             </div>
         
