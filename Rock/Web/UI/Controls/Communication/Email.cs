@@ -410,6 +410,24 @@ function removeAttachment(source, hf, fileId)
             ScriptManager.RegisterStartupScript( this, this.GetType(), "removeAttachment", script, true );
         }
 
+        /// <summary>
+        /// Called when [communication save].
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        public override void OnCommunicationSave( RockContext rockContext )
+        {
+            var binaryFileIds = hfAttachments.Value.SplitDelimitedValues().AsIntegerList();
+            if ( binaryFileIds.Any() )
+            {
+                var binaryFileService = new BinaryFileService( rockContext );
+                foreach( var binaryFile in binaryFileService.Queryable()
+                    .Where( f => binaryFileIds.Contains( f.Id ) ) )
+                {
+                    binaryFile.IsTemporary = false;
+                }
+            }
+        }
+
         #endregion
 
     }

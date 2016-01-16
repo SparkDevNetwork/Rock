@@ -101,5 +101,13 @@ namespace Rock.Web.UI.Controls.Communication
             set {}
         }
 
+        /// <summary>
+        /// Called when [communication save].
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        public virtual void OnCommunicationSave( Rock.Data.RockContext rockContext )
+        {
+        }
+
     }
 }
