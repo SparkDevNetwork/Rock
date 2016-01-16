@@ -147,7 +147,7 @@ namespace RockWeb
                         ContentChannelItemService contentService = new ContentChannelItemService( rockContext );
 
                         var content = contentService.Queryable( "ContentChannelType" )
-                                        .Where( c => c.ContentChannelId == channel.Id && c.Status == ContentChannelItemStatus.Approved && c.StartDateTime <= RockDateTime.Now )
+                                        .Where( c => c.ContentChannelId == channel.Id && (c.Status == ContentChannelItemStatus.Approved || c.ContentChannel.RequiresApproval == false) && c.StartDateTime <= RockDateTime.Now )
                                         .OrderByDescending( c => c.StartDateTime )
                                         .Take( rssItemLimit );
 
