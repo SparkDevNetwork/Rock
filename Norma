@@ -13,7 +13,7 @@ tasks:
   # copy over all plugin blocks/styles/etc
   copy:
     endpoint: "NewSpring/norma-copy#feature-base-name"
-    src: ".remote/**/*(cc_newspring|com_centralaz|org_sparkdevnetwork)/**/*"
+    src: ".remote/**/*(cc_newspring|com_centralaz|org_sparkdevnetwork|com_mineCartStudio)/**/*"
     dest: "RockWeb/Plugins/"
     base: true
 
@@ -28,6 +28,13 @@ tasks:
     ext: [
       "dll"
     ]
+
+  # copy over any webooks
+  "copy-webhooks":
+    "@extend": "copy"
+    src: ".remote/**/Webhooks/**/*"
+    dest: "./RockWeb/Webhooks/"
+    base: true
 
   "browser-sync":
     "dev": true
