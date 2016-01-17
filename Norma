@@ -17,6 +17,12 @@ tasks:
     dest: "RockWeb/Plugins/"
     base: true
 
+  # copy over any webooks
+  "copy-webhooks":
+    "@extend": "copy"
+    src: ".remote/**/Webhooks/**/*"
+    dest: "./RockWeb/"
+    base: true
 
   # copy over any DLLs
   "copy-dlls":
@@ -29,12 +35,7 @@ tasks:
       "dll"
     ]
 
-  # copy over any webooks
-  "copy-webhooks":
-    "@extend": "copy"
-    src: ".remote/**/Webhooks/**/*"
-    dest: "./RockWeb/Webhooks/"
-    base: true
+
 
   "browser-sync":
     "dev": true
