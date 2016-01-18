@@ -29,7 +29,7 @@
                         <h1>Rock Relationship Management System License</h1>
 
                         <h3>Apache 2.0 License</h3>
-                        <p>Copyright 2015 Spark Development Network</p>
+                        <p>Copyright 2016 Spark Development Network</p>
 
                         <p>
                             Licensed under the Apache License, Version 2.0 (the "License");
