@@ -307,7 +307,7 @@ IF @SpecialNeedsGroupTypeId IS NULL
 BEGIN
 	INSERT [GroupType] ( [IsSystem], [Name], [Description], [GroupTerm], [GroupMemberTerm], [AllowMultipleLocations], [ShowInGroupList], [ShowInNavigation], [GroupTypePurposeValueId],
 		[TakesAttendance], [AttendanceRule], [AttendancePrintTo], [Order], [InheritedGroupTypeId], [LocationSelectionMode], [AllowedScheduleTypes], [SendAttendanceReminder], [Guid] ) 
-	VALUES ( @IsSystem, 'Check In By Special Needs', 'Indicates IF this group IS for those who have special needs.', 'Group', 'Member', @False, @False, @False, 145,
+	VALUES ( @IsSystem, 'Check In By Special Needs', 'Indicates if this group is for those who have special needs.', 'Group', 'Member', @False, @False, @False, 145,
 		@False, 1, 0, 0, 15, 0, 0, 0, NEWID() );
 	
 	SET @SpecialNeedsGroupTypeId = SCOPE_IDENTITY()
@@ -445,7 +445,7 @@ VALUES
 ('Creativity & Tech Attendee', 'Choir', 'Choir'), 
 ('Creativity & Tech Attendee', 'Special Event Attendee', 'Special Event Attendee'), 
 ('Creativity & Tech Volunteer', 'Band', 'Band'), 
-('Creativity & Tech Volunteer', 'Band Green Room', 'Band Green Room'), 
+('Creativity & Tech Volunteer', 'Band Green Room', 'Band Green Room'),
 ('Creativity & Tech Volunteer', 'Editorial Team', 'Editorial Team'), 
 ('Creativity & Tech Volunteer', 'IT Team', 'IT Team'), 
 ('Creativity & Tech Volunteer', 'Load In/Load Out', 'Load In/Load Out'), 
@@ -455,7 +455,7 @@ VALUES
 ('Creativity & Tech Volunteer', 'Social Media/PR Team', 'Social Media/PR Team'), 
 ('Creativity & Tech Volunteer', 'Special Event Volunteer', 'Special Event Volunteer'), 
 ('Elementary Volunteer', 'Base Camp Volunteer', 'Base Camp Volunteer'), 
-('Elementary Volunteer', 'Elementary Early Bird', 'Elementary Early Bird'), 
+('Elementary Volunteer', 'Elementary Early Bird Volunteer', 'Elementary Early Bird Volunteer'), 
 ('Elementary Volunteer', 'Elementary Service Leader', 'Elementary Service Leader'), 
 ('Elementary Volunteer', 'Elementary Area Leader', 'Elementary Area Leader'), 
 ('Elementary Volunteer', 'ImagiNation Volunteer', 'ImagiNation Volunteer'), 
@@ -498,7 +498,6 @@ VALUES
 ('Fuse Volunteer', 'Worship', 'Worship'), 
 ('Guest Services Attendee', 'VIP Room Attendee', 'VIP Room Attendee'), 
 ('Guest Services Attendee', 'Special Event Attendee', 'Special Event Attendee'), 
-('Guest Services Attendee', 'Special Event Volunteer', 'Special Event Volunteer'), 
 ('Guest Services Attendee', 'Auditorium Reset Team', 'Auditorium Reset Team'), 
 ('Guest Services Attendee', 'Awake Team', 'Awake Team'), 
 ('Guest Services Attendee', 'Facility Cleaning Crew', 'Facility Cleaning Crew'), 
@@ -518,9 +517,10 @@ VALUES
 ('Guest Services Volunteer', 'VIP Room Volunteer', 'VIP Room Volunteer'), 
 ('Guest Services Volunteer', 'Guest Services Team', 'Guest Services Team'), 
 ('Guest Services Volunteer', 'New Serve Team', 'New Serve Team'), 
-('Guest Services Volunteer', 'Service Coordinator', 'Service Coordinator'),
+('Guest Services Volunteer', 'Receptionist', 'Receptionist'), 
 ('Guest Services Volunteer', 'Service Leader', 'Service Leader'), 
 ('Guest Services Volunteer', 'Sign Language Team', 'Sign Language Team'), 
+('Guest Services Volunteer', 'Special Event Volunteer', 'Special Event Volunteer'), 
 ('Guest Services Volunteer', 'Usher Team', 'Usher Team'), 
 ('Production Volunteer', 'Elementary Production', 'Elementary Production'), 
 ('Production Volunteer', 'Elementary Production Service Leader', 'Elementary Production Service Leader'), 
@@ -607,7 +607,7 @@ VALUES
 ('Preschool Volunteer', 'Base Camp Jr. Volunteer', 'Base Camp Jr. Volunteer'), 
 ('Preschool Volunteer', 'Fire Station Volunteer', 'Fire Station Volunteer'), 
 ('Preschool Volunteer', 'Lil'' Spring Volunteer', 'Lil'' Spring Volunteer'), 
-('Preschool Volunteer', 'Police Volunteer', 'Police Volunteer'), 
+('Preschool Volunteer', 'Toys Volunteer', 'Toys Volunteer'), 
 ('Preschool Volunteer', 'Pop''s Garage Volunteer', 'Pop''s Garage Volunteer'),
 ('Preschool Volunteer', 'Preschool Early Bird Volunteer', 'Preschool Early Bird Volunteer'), 
 ('Preschool Volunteer', 'Preschool Service Leader', 'Preschool Service Leader'), 
