@@ -307,7 +307,13 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             // filter by group context
             if ( GroupContext != null )
             {
-                metricValueQueryable = metricValueQueryable.Where( a => a.ForeignId == GroupContext.Id );
+                metricValueQueryable = metricValueQueryable.Where( a => a.Metric.ForeignId == GroupContext.Id );
+            }
+            else if( GroupTypeContext != null )
+            {
+                var groupTypeIds = new GroupTypeService( rockContext ).GetAllAssociatedDescendents( GroupTypeContext.Id ).Select( gt => gt.Id );
+                var groupIds = new GroupService( rockContext ).Queryable().Where( g => groupTypeIds.Contains( g.GroupTypeId ) ).Select( g => g.Id );
+                metricValueQueryable = metricValueQueryable.Where( mv => mv.Metric.ForeignId.HasValue && groupIds.Contains( mv.Metric.ForeignId.Value ) );
             }
 
             return metricValueQueryable.ToList();
