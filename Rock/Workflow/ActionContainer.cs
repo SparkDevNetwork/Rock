@@ -62,6 +62,8 @@ namespace Rock.Workflow
                     var categories = new List<string>();
                     foreach ( var action in Instance.Dictionary.Select( d => d.Value.Value ) )
                     {
+                        string categoryName = "Uncategorized";
+
                         var actionType = action.GetType();
                         var obj = actionType.GetCustomAttributes( typeof( ActionCategoryAttribute ), true ).FirstOrDefault();
                         if ( obj != null )
@@ -69,9 +71,11 @@ namespace Rock.Workflow
                             var actionCategory = obj as ActionCategoryAttribute;
                             if ( actionCategory != null )
                             {
-                                categories.Add( actionCategory.CategoryName );
+                                categoryName = actionCategory.CategoryName;
                             }
                         }
+
+                        categories.Add( categoryName );
                     }
 
                     // Get unique and in order

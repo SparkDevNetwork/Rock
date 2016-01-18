@@ -71,7 +71,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> that represents the Value of the DefinedValue.
         /// </value>
         [Required]
-        [MaxLength( 100 )]
+        [MaxLength( 250 )]
         [DataMember( IsRequired = true )]
         public string Value { get; set; }
 

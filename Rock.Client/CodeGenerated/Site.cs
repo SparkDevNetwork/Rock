@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public bool AllowIndexing { get; set; }
+
+        /// <summary />
         public int? CommunicationPageId { get; set; }
 
         /// <summary />
@@ -96,6 +99,9 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
+        public string PageHeaderContent { get; set; }
+
+        /// <summary />
         public int? PageNotFoundPageId { get; set; }
 
         /// <summary />
@@ -149,6 +155,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( Site source )
         {
             this.Id = source.Id;
+            this.AllowIndexing = source.AllowIndexing;
             this.CommunicationPageId = source.CommunicationPageId;
             this.CommunicationPageRouteId = source.CommunicationPageRouteId;
             this.DefaultPageId = source.DefaultPageId;
@@ -167,6 +174,7 @@ namespace Rock.Client
             this.MobilePageId = source.MobilePageId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
+            this.PageHeaderContent = source.PageHeaderContent;
             this.PageNotFoundPageId = source.PageNotFoundPageId;
             this.PageNotFoundPageRouteId = source.PageNotFoundPageRouteId;
             this.PageViewRetentionPeriodDays = source.PageViewRetentionPeriodDays;

@@ -29,6 +29,7 @@ namespace Rock.Client.SystemGuid
     /// </summary>
     public class Attribute
     {
+        public const string GLOBAL_EMAIL_LINK_PREFERENCE = "F1BECEF9-1047-E89F-4CC8-8F856750E5D0";
         public const string PERSON_ALLERGY = "DBD192C9-0AA1-46EC-92AB-A3DA8E056D31";
         public const string PERSON_FACEBOOK = "2B8A03D3-B7DC-4DA3-A31E-826D655435D5";
         public const string PERSON_INSTAGRAM = "8796567C-4047-43C1-AF32-2FDBE030BEAC";
@@ -587,8 +588,6 @@ namespace Rock.Client.SystemGuid
         public const string PHOTO_UPLOAD = "8559A9F1-C6A4-4945-B393-74F6706A8FA2";
         public const string PLEDGE_DETAIL = "EF7AA296-CA69-49BC-A28B-901A8AAA9466";
         public const string PLEDGE_LIST = "1570D2AF-4FE2-4FC7-BED9-F20EBCBE9867";
-        public const string PLUGIN_MANAGER = "B13FCF9A-FAE5-4E53-AF7C-32DF9CA5AAE3";
-        public const string PLUGIN_SETTINGS = "1AFDA740-8119-45B8-AF4D-58856D469BE5";
         public const string POWER_TOOLS = "7F1F4130-CB98-473B-9DE1-7A886D2283ED";
         public const string PRAYER_CATEGORIES = "FA2A1171-9308-41C7-948C-C9EBEA5BD668";
         public const string PRAYER_MANAGE = "1A3437C8-D4CB-4329-A366-8D6A4CBF79BF";
