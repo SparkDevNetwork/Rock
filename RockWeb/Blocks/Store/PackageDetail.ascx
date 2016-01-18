@@ -56,6 +56,10 @@
                                     <strong>Documentation</strong><br />
                                     <asp:Literal ID="lDocumenationLink" runat="server" />
                                 </p>
+                                <p>
+                                    <strong>Support</strong><br />
+                                    <asp:Literal ID="lSupportLink" runat="server" />
+                                </p>
                             </div>
                             <div class="col-md-9">
 

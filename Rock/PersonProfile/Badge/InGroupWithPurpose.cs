@@ -85,7 +85,7 @@ namespace Rock.PersonProfile.Badge
                             var labelText = data.NickName + ' is in group with the ' + data.Purpose + ' purpose.';
                         }} else {{
                             badgeHtml = '<i class=\'badge-icon badge-disabled ' + groupIcon + '\'></i>';
-                            var labelText = data.NickName + ' is not in a group with the ' + data.Purpose + 'purpose.';
+                            var labelText = data.NickName + ' is not in a group with the ' + data.Purpose + ' purpose.';
                         }}
                         $('.badge-ingroupwithpurpose.badge-id-{3}').html(badgeHtml);
                         $('.badge-ingroupwithpurpose.badge-id-{3}').attr('data-original-title', labelText);

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Data.Entity.Spatial;
 using System.Dynamic;
 using System.Linq;
 using System.Net;
@@ -113,7 +114,7 @@ namespace Rock.Rest.Controllers
 
             foreach ( var g in groupNameList )
             {
-                int groupId = int.Parse( g.Id );
+                int groupId = g.Id.AsInteger();
                 g.HasChildren = qryHasChildrenList.Any( a => a == groupId );
             }
 
@@ -200,6 +201,11 @@ namespace Rock.Rest.Controllers
             return familyResults.DistinctBy( f => f.Id ).AsQueryable();
         }
 
+        /// <summary>
+        /// Gets the family.
+        /// </summary>
+        /// <param name="familyId">The family identifier.</param>
+        /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/Groups/GetFamily/{familyId}" )]
@@ -309,74 +315,184 @@ namespace Rock.Rest.Controllers
         /// <param name="geofenceGroupTypeId">The geofence group type identifier.</param>
         /// <param name="groupTypeId">The group type identifier.</param>
         /// <param name="locationId">The location identifier.</param>
+        /// <param name="queryOptions">The query options.</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
+        [Obsolete( "Use one of the other ~/api/Groups/ByLocation endpoint(s)" )]
         [System.Web.Http.Route( "api/Groups/ByLocation/{geofenceGroupTypeId}/{groupTypeId}/{locationId}" )]
         public IQueryable GetByLocation( int geofenceGroupTypeId, int groupTypeId, int locationId, System.Web.Http.OData.Query.ODataQueryOptions<Group> queryOptions )
         {
-            var fenceGroups = new List<Group>();
-
             // Get the location record
             var rockContext = (RockContext)Service.Context;
-            var location = new LocationService( rockContext ).Get( locationId );
+            var specifiedLocation = new LocationService( rockContext ).Get( locationId );
 
             // If location was valid and address was geocoded successfully
-            if ( location != null && location.GeoPoint != null )
-            {
-                // Find all the groupLocation records ( belonging to groups of the "geofenceGroupType" )
-                // where the geofence surrounds the location
-                var groupLocationService = new GroupLocationService( rockContext );
-                foreach ( var fenceGroupLocation in groupLocationService
-                    .Queryable( "Group,Location" ).AsNoTracking()
-                    .Where( gl =>
-                        gl.Group.GroupTypeId == geofenceGroupTypeId &&
-                        gl.Location.GeoFence != null &&
-                        location.GeoPoint.Intersects( gl.Location.GeoFence ) )
-                    .ToList() )
-                {
-                    var fenceGroup = fenceGroups.FirstOrDefault( g => g.Id == fenceGroupLocation.GroupId );
-                    if ( fenceGroup == null )
-                    {
-                        fenceGroup = fenceGroupLocation.Group;
-                        fenceGroups.Add( fenceGroup );
-                    }
-                    fenceGroupLocation.Group = null;
+            DbGeography geoPoint = specifiedLocation != null ? specifiedLocation.GeoPoint : null;
 
-                    // Find all the group groupLocation records ( with group of the "groupTypeId" ) that have a location
-                    // within the fence
-                    foreach ( var group in Service
-                        .Queryable( "Schedule,GroupLocations.Location" ).AsNoTracking()
-                        .Where( g =>
-                            g.GroupTypeId == groupTypeId &&
-                            g.GroupLocations.Any( gl =>
-                                gl.Location.GeoPoint != null &&
-                                gl.Location.GeoPoint.Intersects( fenceGroupLocation.Location.GeoFence ) ) ) )
+            return GetByGeoPoint( groupTypeId, geoPoint, false, null, geofenceGroupTypeId, queryOptions );
+        }
+
+        /// <summary>
+        /// Gets a list of groups surrounding the specified the location, optionally limited to the specified geofenceGroupTypeId
+        /// If geofenceGroupTypeId is specified, the list of GeoFence groups will be returned with the groups as child groups of that geofence group.
+        /// </summary>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <param name="locationId">The location identifier.</param>
+        /// <param name="sortByDistance">if set to <c>true</c> [sort by distance].</param>
+        /// <param name="maxDistanceMiles">The maximum distance miles.</param>
+        /// <param name="geofenceGroupTypeId">The geofence group type identifier.</param>
+        /// <param name="queryOptions">The query options.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/Groups/ByLocation" )]
+        public IQueryable GetByLocation( int groupTypeId, int locationId, bool? sortByDistance = true, double? maxDistanceMiles = null, int? geofenceGroupTypeId = null, System.Web.Http.OData.Query.ODataQueryOptions<Group> queryOptions = null )
+        {
+            // Get the location record
+            var rockContext = (RockContext)Service.Context;
+            var specifiedLocation = new LocationService( rockContext ).Get( locationId );
+
+            // If location was valid and address was geocoded successfully
+            DbGeography geoPoint = specifiedLocation != null ? specifiedLocation.GeoPoint : null;
+
+            return GetByGeoPoint( groupTypeId, geoPoint, sortByDistance, maxDistanceMiles, geofenceGroupTypeId, queryOptions );
+        }
+
+        /// <summary>
+        /// Gets a list of groups surrounding the specified lat/long, optionally limited to the specified geofenceGroupTypeId
+        /// If geofenceGroupTypeId is specified, the list of GeoFence groups will be returned with the groups as child groups of that geofence group.
+        /// </summary>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <param name="latitude">The latitude.</param>
+        /// <param name="longitude">The longitude.</param>
+        /// <param name="sortByDistance">The sort by distance.</param>
+        /// <param name="maxDistanceMiles">The maximum distance miles.</param>
+        /// <param name="geofenceGroupTypeId">The geofence group type identifier.</param>
+        /// <param name="queryOptions">The query options.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/Groups/ByLatLong" )]
+        public IQueryable GetByLatLong( int groupTypeId, double latitude, double longitude, bool? sortByDistance = true, double? maxDistanceMiles = null, int? geofenceGroupTypeId = null, System.Web.Http.OData.Query.ODataQueryOptions<Group> queryOptions = null )
+        {
+            string geoText = string.Format( "POINT({0} {1})", longitude, latitude );
+            DbGeography geoPoint = DbGeography.FromText( geoText );
+
+            return GetByGeoPoint( groupTypeId, geoPoint, sortByDistance, maxDistanceMiles, geofenceGroupTypeId, queryOptions );
+        }
+
+        /// <summary>
+        /// Gets a list of groups surrounding the specified geopoint of the specified GroupTypeid
+        /// If geofenceGroupTypeId is specified, the list of GeoFence groups will be returned with the groups as child groups of that geofence group.
+        /// </summary>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <param name="geoPoint">The geo point.</param>
+        /// <param name="sortByDistance">if set to <c>true</c> [sort by distance].</param>
+        /// <param name="maxDistanceMiles">The maximum distance miles.</param>
+        /// <param name="geofenceGroupTypeId">The geofence group type identifier.</param>
+        /// <param name="queryOptions">The query options.</param>
+        /// <returns></returns>
+        private IQueryable GetByGeoPoint( int groupTypeId, DbGeography geoPoint, bool? sortByDistance, double? maxDistanceMiles, int? geofenceGroupTypeId, System.Web.Http.OData.Query.ODataQueryOptions<Group> queryOptions )
+        {
+            var rockContext = (RockContext)Service.Context;
+            IEnumerable<Group> resultGroups = new List<Group>();
+
+            if ( geoPoint != null )
+            {
+                if ( geofenceGroupTypeId.HasValue && geofenceGroupTypeId.Value > 0 )
+                {
+                    var fenceGroups = new List<Group>();
+
+                    // Find all the groupLocation records ( belonging to groups of the "geofenceGroupType" )
+                    // where the geofence surrounds the location
+                    var groupLocationService = new GroupLocationService( rockContext );
+                    foreach ( var fenceGroupLocation in groupLocationService
+                        .Queryable( "Group,Location" ).AsNoTracking()
+                        .Where( gl =>
+                            gl.Group.GroupTypeId == geofenceGroupTypeId &&
+                            gl.Location.GeoFence != null &&
+                            geoPoint.Intersects( gl.Location.GeoFence ) )
+                        .ToList() )
                     {
-                        // Remove any other group locations that do not belong to fence
-                        foreach ( var gl in group.GroupLocations.ToList() )
+                        var fenceGroup = fenceGroups.FirstOrDefault( g => g.Id == fenceGroupLocation.GroupId );
+                        if ( fenceGroup == null )
                         {
-                            if ( gl.Location.GeoPoint == null ||
-                                !gl.Location.GeoPoint.Intersects( fenceGroupLocation.Location.GeoFence ) )
-                            {
-                                group.GroupLocations.Remove( gl );
-                            }
-                            else
-                            {
-                                // Calculate distance
-                                double meters = gl.Location.GeoPoint.Distance( location.GeoPoint ) ?? 0.0D;
-                                gl.Location.SetDistance( meters * Location.MilesPerMeter );
-                            }
+                            fenceGroup = fenceGroupLocation.Group;
+                            fenceGroups.Add( fenceGroup );
                         }
 
-                        fenceGroup.Groups.Add( group );
+                        fenceGroupLocation.Group = null;
+
+                        // Find all the group groupLocation records ( with group of the "groupTypeId" ) that have a location
+                        // within the fence
+                        foreach ( var group in Service
+                            .Queryable( "Schedule,GroupLocations.Location" ).AsNoTracking()
+                            .Where( g =>
+                                g.GroupTypeId == groupTypeId &&
+                                g.GroupLocations.Any( gl =>
+                                    gl.Location.GeoPoint != null &&
+                                    gl.Location.GeoPoint.Intersects( fenceGroupLocation.Location.GeoFence ) ) ) )
+                        {
+                            // Remove any other group locations that do not belong to fence
+                            foreach ( var gl in group.GroupLocations.ToList() )
+                            {
+                                if ( gl.Location.GeoPoint == null ||
+                                    !gl.Location.GeoPoint.Intersects( fenceGroupLocation.Location.GeoFence ) )
+                                {
+                                    group.GroupLocations.Remove( gl );
+                                }
+                            }
+
+                            fenceGroup.Groups.Add( group );
+                        }
+                    }
+
+                    resultGroups = fenceGroups;
+                }
+                else
+                {
+                    // if a geoFence is not specified, just get all groups of this group type
+                    resultGroups = Service.Queryable( "Schedule,GroupLocations.Location" ).AsNoTracking().Where( a => a.GroupTypeId == groupTypeId ).Include( a => a.GroupLocations ).ToList();
+                }
+            }
+
+            // calculate the distance of each of the groups locations from the specified geoFence
+            foreach ( var group in resultGroups )
+            {
+                foreach ( var gl in group.GroupLocations )
+                {
+                    // Calculate distance
+                    if ( gl.Location.GeoPoint != null )
+                    {
+                        double meters = gl.Location.GeoPoint.Distance( geoPoint ) ?? 0.0D;
+                        gl.Location.SetDistance( meters * Location.MilesPerMeter );
                     }
                 }
             }
 
+            // remove groups that don't have a GeoPoint
+            resultGroups = resultGroups.Where( a => a.GroupLocations.Any( x => x.Location.GeoPoint != null ) );
+
+            // remove groups that don't have a location within the specified radius
+            if ( maxDistanceMiles.HasValue )
+            {
+                resultGroups = resultGroups.Where( a => a.GroupLocations.Any( x => x.Location.Distance <= maxDistanceMiles.Value ) );
+            }
+
+            var querySettings = new System.Web.Http.OData.Query.ODataQuerySettings();
+            if ( sortByDistance.HasValue && sortByDistance.Value )
+            {
+                resultGroups = resultGroups.OrderBy( a => a.GroupLocations.FirstOrDefault() != null ? a.GroupLocations.FirstOrDefault().Location.Distance : int.MaxValue ).ToList();
+
+                // if we are sorting by distance, tell OData not to re-sort them by Id
+                querySettings.EnsureStableOrdering = false;
+            }
+
             // manually apply any OData parameters to the InMemory Query
-            var qryResults = queryOptions.ApplyTo( fenceGroups.AsQueryable() );
-            return qryResults;
+            var qryResults = queryOptions.ApplyTo( resultGroups.AsQueryable(), querySettings );
+
+            return qryResults.AsQueryable();
         }
 
         /// <summary>
@@ -394,15 +510,14 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPut]
         [System.Web.Http.Route( "api/Groups/SaveAddress/{groupId}/{locationTypeId}" )]
-        public virtual void SaveAddress( int groupId, int locationTypeId,
-            string street1 = "", string street2 = "", string city = "", string state = "", string postalCode = "", string country = "" )
+        public virtual void SaveAddress( int groupId, int locationTypeId, string street1 = "", string street2 = "", string city = "", string state = "", string postalCode = "", string country = "" )
         {
             SetProxyCreation( true );
 
             var rockContext = (RockContext)Service.Context;
             var group = new GroupService( rockContext ).Get( groupId );
 
-            var locationType = DefinedValueCache.Read( locationTypeId, rockContext );
+            var locationType = DefinedValueCache.Read( locationTypeId );
             if ( group == null || locationType == null )
             {
                 throw new HttpResponseException( HttpStatusCode.NotFound );
@@ -410,8 +525,7 @@ namespace Rock.Rest.Controllers
 
             System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
 
-            GroupService.AddNewGroupAddress( rockContext, group, locationType.Guid.ToString(),
-                street1, street2, city, state, postalCode, country, true );
+            GroupService.AddNewGroupAddress( rockContext, group, locationType.Guid.ToString(), street1, street2, city, state, postalCode, country, true );
         }
 
         /// <summary>
@@ -522,6 +636,11 @@ namespace Rock.Rest.Controllers
             }
         }
 
+        /// <summary>
+        /// Gets the child map information.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Groups/GetMapInfo/{groupId}/Children" )]
         public IQueryable<MapItem> GetChildMapInfo( int groupId )
@@ -557,6 +676,13 @@ namespace Rock.Rest.Controllers
             return mapItems.AsQueryable();
         }
 
+        /// <summary>
+        /// Gets the member map information.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Web.Http.HttpResponseException">
+        /// </exception>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Groups/GetMapInfo/{groupId}/Members" )]
         public IQueryable<MapItem> GetMemberMapInfo( int groupId )
@@ -614,6 +740,14 @@ namespace Rock.Rest.Controllers
             }
         }
 
+        /// <summary>
+        /// Gets the families map information.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="statusId">The status identifier.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Web.Http.HttpResponseException">
+        /// </exception>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Groups/GetMapInfo/{groupId}/Families/{statusId}" )]
         public IQueryable<MapItem> GetFamiliesMapInfo( int groupId, int statusId )
@@ -690,6 +824,15 @@ namespace Rock.Rest.Controllers
             }
         }
 
+        /// <summary>
+        /// Gets the map information window.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="locationId">The location identifier.</param>
+        /// <param name="infoWindowDetails">The information window details.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Web.Http.HttpResponseException">
+        /// </exception>
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/Groups/GetMapInfoWindow/{groupId}/{locationId}" )]
@@ -821,33 +964,114 @@ namespace Rock.Rest.Controllers
             /// </value>
             public int Id { get; set; }
 
+            /// <summary>
+            /// Gets or sets the name.
+            /// </summary>
+            /// <value>
+            /// The name.
+            /// </value>
             public string Name { get; set; }
 
+            /// <summary>
+            /// Gets or sets the unique identifier.
+            /// </summary>
+            /// <value>
+            /// The unique identifier.
+            /// </value>
             public Guid Guid { get; set; }
 
+            /// <summary>
+            /// Gets or sets the family members.
+            /// </summary>
+            /// <value>
+            /// The family members.
+            /// </value>
             public List<GuestFamilyMember> FamilyMembers { get; set; }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
         public class GuestFamilyMember
         {
+            /// <summary>
+            /// Gets or sets the identifier.
+            /// </summary>
+            /// <value>
+            /// The identifier.
+            /// </value>
             public int Id { get; set; }
 
+            /// <summary>
+            /// Gets or sets the person alias identifier.
+            /// </summary>
+            /// <value>
+            /// The person alias identifier.
+            /// </value>
             public int PersonAliasId { get; set; }
 
+            /// <summary>
+            /// Gets or sets the unique identifier.
+            /// </summary>
+            /// <value>
+            /// The unique identifier.
+            /// </value>
             public Guid Guid { get; set; }
 
+            /// <summary>
+            /// Gets or sets the first name.
+            /// </summary>
+            /// <value>
+            /// The first name.
+            /// </value>
             public string FirstName { get; set; }
 
+            /// <summary>
+            /// Gets or sets the last name.
+            /// </summary>
+            /// <value>
+            /// The last name.
+            /// </value>
             public string LastName { get; set; }
 
+            /// <summary>
+            /// Gets or sets the photo URL.
+            /// </summary>
+            /// <value>
+            /// The photo URL.
+            /// </value>
             public string PhotoUrl { get; set; }
 
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance can checkin.
+            /// </summary>
+            /// <value>
+            /// <c>true</c> if this instance can checkin; otherwise, <c>false</c>.
+            /// </value>
             public bool CanCheckin { get; set; }
 
+            /// <summary>
+            /// Gets or sets the age.
+            /// </summary>
+            /// <value>
+            /// The age.
+            /// </value>
             public int? Age { get; set; }
 
+            /// <summary>
+            /// Gets or sets the role.
+            /// </summary>
+            /// <value>
+            /// The role.
+            /// </value>
             public string Role { get; set; }
 
+            /// <summary>
+            /// Gets or sets the gender.
+            /// </summary>
+            /// <value>
+            /// The gender.
+            /// </value>
             public Gender Gender { get; set; }
         }
 
@@ -897,21 +1121,61 @@ namespace Rock.Rest.Controllers
             public PhoneNumber MainPhone { get; set; }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
         public class InfoWindowRequest
         {
+            /// <summary>
+            /// Gets or sets the group page.
+            /// </summary>
+            /// <value>
+            /// The group page.
+            /// </value>
             public string GroupPage { get; set; }
 
+            /// <summary>
+            /// Gets or sets the person profile page.
+            /// </summary>
+            /// <value>
+            /// The person profile page.
+            /// </value>
             public string PersonProfilePage { get; set; }
 
+            /// <summary>
+            /// Gets or sets the map page.
+            /// </summary>
+            /// <value>
+            /// The map page.
+            /// </value>
             public string MapPage { get; set; }
 
+            /// <summary>
+            /// Gets or sets the template.
+            /// </summary>
+            /// <value>
+            /// The template.
+            /// </value>
             public string Template { get; set; }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
         public class InfoWindowResult
         {
+            /// <summary>
+            /// Gets or sets the result.
+            /// </summary>
+            /// <value>
+            /// The result.
+            /// </value>
             public string Result { get; set; }
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="InfoWindowResult"/> class.
+            /// </summary>
+            /// <param name="result">The result.</param>
             public InfoWindowResult( string result )
             {
                 Result = result;

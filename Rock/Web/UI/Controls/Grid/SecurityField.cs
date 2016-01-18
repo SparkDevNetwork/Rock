@@ -29,6 +29,54 @@ namespace Rock.Web.UI.Controls
     public class SecurityField : RockTemplateField, INotRowSelectedField
     {
         /// <summary>
+        /// Gets or sets the icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The icon CSS class.
+        /// </value>
+        public string IconCssClass
+        {
+            get
+            {
+                string iconCssClass = ViewState["IconCssClass"] as string;
+                if ( string.IsNullOrWhiteSpace( iconCssClass ) )
+                {
+                    iconCssClass = "fa fa-lock";
+                    ViewState["IconCssClass"] = iconCssClass;
+                }
+                return iconCssClass;
+            }
+            set
+            {
+                ViewState["IconCssClass"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the button CSS class.
+        /// </summary>
+        /// <value>
+        /// The button CSS class.
+        /// </value>
+        public string ButtonCssClass
+        {
+            get
+            {
+                string buttonCssClass = ViewState["ButtonCssClass"] as string;
+                if ( string.IsNullOrWhiteSpace( buttonCssClass ) )
+                {
+                    buttonCssClass = "btn btn-security btn-sm";
+                    ViewState["ButtonCssClass"] = buttonCssClass;
+                }
+                return buttonCssClass;
+            }
+            set
+            {
+                ViewState["ButtonCssClass"] = value;
+            }
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SecurityField" /> class.
         /// </summary>
         public SecurityField()
@@ -133,15 +181,16 @@ namespace Rock.Web.UI.Controls
             DataControlFieldCell cell = container as DataControlFieldCell;
             if ( cell != null )
             {
+                SecurityField securityField = cell.ContainingField as SecurityField;
                 HtmlGenericControl aSecure = new HtmlGenericControl( "a" );
                 cell.Controls.Add( aSecure );
-                aSecure.Attributes.Add("class", "btn btn-security btn-sm");
+                aSecure.Attributes.Add("class", securityField.ButtonCssClass );
 
                 // height attribute is used by the modal that pops up when the button is clicked
                 aSecure.Attributes.Add( "height", "500px" );
 
                 HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
-                buttonIcon.Attributes.Add( "class", "fa fa-lock" );
+                buttonIcon.Attributes.Add( "class", securityField.IconCssClass );
                 aSecure.Controls.Add( buttonIcon );
 
                 aSecure.DataBinding += new EventHandler( aSecure_DataBinding );

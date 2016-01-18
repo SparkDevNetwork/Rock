@@ -31,6 +31,54 @@ namespace Rock.Web.UI.Controls
     public class DeleteField : RockTemplateField, INotRowSelectedField
     {
         /// <summary>
+        /// Gets or sets the icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The icon CSS class.
+        /// </value>
+        public string IconCssClass
+        {
+            get
+            {
+                string iconCssClass = ViewState["IconCssClass"] as string;
+                if ( string.IsNullOrWhiteSpace( iconCssClass ) )
+                {
+                    iconCssClass = "fa fa-times";
+                    ViewState["IconCssClass"] = iconCssClass;
+                }
+                return iconCssClass;
+            }
+            set
+            {
+                ViewState["IconCssClass"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the button CSS class.
+        /// </summary>
+        /// <value>
+        /// The button CSS class.
+        /// </value>
+        public string ButtonCssClass
+        {
+            get
+            {
+                string buttonCssClass = ViewState["ButtonCssClass"] as string;
+                if ( string.IsNullOrWhiteSpace( buttonCssClass ) )
+                {
+                    buttonCssClass = "btn btn-danger btn-sm grid-delete-button";
+                    ViewState["ButtonCssClass"] = buttonCssClass;
+                }
+                return buttonCssClass;
+            }
+            set
+            {
+                ViewState["ButtonCssClass"] = value;
+            }
+        }
+
+        /// <summary>
         /// When exporting a grid with an Export source of ColumnOutput, this property controls whether a column is included
         /// in the export or not
         /// </summary>
@@ -128,7 +176,7 @@ namespace Rock.Web.UI.Controls
                 ParentGrid = deleteField.ParentGrid;
                 LinkButton lbDelete = new LinkButton();
                 lbDelete.CausesValidation = false;
-                lbDelete.CssClass = "btn btn-danger btn-sm grid-delete-button";
+                lbDelete.CssClass =  deleteField.ButtonCssClass;
                 lbDelete.PreRender += ( s, e ) =>
                 {
                     if ( lbDelete.Enabled && ( !ParentGrid.Enabled || !ParentGrid.IsDeleteEnabled ) )
@@ -142,7 +190,7 @@ namespace Rock.Web.UI.Controls
                 lbDelete.ToolTip = "Delete";
 
                 HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
-                buttonIcon.Attributes.Add( "class", "fa fa-times" );
+                buttonIcon.Attributes.Add( "class", deleteField.IconCssClass );
                 lbDelete.Controls.Add( buttonIcon );
 
                 lbDelete.Click += lbDelete_Click;
