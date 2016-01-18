@@ -491,7 +491,7 @@ values
 (1343195, 'BSP', 'Fuse Volunteer', 'Game Room', NULL),
 (1212023, 'BSP', 'Fuse Volunteer', 'Greeter', NULL),
 (1361834, 'BSP', 'Fuse Volunteer', 'Leadership Team', NULL),
-(1212022, 'BSP', 'Fuse Attendee', 'Load In', NULL),
+(1212022, 'BSP', 'Fuse Volunteer', 'Load In', NULL),
 (1212025, 'BSP', 'Fuse Volunteer', 'Lounge', NULL),
 (1239818, 'BSP', 'Fuse Volunteer', 'New Serve', NULL),
 (1212027, 'BSP', 'Fuse Volunteer', 'Pick-Up', NULL),
