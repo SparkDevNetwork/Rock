@@ -35,7 +35,7 @@ namespace Rock.Web.UI.Controls
             this.Text = this.Value;
 
             this.AppendText = "<i></i>";
-            this.AddCssClass( "rock-colorpicker-input" );
+            this.AddCssClass( "rock-colorpicker-input input-width-lg" );
 
             string script = "$('.rock-colorpicker-input').colorpicker();";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "rock-colorpicker", script, true );

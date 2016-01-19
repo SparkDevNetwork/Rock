@@ -6,23 +6,20 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
         
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-star"></i> Blank Detail Block</h1>
-
-                <div class="panel-labels">
-                    <Rock:HighlightLabel ID="hlblTest" runat="server" LabelType="Info" Text="Label" />
-                </div>
+                <h1 class="panel-title"><i class="fa fa-pencil"></i> Theme Editor</h1>
             </div>
             <div class="panel-body">
 
-
-                <Rock:RockDropDownList ID="ddlTheme" runat="server" Label="Theme" OnSelectedIndexChanged="ddlTheme_SelectedIndexChanged" AutoPostBack="true" />
+                <div class="well clearfix">
+                    <Rock:RockDropDownList ID="ddlTheme" runat="server" Label="Theme" OnSelectedIndexChanged="ddlTheme_SelectedIndexChanged" AutoPostBack="true" />
+                    <div class="pull-right">
+                        <asp:LinkButton ID="btnSave" runat="server" CssClass="btn btn-primary" Text="Save" Visible="false" OnClick="btnSave_Click" />
+                    </div>
+                </div>
 
                 <Rock:NotificationBox ID="nbMessages" runat="server" />
 
-                <asp:PlaceHolder ID="phThemeControls" runat="server" />
-                <asp:Literal ID="lTest" runat="server" />
-
-                <Rock:ColorPicker ID="cpColor" runat="server" Value="#000" Label="My Color" />
+                <asp:PlaceHolder ID="phThemeControls" runat="server" EnableViewState="true" />
 
             </div>
         
