@@ -765,7 +765,7 @@ BEGIN
 				ShowInGroupList, ShowInNavigation, TakesAttendance, AttendanceRule, AttendancePrintTo,
 				[Order], InheritedGroupTypeId, LocationSelectionMode, GroupTypePurposeValueId, [Guid],
 				AllowedScheduleTypes, SendAttendanceReminder)
-			SELECT @IsSystem, @ParentAreaName, @ParentAreaName + ' Area', 'Group', 'Member', @False, @False, @False, 
+			SELECT @IsSystem, @ParentAreaName, @ParentAreaName + ' Area', 'Group', 'Member', @False, @True, @False, 
 				@False, 0, 0, 0, NULL, 0, @CheckInAreaPurposeId, NEWID(), 0, @False
 
 			SELECT @ParentAreaId = SCOPE_IDENTITY()
