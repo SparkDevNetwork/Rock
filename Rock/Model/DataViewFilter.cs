@@ -502,6 +502,10 @@ namespace Rock.Model
         /// </summary>
         Between = 0x1000,
 
+        /// <summary>
+        /// Regular Expression
+        /// </summary>
+        RegularExpression = 0x2000,
     }
 
     #endregion

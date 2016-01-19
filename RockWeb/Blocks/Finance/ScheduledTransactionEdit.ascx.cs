@@ -1061,7 +1061,10 @@ achieve our mission.  We are so grateful for your commitment.
 
                 if ( Gateway.UpdateScheduledPayment( scheduledTransaction, paymentInfo, out errorMessage ) )
                 {
-                    scheduledTransaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, Gateway, rockContext );
+                    if ( hfPaymentTab.Value == "CreditCard" || hfPaymentTab.Value == "ACH" )
+                    {
+                        scheduledTransaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, Gateway, rockContext );
+                    }
 
                     var selectedAccountIds = SelectedAccounts
                         .Where( a => a.Amount > 0 )

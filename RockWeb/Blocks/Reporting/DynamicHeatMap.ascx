@@ -257,18 +257,20 @@
                         if (selectedShape.Name){
                             mapLabel = selectedShape.Name + ': ' + mapLabel;
                         }
-                        var mapCountLabel = new MapLabel({
-                            position: selectedBounds.getCenter(),
-                            map: map,
-                            fontSize: <%=this.LabelFontSize%>,
-                            text: mapLabel
-                        });
 
-                        if (selectedShape.mapCountLabel) {
-                            selectedShape.mapCountLabel.setMap(null);
+                        if (!selectedShape.mapCountLabel) {
+                            selectedShape.mapCountLabel = new MapLabel({
+                                map:map,
+                                fontSize: <%=this.LabelFontSize%>,
+                                text:'x',
+                                position: selectedBounds.getCenter()
+                            });
                         }
 
-                        selectedShape.mapCountLabel = mapCountLabel;
+                        selectedShape.mapCountLabel.position = selectedBounds.getCenter();
+                        selectedShape.mapCountLabel.changed('position');
+                        selectedShape.mapCountLabel.text = mapLabel;
+                        selectedShape.mapCountLabel.changed('text');
 
                         if (!justUpdate) {
                             selectedShape.addListener('bounds_changed', function (event) {
@@ -329,17 +331,17 @@
                     google.maps.event.addListener(drawingManager, 'polygoncomplete', function (polygon) {
                         google.maps.event.addListener(polygon, 'dragend', function (a,b,c) {
                             allShapes.forEach( function(s) {
-                                map.AddUpdateShape(s, false);
+                                map.AddUpdateShape(s, true);
                             });
                         });
                         google.maps.event.addListener(polygon.getPath(), 'insert_at', function (a,b,c) {
                             allShapes.forEach( function(s) {
-                                map.AddUpdateShape(s, false);
+                                map.AddUpdateShape(s, true);
                             });
                         });
                         google.maps.event.addListener(polygon.getPath(), 'set_at', function (a,b,c) {
                             allShapes.forEach( function(s) {
-                                map.AddUpdateShape(s, false);
+                                map.AddUpdateShape(s, true);
                             });
                         });
                     });
@@ -347,16 +349,35 @@
 
                 $('.js-deleteshape').click(function () {
                     if (selectedShape) {
-                        selectedShape.setMap(null);
+                        var allShapesIndex = allShapes.indexOf(selectedShape);
+                        
+                        if (allShapesIndex > -1)
+                        {
+                            allShapes.splice(allShapesIndex, 1);
+                        }
+
                         selectedShape.mapCountLabel.setMap(null);
+                        selectedShape.setMap(null);
                         selectedShape = null;
                     }
                 });
 
                 $('.js-createpieshape').click(function () {
-                    if (selectedShape && selectedShape.overlayType == 'circle') {
-                        var centerPt = selectedShape.center;
-                        var radiusMeters = selectedShape.radius;
+                    if (selectedShape ) {
+                        var selectedBounds = selectedShape.getBounds();
+
+                        var centerPt = selectedBounds.getCenter();
+                        var northEastPt = selectedBounds.getNorthEast();
+                        var radiusMeters = google.maps.geometry.spherical.computeDistanceBetween(centerPt, northEastPt);
+                        var startOffsetDegrees = google.maps.geometry.spherical.computeHeading(centerPt, northEastPt);
+
+                        var allShapesIndex = allShapes.indexOf(selectedShape);
+                        
+                        if (allShapesIndex > -1)
+                        {
+                            allShapes.splice(allShapesIndex, 1);
+                        }
+
                         selectedShape.setMap(null);
                         selectedShape.mapCountLabel.setMap(null);
                         selectedShape = null;
@@ -366,15 +387,17 @@
                         var degreesInc = 360 / pieSliceCount;
                         for (; i < pieSliceCount; i++) {
                             var startDegrees = i*degreesInc;
-                            var endDegrees = startDegrees+degreesInc;
 
                             var pieSlicePath = Array();
+                            var nextRadialPoint = startDegrees;
+                            var lastRadialPoint = startDegrees + degreesInc;
                             
-                            while (startDegrees < endDegrees)
-                            {
-                                pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, startDegrees));
-                                startDegrees++;
+                            while (nextRadialPoint < lastRadialPoint) {
+                                pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, nextRadialPoint + startOffsetDegrees));
+                                nextRadialPoint += 30;
                             }
+                            
+                            pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, lastRadialPoint + startOffsetDegrees));
                             
                             pieSlicePath.unshift(centerPt);
                             pieSlicePath.push(centerPt);
@@ -384,7 +407,7 @@
                                 fillColor: map.GetNextColor(),
                                 fillOpacity: 0.6,
                                 draggable: true,
-                                editable: false,
+                                editable: true,
                             });
 
                             google.maps.event.trigger(drawingManager, 'polygoncomplete', pieSlicePoly);
