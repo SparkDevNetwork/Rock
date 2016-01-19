@@ -60,8 +60,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.WorkflowAlert
 
                     // Return the count of active workflows assigned to the current user (or user's group)
                     var activeIncompleteWorkflows = new WorkflowActivityService( rockContext ).Queryable().AsNoTracking()
-                        .Where( a => !a.CompletedDateTime.HasValue
-                            && !a.Workflow.Status.Equals( "Completed" )
+                        .Where( a => !a.Workflow.Status.Equals( "Completed" )
                             && ( a.AssignedPersonAliasId == CurrentPersonAliasId || (
                                     a.AssignedGroupId.HasValue
                                     && memberGroups.Contains( (int)a.AssignedGroupId )

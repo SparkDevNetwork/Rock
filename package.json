@@ -12,5 +12,8 @@
     "norma-bower": "^0.3.7",
     "norma-copy": "newspring/norma-copy#feature-base-name",
     "normajs": "^1.7.10"
+  },
+  "devDependencies": {
+    "norma-browser-sync": "^0.4.4"
   }
 }

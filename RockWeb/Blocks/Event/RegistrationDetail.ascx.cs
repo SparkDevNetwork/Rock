@@ -1212,6 +1212,10 @@ namespace RockWeb.Blocks.Event
 
             PercentageDiscountExists = registration.DiscountPercentage > 0.0m;
             BuildFeeTable( registration );
+
+            pnlPaymentDetails.Visible = false;
+            pnlPaymentInfo.Visible = false;
+            
             BuildRegistrationControls( true );
 
             bool anyPayments = registration.Payments.Any();
@@ -1935,7 +1939,7 @@ namespace RockWeb.Blocks.Event
             object fieldValue = null;
             if ( registrant != null && registrant.FieldValues != null && registrant.FieldValues.ContainsKey( field.Id ) )
             {
-                fieldValue = registrant.FieldValues[field.Id];
+                fieldValue = registrant.FieldValues[field.Id].FieldValue;
             }
 
             if ( fieldValue != null )

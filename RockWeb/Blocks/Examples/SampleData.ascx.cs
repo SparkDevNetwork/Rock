@@ -1875,8 +1875,7 @@ namespace RockWeb.Blocks.Examples
                     FinancialTransactionDetail transactionDetail = new FinancialTransactionDetail {
                         AccountId = item.Key,
                         Amount = item.Value,
-                        Guid = Guid.NewGuid(),
-                        IsNonCash = false,
+                        Guid = Guid.NewGuid()
                     };
 
                     financialTransaction.TransactionDetails.Add( transactionDetail );

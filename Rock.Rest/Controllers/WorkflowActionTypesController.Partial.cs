@@ -52,7 +52,6 @@ namespace Rock.Rest.Controllers
             if ( string.IsNullOrWhiteSpace( id ) || ( idAsInt.HasValue && idAsInt.Value == 0 ) )
             {
                 // Root
-                var categorizedActions = GetCategorizedActions();
                 foreach( var category in ActionContainer.Instance.Categories )
                 {
                     var item = new TreeViewItem();
@@ -79,7 +78,7 @@ namespace Rock.Rest.Controllers
                                 var item = new TreeViewItem();
                                 item.Id = entityType.Id.ToString();
                                 item.Name = entityType.FriendlyName;
-                                item.HasChildren = true;
+                                item.HasChildren = false;
                                 item.IconCssClass = "fa fa-cube";
                                 list.Add( item );
                             }
@@ -101,6 +100,8 @@ namespace Rock.Rest.Controllers
 
             foreach ( var action in ActionContainer.Instance.Dictionary.Select( d => d.Value.Value ) )
             {
+                string categoryName = "Uncategorized";
+
                 var actionType = action.GetType();
                 var obj = actionType.GetCustomAttributes( typeof( ActionCategoryAttribute ), true ).FirstOrDefault();
                 if ( obj != null )
@@ -108,10 +109,13 @@ namespace Rock.Rest.Controllers
                     var actionCategory = obj as ActionCategoryAttribute;
                     if ( actionCategory != null )
                     {
-                        categorizedActions.AddOrIgnore( actionCategory.CategoryName, new List<EntityTypeCache>() );
-                        categorizedActions[actionCategory.CategoryName].Add( action.EntityType );
+                        categoryName = actionCategory.CategoryName;
                     }
                 }
+
+                categorizedActions.AddOrIgnore( categoryName, new List<EntityTypeCache>() );
+                categorizedActions[categoryName].Add( action.EntityType );
+
             }
 
             return categorizedActions;

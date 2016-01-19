@@ -84,13 +84,27 @@ namespace Rock.Storage.Provider
         /// <returns></returns>
         public override Stream GetContentStream( BinaryFile binaryFile )
         {
-            var file = new FileInfo( GetFilePath( binaryFile ) );
-            if ( file.Exists )
+            string filePath = GetFilePath( binaryFile );
+            if ( !string.IsNullOrWhiteSpace( filePath ) )
             {
-                return file.OpenRead();
+                var file = new FileInfo( GetFilePath( binaryFile ) );
+                if ( file.Exists )
+                {
+                    return file.OpenRead();
+                }
             }
 
             return new MemoryStream();
+        }
+
+        /// <summary>
+        /// Gets the path.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <returns></returns>
+        public override string GetPath( BinaryFile file )
+        {
+            return GetRelativePath( file );
         }
 
         /// <summary>
@@ -99,6 +113,21 @@ namespace Rock.Storage.Provider
         /// <param name="binaryFile">The binary file.</param>
         /// <returns></returns>
         private string GetFilePath( BinaryFile binaryFile )
+        {
+            string relativePath = GetRelativePath( binaryFile );
+            if ( string.IsNullOrWhiteSpace( relativePath ) )
+            {
+                return string.Empty;
+            }
+            return System.Web.Hosting.HostingEnvironment.MapPath( relativePath );
+        }
+
+        /// <summary>
+        /// Gets the relative path.
+        /// </summary>
+        /// <param name="binaryFile">The binary file.</param>
+        /// <returns></returns>
+        private string GetRelativePath ( BinaryFile binaryFile )
         {
             if ( binaryFile != null && !string.IsNullOrWhiteSpace( binaryFile.FileName ) )
             {
@@ -121,16 +150,14 @@ namespace Rock.Storage.Provider
                 {
                     subFolder = @"~/App_Data/Files";
                 }
-                
-                string folder = System.Web.Hosting.HostingEnvironment.MapPath( subFolder );
-                
-                string fileName = string.Format( "{0}_{1}", binaryFile.Guid, binaryFile.FileName );
-                return Path.Combine( folder, fileName );
+
+                subFolder = subFolder.EnsureTrailingForwardslash();
+
+                return string.Format( "{0}{1}_{2}", subFolder, binaryFile.Guid, binaryFile.FileName );
             }
 
             return string.Empty;
         }
-
 
     }
 }

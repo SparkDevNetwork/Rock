@@ -88,6 +88,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Site target, Site source )
         {
             target.Id = source.Id;
+            target.AllowIndexing = source.AllowIndexing;
             target.CommunicationPageId = source.CommunicationPageId;
             target.CommunicationPageRouteId = source.CommunicationPageRouteId;
             target.DefaultPageId = source.DefaultPageId;
@@ -105,6 +106,7 @@ namespace Rock.Model
             target.LoginPageRouteId = source.LoginPageRouteId;
             target.MobilePageId = source.MobilePageId;
             target.Name = source.Name;
+            target.PageHeaderContent = source.PageHeaderContent;
             target.PageNotFoundPageId = source.PageNotFoundPageId;
             target.PageNotFoundPageRouteId = source.PageNotFoundPageRouteId;
             target.PageViewRetentionPeriodDays = source.PageViewRetentionPeriodDays;

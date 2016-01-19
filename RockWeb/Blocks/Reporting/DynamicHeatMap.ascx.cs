@@ -45,6 +45,9 @@ namespace RockWeb.Blocks.Reporting
     [IntegerField( "Map Height", "Height of the map in pixels (default value is 600px)", false, 600, "", 4 )]
     [TextField( "Polygon Colors", "Comma-Delimited list of colors to use when displaying multiple polygons (e.g. #f37833,#446f7a,#afd074,#649dac,#f8eba2,#92d0df,#eaf7fc).", true, "#f37833,#446f7a,#afd074,#649dac,#f8eba2,#92d0df,#eaf7fc", "", 5 )]
     [DecimalField( "Point Grouping", "The number of miles per to use to group points that are close together. For example, enter 0.25 to group points in 1/4 mile blocks. Increase this if the heatmap has lots of points and is slow", required: false, order: 6 )]
+    [IntegerField( "Label Font Size", "Select the Font Size for the map labels", defaultValue: 24, order: 7 )]
+    [BooleanField( "Show Pie Slicer", "Adds a button which will convert a circle into triangular pie slices. To use, draw or click on a circle, then click the Pie Slicer button.", defaultValue: false, order: 8 )]
+    [IntegerField( "Pie Slice Count", "The number of slices to create when using the pie slicer", defaultValue: 6, order: 9) ]
     public partial class DynamicHeatMap : RockBlockCustomSettings
     {
         /// <summary>
@@ -117,7 +120,7 @@ namespace RockWeb.Blocks.Reporting
                 rsDataPointRadius.SelectedValue = this.DataPointRadius;
 
                 cpCampuses.SetValues( campusIds );
-                
+
                 // if there is no dataview specified, force the Filter options panel to be visible so they get a hint that a dataview needs to be picked
                 ddlUserDataView.SetValue( dataViewGuid );
                 if ( !dataViewGuid.HasValue && ddlUserDataView.Visible )
@@ -128,11 +131,14 @@ namespace RockWeb.Blocks.Reporting
                 var groupId = this.GetBlockUserPreference( "GroupId" ).AsIntegerOrNull();
                 gpGroupToMap.SetValue( groupId );
 
-                this.LabelFontSize = this.GetBlockUserPreference( "LabelFontSize" ).AsIntegerOrNull() ?? 24;
-                nbFontSize.Text = this.LabelFontSize.ToString();
-                
+                this.LabelFontSize = this.GetAttributeValue( "LabelFontSize" ).AsIntegerOrNull() ?? 24;
+
+
                 lMessages.Text = string.Empty;
                 pnlMap.Visible = true;
+
+                pnlPieSlicer.Visible = this.GetAttributeValue( "ShowPieSlicer" ).AsBoolean();
+                PieSliceCount = this.GetAttributeValue( "PieSliceCount" ).AsIntegerOrNull() ?? 6;
             }
 
             ShowMap();
@@ -177,6 +183,14 @@ namespace RockWeb.Blocks.Reporting
         /// The size of the label font.
         /// </value>
         public int LabelFontSize { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pie slice count.
+        /// </summary>
+        /// <value>
+        /// The pie slice count.
+        /// </value>
+        public int PieSliceCount { get; set; }
 
         /// <summary>
         /// 
@@ -481,8 +495,6 @@ namespace RockWeb.Blocks.Reporting
             this.SetBlockUserPreference( "Campuses", cpCampuses.SelectedCampusIds.AsDelimited( "," ) );
             this.SetBlockUserPreference( "DataView", ddlUserDataView.SelectedValue );
             this.SetBlockUserPreference( "GroupId", gpGroupToMap.SelectedValue );
-            this.SetBlockUserPreference( "LabelFontSize", nbFontSize.Text );
-            
 
             NavigateToPage( this.CurrentPageReference );
         }
