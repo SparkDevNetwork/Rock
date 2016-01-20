@@ -534,6 +534,11 @@ namespace RockWeb.Blocks.Event
                             newFormField.Guid = Guid.NewGuid();
                             newFormFieldsState[newForm.Guid].Add( newFormField );
 
+                            if ( formField.FieldSource != RegistrationFieldSource.PersonField )
+                            {
+                                newFormField.Attribute = formField.Attribute;
+                            }
+
                             if ( formField.FieldSource == RegistrationFieldSource.RegistrationAttribute && formField.Attribute != null )
                             {
                                 var newAttribute = formField.Attribute.Clone( false );
