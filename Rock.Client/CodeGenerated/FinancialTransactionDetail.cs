@@ -52,9 +52,6 @@ namespace Rock.Client
         /// <summary />
         public string ForeignKey { get; set; }
 
-        /// <summary />
-        public bool IsNonCash { get; set; }
-
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
@@ -105,7 +102,6 @@ namespace Rock.Client
             this.EntityTypeId = source.EntityTypeId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.IsNonCash = source.IsNonCash;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Summary = source.Summary;
             this.TransactionId = source.TransactionId;
