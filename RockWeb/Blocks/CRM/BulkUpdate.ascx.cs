@@ -1066,6 +1066,13 @@ namespace RockWeb.Blocks.Crm
 
                                                                                       var batchGroupMembers = groupMemberService.Queryable().Where(x => items.Contains(x.Id)).ToList();
 
+                                                                                      // also unregister them from any registration groups
+                                                                                      RegistrationRegistrantService registrantService = new RegistrationRegistrantService( context );
+                                                                                      foreach ( var registrant in registrantService.Queryable().Where( r => r.GroupMemberId.HasValue && items.Contains( r.GroupMemberId.Value ) ) )
+                                                                                      {
+                                                                                         registrant.GroupMemberId = null;
+                                                                                      }
+                                                                                      
                                                                                       groupMemberService.DeleteRange( batchGroupMembers );
                                                                                       
                                                                                       context.SaveChanges();
