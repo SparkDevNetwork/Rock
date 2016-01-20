@@ -94,6 +94,7 @@ namespace Rock.Web.UI.Controls
                             Literal lLiteral = new Literal();
                             lLiteral.ID = rockLiteralField.ID;
                             lLiteral.Text = rockLiteralField.Text;
+                            lLiteral.Visible = rockLiteralField.Visible;
 
                             container.Controls.Add( lLiteral );
                         }
