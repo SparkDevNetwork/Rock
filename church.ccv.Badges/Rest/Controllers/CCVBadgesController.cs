@@ -82,5 +82,174 @@ namespace church.ccv.Badges.Rest.Controllers
             /// </value>
             public string LeaderNames { get; set; }
         }
+
+        /// <summary>
+        /// Steps Result 
+        /// </summary>
+        public class StepsBarResult
+        {
+            public BaptismResult BaptismResult { get; set; }
+            public bool IsMember { get; set; }
+            public bool IsWorshipper { get; set; }
+            public ConnectionResult ConnectionResult { get; set; }
+            public bool isTithing { get; set; }
+            public ServingResult ServingResult { get; set;}
+            public CoachingResult CoachingResult { get; set; }
+        }
+
+        /// <summary>
+        /// Coaching Result
+        /// </summary>
+        public class CoachingResult
+        {
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance is coaching.
+            /// </summary>
+            /// <value>
+            /// <c>true</c> if this instance is coaching; otherwise, <c>false</c>.
+            /// </value>
+            public bool IsCoaching { get; set; }
+            /// <summary>
+            /// Gets or sets the groups.
+            /// </summary>
+            /// <value>
+            /// The groups.
+            /// </value>
+            public List<GroupMemberSummary> Groups { get; set; }
+        }
+
+        /// <summary>
+        /// Serving Result
+        /// </summary>
+        public class ServingResult
+        {
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance is serving.
+            /// </summary>
+            /// <value>
+            /// <c>true</c> if this instance is serving; otherwise, <c>false</c>.
+            /// </value>
+            public bool IsServing { get; set; }
+            /// <summary>
+            /// Gets or sets the groups.
+            /// </summary>
+            /// <value>
+            /// The groups.
+            /// </value>
+            List<GroupMemberSummary> Groups { get; set; }
+        }
+
+        /// <summary>
+        /// Connection Result
+        /// </summary>
+        public class ConnectionResult
+        {
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance is leader.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance is leader; otherwise, <c>false</c>.
+            /// </value>
+            public bool IsLeader { get; set; }
+            /// <summary>
+            /// Gets or sets the connection status.
+            /// </summary>
+            /// <value>
+            /// The connection status.
+            /// </value>
+            public ConnectionStatus ConnectionStatus { get; set; }
+            /// <summary>
+            /// Gets or sets the groups.
+            /// </summary>
+            /// <value>
+            /// The groups.
+            /// </value>
+            public List<GroupMemberSummary> Groups { get; set; }
+        }
+
+        /// <summary>
+        /// Group Member Summary
+        /// </summary>
+        public class GroupMemberSummary
+        {
+            /// <summary>
+            /// Gets or sets the group identifier.
+            /// </summary>
+            /// <value>
+            /// The group identifier.
+            /// </value>
+            public int GroupId { get; set; }
+            /// <summary>
+            /// Gets or sets the name of the group.
+            /// </summary>
+            /// <value>
+            /// The name of the group.
+            /// </value>
+            public string GroupName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the role.
+            /// </summary>
+            /// <value>
+            /// The role.
+            /// </value>
+            public string Role { get; set; }
+
+            /// <summary>
+            /// Gets or sets the role identifier.
+            /// </summary>
+            /// <value>
+            /// The role identifier.
+            /// </value>
+            public int RoleId { get; set; }
+        }
+
+        /// <summary>
+        /// Connection Status
+        /// </summary>
+        public enum ConnectionStatus
+        {
+            InGroup,
+            NotInGroup,
+            PendingInGroup
+        }
+
+        /// <summary>
+        /// Baptism Result
+        /// </summary>
+        public class BaptismResult
+        {
+            /// <summary>
+            /// Gets or sets the baptism date.
+            /// </summary>
+            /// <value>
+            /// The baptism date.
+            /// </value>
+            public DateTime? BaptismDate { get; set; }
+            /// <summary>
+            /// Gets or sets the baptism status.
+            /// </summary>
+            /// <value>
+            /// The baptism status.
+            /// </value>
+            public BaptismStatus BaptismStatus { get; set; }
+            /// <summary>
+            /// Gets or sets the registration group identifier.
+            /// </summary>
+            /// <value>
+            /// The registration group identifier.
+            /// </value>
+            public int RegistrationGroupId { get; set; }
+        }
+
+        /// <summary>
+        /// Baptism status
+        /// </summary>
+        public enum BaptismStatus
+        {
+            NotBaptised,
+            Baptised,
+            Registered
+        }
     }
 }
