@@ -75,7 +75,13 @@ namespace Rock.Migrations
             AddColumn( "dbo.PageView", "PageViewSessionId", c => c.Int( nullable: true ) );
 
             // Populate PageViewUserAgent from pre-converted PageView table
-            Sql( @"INSERT INTO PageViewUserAgent (
+            Sql( @"
+--Truncate any user agents longer than 450 characters first (new field is indexed which requires max len of 900 bytes)
+UPDATE PageView
+SET UserAgent = LEFT(UserAgent,450)
+WHERE UserAgent IS NOT NULL
+
+INSERT INTO PageViewUserAgent (
     UserAgent
     ,[Guid]
     ) (
