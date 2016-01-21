@@ -87,7 +87,7 @@ namespace Rock.Data
         /// <param name="query">The query.</param>
         /// <param name="commandType">Type of the command.</param>
         /// <param name="parameters">The parameters.</param>
-        /// <param name="timeOut">The time out.</param>
+        /// <param name="timeOut">The time out in seconds.</param>
         /// <returns></returns>
         public static DataSet GetDataSet( string query, CommandType commandType, Dictionary<string, object> parameters, int? timeOut = null )
         {
