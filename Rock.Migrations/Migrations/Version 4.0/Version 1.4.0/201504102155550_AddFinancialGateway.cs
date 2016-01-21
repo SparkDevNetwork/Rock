@@ -124,7 +124,7 @@ namespace Rock.Migrations
     )
     WHERE [GatewayEntityTypeId] IS NOT NULL
 
-    UPDATE [FinancialTransaction]
+    UPDATE [FinancialPersonSavedAccount]
     SET [FinancialGatewayId] = (
 	    CASE [GatewayEntityTypeId] 
             WHEN @PayFlowProGatewayEntityTypeId THEN @PayFlowProGatewayId
