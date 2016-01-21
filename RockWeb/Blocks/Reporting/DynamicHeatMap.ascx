@@ -88,6 +88,14 @@
                 // configure/display heatmap
                 var allShapes = [];
                 var selectedShape;
+
+                var pieSlicerState = {
+                    SelectedCenterPt: null,
+                    SelectedRadius: null,
+                    SelectedPieCuts: [],
+                    CurrentPieSlices: []
+                };
+                
                 var map;
 
                 var heatMap;
@@ -203,7 +211,25 @@
 
                     heatmap.setMap(map);
 
-                    map.GetNextColor = function GetNextColor() {
+                    map.DeleteShape = function(shape) {
+                        var allShapesIndex = allShapes.indexOf(shape);
+                                    
+                        if (allShapesIndex > -1)
+                        {
+                            allShapes.splice(allShapesIndex, 1);
+                        }
+                                    
+                        shape.setMap(null);
+                        shape.mapCountLabel.setMap(null);
+                        if (shape == selectedShape)
+                        {
+                            selectedShape = null;
+                        }
+                        
+                        shape = null;
+                    };
+
+                    map.GetNextColor = function () {
                         if (polygonColors && polygonColors.length) {
                             if (polygonColorIndex >= polygonColors.length) {
                                 polygonColorIndex = 0;
@@ -223,6 +249,7 @@
                                 selectedShape = shape
                             });
 
+                            // set the color of the next shape
                             if (polygonColors && polygonColors.length) {
                                 var color = map.GetNextColor();
 
@@ -349,69 +376,145 @@
 
                 $('.js-deleteshape').click(function () {
                     if (selectedShape) {
-                        var allShapesIndex = allShapes.indexOf(selectedShape);
-                        
-                        if (allShapesIndex > -1)
-                        {
-                            allShapes.splice(allShapesIndex, 1);
-                        }
-
-                        selectedShape.mapCountLabel.setMap(null);
-                        selectedShape.setMap(null);
-                        selectedShape = null;
+                        map.DeleteShape(selectedShape);
                     }
                 });
 
                 $('.js-createpieshape').click(function () {
-                    if (selectedShape ) {
-                        var selectedBounds = selectedShape.getBounds();
 
-                        var centerPt = selectedBounds.getCenter();
-                        var northEastPt = selectedBounds.getNorthEast();
-                        var radiusMeters = google.maps.geometry.spherical.computeDistanceBetween(centerPt, northEastPt);
-                        var startOffsetDegrees = google.maps.geometry.spherical.computeHeading(centerPt, northEastPt);
+                    // make sure drawing manager mode is the hand so that 'mousemove' will fire
+                    drawingManager.setDrawingMode(null);
 
-                        var allShapesIndex = allShapes.indexOf(selectedShape);
-                        
-                        if (allShapesIndex > -1)
-                        {
-                            allShapes.splice(allShapesIndex, 1);
+                    if ((selectedShape && (typeof(selectedShape.overlayType) != 'undefined') && selectedShape.overlayType == 'circle') || (pieSlicerState.SelectedCenterPt && pieSlicerState.SelectedRadius)) {
+
+                        // if we are starting with a new shape (not a pieslice), start over with a new pieslicer
+                        if (selectedShape && (typeof(selectedShape.overlayType) != 'undefined') && selectedShape.overlayType != 'pieslice') {
+                            if (selectedShape.overlayType == 'circle') {
+                                pieSlicerState.SelectedCenterPt = selectedShape.getCenter();
+                                pieSlicerState.SelectedRadius = selectedShape.radius;
+                            } else {
+                                pieSlicerState.SelectedCenterPt = null;
+                                pieSlicerState.SelectedRadius = null;
+                            }
+                            pieSlicerState.SelectedPieCuts = [];
+                            pieSlicerState.CurrentPieSlices = [];
                         }
 
-                        selectedShape.setMap(null);
-                        selectedShape.mapCountLabel.setMap(null);
-                        selectedShape = null;
-
-                        var i = 0;
-                        var pieSliceCount = <%=this.PieSliceCount%>;
-                        var degreesInc = 360 / pieSliceCount;
-                        for (; i < pieSliceCount; i++) {
-                            var startDegrees = i*degreesInc;
-
-                            var pieSlicePath = Array();
-                            var nextRadialPoint = startDegrees;
-                            var lastRadialPoint = startDegrees + degreesInc;
-                            
-                            while (nextRadialPoint < lastRadialPoint) {
-                                pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, nextRadialPoint + startOffsetDegrees));
-                                nextRadialPoint += 30;
-                            }
-                            
-                            pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, lastRadialPoint + startOffsetDegrees));
-                            
-                            pieSlicePath.unshift(centerPt);
-                            pieSlicePath.push(centerPt);
-                            var pieSlicePoly = new google.maps.Polygon({
-                                path: pieSlicePath,
-                                map: map,
-                                fillColor: map.GetNextColor(),
-                                fillOpacity: 0.6,
-                                draggable: true,
-                                editable: true,
+                        // map to the click event which we'll use to make the pieslice position permanent
+                        if (!map.pieClickListener) {
+                            map.pieClickListener = google.maps.event.addListener(map, 'click', function (event) {
+                                if (selectedShape && selectedShape.isPieDrawing){
+                                    pieSlicerState.SelectedPieCuts = [];
+                                    pieSlicerState.CurrentPieSlices.forEach(function(ps){
+                                        pieSlicerState.SelectedPieCuts.push(ps.startArc);
+                                    })
+                                    
+                                    selectedShape.isPieDrawing = false;
+                                    selectedShape.deleteOnFirstSlice = false;
+                                    map.pieMouseMoveListener.remove();
+                                    map.pieMouseMoveListener = null;
+                                }
                             });
+                        }
+                        
+                        // when the move moves over the map, draw the pie shapes in realtime based on the mouse position relative to the center of the orig circle
+                        if (!map.pieMouseMoveListener) {
+                            map.pieMouseMoveListener = google.maps.event.addListener(map, 'mousemove', function (event) {
+                                if (pieSlicerState.SelectedCenterPt && pieSlicerState.SelectedRadius && selectedShape){
 
-                            google.maps.event.trigger(drawingManager, 'polygoncomplete', pieSlicePoly);
-                            map.AddUpdateShape(pieSlicePoly, false);
+                                    var heading = google.maps.geometry.spherical.computeHeading(pieSlicerState.SelectedCenterPt, event.latLng);
+                                    while (heading < 0)
+                                    {
+                                        heading += 360;
+                                    }
+
+                                    var currentPieCuts = [];
+                                    currentPieCuts.push(heading);
+                                    pieSlicerState.SelectedPieCuts.forEach(function(pc) {
+                                        currentPieCuts.push(pc);
+                                    });
+
+                                    currentPieCuts.sort(function(a,b){
+                                        return a - b;
+                                    });
+
+                                    // if we already have the pieslices, delete them all and we'll redraw them based on the currentPieCuts
+                                    pieSlicerState.CurrentPieSlices.forEach(function(ps) {
+                                        map.DeleteShape(ps);
+                                    });
+
+                                    pieSlicerState.CurrentPieSlices = [];
+
+                                    // if we are starting with a circle, delete it since we are redrawing it as a big pieslice
+                                    if (selectedShape && (selectedShape.isPieDrawing || selectedShape.overlayType == 'circle')){
+                                        map.DeleteShape(selectedShape);
+                                    }
+                                    
+                                    currentPieCuts.forEach(function(pc, i) {
+                                        var centerPt = pieSlicerState.SelectedCenterPt;
+                                        var radiusMeters = pieSlicerState.SelectedRadius;
+                                        
+                                        var pieSlicePath = Array();
+
+                                        var nextRadialPoint = pc;
+                                        lastRadialPoint = pc;
+
+                                        if (i < currentPieCuts.length-1){
+                                            // find the next arc starting point
+                                            lastRadialPoint = currentPieCuts[i+1];
+                                        }
+                                        else{
+                                            // use the first arc of our currentPieCuts
+                                            lastRadialPoint = currentPieCuts[0];
+
+                                            // make sure the pieshape colors don't flash to random colors as it is resized
+                                            polygonColorIndex = 0;
+                                        }
+
+                                        // if the start of the arc is counterclockwise from the current, move it back 360 degrees (because it is probably the last missing piece of the circle)
+                                        if (nextRadialPoint >= lastRadialPoint){
+                                            nextRadialPoint -= 360;
+                                        }
+                                    
+                                        // create a Google Map Path as an array of all the lines from the center to the outer radius for every full degree to make it look like a pie slice
+                                        while (nextRadialPoint < lastRadialPoint) {
+                                            pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, nextRadialPoint));
+                                            nextRadialPoint += 1;
+                                        }
+                            
+                                        // ensure that the last path of the pieslice is there for the last line of the path
+                                        var endArc = lastRadialPoint;
+                                        pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, endArc));
+                            
+                                        // put the center point to the start and end of the pieSlicePath
+                                        pieSlicePath.unshift(centerPt);
+                                        pieSlicePath.push(centerPt);
+
+                                        var pieSlicePoly = new google.maps.Polygon({
+                                            path: pieSlicePath,
+                                            map: map,
+                                            fillColor: map.GetNextColor(),
+                                            fillOpacity: 0.6,
+                                            draggable: false,
+                                            editable: false,
+                                        });
+
+                                        pieSlicePoly.isPieDrawing = true;
+                                        pieSlicePoly.startArc = pc;
+                                        pieSlicePoly.overlayType = 'pieslice';
+                                        while (pieSlicePoly.startArc < 0){
+                                            pieSlicePoly.startArc += 360;
+                                        }
+
+                                        google.maps.event.trigger(drawingManager, 'polygoncomplete', pieSlicePoly);
+
+                                        pieSlicerState.CurrentPieSlices.push(pieSlicePoly);
+
+                                        map.AddUpdateShape(pieSlicePoly, false );
+                                    });
+                                }
+                            
+                            });
                         }
                     }
                 });
