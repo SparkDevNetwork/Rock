@@ -440,7 +440,6 @@ namespace RockWeb.Blocks.Groups
                 {
                     // person removed from SecurityRole, Flush
                     Rock.Security.Role.Flush( group.Id );
-                    Rock.Security.Authorization.Flush();
                 }
             }
 

@@ -469,7 +469,6 @@ namespace RockWeb.Blocks.Groups
             if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
             {
                 Rock.Security.Role.Flush( group.Id );
-                Rock.Security.Authorization.Flush();
             }
 
             pnlEditGroupMember.Visible = false;
