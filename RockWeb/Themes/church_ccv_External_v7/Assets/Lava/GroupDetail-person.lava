@@ -32,7 +32,7 @@
     <small>({{ member.GroupRole.Name}})</small>
 
     <br />
-    <a href="{{ communicationPage }}?person={{ member.Person.PrimaryAliasId }}">
+    <a href="{{ communicationPage }}?person={{ member.Person.Id }}">
       {{ member.Person.Email }}
     </a>
 
