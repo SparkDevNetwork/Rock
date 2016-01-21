@@ -116,23 +116,23 @@ BEGIN
                 SET @GroupFirstOrNickNames = SUBSTRING(@GroupFirstOrNickNames, 0, len(@GroupFirstOrNickNames) - 1)
             END
 
-			IF len(@GroupAdultFullNames) > 2
+            IF len(@GroupAdultFullNames) > 2
             BEGIN
                 -- trim the extra ' &' off the end 
                 SET @GroupAdultFullNames = SUBSTRING(@GroupAdultFullNames, 0, len(@GroupAdultFullNames) - 1)
             END
 
-			-- if all the firstnames are blanks, get rid of the '&'
-			IF (LTRIM(RTRIM(@GroupFirstOrNickNames)) = '&')
-			BEGIN
-				SET @GroupFirstOrNickNames = ''
-			END
+            -- if all the firstnames are blanks, get rid of the '&'
+            IF (LTRIM(RTRIM(@GroupFirstOrNickNames)) = '&')
+            BEGIN
+                SET @GroupFirstOrNickNames = ''
+            END
 
-			-- if all the fullnames are blanks, get rid of the '&'
-			IF (LTRIM(RTRIM(@GroupAdultFullNames)) = '&')
-			BEGIN
-				SET @GroupAdultFullNames = ''
-			END
+            -- if all the fullnames are blanks, get rid of the '&'
+            IF (LTRIM(RTRIM(@GroupAdultFullNames)) = '&')
+            BEGIN
+                SET @GroupAdultFullNames = ''
+            END
         END
 
         IF @AdultLastNameCount = 0
@@ -148,11 +148,11 @@ BEGIN
                 SET @GroupNonAdultFullNames = SUBSTRING(@GroupNonAdultFullNames, 0, len(@GroupNonAdultFullNames) - 1)
             END
 
-			-- if all the fullnames are blanks, get rid of the '&'
-			IF (LTRIM(RTRIM(@GroupNonAdultFullNames)) = '&')
-			BEGIN
-				SET @GroupNonAdultFullNames = ''
-			END
+            -- if all the fullnames are blanks, get rid of the '&'
+            IF (LTRIM(RTRIM(@GroupNonAdultFullNames)) = '&')
+            BEGIN
+                SET @GroupNonAdultFullNames = ''
+            END
         END
 
         IF (@AdultLastNameCount = 1)
@@ -170,6 +170,11 @@ BEGIN
             -- multiple adult lastnames
             SET @PersonNames = @GroupAdultFullNames;
         END
+    END
+
+    WHILE (len(@PersonNames) - len(replace(@PersonNames, ' & ', '  ')) > 1)
+    BEGIN
+        SET @PersonNames = Stuff(@PersonNames, CharIndex(' & ', @PersonNames), Len(' & '), ', ')
     END
 
     INSERT INTO @PersonNamesTable ([PersonNames])
