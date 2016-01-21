@@ -88,6 +88,8 @@
                 // configure/display heatmap
                 var allShapes = [];
                 var selectedShape;
+                var selectedCenterPt;
+                var selectedRadius;
                 var map;
 
                 var heatMap;
@@ -363,55 +365,108 @@
                 });
 
                 $('.js-createpieshape').click(function () {
-                    if (selectedShape ) {
-                        var selectedBounds = selectedShape.getBounds();
+                    if ((selectedShape && selectedShape.overlayType == 'circle') || (selectedCenterPt && selectedRadius)) {
 
-                        var centerPt = selectedBounds.getCenter();
-                        var northEastPt = selectedBounds.getNorthEast();
-                        var radiusMeters = google.maps.geometry.spherical.computeDistanceBetween(centerPt, northEastPt);
-                        var startOffsetDegrees = google.maps.geometry.spherical.computeHeading(centerPt, northEastPt);
+                        debugger
 
-                        var allShapesIndex = allShapes.indexOf(selectedShape);
-                        
-                        if (allShapesIndex > -1)
-                        {
-                            allShapes.splice(allShapesIndex, 1);
+                        if (selectedShape && selectedShape.overlayType == 'circle') {
+                            selectedCenterPt = selectedShape.getCenter();
+                            selectedRadius = selectedShape.radius;
                         }
 
-                        selectedShape.setMap(null);
-                        selectedShape.mapCountLabel.setMap(null);
-                        selectedShape = null;
-
-                        var i = 0;
-                        var pieSliceCount = <%=this.PieSliceCount%>;
-                        var degreesInc = 360 / pieSliceCount;
-                        for (; i < pieSliceCount; i++) {
-                            var startDegrees = i*degreesInc;
-
-                            var pieSlicePath = Array();
-                            var nextRadialPoint = startDegrees;
-                            var lastRadialPoint = startDegrees + degreesInc;
-                            
-                            while (nextRadialPoint < lastRadialPoint) {
-                                pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, nextRadialPoint + startOffsetDegrees));
-                                nextRadialPoint += 30;
-                            }
-                            
-                            pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, lastRadialPoint + startOffsetDegrees));
-                            
-                            pieSlicePath.unshift(centerPt);
-                            pieSlicePath.push(centerPt);
-                            var pieSlicePoly = new google.maps.Polygon({
-                                path: pieSlicePath,
-                                map: map,
-                                fillColor: map.GetNextColor(),
-                                fillOpacity: 0.6,
-                                draggable: true,
-                                editable: true,
+                        if (!map.pieClickListener) {
+                            map.pieClickListener = google.maps.event.addListener(map, 'click', function (event) {
+                                if (selectedShape && selectedShape.isPieDrawing){
+                                    selectedShape.isPieDrawing = false;
+                                    selectedShape.deleteOnFirstSlice = false;
+                                    map.pieMouseMoveListener.remove();
+                                    map.pieMouseMoveListener = null;
+                                }
                             });
+                        }
+                        
+                        if (!map.pieMouseMoveListener) {
+                            map.pieMouseMoveListener = google.maps.event.addListener(map, 'mousemove', function (event) {
+                                if (selectedCenterPt && selectedRadius && selectedShape){
 
-                            google.maps.event.trigger(drawingManager, 'polygoncomplete', pieSlicePoly);
-                            map.AddUpdateShape(pieSlicePoly, false);
+                                    if (selectedShape && selectedShape.isPieDrawing){
+                                        selectedShape.deleteOnFirstSlice = true;
+                                    }
+
+                                    if (selectedShape.deleteOnFirstSlice) {
+
+                                        var allShapesIndex = allShapes.indexOf(selectedShape);
+                                    
+                                        if (allShapesIndex > -1)
+                                        {
+                                            allShapes.splice(allShapesIndex, 1);
+                                        }
+                                    
+                                        selectedShape.setMap(null);
+                                        selectedShape.mapCountLabel.setMap(null);
+                                        selectedShape = null;
+                                    }
+
+                                    var heading = google.maps.geometry.spherical.computeHeading(selectedCenterPt, event.latLng);
+                                
+                                    var pieSlicePath = Array();
+                                    var pointsCount = 0;
+                                    var startOffsetDegrees = heading;
+
+                                    var nextRadialPoint = 0;
+                                    var lastRadialPoint = 360;
+                                    if (selectedShape && selectedShape.startOffsetDegrees)
+                                    {
+                                        lastRadialPoint = lastRadialPoint + selectedShape.startOffsetDegrees
+                                        while (lastRadialPoint > 360)
+                                        {
+                                            lastRadialPoint = lastRadialPoint - 360;
+                                        }
+                                    }
+                                    var centerPt = selectedCenterPt;
+                                    var radiusMeters = selectedRadius;
+                            
+                                    while (nextRadialPoint < lastRadialPoint) {
+                                        pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, nextRadialPoint + startOffsetDegrees));
+                                        nextRadialPoint += 1;
+                                    }
+                            
+                                    pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, lastRadialPoint + startOffsetDegrees));
+                            
+                                    pieSlicePath.unshift(centerPt);
+                                    pieSlicePath.push(centerPt);
+
+                                    var polyColor;
+                                    if (selectedShape && selectedShape.isPieDrawing)
+                                    {
+                                        polyColor = selectedShape.fillColor;
+                                    }
+                                    else
+                                    {
+                                        polyColor = map.GetNextColor();
+                                    }
+                                    var pieSlicePoly = new google.maps.Polygon({
+                                        path: pieSlicePath,
+                                        map: map,
+                                        fillColor: map.GetNextColor(),
+                                        fillOpacity: 0.6,
+                                        draggable: false,
+                                        editable: false,
+                                    });
+
+                                    pieSlicePoly.isPieDrawing = true;
+                                    pieSlicePoly.isPieSlice = true;
+                                    pieSlicePoly.startOffsetDegrees = startOffsetDegrees;
+
+                                    google.maps.event.trigger(drawingManager, 'polygoncomplete', pieSlicePoly);
+                                    map.AddUpdateShape(pieSlicePoly, false);
+                                }
+                            
+                            });
+                        }
+
+                        if (selectedShape.overlayType && selectedShape.overlayType == 'circle') {
+                            selectedShape.deleteOnFirstSlice = true;
                         }
                     }
                 });
