@@ -33,6 +33,7 @@
                                             By default, a grid will be displayed showing all the rows and columns returned by the query.  However, if a 'Formatted Ouput' value is included below, the results will be formatted
                                             according to the 'Formatted Ouput' value." />
                                     <Rock:RockCheckBox ID="cbStoredProcedure" runat="server" Label="Query is a Stored Procedure" Text="Yes" />
+                                    
                                 </div>
                             </div>
 
@@ -73,6 +74,8 @@
 
                                     <Rock:RockTextBox ID="tbMergeFields" runat="server" Label="Communication Merge Fields" TextMode="MultiLine" Rows="1" CssClass="input-xlarge"
                                         Help="When creating a new communication from a person report, additional fields from the report can be used as merge fields on the communication.  Enter any column names that you'd like to be available for the communication." />
+                                
+                                    <Rock:NumberBox ID="nbTimeout" runat="server" Label="Timeout" Help="In seconds." />
                                 </div>
 
                                 <div class="col-md-12">
