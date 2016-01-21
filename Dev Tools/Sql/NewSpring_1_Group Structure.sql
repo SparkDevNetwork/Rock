@@ -57,14 +57,12 @@ VALUES
 (@IsSystem, 'Florence', 'FLO', NEWID(), @True),
 (@IsSystem, 'Greenville', 'GVL', NEWID(), @True),
 (@IsSystem, 'Greenwood', 'GWD', NEWID(), @True),
-(@IsSystem, 'Greer', 'GRR', NEWID(), @True),
 (@IsSystem, 'Hilton Head', 'HHD', NEWID(), @True),
 (@IsSystem, 'Lexington', 'LEX', NEWID(), @True),
 (@IsSystem, 'Myrtle Beach', 'MYR', NEWID(), @True),
 (@IsSystem, 'Northeast Columbia', 'NEC', NEWID(), @True),
 (@IsSystem, 'Powdersville', 'POW', NEWID(), @True),
 (@IsSystem, 'Rock Hill', 'RKH', NEWID(), @True),
-(@IsSystem, 'Simpsonville', 'SIM', NEWID(), @True),
 (@IsSystem, 'Spartanburg', 'SPA', NEWID(), @True),
 (@IsSystem, 'Sumter', 'SUM', NEWID(), @True),
 (@IsSystem, 'Web', 'WEB', NEWID(), @False)
@@ -748,7 +746,7 @@ BEGIN
 
 	IF @AreaName <> ''
 	BEGIN
-				
+
 		SELECT @msg = 'Creating ' + @ParentAreaName + ' / ' + @AreaName
 		RAISERROR ( @msg, 0, 0 ) WITH NOWAIT
 
@@ -760,7 +758,7 @@ BEGIN
 
 		IF @ParentAreaId IS NULL
 		BEGIN
-			
+
 			INSERT GroupType (IsSystem, Name, [Description], GroupTerm, GroupMemberTerm, AllowMultipleLocations, 
 				ShowInGroupList, ShowInNavigation, TakesAttendance, AttendanceRule, AttendancePrintTo,
 				[Order], InheritedGroupTypeId, LocationSelectionMode, GroupTypePurposeValueId, [Guid],
