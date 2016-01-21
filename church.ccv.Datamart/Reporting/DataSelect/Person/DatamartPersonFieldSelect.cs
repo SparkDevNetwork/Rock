@@ -75,6 +75,26 @@ namespace church.ccv.Datamart.Reporting.DataSelect.Person
         }
 
         /// <summary>
+        /// Gets the grid field.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        public override System.Web.UI.WebControls.DataControlField GetGridField( Type entityType, string selection )
+        {
+            var datamartParameterExpression = Expression.Parameter( typeof( DatamartPerson ), "d" );
+            MemberExpression datamartMember = Expression.Property( datamartParameterExpression, selection );
+            if ( datamartMember != null )
+            {
+                return Grid.GetGridField( datamartMember.Type );
+            }
+            else
+            {
+                return base.GetGridField( entityType, selection );
+            }
+        }
+
+        /// <summary>
         /// Gets the default column header text.
         /// </summary>
         /// <value>
