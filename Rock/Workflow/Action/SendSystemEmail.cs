@@ -37,7 +37,7 @@ namespace Rock.Workflow.Action
 
     [SystemEmailField( "System Email", "A system email to send.", true, "", "", 0 )]
     [WorkflowTextOrAttribute( "Send To Email Addresses", "Attribute Value", "The email addresses or an attribute that contains the person or email address that email should be sent to. <span class='tip tip-lava'></span>", true, "", "", 1, "Recipient",
-        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
+        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
     [BooleanField( "Save Communication History", "Should a record of this communication be saved to the recipient's profile", false, "", 2 )]
     public class SendSystemEmail : ActionComponent
     {
@@ -70,6 +70,7 @@ namespace Rock.Workflow.Action
                         switch ( attribute.FieldType.Class )
                         {
                             case "Rock.Field.Types.TextFieldType":
+                            case "Rock.Field.Types.EmailFieldType":
                                 {
                                     var recipientList = toValue.SplitDelimitedValues().ToList();
                                     foreach ( string recipient in recipientList )
