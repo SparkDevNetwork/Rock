@@ -79,6 +79,25 @@ ___ 10. Open the SQL file and make the following edits:
             'TEXTIMAGE_ON [PRIMARY]'
             'ON [PRIMARY]'
 
+         * The script will have issues inserting into the [AttributeValue] table wiht its persisted
+           computed column so:
+           1. Remove this line from the create table for [AttributeValue]
+                [ValueAsNumeric]  AS (case when len([value])<(100) then case when isnumeric([value])=(1) AND NOT [value] like '%[^0-9.]%' then TRY_CAST([value] AS [numeric](38,10))  end  end) PERSISTED;
+
+           2. Search for the lines
+              SET IDENTITY_INSERT [dbo].[AttributeValue] OFF
+              SET ANSI_PADDING OFF
+         
+           ... and place the lines below under it ...
+              SET ANSI_NULLS ON
+              GO
+              SET QUOTED_IDENTIFIER ON
+              GO
+              SET ANSI_PADDING ON
+              GO
+              ALTER TABLE [AttributeValue]
+                     ADD [ValueAsNumeric]  AS (case when len([value])<(100) then case when isnumeric([value])=(1) AND NOT [value] like '%[^0-9.]%' then TRY_CAST([value] AS [numeric](38,10))  end  end) PERSISTED;
+
 
 ___ 11. Zip the file into a new file named 'sql-latest.zip'
 
