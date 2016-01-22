@@ -32,7 +32,7 @@
             </asp:Panel>
 
             <div class="margin-all-md">
-                <div class="pull-right">
+                <div class="pull-right js-heatmap-actions">
                     <asp:Panel ID="pnlPieSlicer" runat="server" CssClass="btn btn-default btn-xs js-createpieshape">
                         <i class='fa fa-pie-chart' title="Create pie slices from selected circle"></i>
                     </asp:Panel>
@@ -86,9 +86,6 @@
                 });
 
                 // configure/display heatmap
-                var allShapes = [];
-                var selectedShape;
-
                 var pieSlicerState = {
                     SelectedCenterPt: null,
                     SelectedRadius: null,
@@ -127,6 +124,11 @@
                     // Display a map on the page
                     var mapCanvas = document.getElementById('map_canvas');
                     map = new google.maps.Map(mapCanvas, mapOptions);
+
+                    map.AllShapes = [];
+                    map.SelectedShape = null;
+
+                    $(mapCanvas).data("googleMap", map);
                     map.setTilt(45);
                     map.setCenter(centerLatLng);
 
@@ -212,18 +214,18 @@
                     heatmap.setMap(map);
 
                     map.DeleteShape = function(shape) {
-                        var allShapesIndex = allShapes.indexOf(shape);
+                        var allShapesIndex = map.AllShapes.indexOf(shape);
                                     
                         if (allShapesIndex > -1)
                         {
-                            allShapes.splice(allShapesIndex, 1);
+                            map.AllShapes.splice(allShapesIndex, 1);
                         }
                                     
                         shape.setMap(null);
                         shape.mapCountLabel.setMap(null);
-                        if (shape == selectedShape)
+                        if (shape == map.SelectedShape)
                         {
-                            selectedShape = null;
+                            map.SelectedShape = null;
                         }
                         
                         shape = null;
@@ -242,11 +244,11 @@
                     }
 
                     map.AddUpdateShape = function AddUpdateShape(shape, justUpdate) {
-                        selectedShape = shape;
+                        map.SelectedShape = shape;
                         
                         if (!justUpdate) {
                             google.maps.event.addListener(shape, 'click', function () {
-                                selectedShape = shape
+                                map.SelectedShape = shape
                             });
 
                             // set the color of the next shape
@@ -261,7 +263,7 @@
                                 drawingManager.rectangleOptions.strokeColor = color;
                             }
 
-                            allShapes.push(shape);
+                            map.AllShapes.push(shape);
                         }
 
                         var selectedBounds = shape.getBounds();
@@ -281,12 +283,12 @@
 
                         var totalCount = pointCount;
                         var mapLabel = totalCount.toString();
-                        if (selectedShape.Name){
-                            mapLabel = selectedShape.Name + ': ' + mapLabel;
+                        if (map.SelectedShape.Name){
+                            mapLabel = map.SelectedShape.Name + ': ' + mapLabel;
                         }
 
-                        if (!selectedShape.mapCountLabel) {
-                            selectedShape.mapCountLabel = new MapLabel({
+                        if (!map.SelectedShape.mapCountLabel) {
+                            map.SelectedShape.mapCountLabel = new MapLabel({
                                 map:map,
                                 fontSize: <%=this.LabelFontSize%>,
                                 text:'x',
@@ -294,13 +296,13 @@
                             });
                         }
 
-                        selectedShape.mapCountLabel.position = selectedBounds.getCenter();
-                        selectedShape.mapCountLabel.changed('position');
-                        selectedShape.mapCountLabel.text = mapLabel;
-                        selectedShape.mapCountLabel.changed('text');
+                        map.SelectedShape.mapCountLabel.position = selectedBounds.getCenter();
+                        map.SelectedShape.mapCountLabel.changed('position');
+                        map.SelectedShape.mapCountLabel.text = mapLabel;
+                        map.SelectedShape.mapCountLabel.changed('text');
 
                         if (!justUpdate) {
-                            selectedShape.addListener('bounds_changed', function (event) {
+                            map.SelectedShape.addListener('bounds_changed', function (event) {
                                 var resizedShape = this;
                                 map.AddUpdateShape(resizedShape, true);
                             });
@@ -357,17 +359,17 @@
 
                     google.maps.event.addListener(drawingManager, 'polygoncomplete', function (polygon) {
                         google.maps.event.addListener(polygon, 'dragend', function (a,b,c) {
-                            allShapes.forEach( function(s) {
+                            map.AllShapes.forEach( function(s) {
                                 map.AddUpdateShape(s, true);
                             });
                         });
                         google.maps.event.addListener(polygon.getPath(), 'insert_at', function (a,b,c) {
-                            allShapes.forEach( function(s) {
+                            map.AllShapes.forEach( function(s) {
                                 map.AddUpdateShape(s, true);
                             });
                         });
                         google.maps.event.addListener(polygon.getPath(), 'set_at', function (a,b,c) {
-                            allShapes.forEach( function(s) {
+                            map.AllShapes.forEach( function(s) {
                                 map.AddUpdateShape(s, true);
                             });
                         });
@@ -375,8 +377,8 @@
                 }
 
                 $('.js-deleteshape').click(function () {
-                    if (selectedShape) {
-                        map.DeleteShape(selectedShape);
+                    if (map.SelectedShape) {
+                        map.DeleteShape(map.SelectedShape);
                     }
                 });
 
@@ -385,13 +387,13 @@
                     // make sure drawing manager mode is the hand so that 'mousemove' will fire
                     drawingManager.setDrawingMode(null);
 
-                    if ((selectedShape && (typeof(selectedShape.overlayType) != 'undefined') && selectedShape.overlayType == 'circle') || (pieSlicerState.SelectedCenterPt && pieSlicerState.SelectedRadius)) {
+                    if ((map.SelectedShape && (typeof(map.SelectedShape.overlayType) != 'undefined') && map.SelectedShape.overlayType == 'circle') || (pieSlicerState.SelectedCenterPt && pieSlicerState.SelectedRadius)) {
 
                         // if we are starting with a new shape (not a pieslice), start over with a new pieslicer
-                        if (selectedShape && (typeof(selectedShape.overlayType) != 'undefined') && selectedShape.overlayType != 'pieslice') {
-                            if (selectedShape.overlayType == 'circle') {
-                                pieSlicerState.SelectedCenterPt = selectedShape.getCenter();
-                                pieSlicerState.SelectedRadius = selectedShape.radius;
+                        if (map.SelectedShape && (typeof(map.SelectedShape.overlayType) != 'undefined') && map.SelectedShape.overlayType != 'pieslice') {
+                            if (map.SelectedShape.overlayType == 'circle') {
+                                pieSlicerState.SelectedCenterPt = map.SelectedShape.getCenter();
+                                pieSlicerState.SelectedRadius = map.SelectedShape.radius;
                             } else {
                                 pieSlicerState.SelectedCenterPt = null;
                                 pieSlicerState.SelectedRadius = null;
@@ -403,14 +405,14 @@
                         // map to the click event which we'll use to make the pieslice position permanent
                         if (!map.pieClickListener) {
                             map.pieClickListener = google.maps.event.addListener(map, 'click', function (event) {
-                                if (selectedShape && selectedShape.isPieDrawing){
+                                if (map.SelectedShape && map.SelectedShape.isPieDrawing){
                                     pieSlicerState.SelectedPieCuts = [];
                                     pieSlicerState.CurrentPieSlices.forEach(function(ps){
                                         pieSlicerState.SelectedPieCuts.push(ps.startArc);
                                     })
                                     
-                                    selectedShape.isPieDrawing = false;
-                                    selectedShape.deleteOnFirstSlice = false;
+                                    map.SelectedShape.isPieDrawing = false;
+                                    map.SelectedShape.deleteOnFirstSlice = false;
                                     map.pieMouseMoveListener.remove();
                                     map.pieMouseMoveListener = null;
                                 }
@@ -420,7 +422,7 @@
                         // when the move moves over the map, draw the pie shapes in realtime based on the mouse position relative to the center of the orig circle
                         if (!map.pieMouseMoveListener) {
                             map.pieMouseMoveListener = google.maps.event.addListener(map, 'mousemove', function (event) {
-                                if (pieSlicerState.SelectedCenterPt && pieSlicerState.SelectedRadius && selectedShape){
+                                if (pieSlicerState.SelectedCenterPt && pieSlicerState.SelectedRadius && map.SelectedShape){
 
                                     var heading = google.maps.geometry.spherical.computeHeading(pieSlicerState.SelectedCenterPt, event.latLng);
                                     while (heading < 0)
@@ -446,8 +448,8 @@
                                     pieSlicerState.CurrentPieSlices = [];
 
                                     // if we are starting with a circle, delete it since we are redrawing it as a big pieslice
-                                    if (selectedShape && (selectedShape.isPieDrawing || selectedShape.overlayType == 'circle')){
-                                        map.DeleteShape(selectedShape);
+                                    if (map.SelectedShape && (map.SelectedShape.isPieDrawing || map.SelectedShape.overlayType == 'circle')){
+                                        map.DeleteShape(map.SelectedShape);
                                     }
                                     
                                     currentPieCuts.forEach(function(pc, i) {
