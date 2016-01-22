@@ -29,6 +29,7 @@ ___ 7. Delete the following files from the RockWeb directory
        * .gitignore (do a search as there are files in several directory)
         *.pdb (do a search as there are several files )
         * Settings.StyleCop
+        * .editorconfig
 
 ___ 8. Zip up the RockWeb directory
 
