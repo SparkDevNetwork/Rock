@@ -98,6 +98,11 @@ ___ 10. Open the SQL file and make the following edits:
               ALTER TABLE [AttributeValue]
                      ADD [ValueAsNumeric]  AS (case when len([value])<(100) then case when isnumeric([value])=(1) AND NOT [value] like '%[^0-9.]%' then TRY_CAST([value] AS [numeric](38,10))  end  end) PERSISTED;
 
+		 * Remove the following "WITH" options from any "CREATE SPATIAL INDEX" statements (to avoid problems with Azure SQL V2):
+			PAD_INDEX = OFF,
+			SORT_IN_TEMPDB = OFF,
+			ALLOW_ROW_LOCKS = ON,
+			ALLOW_PAGE_LOCKS = ON
 
 ___ 11. Zip the file into a new file named 'sql-latest.zip'
 
