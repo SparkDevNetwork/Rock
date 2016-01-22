@@ -43,10 +43,10 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Block that takes and HTML form and emails the contents to an address of your choosing." )]
 
-    [TextField("Receipient Email(s)", "Email addresses (comma delimited) to send the contents to.", true, "", "", 0, "RecipientEmail")]
-    [TextField("Subject", "The subject line for the email.", true, "", "", 1)]
-    [EmailField("From Email", "The email address to use for the from.", true, "", "", 2)]
-    [TextField("From Name", "The name to use for the from address.", true, "", "", 3)]
+    [TextField( "Receipient Email(s)", "Email addresses (comma delimited) to send the contents to.", true, "", "", 0, "RecipientEmail" )]
+    [TextField( "Subject", "The subject line for the email. <span class='tip tip-lava'></span>", true, "", "", 1 )]
+    [TextField( "From Email", "The email address to use for the from. <span class='tip tip-lava'></span>", true, "", "", 2 )]
+    [TextField( "From Name", "The name to use for the from address. <span class='tip tip-lava'></span>", true, "", "", 3 )]
     [CodeEditorField( "HTML Form", "The HTML for the form the user will complete. <span class='tip tip-lava'></span>", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, false, @"{% if CurentUser %}
     {{ CurrentPerson.NickName }}, could you please complete the form below.
 {% else %}
@@ -108,13 +108,13 @@ namespace RockWeb.Blocks.Cms
 
 <p>&nbsp;</p>
 
-{{ GlobalAttribute.EmailFooter }}", "", 5 )]  
-    [CodeEditorField("Response Message", "The message the user will see when they submit the form if no response page if provided. Lava merege fields are available for you to use in your message.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"<div class=""alert alert-info"">
+{{ GlobalAttribute.EmailFooter }}", "", 5 )]
+    [CodeEditorField( "Response Message", "The message the user will see when they submit the form if no response page if provided. Lava merege fields are available for you to use in your message.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"<div class=""alert alert-info"">
     Thank you for your response. We appreciate your feedback!
-</div>","",6)]
-    [LinkedPage("Response Page", "The page the use will be taken to after submitting the form. Use the 'Response Message' field if you just need a simple message.", false, "", "", 7)]
-    [TextField("Submit Button Text", "The text to display for the submit button.", true, "Submit", "", 8)]
-    [BooleanField("Enable Debug", "Shows the fields available to merge in lava.", false, "", 9)]
+</div>", "", 6 )]
+    [LinkedPage( "Response Page", "The page the use will be taken to after submitting the form. Use the 'Response Message' field if you just need a simple message.", false, "", "", 7 )]
+    [TextField( "Submit Button Text", "The text to display for the submit button.", true, "Submit", "", 8 )]
+    [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 9 )]
     [BooleanField( "Save Communication History", "Should a record of this communication be saved to the recipient's profile", false, "", 10 )]
     public partial class EmailForm : Rock.Web.UI.RockBlock
     {
@@ -147,22 +147,22 @@ namespace RockWeb.Blocks.Cms
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             // provide some good default values for from email / from name
-            string fromEmail = GetAttributeValue("FromEmail");
-            if ( string.IsNullOrWhiteSpace(fromEmail) )
+            string fromEmail = GetAttributeValue( "FromEmail" );
+            if ( string.IsNullOrWhiteSpace( fromEmail ) )
             {
-                SetAttributeValue("FromEmail", GlobalAttributesCache.Value("OrganizationEmail"));
+                SetAttributeValue( "FromEmail", GlobalAttributesCache.Value( "OrganizationEmail" ) );
                 SaveAttributeValues();
             }
 
-            string fromName = GetAttributeValue("FromName");
-            if ( string.IsNullOrWhiteSpace(fromEmail) )
+            string fromName = GetAttributeValue( "FromName" );
+            if ( string.IsNullOrWhiteSpace( fromEmail ) )
             {
-                SetAttributeValue("FromName", GlobalAttributesCache.Value("OrganizationName"));
+                SetAttributeValue( "FromName", GlobalAttributesCache.Value( "OrganizationName" ) );
                 SaveAttributeValues();
             }
 
             Page.Form.Enctype = "multipart/form-data";
-            
+
         }
 
         /// <summary>
@@ -178,9 +178,9 @@ namespace RockWeb.Blocks.Cms
                 ShowForm();
                 pnlEmailForm.Visible = true;
 
-                if ( !string.IsNullOrWhiteSpace(GetAttributeValue("SubmitButtonText")) )
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "SubmitButtonText" ) ) )
                 {
-                    btnSubmit.Text = GetAttributeValue("SubmitButtonText");
+                    btnSubmit.Text = GetAttributeValue( "SubmitButtonText" );
                 }
 
                 if ( string.IsNullOrWhiteSpace( GetAttributeValue( "RecipientEmail" ) ) )
@@ -211,7 +211,7 @@ namespace RockWeb.Blocks.Cms
             ShowForm();
         }
 
-        protected void btnSubmit_Click(object sender, EventArgs e)
+        protected void btnSubmit_Click( object sender, EventArgs e )
         {
             SendEmail();
             pnlEmailForm.Visible = false;
@@ -223,27 +223,27 @@ namespace RockWeb.Blocks.Cms
 
         private void ShowForm()
         {
-            var mergeObjects = GlobalAttributesCache.GetMergeFields(CurrentPerson);
-            mergeObjects.Add("CurrentPerson", CurrentPerson);
+            var mergeObjects = GlobalAttributesCache.GetMergeFields( CurrentPerson );
+            mergeObjects.Add( "CurrentPerson", CurrentPerson );
 
-            lEmailForm.Text = GetAttributeValue("HTMLForm").ResolveMergeFields(mergeObjects);
+            lEmailForm.Text = GetAttributeValue( "HTMLForm" ).ResolveMergeFields( mergeObjects );
         }
 
         private void SendEmail()
         {
             // ensure this is not from a bot
-            string[] bots = GlobalAttributesCache.Value("EmailExceptionsFilter").Split('|');
-            string test = GlobalAttributesCache.Value("EmailExceptionsFilter");
+            string[] bots = GlobalAttributesCache.Value( "EmailExceptionsFilter" ).Split( '|' );
+            string test = GlobalAttributesCache.Value( "EmailExceptionsFilter" );
             var serverVarList = Context.Request.ServerVariables;
             bool isBot = false;
 
             foreach ( var bot in bots )
             {
-                string[] botParms = bot.Split('^');
+                string[] botParms = bot.Split( '^' );
                 if ( botParms.Length == 2 )
                 {
                     var serverValue = serverVarList[botParms[0]];
-                    if ( serverValue != null && serverValue.ToUpper().Contains(botParms[1].ToUpper().Trim()) )
+                    if ( serverValue != null && serverValue.ToUpper().Contains( botParms[1].ToUpper().Trim() ) )
                     {
                         isBot = true;
                     }
@@ -253,27 +253,27 @@ namespace RockWeb.Blocks.Cms
             if ( !isBot )
             {
                 // create merge objects
-                var mergeFields = GlobalAttributesCache.GetMergeFields(CurrentPerson);
-                mergeFields.Add("CurrentPerson", CurrentPerson);
+                var mergeFields = GlobalAttributesCache.GetMergeFields( CurrentPerson );
+                mergeFields.Add( "CurrentPerson", CurrentPerson );
 
                 // create merge object for fields
-                Regex rgxRockControls = new Regex(@"^ctl\d*\$.*");
+                Regex rgxRockControls = new Regex( @"^ctl\d*\$.*" );
 
                 var formFields = new Dictionary<string, object>();
                 for ( int i = 0; i < Request.Form.Count; i++ )
                 {
-                    string formFieldKey = Request.Form.GetKey(i);
-                    if ( formFieldKey != null && 
-                        formFieldKey.Substring(0, 1) != "_" &&
+                    string formFieldKey = Request.Form.GetKey( i );
+                    if ( formFieldKey != null &&
+                        formFieldKey.Substring( 0, 1 ) != "_" &&
                         formFieldKey != "searchField_hSearchFilter" &&
                         formFieldKey != "send" &&
-                        ! rgxRockControls.IsMatch(formFieldKey))
+                        !rgxRockControls.IsMatch( formFieldKey ) )
                     {
-                        formFields.Add(formFieldKey, Request.Form[formFieldKey]);
+                        formFields.Add( formFieldKey, Request.Form[formFieldKey] );
                     }
                 }
 
-                mergeFields.Add("FormFields", formFields);
+                mergeFields.Add( "FormFields", formFields );
 
                 // get attachments
                 List<Attachment> attachments = new List<Attachment>();
@@ -282,37 +282,37 @@ namespace RockWeb.Blocks.Cms
                 {
                     HttpPostedFile attachmentFile = Request.Files[i];
 
-                    string fileName = System.IO.Path.GetFileName(attachmentFile.FileName);
+                    string fileName = System.IO.Path.GetFileName( attachmentFile.FileName );
 
-                    Attachment attachment = new Attachment(attachmentFile.InputStream, fileName);
+                    Attachment attachment = new Attachment( attachmentFile.InputStream, fileName );
 
-                    attachments.Add(attachment);
+                    attachments.Add( attachment );
                 }
 
-                mergeFields.Add("AttachmentCount", attachments.Count);
+                mergeFields.Add( "AttachmentCount", attachments.Count );
 
                 // send email
-                List<string> recipients = GetAttributeValue("RecipientEmail").Split(',').ToList();
-                string message = GetAttributeValue("MessageBody").ResolveMergeFields(mergeFields);
-                string fromEmail = GetAttributeValue("FromEmail");
-                string fromName = GetAttributeValue( "FromName" );
-                string subject = GetAttributeValue("Subject");
+                List<string> recipients = GetAttributeValue( "RecipientEmail" ).Split( ',' ).ToList();
+                string message = GetAttributeValue( "MessageBody" ).ResolveMergeFields( mergeFields );
+                string fromEmail = GetAttributeValue( "FromEmail" ).ResolveMergeFields( mergeFields );
+                string fromName = GetAttributeValue( "FromName" ).ResolveMergeFields( mergeFields );
+                string subject = GetAttributeValue( "Subject" ).ResolveMergeFields( mergeFields );
 
                 Email.Send( fromEmail, fromName, subject, recipients, message, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ), attachments, GetAttributeValue( "SaveCommunicationHistory" ).AsBoolean() );
 
                 // set response
-                if ( !string.IsNullOrWhiteSpace(GetAttributeValue("ResponsePage")) )
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "ResponsePage" ) ) )
                 {
-                    NavigateToLinkedPage("ResponsePage");
+                    NavigateToLinkedPage( "ResponsePage" );
                 }
 
                 // display response message
                 lResponse.Visible = true;
                 lEmailForm.Visible = false;
-                lResponse.Text = GetAttributeValue("ResponseMessage").ResolveMergeFields(mergeFields);
+                lResponse.Text = GetAttributeValue( "ResponseMessage" ).ResolveMergeFields( mergeFields );
 
                 // show debug info
-                if ( GetAttributeValue("EnableDebug").AsBoolean() && IsUserAuthorized(Authorization.EDIT) )
+                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
                 {
                     lDebug.Visible = true;
                     lDebug.Text = mergeFields.lavaDebugInfo();
@@ -327,6 +327,6 @@ namespace RockWeb.Blocks.Cms
         }
 
         #endregion
-        
-}
+
+    }
 }
