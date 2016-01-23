@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 using RestSharp;
 using System.Configuration;
 using System.IO;
+using System.Web;
 
 
 namespace Rock.Store
@@ -64,7 +65,10 @@ namespace Rock.Store
             // setup REST call
             var client = new RestClient( _rockStoreUrl );
             client.Timeout = _clientTimeout;
-            string requestUrl = string.Format("api/Store/RetrieveOrganizations/{0}/{1}", username, password);
+
+            string encodedUserName = HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( username ) ) );
+            string encodedPassword = HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( password ) ) );
+            string requestUrl = string.Format( "api/Store/RetrieveOrganizations/{0}/{1}", encodedUserName, encodedPassword );
             var request = new RestRequest( requestUrl, Method.GET );
 
             // deserialize to list of packages
