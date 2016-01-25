@@ -1,3 +1,26 @@
+Rock McKinley 4.1
+
++ Updated communication entry block so that binary file attachments are not stored as temporary files (and possibly deleted up before an email is sent in the future).
++ Fixed issue with payment details getting cleared when a scheduled transaction is updated.
++ Fixed issue with a reporting lava column being blank when exporting to excel (fixes #1349).
++ Updated the cache timeout on check-in location attendance counts. Was previously changed from 1 min to an hour, but an hour is too long to accurately reflect current attendance in a location.
++ Fixed the Defined Value field type filter when the option to display multiple values is enabled.
++ Updated REST methods so they do not pass their rockcontext object (without proxy creation enabled) to the cache methods that rely on being able to use navigation properties to load child collection properties.
++ Updated Registration Entry so that it does not block existing registrations from editing an existing registration when the instance is full.
++ Fixed exception that would occur when attempting to add a new registrant who already belonged to the group associated with the registration.
++ Fixed exception that would occur if a fee was deleted from a registrant template that had existing registrants already using the fee. It will now remove the fee from the registrants.
++ Fixed exception that would occur when unselecting a fee from a registrant.
++ Fixed baptism badge html markup.
++ Fixed an issue with Connection signup where new records were being created even when logged in.
++ Updated how registration person field values are serialized so that objects can be unserialized correctly.
++ Fixed security issue on metric detail that allowed non-authorized users to edit/delete a metric (Fixes #1338).
++ Fixed issue with undelivered emails appearing in a person's communication history list (Fixes #1344).
++ Fixed Pledge Analytics to display business names (Fixes #1335).
++ Fixed issue with date picker not working correctly on New Family block (Fixes #1333).
++ Fixed the workflow SMS Send action to support using 'Person' merge field when recipient is a person, group, or security role attribute (Fixes #1309).
++ Fixed issue with transaction matching when masked account number was blank.
++ Fixed an issue preventing Email, Campus and Fee columns from exporting to Excel.
+
 Rock McKinley 4.0
 
 + Added support for processing refunds.

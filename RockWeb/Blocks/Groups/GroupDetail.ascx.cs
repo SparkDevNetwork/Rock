@@ -1086,8 +1086,21 @@ namespace RockWeb.Blocks.Groups
         /// Sets the highlight label visibility.
         /// </summary>
         /// <param name="group">The group.</param>
-        private void SetHighlightLabelVisibility( Group group )
+        private void SetHighlightLabelVisibility( Group group, bool readOnly )
         {
+            if ( readOnly )
+            {
+                // if we are just showing readonly detail of the group, we don't have to worry about the highlight labels changing while editing on the client
+                hlInactive.Visible = !group.IsActive;
+                hlIsPrivate.Visible = !group.IsPublic;
+            }
+            else
+            {
+                // in edit mode, the labels will have javascript handle if/when they are shown
+                hlInactive.Visible = true;
+                hlIsPrivate.Visible = true;
+            }
+
             if ( group.IsActive )
             {
                 hlInactive.Style[HtmlTextWriterStyle.Display] = "none";
@@ -1114,7 +1127,7 @@ namespace RockWeb.Blocks.Groups
                 lReadOnlyTitle.Text = group.Name.FormatAsHtmlTitle();
             }
 
-            SetHighlightLabelVisibility( group );
+            SetHighlightLabelVisibility( group, false );
 
             ddlGroupType.Visible = group.Id == 0;
             lGroupType.Visible = group.Id != 0;
@@ -1386,7 +1399,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="group">The group.</param>
         private void ShowReadonlyDetails( Group group )
         {
-            SetHighlightLabelVisibility( group );
+            SetHighlightLabelVisibility( group, true );
             SetEditMode( false );
             var rockContext = new RockContext();
 

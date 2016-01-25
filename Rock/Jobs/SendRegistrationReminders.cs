@@ -50,6 +50,7 @@ namespace Rock.Jobs
         public virtual void Execute( IJobExecutionContext context )
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
+            int remindersSent = 0;
 
             using ( var rockContext = new RockContext() )
             {
@@ -57,7 +58,7 @@ namespace Rock.Jobs
 
                 foreach ( var instance in new RegistrationInstanceService( rockContext )
                     .Queryable( "RegistrationTemplate,Registrations" )
-                    .Where( i => 
+                    .Where( i =>
                         i.IsActive &&
                         i.RegistrationTemplate.IsActive &&
                         i.RegistrationTemplate.ReminderEmailTemplate != "" &&
@@ -69,9 +70,9 @@ namespace Rock.Jobs
                     var template = instance.RegistrationTemplate;
 
                     foreach ( var registration in instance.Registrations
-                        .Where( r => 
+                        .Where( r =>
                             r.ConfirmationEmail != null &&
-                            r.ConfirmationEmail != "") )
+                            r.ConfirmationEmail != "" ) )
                     {
                         var mergeFields = new Dictionary<string, object>();
                         mergeFields.Add( "RegistrationInstance", registration.RegistrationInstance );
@@ -88,8 +89,22 @@ namespace Rock.Jobs
 
                     instance.SendReminderDateTime = now;
                     instance.ReminderSent = true;
+                    remindersSent++;
 
                     rockContext.SaveChanges();
+                }
+
+                if ( remindersSent == 0 )
+                {
+                    context.Result = "No reminders to send";
+                }
+                else if ( remindersSent == 1 )
+                {
+                    context.Result = "1 reminder was sent";
+                }
+                else
+                {
+                    context.Result = string.Format( "{0} reminders were sent", remindersSent );
                 }
             }
         }
