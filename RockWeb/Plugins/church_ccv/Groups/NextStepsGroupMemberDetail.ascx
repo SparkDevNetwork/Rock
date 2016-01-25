@@ -31,6 +31,10 @@
                                     <asp:Literal ID="lGroupRole" runat="server" /></small>
                             </h3>
                             <Rock:RockRadioButtonList ID="rblActivePendingStatus" runat="server" Label="Status" RepeatDirection="Horizontal" />
+                            <Rock:EmailBox ID="ebEmailAddress" runat="server" Label="Email Address" RepeatDirection="Horizontal" />
+                            <Rock:PhoneNumberBox ID="pnHome" runat="server" Label="Home Phone" />
+                            <Rock:PhoneNumberBox ID="pnMobile" runat="server" Label="Mobile Phone" />
+                            <Rock:DatePicker ID="dpAnniversaryDate" runat="server" Label="Anniversary Date" RepeatDirection="Horizontal" />
                         </div>
                         <div class="col-md-6">
                         </div>

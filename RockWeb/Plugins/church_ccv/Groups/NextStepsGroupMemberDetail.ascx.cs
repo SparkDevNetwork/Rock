@@ -123,6 +123,23 @@ namespace RockWeb.Plugins.church_ccv.Groups
                     return;
                 }
 
+                // see if there's a valid email address
+                if ( string.IsNullOrEmpty( ebEmailAddress.Text ) == true ||
+                    ebEmailAddress.Text.IsValidEmail() )
+                {
+                    groupMember.Person.Email = ebEmailAddress.Text;
+                }
+
+                // set their home and mobile phone
+                var homeNumberType = Rock.Web.Cache.DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) );
+                var mobileNumberType = Rock.Web.Cache.DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
+
+                groupMember.Person.UpdatePhoneNumber( homeNumberType.Id, pnHome.CountryCode, pnHome.Text, null, null, rockContext );
+                groupMember.Person.UpdatePhoneNumber( mobileNumberType.Id, pnMobile.CountryCode, pnMobile.Text, null, null, rockContext );
+
+                // set their anniversary date
+                groupMember.Person.AnniversaryDate = dpAnniversaryDate.SelectedDate;
+
                 // if the groupMember IsValid is false, and the UI controls didn't report any errors, it is probably because the custom rules of GroupMember didn't pass.
                 // So, make sure a message is displayed in the validation summary
                 cvGroupMember.IsValid = groupMember.IsValid;
@@ -236,6 +253,29 @@ namespace RockWeb.Plugins.church_ccv.Groups
                 ddlOptOutReason.SetValue( string.Empty );
             }
 
+            // get their email
+            ebEmailAddress.Text = groupMember.Person.Email;
+
+
+            // get their home and mobile phone numbers
+            var homeNumberType = Rock.Web.Cache.DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) );
+            var mobileNumberType = Rock.Web.Cache.DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
+
+            var homephone = groupMember.Person.PhoneNumbers.Where( p => p.NumberTypeValueId == homeNumberType.Id ).FirstOrDefault();
+            if ( homephone != null )
+            {
+                pnHome.Text = homephone.NumberFormatted;
+            }
+            
+            var mobilephone = groupMember.Person.PhoneNumbers.Where( p => p.NumberTypeValueId == mobileNumberType.Id ).FirstOrDefault();
+            if ( mobilephone != null )
+            {
+                pnMobile.Text = mobilephone.NumberFormatted;
+            }
+
+            // get their anniversary date
+            dpAnniversaryDate.SelectedDate = groupMember.Person.AnniversaryDate;
+
             var followUpDate = groupMember.GetAttributeValue( "FollowUpDate" );
 
             dpFollowUpDate.SelectedDate = followUpDate.AsDateTime();
@@ -273,7 +313,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
             dpFollowUpDate.Visible = ddlOptOutReason.SelectedValueAsEnumOrNull<OptOutReason>() == OptOutReason.FollowUpLater;
             rblActivePendingStatus.Visible = ddlOptOutReason.SelectedValueAsEnumOrNull<OptOutReason>() == null;
         }
-
+        
         /// <summary>
         /// 
         /// </summary>
