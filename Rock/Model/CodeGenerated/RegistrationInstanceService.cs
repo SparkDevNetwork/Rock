@@ -96,12 +96,14 @@ namespace Rock.Model
             target.ContactEmail = source.ContactEmail;
             target.ContactPersonAliasId = source.ContactPersonAliasId;
             target.ContactPhone = source.ContactPhone;
+            target.Cost = source.Cost;
             target.Details = source.Details;
             target.EndDateTime = source.EndDateTime;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
             target.MaxAttendees = source.MaxAttendees;
+            target.MinimumInitialPayment = source.MinimumInitialPayment;
             target.Name = source.Name;
             target.RegistrationTemplateId = source.RegistrationTemplateId;
             target.ReminderSent = source.ReminderSent;

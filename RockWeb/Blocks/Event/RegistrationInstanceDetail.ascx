@@ -80,10 +80,12 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:RockLiteral ID="lName" runat="server" Label="Name" />
-                                <Rock:RockLiteral ID="lAccount" runat="server" Label="Account" />
+                                <Rock:RockLiteral ID="lMaxAttendees" runat="server" Label="Maximum Attendees" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:RockLiteral ID="lMaxAttendees" runat="server" Label="Maximum Attendees" />
+                                <Rock:RockLiteral ID="lCost" runat="server" Label="Cost" />
+                                <Rock:RockLiteral ID="lMinimumInitialPayment" runat="server" Label="Minimum Initial Payment" />
+                                <Rock:RockLiteral ID="lAccount" runat="server" Label="Account" />
                             </div>
                         </div>
 
