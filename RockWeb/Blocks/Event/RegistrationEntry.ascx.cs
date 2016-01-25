@@ -1274,9 +1274,11 @@ namespace RockWeb.Blocks.Event
                                 }
                             }
 
-                            // If there is a valid registration, and nothing went wrong processing the payment, send the notifications
+                            // If there is a valid registration, and nothing went wrong processing the payment, add registrants to group and send the notifications
                             if ( registration != null )
                             {
+                                AddRegistrantsToGroup( rockContext, registration );
+
                                 string appRoot = ResolveRockUrl( "~/" );
                                 string themeRoot = ResolveRockUrl( "~~/" );
 
@@ -1343,7 +1345,6 @@ namespace RockWeb.Blocks.Event
         /// <returns></returns>
         private Registration SaveRegistration( RockContext rockContext, bool hasPayment )
         {
-
             var registrationService = new RegistrationService( rockContext );
             var registrantService = new RegistrationRegistrantService( rockContext );
             var registrantFeeService = new RegistrationRegistrantFeeService( rockContext );
@@ -1773,94 +1774,16 @@ namespace RockWeb.Blocks.Event
 
                 personChanges.ForEach( c => registrantChanges.Add( c ) );
 
-                GroupMember groupMember = null;
-
-                // If the registration instance linkage specified a group to add registrant to, add them if there not already
-                // part of that group
-                if ( group != null )
-                {
-                    groupMember = group.Members.Where( m => m.PersonId == person.Id ).FirstOrDefault();
-                    if ( groupMember == null && group.GroupType.DefaultGroupRoleId.HasValue )
-                    {
-                        groupMember = new GroupMember();
-                        groupMemberService.Add( groupMember );
-                        groupMember.GroupId = group.Id;
-                        groupMember.PersonId = person.Id;
-
-                        if ( RegistrationTemplate.GroupTypeId.HasValue &&
-                            RegistrationTemplate.GroupTypeId == group.GroupTypeId &&
-                            RegistrationTemplate.GroupMemberRoleId.HasValue )
-                        {
-                            groupMember.GroupRoleId = RegistrationTemplate.GroupMemberRoleId.Value;
-                            groupMember.GroupMemberStatus = RegistrationTemplate.GroupMemberStatus;
-                        }
-                        else
-                        {
-                            groupMember.GroupRoleId = group.GroupType.DefaultGroupRoleId.Value;
-                            groupMember.GroupMemberStatus = GroupMemberStatus.Active;
-                        }
-
-                        registrantChanges.Add( "Added to Group: " + group.Name );
-                    }
-
-                    rockContext.SaveChanges();
-
-                    // Set any of the template's group member attributes 
-                    groupMember.LoadAttributes();
-
-                    foreach ( var field in RegistrationTemplate.Forms
-                        .SelectMany( f => f.Fields
-                            .Where( t =>
-                                t.FieldSource == RegistrationFieldSource.GroupMemberAttribute &&
-                                t.AttributeId.HasValue ) ) )
-                    {
-                        // Find the registrant's value
-                        var fieldValue = registrantInfo.FieldValues
-                            .Where( f => f.Key == field.Id )
-                            .Select( f => f.Value.FieldValue )
-                            .FirstOrDefault();
-
-                        if ( fieldValue != null )
-                        {
-                            var attribute = AttributeCache.Read( field.AttributeId.Value );
-                            if ( attribute != null )
-                            {
-                                string originalValue = groupMember.GetAttributeValue( attribute.Key );
-                                string newValue = fieldValue.ToString();
-                                groupMember.SetAttributeValue( attribute.Key, fieldValue.ToString() );
-
-                                if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
-                                {
-                                    string formattedOriginalValue = string.Empty;
-                                    if ( !string.IsNullOrWhiteSpace( originalValue ) )
-                                    {
-                                        formattedOriginalValue = attribute.FieldType.Field.FormatValue( null, originalValue, attribute.QualifierValues, false );
-                                    }
-
-                                    string formattedNewValue = string.Empty;
-                                    if ( !string.IsNullOrWhiteSpace( newValue ) )
-                                    {
-                                        formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
-                                    }
-
-                                    Helper.SaveAttributeValue( groupMember, attribute, newValue, rockContext );
-                                    History.EvaluateChange( registrantChanges, attribute.Name, formattedOriginalValue, formattedNewValue );
-                                }
-                            }
-                        }
-                    }
-                }
-
                 if ( registrant == null )
                 {
                     registrant = new RegistrationRegistrant();
+                    registrant.Guid = registrantInfo.Guid;
                     registrantService.Add( registrant );
                     registrant.RegistrationId = registration.Id;
                 }
 
                 registrant.PersonAliasId = person.PrimaryAliasId;
                 registrant.Cost = registrantInfo.Cost;
-                registrant.GroupMemberId = groupMember != null ? groupMember.Id : (int?)null;
 
                 // Remove fees
                 // Remove/delete any registrant fees that are no longer in UI with quantity 
@@ -1880,7 +1803,6 @@ namespace RockWeb.Blocks.Event
                         registrantFeeService.Delete( dbFee );
                     }
                 }
-
 
                 // Add or Update fees
                 foreach ( var uiFee in registrantInfo.FeeValues.Where( f => f.Value != null ) )
@@ -2185,6 +2107,113 @@ namespace RockWeb.Blocks.Event
                             string.Format( "{0} Phone", numberType.Value ),
                             oldPhoneNumber,
                             phoneNumber.NumberFormattedWithCountryCode );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds the registrants to group.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="registration">The registration.</param>
+        private void AddRegistrantsToGroup( RockContext rockContext, Registration registration )
+        {
+            // If the registration instance linkage specified a group to add registrant to, add them if they're not already
+            // part of that group
+            if ( registration.GroupId.HasValue )
+            {
+                var groupService = new GroupService( rockContext );
+                var personAliasService = new PersonAliasService( rockContext );
+                var groupMemberService = new GroupMemberService( rockContext );
+
+                var group = groupService.Get( registration.GroupId.Value );
+                if ( group != null )
+                {
+                    foreach ( var registrant in registration.Registrants.Where( r => r.PersonAliasId.HasValue ).ToList() )
+                    {
+                        var personAlias = personAliasService.Get( registrant.PersonAliasId.Value );
+                        GroupMember groupMember = group.Members.Where( m => m.PersonId == personAlias.PersonId ).FirstOrDefault();
+                        if ( groupMember == null )
+                        {
+                            groupMember = new GroupMember();
+                            groupMemberService.Add( groupMember );
+                            groupMember.GroupId = group.Id;
+                            groupMember.PersonId = personAlias.PersonId;
+
+                            if ( RegistrationTemplate.GroupTypeId.HasValue &&
+                                RegistrationTemplate.GroupTypeId == group.GroupTypeId &&
+                                RegistrationTemplate.GroupMemberRoleId.HasValue )
+                            {
+                                groupMember.GroupRoleId = RegistrationTemplate.GroupMemberRoleId.Value;
+                                groupMember.GroupMemberStatus = RegistrationTemplate.GroupMemberStatus;
+                            }
+                            else
+                            {
+                                if ( group.GroupType.DefaultGroupRoleId.HasValue )
+                                {
+                                    groupMember.GroupRoleId = group.GroupType.DefaultGroupRoleId.Value;
+                                }
+                                else
+                                {
+                                    groupMember.GroupRoleId = group.GroupType.Roles.Select( r => r.Id ).FirstOrDefault();
+                                }
+                                groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+                            }
+                        }
+
+                        rockContext.SaveChanges();
+
+                        registrant.GroupMemberId = groupMember != null ? groupMember.Id : (int?)null;
+                        rockContext.SaveChanges();
+
+                        // Set any of the template's group member attributes 
+                        groupMember.LoadAttributes();
+
+                        var registrantInfo = RegistrationState.Registrants.FirstOrDefault( r => r.Guid == registrant.Guid );
+                        if ( registrantInfo != null )
+                        {
+                            foreach ( var field in RegistrationTemplate.Forms
+                                .SelectMany( f => f.Fields
+                                    .Where( t =>
+                                        t.FieldSource == RegistrationFieldSource.GroupMemberAttribute &&
+                                        t.AttributeId.HasValue ) ) )
+                            {
+                                // Find the registrant's value
+                                var fieldValue = registrantInfo.FieldValues
+                                    .Where( f => f.Key == field.Id )
+                                    .Select( f => f.Value.FieldValue )
+                                    .FirstOrDefault();
+
+                                if ( fieldValue != null )
+                                {
+                                    var attribute = AttributeCache.Read( field.AttributeId.Value );
+                                    if ( attribute != null )
+                                    {
+                                        string originalValue = groupMember.GetAttributeValue( attribute.Key );
+                                        string newValue = fieldValue.ToString();
+                                        groupMember.SetAttributeValue( attribute.Key, fieldValue.ToString() );
+
+                                        if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
+                                        {
+                                            string formattedOriginalValue = string.Empty;
+                                            if ( !string.IsNullOrWhiteSpace( originalValue ) )
+                                            {
+                                                formattedOriginalValue = attribute.FieldType.Field.FormatValue( null, originalValue, attribute.QualifierValues, false );
+                                            }
+
+                                            string formattedNewValue = string.Empty;
+                                            if ( !string.IsNullOrWhiteSpace( newValue ) )
+                                            {
+                                                formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
+                                            }
+
+                                            Helper.SaveAttributeValue( groupMember, attribute, newValue, rockContext );
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
