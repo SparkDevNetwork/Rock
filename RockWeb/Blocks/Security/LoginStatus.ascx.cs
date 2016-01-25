@@ -33,9 +33,9 @@ namespace RockWeb.Blocks.Security
     [Category( "Security" )]
     [Description( "Displays the currently logged in user's name along with options to Login, Logout, or manage account." )]
 
-    [LinkedPage( "My Account Page", "Page for user to manage their account (if blank will use 'MyAccount' page route)" )]
-    [LinkedPage( "My Profile Page", "Page for user to view their person profile (if blank option will not be displayed)" )]
-    [LinkedPage( "My Settings Page", "Page for user to view their settings (if blank option will not be displayed)" )]
+    [LinkedPage( "My Account Page", "Page for user to manage their account (if blank will use 'MyAccount' page route)", false )]
+    [LinkedPage( "My Profile Page", "Page for user to view their person profile (if blank option will not be displayed)", false )]
+    [LinkedPage( "My Settings Page", "Page for user to view their settings (if blank option will not be displayed)", false )]
     [KeyValueListField( "Logged In Page List", "List of pages to show in the dropdown when the user is logged in. The link field takes Lava with the CurrentPerson merge fields. Place the text 'divider' in the title field to add a divider.", false, "", "Title", "Link" )]
     
     public partial class LoginStatus : Rock.Web.UI.RockBlock
