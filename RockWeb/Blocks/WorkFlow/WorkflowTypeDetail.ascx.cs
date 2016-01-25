@@ -551,6 +551,8 @@ namespace RockWeb.Blocks.WorkFlow
                 SaveAttributes( new Workflow().TypeId, "WorkflowTypeId", workflowType.Id.ToString(), AttributesState, rockContext );
 
                 WorkflowActivityTypeService workflowActivityTypeService = new WorkflowActivityTypeService( rockContext );
+                WorkflowActivityService workflowActivityService = new WorkflowActivityService( rockContext );
+                WorkflowActionService workflowActionService = new WorkflowActionService( rockContext );
                 WorkflowActionTypeService workflowActionTypeService = new WorkflowActionTypeService( rockContext );
                 WorkflowActionFormService workflowFormService = new WorkflowActionFormService( rockContext );
                 WorkflowActionFormAttributeService workflowFormAttributeService = new WorkflowActionFormAttributeService( rockContext );
@@ -570,14 +572,29 @@ namespace RockWeb.Blocks.WorkFlow
                 var deletedActionTypes = from actionType in actionTypesInDB
                                          where !actionTypesInUI.Select( u => u.Guid ).Contains( actionType.Guid )
                                          select actionType;
-                deletedActionTypes.ToList().ForEach( actionType =>
+                foreach ( var actionType in deletedActionTypes.ToList() )
                 {
                     if ( actionType.WorkflowForm != null )
                     {
                         workflowFormService.Delete( actionType.WorkflowForm );
                     }
+
+                    // Delete any workflow actions of this type
+                    int loopCounter = 0;
+                    foreach ( var action in workflowActionService.Queryable().Where( a => a.ActionTypeId == actionType.Id ) )
+                    {
+                        workflowActionService.Delete( action );
+                        loopCounter++;
+                        if ( loopCounter > 100 )
+                        {
+                            rockContext.SaveChanges();
+                            loopCounter = 0;
+                        }
+                    }
+                    rockContext.SaveChanges();
+
                     workflowActionTypeService.Delete( actionType );
-                } );
+                } 
                 rockContext.SaveChanges();
 
                 // delete WorkflowActivityTypes that aren't assigned in the UI anymore
@@ -585,10 +602,24 @@ namespace RockWeb.Blocks.WorkFlow
                 var deletedActivityTypes = from activityType in activityTypesInDB
                                            where !ActivityTypesState.Select( u => u.Guid ).Contains( activityType.Guid )
                                            select activityType;
-                deletedActivityTypes.ToList().ForEach( activityType =>
+                foreach ( var activityType in deletedActivityTypes.ToList() )
                 {
+                    // Delete any workflow activities of this type
+                    int loopCounter = 0;
+                    foreach ( var activity in workflowActivityService.Queryable().Where( a => a.ActivityTypeId == activityType.Id ) )
+                    {
+                        workflowActivityService.Delete( activity );
+                        loopCounter++;
+                        if ( loopCounter > 100 )
+                        {
+                            rockContext.SaveChanges();
+                            loopCounter = 0;
+                        }
+                    }
+                    rockContext.SaveChanges();
+
                     workflowActivityTypeService.Delete( activityType );
-                } );
+                } 
                 rockContext.SaveChanges();
 
                 // add or update WorkflowActivityTypes(and Actions) that are assigned in the UI
