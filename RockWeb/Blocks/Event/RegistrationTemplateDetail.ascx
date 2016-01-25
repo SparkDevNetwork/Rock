@@ -85,12 +85,16 @@
                                 </div>
                                 <Rock:RockRadioButtonList ID="rblRegistrantsInSameFamily" runat="server" Label="Registrants in same Family" RepeatDirection="Horizontal"
                                     Help="Typical relationship of registrants that user would register." />
-                                <Rock:CurrencyBox ID="cbCost" runat="server" Label="Cost"
-                                    Help="The cost per registrant." />
-                                <Rock:CurrencyBox ID="cbMinimumInitialPayment" runat="server" Label="Minimum Initial Payment"
-                                    Help="The minimum amount required per registrant. Leave value blank if full amount is required." />
-                                <Rock:FinancialGatewayPicker ID="fgpFinancialGateway" runat="server" Label="Financial Gateway"
-                                    Help="The financial gateway to use for processing registration payments." />
+                                <div class="well">
+                                    <Rock:Toggle ID="tglSetCostOnTemplate" runat="server" Label="Set Cost On" OnText="Template" OffText="Instance" 
+                                        ActiveButtonCssClass="btn-info" OnCheckedChanged="tglSetCost_CheckedChanged" />
+                                    <Rock:CurrencyBox ID="cbCost" runat="server" Label="Cost" cs
+                                        Help="The cost per registrant." />
+                                    <Rock:CurrencyBox ID="cbMinimumInitialPayment" runat="server" Label="Minimum Initial Payment"
+                                        Help="The minimum amount required per registrant. Leave value blank if full amount is required." />
+                                    <Rock:FinancialGatewayPicker ID="fgpFinancialGateway" runat="server" Label="Financial Gateway"
+                                        Help="The financial gateway to use for processing registration payments." />
+                                </div>
                             </div>
                         </div>
                     </Rock:PanelWidget>

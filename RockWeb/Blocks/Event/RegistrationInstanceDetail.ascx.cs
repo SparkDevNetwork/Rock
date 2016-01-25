@@ -1602,6 +1602,18 @@ namespace RockWeb.Blocks.Event
             lWizardInstanceName.Text = RegistrationInstance.Name;
             lName.Text = RegistrationInstance.Name;
 
+            if ( RegistrationInstance.RegistrationTemplate.SetCostOnInstance ?? false )
+            {
+                lCost.Text = RegistrationInstance.Cost.FormatAsCurrency();
+                lMinimumInitialPayment.Visible = RegistrationInstance.MinimumInitialPayment.HasValue;
+                lMinimumInitialPayment.Text = RegistrationInstance.MinimumInitialPayment.HasValue ? RegistrationInstance.MinimumInitialPayment.Value.FormatAsCurrency() : "";
+            }
+            else
+            {
+                lCost.Visible = false;
+                lMinimumInitialPayment.Visible = false;
+            }
+
             lAccount.Visible = RegistrationInstance.Account != null;
             lAccount.Text = RegistrationInstance.Account != null ? RegistrationInstance.Account.Name : "";
 
@@ -1752,7 +1764,12 @@ namespace RockWeb.Blocks.Event
                     var registrationEntityType = EntityTypeCache.Read( typeof( Rock.Model.Registration ) );
 
                     var instance = new RegistrationInstanceService( rockContext ).Get( instanceId.Value );
-                    _instanceHasCost = instance != null && instance.RegistrationTemplate.Cost > 0.0m;
+                    decimal cost = instance.RegistrationTemplate.Cost;
+                    if ( instance.RegistrationTemplate.SetCostOnInstance ?? false )
+                    {
+                        cost = instance.Cost ?? 0.0m;
+                    }
+                    _instanceHasCost = cost > 0.0m;
 
                     var qry = new RegistrationService( rockContext )
                         .Queryable( "PersonAlias.Person,Registrants.PersonAlias.Person,Registrants.Fees.RegistrationTemplateFee" )
