@@ -57,28 +57,29 @@ namespace Rock.Jobs
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
             string workflowName = dataMap.GetString( "Workflow" );
-            LaunchTheWorkflow( workflowName );
+            LaunchTheWorkflow( workflowName, context );
         }
 
         /// <summary>
         /// Launch the workflow
         /// </summary>
-        protected void LaunchTheWorkflow(string workflowName)
+        protected void LaunchTheWorkflow( string workflowName, IJobExecutionContext context )
         {
             Guid workflowTypeGuid = Guid.NewGuid();
             if ( Guid.TryParse( workflowName, out workflowTypeGuid ) )
             {
                 var rockContext = new RockContext();
-                var workflowTypeService = new WorkflowTypeService(rockContext);
+                var workflowTypeService = new WorkflowTypeService( rockContext );
                 var workflowType = workflowTypeService.Get( workflowTypeGuid );
                 if ( workflowType != null )
                 {
                     var workflow = Rock.Model.Workflow.Activate( workflowType, workflowName );
 
                     List<string> workflowErrors;
-                    new Rock.Model.WorkflowService( rockContext ).Process( workflow, out workflowErrors );
+                    var processed = new Rock.Model.WorkflowService( rockContext ).Process( workflow, out workflowErrors );
+                    context.Result = ( processed ? "Processed " : "Did not process " ) + workflow.ToString();
                 }
-            }     
+            }
         }
     }
 }

@@ -1049,7 +1049,8 @@ function(item) {
                         InGroup = k1.LastAttendance.Group.Members.Any( m => m.PersonId == k1.PersonId ),
                         GroupRoles = k1.LastAttendance.Group.Members.Where( m => m.PersonId == k1.PersonId ).OrderBy( m => m.GroupRole.Order ).Select( m => m.GroupRole.Name ).ToList(),
                         ScheduleId = k1.LastAttendance.ScheduleId,
-                        StartDateTime = k1.LastAttendance.StartDateTime
+                        StartDateTime = k1.LastAttendance.StartDateTime,
+                        LocationName = k1.LastAttendance.Location != null ? k1.LastAttendance.Location.Name : ""
                     }
                 } );
 
@@ -1709,6 +1710,7 @@ function(item) {
             public List<string> GroupRoles { get; set; }
             public int? ScheduleId { get; set; }
             public DateTime? StartDateTime { get; set; }
+            public string LocationName { get; set; }
             public int PersonAliasPersonId { get; set; }
             public int PersonAliasId { get; set; }
         }

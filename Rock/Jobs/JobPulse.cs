@@ -66,6 +66,8 @@ namespace Rock.Jobs
         private void UpdateScheduledJobs( IJobExecutionContext context )
         {
             var scheduler = context.Scheduler;
+            int jobsDeleted = 0;
+            int jobsScheduleUpdated = 0;
 
             var rockContext = new Rock.Data.RockContext();
             ServiceJobService jobService = new ServiceJobService( rockContext );
@@ -77,6 +79,7 @@ namespace Rock.Jobs
             foreach ( JobKey jobKey in quartsJobsToDelete )
             {
                 scheduler.DeleteJob( jobKey );
+                jobsDeleted++;
             }
 
             // add any jobs that are not yet scheduled
@@ -90,6 +93,7 @@ namespace Rock.Jobs
                     ITrigger jobTrigger = jobService.BuildQuartzTrigger( job );
 
                     scheduler.ScheduleJob( jobDetail, jobTrigger );
+                    jobsScheduleUpdated++;
 
                     if ( job.LastStatus == errorSchedulingStatus )
                     {
@@ -156,6 +160,7 @@ namespace Rock.Jobs
                                 ITrigger newJobTrigger = jobService.BuildQuartzTrigger( activeJob );
                                 bool deletedSuccessfully = scheduler.DeleteJob( jobKey );
                                 scheduler.ScheduleJob( jobDetail, newJobTrigger );
+                                jobsScheduleUpdated++;
 
                                 if ( activeJob.LastStatus == errorReschedulingStatus )
                                 {
@@ -176,6 +181,18 @@ namespace Rock.Jobs
                         }
                     }
                 }
+            }
+
+            context.Result = string.Empty;
+
+            if ( jobsDeleted > 0 )
+            {
+                context.Result += string.Format( "Deleted {0} job schedule(s)", jobsDeleted );
+            }
+
+            if ( jobsScheduleUpdated > 0 )
+            {
+                context.Result += ( string.IsNullOrEmpty( context.Result as string ) ? "" : " and " ) + string.Format( "Updated {0} schedule(s)", jobsScheduleUpdated );
             }
         }
     }

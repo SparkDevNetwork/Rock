@@ -93,6 +93,8 @@ namespace RockWeb.Blocks.Cms
                     gItems.Columns[1].HeaderText = startHeading;
                     gItems.Columns[3].HeaderText = startHeading;
 
+                    ddlStatus.Visible = contentChannel.RequiresApproval;
+
                     if ( contentChannel.ContentChannelType.IncludeTime )
                     {
                         gItems.Columns[1].Visible = true;

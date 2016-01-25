@@ -481,20 +481,23 @@ namespace RockWeb.Blocks.WorkFlow
                 foreach ( var attribute in AvailableAttributes )
                 {
                     var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filter_" + attribute.Id.ToString(), false, Rock.Reporting.FilterMode.SimpleFilter );
-                    if ( control is IRockControl )
+                    if ( control != null )
                     {
-                        var rockControl = (IRockControl)control;
-                        rockControl.Label = attribute.Name;
-                        rockControl.Help = attribute.Description;
-                        phAttributeFilters.Controls.Add( control );
-                    }
-                    else
-                    {
-                        var wrapper = new RockControlWrapper();
-                        wrapper.ID = control.ID + "_wrapper";
-                        wrapper.Label = attribute.Name;
-                        wrapper.Controls.Add( control );
-                        phAttributeFilters.Controls.Add( wrapper );
+                        if ( control is IRockControl )
+                        {
+                            var rockControl = (IRockControl)control;
+                            rockControl.Label = attribute.Name;
+                            rockControl.Help = attribute.Description;
+                            phAttributeFilters.Controls.Add( control );
+                        }
+                        else
+                        {
+                            var wrapper = new RockControlWrapper();
+                            wrapper.ID = control.ID + "_wrapper";
+                            wrapper.Label = attribute.Name;
+                            wrapper.Controls.Add( control );
+                            phAttributeFilters.Controls.Add( wrapper );
+                        }
                     }
 
                     string savedValue = gfWorkflows.GetUserPreference( MakeKeyUniqueToType( attribute.Key ) );
