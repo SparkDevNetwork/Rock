@@ -463,8 +463,6 @@
     <Compile Include="Model\RestActionService.partial.cs" />
     <Compile Include="Model\ScheduleService.Partial.cs" />
     <Compile Include="Model\WorkflowActionService.Partial.cs" />
-    <Compile Include="Model\WorkflowActivityTypeService.Partial.cs" />
-    <Compile Include="Model\WorkflowActionTypeService.Partial.cs" />
     <Compile Include="Model\GroupMemberWorkflowTrigger.cs" />
     <Compile Include="Net\RockWebRequest.cs" />
     <Compile Include="PersonProfile\Badge\AlertNote.cs" />
