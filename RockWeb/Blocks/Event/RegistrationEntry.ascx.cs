@@ -1127,11 +1127,17 @@ namespace RockWeb.Blocks.Event
         {
             if ( RegistrationState != null )
             {
+                decimal cost = RegistrationTemplate.Cost;
+                if ( ( RegistrationTemplate.SetCostOnInstance ?? false ) && RegistrationInstanceState != null )
+                {
+                    cost = RegistrationInstanceState.Cost ?? 0.0m;
+                }
+
                 // If this is the first registrant being added, default it to the current person
                 if ( RegistrationState.RegistrantCount == 0 && registrantCount == 1 && CurrentPerson != null )
                 {
                     var registrant = new RegistrantInfo( RegistrationInstanceState, CurrentPerson );
-                    registrant.Cost = RegistrationTemplate.Cost;
+                    registrant.Cost = cost;
                     registrant.FamilyGuid = RegistrationState.FamilyGuid;
                     RegistrationState.Registrants.Add( registrant );
                 }
@@ -1139,7 +1145,7 @@ namespace RockWeb.Blocks.Event
                 // While the number of registrants belonging to registration is less than the selected count, addd another registrant
                 while ( RegistrationState.RegistrantCount < registrantCount )
                 {
-                    var registrant = new RegistrantInfo { Cost = RegistrationTemplate.Cost };
+                    var registrant = new RegistrantInfo { Cost = cost };
                     if ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.No )
                     {
                         registrant.FamilyGuid = Guid.NewGuid();
@@ -3501,7 +3507,7 @@ namespace RockWeb.Blocks.Event
         {
             lDiscountCodeLabel.Text = DiscountCodeTerm;
 
-            if ( setValues && RegistrationState != null )
+            if ( setValues && RegistrationState != null && RegistrationInstanceState != null )
             {
                 // Check to see if this is an existing registration or information has already been entered
                 if ( RegistrationState.RegistrationId.HasValue ||
@@ -3587,6 +3593,12 @@ namespace RockWeb.Blocks.Event
                     divDiscountCode.Visible = false;
                 }
 
+                decimal? minimumInitialPayment = RegistrationTemplate.MinimumInitialPayment;
+                if ( RegistrationTemplate.SetCostOnInstance ?? false )
+                {
+                    minimumInitialPayment = RegistrationInstanceState.MinimumInitialPayment;
+                }
+
                 // Get the cost/fee summary
                 var costs = new List<RegistrationCostSummaryInfo>();
                 foreach( var registrant in RegistrationState.Registrants )
@@ -3609,8 +3621,7 @@ namespace RockWeb.Blocks.Event
                         }
 
                         // If registration allows a minimum payment calculate that amount, otherwise use the discounted amount as minimum
-                        costSummary.MinPayment = RegistrationTemplate.MinimumInitialPayment.HasValue ? 
-                            RegistrationTemplate.MinimumInitialPayment.Value : costSummary.DiscountedCost;
+                        costSummary.MinPayment = minimumInitialPayment.HasValue ? minimumInitialPayment.Value : costSummary.DiscountedCost;
 
                         costs.Add( costSummary );
                     }
@@ -3644,7 +3655,7 @@ namespace RockWeb.Blocks.Event
                                 }
 
                                 // If template allows a minimum payment, then fees are not included, otherwise it is included
-                                costSummary.MinPayment = RegistrationTemplate.MinimumInitialPayment.HasValue ? 0 : costSummary.DiscountedCost;
+                                costSummary.MinPayment = minimumInitialPayment.HasValue ? 0 : costSummary.DiscountedCost;
 
                                 costs.Add( costSummary );
                             }

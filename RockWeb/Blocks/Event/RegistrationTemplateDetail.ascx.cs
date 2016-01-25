@@ -639,6 +639,7 @@ namespace RockWeb.Blocks.Event
             RegistrationTemplate.AllowMultipleRegistrants = cbMultipleRegistrants.Checked;
             RegistrationTemplate.MaxRegistrants = nbMaxRegistrants.Text.AsInteger();
             RegistrationTemplate.RegistrantsSameFamily = rblRegistrantsInSameFamily.SelectedValueAsEnum<RegistrantsSameFamily>();
+            RegistrationTemplate.SetCostOnInstance = !tglSetCostOnTemplate.Checked;
             RegistrationTemplate.Cost = cbCost.Text.AsDecimal();
             RegistrationTemplate.MinimumInitialPayment = cbMinimumInitialPayment.Text.AsDecimalOrNull();
             RegistrationTemplate.FinancialGatewayId = fgpFinancialGateway.SelectedValueAsInt();
@@ -708,9 +709,9 @@ namespace RockWeb.Blocks.Event
 
             // Perform Validation
             var validationErrors = new List<string>();
-            if ( ( RegistrationTemplate.Cost > 0 || FeeState.Any() ) && !RegistrationTemplate.FinancialGatewayId.HasValue )
+            if ( ( ( RegistrationTemplate.SetCostOnInstance ?? false ) || RegistrationTemplate.Cost > 0 || FeeState.Any() ) && !RegistrationTemplate.FinancialGatewayId.HasValue )
             {
-                validationErrors.Add( "A Financial Gateway is required when the registration has a cost or additional fees." );
+                validationErrors.Add( "A Financial Gateway is required when the registration has a cost or additional fees or is configured to allow instances to set a cost." );
             }
 
             if ( validationErrors.Any() )
@@ -981,6 +982,16 @@ namespace RockWeb.Blocks.Event
             nbMaxRegistrants.Visible = cbMultipleRegistrants.Checked;
             
             BuildControls();
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the tglSetCost control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void tglSetCost_CheckedChanged( object sender, EventArgs e )
+        {
+            SetCostVisibility();
         }
 
         #endregion
@@ -1904,9 +1915,11 @@ namespace RockWeb.Blocks.Event
             nbMaxRegistrants.Visible = RegistrationTemplate.AllowMultipleRegistrants;
             nbMaxRegistrants.Text = RegistrationTemplate.MaxRegistrants.ToString();
             rblRegistrantsInSameFamily.SetValue( RegistrationTemplate.RegistrantsSameFamily.ConvertToInt() );
+            tglSetCostOnTemplate.Checked = !RegistrationTemplate.SetCostOnInstance.HasValue || !RegistrationTemplate.SetCostOnInstance.Value;
             cbCost.Text = RegistrationTemplate.Cost.ToString();
             cbMinimumInitialPayment.Text = RegistrationTemplate.MinimumInitialPayment.HasValue ? RegistrationTemplate.MinimumInitialPayment.Value.ToString( "N2" ) : "";
             fgpFinancialGateway.SetValue( RegistrationTemplate.FinancialGatewayId );
+            SetCostVisibility();
 
             tbConfirmationFromName.Text = RegistrationTemplate.ConfirmationFromName;
             tbConfirmationFromEmail.Text = RegistrationTemplate.ConfirmationFromEmail;
@@ -1927,6 +1940,16 @@ namespace RockWeb.Blocks.Event
             ceSuccessText.Text = RegistrationTemplate.SuccessText;
 
             BuildControls( true );
+        }
+
+        /// <summary>
+        /// Sets the cost visibility.
+        /// </summary>
+        private void SetCostVisibility()
+        {
+            bool setCostOnTemplate = tglSetCostOnTemplate.Checked;
+            cbCost.Visible = setCostOnTemplate;
+            cbMinimumInitialPayment.Visible = setCostOnTemplate;
         }
 
         /// <summary>
@@ -1987,10 +2010,17 @@ namespace RockWeb.Blocks.Event
                 lFormsReadonly.Text = "<div>" + None.TextHtml + "</div>";
             }
 
-            lCost.Text = RegistrationTemplate.Cost.FormatAsCurrency();
-
-            lMinimumInitialPayment.Visible = RegistrationTemplate.MinimumInitialPayment.HasValue;
-            lMinimumInitialPayment.Text = RegistrationTemplate.MinimumInitialPayment.HasValue ? RegistrationTemplate.MinimumInitialPayment.Value.FormatAsCurrency() : "";
+            if ( RegistrationTemplate.SetCostOnInstance ?? false )
+            {
+                lCost.Text = "Set on Instance";
+                lMinimumInitialPayment.Text = "Set on Instance";
+            }
+            else
+            {
+                lCost.Text = RegistrationTemplate.Cost.FormatAsCurrency();
+                lMinimumInitialPayment.Visible = RegistrationTemplate.MinimumInitialPayment.HasValue;
+                lMinimumInitialPayment.Text = RegistrationTemplate.MinimumInitialPayment.HasValue ? RegistrationTemplate.MinimumInitialPayment.Value.FormatAsCurrency() : "";
+            }
 
             rFees.DataSource = RegistrationTemplate.Fees.OrderBy( f => f.Order ).ToList();
             rFees.DataBind();
@@ -2565,5 +2595,5 @@ namespace RockWeb.Blocks.Event
 
         #endregion
 
-    }
+}
 }
