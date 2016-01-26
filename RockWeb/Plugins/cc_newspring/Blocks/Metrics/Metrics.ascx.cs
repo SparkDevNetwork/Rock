@@ -45,7 +45,10 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
     [TextField( "Comparison Metric Key", "Enter the metric title to calculate against the Primary Source/Key.", false, Order = 5 )]
     [MetricCategoriesField( "Comparison Metric Source", "Select the metric(s) to calculate against the Primary Source/Key.", false, Order = 6 )]
     [CustomRadioListField( "Display Comparison As", "Choose to display the comparison result as an integer or percentage", "Integer,Percentage", true, "Integer", order: 7 )]
-    [CustomRadioListField( "Context Scope", "The scope of context to set", "None,Page", true, "Page", order: 8 )]
+    [BooleanField( "Respect Campus Context", "Respect the group context even if the Campus context selector isn't included on the page.", true, Order = 8 )]
+    [BooleanField( "Respect Group Context", "Respect the group context even if the GroupType context selector isn't included on the page.", true, Order = 9 )]
+    [BooleanField( "Respect Date Context", "Respect the date context even if the DateRange context selector isn't included on the page.", true, Order = 10 )]
+    [BooleanField( "Respect Schedule Context", "Respect the schedule context even if the Schedule context selector isn't included on the page.", true, Order = 11 )]
 
     //[SlidingDateRangeField( "Date Range", Key = "SlidingDateRange", Order = 9 )]
     //[CustomRadioListField( "Custom Dates", "If not using date range, please select a custom date from here", "This Week Last Year", Order = 9 )]
@@ -127,26 +130,29 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
 
             if ( !Page.IsPostBack )
             {
-                // check the page context
-                bool pageScope = GetAttributeValue( "ContextScope" ) == "Page";
-
-                // If the blocks respect page context let's set those vars
-                if ( pageScope )
+                // Get Current Campus Context
+                if ( GetAttributeValue( "RespectCampusContext" ).AsBoolean() )
                 {
-                    // Get Current Campus Context
                     CampusContext = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( Campus ) ) );
+                }
 
-                    // Get Current Schedule Context
-                    ScheduleContext = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( Schedule ) ) );
-
-                    // Get Current Group Context
-                    GroupContext = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( Group ) ) );
-
-                    // Get Current GroupType Context
+                // Get Current Group Context
+                if ( GetAttributeValue( "RespectGroupContext" ).AsBoolean() )
+                {
                     GroupTypeContext = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( GroupType ) ) );
+                    GroupContext = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( Group ) ) );
+                }
 
-                    // Get Date Range Context
+                // Get Current Date Range Context
+                if ( GetAttributeValue( "RespectDateContext" ).AsBoolean() )
+                {
                     DateRangeContext = RockPage.GetUserPreference( ContextPreferenceName );
+                }
+
+                // Get Current Schedule Context
+                if ( GetAttributeValue( "RespectScheduleContext" ).AsBoolean() )
+                {
+                    ScheduleContext = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( Schedule ) ) );
                 }
 
                 // Output variables direct to the ascx
@@ -309,7 +315,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             {
                 metricValueQueryable = metricValueQueryable.Where( a => a.Metric.ForeignId == GroupContext.Id );
             }
-            else if( GroupTypeContext != null )
+            else if ( GroupTypeContext != null )
             {
                 var groupTypeIds = new GroupTypeService( rockContext ).GetAllAssociatedDescendents( GroupTypeContext.Id ).Select( gt => gt.Id );
                 var groupIds = new GroupService( rockContext ).Queryable().Where( g => groupTypeIds.Contains( g.GroupTypeId ) ).Select( g => g.Id );
