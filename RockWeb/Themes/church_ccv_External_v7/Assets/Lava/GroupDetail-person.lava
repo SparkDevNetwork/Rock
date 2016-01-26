@@ -30,7 +30,6 @@
   </a>
   <div class="pull-left">
     <strong>{{ member.Person.FullName }}</strong>
-    <small>({{ member.GroupRole.Name}})</small>
 
     <br />
     <a href="{{ communicationPage }}?person={{ member.Person.Id }}">
