@@ -1,6 +1,6 @@
 
 {% assign communicationPage = "/page/491" %}
-{% assign nhMemberDetailPage = "/page/1020" %}
+{% assign nhMemberDetailPage = "/page/1024" %}
 
 <div class="col-xs-12 col-sm-6 margin-b-md rollover-container">
   {% if LinkedPages.PersonDetailPage != '' %}
