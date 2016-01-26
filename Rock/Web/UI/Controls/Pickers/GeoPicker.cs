@@ -729,7 +729,7 @@ if ($('#{1}').length > 0)
         /// </summary>
         /// <param name="latCommaLongPipe">string of "lat1,long1|lat2,long2|..."</param>
         /// <returns>A Well Known Text (WKT) POLYGON string suitable for use by DbGeography</returns>
-        private string ConvertPolyToWellKnownText( string latCommaLongPipe )
+        public static string ConvertPolyToWellKnownText( string latCommaLongPipe )
         {
             var coords = latCommaLongPipe.Split( '|' );
             var convertedCoords = new List<string>();
@@ -812,7 +812,7 @@ if ($('#{1}').length > 0)
         /// </summary>
         /// <param name="polygon"></param>
         /// <returns></returns>
-        private bool IsClockwisePolygon( PointF[] polygon )
+        public static bool IsClockwisePolygon( PointF[] polygon )
         {
             bool isClockwise = false;
             double sum = 0;
