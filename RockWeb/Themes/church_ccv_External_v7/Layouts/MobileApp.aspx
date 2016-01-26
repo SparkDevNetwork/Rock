@@ -50,6 +50,8 @@
             </ProgressTemplate>
         </asp:UpdateProgress>
 
+        <Rock:Zone Name="Feature" runat="server" />
+
         <div class="container">
 
             <!-- Start Content Area -->
