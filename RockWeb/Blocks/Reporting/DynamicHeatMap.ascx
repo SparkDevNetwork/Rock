@@ -286,21 +286,50 @@
 
                             map.AllShapes.push(shape);
                         }
-
+                        
+                        // NOTE: bounds is the rectangle bounds of the shape (not the actual shape)
                         var selectedBounds = shape.getBounds();
 
                         var pointCount = 0;
-                        heatmap.data.forEach(function (latLng) {
-                            if (latLng.location) {
-                                if (selectedBounds.contains(latLng.location)) {
-                                    pointCount += latLng.weight;
-                                }
-                            } else {
-                                if (selectedBounds.contains(latLng)) {
-                                    pointCount++;
+
+                        var shapeCenter = null;
+                        if (shape.getCenter)
+                        {
+                            shapeCenter = shape.getCenter();
+                        }
+                        else
+                        {
+                            shapeCenter = selectedBounds.getCenter();
+                        }
+                        
+                        heatmapDataArray = heatmap.data.getArray();
+                        for (var i = 0, len = heatmap.data.length; i < len; i++) {
+                            var latLng = heatmapDataArray[i];
+                            var pointWeight = 1;
+                            var point = latLng;
+                            if (latLng.location)
+                            {
+                                // weighted location
+                                point = latLng.location;
+                                pointWeight = latLng.weight;
+                            }
+
+                            // first check if within bounds to narrow down (for performance)
+                            if (selectedBounds.contains(point)) {
+
+                                if ('polygon' == shape.overlayType) {
+                                    if (google.maps.geometry.poly.containsLocation(point, shape)) {
+                                        pointCount += pointWeight;
+                                    }
+                                } else if ('circle' == shape.overlayType) {
+                                    if (google.maps.geometry.spherical.computeDistanceBetween(shapeCenter, point) < shape.radius) {
+                                        pointCount += pointWeight;
+                                    }
+                                } else if ('rectangle' == shape.overlayType) {
+                                    pointCount += pointWeight;
                                 }
                             }
-                        });
+                        }
 
                         var totalCount = pointCount;
                         var mapLabel = totalCount.toString();
@@ -313,11 +342,11 @@
                                 map:map,
                                 fontSize: <%=this.LabelFontSize%>,
                                 text:'x',
-                                position: selectedBounds.getCenter()
+                                position: shapeCenter
                             });
                         }
 
-                        map.SelectedShape.mapCountLabel.position = selectedBounds.getCenter();
+                        map.SelectedShape.mapCountLabel.position = shapeCenter;
                         map.SelectedShape.mapCountLabel.changed('position');
                         map.SelectedShape.mapCountLabel.text = mapLabel;
                         map.SelectedShape.mapCountLabel.changed('text');
@@ -424,13 +453,13 @@
                             }
 
                             geoFencePath = coordinates.join('|');
-                        } else if (map.SelectedShape.overlayType == 'rectangle')
+                        } else if ('rectangle' == map.SelectedShape.overlayType)
                         {
                             var ne = map.SelectedShape.getBounds().getNorthEast();
                             var sw = map.SelectedShape.getBounds().getSouthWest();
 
                             geoFencePath = ne.toUrlValue() + '|' + sw.lat() + ',' + ne.lng() + '|' + sw.toUrlValue() + '|' + ne.lat() + ',' + sw.lng() + ' | ' + ne.toUrlValue();
-                        } else if (map.SelectedShape.overlayType == 'circle')
+                        } else if ('circle' == map.SelectedShape.overlayType)
                         {
                             var center = map.SelectedShape.getCenter();
                             var radius = map.SelectedShape.radius;
@@ -451,7 +480,7 @@
                     if ((map.SelectedShape && (typeof(map.SelectedShape.overlayType) != 'undefined') && map.SelectedShape.overlayType == 'circle') || (pieSlicerState.SelectedCenterPt && pieSlicerState.SelectedRadius)) {
 
                         // if we are starting with a new shape (not a pieslice), start over with a new pieslicer
-                        if (map.SelectedShape && (typeof(map.SelectedShape.overlayType) != 'undefined') && map.SelectedShape.overlayType != 'pieslice') {
+                        if (map.SelectedShape && (typeof(map.SelectedShape.overlayType) != 'undefined') && map.SelectedShape.isPieSlice != true) {
                             if (map.SelectedShape.overlayType == 'circle') {
                                 pieSlicerState.SelectedCenterPt = map.SelectedShape.getCenter();
                                 pieSlicerState.SelectedRadius = map.SelectedShape.radius;
@@ -564,7 +593,8 @@
 
                                         pieSlicePoly.isPieDrawing = true;
                                         pieSlicePoly.startArc = pc;
-                                        pieSlicePoly.overlayType = 'pieslice';
+                                        pieSlicePoly.overlayType = 'polygon';
+                                        pieSlicePoly.isPieSlice = true;
                                         while (pieSlicePoly.startArc < 0){
                                             pieSlicePoly.startArc += 360;
                                         }

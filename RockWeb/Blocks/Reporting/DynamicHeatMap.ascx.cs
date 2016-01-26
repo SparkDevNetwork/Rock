@@ -389,6 +389,12 @@ namespace RockWeb.Blocks.Reporting
 
             // cluster points that are close together
             double? milesPerGrouping = this.GetAttributeValue( "PointGrouping" ).AsDoubleOrNull();
+            if ( !milesPerGrouping.HasValue )
+            {
+                // default to a 1/10th of a mile 
+                milesPerGrouping = 0.10;
+            }
+
             if ( milesPerGrouping.HasValue && milesPerGrouping > 0 )
             {
                 var metersPerLatitudePHX = 110886.79;
