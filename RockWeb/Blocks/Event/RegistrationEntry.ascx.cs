@@ -1438,6 +1438,11 @@ namespace RockWeb.Blocks.Event
 
             if ( newRegistrar )
             {
+                if( CurrentPerson != null && CurrentPerson.NickName == null )
+                {
+                    CurrentPerson.NickName = CurrentPerson.FirstName;
+                }
+
                 // If the 'your name' value equals the currently logged in person, use their person alias id
                 if ( CurrentPerson != null &&
                 ( CurrentPerson.NickName.Trim().Equals( registration.FirstName.Trim(), StringComparison.OrdinalIgnoreCase ) ||
