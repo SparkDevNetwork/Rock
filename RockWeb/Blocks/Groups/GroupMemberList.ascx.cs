@@ -38,10 +38,11 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Lists all the members of the given group." )]
 
-    [GroupField( "Group", "Either pick a specific group or choose <none> to have group be determined by the groupId page parameter" )]
+    [GroupField( "Group", "Either pick a specific group or choose <none> to have group be determined by the groupId page parameter", false )]
     [LinkedPage( "Detail Page" )]
     [LinkedPage( "Person Profile Page", "Page used for viewing a person's profile. If set a view profile button will show for each group member.", false, "", "", 2, "PersonProfilePage" )]
     [LinkedPage( "Registration Page", "Page used for viewing the registration(s) associated with a particular group member", false, "", "", 3 )]
+    [BooleanField("Show Campus Filter", "Setting to show/hide campus filter.", true, order: 4)]
     public partial class GroupMemberList : RockBlock, ISecondaryBlock
     {
         #region Private Variables
@@ -89,6 +90,9 @@ namespace RockWeb.Blocks.Groups
             base.OnInit( e );
 
             this.BlockUpdated += GroupMemberList_BlockUpdated;
+
+            // show hide campus filter
+            cpCampusFilter.Visible = GetAttributeValue( "ShowCampusFilter" ).AsBoolean();
 
             string script = @"
     $('.js-person-popover').popover({
