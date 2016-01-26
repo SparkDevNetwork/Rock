@@ -108,12 +108,16 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _lbAddGroupMember );
             _lbAddGroupMember.ID = this.ID + "_btnAddGroupMember";
             _lbAddGroupMember.Click += lbAddGroupMember_Click;
-            _lbAddGroupMember.AddCssClass( "add btn btn-sm btn-action" );
+            _lbAddGroupMember.AddCssClass( "add btn btn-xs btn-action" );
             _lbAddGroupMember.CausesValidation = false;
 
             var iAddFilter = new HtmlGenericControl( "i" );
-            iAddFilter.AddCssClass("fa fa-plus-circle");
+            iAddFilter.AddCssClass("fa fa-user");
             _lbAddGroupMember.Controls.Add( iAddFilter );
+
+            var spanAddFilter = new HtmlGenericControl("span");
+            spanAddFilter.InnerHtml = " Add Person";
+            _lbAddGroupMember.Controls.Add( spanAddFilter );
         }
 
         /// <summary>
