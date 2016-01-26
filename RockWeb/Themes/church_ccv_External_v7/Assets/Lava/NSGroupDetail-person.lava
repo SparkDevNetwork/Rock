@@ -33,8 +33,7 @@
     <a href="{{ groupMemberDetailPage }}?GroupMemberId={{ member.Id }}">
 		<strong>{{ member.Person.FullName }}</strong>
 	</a>
-		
-    <small>({{ member.GroupRole.Name}})</small>
+	
     {% if member.GroupMemberStatus == 'Pending' %}
       <a class="btn btn-link btn-xs" href="{{ videoPage }}?person={{ member.Person.Id }}" title="Send T-Up Video"><i class="fa fa-video-camera"></i></a>
     {% endif %}
