@@ -27,6 +27,7 @@ using System.Data;
 using System;
 using System.Diagnostics;
 using Rock.Web.Cache;
+using Humanizer;
 
 namespace Rock.PersonProfile.Badge
 {
@@ -97,7 +98,7 @@ namespace Rock.PersonProfile.Badge
                 }
                 else
                 {
-                    writer.Write(String.Format( "<div class='badge badge-attendingduration' data-toggle='tooltip' data-original-title='{0} has attended for {1} {2}.'>", Person.NickName, spanValue, spanUnit));
+                    writer.Write(String.Format( "<div class='badge badge-attendingduration' data-toggle='tooltip' data-original-title='{0} first visited {1} ago.'>", Person.NickName, spanUnit.ToQuantity(spanValue.AsInteger())));
                 }
 
                 writer.Write(String.Format("<div class='duration-metric {0}'>", cssClass));
