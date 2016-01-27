@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
-
 using Rock;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Web.UI.Controls;
 
 namespace church.ccv.Reporting.DataSelect.Person
 {
@@ -69,6 +70,27 @@ namespace church.ccv.Reporting.DataSelect.Person
             {
                 return "First Contribution Record";
             }
+        }
+
+        /// <summary>
+        /// Creates the child controls.
+        /// </summary>
+        /// <param name="parentControl"></param>
+        /// <returns></returns>
+        public override System.Web.UI.Control[] CreateChildControls( System.Web.UI.Control parentControl )
+        {
+            var baseControls = base.CreateChildControls( parentControl );
+
+            HelpBlock helpBlock = new HelpBlock();
+            helpBlock.ID = parentControl.ID + "_helpBlock";
+            helpBlock.Text = "Use this field along with some Lava Select fields to display the various details about the transaction.  For example: Set 'Show in Grid' to false, then add a Lava field with <code>{{ FirstContributionRecord.SourceTypeValue.Value }}</code>";
+
+            parentControl.Controls.Add( helpBlock );
+
+            var result = baseControls.ToList();
+            result.Add( helpBlock );
+
+            return result.ToArray();
         }
 
         /// <summary>
