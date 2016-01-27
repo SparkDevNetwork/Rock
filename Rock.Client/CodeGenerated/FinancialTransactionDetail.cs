@@ -125,6 +125,9 @@ namespace Rock.Client
     public partial class FinancialTransactionDetail : FinancialTransactionDetailEntity
     {
         /// <summary />
+        public FinancialAccount Account { get; set; }
+
+        /// <summary />
         public EntityType EntityType { get; set; }
 
         /// <summary>

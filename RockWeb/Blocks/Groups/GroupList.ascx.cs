@@ -34,7 +34,7 @@ namespace RockWeb.Blocks.Groups
 {
     [DisplayName( "Group List" )]
     [Category( "Groups" )]
-    [Description( "Lists all groups for the configured group types." )]
+    [Description( "Lists all groups for the configured group types. Query string parameters: <ul><li>GroupTypeId - Filters to a specific group type.</li></ui>" )]
 
     [LinkedPage( "Detail Page", "", true, "", "", 0 )]
     [GroupTypesField( "Include Group Types", "The group types to display in the list.  If none are selected, all group types will be included.", false, "", "", 1 )]
@@ -370,6 +370,17 @@ namespace RockWeb.Blocks.Groups
                 if ( groupTypeFilter.HasValue )
                 {
                     groupTypeIds = groupTypeIds.Where( g => g == groupTypeFilter.Value ).ToList();
+                }
+            }
+
+            // filter to a specific group type if provided in the query string
+            if (!string.IsNullOrWhiteSpace( RockPage.PageParameter( "GroupTypeId" ) )){
+                int? groupTypeId = RockPage.PageParameter( "GroupTypeId" ).AsIntegerOrNull();
+
+                if ( groupTypeId.HasValue )
+                {
+                    groupTypeIds.Clear();
+                    groupTypeIds.Add( groupTypeId.Value );
                 }
             }
 

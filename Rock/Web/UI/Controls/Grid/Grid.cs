@@ -1528,10 +1528,9 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                var gridDataFields = this.Columns.OfType<BoundField>().ToList();
-
                 if ( this.DataSourceAsDataTable != null )
                 {
+                    var gridDataFields = this.Columns.OfType<BoundField>().ToList();
                     DataTable data = this.DataSourceAsDataTable;
 
                     // print headings
@@ -1555,6 +1554,27 @@ namespace Rock.Web.UI.Controls
                 }
                 else
                 {
+                    var definedValueFields = this.Columns.OfType<DefinedValueField>().ToList();
+                    var attributeFields = this.Columns.OfType<AttributeField>().ToList();
+                    var lavaFields = new List<LiquidField>();
+                    var visibleFields = new Dictionary<int, DataControlField>();
+
+                    int fieldOrder = 0;
+                    foreach( DataControlField dataField in this.Columns )
+                    {
+                        if ( dataField is LiquidField )
+                        {
+                            var lavaField = dataField as LiquidField;
+                            lavaFields.Add( lavaField );
+                            visibleFields.Add( fieldOrder++, lavaField );
+                        }
+                        if ( dataField is BoundField )
+                        {
+                            var boundField = dataField as BoundField;
+                            visibleFields.Add( fieldOrder++, boundField );
+                        }
+                    }
+
                     var oType = GetDataSourceObjectType();
 
                     // get all properties of the objects in the grid
@@ -1562,47 +1582,65 @@ namespace Rock.Web.UI.Controls
 
                     // Inspect the collection of Fields that appear in the Grid and add the corresponding data item properties to the set of fields to be exported.
                     // The fields are exported in the same order as they appear in the Grid.
-                    var orderedProps = new SortedDictionary<int, PropertyInfo>();
-                    var hiddenProps = new List<PropertyInfo>();
-
+                    var props = new List<PropertyInfo>();
                     foreach ( PropertyInfo prop in allprops )
                     {
                         // skip over virtual properties that aren't shown in the grid since they are probably lazy loaded and it is too late to get them
-                        if ( prop.GetGetMethod().IsVirtual &&
-                            prop.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() == 0 )
+                        if ( prop.GetGetMethod().IsVirtual && prop.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() == 0 )
                         {
                             continue;
                         }
 
-                        // Find a matching field in the Grid and add it to the list of exported properties.
-                        var gridField = gridDataFields.FirstOrDefault( a => a.DataField == prop.Name || a.DataField.StartsWith( prop.Name + "." ) );
-                        if ( gridField != null )
+                        // Skip the lava property (is added through columns)
+                        if ( prop.Name.StartsWith( "Data_Lava_"))
                         {
-                            int fieldIndex = gridDataFields.IndexOf( gridField );
-                            orderedProps.Add( fieldIndex, prop );
+                            continue;
                         }
-                        else
-                        {
-                            hiddenProps.Add( prop );
-                        }
+
+                        props.Add( prop );
                     }
 
-                    var props = orderedProps.Values.ToList();
-                    props.AddRange( hiddenProps );
+                    var lavaDataFields = new Dictionary<string, LiquidFieldTemplate.DataFieldInfo>();
 
-                    // print column headings
-                    foreach ( PropertyInfo prop in props )
+                    // Grid column headings
+                    var boundPropNames = new List<string>();
+                    foreach ( DataControlField dataField in visibleFields.OrderBy( f => f.Key ).Select( f => f.Value ) )
                     {
-                        var gridDataField = gridDataFields.FirstOrDefault( a => a.DataField == prop.Name || a.DataField.StartsWith( prop.Name + "." ) );
-                        if ( gridDataField != null )
+                        worksheet.Cells[3, columnCounter].Value = dataField.HeaderText;
+
+                        var boundField = dataField as BoundField;
+                        if ( boundField != null )
                         {
-                            worksheet.Cells[3, columnCounter].Value = gridDataField.HeaderText;
-                        }
-                        else
-                        {
-                            worksheet.Cells[3, columnCounter].Value = prop.Name.SplitCase();
+                            var prop = props.FirstOrDefault( p => boundField.DataField == p.Name || boundField.DataField.StartsWith( p.Name + "." ) );
+                            if ( prop != null )
+                            {
+                                if ( lavaFields.Any() )
+                                {
+                                    var mergeFieldName = boundField.HeaderText.Replace( " ", string.Empty ).RemoveSpecialCharacters();
+                                    lavaDataFields.AddOrIgnore( mergeFieldName, new LiquidFieldTemplate.DataFieldInfo { PropertyInfo = prop, GridField = boundField } );
+                                }
+
+                                boundPropNames.Add( prop.Name );
+                                if ( prop.PropertyType == typeof( DateTime ) || prop.PropertyType == typeof( DateTime? ) )
+                                {
+                                    worksheet.Column( columnCounter ).Style.Numberformat.Format = "MM/dd/yyyy hh:mm";
+                                }
+                            }
                         }
 
+                        columnCounter++;
+                    }
+
+                    // headings for data not associated with a bound field
+                    foreach ( var prop in props.Where( p => !boundPropNames.Contains( p.Name ) ) )
+                    {
+                        if ( lavaFields.Any() )
+                        {
+                            var mergeFieldName = prop.Name;
+                            lavaDataFields.Add( mergeFieldName, new LiquidFieldTemplate.DataFieldInfo { PropertyInfo = prop, GridField = null } );
+                        }
+
+                        worksheet.Cells[3, columnCounter].Value = prop.Name.SplitCase();
                         if ( prop.PropertyType == typeof( DateTime ) || prop.PropertyType == typeof( DateTime? ) )
                         {
                             worksheet.Column( columnCounter ).Style.Numberformat.Format = "MM/dd/yyyy hh:mm";
@@ -1611,16 +1649,8 @@ namespace Rock.Web.UI.Controls
                         columnCounter++;
                     }
 
-                    // Get any defined value columns
-                    List<DefinedValueField> definedValueFields = this.Columns.OfType<DefinedValueField>().ToList();
-
-                    // Get any attribute columns
-                    List<AttributeField> attributeFields = this.Columns.OfType<AttributeField>().ToList();
-                    foreach ( var attributeField in attributeFields )
-                    {
-                        worksheet.Cells[3, columnCounter].Value = attributeField.HeaderText;
-                        columnCounter++;
-                    }
+                    string appRoot =  ( (RockPage)Page ).ResolveRockUrl( "~/" );
+                    string themeRoot = ( (RockPage)Page ).ResolveRockUrl( "~~/" );
 
                     // print data
                     int dataIndex = 0;
@@ -1640,11 +1670,98 @@ namespace Rock.Web.UI.Controls
                             }
                         }
 
+                        Rock.Attribute.IHasAttributes dataItemWithAttributes = null;
+                        if ( attributeFields.Any() )
+                        {
+                            // First check to see if there is an object list
+                            if ( ObjectList != null )
+                            {
+                                // If an object list exists, check to see if the associated object has attributes
+                                string key = DataKeys[dataIndex].Value.ToString();
+                                if ( !string.IsNullOrWhiteSpace( key ) && ObjectList.ContainsKey( key ) )
+                                {
+                                    dataItemWithAttributes = ObjectList[key] as Rock.Attribute.IHasAttributes;
+                                }
+                            }
+
+                            // Then check if DataItem has attributes
+                            if ( dataItemWithAttributes == null )
+                            {
+                                dataItemWithAttributes = item as Rock.Attribute.IHasAttributes;
+                            }
+
+                            if ( dataItemWithAttributes != null )
+                            {
+                                if ( dataItemWithAttributes.Attributes == null )
+                                {
+                                    dataItemWithAttributes.LoadAttributes();
+                                }
+                            }
+                        }
+
                         columnCounter = 0;
-                        foreach ( PropertyInfo prop in props )
+
+                        foreach( var dataField in visibleFields.OrderBy( f => f.Key ).Select( f => f.Value ) )
                         {
                             columnCounter++;
 
+                            var attributeField = dataField as AttributeField;
+                            if ( attributeField != null )
+                            {
+                                bool exists = dataItemWithAttributes.Attributes.ContainsKey( attributeField.DataField );
+                                if ( exists )
+                                {
+                                    var attrib = dataItemWithAttributes.Attributes[attributeField.DataField];
+                                    string rawValue = dataItemWithAttributes.GetAttributeValue( attributeField.DataField );
+                                    string resultHtml = attrib.FieldType.Field.FormatValue( null, rawValue, attrib.QualifierValues, false );
+                                    worksheet.Cells[rowCounter, columnCounter].Value = resultHtml;
+                                }
+                                continue;
+                            } 
+                            
+                            var boundField = dataField as BoundField;
+                            if ( boundField != null )
+                            {
+                                var prop = props.FirstOrDefault( p => boundField.DataField == p.Name || boundField.DataField.StartsWith( p.Name + "." ) );
+                                if ( prop != null )
+                                {
+                                    object propValue = prop.GetValue( item, null );
+
+                                    var definedValueAttribute = prop.GetCustomAttributes( typeof( DefinedValueAttribute ), true ).FirstOrDefault();
+
+                                    bool isDefinedValue = ( definedValueAttribute != null || definedValueFields.Any( f => f.DataField == prop.Name ) );
+
+                                    var cell = worksheet.Cells[rowCounter, columnCounter];
+                                    SetExcelValue( cell, this.GetExportValue( prop, propValue, isDefinedValue, cell ) );
+                                }
+                                continue;
+                            }
+
+                            var lavaField = dataField as LiquidField;
+                            if ( lavaField != null )
+                            {
+                                var mergeValues = new Dictionary<string, object>();
+                                foreach ( var dataFieldItem in lavaDataFields )
+                                {
+                                    var dataFieldValue = dataFieldItem.Value.PropertyInfo.GetValue( item, null );
+                                    if ( dataFieldItem.Value.GridField is DefinedValueField )
+                                    {
+                                        var definedValue = ( dataFieldItem.Value.GridField as DefinedValueField ).GetDefinedValue( dataFieldValue );
+                                        dataFieldValue = definedValue != null ? definedValue.Value : null;
+                                    }
+                                    mergeValues.Add( dataFieldItem.Key, dataFieldValue );
+                                }
+
+                                string resolvedValue = lavaField.LiquidTemplate.ResolveMergeFields( mergeValues );
+                                worksheet.Cells[rowCounter, columnCounter].Value = resolvedValue.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
+
+                                continue;
+                            }
+                        }
+
+                        foreach ( var prop in props.Where( p => !boundPropNames.Contains( p.Name ) ) )
+                        {
+                            columnCounter++;
                             object propValue = prop.GetValue( item, null );
 
                             var definedValueAttribute = prop.GetCustomAttributes( typeof( DefinedValueAttribute ), true ).FirstOrDefault();
@@ -1653,50 +1770,6 @@ namespace Rock.Web.UI.Controls
 
                             var cell = worksheet.Cells[rowCounter, columnCounter];
                             SetExcelValue( cell, this.GetExportValue( prop, propValue, isDefinedValue, cell ) );
-                        }
-
-                        if ( attributeFields.Any() )
-                        {
-                            Rock.Attribute.IHasAttributes dataItem = null;
-
-                            // First check to see if there is an object list
-                            if ( ObjectList != null )
-                            {
-                                // If an object list exists, check to see if the associated object has attributes
-                                string key = DataKeys[dataIndex].Value.ToString();
-                                if ( !string.IsNullOrWhiteSpace( key ) && ObjectList.ContainsKey( key ) )
-                                {
-                                    dataItem = ObjectList[key] as Rock.Attribute.IHasAttributes;
-                                }
-                            }
-
-                            // Then check if DataItem has attributes
-                            if ( dataItem == null )
-                            {
-                                dataItem = item as Rock.Attribute.IHasAttributes;
-                            }
-
-                            if ( dataItem != null )
-                            {
-                                if ( dataItem.Attributes == null )
-                                {
-                                    dataItem.LoadAttributes();
-                                }
-
-                                foreach ( var attributeField in attributeFields )
-                                {
-                                    columnCounter++;
-
-                                    bool exists = dataItem.Attributes.ContainsKey( attributeField.DataField );
-                                    if ( exists )
-                                    {
-                                        var attrib = dataItem.Attributes[attributeField.DataField];
-                                        string rawValue = dataItem.GetAttributeValue( attributeField.DataField );
-                                        string resultHtml = attrib.FieldType.Field.FormatValue( null, rawValue, attrib.QualifierValues, false );
-                                        worksheet.Cells[rowCounter, columnCounter].Value = resultHtml;
-                                    }
-                                }
-                            }
                         }
 
                         rowCounter++;

@@ -132,6 +132,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Page target, Page source )
         {
             target.Id = source.Id;
+            target.AllowIndexing = source.AllowIndexing;
             target.BreadCrumbDisplayIcon = source.BreadCrumbDisplayIcon;
             target.BreadCrumbDisplayName = source.BreadCrumbDisplayName;
             target.BrowserTitle = source.BrowserTitle;

@@ -31,7 +31,7 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sets an attribute's value to the selected person 
     /// </summary>
-    [ActionCategory( "Set Attribute" )]
+    [ActionCategory( "Set Workflow Attribute" )]
     [Description( "Sets an attribute to a person with matching name and email. If single match is not found a new person will be created." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Get Person From Fields" )]

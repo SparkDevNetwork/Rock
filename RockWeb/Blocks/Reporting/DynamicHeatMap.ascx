@@ -17,13 +17,12 @@
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlUserDataView" runat="server" Label="Dataview" Help="Select the dataview to use to filter the results." Required="true" />
-                        <Rock:CampusesPicker ID="cpCampuses" runat="server" Label="Campuses" Help="Select the campuses to narrow the results down to families with that home campus." Required="false" />
-                        <Rock:GroupPicker ID="gpGroupToMap" runat="server" Label="Group" Help="Select a Group to show the geofences for that group and it's child groups" />
+                        <Rock:CampusesPicker ID="cpCampuses" runat="server" Label="Campus Filter" Help="Select the campuses to narrow the results down to families with that home campus." Required="false" />
+                        <Rock:GroupPicker ID="gpGroupToMap" runat="server" Label="Geo-fencing Group" Help="Select a Group to show the geofences for that group and it's child groups" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockCheckBox ID="cbShowCampusLocations" runat="server" Label="Show Campus locations on map" Checked="true" />
+                        <Rock:RockCheckBox ID="cbShowCampusLocations" runat="server" Label="Show Campus Locations On Map" Checked="true" />
                         <Rock:RangeSlider ID="rsDataPointRadius" runat="server" MinValue="0" MaxValue="128" Text="32" Label="Radius" Help="The radius of influence for each data point, in pixels" />
-                        <Rock:NumberBox ID="nbFontSize" runat="server" NumberType="Integer" Label="Label Font Size" />
                     </div>
                 </div>
 
@@ -34,7 +33,9 @@
 
             <div class="margin-all-md">
                 <div class="pull-right">
-                    <div class="btn btn-default btn-xs js-createpieshape "><i class='fa fa-pie-chart' title="Create pie slices from circle"></i></div>
+                    <asp:Panel ID="pnlPieSlicer" runat="server" CssClass="btn btn-default btn-xs js-createpieshape">
+                        <i class='fa fa-pie-chart' title="Create pie slices from selected circle"></i>
+                    </asp:Panel>
                     <div class="btn btn-danger btn-xs js-deleteshape"><i class='fa fa-times' title="Delete selected shape"></i></div>
                 </div>
             </div>
@@ -256,18 +257,20 @@
                         if (selectedShape.Name){
                             mapLabel = selectedShape.Name + ': ' + mapLabel;
                         }
-                        var mapCountLabel = new MapLabel({
-                            position: selectedBounds.getCenter(),
-                            map: map,
-                            fontSize: <%=this.LabelFontSize%>,
-                            text: mapLabel
-                        });
 
-                        if (selectedShape.mapCountLabel) {
-                            selectedShape.mapCountLabel.setMap(null);
+                        if (!selectedShape.mapCountLabel) {
+                            selectedShape.mapCountLabel = new MapLabel({
+                                map:map,
+                                fontSize: <%=this.LabelFontSize%>,
+                                text:'x',
+                                position: selectedBounds.getCenter()
+                            });
                         }
 
-                        selectedShape.mapCountLabel = mapCountLabel;
+                        selectedShape.mapCountLabel.position = selectedBounds.getCenter();
+                        selectedShape.mapCountLabel.changed('position');
+                        selectedShape.mapCountLabel.text = mapLabel;
+                        selectedShape.mapCountLabel.changed('text');
 
                         if (!justUpdate) {
                             selectedShape.addListener('bounds_changed', function (event) {
@@ -328,17 +331,17 @@
                     google.maps.event.addListener(drawingManager, 'polygoncomplete', function (polygon) {
                         google.maps.event.addListener(polygon, 'dragend', function (a,b,c) {
                             allShapes.forEach( function(s) {
-                                map.AddUpdateShape(s, false);
+                                map.AddUpdateShape(s, true);
                             });
                         });
                         google.maps.event.addListener(polygon.getPath(), 'insert_at', function (a,b,c) {
                             allShapes.forEach( function(s) {
-                                map.AddUpdateShape(s, false);
+                                map.AddUpdateShape(s, true);
                             });
                         });
                         google.maps.event.addListener(polygon.getPath(), 'set_at', function (a,b,c) {
                             allShapes.forEach( function(s) {
-                                map.AddUpdateShape(s, false);
+                                map.AddUpdateShape(s, true);
                             });
                         });
                     });
@@ -346,27 +349,56 @@
 
                 $('.js-deleteshape').click(function () {
                     if (selectedShape) {
-                        selectedShape.setMap(null);
+                        var allShapesIndex = allShapes.indexOf(selectedShape);
+                        
+                        if (allShapesIndex > -1)
+                        {
+                            allShapes.splice(allShapesIndex, 1);
+                        }
+
                         selectedShape.mapCountLabel.setMap(null);
+                        selectedShape.setMap(null);
                         selectedShape = null;
                     }
                 });
 
                 $('.js-createpieshape').click(function () {
-                    if (selectedShape && selectedShape.overlayType == 'circle') {
-                        var centerPt = selectedShape.center;
-                        var radiusMeters = selectedShape.radius;
+                    if (selectedShape ) {
+                        var selectedBounds = selectedShape.getBounds();
+
+                        var centerPt = selectedBounds.getCenter();
+                        var northEastPt = selectedBounds.getNorthEast();
+                        var radiusMeters = google.maps.geometry.spherical.computeDistanceBetween(centerPt, northEastPt);
+                        var startOffsetDegrees = google.maps.geometry.spherical.computeHeading(centerPt, northEastPt);
+
+                        var allShapesIndex = allShapes.indexOf(selectedShape);
+                        
+                        if (allShapesIndex > -1)
+                        {
+                            allShapes.splice(allShapesIndex, 1);
+                        }
+
                         selectedShape.setMap(null);
                         selectedShape.mapCountLabel.setMap(null);
                         selectedShape = null;
 
                         var i = 0;
-                        for (; i < 6; i++) {
-                            var startDegrees = i*60;
+                        var pieSliceCount = <%=this.PieSliceCount%>;
+                        var degreesInc = 360 / pieSliceCount;
+                        for (; i < pieSliceCount; i++) {
+                            var startDegrees = i*degreesInc;
 
                             var pieSlicePath = Array();
-                            pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, startDegrees));
-                            pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, startDegrees+60));
+                            var nextRadialPoint = startDegrees;
+                            var lastRadialPoint = startDegrees + degreesInc;
+                            
+                            while (nextRadialPoint < lastRadialPoint) {
+                                pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, nextRadialPoint + startOffsetDegrees));
+                                nextRadialPoint += 30;
+                            }
+                            
+                            pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, lastRadialPoint + startOffsetDegrees));
+                            
                             pieSlicePath.unshift(centerPt);
                             pieSlicePath.push(centerPt);
                             var pieSlicePoly = new google.maps.Polygon({

@@ -190,7 +190,7 @@ namespace Rock.Model
             ActionComponent workflowAction = this.ActionType.WorkflowAction;
             if ( workflowAction == null )
             {
-                throw new SystemException( string.Format( "The '{0}' component does not exist, or is not active", workflowAction));
+                throw new SystemException( string.Format( "The '{0}' component does not exist, or is not active", this.ActionType.EntityType ) );
             }
 
             this.ActionType.LoadAttributes( rockContext );

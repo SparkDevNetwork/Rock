@@ -83,7 +83,11 @@ namespace Rock
                     {
                         if ( p.SqlDbType == System.Data.SqlDbType.NVarChar )
                         {
-                            return string.Format( "@{0} {1}({2}) = '{3}'", p.ParameterName, p.SqlDbType, p.Size, p.SqlValue );
+                            return string.Format( "@{0} {1}({2}) = '{3}'", p.ParameterName, p.SqlDbType, p.Size, p.SqlValue.ToString().Replace( "'", "''" ) );
+                        }
+                        if ( p.SqlDbType == System.Data.SqlDbType.Int )
+                        {
+                            return string.Format( "@{0} {1} = {2}", p.ParameterName, p.SqlDbType, p.SqlValue ?? "null" );
                         }
                         else if ( p.SqlDbType == System.Data.SqlDbType.Udt )
                         {

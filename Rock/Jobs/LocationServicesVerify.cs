@@ -67,6 +67,7 @@ namespace Rock.Jobs
 
             var rockContext = new Rock.Data.RockContext();
             LocationService locationService = new LocationService(rockContext);
+            int addressesVerified = 0;
             var addresses = locationService.Queryable()
                                 .Where( l => (
                                     (l.IsGeoPointLocked == null || l.IsGeoPointLocked == false) // don't ever try locked address
@@ -82,9 +83,12 @@ namespace Rock.Jobs
             foreach ( var address in addresses )
             {
                 locationService.Verify( address, false ); // currently not reverifying 
+                addressesVerified++;
                 rockContext.SaveChanges();
                 System.Threading.Thread.Sleep( throttlePeriod );
             }
+
+            context.Result = string.Format( "{0} addresses verified", addressesVerified );
 
         }
 

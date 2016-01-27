@@ -990,7 +990,7 @@ namespace RockWeb.Blocks.Groups
                         .GroupBy( r => r.GroupMemberId.Value )
                         .Select( g => new
                         {
-                            GroupMemberId = g.Key,
+                            GroupMemberId = g.Key,  
                             Registrations = g.ToList()
                                 .Select( r => new {
                                     Id = r.Registration.Id,
@@ -1005,7 +1005,7 @@ namespace RockWeb.Blocks.Groups
                         registrationField.Visible = _groupMembersWithRegistrations.Any();
                     }
 
-                    var connectionStatusField = gGroupMembers.ColumnsOfType<DefinedValueField>().FirstOrDefault( a => a.DataField == "Person.ConnectionStatusValueId" );
+                    var connectionStatusField = gGroupMembers.ColumnsOfType<DefinedValueField>().FirstOrDefault( a => a.DataField == "ConnectionStatusValueId" );
                     if ( connectionStatusField != null )
                     {
                         connectionStatusField.Visible = _group.GroupType.ShowConnectionStatus;
@@ -1016,6 +1016,8 @@ namespace RockWeb.Blocks.Groups
                         m.Id,
                         m.Guid,
                         m.PersonId,
+                        m.Person.NickName,
+                        m.Person.LastName,
                         Name =
                         ( selectAll ? m.Person.LastName + ", " + m.Person.NickName : ( m.Person.PhotoId.HasValue ? "<i class='fa fa-fw fa-user photo-icon has-photo js-person-popover' personid=" + m.PersonId.ToString() + "></i> " : "<i class='fa fa-fw photo-icon js-person-popover' personid=" + m.PersonId.ToString() + "></i> " ) +
                         m.Person.NickName + " " + m.Person.LastName
@@ -1025,6 +1027,7 @@ namespace RockWeb.Blocks.Groups
                             + ( !string.IsNullOrEmpty( m.Note )
                             ? " <i class='fa fa-file-text-o text-info'></i>"
                             : string.Empty ) ),
+                        m.Person.ConnectionStatusValueId,
                         Email = m.Person.Email,
                         HomePhone = selectAll && homePhoneType != null ?
                             m.Person.PhoneNumbers
@@ -1045,7 +1048,6 @@ namespace RockWeb.Blocks.Groups
                         GroupRole = m.GroupRole.Name,
                         m.GroupMemberStatus,
                         RecordStatusValueId = m.Person.RecordStatusValueId,
-                        m.Person,
                         IsDeceased = m.Person.IsDeceased
                     } ).ToList();
 
