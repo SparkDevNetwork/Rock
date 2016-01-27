@@ -18,29 +18,37 @@
 // Custom
 // -------------------------
 
-// Image stack
-
-.nextsteps-icon {
-  position: relative;
-}
-  .nextsteps-icon > img {
-    position: absolute;
-    opacity: 0;
-    .transition(.5s opacity);
-    &.active {
-      opacity: 1;
-    }
+.nextsteps-logo {
+  max-width: 60em;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+  @media @sm {
+    padding-top: @grid-gutter-width;
+    padding-bottom: @grid-gutter-width;
   }
-
-// Positioning
-
-.nextsteps-icon {
-  margin-top: @grid-gutter-width;
 }
 
-@media (max-width: @screen-xs-max) {
-  .nextsteps-icon-holder {
-    padding-right: 0;
+.nextsteps-container {
+  max-width: 60em;
+}
+
+.nextsteps-section .media>.media-left {
+  float: none;
+  @media @sm {
+    float: left;
+  }
+}
+
+.nextsteps-icon {
+  width: @grid-gutter-width*2;
+  fill: #999;
+  margin-left: auto;
+  margin-right: auto;
+  @media @sm {
+    width: @grid-gutter-width*3;
+    margin-top: @grid-gutter-width;
+    margin-right: @grid-gutter-width;
   }
 }
 
