@@ -579,8 +579,11 @@ namespace Rock.Data
         /// </summary>
         /// <param name="pageGuid">The page GUID.</param>
         /// <param name="route">The route.</param>
-        public void AddPageRoute( string pageGuid, string route )
+        /// <param name="guid">The unique identifier.</param>
+        public void AddPageRoute( string pageGuid, string route, string guid = null )
         {
+            guid = guid != null ? string.Format( "'{0}'", guid ) : "NEWID()";
+
             Migration.Sql( string.Format( @"
 
                 DECLARE @PageId int
@@ -590,8 +593,8 @@ namespace Rock.Data
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
-                        1, @PageId, '{1}', newid())
-", pageGuid, route ) );
+                        1, @PageId, '{1}', {2} )
+", pageGuid, route, guid ) );
         }
 
         /// <summary>
