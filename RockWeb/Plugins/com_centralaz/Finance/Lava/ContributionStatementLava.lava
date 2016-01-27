@@ -54,7 +54,7 @@ On behalf of Central Christian Church, thank you for your faithful giving.</br>
       {% for transaction in Transactions %}
       <div class="row">
         <div class="col-md-3">
-          {{ transaction.Date | Date:'dd/MM/yyyy' }}
+          {{ transaction.Date | Date:'MM/dd/yyyy' }}
         </div>
         <div class="col-md-3">
           {{ transaction.Type }}
@@ -88,7 +88,7 @@ On behalf of Central Christian Church, thank you for your faithful giving.</br>
         {% for total in Totals %}
         <div class="row" style="text-align:right">
           <div class="col-md-6">
-            <b>{{ total.AccountName }}</b>
+            <b>{{ total.Name }}</b>
           </div>
           <div class="col-md-6">
             {{ total.TotalAmount | FormatAsCurrency }}

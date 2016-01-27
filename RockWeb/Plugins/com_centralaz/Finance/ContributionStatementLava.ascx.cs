@@ -93,64 +93,37 @@ namespace RockWeb.Plugins.com_centralaz.Finance
             var year = PageParameter( "Year" ).AsIntegerOrNull();
             if ( year != null )
             {
-                var transactionDetailService = new FinancialTransactionDetailService( rockContext );
-                var qry = transactionDetailService.Queryable("FinancialTransaction,FinancialPaymentDetail").AsNoTracking()
-                    .Where( a => a.Transaction.TransactionDateTime.HasValue );
-
                 var targetPerson = CurrentPerson;
                 if ( targetPerson != null )
                 {
-                    qry = qry.Where( t => 
-                        t.Transaction.AuthorizedPersonAlias.Person.GivingId == targetPerson.GivingId &&
-                        t.Transaction.TransactionDateTime.HasValue &&
-                        t.Transaction.TransactionDateTime.Value.Year == year
-                        );
-
-                    var transactionDetails = qry.Select( t => new
-                    {
-                        AccountId = t.Account.Id,
-                        AccountName = t.Account.Name,
-                        Amount = t.Amount,
-                        Transaction = t.Transaction
-                    } )
-                    .ToList();
-
-                    var summaryList = transactionDetails
-                        .GroupBy( a => a.Transaction )
-                        .Select( t => new
-                        {
-                            Transaction = t.Key,
-                            Date = t.Key.TransactionDateTime.Value,
-                            Amount = t.Sum(d=> d.Amount),
-                            SourceType = t.Key.FinancialPaymentDetail != null ?  t.Key.FinancialPaymentDetail.CurrencyTypeValue.Value : "N/A",
-                            Accounts = t.GroupBy( b => b.AccountId ).Select( c => new
-                            {
-                                AccountName = c.Max( d => d.AccountName ),
-                                TotalAmount = c.Sum( d => d.Amount )
-                            } ).OrderBy( e => e.AccountName )
-                        } ).OrderByDescending( a => a.Date )
-                        .ToList();
-
-                    var totalList = transactionDetails
-                       .GroupBy( b => b.AccountId )
-                       .Select( c => new
-                           {
-                               AccountName = c.Max( d => d.AccountName ),
-                               TotalAmount = c.Sum( d => d.Amount )
-                           } )
-                       .OrderBy( e => e.AccountName )
-                       .ToList();
-
-                    var givingPeopleList = new PersonService(rockContext).Queryable()
-                        .Where( p=> p.GivingId == targetPerson.GivingId)
-                        .ToList()
-                        ;
-                    var finalTotal = totalList.Sum( t => t.TotalAmount );
-
                     var mergeObjects = GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
 
+                    var contributionTypeGuid = Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid();
+                    var transactionDetailService = new FinancialTransactionService( rockContext );
+                    var qry = transactionDetailService.Queryable( "FinancialTransaction,FinancialPaymentDetail" ).AsNoTracking()
+                        .Where( a => a.TransactionDateTime.HasValue &&
+                            a.TransactionDateTime.Value.Year == year &&
+                            a.AuthorizedPersonAlias.Person.GivingId == targetPerson.GivingId &&
+                            a.TransactionTypeValue.Guid == contributionTypeGuid
+                            );
+
+                    //Add Transaction Details
+                    var transactionList = qry
+                        .Select( t => new
+                        {
+                            Date = t.TransactionDateTime.Value,
+                            Amount = t.TransactionDetails.Sum( d => d.Amount ),
+                            SourceType = t.FinancialPaymentDetail != null ? t.FinancialPaymentDetail.CurrencyTypeValue.Value : "N/A",
+                            Accounts = t.TransactionDetails.GroupBy( b => b.Account.Id ).Select( c => new
+                            {
+                                AccountName = c.Max( d => d.Account.Name ),
+                                TotalAmount = c.Sum( d => d.Amount )
+                            } ).OrderBy( e => e.AccountName )
+                        } ).OrderBy( a => a.Date )
+                        .ToList();
+
                     var yearsMergeObjects = new List<Dictionary<string, object>>();
-                    foreach ( var item in summaryList )
+                    foreach ( var item in transactionList )
                     {
                         var accountsList = new List<object>();
                         foreach ( var a in item.Accounts )
@@ -170,10 +143,30 @@ namespace RockWeb.Plugins.com_centralaz.Finance
                         yearsMergeObjects.Add( transactionDictionary );
                     }
 
-                    mergeObjects.Add( "GivingPeople", givingPeopleList );
                     mergeObjects.Add( "Transactions", yearsMergeObjects );
-                    mergeObjects.Add( "Totals", totalList );
-                    mergeObjects.Add( "FinalTotal", finalTotal );
+
+                    // Add Yearly Totals
+                    var qryTransactionDetails = qry.SelectMany( a => a.TransactionDetails );
+                    var qryFinancialAccount = new FinancialAccountService( rockContext ).Queryable();
+                    var accountSummaryQry = qryTransactionDetails.GroupBy( a => a.AccountId ).Select( a => new
+                    {
+                        AccountId = a.Key,
+                        TotalAmount = (decimal?)a.Sum( d => d.Amount )
+                    } ).Join( qryFinancialAccount, k1 => k1.AccountId, k2 => k2.Id, ( td, fa ) => new { td.TotalAmount, fa.Name, fa.Order } )
+                    .OrderBy( a => a.Order );
+
+                    var summaryList = accountSummaryQry.ToList();
+                    var grandTotalAmount = ( summaryList.Count > 0 ) ? summaryList.Sum( a => a.TotalAmount ?? 0 ) : 0;
+
+                    mergeObjects.Add( "Totals", summaryList );
+                    mergeObjects.Add( "FinalTotal", grandTotalAmount );
+
+                    //Add Giving People
+                    var givingPeopleList = new PersonService( rockContext ).Queryable()
+                        .Where( p => p.GivingId == targetPerson.GivingId )
+                        .ToList();
+
+                    mergeObjects.Add( "GivingPeople", givingPeopleList );
                     mergeObjects.Add( "CurrentPerson", CurrentPerson );
 
                     lContent.Text = string.Empty;
@@ -188,6 +181,7 @@ namespace RockWeb.Plugins.com_centralaz.Finance
                 }
             }
         }
+
         #endregion
     }
 }
