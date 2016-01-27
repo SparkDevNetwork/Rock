@@ -22,8 +22,10 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.UI;
 
 namespace RockWeb.Plugins.church_ccv.Groups
@@ -31,6 +33,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
     [DisplayName( "Next Steps Group Member Detail" )]
     [Category( "CCV > Groups" )]
     [Description( "Displays the details of the given Next Steps group member " )]
+    [SystemEmailField( "Reassign To Another Coach Email Template", "Email template to use when a group member's opt-out status is set to \"Reassign to another Coach\".", false)]
     public partial class NextStepsGroupMemberDetail : RockBlock, IDetailBlock
     {
         #region Control Methods
@@ -47,7 +50,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "GroupMemberId" ).AsInteger() );
+                ShowDetail( PageParameter( "CoachGroupMemberId" ).AsInteger(), PageParameter( "GroupMemberId" ).AsInteger(), null );
             }
         }
 
@@ -161,6 +164,53 @@ namespace RockWeb.Plugins.church_ccv.Groups
                     rockContext.SaveChanges();
                     groupMember.SaveAttributeValues( rockContext );
                 } );
+
+                // see if we need to send off a communcation email.
+                if ( optOutReason == OptOutReason.Reassign )
+                {
+                    // we do. Get the coach for this group.
+                    int coachGroupMemberId = int.Parse( hfCoachGroupMemberId.Value );
+
+                    // load existing group member
+                    GroupMember coachGroupMember = groupMemberService.Get( coachGroupMemberId );
+
+
+                    var mergeObjects = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
+                    mergeObjects.Add( "Coach", coachGroupMember );
+                    mergeObjects.Add( "Member", groupMember );
+                    mergeObjects.Add( "Reason", tbReassignReason.Text );
+                    lReceipt.Text = GetAttributeValue( "ReceiptText" ).ResolveMergeFields( mergeObjects );
+
+                    // Resolve any dynamic url references
+                    string appRoot = ResolveRockUrl( "~/" );
+                    string themeRoot = ResolveRockUrl( "~~/" );
+                    lReceipt.Text = lReceipt.Text.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
+
+                    // show liquid help for debug
+                    if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
+                    {
+                        lReceipt.Text += mergeObjects.lavaDebugInfo();
+                    }
+
+                    lReceipt.Visible = true;
+
+                    // if a ConfirmationEmailTemplate is configured (which it better be) assign it
+                    var confirmationEmailTemplateGuid = GetAttributeValue( "ReassignToAnotherCoachEmailTemplate" ).AsGuidOrNull();
+                    if ( confirmationEmailTemplateGuid.HasValue )
+                    {
+                        // get the email service and email
+                        SystemEmailService emailService = new SystemEmailService( rockContext );
+                        SystemEmail reassignEmail = emailService.Get( confirmationEmailTemplateGuid.Value );
+
+                        // build a recipient list using the "To" from the system email
+                        var recipients = new List<Rock.Communication.RecipientData>();
+
+                        // add person and the mergeObjects (same mergeobjects as receipt)
+                        recipients.Add( new Rock.Communication.RecipientData( reassignEmail.To, mergeObjects ) );
+
+                        Rock.Communication.Email.Send( confirmationEmailTemplateGuid.Value, recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
+                    }
+                }
             }
         }
 
@@ -200,32 +250,35 @@ namespace RockWeb.Plugins.church_ccv.Groups
         /// <param name="groupMemberId">The group member identifier.</param>
         public void ShowDetail( int groupMemberId )
         {
-            ShowDetail( groupMemberId, null );
+            // unused
         }
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
+        /// <param name="coachGroupMemberId">The coach's group member identifier.</param>
         /// <param name="groupMemberId">The group member identifier.</param>
         /// <param name="groupId">The group id.</param>
-        public void ShowDetail( int groupMemberId, int? groupId )
+        public void ShowDetail( int coachGroupMemberId, int groupMemberId, int? groupId )
         {
             var rockContext = new RockContext();
             GroupMember groupMember = new GroupMemberService( rockContext ).Get( groupMemberId );
+            GroupMember coachGroupMember = new GroupMemberService( rockContext ).Get( coachGroupMemberId );
 
-            if ( groupMember == null )
+            // make sure both exist, otherwise warn one is wrong.
+            if ( groupMember == null || coachGroupMember == null )
             {
-                if ( groupMemberId > 0 )
+                if ( groupMemberId > 0 && coachGroupMemberId > 0 )
                 {
                     nbErrorMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Warning;
                     nbErrorMessage.Title = "Warning";
-                    nbErrorMessage.Text = "Group Member not found. Group Member may have been moved to another group or deleted.";
+                    nbErrorMessage.Text = "Group Member or Coach Group Member not found. Group Member may have been moved to another group or deleted.";
                 }
                 else
                 {
                     nbErrorMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
                     nbErrorMessage.Title = "Invalid Request";
-                    nbErrorMessage.Text = "An incorrect querystring parameter was used.  A valid GroupMemberId parameter is required.";
+                    nbErrorMessage.Text = "An incorrect querystring parameter was used.  Valid GroupMemberId and CoachGroupMemberId parameters are required.";
                 }
 
                 pnlEditDetails.Visible = false;
@@ -236,6 +289,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
 
             hfGroupId.Value = groupMember.GroupId.ToString();
             hfGroupMemberId.Value = groupMember.Id.ToString();
+            hfCoachGroupMemberId.Value = coachGroupMember.Id.ToString();
 
             LoadDropDowns();
 
@@ -310,8 +364,15 @@ namespace RockWeb.Plugins.church_ccv.Groups
         /// </summary>
         private void SetControlVisibilities()
         {
-            dpFollowUpDate.Visible = ddlOptOutReason.SelectedValueAsEnumOrNull<OptOutReason>() == OptOutReason.FollowUpLater;
-            rblActivePendingStatus.Visible = ddlOptOutReason.SelectedValueAsEnumOrNull<OptOutReason>() == null;
+            OptOutReason? optOutReason = ddlOptOutReason.SelectedValueAsEnumOrNull<OptOutReason>();
+            
+            // toggle the follow-up date on or off depending on the reason.
+            dpFollowUpDate.Visible = optOutReason == OptOutReason.FollowUpLater;
+
+            // show the active / pending status picker if there's NO opt out reason.
+            rblActivePendingStatus.Visible = optOutReason == null;
+
+            tbReassignReason.Visible = optOutReason == OptOutReason.Reassign;
         }
         
         /// <summary>
@@ -330,9 +391,9 @@ namespace RockWeb.Plugins.church_ccv.Groups
             DoNotContact = 1,
 
             /// <summary>
-            /// completed
+            /// reassign to a new coach
             /// </summary>
-            Completed = 2
+            Reassign = 2
         }
 
         #endregion
