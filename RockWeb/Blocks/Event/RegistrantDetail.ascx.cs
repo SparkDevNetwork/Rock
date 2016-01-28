@@ -501,7 +501,18 @@ namespace RockWeb.Blocks.Event
                 {
                     RegistrantState = new RegistrantInfo();
                     RegistrantState.RegistrationId = registrationId ?? 0;
-                    RegistrantState.Cost = TemplateState.Cost;
+                    if ( TemplateState.SetCostOnInstance.HasValue && TemplateState.SetCostOnInstance.Value )
+                    {
+                        var instance = new RegistrationInstanceService( rockContext ).Get( RegistrationInstanceId );
+                        if ( instance != null )
+                        {
+                            RegistrantState.Cost = instance.Cost ?? 0.0m;
+                        }
+                    }
+                    else
+                    {
+                        RegistrantState.Cost = TemplateState.Cost;
+                    }
                 }
 
                 if ( registrant != null && registrant.PersonAlias != null && registrant.PersonAlias.Person != null )

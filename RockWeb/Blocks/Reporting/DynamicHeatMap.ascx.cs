@@ -17,9 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity.Spatial;
 using System.Linq;
+using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -46,8 +47,8 @@ namespace RockWeb.Blocks.Reporting
     [TextField( "Polygon Colors", "Comma-Delimited list of colors to use when displaying multiple polygons (e.g. #f37833,#446f7a,#afd074,#649dac,#f8eba2,#92d0df,#eaf7fc).", true, "#f37833,#446f7a,#afd074,#649dac,#f8eba2,#92d0df,#eaf7fc", "", 5 )]
     [DecimalField( "Point Grouping", "The number of miles per to use to group points that are close together. For example, enter 0.25 to group points in 1/4 mile blocks. Increase this if the heatmap has lots of points and is slow", required: false, order: 6 )]
     [IntegerField( "Label Font Size", "Select the Font Size for the map labels", defaultValue: 24, order: 7 )]
-    [BooleanField( "Show Pie Slicer", "Adds a button which will convert a circle into triangular pie slices. To use, draw or click on a circle, then click the Pie Slicer button.", defaultValue: false, order: 8 )]
-    [IntegerField( "Pie Slice Count", "The number of slices to create when using the pie slicer", defaultValue: 6, order: 9) ]
+    [BooleanField( "Show Pie Slicer", "Adds a button which will help slice a circle into triangular pie slices. To use, draw or click on a circle, then click the Pie Slicer button.", defaultValue: false, order: 8 )]
+    [BooleanField( "Show Save Location", "Adds a button which will save the selected shape as a named location's geofence ", defaultValue: false, order: 9 )]
     public partial class DynamicHeatMap : RockBlockCustomSettings
     {
         /// <summary>
@@ -133,15 +134,17 @@ namespace RockWeb.Blocks.Reporting
 
                 this.LabelFontSize = this.GetAttributeValue( "LabelFontSize" ).AsIntegerOrNull() ?? 24;
 
-
                 lMessages.Text = string.Empty;
                 pnlMap.Visible = true;
 
                 pnlPieSlicer.Visible = this.GetAttributeValue( "ShowPieSlicer" ).AsBoolean();
-                PieSliceCount = this.GetAttributeValue( "PieSliceCount" ).AsIntegerOrNull() ?? 6;
-            }
+                pnlSaveShape.Visible = this.GetAttributeValue( "ShowSaveLocation" ).AsBoolean();
 
-            ShowMap();
+                ShowMap();
+            }
+            else if (this.Request.Params["__EVENTTARGET"] == upSaveLocation.ClientID){
+                mdSaveLocation_SaveClick(null, null);
+            }
         }
 
         /// <summary>
@@ -183,14 +186,6 @@ namespace RockWeb.Blocks.Reporting
         /// The size of the label font.
         /// </value>
         public int LabelFontSize { get; set; }
-
-        /// <summary>
-        /// Gets or sets the pie slice count.
-        /// </summary>
-        /// <value>
-        /// The pie slice count.
-        /// </value>
-        public int PieSliceCount { get; set; }
 
         /// <summary>
         /// 
@@ -394,6 +389,12 @@ namespace RockWeb.Blocks.Reporting
 
             // cluster points that are close together
             double? milesPerGrouping = this.GetAttributeValue( "PointGrouping" ).AsDoubleOrNull();
+            if ( !milesPerGrouping.HasValue )
+            {
+                // default to a 1/10th of a mile 
+                milesPerGrouping = 0.10;
+            }
+
             if ( milesPerGrouping.HasValue && milesPerGrouping > 0 )
             {
                 var metersPerLatitudePHX = 110886.79;
@@ -497,6 +498,55 @@ namespace RockWeb.Blocks.Reporting
             this.SetBlockUserPreference( "GroupId", gpGroupToMap.SelectedValue );
 
             NavigateToPage( this.CurrentPageReference );
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdSaveLocation control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdSaveLocation_SaveClick( object sender, EventArgs e )
+        {
+            try
+            {
+                DbGeography geoFence = null;
+                if ( hfLocationSavePath.Value.StartsWith( "CIRCLE|" ) )
+                {
+                    var parts = hfLocationSavePath.Value.Split( '|' );
+                    if ( parts.Length == 3 )
+                    {
+                        var pointWKT = string.Format( "POINT({0})", parts[1].Replace(',', ' '));
+                        var radius = parts[2].AsDoubleOrNull();
+                        var geoPoint = DbGeography.FromText( pointWKT );
+                        geoFence = geoPoint.Buffer( radius );
+                    }
+                }
+                else
+                {
+                    var polyWKT = GeoPicker.ConvertPolyToWellKnownText( hfLocationSavePath.Value );
+                    geoFence = DbGeography.FromText( polyWKT );
+                }
+
+                // get the LocationId from hfLocationId instead of dpLocation since the postback is done in javascript
+                var locationId = hfLocationId.Value.AsIntegerOrNull();
+                Location location = null;
+                if (locationId.HasValue)
+                {
+                    var rockContext = new RockContext();
+                    location = new LocationService( rockContext ).Get( locationId.Value );
+
+                    if (location != null && geoFence != null)
+                    {
+                        location.GeoFence = geoFence;
+                        rockContext.SaveChanges();
+                        mdSaveLocation.Hide();
+                    }
+                }
+            }
+            catch
+            {
+                //
+            }
         }
     }
 }

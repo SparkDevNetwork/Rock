@@ -43,6 +43,8 @@ namespace Rock.Web.UI.Controls
         DateTimePicker _dtpStart;
         DateTimePicker _dtpEnd;
         NumberBox _nbMaxAttendees;
+        CurrencyBox _cbCost;
+        CurrencyBox _cbMinimumInitialPayment;
         AccountPicker _apAccount;
         PersonPicker _ppContact;
         PhoneNumberBox _pnContactPhone;
@@ -229,6 +231,67 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _nbMaxAttendees.Text = value.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the cost.
+        /// </summary>
+        /// <value>
+        /// The cost.
+        /// </value>
+        public decimal? Cost
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbCost.Text.AsDecimalOrNull();
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbCost.Text = value.HasValue ? value.ToString() : string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the minimum initial payment.
+        /// </summary>
+        /// <value>
+        /// The minimum initial payment.
+        /// </value>
+        public decimal? MinimumInitialPayment
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbMinimumInitialPayment.Text.AsDecimalOrNull();
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbMinimumInitialPayment.Text = value.HasValue ? value.ToString() : string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show cost].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show cost]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowCost
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbCost.Visible;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbCost.Visible = value;
+                _cbMinimumInitialPayment.Visible = value;
             }
         }
 
@@ -448,6 +511,8 @@ namespace Rock.Web.UI.Controls
                 _ppContact.ValidationGroup = value;
                 _pnContactPhone.ValidationGroup = value;
                 _ebContactEmail.ValidationGroup = value;
+                _cbCost.ValidationGroup = value;
+                _cbMinimumInitialPayment.ValidationGroup = value;
                 _apAccount.ValidationGroup = value;
                 _dtpSendReminder.ValidationGroup = value;
                 _cbReminderSent.ValidationGroup = value;
@@ -496,6 +561,10 @@ namespace Rock.Web.UI.Controls
 
                 _pnContactPhone.Text = instance.ContactPhone;
                 _ebContactEmail.Text = instance.ContactEmail;
+                _cbCost.Text = instance.Cost.HasValue ? instance.Cost.Value.ToString() : string.Empty;
+                _cbCost.Visible = instance.RegistrationTemplate != null && ( instance.RegistrationTemplate.SetCostOnInstance ?? false );
+                _cbMinimumInitialPayment.Text = instance.MinimumInitialPayment.HasValue ? instance.MinimumInitialPayment.Value.ToString() : string.Empty;
+                _cbMinimumInitialPayment.Visible = instance.RegistrationTemplate != null && ( instance.RegistrationTemplate.SetCostOnInstance ?? false );
                 _apAccount.SetValue( instance.AccountId );
                 _apAccount.Visible = instance.RegistrationTemplate != null && instance.RegistrationTemplate.FinancialGatewayId.HasValue;
                 _dtpSendReminder.SelectedDateTime = instance.SendReminderDateTime;
@@ -514,6 +583,8 @@ namespace Rock.Web.UI.Controls
                 _ppContact.SetValue( null );
                 _pnContactPhone.Text = string.Empty;
                 _ebContactEmail.Text = string.Empty;
+                _cbCost.Text = string.Empty;
+                _cbMinimumInitialPayment.Text = string.Empty;
                 _apAccount.SetValue( null );
                 _dtpSendReminder.SelectedDateTime = null;
                 _cbReminderSent.Checked = false;
@@ -544,6 +615,8 @@ namespace Rock.Web.UI.Controls
                 instance.ContactPersonAliasId = _ppContact.PersonAliasId;
                 instance.ContactPhone = _pnContactPhone.Text;
                 instance.ContactEmail = _ebContactEmail.Text;
+                instance.Cost = _cbCost.Text.AsDecimalOrNull();
+                instance.MinimumInitialPayment = _cbMinimumInitialPayment.Text.AsDecimalOrNull();
                 int accountId = _apAccount.SelectedValue.AsInteger();
                 instance.AccountId = accountId > 0 ? accountId : (int?)null;
                 instance.SendReminderDateTime = _dtpSendReminder.SelectedDateTime;
@@ -607,6 +680,18 @@ namespace Rock.Web.UI.Controls
                 _nbMaxAttendees.Label = "Maximum Attendees";
                 _nbMaxAttendees.NumberType = ValidationDataType.Integer;
                 Controls.Add( _nbMaxAttendees );
+
+                _cbCost = new CurrencyBox();
+                _cbCost.ID = this.ID + "_cbCost";
+                _cbCost.Label = "Cost";
+                _cbCost.Help = "The cost per registrant";
+                Controls.Add( _cbCost );
+
+                _cbMinimumInitialPayment = new CurrencyBox();
+                _cbMinimumInitialPayment.ID = this.ID + "_cbMinimumInitialPayment";
+                _cbMinimumInitialPayment.Label = "Minimum Initial Payment";
+                _cbMinimumInitialPayment.Help = "The minimum amount required per registrant. Leave value blank if full amount is required.";
+                Controls.Add( _cbMinimumInitialPayment );
 
                 _apAccount = new AccountPicker();
                 _apAccount.ID = this.ID + "_apAccount";
@@ -726,22 +811,26 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            _dtpStart.RenderControl( writer );
-            _dtpEnd.RenderControl( writer );
-            _nbMaxAttendees.RenderControl( writer );
-            writer.RenderEndTag();  // col-md-6
+                    _dtpStart.RenderControl( writer );
+                    _dtpEnd.RenderControl( writer );
+                    _nbMaxAttendees.RenderControl( writer );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            _apAccount.RenderControl( writer );
-            _ppContact.RenderControl( writer );
-            _pnContactPhone.RenderControl( writer );
-            _ebContactEmail.RenderControl( writer );
-            writer.RenderEndTag();  // col-md-6
+                writer.RenderEndTag();  // col-md-6
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
+                _ppContact.RenderControl( writer );
+                _pnContactPhone.RenderControl( writer );
+                _ebContactEmail.RenderControl( writer );
+
+                    _cbCost.RenderControl( writer );
+                    _cbMinimumInitialPayment.RenderControl( writer );
+                    _apAccount.RenderControl( writer );
+
+                writer.RenderEndTag();  // col-md-6
             writer.RenderEndTag();  // row
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );

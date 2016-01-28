@@ -30,16 +30,22 @@
     </div>
   </a>
   <div class="pull-left">
-    <a href="{{ groupMemberDetailPage }}?GroupMemberId={{ member.Id }}">
-		<strong>{{ member.Person.FullName }}</strong>
-	</a>
+  
+	{% for coachMember in Group.Members %}
+		{% if coachMember.Person.Id == {{CurrentPerson.Id}} %}
+			
+			<a href="{{ groupMemberDetailPage }}?GroupMemberId={{ member.Id }}&CoachGroupMemberId={{coachMember.Id}}">
+				<strong>{{ member.Person.FullName }}</strong>
+			</a>
+		
+		{% endif %}
+	{% endfor %}
 	
-    <small>({{ member.GroupRole.Name}})</small>
     {% if member.GroupMemberStatus == 'Pending' %}
-      <a class="btn btn-link btn-xs" href="{{ videoPage }}?person={{ member.Person.PrimaryAliasId }}" title="Send T-Up Video"><i class="fa fa-video-camera"></i></a>
+      <a class="btn btn-link btn-xs" href="{{ videoPage }}?person={{ member.Person.Id }}" title="Send T-Up Video"><i class="fa fa-video-camera"></i></a>
     {% endif %}
     <br />
-    <a href="{{ communicationPage }}?person={{ member.Person.PrimaryAliasId }}">
+    <a href="{{ communicationPage }}?person={{ member.Person.Id }}">
       {{ member.Person.Email }}
     </a>
 

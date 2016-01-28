@@ -109,7 +109,7 @@ REQUIRED VARIABLES
 
     {% if countPending > -1 %}
       <div class="well">
-        <h4>Pending Members</h4>
+        <h4>Pending Roster</h4>
       {% assign icountPending = 0 %}
 
 
@@ -145,7 +145,7 @@ REQUIRED VARIABLES
     {% if countActive > -1 %}
       {% assign icountActive = 0 %}
 
-      <h4>Active Members</h4>
+      <h4>Active Roster</h4>
 
       {% for member in Group.Members %}
 

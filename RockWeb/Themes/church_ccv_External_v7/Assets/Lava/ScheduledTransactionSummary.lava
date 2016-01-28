@@ -190,6 +190,25 @@ REQUIRED VARIABLES
   </div>
 </div>
 
+<div class="bigblock bigblock-graylighter">
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-6">
+        <p class="hidden-xs">&nbsp;</p>
+        <p class="hidden-xs">&nbsp;</p>
+        <p class="hidden-xs">&nbsp;</p>
+        <h2>Calculate your giving</h2>
+        <p class="lead">
+          Use this tool to calculate your percentage giving.
+        </p>
+      </div>
+      <div class="col-sm-6">
+        {% include '~~/Assets/Lava/GivingCalculator.lava' %}
+      </div>
+    </div>
+  </div>
+</div>
+
 {% if userSegment == 1 or userSegment == 2 %}
   <div class="bigblock bigblock-graydark">
     <div class="container">

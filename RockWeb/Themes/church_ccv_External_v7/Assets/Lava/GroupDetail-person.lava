@@ -1,5 +1,6 @@
 
 {% assign communicationPage = "/page/491" %}
+{% assign nhMemberDetailPage = "/page/1024" %}
 
 <div class="col-xs-12 col-sm-6 margin-b-md rollover-container">
   {% if LinkedPages.PersonDetailPage != '' %}
@@ -29,10 +30,9 @@
   </a>
   <div class="pull-left">
     <strong>{{ member.Person.FullName }}</strong>
-    <small>({{ member.GroupRole.Name}})</small>
 
     <br />
-    <a href="{{ communicationPage }}?person={{ member.Person.PrimaryAliasId }}">
+    <a href="{{ communicationPage }}?person={{ member.Person.Id }}">
       {{ member.Person.Email }}
     </a>
 
@@ -118,7 +118,7 @@
     <a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
     <i class="fa fa-times"></i>
     </a>
-    <a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
+    <a href="{{nhMemberDetailPage}}?groupMemberId={{ member.Id }}" class="margin-l-sm">
     <i class="fa fa-pencil"></i>
     </a>
   </div>

@@ -1,0 +1,87 @@
+{% comment %}
+
+  {% include '~~/Assets/Lava/GivingCalculator.lava' %}
+
+{% endcomment %}
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/rangeslider.js/2.1.1/rangeslider.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/rangeslider.js/2.1.1/rangeslider.min.js"></script>
+
+<style>
+.rangeslider__fill {
+  background: #7a1315;
+}
+.thin-hr {
+  margin: 0;
+}
+.result {
+  font-size: 2.5em;
+}
+</style>
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Giving Calculator</h3>
+  </div>
+  <div class="panel-body">
+
+    <div class="form-group">
+      <label for="base">Gross Paycheck Amount</label>
+      <div class="input-group">
+        <div class="input-group-addon">$</div>
+        <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control input-lg" id="base" placeholder="Amount">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <input id="slider" type="range" min="0" max="100" step="1" value="10">
+    </div>
+
+    <div class="form-group">
+      <label for="percentage">Percentage</label>
+      <div class="row">
+        <div class="col-xs-5 col-sm-3">
+          <div class="input-group">
+            <input class="form-control input-lg text-center" type="number" id="percentage" value="10" min="0" max="100" inputmode="numeric" pattern="[0-9]*">
+            <div class="input-group-addon">%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <hr class="thin-hr" />
+  <div class="panel-body">
+    <span class="result">$<span id="result">0</span></span>
+  </div>
+</div>
+
+<script>
+  var $slider = $('#slider');
+  var $percent = $('#percentage');
+  var $base = $('#base');
+  var $result = $('#result');
+
+  function updateValue(base, percent) {
+    $result[0].innerHTML = Math.round(base * (percent * 0.01));
+  }
+
+  $slider
+    .rangeslider({polyfill: false})
+    .on('input', function() {
+      $percent[0].value = this.value;
+      if($base[0].value) {
+        updateValue($base[0].value, this.value)
+      }
+    });
+
+  $percent.on('input', function() {
+    if (this.value != "") {
+     $slider.val(this.value).change();
+    }
+  });
+
+  $base.on('input', function() {
+    updateValue(this.value, $slider.val());
+  });
+</script>

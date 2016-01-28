@@ -5,6 +5,7 @@
 
         <asp:HiddenField ID="hfGroupId" runat="server" />
         <asp:HiddenField ID="hfGroupMemberId" runat="server" />
+        <asp:HiddenField ID="hfCoachGroupMemberId" runat="server" />
 
 
         <div class="panel panel-block">
@@ -31,17 +32,18 @@
                                     <asp:Literal ID="lGroupRole" runat="server" /></small>
                             </h3>
                             <Rock:RockRadioButtonList ID="rblActivePendingStatus" runat="server" Label="Status" RepeatDirection="Horizontal" />
-                        </div>
-                        <div class="col-md-6">
-                        </div>
+                            <Rock:EmailBox ID="ebEmailAddress" runat="server" Label="Email Address" RepeatDirection="Horizontal" />
+                            <Rock:PhoneNumberBox ID="pnHome" runat="server" Label="Home Phone" />
+                            <Rock:PhoneNumberBox ID="pnMobile" runat="server" Label="Mobile Phone" />
+                            <Rock:DatePicker ID="dpAnniversaryDate" runat="server" Label="Anniversary Date" RepeatDirection="Horizontal" />
+                       </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:RockDropDownList ID="ddlOptOutReason" runat="server" Label="Opt Out" AutoPostBack="true" OnSelectedIndexChanged="ddlOptOutReason_SelectedIndexChanged" />
                             <Rock:DatePicker ID="dpFollowUpDate" runat="server" Label="Follow Up Date" />
-                        </div>
-                        <div class="col-md-6">
+                            <Rock:RockTextBox ID="tbReassignReason" runat="server" TextMode="MultiLine" Rows="3" Label="Reason for Reassignment" />
                         </div>
                     </div>
 
@@ -54,6 +56,8 @@
 
             </div>
         </div>
+
+        <asp:Literal ID="lReceipt" runat="server" Text="" />
 
     </ContentTemplate>
 </asp:UpdatePanel>
