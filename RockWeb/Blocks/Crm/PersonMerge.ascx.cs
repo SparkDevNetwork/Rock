@@ -333,6 +333,7 @@ namespace RockWeb.Blocks.Crm
                 var groupMemberService = new GroupMemberService( rockContext );
                 var binaryFileService = new BinaryFileService( rockContext );
                 var phoneNumberService = new PhoneNumberService( rockContext );
+                var taggedItemService = new TaggedItemService( rockContext );
 
                 Person primaryPerson = personService.Get( MergeData.PrimaryPersonId ?? 0 );
                 if ( primaryPerson != null )
@@ -1190,6 +1191,7 @@ namespace RockWeb.Blocks.Crm
         public string ModifiedBy { get; set; }
         public string Email { get; set; }
         public bool HasLogins { get; set; }
+        public Guid Guid { get; set; }
 
         public MergePerson( Person person )
         {
@@ -1198,6 +1200,7 @@ namespace RockWeb.Blocks.Crm
             ModifiedDateTime = person.ModifiedDateTime;
             Email = person.Email;
             HasLogins = person.Users.Any();
+            Guid = person.Guid;
 
             if ( person.ModifiedByPersonAlias != null &&
                 person.ModifiedByPersonAlias.Person != null )
