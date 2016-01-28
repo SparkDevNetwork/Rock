@@ -37,6 +37,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
     [Description( "Allows a user to fire off a workflow" )]
 
     [WorkflowTypeField( "Workflow Actions", "The workflows to make available as actions.", false, false, "", "", 1 )]
+    [LinkedPage( "Workflow Entry Page", "", true, "", "", 0 )]
     [TextField( "Button Text", "The text the button will have." )]
     public partial class FireWorkflowButton : RockBlock
     {
@@ -82,7 +83,10 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                                         var workflowType = workflowTypeService.Get( guid.Value );
                                         if ( workflowType != null && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                                         {
-                                            string url = string.Format( "~/WorkflowEntry/{0}?GroupId={1}", workflowType.Id, groupId );
+                                            var queryParams = new Dictionary<string, string>();
+                                            queryParams.Add( "WorkflowTypeId", workflowType.Id.ToString() );
+                                            queryParams.Add( "GroupId", groupId.ToString() );
+                                            string url = LinkedPageUrl( "WorkflowEntryPage", queryParams );
                                             workflowList.Add( new LeaderToolboxWorkflow
                                             {
                                                 Name = !String.IsNullOrWhiteSpace( GetAttributeValue( "ButtonText" ) ) ? GetAttributeValue( "ButtonText" ) : workflowType.Name,
