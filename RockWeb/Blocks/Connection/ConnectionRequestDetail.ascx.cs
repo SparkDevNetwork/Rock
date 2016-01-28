@@ -536,6 +536,7 @@ namespace RockWeb.Blocks.Connection
 
                         connectionRequest.ConnectionOpportunityId = newOpportunityId.Value;
                         connectionRequest.ConnectionStatusId = newStatusId.Value;
+                        connectionRequest.AssignedGroupId = null;
 
                         if ( cbClearConnector.Checked )
                         {
