@@ -502,22 +502,27 @@ namespace RockWeb.Blocks.Crm
                             {
                                 // If there are not any other family members, delete the family record.
 
-                                var oldFamilyChanges = new List<string>();
-                                History.EvaluateChange( oldFamilyChanges, "Family", family.Name, string.Empty );
-                                HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                                    primaryPersonId.Value, oldFamilyChanges, family.Name, typeof( Group ), family.Id );
-
                                 // If theres any people that have this group as a giving group, set it to null (the person being merged should be the only one)
                                 foreach ( Person gp in personService.Queryable().Where( g => g.GivingGroupId == family.Id ) )
                                 {
                                     gp.GivingGroupId = null;
                                 }
 
-                                // Delete the family
-                                groupService.Delete( family );
-
+                                // save to the database prior to doing groupService.Delete since .Delete quietly might not delete if thinks the Family is used for a GivingGroupId
                                 rockContext.SaveChanges();
 
+                                // Delete the family
+                                string errorMessage;
+                                if ( groupService.CanDelete( family, out errorMessage ) )
+                                {
+                                    var oldFamilyChanges = new List<string>();
+                                    History.EvaluateChange( oldFamilyChanges, "Family", family.Name, string.Empty );
+                                    HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                                        primaryPersonId.Value, oldFamilyChanges, family.Name, typeof( Group ), family.Id );
+
+                                    groupService.Delete( family );
+                                    rockContext.SaveChanges();
+                                }
                             }
                         }
                     }
