@@ -1333,10 +1333,13 @@ namespace RockWeb.Blocks.Connection
             rblStatus.Label = "Status";
 
             ddlCampus.Items.Clear();
+            ddlCampus.Items.Add( new ListItem( string.Empty, string.Empty ) );
+
             foreach ( var campus in CampusCache.All() )
             {
                 ddlCampus.Items.Add( new ListItem( campus.Name, campus.Id.ToString().ToUpper() ) );
             }
+
             if ( connectionRequest.CampusId != null )
             {
                 ddlCampus.SelectedValue = connectionRequest.CampusId.ToString();
