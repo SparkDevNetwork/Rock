@@ -1107,6 +1107,12 @@ namespace RockWeb.Blocks.Connection
                 lbConnect.Enabled = false;
             }
 
+            if ( connectionRequest.ConnectionState == ConnectionState.Inactive || connectionRequest.ConnectionState == ConnectionState.Connected )
+            {
+                lbConnect.Visible = false;
+                lbTransfer.Visible = false;
+            }
+
             btnSave.Visible = false;
 
             lContactInfo.Text = string.Empty;
@@ -1169,7 +1175,6 @@ namespace RockWeb.Blocks.Connection
             {
                 lPortrait.Text = string.Empty;;
             }
-
 
             lComments.Text = connectionRequest != null && connectionRequest.Comments != null ? connectionRequest.Comments.ScrubHtmlAndConvertCrLfToBr() : string.Empty;
             lRequestDate.Text = connectionRequest != null && connectionRequest.CreatedDateTime.HasValue ? connectionRequest.CreatedDateTime.Value.ToShortDateString() : string.Empty;
@@ -1234,15 +1239,6 @@ namespace RockWeb.Blocks.Connection
                     {
                         lblWorkflows.Visible = false;
                     }
-                }
-
-                if ( connectionRequest.ConnectionState == ConnectionState.Inactive || connectionRequest.ConnectionState == ConnectionState.Connected )
-                {
-                    lbConnect.Enabled = false;
-                }
-                else
-                {
-                    lbConnect.Enabled = true;
                 }
 
                 BindConnectionRequestActivitiesGrid( connectionRequest, new RockContext() );
