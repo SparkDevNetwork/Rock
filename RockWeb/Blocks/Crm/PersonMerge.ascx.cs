@@ -333,6 +333,7 @@ namespace RockWeb.Blocks.Crm
                 var groupMemberService = new GroupMemberService( rockContext );
                 var binaryFileService = new BinaryFileService( rockContext );
                 var phoneNumberService = new PhoneNumberService( rockContext );
+                var taggedItemService = new TaggedItemService( rockContext );
 
                 Person primaryPerson = personService.Get( MergeData.PrimaryPersonId ?? 0 );
                 if ( primaryPerson != null )
@@ -418,6 +419,32 @@ namespace RockWeb.Blocks.Crm
                     }
 
                     // Save the new record
+                    rockContext.SaveChanges();
+
+                    // merge tags
+                    var personEntityType = Rock.Web.Cache.EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+                    var primaryPersonTagIds = taggedItemService.Queryable()
+                                                .Where(t => t.Tag.EntityTypeId == personEntityType && t.EntityGuid == primaryPerson.Guid)
+                                                .Select(t=> t.Tag.Id ).ToList();
+
+                    // get tags from other merged records
+                    var otherPeopleGuids = MergeData.People.Where(p => p.Guid != primaryPerson.Guid ).Select( p => p.Guid ).ToList();
+                    var otherPeopleTaggedItems = taggedItemService.Queryable("Tag")
+                                                .Where( t => t.Tag.EntityTypeId == personEntityType && otherPeopleGuids.Contains( t.EntityGuid ));
+
+                    foreach(var taggedItem in otherPeopleTaggedItems )
+                    {
+                        if ( primaryPersonTagIds.Contains( taggedItem.Tag.Id ) )
+                        {
+                            taggedItemService.Delete( taggedItem );
+                        }
+                        else
+                        {
+                            taggedItem.EntityGuid = primaryPerson.Guid;
+                            primaryPersonTagIds.Add( taggedItem.Tag.Id );
+                        }
+                    }
+
                     rockContext.SaveChanges();
 
                     // Update the attributes
@@ -1190,6 +1217,7 @@ namespace RockWeb.Blocks.Crm
         public string ModifiedBy { get; set; }
         public string Email { get; set; }
         public bool HasLogins { get; set; }
+        public Guid Guid { get; set; }
 
         public MergePerson( Person person )
         {
@@ -1198,6 +1226,7 @@ namespace RockWeb.Blocks.Crm
             ModifiedDateTime = person.ModifiedDateTime;
             Email = person.Email;
             HasLogins = person.Users.Any();
+            Guid = person.Guid;
 
             if ( person.ModifiedByPersonAlias != null &&
                 person.ModifiedByPersonAlias.Person != null )
