@@ -253,6 +253,8 @@ namespace RockWeb.Plugins.church_ccv.Groups
             // unused
         }
 
+        private bool IsMarried { get; set; }
+
         /// <summary>
         /// Shows the detail.
         /// </summary>
@@ -334,6 +336,15 @@ namespace RockWeb.Plugins.church_ccv.Groups
 
             dpFollowUpDate.SelectedDate = followUpDate.AsDateTime();
 
+            // see if they're married so we can show / hide the anniversary picker
+            IsMarried = false;
+
+            Person spouse = new PersonService( rockContext ).GetSpouse( groupMember.Person );
+            if ( spouse != null )
+            {
+                IsMarried = true;
+            }
+            
             SetControlVisibilities();
         }
 
@@ -362,7 +373,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
         /// <summary>
         /// Sets the control visibilities.
         /// </summary>
-        private void SetControlVisibilities()
+        private void SetControlVisibilities( )
         {
             OptOutReason? optOutReason = ddlOptOutReason.SelectedValueAsEnumOrNull<OptOutReason>();
             
@@ -372,7 +383,10 @@ namespace RockWeb.Plugins.church_ccv.Groups
             // show the active / pending status picker if there's NO opt out reason.
             rblActivePendingStatus.Visible = optOutReason == null;
 
+            // show the reassignment reason field if that's the opt out choice selected.
             tbReassignReason.Visible = optOutReason == OptOutReason.Reassign;
+
+            dpAnniversaryDate.Visible = IsMarried == true;
         }
         
         /// <summary>
