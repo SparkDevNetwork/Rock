@@ -536,6 +536,12 @@ namespace RockWeb.Blocks.Connection
 
                         connectionRequest.ConnectionOpportunityId = newOpportunityId.Value;
                         connectionRequest.ConnectionStatusId = newStatusId.Value;
+
+                        if ( cbClearConnector.Checked )
+                        {
+                            connectionRequest.ConnectorPersonAliasId = null;
+                        }
+
                         rockContext.SaveChanges();
 
                         pnlReadDetails.Visible = true;
