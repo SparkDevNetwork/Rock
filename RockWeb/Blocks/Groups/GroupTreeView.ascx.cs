@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -25,6 +26,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Groups
 {
@@ -102,6 +104,7 @@ namespace RockWeb.Blocks.Groups
             this.AddConfigurationUpdateTrigger( upGroupType );
 
             tglHideInactiveGroups.Visible = this.GetAttributeValue( "ShowFilterOption" ).AsBooleanOrNull() ?? true;
+            ddlCountsType.Visible = this.GetAttributeValue( "ShowFilterOption" ).AsBooleanOrNull() ?? true;
             if ( tglHideInactiveGroups.Visible )
             {
                 tglHideInactiveGroups.Checked = this.GetUserPreference( "HideInactiveGroups" ).AsBooleanOrNull() ?? true;
@@ -111,6 +114,13 @@ namespace RockWeb.Blocks.Groups
                 // if the filter is hidden, don't show inactive groups
                 tglHideInactiveGroups.Checked = true;
             }
+
+            ddlCountsType.Items.Clear();
+            ddlCountsType.Items.Add( new ListItem( string.Empty, TreeViewItem.GetCountsType.None.ConvertToInt().ToString() ) );
+            ddlCountsType.Items.Add( new ListItem( TreeViewItem.GetCountsType.ChildGroups.ConvertToString(), TreeViewItem.GetCountsType.ChildGroups.ConvertToInt().ToString() ) );
+            ddlCountsType.Items.Add( new ListItem( TreeViewItem.GetCountsType.MemberCount.ConvertToString(), TreeViewItem.GetCountsType.MemberCount.ConvertToInt().ToString() ) );
+
+            ddlCountsType.SetValue( this.GetUserPreference( "CountsType" ) );
         }
 
         /// <summary>
@@ -287,6 +297,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             hfIncludeInactiveGroups.Value = ( !tglHideInactiveGroups.Checked ).ToTrueFalse();
+            hfCountsType.Value = ddlCountsType.SelectedValue;
         }
 
         /// <summary>
@@ -411,6 +422,19 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlCountType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlCountsType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            this.SetUserPreference( "CountsType", ddlCountsType.SelectedValue );
+
+            // reload the whole page
+            NavigateToPage( this.RockPage.Guid, new Dictionary<string, string>() );
+        }
+
+        /// <summary>
         /// Finds the first group.
         /// </summary>
         /// <returns></returns>
@@ -438,5 +462,6 @@ namespace RockWeb.Blocks.Groups
         }
 
         #endregion
-    }
+        
+}
 }

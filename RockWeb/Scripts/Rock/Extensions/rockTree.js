@@ -52,7 +52,8 @@
 		            iconCssClass: item.IconCssClass,
 		            parentId: item.ParentId,
 		            hasChildren: item.HasChildren,
-                    isActive: item.IsActive
+		            isActive: item.IsActive,
+                    countInfo: item.CountInfo
 		        };
 
 		        if (item.Children && typeof item.Children.length === 'number') {
@@ -310,7 +311,12 @@
 				    tmp.innerHTML = node.name;
 				    var nodeText = tmp.textContent || tmp.innerText || "";
 
-				    $li.append('<span class="rocktree-name" title="' + nodeText.trim() + '"> ' + node.name + '</span>');
+				    var countInfoHtml = '';
+				    if (typeof (node.countInfo) != 'undefined' && node.countInfo != null) {
+				        countInfoHtml = '<span class="label label-default margin-l-sm">' + node.countInfo + '</span>';
+				    }
+
+				    $li.append('<span class="rocktree-name" title="' + nodeText.trim() + '"> ' + node.name + countInfoHtml + '</span>');
 				    
 				    for (var i = 0; i < self.selectedNodes.length; i++) {
 				        if (self.selectedNodes[i].id == node.id) {
