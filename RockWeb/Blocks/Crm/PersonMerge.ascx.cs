@@ -421,32 +421,6 @@ namespace RockWeb.Blocks.Crm
                     // Save the new record
                     rockContext.SaveChanges();
 
-                    // merge tags
-                    var personEntityType = Rock.Web.Cache.EntityTypeCache.Read( "Rock.Model.Person" ).Id;
-                    var primaryPersonTagIds = taggedItemService.Queryable()
-                                                .Where(t => t.Tag.EntityTypeId == personEntityType && t.EntityGuid == primaryPerson.Guid)
-                                                .Select(t=> t.Tag.Id ).ToList();
-
-                    // get tags from other merged records
-                    var otherPeopleGuids = MergeData.People.Where(p => p.Guid != primaryPerson.Guid ).Select( p => p.Guid ).ToList();
-                    var otherPeopleTaggedItems = taggedItemService.Queryable("Tag")
-                                                .Where( t => t.Tag.EntityTypeId == personEntityType && otherPeopleGuids.Contains( t.EntityGuid ));
-
-                    foreach(var taggedItem in otherPeopleTaggedItems )
-                    {
-                        if ( primaryPersonTagIds.Contains( taggedItem.Tag.Id ) )
-                        {
-                            taggedItemService.Delete( taggedItem );
-                        }
-                        else
-                        {
-                            taggedItem.EntityGuid = primaryPerson.Guid;
-                            primaryPersonTagIds.Add( taggedItem.Tag.Id );
-                        }
-                    }
-
-                    rockContext.SaveChanges();
-
                     // Update the attributes
                     primaryPerson.LoadAttributes( rockContext );
                     foreach ( var property in MergeData.Properties.Where( p => p.Key.StartsWith( "attr_" ) ) )
