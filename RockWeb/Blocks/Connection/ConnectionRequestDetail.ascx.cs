@@ -1406,6 +1406,7 @@ namespace RockWeb.Blocks.Connection
                                 !campusId.HasValue ||
                                 g.CampusId.Value == campusId.Value )
                             .SelectMany( g => g.ConnectorGroup.Members )
+                            .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
                             .Select( m => m.Person )
                             .ToList()
                             .ForEach( p => connectors.AddOrIgnore( p.Id, p ) );
