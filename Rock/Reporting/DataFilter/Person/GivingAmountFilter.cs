@@ -344,9 +344,18 @@ function() {
 
             bool limitToAccounts = accountIdList.Any();
 
+            // Create an explicit join to person alias so that rendered SQL is an INNER Join vs OUTER join
+            var personAliasQry = new PersonAliasService( rockContext ).Queryable();
+            var financialTransactionGivingGroupQry = financialTransactionQry
+                .Join( personAliasQry, t => t.AuthorizedPersonAliasId, p => p.Id, ( t, p ) => new
+                {
+                    Txn = t,
+                    GivingGroupId = p.Person.GivingGroupId
+                } );
+
             // query transactions for individuals.  
             // If CombineGiving, exclude people that are Giving Group, and we'll get those when we union with CombineGiving
-            var financialTransactionDetailsIndividualQry = financialTransactionQry.Where( a => !combineGiving || !a.AuthorizedPersonAlias.Person.GivingGroupId.HasValue )
+            var financialTransactionDetailsIndividualQry = financialTransactionGivingGroupQry.Where( a => !combineGiving || !a.GivingGroupId.HasValue).Select( a => a.Txn )
                 .GroupBy( xx => xx.AuthorizedPersonAlias.PersonId
                 ).Select( xx =>
                     new
@@ -375,15 +384,15 @@ function() {
             if ( combineGiving )
             {
                 // if CombineGiving=true, do another query to total by GivingGroupId for people with GivingGroupId specified
-                var financialTransactionDetailsGivingGroupQry = financialTransactionQry.Where( a => a.AuthorizedPersonAlias.Person.GivingGroupId.HasValue )
+                var financialTransactionDetailsGivingGroupQry = financialTransactionGivingGroupQry.Where( a => a.GivingGroupId.HasValue )
                 .GroupBy( xx => new
                 {
-                    xx.AuthorizedPersonAlias.Person.GivingGroupId
+                    xx.GivingGroupId
                 } ).Select( xx =>
                     new
                     {
                         GivingGroupId = xx.Key,
-                        TotalAmount = xx.Sum( ss => ss.TransactionDetails.Where( td => !limitToAccounts || accountIdList.Contains( td.AccountId ) ).Sum( td => td.Amount ) )
+                        TotalAmount = xx.Sum( ss => ss.Txn.TransactionDetails.Where( td => !limitToAccounts || accountIdList.Contains( td.AccountId ) ).Sum( td => td.Amount ) )
                     } );
 
                 if ( comparisonType == ComparisonType.LessThan )
