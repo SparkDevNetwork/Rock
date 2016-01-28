@@ -8,6 +8,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Web.Cache;
 
 namespace church.ccv.Badges.Rest.Controllers
 {
@@ -16,6 +17,23 @@ namespace church.ccv.Badges.Rest.Controllers
     /// </summary>
     public partial class CCVBadgesController : Rock.Rest.ApiControllerBase
     {
+        const int MEMBERSHIP_CONNECTION_VALUE_ID = 65;
+        const string ATTRIBUTE_DATE_OF_MEMBERSHIP = "DateofMembership";
+
+        const int GROUPTYPE_BAPTISM_ID = 58;
+        const string ATTRIBUTE_DATE_OF_BAPTISM = "BaptismDate";
+
+        const string ATTRIBUTE_ERA = "CurrentlyanERA";
+
+        const int GROUPTYPE_NEIGHBORHOOD_ID = 25;
+
+        const string ATTRIBUTE_GIVING_IN_LAST_12_MONTHS = "GivingInLast12Months";
+        const string ATTRIBUTE_GLOBAL_TITHE_THRESHOLD = "TitheThreshold";
+
+        const int GROUPTYPE_SERVINGTEAM_ID = 23;
+
+        const string ATTRIBUTE_GLOBAL_COACHING_GROUPTYPE_IDS = "CoachingGroupTypeIds";
+
         /// <summary>
         /// Returns groups that are a specified type and geofence a given person for their home campus
         /// </summary>
@@ -61,6 +79,266 @@ namespace church.ccv.Badges.Rest.Controllers
             return result;
         }
 
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/CCV/Badges/StepsBar/{personId}" )]
+        public StepsBarResult GetStepsBar( int personId )
+        {
+
+            return GetStepsResult( personId );
+
+        }
+
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/CCV/Badges/StepsBarGroup/{groupId}" )]
+        public Dictionary<int, StepsBarResult> GetStepsBarGroup( int groupId )
+        {
+            Dictionary<int, StepsBarResult> groupResults = new Dictionary<int, StepsBarResult>();
+
+            using (RockContext rockContext = new RockContext())
+            {
+                var personIds = new GroupMemberService( rockContext ).Queryable().Where( m => m.GroupId == groupId ).Select( m => m.PersonId );
+
+                foreach(var personId in personIds )
+                {
+                    groupResults.Add( personId, GetStepsResult( personId ) );
+                }
+            }
+
+            return groupResults;
+        }
+
+        private StepsBarResult GetStepsResult(int personId )
+        {
+            StepsBarResult stepsBarResult = new StepsBarResult();
+
+            using ( RockContext rockContext = new RockContext() )
+            {
+                var person = new PersonService( rockContext ).Get( personId );
+                if ( person != null )
+                {
+                    person.LoadAttributes();
+
+                    // membership
+                    stepsBarResult.MembershipResult = new MembershipResult();
+                    if ( person.ConnectionStatusValueId == MEMBERSHIP_CONNECTION_VALUE_ID )
+                    {
+                        stepsBarResult.MembershipResult.IsMember = true;
+                        if ( person.AttributeValues.ContainsKey( ATTRIBUTE_DATE_OF_MEMBERSHIP ) )
+                        {
+                            stepsBarResult.MembershipResult.MembershipDate = person.GetAttributeValue(ATTRIBUTE_DATE_OF_MEMBERSHIP).AsDateTime();
+                        }
+                    }
+                    else
+                    {
+                        stepsBarResult.MembershipResult.IsMember = false;
+                    }
+
+                    // baptism - baptism is driven by the baptism date person attribute
+                    stepsBarResult.BaptismResult = new BaptismResult();
+                    stepsBarResult.BaptismResult.BaptismDate = person.GetAttributeValue( ATTRIBUTE_DATE_OF_BAPTISM ).AsDateTime();
+
+                    if ( stepsBarResult.BaptismResult.BaptismDate.HasValue )
+                    {
+                        stepsBarResult.BaptismResult.BaptismStatus = BaptismStatus.Baptised;
+                    } else
+                    {
+                        // check if registered for baptism
+                        var baptismGroups = new GroupMemberService( rockContext ).Queryable()
+                                                        .Where( m => m.Group.GroupTypeId == GROUPTYPE_BAPTISM_ID
+                                                             && m.GroupMemberStatus == GroupMemberStatus.Active
+                                                             && m.PersonId == person.Id )
+                                                        .Select( m => m.GroupId ).ToList();
+                        if ( baptismGroups.Count > 0 ) {
+
+                            // ensure baptisms are in the future
+                            var baptismEventItems = new EventItemOccurrenceService( rockContext ).Queryable( "Scheduled,Linkages" )
+                                                .Where( e => e.Linkages.Any( l => l.GroupId.HasValue && baptismGroups.Contains( l.GroupId.Value ) ) )
+                                                .ToList();
+
+                            bool futureBaptismScheduled = false;
+                            int? futureBaptismGroupId = null;
+
+                            foreach (var baptismEventItem in baptismEventItems)
+                            {
+                                if (baptismEventItem.NextStartDateTime >= RockDateTime.Now )
+                                {
+                                    futureBaptismScheduled = true;
+                                    futureBaptismGroupId = baptismEventItem.Linkages.First().GroupId;
+                                    break;
+                                }
+                            }
+
+                            if ( futureBaptismScheduled )
+                            {
+                                stepsBarResult.BaptismResult.BaptismStatus = BaptismStatus.Registered;
+                                stepsBarResult.BaptismResult.RegistrationGroupId = futureBaptismGroupId;
+                            }
+                            else
+                            {
+                                stepsBarResult.BaptismResult.BaptismStatus = BaptismStatus.NotBaptised;
+                            }
+                        }
+                    }
+
+                    // is worshiper
+                    stepsBarResult.IsWorshipper = person.GetAttributeValue( ATTRIBUTE_ERA ).AsBoolean();
+
+                    // connect - in NG group
+                    stepsBarResult.ConnectionResult = new ConnectionResult();
+                    stepsBarResult.ConnectionResult.Groups = new List<GroupMemberSummary>();
+
+                    // get group list
+                    var neighborhoodGroups = new GroupMemberService( rockContext ).Queryable()
+                                                .Where( m => m.Group.GroupTypeId == GROUPTYPE_NEIGHBORHOOD_ID
+                                                     && m.GroupMemberStatus != GroupMemberStatus.Inactive
+                                                     && m.PersonId == person.Id)
+                                                .Select(m => new
+                                                                {
+                                                                    GroupId = m.GroupId,
+                                                                    GroupName = m.Group.Name,
+                                                                    Role = m.GroupRole,
+                                                                    Status = m.GroupMemberStatus,
+                                                                    StartDate = m.CreatedDateTime
+                                                                } ).ToList();
+
+                    if (neighborhoodGroups.Count == 0 )
+                    {
+                        stepsBarResult.ConnectionResult.ConnectionStatus = ConnectionStatus.NotInGroup;
+                    } else
+                    {
+                        stepsBarResult.ConnectionResult.ConnectedSince = DateTime.MaxValue;
+
+                        foreach ( var group in neighborhoodGroups )
+                        {
+                            GroupMemberSummary groupMemberSummary = new GroupMemberSummary();
+                            groupMemberSummary.GroupId = group.GroupId;
+                            groupMemberSummary.GroupName = group.GroupName;
+                            groupMemberSummary.Role = group.Role.Name;
+                            groupMemberSummary.RoleId = group.Role.Id;
+                            stepsBarResult.ConnectionResult.Groups.Add( groupMemberSummary );
+
+                            if (group.StartDate < stepsBarResult.ConnectionResult.ConnectedSince )
+                            {
+                                stepsBarResult.ConnectionResult.ConnectedSince = group.StartDate;
+                            }
+                        }
+
+                        if ( neighborhoodGroups.Any( m => m.Status == GroupMemberStatus.Active ))
+                        {
+                            stepsBarResult.ConnectionResult.ConnectionStatus = ConnectionStatus.InGroup;
+
+                            if ( neighborhoodGroups.Any( m => m.Role.IsLeader ) )
+                            {
+                                stepsBarResult.ConnectionResult.IsLeader = true;
+                            }
+                        }
+                        else
+                        {
+                            stepsBarResult.ConnectionResult.ConnectionStatus = ConnectionStatus.PendingInGroup;
+                        }
+                    }
+
+                    // is tithing
+                    decimal givingInLast12Months = person.GetAttributeValue( ATTRIBUTE_GIVING_IN_LAST_12_MONTHS ).AsDecimal();
+                    decimal titheThreshold = GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_TITHE_THRESHOLD ).AsDecimal();
+
+                    stepsBarResult.IsTithing = (givingInLast12Months >= titheThreshold);
+
+                    // serving results
+                    stepsBarResult.ServingResult = new ServingResult();
+                    stepsBarResult.ServingResult.Groups = new List<GroupMemberSummary>();
+
+                    var servingGroups = new GroupMemberService( rockContext ).Queryable()
+                                                .Where( m => m.Group.GroupTypeId == GROUPTYPE_SERVINGTEAM_ID
+                                                     && m.GroupMemberStatus != GroupMemberStatus.Inactive
+                                                     && m.PersonId == person.Id )
+                                                .Select( m => new
+                                                {
+                                                    GroupId = m.GroupId,
+                                                    GroupName = m.Group.Name,
+                                                    Role = m.GroupRole,
+                                                    Status = m.GroupMemberStatus,
+                                                    StartDate = m.CreatedDateTime
+                                                } ).ToList();
+
+                    if (servingGroups.Count == 0 )
+                    {
+                        stepsBarResult.ServingResult.IsServing = false;
+                    } else
+                    {
+                        stepsBarResult.ServingResult.IsServing = true;
+                        stepsBarResult.ServingResult.ServingSince = DateTime.MaxValue;
+
+                        foreach ( var group in servingGroups )
+                        {
+                            GroupMemberSummary groupMemberSummary = new GroupMemberSummary();
+                            groupMemberSummary.GroupId = group.GroupId;
+                            groupMemberSummary.GroupName = group.GroupName;
+                            groupMemberSummary.Role = group.Role.Name;
+                            groupMemberSummary.RoleId = group.Role.Id;
+                            stepsBarResult.ServingResult.Groups.Add( groupMemberSummary );
+
+                            if ( group.StartDate < stepsBarResult.ServingResult.ServingSince )
+                            {
+                                stepsBarResult.ServingResult.ServingSince = group.StartDate;
+                            }
+                        }
+                    }
+
+                    // coaching
+                    List<int> GROUPTYPES_COACHING_IDS = GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_COACHING_GROUPTYPE_IDS ).Split( ',' ).Select( int.Parse ).ToList(); ;
+
+                    stepsBarResult.CoachingResult = new CoachingResult();
+                    stepsBarResult.CoachingResult.Groups = new List<GroupMemberSummary>();
+
+                    var coachingGroups = new GroupMemberService( rockContext ).Queryable()
+                                                .Where( m => GROUPTYPES_COACHING_IDS.Contains(m.Group.GroupTypeId)
+                                                     && m.GroupMemberStatus != GroupMemberStatus.Inactive
+                                                     && m.PersonId == person.Id 
+                                                     && m.GroupRole.IsLeader == true)
+                                                .Select( m => new
+                                                {
+                                                    GroupId = m.GroupId,
+                                                    GroupName = m.Group.Name,
+                                                    Role = m.GroupRole,
+                                                    Status = m.GroupMemberStatus,
+                                                    StartDate = m.CreatedDateTime
+                                                } ).ToList();
+
+                    if ( coachingGroups.Count == 0 )
+                    {
+                        stepsBarResult.CoachingResult.IsCoaching = false;
+                    }
+                    else
+                    {
+                        stepsBarResult.CoachingResult.IsCoaching = true;
+                        stepsBarResult.CoachingResult.CoachingSince = DateTime.MaxValue;
+
+                        foreach ( var group in coachingGroups )
+                        {
+                            GroupMemberSummary groupMemberSummary = new GroupMemberSummary();
+                            groupMemberSummary.GroupId = group.GroupId;
+                            groupMemberSummary.GroupName = group.GroupName;
+                            groupMemberSummary.Role = group.Role.Name;
+                            groupMemberSummary.RoleId = group.Role.Id;
+                            stepsBarResult.CoachingResult.Groups.Add( groupMemberSummary );
+
+                            if ( group.StartDate < stepsBarResult.CoachingResult.CoachingSince )
+                            {
+                                stepsBarResult.CoachingResult.CoachingSince = group.StartDate;
+                            }
+                        }
+                    }
+                }
+
+
+            }
+
+            return stepsBarResult;
+        }
+
         /// <summary>
         /// Group and Leader name info
         /// </summary>
@@ -88,13 +366,76 @@ namespace church.ccv.Badges.Rest.Controllers
         /// </summary>
         public class StepsBarResult
         {
+            /// <summary>
+            /// Gets or sets the baptism result.
+            /// </summary>
+            /// <value>
+            /// The baptism result.
+            /// </value>
             public BaptismResult BaptismResult { get; set; }
-            public bool IsMember { get; set; }
+            /// <summary>
+            /// Gets or sets the membership result.
+            /// </summary>
+            /// <value>
+            /// The membership result.
+            /// </value>
+            public MembershipResult MembershipResult { get; set; }
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance is worshipper.
+            /// </summary>
+            /// <value>
+            /// <c>true</c> if this instance is worshipper; otherwise, <c>false</c>.
+            /// </value>
             public bool IsWorshipper { get; set; }
+            /// <summary>
+            /// Gets or sets the connection result.
+            /// </summary>
+            /// <value>
+            /// The connection result.
+            /// </value>
             public ConnectionResult ConnectionResult { get; set; }
-            public bool isTithing { get; set; }
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance is tithing.
+            /// </summary>
+            /// <value>
+            /// <c>true</c> if this instance is tithing; otherwise, <c>false</c>.
+            /// </value>
+            public bool IsTithing { get; set; }
+            /// <summary>
+            /// Gets or sets the serving result.
+            /// </summary>
+            /// <value>
+            /// The serving result.
+            /// </value>
             public ServingResult ServingResult { get; set;}
+            /// <summary>
+            /// Gets or sets the coaching result.
+            /// </summary>
+            /// <value>
+            /// The coaching result.
+            /// </value>
             public CoachingResult CoachingResult { get; set; }
+        }
+
+        /// <summary>
+        /// Membership Date
+        /// </summary>
+        public class MembershipResult
+        {
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance is member.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance is member; otherwise, <c>false</c>.
+            /// </value>
+            public bool IsMember { get; set; }
+            /// <summary>
+            /// Gets or sets the membership date.
+            /// </summary>
+            /// <value>
+            /// The membership date.
+            /// </value>
+            public DateTime? MembershipDate { get; set; }
         }
 
         /// <summary>
@@ -116,6 +457,14 @@ namespace church.ccv.Badges.Rest.Controllers
             /// The groups.
             /// </value>
             public List<GroupMemberSummary> Groups { get; set; }
+
+            /// <summary>
+            /// Gets or sets the coaching since.
+            /// </summary>
+            /// <value>
+            /// The coaching since.
+            /// </value>
+            public DateTime? CoachingSince { get; set; }
         }
 
         /// <summary>
@@ -136,7 +485,15 @@ namespace church.ccv.Badges.Rest.Controllers
             /// <value>
             /// The groups.
             /// </value>
-            List<GroupMemberSummary> Groups { get; set; }
+            public List<GroupMemberSummary> Groups { get; set; }
+
+            /// <summary>
+            /// Gets or sets the serving since.
+            /// </summary>
+            /// <value>
+            /// The serving since.
+            /// </value>
+            public DateTime? ServingSince { get; set; }
         }
 
         /// <summary>
@@ -165,6 +522,14 @@ namespace church.ccv.Badges.Rest.Controllers
             /// The groups.
             /// </value>
             public List<GroupMemberSummary> Groups { get; set; }
+
+            /// <summary>
+            /// Gets or sets the connected since.
+            /// </summary>
+            /// <value>
+            /// The connected since.
+            /// </value>
+            public DateTime? ConnectedSince { get; set; }
         }
 
         /// <summary>
@@ -239,7 +604,7 @@ namespace church.ccv.Badges.Rest.Controllers
             /// <value>
             /// The registration group identifier.
             /// </value>
-            public int RegistrationGroupId { get; set; }
+            public int? RegistrationGroupId { get; set; }
         }
 
         /// <summary>
