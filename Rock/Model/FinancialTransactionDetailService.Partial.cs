@@ -306,7 +306,7 @@ namespace Rock.Model
             }
             parameters.Add( "ViewBy", viewBy );
 
-            var result = DbService.GetDataSet( "spFinance_GivingAnalyticsQuery", System.Data.CommandType.StoredProcedure, parameters, 180 );
+            var result = DbService.GetDataSet( "spFinance_GivingAnalyticsQuery", System.Data.CommandType.StoredProcedure, parameters, 300 );
 
             return result;
         }
