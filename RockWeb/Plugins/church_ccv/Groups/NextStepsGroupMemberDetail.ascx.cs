@@ -34,6 +34,8 @@ namespace RockWeb.Plugins.church_ccv.Groups
     [Category( "CCV > Groups" )]
     [Description( "Displays the details of the given Next Steps group member " )]
     [SystemEmailField( "Reassign To Another Coach Email Template", "Email template to use when a group member's opt-out status is set to \"Reassign to another Coach\".", false)]
+    [WorkflowTypeField( "OptOut Neighborhood Workflow", "The workflow to use when opting out a person due to them being in a neighborhood group. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "", 2 )]
+    [WorkflowTypeField( "OptOut No Longer Attends Workflow", "The workflow to use when opting out a person due to them no longer attending CCV. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "", 3 )]
     public partial class NextStepsGroupMemberDetail : RockBlock, IDetailBlock
     {
         #region Control Methods
@@ -165,52 +167,75 @@ namespace RockWeb.Plugins.church_ccv.Groups
                     groupMember.SaveAttributeValues( rockContext );
                 } );
 
-                // see if we need to send off a communcation email.
-                if ( optOutReason == OptOutReason.Reassign )
+                // now handle any opt-out specific behavior
+                switch ( optOutReason )
                 {
-                    // we do. Get the coach for this group.
-                    int coachGroupMemberId = int.Parse( hfCoachGroupMemberId.Value );
-
-                    // load existing group member
-                    GroupMember coachGroupMember = groupMemberService.Get( coachGroupMemberId );
-
-
-                    var mergeObjects = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
-                    mergeObjects.Add( "Coach", coachGroupMember );
-                    mergeObjects.Add( "Member", groupMember );
-                    mergeObjects.Add( "Reason", tbReassignReason.Text );
-                    lReceipt.Text = GetAttributeValue( "ReceiptText" ).ResolveMergeFields( mergeObjects );
-
-                    // Resolve any dynamic url references
-                    string appRoot = ResolveRockUrl( "~/" );
-                    string themeRoot = ResolveRockUrl( "~~/" );
-                    lReceipt.Text = lReceipt.Text.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
-
-                    // show liquid help for debug
-                    if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
+                    case OptOutReason.Reassign:
                     {
-                        lReceipt.Text += mergeObjects.lavaDebugInfo();
+                        HandleOptOut_Reassign( groupMemberService, groupMember, rockContext );
+                        break;
                     }
 
-                    lReceipt.Visible = true;
-
-                    // if a ConfirmationEmailTemplate is configured (which it better be) assign it
-                    var confirmationEmailTemplateGuid = GetAttributeValue( "ReassignToAnotherCoachEmailTemplate" ).AsGuidOrNull();
-                    if ( confirmationEmailTemplateGuid.HasValue )
+                    case OptOutReason.RegisteredForNeighborhoodGroup:
                     {
-                        // get the email service and email
-                        SystemEmailService emailService = new SystemEmailService( rockContext );
-                        SystemEmail reassignEmail = emailService.Get( confirmationEmailTemplateGuid.Value );
+                        StartWorkflow( "OptOutNeighborhoodWorkflow", groupMember.Person, rockContext );
+                        break;
+                    }
 
-                        // build a recipient list using the "To" from the system email
-                        var recipients = new List<Rock.Communication.RecipientData>();
-
-                        // add person and the mergeObjects (same mergeobjects as receipt)
-                        recipients.Add( new Rock.Communication.RecipientData( reassignEmail.To, mergeObjects ) );
-
-                        Rock.Communication.Email.Send( confirmationEmailTemplateGuid.Value, recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
+                    case OptOutReason.NoLongerAttends:
+                    {
+                        StartWorkflow( "OptOutNoLongerAttendsWorkflow", groupMember.Person, rockContext );
+                        break;
                     }
                 }
+            }
+        }
+
+        private void HandleOptOut_Reassign( GroupMemberService groupMemberService, GroupMember groupMember, RockContext rockContext )
+        {
+            // we need to send off a communcation email. 
+
+            // Get the coach for this group.
+            int coachGroupMemberId = int.Parse( hfCoachGroupMemberId.Value );
+
+            // load existing group member
+            GroupMember coachGroupMember = groupMemberService.Get( coachGroupMemberId );
+
+
+            var mergeObjects = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
+            mergeObjects.Add( "Coach", coachGroupMember );
+            mergeObjects.Add( "Member", groupMember );
+            mergeObjects.Add( "Reason", tbReassignReason.Text );
+            lReceipt.Text = GetAttributeValue( "ReceiptText" ).ResolveMergeFields( mergeObjects );
+
+            // Resolve any dynamic url references
+            string appRoot = ResolveRockUrl( "~/" );
+            string themeRoot = ResolveRockUrl( "~~/" );
+            lReceipt.Text = lReceipt.Text.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
+
+            // show liquid help for debug
+            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
+            {
+                lReceipt.Text += mergeObjects.lavaDebugInfo();
+            }
+
+            lReceipt.Visible = true;
+
+            // if a ConfirmationEmailTemplate is configured (which it better be) assign it
+            var confirmationEmailTemplateGuid = GetAttributeValue( "ReassignToAnotherCoachEmailTemplate" ).AsGuidOrNull();
+            if ( confirmationEmailTemplateGuid.HasValue )
+            {
+                // get the email service and email
+                SystemEmailService emailService = new SystemEmailService( rockContext );
+                SystemEmail reassignEmail = emailService.Get( confirmationEmailTemplateGuid.Value );
+
+                // build a recipient list using the "To" from the system email
+                var recipients = new List<Rock.Communication.RecipientData>();
+
+                // add person and the mergeObjects (same mergeobjects as receipt)
+                recipients.Add( new Rock.Communication.RecipientData( reassignEmail.To, mergeObjects ) );
+
+                Rock.Communication.Email.Send( confirmationEmailTemplateGuid.Value, recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
             }
         }
 
@@ -388,7 +413,36 @@ namespace RockWeb.Plugins.church_ccv.Groups
 
             dpAnniversaryDate.Visible = IsMarried == true;
         }
-        
+
+        /// <summary>
+        /// Starts the workflow if one was defined in the block setting.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void StartWorkflow( string workflowName, Person person, RockContext rockContext )
+        {
+            WorkflowType workflowType = null;
+            Guid? workflowTypeGuid = GetAttributeValue( workflowName ).AsGuidOrNull();
+            if ( workflowTypeGuid.HasValue )
+            {
+                var workflowTypeService = new WorkflowTypeService( rockContext );
+                workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
+                if ( workflowType != null )
+                {
+                    try
+                    {
+                        var workflow = Workflow.Activate( workflowType, person.FirstName );
+                        List<string> workflowErrors;
+                        new WorkflowService( rockContext ).Process( workflow, person, out workflowErrors );
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( ex, this.Context );
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -407,7 +461,22 @@ namespace RockWeb.Plugins.church_ccv.Groups
             /// <summary>
             /// reassign to a new coach
             /// </summary>
-            Reassign = 2
+            Reassign = 2,
+
+            /// <summary>
+            /// Unable to reach
+            /// </summary>
+            UnableToReach = 3,
+
+            /// <summary>
+            /// Registered for neighborhood group
+            /// </summary>
+            RegisteredForNeighborhoodGroup = 4,
+
+            /// <summary>
+            /// No longer attends
+            /// </summary>
+            NoLongerAttends = 5
         }
 
         #endregion
