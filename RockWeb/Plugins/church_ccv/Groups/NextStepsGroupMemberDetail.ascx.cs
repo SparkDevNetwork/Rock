@@ -182,7 +182,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
                         break;
                     }
 
-                    case OptOutReason.NoLongerAttends:
+                    case OptOutReason.NoLongerAttendingCCV:
                     {
                         StartWorkflow( "OptOutNoLongerAttendsWorkflow", groupMember.Person, rockContext );
                         break;
@@ -476,7 +476,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
             /// <summary>
             /// No longer attends
             /// </summary>
-            NoLongerAttends = 5
+            NoLongerAttendingCCV = 5
         }
 
         #endregion

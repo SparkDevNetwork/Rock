@@ -1,8 +1,8 @@
 {% assign allowedToView = 0 %}
 {% for group in Groups %}
-  {% comment %}if user is a NH Group Leader or NH Area leader{% endcomment %}
+  {% comment %}if user is a NH Group Coach or NH Area coach{% endcomment %}
   {% comment %}<pre>{{ group.Role }}</pre>{% endcomment %}
-  {% if group.IsLeader or group.Role == "Neighborhood Leader" or group.Role == "Host" or group.Role == "Neighborhood Connection Team" or group.Role == "Assistant Leader" %}
+  {% if group.IsLeader or group.Role == "Coach" or group.Role == "Host" or group.Role == "Neighborhood Connection Team" or group.Role == "Assistant Coach" %}
     {% assign allowedToView = allowedToView | Plus: 1 %}
   {% endif %}
   {% if group.Role == "Host" %}
@@ -19,7 +19,7 @@
 
     <ul class="list-group list-group-panel">
       {% for group in Groups %}
-        {% if group.IsLeader or group.Role == "Neighborhood Leader" or group.Role == "Host" or group.Role == "Neighborhood Connection Team" or group.Role == "Assistant Leader" %}
+        {% if group.IsLeader or group.Role == "Coach" or group.Role == "Host" or group.Role == "Neighborhood Connection Team" or group.Role == "Assistant Coach" %}
           <li class="list-group-item">
             <a href="{{ LinkedPages.DetailPage }}?GroupId={{group.Group.Id}}" class="js-group-item" data-toggle="tooltip" data-placement="top" title="{{ group.GroupType }}">
               {{ group.Group.Name }} <small>({{ group.Role }})</small>
