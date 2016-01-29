@@ -527,7 +527,7 @@ namespace RockWeb.Blocks.Reporting
                         // convert the circle to a polygon (to make it easier to interact with Google MAPs api which has limited support for circles)
                         var polyCircle = buffer.STCurveToLine();
 
-                        geoFence = DbGeography.FromText( buffer.ToString() );
+                        geoFence = DbGeography.FromText( polyCircle.ToString() );
                     }
                 }
                 else
