@@ -90,7 +90,7 @@ namespace church.ccv.Reporting.DataSelect.Person
             var result = baseControls.ToList();
             result.Add( helpBlock );
 
-            return result.ToArray();
+            return baseControls;
         }
 
         /// <summary>
