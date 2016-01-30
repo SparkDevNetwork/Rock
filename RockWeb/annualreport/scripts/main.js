@@ -1,1 +1,0 @@
-var viewer=new OpenSeadragon({id:"openseadragon1",prefixUrl:"bower_components/openseadragon/build/openseadragon/images/",tileSources:"images/inside.dzi"});
