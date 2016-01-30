@@ -8,6 +8,8 @@ REQUIRED VARIABLES
 {% assign loginPage        = "/page/207" %}
 {% assign faqPage          = "/page/212" %}
 {% assign annualReportPage = "//ccv.church/annualreport" %}
+{% assign annualReportImage = "//ccv.church/GetImage.ashx?id=819156&width=914" %}
+{% assign annualReportClass = "bigblock-graydark" %}
 
 
 {% endcomment %}
@@ -81,14 +83,14 @@ REQUIRED VARIABLES
     </div>
   </div>
 
-  <div class="bigblock bigblock-stacking bigblock-graydark">
+  <div class="bigblock bigblock-stacking {{ annualReportClass }}">
     <div class="container">
       <div class="row">
         <div class="col-sm-7 col-lg-6">
           <p class="give-lead">See how your gifts <span>made an impact</span> last year.</p>
         </div>
         <div class="col-sm-5 col-lg-offset-1">
-          <a href="{{ annualReportPage }}"><img src="https://s3.amazonaws.com/media.ccvonline.com/images/2015/annualreport/annual-report.jpg" alt="Annual Report" class="img-rounded"></a>
+          <a href="{{ annualReportPage }}"><img src="{{ annualReportImage }}" alt="Annual Report" class="img-rounded"></a>
         </div>
       </div>
     </div>
