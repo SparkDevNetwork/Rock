@@ -212,14 +212,14 @@ REQUIRED VARIABLES
 </div>
 
 {% if userSegment == 1 or userSegment == 2 %}
-  <div class="bigblock bigblock-graydark">
+  <div class="bigblock {{ annualReportClass }}">
     <div class="container">
       <div class="row">
         <div class="col-sm-7">
           <p class="give-lead">Learn how your giving <span class="display-b-after-xs">makes an impact.</span></p>
         </div>
         <div class="col-sm-5">
-          <a href="{{ annualReportPage }}"><img src="https://s3.amazonaws.com/media.ccvonline.com/images/2015/annualreport/annual-report.jpg" alt="Annual Report" class="img-rounded"></a>
+          <a href="{{ annualReportPage }}"><img src="{{ annualReportImage }}" alt="Annual Report" class="img-rounded"></a>
         </div>
       </div>
     </div>
