@@ -81,11 +81,11 @@ namespace church.ccv.Badges.Rest.Controllers
 
         [Authenticate, Secured]
         [HttpGet]
-        [System.Web.Http.Route( "api/CCV/Badges/StepsBar/{personId}" )]
-        public StepsBarResult GetStepsBar( int personId )
+        [System.Web.Http.Route( "api/CCV/Badges/StepsBar/{personGuid}" )]
+        public StepsBarResult GetStepsBar( Guid personGuid )
         {
 
-            return GetStepsResult( personId );
+            return GetStepsResult( personGuid );
 
         }
 
@@ -98,24 +98,24 @@ namespace church.ccv.Badges.Rest.Controllers
 
             using ( RockContext rockContext = new RockContext() )
             {
-                var personIds = new GroupMemberService( rockContext ).Queryable().Where( m => m.Group.Guid == groupGuid ).Select( m => m.PersonId );
+                var groupMembers = new GroupMemberService( rockContext ).Queryable().Where( m => m.Group.Guid == groupGuid ).Select( m => new { Guid = m.Person.Guid, Id = m.PersonId } );
 
-                foreach ( var personId in personIds )
+                foreach ( var groupMember in groupMembers )
                 {
-                    groupResults.Add( personId, GetStepsResult( personId ) );
+                    groupResults.Add( groupMember.Id, GetStepsResult( groupMember.Guid ) );
                 }
             }
 
             return groupResults;
         }
 
-        private StepsBarResult GetStepsResult(int personId )
+        private StepsBarResult GetStepsResult(Guid personGuid )
         {
             StepsBarResult stepsBarResult = new StepsBarResult();
 
             using ( RockContext rockContext = new RockContext() )
             {
-                var person = new PersonService( rockContext ).Get( personId );
+                var person = new PersonService( rockContext ).Get( personGuid );
                 if ( person != null )
                 {
                     person.LoadAttributes();
