@@ -1,3 +1,15 @@
+/* ====================================================== */
+-- KidSpring Tag and Breakout Report
+
+-- This query reports all checked in people the day of the 
+-- most recent checkins to KidSpring groups. Usually this
+-- would mean that kids have checked in on the most recent 
+-- Sunday, X.  Therefore all kids checked in on X are 
+-- included.  The report shows names, tag code, legal notes,
+-- allergy notes, breakout group, etc.
+
+/* ====================================================== */
+
 WITH KidSpringAttendeeGroups AS (
 	SELECT
 		g.Id
