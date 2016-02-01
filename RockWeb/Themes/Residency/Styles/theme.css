@@ -1258,10 +1258,6 @@ tr.row-highlight td {
   border-radius: 0;
   margin-bottom: 15px;
 }
-td .photo-icon {
-  opacity: 0.6;
-  min-height: 16px;
-}
 /*
     Used to manage styles for specific blocks.
 
@@ -4415,6 +4411,11 @@ ul.list-group-panel .list-group-item:first-child,
 .photo-round.photo-round-sm {
   height: 35px;
   width: 35px;
+  border-radius: 17.5px;
+}
+.photo-round.photo-round-xs {
+  height: 20px;
+  width: 20px;
   border-radius: 17.5px;
 }
 .wizard {
