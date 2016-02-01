@@ -40,21 +40,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
     [ConnectionTypesField( "Include Connection Types", "The connection types to include." )]
     public partial class ConnectionRequestEntry : Rock.Web.UI.RockBlock
     {
-        #region Fields
-
-        // used for private variables
-
-        #endregion
-
-        #region Properties
-
-        // used for public / protected properties
-
-        #endregion
-
         #region Base Control Methods
-
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -85,12 +71,15 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             }
         }
 
-
-
         #endregion
 
         #region Events
 
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptConnnectionTypes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptConnnectionTypes_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             var cblOpportunities = e.Item.FindControl( "cblOpportunities" ) as RockCheckBoxList;
@@ -105,6 +94,11 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbSubmit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSubmit_Click( object sender, EventArgs e )
         {
             using ( var rockContext = new RockContext() )
@@ -188,6 +182,11 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             }
         }
 
+        /// <summary>
+        /// Handles the SelectPerson event of the ppPerson control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ppPerson_SelectPerson( object sender, EventArgs e )
         {
             hlCampus.Text = new PersonService( new RockContext() ).Get( ppPerson.PersonId.Value ).GetCampus().Name;
@@ -209,6 +208,9 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
 
         #region Methods
 
+        /// <summary>
+        /// Loads the opportunities.
+        /// </summary>
         private void LoadOpportunities()
         {
             var typeFilter = GetAttributeValue( "IncludeConnectionTypes" ).SplitDelimitedValues().AsGuidList();
@@ -217,7 +219,6 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         }
 
         #endregion
-
 
     }
 }
