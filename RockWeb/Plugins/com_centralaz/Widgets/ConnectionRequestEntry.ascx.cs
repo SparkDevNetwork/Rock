@@ -28,6 +28,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
+using System.Text;
 
 namespace RockWeb.Plugins.com_centralaz.Widgets
 {
@@ -67,6 +68,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             {
                 nbSuccess.Text = string.Empty;
                 nbSuccess.Visible = false;
+                nbDanger.Visible = false;
                 LoadOpportunities();
             }
         }
@@ -107,10 +109,13 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var personService = new PersonService( rockContext );
                 Person person = personService.Get( ppPerson.PersonId.Value );
+                List<string> opportunityNames = new List<string>();
+
 
                 // If there is a valid person with a primary alias, continue
                 if ( person != null && person.PrimaryAliasId.HasValue )
                 {
+
                     foreach ( RepeaterItem typeItem in rptConnnectionTypes.Items )
                     {
                         var cblOpportunities = typeItem.FindControl( "cblOpportunities" ) as RockCheckBoxList;
@@ -131,7 +136,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                             // If opportunity is valid and has a default status
                             if ( opportunity != null && defaultStatusId > 0 )
                             {
-                               // Now we create the connection request
+                                // Now we create the connection request
                                 var connectionRequest = new ConnectionRequest();
                                 connectionRequest.PersonAliasId = person.PrimaryAliasId.Value;
                                 connectionRequest.Comments = tbComments.Text.Trim();
@@ -164,21 +169,41 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                                     return;
                                 }
 
+                                opportunityNames.Add( opportunity.Name );
+
                                 connectionRequestService.Add( connectionRequest );
                             }
                         }
                     }
                 }
+                if ( opportunityNames.Count > 0 )
+                {
+                    rockContext.SaveChanges();
 
-                rockContext.SaveChanges();
+                    // Reset everything for the next person
+                    tbComments.Text = string.Empty;
+                    LoadOpportunities();
+                    ppPerson.SetValue( null );
 
-                // Reset everything for the next person
-                tbComments.Text = string.Empty;
-                LoadOpportunities();
-                ppPerson.SetValue( null );
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendLine( String.Format( "{0}'s connection requests have been entered for the following opportunities:\n<ul>", person.FullName ) );
+                    foreach ( var name in opportunityNames )
+                    {
+                        sb.AppendLine( String.Format( "<li> {0}</li>", name ) );
+                    }
+                    sb.AppendLine( "</ul>" );
 
-                nbSuccess.Text = String.Format( "{0}'s connection requests have been entered.", person.FullName );
-                nbSuccess.Visible = true;
+                    nbSuccess.Text = sb.ToString();
+                    nbSuccess.Visible = true;
+                    nbDanger.Visible = false;
+                }
+                else
+                {
+                    nbDanger.Visible = true;
+                    nbSuccess.Visible = false;
+                }
+
+
             }
         }
 
@@ -201,6 +226,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         {
             nbSuccess.Text = string.Empty;
             nbSuccess.Visible = false;
+            nbDanger.Visible = false;
             LoadOpportunities();
         }
 

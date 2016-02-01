@@ -2,28 +2,26 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-                    <Rock:NotificationBox ID="nbSuccess" NotificationBoxType="Success" runat="server" />
+        <Rock:NotificationBox ID="nbSuccess" NotificationBoxType="Success" runat="server" />
+        <Rock:NotificationBox ID="nbDanger" NotificationBoxType="Danger" runat="server" Text="Please select an opportunity." />
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-file-text-o"></i> Connection Request Entry</h1>
+                <h1 class="panel-title"><i class="fa fa-file-text-o"></i>Connection Request Entry</h1>
+                <div class="panel-labels">
+                    <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
+                </div>
             </div>
 
             <div class="panel-body">
-                <div class="row">
-                    <div class="col-md-3">
-                        <Rock:PersonPicker ID="ppPerson" Label="Requestor" runat="server" OnSelectPerson="ppPerson_SelectPerson" />
-                    </div>
-                    <div class="col-md-3">
-                        <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" Text="Mesa" />
-                    </div>
-                </div>
+                <Rock:PersonPicker ID="ppPerson" Label="Requestor" runat="server" OnSelectPerson="ppPerson_SelectPerson" />
 
                 <div class="well">
                     <asp:Repeater ID="rptConnnectionTypes" runat="server" OnItemDataBound="rptConnnectionTypes_ItemDataBound">
                         <ItemTemplate>
                             <asp:Literal ID="lConnectionTypeName" runat="server" />
                             <Rock:RockCheckBoxList ID="cblOpportunities" runat="server" RepeatDirection="Horizontal" DataTextField="Name" DataValueField="Id" />
+                            </br>
                         </ItemTemplate>
                     </asp:Repeater>
                 </div>
