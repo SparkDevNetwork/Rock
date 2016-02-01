@@ -1038,7 +1038,7 @@ namespace RockWeb.Blocks.Communication
                 IsUserAuthorized( Authorization.EDIT ) )
             {
                 btnSubmit.Enabled = true;
-                btnSave.Enabled = true;
+                btnSave.Enabled = true && _fullMode;
             }
             else
             {
@@ -1055,7 +1055,7 @@ namespace RockWeb.Blocks.Communication
             else
             {
                 btnSubmit.Text = "Submit";
-                btnSave.Visible = true;
+                btnSave.Visible = true && _fullMode;
                 btnCancel.Visible = false;
             }
         }
