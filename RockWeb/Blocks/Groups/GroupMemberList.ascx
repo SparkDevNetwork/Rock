@@ -57,6 +57,14 @@
                 </div>
             </div>
 
+             <script>
+                Sys.Application.add_load( function () {
+                    $("div.photo-icon").lazyload({
+                        effect: "fadeIn"
+                    });
+                });
+            </script>
+
             <Rock:ModalDialog ID="mdPlaceElsewhere" runat="server" Visible="false" ValidationGroup="vgPlaceElsewhere"
                 Title="<i class='fa fa-share'></i> Place Elsewhere" OnSaveClick="mdPlaceElsewhere_SaveClick"
                 SaveButtonText="Place">
