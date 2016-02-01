@@ -653,7 +653,6 @@ VALUES
 ('Guest Services Volunteer', 'Events Team', 'Events Team'), 
 ('Guest Services Volunteer', 'Finance Office Team', 'Finance Office Team'), 
 ('Guest Services Volunteer', 'GS Office Team', 'GS Office Team'), 
-('Guest Services Volunteer', 'HR Team', 'HR Team'), 
 ('Guest Services Volunteer', 'Receptionist', 'Receptionist'), 
 ('Guest Services Volunteer', 'Special Event Attendee', 'Special Event Attendee'), 
 ('Guest Services Volunteer', 'Special Event Volunteer', 'Special Event Volunteer'), 
