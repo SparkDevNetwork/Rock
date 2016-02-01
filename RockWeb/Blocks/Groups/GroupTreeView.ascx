@@ -14,7 +14,7 @@
         <asp:HiddenField ID="hfPageRouteTemplate" runat="server"  />
         <asp:HiddenField ID="hfDetailPageUrl" runat="server"  />
 
-        <div class="treeview">
+        <div class="treeview js-grouptreeview">
             <div class="treeview-actions rollover-container" id="divTreeviewActions" runat="server">
 
                 <div class="btn-group pull-left margin-r-sm">
@@ -28,14 +28,10 @@
                             <asp:LinkButton ID="lbAddGroupChild" OnClick="lbAddGroupChild_Click" Enabled="false" Text="Add Child To Selected" runat="server"></asp:LinkButton></li>
                     </ul>
                 </div>
-                
+
                 <div class="rollover-item">
-                    <div class="pull-right">
-                        <i class="fa fa-gear js-show-config" onclick="$('.js-config-panel').toggle()"></i>
-                    </div>
+                    <i class="fa fa-gear clickable js-show-config" onclick="$(this).closest('.js-grouptreeview').find('.js-config-panel').slideToggle()"></i>
                 </div>
-                
-                
             </div>
 
             <div class="js-config-panel" style="display:none">
