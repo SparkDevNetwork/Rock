@@ -1,0 +1,223 @@
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+using Rock;
+using Rock.Data;
+using Rock.Model;
+using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
+using Rock.Attribute;
+
+namespace RockWeb.Plugins.com_centralaz.Widgets
+{
+    /// <summary>
+    /// Template block for developers to use to start a new block.
+    /// </summary>
+    [DisplayName( "Connection Request Entry" )]
+    [Category( "com_centralaz > Widgets" )]
+    [Description( "A block for servant ministers to use to enter connection requests into Rock." )]
+    [ConnectionTypesField( "Include Connection Types", "The connection types to include." )]
+    public partial class ConnectionRequestEntry : Rock.Web.UI.RockBlock
+    {
+        #region Fields
+
+        // used for private variables
+
+        #endregion
+
+        #region Properties
+
+        // used for public / protected properties
+
+        #endregion
+
+        #region Base Control Methods
+
+        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlContent );
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
+            if ( !Page.IsPostBack )
+            {
+                nbSuccess.Text = string.Empty;
+                nbSuccess.Visible = false;
+                LoadOpportunities();
+            }
+        }
+
+
+
+        #endregion
+
+        #region Events
+
+        protected void rptConnnectionTypes_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            var cblOpportunities = e.Item.FindControl( "cblOpportunities" ) as RockCheckBoxList;
+            var lConnectionTypeName = e.Item.FindControl( "lConnectionTypeName" ) as Literal;
+            var connectionType = e.Item.DataItem as ConnectionType;
+            if ( cblOpportunities != null && lConnectionTypeName != null && connectionType != null )
+            {
+                lConnectionTypeName.Text = String.Format( "<h4 class='block-title'>{0}</h4>", connectionType.Name );
+
+                cblOpportunities.DataSource = connectionType.ConnectionOpportunities.OrderBy( c => c.Name );
+                cblOpportunities.DataBind();
+            }
+        }
+
+        protected void lbSubmit_Click( object sender, EventArgs e )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var opportunityService = new ConnectionOpportunityService( rockContext );
+                var connectionRequestService = new ConnectionRequestService( rockContext );
+                var personService = new PersonService( rockContext );
+                Person person = personService.Get( ppPerson.PersonId.Value );
+
+                // If there is a valid person with a primary alias, continue
+                if ( person != null && person.PrimaryAliasId.HasValue )
+                {
+                    foreach ( RepeaterItem typeItem in rptConnnectionTypes.Items )
+                    {
+                        var cblOpportunities = typeItem.FindControl( "cblOpportunities" ) as RockCheckBoxList;
+                        foreach ( int connectionOpportunityId in cblOpportunities.SelectedValuesAsInt )
+                        {
+
+                            // Get the opportunity and default status
+                            var opportunity = opportunityService
+                                .Queryable()
+                                .Where( o => o.Id == connectionOpportunityId )
+                                .FirstOrDefault();
+
+                            int defaultStatusId = opportunity.ConnectionType.ConnectionStatuses
+                                .Where( s => s.IsDefault )
+                                .Select( s => s.Id )
+                                .FirstOrDefault();
+
+                            // If opportunity is valid and has a default status
+                            if ( opportunity != null && defaultStatusId > 0 )
+                            {
+                               // Now we create the connection request
+                                var connectionRequest = new ConnectionRequest();
+                                connectionRequest.PersonAliasId = person.PrimaryAliasId.Value;
+                                connectionRequest.Comments = tbComments.Text.Trim();
+                                connectionRequest.ConnectionOpportunityId = opportunity.Id;
+                                connectionRequest.ConnectionState = ConnectionState.Active;
+                                connectionRequest.ConnectionStatusId = defaultStatusId;
+
+                                if ( person.GetCampus() != null )
+                                {
+                                    var campusId = person.GetCampus().Id;
+                                    connectionRequest.CampusId = campusId;
+                                    connectionRequest.ConnectorPersonAliasId = opportunity.GetDefaultConnectorPersonAliasId( campusId );
+                                    if (
+                                        opportunity != null &&
+                                        opportunity.ConnectionOpportunityCampuses != null )
+                                    {
+                                        var campus = opportunity.ConnectionOpportunityCampuses
+                                            .Where( c => c.CampusId == campusId )
+                                            .FirstOrDefault();
+                                        if ( campus != null )
+                                        {
+                                            connectionRequest.ConnectorPersonAliasId = campus.DefaultConnectorPersonAliasId;
+                                        }
+                                    }
+                                }
+
+                                if ( !connectionRequest.IsValid )
+                                {
+                                    // Controls will show warnings
+                                    return;
+                                }
+
+                                connectionRequestService.Add( connectionRequest );
+                            }
+                        }
+                    }
+                }
+
+                rockContext.SaveChanges();
+
+                // Reset everything for the next person
+                tbComments.Text = string.Empty;
+                LoadOpportunities();
+                ppPerson.SetValue( null );
+
+                nbSuccess.Text = String.Format( "{0}'s connection requests have been entered.", person.FullName );
+                nbSuccess.Visible = true;
+            }
+        }
+
+        protected void ppPerson_SelectPerson( object sender, EventArgs e )
+        {
+            hlCampus.Text = new PersonService( new RockContext() ).Get( ppPerson.PersonId.Value ).GetCampus().Name;
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            nbSuccess.Text = string.Empty;
+            nbSuccess.Visible = false;
+            LoadOpportunities();
+        }
+
+        #endregion
+
+        #region Methods
+
+        private void LoadOpportunities()
+        {
+            var typeFilter = GetAttributeValue( "IncludeConnectionTypes" ).SplitDelimitedValues().AsGuidList();
+            rptConnnectionTypes.DataSource = new ConnectionTypeService( new RockContext() ).Queryable().Where( t => typeFilter.Contains( t.Guid ) ).ToList();
+            rptConnnectionTypes.DataBind();
+        }
+
+        #endregion
+
+
+    }
+}
