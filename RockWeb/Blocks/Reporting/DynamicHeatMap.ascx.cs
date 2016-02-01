@@ -512,13 +512,22 @@ namespace RockWeb.Blocks.Reporting
                 DbGeography geoFence = null;
                 if ( hfLocationSavePath.Value.StartsWith( "CIRCLE|" ) )
                 {
+                    // the javascript will save the circle in the format "CIRCLE|lng lat|radiusMeters"
                     var parts = hfLocationSavePath.Value.Split( '|' );
                     if ( parts.Length == 3 )
                     {
-                        var pointWKT = string.Format( "POINT({0})", parts[1].Replace(',', ' '));
-                        var radius = parts[2].AsDoubleOrNull();
-                        var geoPoint = DbGeography.FromText( pointWKT );
-                        geoFence = geoPoint.Buffer( radius );
+                        var lngLat = parts[1].Split( new char[] { ',', ' ' } ).Select( a => a.AsDouble() ).ToList().ToArray();
+                        var point = Microsoft.SqlServer.Types.SqlGeography.Point( lngLat[1], lngLat[0], DbGeography.DefaultCoordinateSystemId );
+                        
+                        var radius = parts[2].AsDoubleOrNull() ?? 1;
+
+                        // construct a circle using BufferWithCurves (point.Buffer creates a polygon with too many coordinates for large circles)
+                        var buffer = point.BufferWithCurves( radius );
+                        
+                        // convert the circle to a polygon (to make it easier to interact with Google MAPs api which has limited support for circles)
+                        var polyCircle = buffer.STCurveToLine();
+
+                        geoFence = DbGeography.FromText( polyCircle.ToString() );
                     }
                 }
                 else

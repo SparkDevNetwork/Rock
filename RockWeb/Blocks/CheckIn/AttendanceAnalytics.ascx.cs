@@ -179,7 +179,11 @@ namespace RockWeb.Blocks.CheckIn
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
             BuildGroupTypesUI();
-            LoadChartAndGrids();
+
+            if ( pnlResults.Visible )
+            {
+                LoadChartAndGrids();
+            }
         }
 
         #endregion
@@ -411,14 +415,17 @@ function(item) {
             bcAttendance.TooltipFormatter = lcAttendance.TooltipFormatter;
             bcAttendance.DataSourceUrl = this.ResolveUrl( lineChartDataSourceUrl );
 
-            var chartData = this.GetAttendanceChartData();
-            var singleDateTime = chartData.GroupBy(a => a.DateTimeStamp).Count() == 1;
-            bcAttendance.Visible = singleDateTime;
-            lcAttendance.Visible = !singleDateTime;
-
-            if ( pnlChartAttendanceGrid.Visible )
+            if ( pnlShowByChart.Visible )
             {
-                BindChartAttendanceGrid( chartData );
+                var chartData = this.GetAttendanceChartData();
+                var singleDateTime = chartData.GroupBy( a => a.DateTimeStamp ).Count() == 1;
+                bcAttendance.Visible = singleDateTime;
+                lcAttendance.Visible = !singleDateTime;
+
+                if ( pnlChartAttendanceGrid.Visible )
+                {
+                    BindChartAttendanceGrid( chartData );
+                }
             }
 
             if ( pnlShowByAttendees.Visible )
@@ -735,6 +742,10 @@ function(item) {
 
             var rockContext = new RockContext();
 
+            // increase the timeout from 30sec to 5min. The Query can be slow if SQL hasn't calculated the Query Plan for the query yet.
+            // Sometimes, most of the time consumption is figuring out the Query Plan, but after it figures it out, it caches it so that the next time it'll be much faster
+            rockContext.Database.CommandTimeout = 300;
+
             // make a qryPersonAlias so that the generated SQL will be a "WHERE .. IN ()" instead of an OUTER JOIN (which is incredibly slow for this) 
             var qryPersonAlias = new PersonAliasService( rockContext ).Queryable();
 
@@ -944,7 +955,7 @@ function(item) {
             var dataViewId = dvpDataView.SelectedValueAsInt();
             if ( dataViewId.HasValue )
             {
-                var dataView = new DataViewService( _rockContext ).Get( dataViewId.Value );
+                var dataView = new DataViewService( rockContext ).Get( dataViewId.Value );
                 if ( dataView != null )
                 {
                     var errorMessages = new List<string>();
@@ -1154,9 +1165,6 @@ function(item) {
             {
                 nbAttendeesError.Visible = false;
 
-                // increase the timeout from 30 to 90. The Query can be slow if SQL hasn't calculated the Query Plan for the query yet.
-                // Sometimes, most of the time consumption is figuring out the Query Plan, but after it figures it out, it caches it so that the next time it'll be much faster
-                rockContext.Database.CommandTimeout = 90;
                 gAttendeesAttendance.SetLinqDataSource( qryResult.AsNoTracking() );
 
                 gAttendeesAttendance.DataBind();
@@ -1639,7 +1647,10 @@ function(item) {
         protected void btnShowByAttendees_Click( object sender, EventArgs e )
         {
             DisplayShowBy( ShowBy.Attendees );
-            BindAttendeesGrid();
+            if ( pnlResults.Visible )
+            {
+                BindAttendeesGrid();
+            }
         }
 
         /// <summary>
@@ -1650,7 +1661,10 @@ function(item) {
         protected void btnShowByChart_Click( object sender, EventArgs e )
         {
             DisplayShowBy( ShowBy.Chart );
-            BindChartAttendanceGrid();
+            if ( pnlResults.Visible )
+            {
+                BindChartAttendanceGrid();
+            }
         }
 
         /// <summary>

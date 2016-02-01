@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [BooleanField( "Grade", "Require a grade for each child", "Don't require", "When Family group type, should Grade be required for each child added?", false, "", 8 )]
     [BooleanField("SMS", "SMS is enabled by default", "SMS is not enabled by default", "Should SMS be enabled for cell phone numbers by default?", false, "", 9)]
     [AttributeCategoryField( "Attribute Categories", "The Person Attribute Categories to display attributes from", true, "Rock.Model.Person", false, "", "", 10 )]
-
+    [BooleanField( "Show Inactive Campuses", "Determines if inactive campuses should be shown.", true, order: 9 )]
     public partial class AddGroup : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -168,8 +168,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( _isFamilyGroupType )
             {
                 divGroupName.Visible = false;
-                var campusi = CampusCache.All();
-                cpCampus.Campuses = campusi;
+                var campusi = GetAttributeValue( "ShowInactiveCampuses" ).AsBoolean() ? CampusCache.All() : CampusCache.All().Where( c => c.IsActive == true ).ToList();
+                cpCampus.Campuses =  campusi;
                 cpCampus.Visible = campusi.Any();
                 if ( campusi.Count == 1 )
                 {
