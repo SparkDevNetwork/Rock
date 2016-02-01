@@ -29,7 +29,15 @@
     </div>
   </a>
   <div class="pull-left">
-    <strong>{{ member.Person.FullName }}</strong>
+    {% for coachMember in Group.Members %}
+		{% if coachMember.Person.Id == {{CurrentPerson.Id}} %}
+			
+			<a href="{{ nhMemberDetailPage }}?GroupMemberId={{ member.Id }}&CoachGroupMemberId={{coachMember.Id}}">
+				<strong>{{ member.Person.FullName }}</strong>
+			</a>
+		
+		{% endif %}
+	{% endfor %}
 
     <br />
     <a href="{{ communicationPage }}?person={{ member.Person.Id }}">
@@ -112,17 +120,6 @@
       {% endunless %}
     </p>
   </div>
-
-  {% if AllowedActions.Edit == true %}
-  <div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
-    <a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
-    <i class="fa fa-times"></i>
-    </a>
-    <a href="{{nhMemberDetailPage}}?groupMemberId={{ member.Id }}" class="margin-l-sm">
-    <i class="fa fa-pencil"></i>
-    </a>
-  </div>
-  {% endif %}
 
   {% if LinkedPages.PersonDetailPage != '' %}
     </a>
