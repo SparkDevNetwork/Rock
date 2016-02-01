@@ -111,7 +111,6 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                 Person person = personService.Get( ppPerson.PersonId.Value );
                 List<string> opportunityNames = new List<string>();
 
-
                 // If there is a valid person with a primary alias, continue
                 if ( person != null && person.PrimaryAliasId.HasValue )
                 {
@@ -202,7 +201,6 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                     nbDanger.Visible = true;
                     nbSuccess.Visible = false;
                 }
-
 
             }
         }
