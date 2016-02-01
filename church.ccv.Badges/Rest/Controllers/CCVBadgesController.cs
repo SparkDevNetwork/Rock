@@ -91,16 +91,16 @@ namespace church.ccv.Badges.Rest.Controllers
 
         [Authenticate, Secured]
         [HttpGet]
-        [System.Web.Http.Route( "api/CCV/Badges/StepsBarGroup/{groupId}" )]
-        public Dictionary<int, StepsBarResult> GetStepsBarGroup( int groupId )
+        [System.Web.Http.Route( "api/CCV/Badges/StepsBarGroup/{groupGuid}" )]
+        public Dictionary<int, StepsBarResult> GetStepsBarGroup( Guid groupGuid )
         {
             Dictionary<int, StepsBarResult> groupResults = new Dictionary<int, StepsBarResult>();
 
-            using (RockContext rockContext = new RockContext())
+            using ( RockContext rockContext = new RockContext() )
             {
-                var personIds = new GroupMemberService( rockContext ).Queryable().Where( m => m.GroupId == groupId ).Select( m => m.PersonId );
+                var personIds = new GroupMemberService( rockContext ).Queryable().Where( m => m.Group.Guid == groupGuid ).Select( m => m.PersonId );
 
-                foreach(var personId in personIds )
+                foreach ( var personId in personIds )
                 {
                     groupResults.Add( personId, GetStepsResult( personId ) );
                 }
