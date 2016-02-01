@@ -371,7 +371,8 @@ SET @SQL = N'
 			p.Name IN (
 				''Nursery Attendee'', 
 				''Preschool Attendee'', 
-				''Elementary Attendee'')
+				''Elementary Attendee'',
+				''Special Needs Attendee'')
 	),
 	cte_FirstTimePersonIds AS (
 		SELECT
@@ -545,7 +546,6 @@ VALUES ( @InsertedId, @FuseAttendanceCategoryId, @Order, NEWID() );
 SET @SQL = N'
 	DECLARE @today AS DATE = GETDATE();
 	DECLARE @recentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @today), @today));
-	DECLARE @firstTimeSundayDate AS DATE = DATEADD(WEEK, -3, @recentSundayDate);
 
 	WITH cte_GroupIds AS (
 		SELECT
@@ -569,7 +569,7 @@ SET @SQL = N'
 		GROUP BY
 			pa.PersonId
 		HAVING
-			CONVERT(DATE, MIN([StartDateTime])) = @firstTimeSundayDate
+			CONVERT(DATE, MIN([SundayDate])) = @recentSundayDate
 	)
 	SELECT
 		COUNT(Id) AS Value
@@ -598,6 +598,85 @@ VALUES (
 	0
 	, 'Fuse 1st Time Attendance'
 	, 'The number of attendances that are Fuse newcomers'
+	, @False
+	, @MetricSourceSQLId
+	, @SQL
+	, ''
+	, ''
+	, @MetricScheduleId
+	, @CampusEntityTypeId
+	, NEWID()
+	, NULL );
+
+SELECT @InsertedId = SCOPE_IDENTITY();
+
+INSERT [MetricCategory] (MetricId, CategoryId, [Order], [Guid])
+VALUES ( @InsertedId, @FuseAttendanceCategoryId, @Order, NEWID() );
+
+/* ======================================================
+	KidSpring 1st timers
+	The number of attendances that are KidSpring newcomers
+   ======================================================*/
+
+SET @SQL = N'
+	DECLARE @today AS DATE = GETDATE();
+	DECLARE @recentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @today), @today));
+
+	WITH cte_GroupIds AS (
+		SELECT
+			g.Id
+		FROM
+			[Group] g
+			JOIN [Group] p ON g.ParentGroupId = p.Id
+		WHERE
+			p.Name IN (
+				''Nursery Attendee'', 
+				''Preschool Attendee'', 
+				''Elementary Attendee'',
+				''Special Needs Attendee'')
+	),
+	cte_FirstTimePersonIds AS (
+		SELECT
+			pa.PersonId AS Id
+			, MAX(a.CampusId) AS CampusId
+		FROM
+			[Attendance] a
+			JOIN [PersonAlias] pa ON pa.Id = a.PersonAliasId
+			JOIN [cte_GroupIds] g ON g.Id = a.GroupId
+		WHERE
+			a.DidAttend = 1
+		GROUP BY
+			pa.PersonId
+		HAVING
+			CONVERT(DATE, MIN([StartDateTime])) = @recentSundayDate
+	)
+	SELECT
+		COUNT(Id) AS Value
+		, CampusId AS EntityId
+		, DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + ''00:00'' AS ScheduleDate
+	FROM
+		[cte_FirstTimePersonIds]
+	GROUP BY
+		CampusId
+';
+
+INSERT [Metric] (
+	IsSystem
+	, Title
+	, [Description]
+	, IsCumulative
+	, SourceValueTypeId
+	, SourceSql
+	, XAxisLabel
+	, YAxisLabel
+	, ScheduleId
+	, EntityTypeId
+	, [Guid]
+	, ForeignId)
+VALUES (
+	0
+	, 'KidSpring 1st Time Attendance'
+	, 'The number of attendances that are KidSpring newcomers'
 	, @False
 	, @MetricSourceSQLId
 	, @SQL

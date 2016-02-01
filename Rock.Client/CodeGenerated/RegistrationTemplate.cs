@@ -133,6 +133,9 @@ namespace Rock.Client
         public string RequestEntryName { get; set; }
 
         /// <summary />
+        public bool? SetCostOnInstance { get; set; }
+
+        /// <summary />
         public string SuccessText { get; set; }
 
         /// <summary />
@@ -203,6 +206,7 @@ namespace Rock.Client
             this.ReminderFromName = source.ReminderFromName;
             this.ReminderSubject = source.ReminderSubject;
             this.RequestEntryName = source.RequestEntryName;
+            this.SetCostOnInstance = source.SetCostOnInstance;
             this.SuccessText = source.SuccessText;
             this.SuccessTitle = source.SuccessTitle;
             this.CreatedDateTime = source.CreatedDateTime;

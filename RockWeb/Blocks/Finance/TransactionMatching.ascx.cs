@@ -125,9 +125,11 @@ namespace RockWeb.Blocks.Finance
             string keyPrefix = string.Format( "transaction-matching-{0}-", this.BlockId );
             var personalAccountGuidList = ( this.GetUserPreference( keyPrefix + "account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
 
-            var accountQry = new FinancialAccountService( rockContext ).Queryable();
+            var accountQry = new FinancialAccountService( rockContext )
+                .Queryable()
+                .Where( a => a.IsActive );
 
-            // no accounts specified means "all"
+            // no accounts specified means "all Active"
             if ( accountGuidList.Any() )
             {
                 accountQry = accountQry.Where( a => accountGuidList.Contains( a.Guid ) );
@@ -512,7 +514,10 @@ namespace RockWeb.Blocks.Finance
         {
             string keyPrefix = string.Format( "transaction-matching-{0}-", this.BlockId );
             var personalAccountGuidList = ( this.GetUserPreference( keyPrefix + "account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
-            var personalAccountList = new FinancialAccountService( new RockContext() ).GetByGuids( personalAccountGuidList ).ToList();
+            var personalAccountList = new FinancialAccountService( new RockContext() )
+                .GetByGuids( personalAccountGuidList )
+                .Where( a => a.IsActive )
+                .ToList();
 
             apPersonalAccounts.SetValues( personalAccountList );
 

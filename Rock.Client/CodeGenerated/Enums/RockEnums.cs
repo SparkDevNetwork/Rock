@@ -132,6 +132,7 @@ namespace Rock.Client.Enums
         LessThanOrEqualTo = 0x400,
         EndsWith = 0x800,
         Between = 0x1000,
+        RegularExpression = 0x2000,
     }
 
     /// <summary>

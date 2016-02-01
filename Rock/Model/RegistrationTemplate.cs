@@ -212,6 +212,15 @@ namespace Rock.Model
         public string ReminderEmailTemplate { get; set; }
 
         /// <summary>
+        /// Gets or sets the set cost on instance.
+        /// </summary>
+        /// <value>
+        /// The set cost on instance.
+        /// </value>
+        [DataMember]
+        public bool? SetCostOnInstance { get; set; }
+
+        /// <summary>
         /// Gets or sets the cost.
         /// </summary>
         /// <value>

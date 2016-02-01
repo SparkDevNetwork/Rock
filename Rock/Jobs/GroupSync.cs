@@ -70,6 +70,8 @@ namespace Rock.Jobs
 
                 foreach ( var syncGroup in groupsThatSync )
                 {
+                    bool hasGroupChanged = false;
+
                     GroupMemberService groupMemberService = new GroupMemberService( rockContext );
 
                     var syncSource = new DataViewService( rockContext ).Get( syncGroup.SyncDataViewId.Value );
@@ -98,6 +100,8 @@ namespace Rock.Jobs
 
                             rockContext.SaveChanges();
 
+                            hasGroupChanged = true;
+
                             if ( syncGroup.ExitSystemEmailId.HasValue )
                             {
                                 SendExitEmail( syncGroup.ExitSystemEmailId.Value, recipient, syncGroup );
@@ -115,6 +119,8 @@ namespace Rock.Jobs
                             newGroupMember.GroupRoleId = syncGroup.GroupType.DefaultGroupRoleId ?? syncGroup.GroupType.Roles.FirstOrDefault().Id;
                             groupMemberService.Add( newGroupMember );
 
+                            hasGroupChanged = true;
+
                             if ( syncGroup.WelcomeSystemEmailId.HasValue )
                             {
                                 SendWelcomeEmail( syncGroup.WelcomeSystemEmailId.Value, sourceItem, syncGroup, syncGroup.AddUserAccountsDuringSync ?? false );
@@ -122,6 +128,11 @@ namespace Rock.Jobs
                         }
 
                         rockContext.SaveChanges();
+
+                        if ( hasGroupChanged && ( syncGroup.IsSecurityRole || syncGroup.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) ) )
+                        {
+                            Rock.Security.Role.Flush( syncGroup.Id );
+                        }
                     }
                 }
 

@@ -124,6 +124,25 @@ namespace Rock.Model
         [DataMember]
         public int? AccountId { get; set; }
 
+
+        /// <summary>
+        /// Gets or sets the cost (if template is configured to allow cost on instance).
+        /// </summary>
+        /// <value>
+        /// The cost.
+        /// </value>
+        [DataMember]
+        public decimal? Cost { get; set; }
+
+        /// <summary>
+        /// Gets or sets the minimum initial payment (if template is configured to allow cost on instance).
+        /// </summary>
+        /// <value>
+        /// The minimum initial payment.
+        /// </value>
+        [DataMember]
+        public decimal? MinimumInitialPayment { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance is active.
         /// </summary>
