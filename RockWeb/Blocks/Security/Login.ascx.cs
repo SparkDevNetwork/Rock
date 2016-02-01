@@ -50,10 +50,11 @@ Thank-you for logging in, however, we need to confirm the email associated with 
     [CodeEditorField( "Locked Out Caption", "The text (HTML) to display when a user's account has been locked.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"
 Sorry, your account has been locked.  Please contact our office at {{ GlobalAttribute.OrganizationPhone }} or email {{ GlobalAttribute.OrganizationEmail }} to resolve this.  Thank-you. 
 ", "", 5 )]
-    [BooleanField("Hide New Account Option", "Should 'New Account' option be hidden?  For site's that require user to be in a role (Internal Rock Site for example), users shouldn't be able to create their own accont.", false, "", 6, "HideNewAccount" )]
-    [RemoteAuthsField("Remote Authorization Types", "Which of the active remote authorization types should be displayed as an option for user to use for authentication.", false, "", "", 7)]
-    [CodeEditorField( "Prompt Message", "Optional text (HTML) to display above username and password fields.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"", "", 8 )]
-    [LinkedPage( "Redirect Page", "Page to redirect user to upon successful login. The 'returnurl' query string will always override this setting for database authenticated logins. Redirect Page Setting will override third-party authentication 'returnurl'.", false, "", "", 9 )]
+    [BooleanField("Hide New Account Option", "Should 'New Account' option be hidden?  For site's that require user to be in a role (Internal Rock Site for example), users shouldn't be able to create their own account.", false, "", 6, "HideNewAccount" )]
+    [TextField( "New Account Text", "The text to show on the New Account button.", false, "Register", "", 7, "NewAccountButtonText" )]
+    [RemoteAuthsField("Remote Authorization Types", "Which of the active remote authorization types should be displayed as an option for user to use for authentication.", false, "", "", 8)]
+    [CodeEditorField( "Prompt Message", "Optional text (HTML) to display above username and password fields.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"", "", 9 )]
+    [LinkedPage( "Redirect Page", "Page to redirect user to upon successful login. The 'returnurl' query string will always override this setting for database authenticated logins. Redirect Page Setting will override third-party authentication 'returnurl'.", false, "", "", 10 )]
     public partial class Login : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -67,6 +68,7 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
             base.OnInit( e );
 
             btnNewAccount.Visible = !GetAttributeValue( "HideNewAccount" ).AsBoolean();
+            btnNewAccount.Text = this.GetAttributeValue( "NewAccountButtonText" ) ?? "Register";
 
             phExternalLogins.Controls.Clear();
 
@@ -76,6 +78,8 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
             GetAttributeValue( "RemoteAuthorizationTypes" ).SplitDelimitedValues()
                 .ToList()
                 .ForEach( v => selectedGuids.Add( v.AsGuid() ) );
+
+            
 
             // Look for active external authentication providers
             foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
