@@ -80,12 +80,8 @@ namespace RockWeb.Plugins.com_centralaz.Utility
 
             if ( !Page.IsPostBack )
             {
-                DataTable dtVirtualDirectories = GetVirtualDirectories();
-                gVirtualDirectory.DataSource = dtVirtualDirectories;
-                gVirtualDirectory.DataBind();
-
-                ddlFriendlyUrls.DataSource = dtVirtualDirectories;
-                ddlFriendlyUrls.DataBind();
+                BindGrid();
+                lblProcessReport.Text = string.Empty;
             }
 
         }
@@ -164,7 +160,7 @@ namespace RockWeb.Plugins.com_centralaz.Utility
 
             if ( ( ddlFriendlyUrls.SelectedValue != "new" ) && ( proceed == true ) )
             {
-                string basePath = GetAttributeValue( "PhysicalFodlerLocation" );
+                string basePath = GetAttributeValue( "PhysicalFolderLocation" );
                 string vDirPath = "/" + FriendlyUrlName.Text;
 
                 ServerManager serverManager = new ServerManager();
@@ -203,7 +199,7 @@ namespace RockWeb.Plugins.com_centralaz.Utility
 
                 if ( newVanityUrl )
                 {
-                    string basePath = GetAttributeValue( "PhysicalFodlerLocation" );
+                    string basePath = GetAttributeValue( "PhysicalFolderLocation" );
                     string fullPath = basePath + FriendlyUrlName.Text;
                     Directory.CreateDirectory( fullPath );
 
@@ -265,7 +261,7 @@ namespace RockWeb.Plugins.com_centralaz.Utility
         private bool DirectoryExists( string directoryToFind )
         {
             bool directoryFound = false;
-            string basePath = GetAttributeValue( "PhysicalFodlerLocation" );
+            string basePath = GetAttributeValue( "PhysicalFolderLocation" );
             string fullPath = basePath + directoryToFind;
 
             foreach ( string d in Directory.GetDirectories( basePath ) )

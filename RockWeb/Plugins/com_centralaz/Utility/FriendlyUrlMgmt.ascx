@@ -4,11 +4,11 @@
     <ContentTemplate>
         <asp:Panel ID="pnlEdit" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-desktop"></i> Add/Edit a Friendly Url</h1>
+                <h1 class="panel-title"><i class="fa fa-desktop"></i>Add/Edit a Friendly Url</h1>
             </div>
             <div class="panel-body">
                 <h3>Add or Edit a Friendly Url</h3>
-                <Rock:DataDropDownList ID="ddlFriendlyUrls" AutoPostBack="true" runat="server" AppendDataBoundItems="True"
+                <Rock:RockDropDownList ID="ddlFriendlyUrls" AutoPostBack="true" runat="server" AppendDataBoundItems="True"
                     OnSelectedIndexChanged="ddlFriendlyUrls_SelectedIndexChanged" Label="FriendlyUrl" />
                 <asp:Label ID="lblOutput" runat="server"></asp:Label>
                 <hr />
@@ -38,7 +38,7 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title"> Friendly Url List</h1>
+                <h1 class="panel-title">Friendly Url List</h1>
 
             </div>
             <div class="panel-body">
@@ -46,8 +46,8 @@
                     <Rock:Grid ID="gVirtualDirectory" runat="server" RowItemText="Group" AllowSorting="true">
                         <Columns>
                             <asp:BoundField DataField="FriendlyURL" HeaderText="Friendly URL" SortExpression="FriendlyURL" />
-                            <asp:HyperLinkField DataTextField="Destination" HeaderText="Destination" SortExpression="Destination"
-                                DataNavigateUrlFields="Destination" DataNavigateUrlFormatString="{0}" />
+                            <%--<asp:HyperLinkField DataTextField="Destination" HeaderText="Destination" SortExpression="Destination"
+                                DataNavigateUrlFields="Destination" DataNavigateUrlFormatString="{0}" />--%>
                         </Columns>
                     </Rock:Grid>
                 </div>
