@@ -1,0 +1,52 @@
+{% comment %}
+
+  {% include '~~/Assets/Lava/CoachTrainingVideos.lava' %}
+
+{% endcomment %}
+
+
+<script charset="ISO-8859-1" src="//fast.wistia.com/assets/external/E-v1.js" async></script>
+
+
+{% assign currentCategory = '' %}
+
+{% for item in Items %}
+
+  {% if item.Category != currentCategory %}
+
+    {% if currentCategory != '' %}
+    </div>
+    {% endif %}
+
+    <a name="{{ item.Category }}"></a>
+    <h2 class="page-header">{{ item.Category }}</h1>
+    {% assign currentCategory = item.Category %}
+    <div class="row margin-b-xl">
+
+  {% endif %}
+
+  <div class="col-sm-4">
+    <div class="thumbnail">
+      <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+          <span class="wistia_embed wistia_async_{{ item.WistiaId }} popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        </div>
+      </div>
+      <h4 class="margin-h-sm">{{ item.Title }}</h4>
+      {% assign Resources = item | Attribute: 'Resources' %}
+      {% if Resources != empty %}
+      <ul>
+        {% for _resource in Resources %}
+          {% assign resource = _resource | PropertyToKeyValue %}
+          <li><a href="{{ resource.Value }}">{{ resource.Key }}</a></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if forloop.last %}
+    </div>
+  {% endif %}
+
+{% endfor %}
