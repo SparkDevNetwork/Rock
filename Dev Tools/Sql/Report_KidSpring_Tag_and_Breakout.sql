@@ -27,6 +27,7 @@ WITH KidSpringAttendeeGroups AS (
 SELECT 
     a.StartDateTime AS CheckinTime,
 	g.Name AS [Group], 
+	l.Name AS Location,
 	c.Name AS Campus,
 	s.Name AS Schedule, 
 	p.LastName, 
@@ -44,6 +45,7 @@ FROM
 	JOIN [AttendanceCode] ac ON a.AttendanceCodeId = ac.Id
 	JOIN [Group] g ON a.GroupID = g.Id
 	JOIN Campus c ON c.Id = a.CampusId
+	JOIN Location l ON l.Id = a.LocationId
 	LEFT JOIN [AttributeValue] legal ON p.Id = legal.EntityId AND legal.AttributeId = 715
 	LEFT JOIN [AttributeValue] allergy ON p.Id = allergy.EntityId AND allergy.AttributeId = 676
 	LEFT JOIN [AttributeValue] bo ON p.Id = bo.EntityId AND bo.AttributeId = 2321
@@ -52,7 +54,7 @@ WHERE
 	AND a.DidAttend = 1
 ORDER BY 
 	c.Name,
-	g.Name, 
+	l.Name, 
 	Schedule, 
 	p.LastName,
 	p.FirstName;
