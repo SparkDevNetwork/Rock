@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -65,7 +66,7 @@ namespace RockWeb.Blocks.Groups
             _groupId = PageParameter( "GroupId" );
 
             var detailPageReference = new Rock.Web.PageReference( GetAttributeValue( "DetailPage" ) );
-            
+
             // NOTE: if the detail page is the current page, use the current route instead of route specified in the DetailPage (to preserve old behavoir)
             if ( detailPageReference == null || detailPageReference.PageId == this.RockPage.PageId )
             {
@@ -221,7 +222,9 @@ namespace RockWeb.Blocks.Groups
                     if ( group != null )
                     {
                         if ( !parentIdList.Contains( group.Id.ToString() ) )
+                        {
                             parentIdList.Insert( 0, group.Id.ToString() );
+                        }
                         else
                         {
                             // The parent list already contains this node, so we have encountered a recursive loop.
@@ -252,7 +255,7 @@ namespace RockWeb.Blocks.Groups
 
                     // show the Add button if the selected Group's GroupType can have children and one or more of those child group types is allowed
                     if ( selectedGroup.GroupType.ChildGroupTypes.Count > 0 &&
-                        ( selectedGroup.GroupType.ChildGroupTypes.Any( c => IsGroupTypeIncluded( c.Id ) ) ) )
+                        selectedGroup.GroupType.ChildGroupTypes.Any( c => IsGroupTypeIncluded( c.Id ) ) )
                     {
                         canAddChildGroup = canEditBlock;
 
@@ -312,7 +315,7 @@ namespace RockWeb.Blocks.Groups
             if ( includeGroupTypes.Any() )
             {
                 //// if includedGroupTypes has values, only include groupTypes from the includedGroupTypes list
-                return ( includeGroupTypes.Contains( groupTypeId ) );
+                return includeGroupTypes.Contains( groupTypeId );
             }
             else if ( excludeGroupTypes.Any() )
             {
@@ -371,7 +374,6 @@ namespace RockWeb.Blocks.Groups
         private void SetAllowedGroupTypes()
         {
             // limit GroupType selection to what Block Attributes allow
-
             hfGroupTypesInclude.Value = string.Empty;
             List<Guid> groupTypeIncludeGuids = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().AsGuidList();
 
@@ -462,6 +464,5 @@ namespace RockWeb.Blocks.Groups
         }
 
         #endregion
-        
-}
+    }
 }
