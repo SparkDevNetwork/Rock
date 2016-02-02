@@ -57,6 +57,7 @@
     <Compile Include="HotFixMigrations\003_AddAttendanceIndex.cs" />
     <Compile Include="HotFixMigrations\002_FixAttendanceEmail.cs" />
     <Compile Include="HotFixMigrations\005_ValueAsNumeric.cs" />
+    <Compile Include="HotFixMigrations\006_StatementProcs.cs" />
     <Compile Include="HotFixMigrations\004_FixBaptismBadge.cs" />
     <Compile Include="Migrations\201511231524340_GroupPlacement.cs" />
     <Compile Include="Migrations\201511231524340_GroupPlacement.Designer.cs">
