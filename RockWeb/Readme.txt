@@ -1,3 +1,21 @@
+Rock McKinley 4.2
+
++ Update Registration Entry so that discount code is still applied correctly when user returns to make a payment on existing registration.
++ Updated Registration Entry to correctly delete a registration if it was just created but an error occurred during save of registrants or attributes.
++ Fixed exception that would occur when copying a registration template that included an additional form(s) (in addition to the default form) and that form contained a person or group attribute (Fixes #1356).
++ Fixed registration issue that would result in registered person getting added to target group even if registration failed due to payment issue.
++ Fixed issue with group attendance not recording attendance correctly and continuing to send reminders.
++ Fixed issue where a person's tags would not always survive a merge.
++ Fixed performance issue with the Giving Amount dataview filter due to how it generated its query.
++ Fixed so that Connection Opportunities in the Connection Request transfer window are now ordered.
++ Added real person photos to the group member list block. This is not only an enhancement but also fixes what appears to be a UI bug when no photo exists.
++ Updated the Workflow Type Detail block so that it does not time out when trying to remove an activity type or action from an existing workflow type that has a significant number of workflows already created.
++ Updated the Rock Shop configuration to work with usernames and/or passwords that may have special characters.
++ Updated the Send Email and the Send System Email workflow actions to allow Email attribute field types for the from and to addresses (in addition to text or person field types)
++ Removed unnecesary clearing of authorization cache whenever a group member was added/edited/removed from a security group.
++ Updated the Group Type Detail so that if a group member attribute is removed, it is also removed from any registration template that was configured to use that attribute.
++ Updated the Twilio webhook so that if it gets an IOException when writing to log file that it will wait and try again a few times before causing an error.
+
 Rock McKinley 4.1
 
 + Updated communication entry block so that binary file attachments are not stored as temporary files (and possibly deleted up before an email is sent in the future).
