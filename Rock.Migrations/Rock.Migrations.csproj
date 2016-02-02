@@ -57,6 +57,7 @@
     <Compile Include="HotFixMigrations\003_AddAttendanceIndex.cs" />
     <Compile Include="HotFixMigrations\002_FixAttendanceEmail.cs" />
     <Compile Include="HotFixMigrations\005_ValueAsNumeric.cs" />
+    <Compile Include="HotFixMigrations\006_StatementProcs.cs" />
     <Compile Include="HotFixMigrations\004_FixBaptismBadge.cs" />
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.cs" />
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.Designer.cs">
