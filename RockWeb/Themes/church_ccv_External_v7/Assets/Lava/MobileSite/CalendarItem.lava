@@ -50,7 +50,32 @@
       {% endif %}
 
       {% if linkage.RegistrationInstanceId > 0 ) %}
-        <a href="{{ RegistrationPage }}?RegistrationInstanceId={{ linkage.RegistrationInstanceId }}" class="btn btn-primary btn-block margin-t-md">Register</a>
+
+      {% assign daysTillStartDate = 'Now' | DateDiff:linkage.RegistrationInstance.StartDateTime,'m' %}
+      {% assign daysTillEndDate = 'Now' | DateDiff:linkage.RegistrationInstance.EndDateTime,'m' %}
+      {% assign showRegistration = true %}
+      {% assign registrationMessgae = '' %}
+
+      {% if daysTillStartDate and daysTillStartDate > 0 %}
+        {% assign showRegistration = false %}
+        {% capture registrationMessage %}<p>Registration opens on {{ linkage.RegistrationInstance.StartDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
+      {% endif %}
+
+      {% if daysTillEndDate and daysTillEndDate < 0 %}
+        {% assign showRegistration = false %}
+        {% capture registrationMessage %}<p>Registration closed on {{ linkage.RegistrationInstance.EndDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
+      {% endif %}
+
+      {% if showRegistration == true %}
+        {% if linkage.RegistrationInstance.RegistrationTemplate.FinancialGatewayId == 4 %}
+        <a href="https://ccv.church/StarsRegistration?RegistrationInstanceId={{ linkage.RegistrationInstanceId }}&EventOccurrenceID={{ EventItemOccurrence.Id }}" class="btn btn-primary btn-block margin-t-md">Register</a>
+        {% else %}
+        <a href="{{ RegistrationPage }}?RegistrationInstanceId={{ linkage.RegistrationInstanceId }}&EventOccurrenceID={{ EventItemOccurrence.Id }}" class="btn btn-primary btn-block margin-t-md">Register</a>
+        {% endif %}
+      {% else %}
+        {{ registrationMessage }}
+      {% endif %}
+
       {% endif %}
     </div>
 
