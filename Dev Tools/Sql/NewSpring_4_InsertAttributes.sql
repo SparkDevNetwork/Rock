@@ -32,10 +32,11 @@ DECLARE @F1 nvarchar(255) = 'F1'
 /* ====================================================== */
 declare @IsSystem int = 0, @Order int = 0,  @TextFieldTypeId int = 1, @True int = 1, @False int = 0 
 
-declare @CampusFieldTypeId int, @DateFieldTypeId int, @BooleanFieldTypeId int, @PersonEntityTypeId int, @AttributeEntityTypeId int
+declare @CampusFieldTypeId int, @DateFieldTypeId int, @BooleanFieldTypeId int, @PersonEntityTypeId int, @AttributeEntityTypeId int, @SingleSelectFieldTypeId int
 select @CampusFieldTypeId = [Id] from FieldType where [Guid] = '1B71FEF4-201F-4D53-8C60-2DF21F1985ED'
 select @DateFieldTypeId = [Id] from FieldType where [Guid] = '6B6AA175-4758-453F-8D83-FCD8044B5F36'
 select @BooleanFieldTypeId = [Id] from FieldType where [Guid] = '1EDAFDED-DFE6-4334-B019-6EECBA89E05A'
+select @SingleSelectFieldTypeId = [Id] from FieldType where [Guid] = '7525C4CB-EE6B-41D4-9B64-A08048D5A5C0'
 select @PersonEntityTypeId = [Id] from EntityType where [Guid] = '72657ED8-D16E-492E-AC12-144C5E7567E7'
 select @AttributeEntityTypeId = [Id] from EntityType where [Guid] = '5997C8D3-8840-4591-99A5-552919F90CBD'
 
@@ -92,11 +93,11 @@ while @scopeIndex < @numItems
 begin
 	declare @AttributeGroup nvarchar(255), @AttributeName nvarchar(255), @AttributeCategoryId int, @DateAttributeId int, 
 		@CampusAttributeId int, @BooleanAttributeId int, @IsProcessed bit, @campusGuid uniqueidentifier, @campusId int, 
-		@campusName nvarchar(255), @msg nvarchar(max)
+		@campusName nvarchar(255), @BooleanValueText nvarchar(255), @msg nvarchar(max)
 
 	select @AttributeGroup = attributeGroupName, @AttributeName = attributeName, @DateAttributeId = dateAttributeId, 
 		@CampusAttributeId = campusAttributeId, @BooleanAttributeId = booleanAttributeId, 
-		@IsProcessed = CASE WHEN dateAttributeId is null THEN 0 ELSE 1 END
+		@IsProcessed = CASE WHEN dateAttributeId is null THEN 0 ELSE 1 END, @BooleanValueText = 'True'
 	from #attributes where ID = @scopeIndex
 
 	if @AttributeGroup is not null
@@ -128,27 +129,33 @@ begin
 				select @AttributeCategoryId = SCOPE_IDENTITY()
 			end
 
-			select @DateAttributeId = [Id] from Attribute 
-			where EntityTypeId = @PersonEntityTypeId and name = 'Is Special Needs'
+			/* ======== Update 2/2/16 =======
+			 * Has Special Needs is no longer a Boolean attribute (so should not be used
+			 * as a template) but still uses the variable names it was created with. 
+			*/
 
-			if @DateAttributeId is null
+			select @BooleanValueText = 'Yes'
+			select @BooleanAttributeId = [Id] from Attribute 
+			where EntityTypeId = @PersonEntityTypeId and name = 'Has Special Needs'
+
+			if @BooleanAttributeId is null
 			begin
 				insert Attribute ( [IsSystem], [FieldTypeId], [EntityTypeId], [EntityTypeQualifierColumn], [EntityTypeQualifierValue], 
 					[Key], [Name], [Description], [DefaultValue], [Order], [IsGridColumn], [IsMultiValue], [IsRequired], [Guid] )
-				select @IsSystem, @DateFieldTypeId, @PersonEntityTypeId, '', '', 'IsSpecialNeeds', 'Is Special Needs', 
+				select @IsSystem, @SingleSelectFieldTypeId, @PersonEntityTypeId, '', '', 'HasSpecialNeeds', 'Has Special Needs', 
 					'Whether or not the person has special needs.', '', @Order, @False, @False, @False, NEWID()
 
-				select @DateAttributeId = SCOPE_IDENTITY()
+				select @BooleanAttributeId = SCOPE_IDENTITY()
 
 				-- set additional attribute fields
 				insert AttributeQualifier (IsSystem, AttributeId, [Key], Value, [Guid])
-				select @IsSystem, @DateAttributeId, 'truetext', 'Yes', NEWID()
+				select @IsSystem, @BooleanAttributeId, 'fieldtype', 'ddl', NEWID()
 
 				insert AttributeQualifier (IsSystem, AttributeId, [Key], Value, [Guid])
-				select @IsSystem, @DateAttributeId, 'falsetext', 'No', NEWID()
+				select @IsSystem, @BooleanAttributeId, 'values', @BooleanValueText, NEWID()
 
 				insert AttributeCategory (AttributeId, CategoryId)
-				select @DateAttributeId, @AttributeCategoryId
+				select @BooleanAttributeId, @AttributeCategoryId
 			end
 		end
 		-- end Spring Zone
@@ -612,7 +619,7 @@ begin
 		if @BooleanAttributeId is not null
 		begin
 			insert into #attributeAssignment ( personId, attributeId, value, filterDate )
-			select personId, @BooleanAttributeId, 'True', a.start_date
+			select personId, @BooleanAttributeId, @BooleanValueText, a.start_date
 			from F1..Attribute a
 			inner join PersonAlias pa
 				on a.Individual_Id = pa.ForeignId
@@ -714,6 +721,9 @@ begin
 	where ConnectionStatusValueId = @MemberStatusId
 end
 
+select @msg = 'Checking duplicate attribute values'
+RAISERROR ( @msg, 0, 0 ) WITH NOWAIT
+
 -- remove duplicate attributes and values
 ;WITH duplicates (personId, attributeId, id) 
 AS (
@@ -732,6 +742,9 @@ from AttributeValue av
 inner join #attributeAssignment a
 on a.personId = av.EntityId
 and a.attributeId = av.AttributeId
+
+select @msg = 'Inserting updated attribute values'
+RAISERROR ( @msg, 0, 0 ) WITH NOWAIT
 
 -- insert attribute values
 insert AttributeValue ( [IsSystem], [AttributeId], [EntityId], [Value], [Guid] )
