@@ -34,7 +34,7 @@
    ====================================================== */
 -- Make sure you're using the right Rock database:
 
-USE Rock
+USE spark
 
 /* ====================================================== */
 
@@ -279,7 +279,7 @@ begin
 	declare @msg nvarchar(255), @AssignmentType nvarchar(255), @AttributeName nvarchar(255), @AttributeDescription nvarchar(255), 
 		@AttributeCategoryId int, @DocumentAttributeId int, @DateAttributeId int
 
-	select @AssignmentType = requirementType, @AttributeName  = attributeName, 
+	select @AssignmentType = requirementType, @AttributeName = attributeName, 
 		@AttributeDescription = attributeDescription, @AttributeCategoryId = categoryId
 	from #requirements
 	where ID = @scopeIndex
@@ -287,7 +287,7 @@ begin
 	if @AssignmentType is not null
 	begin
 
-		select @msg = 'Starting ' + @AssignmentType
+		select @msg = 'Starting ' + @AssignmentType + ' / '+ @AttributeName
 		RAISERROR ( @msg, 0, 0 ) WITH NOWAIT
 		
 		-- depending on what assignment this is, take different actions
@@ -554,7 +554,12 @@ begin
 				select @IsSystem, @DateAttributeId, 'format', '', NEWID()
 
 				insert AttributeCategory (AttributeId, CategoryId)
-				values (@DateAttributeId, @AttributeCategoryId)
+				values 
+					(@DateAttributeId, @CreativeCategoryId),
+					(@DateAttributeId, @CSCategoryId),
+					(@DateAttributeId, @FuseCategoryId),
+					(@DateAttributeId, @GSCategoryId),
+					(@DateAttributeId, @ProductionCategoryId)
 			end
 
 
