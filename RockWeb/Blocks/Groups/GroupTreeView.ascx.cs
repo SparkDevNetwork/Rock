@@ -43,8 +43,10 @@ namespace RockWeb.Blocks.Groups
     [GroupTypesField( "Group Types Exclude", "Select group types to exclude from this block. Note that this setting is only effective if 'Group Types Include' has no specific group types selected.", false, key: "GroupTypesExclude", order: 3 )]
     [GroupField( "Root Group", "Select the root group to use as a starting point for the tree view.", false, order: 4 )]
     [BooleanField( "Limit to Security Role Groups", order: 5 )]
-    [BooleanField( "Show Filter Option to include Inactive Groups", defaultValue: true, key: "ShowFilterOption", order: 6 )]
-    [LinkedPage( "Detail Page", order: 7 )]
+    [BooleanField( "Show Settings Panel", defaultValue: true, key: "ShowFilterOption", order: 6 )]
+    [CustomDropdownListField( "Initial Count Setting", "Select the counts that should be initially shown in the treeview.", "0^None,1^Child Groups,2^Group Members", false, "0", "", 7 )]
+    [CustomDropdownListField( "Initial Active Setting", "Select whether to initially show all or just active groups in the treeview", "0^All,1^Active", false, "1", "", 8 )]
+    [LinkedPage( "Detail Page", order: 9 )]
     public partial class GroupTreeView : RockBlock
     {
         #region Fields
@@ -104,11 +106,18 @@ namespace RockWeb.Blocks.Groups
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upGroupType );
 
-            tglHideInactiveGroups.Visible = this.GetAttributeValue( "ShowFilterOption" ).AsBooleanOrNull() ?? true;
-            ddlCountsType.Visible = this.GetAttributeValue( "ShowFilterOption" ).AsBooleanOrNull() ?? true;
-            if ( tglHideInactiveGroups.Visible )
+            pnlConfigPanel.Visible = this.GetAttributeValue( "ShowFilterOption" ).AsBooleanOrNull() ?? false;
+            pnlRolloverConfig.Visible = this.GetAttributeValue( "ShowFilterOption" ).AsBooleanOrNull() ?? false;
+
+            if ( pnlConfigPanel.Visible )
             {
-                tglHideInactiveGroups.Checked = this.GetUserPreference( "HideInactiveGroups" ).AsBooleanOrNull() ?? true;
+                var hideInactiveGroups = this.GetUserPreference( "HideInactiveGroups" ).AsBooleanOrNull();
+                if ( !hideInactiveGroups.HasValue )
+                {
+                    hideInactiveGroups = this.GetAttributeValue( "InitialActiveSetting" ) == "1";
+                }
+
+                tglHideInactiveGroups.Checked = hideInactiveGroups ?? true;
             }
             else
             {
@@ -121,7 +130,20 @@ namespace RockWeb.Blocks.Groups
             ddlCountsType.Items.Add( new ListItem( TreeViewItem.GetCountsType.ChildGroups.ConvertToString(), TreeViewItem.GetCountsType.ChildGroups.ConvertToInt().ToString() ) );
             ddlCountsType.Items.Add( new ListItem( TreeViewItem.GetCountsType.MemberCount.ConvertToString(), TreeViewItem.GetCountsType.MemberCount.ConvertToInt().ToString() ) );
 
-            ddlCountsType.SetValue( this.GetUserPreference( "CountsType" ) );
+            var countsType = this.GetUserPreference( "CountsType" );
+            if ( string.IsNullOrEmpty( countsType ) )
+            {
+                countsType = this.GetAttributeValue( "InitialCountSetting" );
+            }
+
+            if ( pnlConfigPanel.Visible )
+            {
+                ddlCountsType.SetValue( countsType );
+            }
+            else
+            {
+                ddlCountsType.SetValue( "" );
+            }
         }
 
         /// <summary>

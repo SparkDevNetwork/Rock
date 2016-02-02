@@ -29,12 +29,12 @@
                     </ul>
                 </div>
 
-                <div class="rollover-item">
+                <div class="rollover-item" id="pnlRolloverConfig" runat="server">
                     <i class="fa fa-gear clickable js-show-config" onclick="$(this).closest('.js-grouptreeview').find('.js-config-panel').slideToggle()"></i>
                 </div>
             </div>
 
-            <div class="js-config-panel" style="display:none">
+            <div class="js-config-panel" style="display:none" id="pnlConfigPanel" runat="server">
                 <Rock:Toggle ID="tglHideInactiveGroups" runat="server" OnText="Active" OffText="All" Checked="true" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglHideInactiveGroups_CheckedChanged" Label="Show" /></span>
                 <Rock:RockDropDownList ID="ddlCountsType" runat="server" Label="Count" OnSelectedIndexChanged="ddlCountsType_SelectedIndexChanged" AutoPostBack="true"  />
             </div>
