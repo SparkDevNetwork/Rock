@@ -7,14 +7,15 @@
         <asp:HiddenField ID="hfGroupTypesInclude" runat="server"  />
         <asp:HiddenField ID="hfGroupTypesExclude" runat="server"  />
         <asp:HiddenField ID="hfIncludeInactiveGroups" runat="server"  />
+        <asp:HiddenField ID="hfCountsType" runat="server"  />
         <asp:HiddenField ID="hfInitialGroupParentIds" runat="server"  />
         <asp:HiddenField ID="hfLimitToSecurityRoleGroups" runat="server" />
         <asp:HiddenField ID="hfSelectedGroupId" runat="server"  />
         <asp:HiddenField ID="hfPageRouteTemplate" runat="server"  />
         <asp:HiddenField ID="hfDetailPageUrl" runat="server"  />
 
-        <div class="treeview">
-            <div class="treeview-actions" id="divTreeviewActions" runat="server">
+        <div class="treeview js-grouptreeview">
+            <div class="treeview-actions rollover-container" id="divTreeviewActions" runat="server">
 
                 <div class="btn-group pull-left margin-r-sm">
                     <button type="button" class="btn btn-action btn-xs dropdown-toggle" data-toggle="dropdown">
@@ -28,10 +29,15 @@
                     </ul>
                 </div>
 
-                <Rock:Toggle ID="tglHideInactiveGroups" runat="server" OnText="Active" OffText="All" Checked="true" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglHideInactiveGroups_CheckedChanged" />
+                <div class="rollover-item">
+                    <i class="fa fa-gear clickable js-show-config" onclick="$(this).closest('.js-grouptreeview').find('.js-config-panel').slideToggle()"></i>
+                </div>
             </div>
 
-            
+            <div class="js-config-panel" style="display:none">
+                <Rock:Toggle ID="tglHideInactiveGroups" runat="server" OnText="Active" OffText="All" Checked="true" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglHideInactiveGroups_CheckedChanged" Label="Show" /></span>
+                <Rock:RockDropDownList ID="ddlCountsType" runat="server" Label="Count" OnSelectedIndexChanged="ddlCountsType_SelectedIndexChanged" AutoPostBack="true"  />
+            </div>
 
             <div class="treeview-scroll scroll-container scroll-container-horizontal">
 
@@ -114,7 +120,8 @@
                             + '&limitToSecurityRoleGroups=' + ($('#<%=hfLimitToSecurityRoleGroups.ClientID%>').val() || false)
                             + '&includedGroupTypeIds=' + ($('#<%=hfGroupTypesInclude.ClientID%>').val() || '0')
                             + '&excludedGroupTypeIds=' + ($('#<%=hfGroupTypesExclude.ClientID%>').val() || '0')
-                            + '&includeInactiveGroups=' + ($('#<%=hfIncludeInactiveGroups.ClientID%>').val() || false),
+                            + '&includeInactiveGroups=' + ($('#<%=hfIncludeInactiveGroups.ClientID%>').val() || false)
+                            + '&countsType=' + ($('#<%=hfCountsType.ClientID%>').val() || false),
                         multiSelect: false,
                         selectedIds: $selectedId.val() ? $selectedId.val().split(',') : null,
                         expandedIds: $expandedIds.val() ? $expandedIds.val().split(',') : null
