@@ -35,8 +35,8 @@
             </div>
 
             <div class="js-config-panel" style="display:none">
-                <Rock:Toggle ID="tglHideInactiveGroups" runat="server" OnText="Active" OffText="All" Checked="true" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglHideInactiveGroups_CheckedChanged" />
-                <Rock:RockDropDownList ID="ddlCountsType" runat="server" Label="Count" OnSelectedIndexChanged="ddlCountsType_SelectedIndexChanged" AutoPostBack="true" />
+                <Rock:Toggle ID="tglHideInactiveGroups" runat="server" OnText="Active" OffText="All" Checked="true" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglHideInactiveGroups_CheckedChanged" Label="Show" /></span>
+                <Rock:RockDropDownList ID="ddlCountsType" runat="server" Label="Count" OnSelectedIndexChanged="ddlCountsType_SelectedIndexChanged" AutoPostBack="true"  />
             </div>
 
             <div class="treeview-scroll scroll-container scroll-container-horizontal">
