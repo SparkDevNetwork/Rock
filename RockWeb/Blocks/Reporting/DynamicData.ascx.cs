@@ -80,6 +80,11 @@ namespace RockWeb.Blocks.Reporting
         #region Properties
 
         /// <summary>
+        /// Gets or sets the GridFilter.
+        /// </summary>
+        public GridFilter GridFilter { get; set; }
+
+        /// <summary>
         /// Gets the settings tool tip.
         /// </summary>
         /// <value>
@@ -105,8 +110,8 @@ namespace RockWeb.Blocks.Reporting
         {
             base.OnInit( e );
 
-            this.BlockUpdated += DynamicData_BlockUpdated;
-            this.AddConfigurationUpdateTrigger( upnlContent );
+            BlockUpdated += DynamicData_BlockUpdated;
+            AddConfigurationUpdateTrigger( upnlContent );
 
             BuildControls( !Page.IsPostBack );
 
@@ -116,6 +121,40 @@ namespace RockWeb.Blocks.Reporting
         #endregion
 
         #region Events
+
+        /// <summary>
+        /// Handles the ApplyFilterClick event of the fDevice control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void ApplyFilterClick(object sender, EventArgs e)
+        {
+            foreach ( Control control in GridFilter.Controls )
+            {
+                var key = control.ID;
+                string value = null;
+
+                if ( control is DateRangePicker )
+                {
+                    var dateRangePicker = control as DateRangePicker;
+                    value = dateRangePicker.DelimitedValues;
+                }
+                else if ( control is RockCheckBox )
+                {
+                    var checkBox = control as RockCheckBox;
+                    value = checkBox.Checked.ToString();
+                }
+                else if (control is RockTextBox)
+                {
+                    var textBox = control as RockTextBox;
+                    value = textBox.Text;
+                }
+
+                GridFilter.SaveUserPreference(key, value);
+            }
+
+            // BindGrid();
+        }
 
         protected void DynamicData_BlockUpdated( object sender, EventArgs e )
         {
@@ -215,6 +254,7 @@ namespace RockWeb.Blocks.Reporting
                     {
                         if ( ds.Tables.Count > i )
                         {
+                            FilterTable(grid, ds.Tables[i]);
                             SortTable( grid, ds.Tables[i] );
                             grid.DataSource = ds.Tables[i];
                             grid.DataBind();
@@ -257,6 +297,7 @@ namespace RockWeb.Blocks.Reporting
                     var parameters = GetParameters();
                     int timeout = GetAttributeValue( "Timeout" ).AsInteger();
                     
+
                     return DbService.GetDataSet( query, GetAttributeValue( "StoredProcedure" ).AsBoolean( false ) ? CommandType.StoredProcedure : CommandType.Text, parameters, timeout );
                 }
                 catch ( System.Exception ex )
@@ -426,6 +467,19 @@ namespace RockWeb.Blocks.Reporting
 
                             phContent.Controls.Add( div );
 
+                            if( true )
+                            {
+                                GridFilter = new GridFilter()
+                                {
+                                    ID = "gfFilter"
+                                };
+                                var textBox = new RockTextBox();
+                                div.Controls.Add( GridFilter );
+
+                                GridFilter.ApplyFilterClick += ApplyFilterClick;
+                                //GridFilter.DisplayFilterValue += DisplayFilterValue;
+                            }                            
+
                             var grid = new Grid();
                             div.Controls.Add( grid );
                             grid.ID = string.Format( "dynamic_data_{0}", tableId++ );
@@ -454,6 +508,7 @@ namespace RockWeb.Blocks.Reporting
 
                             if ( setData )
                             {
+                                FilterTable( grid, dataTable );
                                 SortTable( grid, dataTable );
                                 grid.DataSource = dataTable;
                                 grid.DataBind();
@@ -583,10 +638,22 @@ namespace RockWeb.Blocks.Reporting
                 }
 
                 BoundField bf = new BoundField();
+                var splitCaseName = dataTableColumn.ColumnName.SplitCase();
 
                 if ( dataTableColumn.DataType == typeof( bool ) )
                 {
                     bf = new BoolField();
+
+                    if( GridFilter != null )
+                    {
+                        var filterControl = new RockCheckBox()
+                        {
+                            Label = splitCaseName,
+                            ID = "cb" + dataTableColumn.ColumnName
+                        };
+
+                        GridFilter.Controls.Add( filterControl );
+                    }
                 }
                 else if ( dataTableColumn.DataType == typeof( DateTime ) )
                 {
@@ -605,15 +672,37 @@ namespace RockWeb.Blocks.Reporting
                             }
                         }
                     }
+
+                    if (GridFilter != null)
+                    {
+                        var filterControl = new DateRangePicker()
+                        {
+                            Label = splitCaseName,
+                            ID = "drp" + dataTableColumn.ColumnName
+                        };
+
+                        GridFilter.Controls.Add(filterControl);
+                    }
                 }
                 else
                 {
                     bf.HtmlEncode = false;
+
+                    if (GridFilter != null)
+                    {
+                        var filterControl = new RockTextBox()
+                        {
+                            Label = splitCaseName,
+                            ID = "tb" + dataTableColumn.ColumnName
+                        };
+
+                        GridFilter.Controls.Add(filterControl);
+                    }
                 }
 
                 bf.DataField = dataTableColumn.ColumnName;
                 bf.SortExpression = dataTableColumn.ColumnName;
-                bf.HeaderText = dataTableColumn.ColumnName.SplitCase();
+                bf.HeaderText = splitCaseName;
                 grid.Columns.Add( bf );
             }
         }
@@ -632,6 +721,18 @@ namespace RockWeb.Blocks.Reporting
             {
                 dataView.Sort = string.Format( "{0} {1}", sortProperty.Property, sortProperty.DirectionString );
             }
+        }
+
+        /// <summary>
+        /// Gets the sorted view.
+        /// </summary>
+        /// <param name="dataTable">The data table.</param>
+        /// <returns></returns>
+        private void FilterTable(Grid grid, DataTable dataTable)
+        {
+            System.Data.DataView dataView = dataTable.DefaultView;
+            dataView.RowFilter = "FirstName like 'J*'";
+            dataView.RowStateFilter = DataViewRowState.ModifiedCurrent;
         }
 
         #endregion
