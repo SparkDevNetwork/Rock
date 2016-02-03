@@ -119,6 +119,10 @@
 
   </form>
 
+  <%-- Missional Marketing Retargeting Code --%>
+  <script>!function(){window._pa=window._pa||{};var t=document.createElement("script");t.type="text/javascript",t.async=!0,t.src=("https:"==document.location.protocol?"https:":"http:")+"//tag.marinsm.com/serve/56563f4e30b2c1d16e000293.js";var e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(t,e)}();</script>
+
+  <%-- Chartbeat --%>
   <script type="text/javascript">
     var _sf_async_config = { uid: 23413, domain: 'ccv.church', useCanonical: true };
     (function() {
