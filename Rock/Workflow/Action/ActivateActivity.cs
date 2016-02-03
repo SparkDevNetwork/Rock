@@ -31,6 +31,7 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Activates a new activity for a given activity type
     /// </summary>
+    [ActionCategory( "Workflow Control" )]
     [Description( "Activates a new activity instance and all of its actions." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Activate Activity" )]

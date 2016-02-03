@@ -31,6 +31,7 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sets an attribute's value to the selected value
     /// </summary>
+    [ActionCategory( "Set Workflow Attribute" )]
     [Description( "Sets an attribute's value to the selected value." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Set Attribute Value" )]

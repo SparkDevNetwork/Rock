@@ -31,6 +31,7 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sets an attribute's value to the selected value
     /// </summary>
+    [ActionCategory( "Workflow Control" )]
     [Description( "Deletes the current workflow instance." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Delete Workflow" )]

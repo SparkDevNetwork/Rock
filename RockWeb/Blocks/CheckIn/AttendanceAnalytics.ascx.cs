@@ -179,7 +179,11 @@ namespace RockWeb.Blocks.CheckIn
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
             BuildGroupTypesUI();
-            LoadChartAndGrids();
+
+            if ( pnlResults.Visible )
+            {
+                LoadChartAndGrids();
+            }
         }
 
         #endregion
@@ -411,14 +415,17 @@ function(item) {
             bcAttendance.TooltipFormatter = lcAttendance.TooltipFormatter;
             bcAttendance.DataSourceUrl = this.ResolveUrl( lineChartDataSourceUrl );
 
-            var chartData = this.GetAttendanceChartData();
-            var singleDateTime = chartData.GroupBy(a => a.DateTimeStamp).Count() == 1;
-            bcAttendance.Visible = singleDateTime;
-            lcAttendance.Visible = !singleDateTime;
-
-            if ( pnlChartAttendanceGrid.Visible )
+            if ( pnlShowByChart.Visible )
             {
-                BindChartAttendanceGrid( chartData );
+                var chartData = this.GetAttendanceChartData();
+                var singleDateTime = chartData.GroupBy( a => a.DateTimeStamp ).Count() == 1;
+                bcAttendance.Visible = singleDateTime;
+                lcAttendance.Visible = !singleDateTime;
+
+                if ( pnlChartAttendanceGrid.Visible )
+                {
+                    BindChartAttendanceGrid( chartData );
+                }
             }
 
             if ( pnlShowByAttendees.Visible )
@@ -528,19 +535,31 @@ function(item) {
             hfGraphBy.Value = GetSetting( keyPrefix, "GraphBy" );
 
             var campusIdList = new List<string>();
-            string campusKey = keyPrefix + "CampusIds";
-            var sessionPreferences = RockPage.SessionUserPreferences();
-            if ( sessionPreferences.ContainsKey( campusKey ) )
+
+            string campusQryString = Request.QueryString["CampusIds"];
+            if ( campusQryString != null )
             {
-                campusIdList = sessionPreferences[campusKey].Split( ',' ).ToList();
+                FilterIncludedInURL = true;
+                campusIdList = campusQryString.Split( ',' ).ToList();
                 clbCampuses.SetValues( campusIdList );
             }
             else
             {
-                // if previous campus selection has never been made, default to showing all of them
-                foreach ( ListItem item in clbCampuses.Items )
+                string campusKey = keyPrefix + "CampusIds";
+
+                var sessionPreferences = RockPage.SessionUserPreferences();
+                if ( sessionPreferences.ContainsKey( campusKey ) )
                 {
-                    item.Selected = true;
+                    campusIdList = sessionPreferences[campusKey].Split( ',' ).ToList();
+                    clbCampuses.SetValues( campusIdList );
+                }
+                else
+                {
+                    // if previous campus selection has never been made, default to showing all of them
+                    foreach ( ListItem item in clbCampuses.Items )
+                    {
+                        item.Selected = true;
+                    }
                 }
             }
 
@@ -723,6 +742,10 @@ function(item) {
 
             var rockContext = new RockContext();
 
+            // increase the timeout from 30sec to 5min. The Query can be slow if SQL hasn't calculated the Query Plan for the query yet.
+            // Sometimes, most of the time consumption is figuring out the Query Plan, but after it figures it out, it caches it so that the next time it'll be much faster
+            rockContext.Database.CommandTimeout = 300;
+
             // make a qryPersonAlias so that the generated SQL will be a "WHERE .. IN ()" instead of an OUTER JOIN (which is incredibly slow for this) 
             var qryPersonAlias = new PersonAliasService( rockContext ).Queryable();
 
@@ -825,49 +848,28 @@ function(item) {
                     {
                         PersonId = m.PersonId,
                         FirstVisits = new DateTime[] { }.AsQueryable(),
-                        LastVisit = new AttendancePersonAlias(),
+                        LastAttendance = new Attendance(),
                         AttendanceSummary = new DateTime[] { }.AsQueryable()
                     } );
             }
             else
             {
                 var qryAttendanceWithSummaryDateTime = qryAttendance.GetAttendanceWithSummaryDateTime( groupBy );
-                var qryGroup = new GroupService( rockContext ).Queryable();
 
-                var qryJoinPerson = qryAttendance.Join(
+                var qryByPerson = qryAttendance.Join(
                     qryPersonAlias,
                     k1 => k1.PersonAliasId,
                     k2 => k2.Id,
                     ( a, pa ) => new
                     {
-                        CampusId = a.CampusId,
-                        GroupId = a.GroupId,
-                        ScheduleId = a.ScheduleId,
-                        StartDateTime = a.StartDateTime,
-                        PersonAliasId = pa.Id,
-                        PersonAliasPersonId = pa.PersonId
-                    } );
-
-                var qryJoinFinal = qryJoinPerson.Join(
-                    qryGroup,
-                    k1 => k1.GroupId,
-                    k2 => k2.Id,
-                    ( a, g ) => new AttendancePersonAlias
+                        PersonId = pa.PersonId,
+                        Attendance = a
+                    } ).GroupBy( g => g.PersonId )
+                    .Select( g => new
                     {
-                        CampusId = a.CampusId,
-                        GroupId = a.GroupId,
-                        GroupName = g.Name,
-                        ScheduleId = a.ScheduleId,
-                        StartDateTime = a.StartDateTime,
-                        PersonAliasId = a.PersonAliasId,
-                        PersonAliasPersonId = a.PersonAliasPersonId
+                        PersonId = g.Key,
+                        Attendances = g.Select( h => h.Attendance )
                     } );
-
-                var qryByPerson = qryJoinFinal.GroupBy( a => a.PersonAliasPersonId ).Select( a => new
-                {
-                    PersonId = a.Key,
-                    Attendances = a
-                } );
 
                 int? attendedMinCount = null;
                 int? attendedMissedCount = null;
@@ -894,7 +896,7 @@ function(item) {
                 {
                     PersonId = a.PersonId,
                     FirstVisits = qryAllVisits.Where( b => qryPersonAlias.Where( pa => pa.PersonId == a.PersonId ).Any( pa => pa.Id == b.PersonAliasId ) ).Select( s => s.StartDateTime ).OrderBy( x => x ).Take( 2 ),
-                    LastVisit = a.Attendances.OrderByDescending( x => x.StartDateTime ).FirstOrDefault(),
+                    LastAttendance = a.Attendances.OrderByDescending( x => x.StartDateTime ).FirstOrDefault(),
                     AttendanceSummary = qryAttendanceWithSummaryDateTime.Where( x => qryPersonAlias.Where( pa => pa.PersonId == a.PersonId ).Any( pa => pa.Id == x.Attendance.PersonAliasId ) ).GroupBy( g => g.SummaryDateTime ).Select( s => s.Key )
                 } );
 
@@ -904,7 +906,7 @@ function(item) {
                     {
                         PersonId = a.PersonId,
                         FirstVisits = qryAllVisits.Where( b => qryPersonAlias.Where( pa => pa.PersonId == a.PersonId ).Any( pa => pa.Id == b.PersonAliasId ) ).Select( s => s.StartDateTime ).OrderBy( x => x ).Take( 5 ),
-                        LastVisit = a.Attendances.OrderByDescending( x => x.StartDateTime ).FirstOrDefault(),
+                        LastAttendance = a.Attendances.OrderByDescending( x => x.StartDateTime ).FirstOrDefault(),
                         AttendanceSummary = qryAttendanceWithSummaryDateTime.Where( x => qryPersonAlias.Where( pa => pa.PersonId == a.PersonId ).Any( pa => pa.Id == x.Attendance.PersonAliasId ) ).GroupBy( g => g.SummaryDateTime ).Select( s => s.Key )
                     } );
                 }
@@ -953,7 +955,7 @@ function(item) {
             var dataViewId = dvpDataView.SelectedValueAsInt();
             if ( dataViewId.HasValue )
             {
-                var dataView = new DataViewService( _rockContext ).Get( dataViewId.Value );
+                var dataView = new DataViewService( rockContext ).Get( dataViewId.Value );
                 if ( dataView != null )
                 {
                     var errorMessages = new List<string>();
@@ -973,7 +975,7 @@ function(item) {
             // declare the qryResult that we'll use in case they didn't choose IncludeParents or IncludeChildren (and the Anonymous Type will also work if we do include parents or children)
             var qryPerson = personService.Queryable();
 
-            var qryResult = qryByPersonWithSummary.Join(
+            var qrySummary = qryByPersonWithSummary.Join(
                     qryPerson,
                     a => a.PersonId,
                     p => p.Id,
@@ -986,7 +988,7 @@ function(item) {
                             Parent = (Person)null,
                             Child = (Person)null,
                             a.FirstVisits,
-                            a.LastVisit,
+                            a.LastAttendance,
                             p.PhoneNumbers,
                             a.AttendanceSummary
                         } );
@@ -998,7 +1000,7 @@ function(item) {
             if ( includeParents )
             {
                 var qryChildWithParent = new PersonService( rockContext ).GetChildWithParent();
-                qryResult = qryByPersonWithSummary.Join(
+                qrySummary = qryByPersonWithSummary.Join(
                     qryChildWithParent,
                     a => a.PersonId,
                     p => p.Child.Id,
@@ -1011,7 +1013,7 @@ function(item) {
                         Parent = p.Parent,
                         Child = (Person)null,
                         a.FirstVisits,
-                        a.LastVisit,
+                        a.LastAttendance,
                         p.Parent.PhoneNumbers,
                         a.AttendanceSummary
                     } );
@@ -1020,7 +1022,7 @@ function(item) {
             if ( includeChildren )
             {
                 var qryParentWithChildren = new PersonService( rockContext ).GetParentWithChild();
-                qryResult = qryByPersonWithSummary.Join(
+                qrySummary = qryByPersonWithSummary.Join(
                     qryParentWithChildren,
                     a => a.PersonId,
                     p => p.Parent.Id,
@@ -1033,11 +1035,35 @@ function(item) {
                         Parent = (Person)null,
                         Child = p.Child,
                         a.FirstVisits,
-                        a.LastVisit,
+                        a.LastAttendance,
                         p.Child.PhoneNumbers,
                         a.AttendanceSummary
                     } );
             }
+            
+            var qryResult = qrySummary.Select( k1 => new {
+                    k1.PersonId,
+                    k1.ParentId,
+                    k1.ChildId,
+                    k1.Person,
+                    k1.Parent,
+                    k1.Child,
+                    k1.FirstVisits,
+                    k1.LastAttendance,
+                    k1.PhoneNumbers,
+                    k1.AttendanceSummary,
+                    LastVisit = new AttendancePersonAlias
+                    {
+                        CampusId = k1.LastAttendance.CampusId,
+                        GroupId = k1.LastAttendance.GroupId,
+                        GroupName = k1.LastAttendance.Group.Name,
+                        InGroup = k1.LastAttendance.Group.Members.Any( m => m.PersonId == k1.PersonId ),
+                        GroupRoles = k1.LastAttendance.Group.Members.Where( m => m.PersonId == k1.PersonId ).OrderBy( m => m.GroupRole.Order ).Select( m => m.GroupRole.Name ).ToList(),
+                        ScheduleId = k1.LastAttendance.ScheduleId,
+                        StartDateTime = k1.LastAttendance.StartDateTime,
+                        LocationName = k1.LastAttendance.Location != null ? k1.LastAttendance.Location.Name : ""
+                    }
+                } );
 
             var parentField = gAttendeesAttendance.Columns.OfType<PersonField>().FirstOrDefault( a => a.HeaderText == "Parent" );
             if ( parentField != null )
@@ -1061,6 +1087,12 @@ function(item) {
             if ( childEmailField != null )
             {
                 childEmailField.ExcelExportBehavior = includeChildren ? ExcelExportBehavior.AlwaysInclude : ExcelExportBehavior.NeverInclude;
+            }
+
+            var childAgeField = gAttendeesAttendance.Columns.OfType<RockBoundField>().FirstOrDefault( a => a.HeaderText == "Child Age" );
+            if ( childAgeField != null )
+            {
+                childAgeField.ExcelExportBehavior = includeChildren ? ExcelExportBehavior.AlwaysInclude : ExcelExportBehavior.NeverInclude;
             }
 
             SortProperty sortProperty = gAttendeesAttendance.SortProperty;
@@ -1133,9 +1165,6 @@ function(item) {
             {
                 nbAttendeesError.Visible = false;
 
-                // increase the timeout from 30 to 90. The Query can be slow if SQL hasn't calculated the Query Plan for the query yet.
-                // Sometimes, most of the time consumption is figuring out the Query Plan, but after it figures it out, it caches it so that the next time it'll be much faster
-                rockContext.Database.CommandTimeout = 90;
                 gAttendeesAttendance.SetLinqDataSource( qryResult.AsNoTracking() );
 
                 gAttendeesAttendance.DataBind();
@@ -1332,6 +1361,7 @@ function(item) {
 
                 Literal lSecondVisitDate = e.Row.FindControl( "lSecondVisitDate" ) as Literal;
                 Literal lServiceTime = e.Row.FindControl( "lServiceTime" ) as Literal;
+                Literal lGroupRoles = e.Row.FindControl( "lGroupRoles" ) as Literal;
                 Literal lHomeAddress = e.Row.FindControl( "lHomeAddress" ) as Literal;
                 Literal lAttendanceCount = e.Row.FindControl( "lAttendanceCount" ) as Literal;
                 Literal lAttendancePercent = e.Row.FindControl( "lAttendancePercent" ) as Literal;
@@ -1380,6 +1410,13 @@ function(item) {
                             lServiceTime.Text = _scheduleNameLookup[scheduleId.Value];
                         }
                     }
+
+                    List<string> groupRoles = lastVisit.GetPropertyValue( "GroupRoles" ) as List<string>;
+                    if ( groupRoles != null && lGroupRoles != null )
+                    {
+                        lGroupRoles.Text = groupRoles.AsDelimited( ", " );
+                    }
+
                 }
 
                 if ( person != null )
@@ -1610,7 +1647,10 @@ function(item) {
         protected void btnShowByAttendees_Click( object sender, EventArgs e )
         {
             DisplayShowBy( ShowBy.Attendees );
-            BindAttendeesGrid();
+            if ( pnlResults.Visible )
+            {
+                BindAttendeesGrid();
+            }
         }
 
         /// <summary>
@@ -1621,7 +1661,10 @@ function(item) {
         protected void btnShowByChart_Click( object sender, EventArgs e )
         {
             DisplayShowBy( ShowBy.Chart );
-            BindChartAttendanceGrid();
+            if ( pnlResults.Visible )
+            {
+                BindChartAttendanceGrid();
+            }
         }
 
         /// <summary>
@@ -1677,8 +1720,11 @@ function(item) {
             public int? CampusId { get; set; }
             public int? GroupId { get; set; }
             public string GroupName { get; set; }
+            public bool InGroup { get; set; }
+            public List<string> GroupRoles { get; set; }
             public int? ScheduleId { get; set; }
             public DateTime? StartDateTime { get; set; }
+            public string LocationName { get; set; }
             public int PersonAliasPersonId { get; set; }
             public int PersonAliasId { get; set; }
         }
@@ -1687,7 +1733,7 @@ function(item) {
         {
             public int PersonId { get; set;}
             public IQueryable<DateTime> FirstVisits { get; set; }
-            public AttendancePersonAlias LastVisit { get; set; }
+            public Attendance LastAttendance { get; set; }
             public IQueryable<DateTime> AttendanceSummary {get; set;}
         }
     }

@@ -29,7 +29,8 @@ namespace Rock.Workflow.Action.CheckIn
     /// <summary>
     /// Loads the group types allowed for each person in a family
     /// </summary>
-    [Description("Loads the group types allowed for each person in a family")]
+    [ActionCategory( "Check-In" )]
+    [Description( "Loads the group types allowed for each person in a family" )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Load Group Types" )]
     public class LoadGroupTypes : CheckInActionComponent

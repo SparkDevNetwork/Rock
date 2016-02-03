@@ -61,6 +61,8 @@ namespace RockWeb.Blocks.Reporting
     [BooleanField( "Show Excel Export", "Show Export to Excel button in grid footer?", true, "CustomSetting" )]
     [BooleanField( "Show Merge Template", "Show Export to Merge Template button in grid footer?", true, "CustomSetting" )]
 
+    [IntegerField("Timeout", "The amount of time in xxx to allow the query to run before timing out.", false, 30, Category = "CustomSetting")]
+
     [TextField( "Merge Fields", "Any fields to make available as merge fields for any new communications", false, "", "CustomSetting" )]
     [CodeEditorField( "Page Title Lava", "Optional Lava for setting the page title. If nothing is provided then the page's title will be used.",
         CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, "", "CustomSetting" )]
@@ -149,6 +151,7 @@ namespace RockWeb.Blocks.Reporting
             }
 
             SetAttributeValue( "Query", ceQuery.Text );
+            SetAttributeValue( "Timeout", nbTimeout.Text );
             SetAttributeValue( "StoredProcedure", cbStoredProcedure.Checked.ToString() );
             SetAttributeValue( "QueryParams", tbParams.Text );
             SetAttributeValue( "UrlMask", tbUrlMask.Text );
@@ -252,7 +255,9 @@ namespace RockWeb.Blocks.Reporting
                     query = query.ResolveMergeFields( mergeFields );
 
                     var parameters = GetParameters();
-                    return DbService.GetDataSet( query, GetAttributeValue( "StoredProcedure" ).AsBoolean( false ) ? CommandType.StoredProcedure : CommandType.Text, parameters );
+                    int timeout = GetAttributeValue( "Timeout" ).AsInteger();
+                    
+                    return DbService.GetDataSet( query, GetAttributeValue( "StoredProcedure" ).AsBoolean( false ) ? CommandType.StoredProcedure : CommandType.Text, parameters, timeout );
                 }
                 catch ( System.Exception ex )
                 {
@@ -280,6 +285,7 @@ namespace RockWeb.Blocks.Reporting
             tbDesc.Visible = _updatePage;
 
             ceQuery.Text = GetAttributeValue( "Query" );
+            nbTimeout.Text = GetAttributeValue( "Timeout" );
             cbStoredProcedure.Checked = GetAttributeValue( "StoredProcedure" ).AsBoolean();
             tbParams.Text = GetAttributeValue( "QueryParams" );
             tbUrlMask.Text = GetAttributeValue( "UrlMask" );
@@ -316,6 +322,26 @@ namespace RockWeb.Blocks.Reporting
             mergeFields.Add( "Campuses", CampusCache.All() );
             mergeFields.Add( "PageParameter", PageParameters() );
             mergeFields.Add( "CurrentPage", this.PageCache );
+
+            var contextObjects = new Dictionary<string, object>();
+            foreach ( var contextEntityType in RockPage.GetContextEntityTypes() )
+            {
+                var contextEntity = RockPage.GetCurrentContext(contextEntityType);
+                if ( contextEntity != null && contextEntity is DotLiquid.ILiquidizable )
+                {
+                    var type = Type.GetType( contextEntityType.AssemblyName ?? contextEntityType.Name );
+                    if ( type != null )
+                    {
+                        contextObjects.Add( type.Name, contextEntity );
+                    }
+                }
+
+            }
+
+            if (contextObjects.Any())
+            {
+                mergeFields.Add("Context", contextObjects);
+            }
 
             return mergeFields;
         }

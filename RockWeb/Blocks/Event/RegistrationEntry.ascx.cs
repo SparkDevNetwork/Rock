@@ -358,7 +358,7 @@ namespace RockWeb.Blocks.Event
                     if ( RegistrationTemplate != null )
                     {
                         bool instanceFull = false;
-                        if ( RegistrationInstanceState.MaxAttendees > 0 )
+                        if ( !RegistrationState.RegistrationId.HasValue && RegistrationInstanceState.MaxAttendees > 0 )
                         {
                             int registrants = RegistrationInstanceState.Registrations.Sum( r => r.Registrants.Count() );
                             instanceFull = registrants >= RegistrationInstanceState.MaxAttendees;
@@ -957,14 +957,19 @@ namespace RockWeb.Blocks.Event
                     .Where( r => r.Id == registrationId.Value )
                     .FirstOrDefault();
 
-                if ( registration != null  && CurrentPersonAliasId.HasValue )
+                if ( registration != null  && CurrentPersonId.HasValue )
                 {
-                    if ( ( registration.PersonAliasId.HasValue && registration.PersonAliasId.Value == CurrentPersonAliasId.Value ) ||
-                        ( registration.CreatedByPersonAliasId.HasValue && registration.CreatedByPersonAliasId.Value == CurrentPersonAliasId.Value ) )
+                    if ( ( registration.PersonAlias != null && registration.PersonAlias.PersonId == CurrentPersonId.Value ) ||
+                        ( registration.CreatedByPersonAlias != null && registration.CreatedByPersonAlias.PersonId == CurrentPersonId.Value ) )
                     {
                         RegistrationInstanceState = registration.RegistrationInstance;
                         RegistrationState = new RegistrationInfo( registration, rockContext );
                         RegistrationState.PreviousPaymentTotal = registrationService.GetTotalPayments( registration.Id );
+                    }
+                    else
+                    {
+                        ShowError( "Sorry", "You are not allowed to view or edit the selected registration since you are not the one who created the registration." );
+                        return false;
                     }
 
                     // set the max number of steps in the progress bar
@@ -1122,11 +1127,17 @@ namespace RockWeb.Blocks.Event
         {
             if ( RegistrationState != null )
             {
+                decimal cost = RegistrationTemplate.Cost;
+                if ( ( RegistrationTemplate.SetCostOnInstance ?? false ) && RegistrationInstanceState != null )
+                {
+                    cost = RegistrationInstanceState.Cost ?? 0.0m;
+                }
+
                 // If this is the first registrant being added, default it to the current person
                 if ( RegistrationState.RegistrantCount == 0 && registrantCount == 1 && CurrentPerson != null )
                 {
                     var registrant = new RegistrantInfo( RegistrationInstanceState, CurrentPerson );
-                    registrant.Cost = RegistrationTemplate.Cost;
+                    registrant.Cost = cost;
                     registrant.FamilyGuid = RegistrationState.FamilyGuid;
                     RegistrationState.Registrants.Add( registrant );
                 }
@@ -1134,7 +1145,7 @@ namespace RockWeb.Blocks.Event
                 // While the number of registrants belonging to registration is less than the selected count, addd another registrant
                 while ( RegistrationState.RegistrantCount < registrantCount )
                 {
-                    var registrant = new RegistrantInfo { Cost = RegistrationTemplate.Cost };
+                    var registrant = new RegistrantInfo { Cost = cost };
                     if ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.No )
                     {
                         registrant.FamilyGuid = Guid.NewGuid();
@@ -1269,9 +1280,11 @@ namespace RockWeb.Blocks.Event
                                 }
                             }
 
-                            // If there is a valid registration, and nothing went wrong processing the payment, send the notifications
+                            // If there is a valid registration, and nothing went wrong processing the payment, add registrants to group and send the notifications
                             if ( registration != null )
                             {
+                                AddRegistrantsToGroup( rockContext, registration );
+
                                 string appRoot = ResolveRockUrl( "~/" );
                                 string themeRoot = ResolveRockUrl( "~~/" );
 
@@ -1338,9 +1351,9 @@ namespace RockWeb.Blocks.Event
         /// <returns></returns>
         private Registration SaveRegistration( RockContext rockContext, bool hasPayment )
         {
-
             var registrationService = new RegistrationService( rockContext );
             var registrantService = new RegistrationRegistrantService( rockContext );
+            var registrantFeeService = new RegistrationRegistrantFeeService( rockContext );
             var personService = new PersonService( rockContext );
             var groupMemberService = new GroupMemberService( rockContext );
             var groupService = new GroupService( rockContext );
@@ -1516,7 +1529,7 @@ namespace RockWeb.Blocks.Event
                     typeof( Registration ),
                     Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
                     registration.Id,
-                    registrationChanges )
+                    registrationChanges, true, CurrentPersonAliasId )
             );
 
 
@@ -1631,7 +1644,7 @@ namespace RockWeb.Blocks.Event
                     // Find the registrant's value
                     var fieldValue = registrantInfo.FieldValues
                         .Where( f => f.Key == field.Id )
-                        .Select( f => f.Value )
+                        .Select( f => f.Value.FieldValue )
                         .FirstOrDefault();
 
 
@@ -1650,7 +1663,7 @@ namespace RockWeb.Blocks.Event
 
                             case RegistrationPersonFieldType.Address:
                                 {
-                                    location = fieldValue.ToString().FromJsonOrNull<Location>();
+                                    location = fieldValue as Location;
                                     break;
                                 }
 
@@ -1729,7 +1742,7 @@ namespace RockWeb.Blocks.Event
                     // Find the registrant's value
                     var fieldValue = registrantInfo.FieldValues
                         .Where( f => f.Key == field.Id )
-                        .Select( f => f.Value )
+                        .Select( f => f.Value.FieldValue )
                         .FirstOrDefault();
 
                     if ( fieldValue != null )
@@ -1767,118 +1780,77 @@ namespace RockWeb.Blocks.Event
 
                 personChanges.ForEach( c => registrantChanges.Add( c ) );
 
-                GroupMember groupMember = null;
-
-                // If the registration instance linkage specified a group to add registrant to, add them if there not already
-                // part of that group
-                if ( group != null )
-                {
-                    groupMember = group.Members.Where( m => m.PersonId == person.Id ).FirstOrDefault();
-                    if ( groupMember == null && group.GroupType.DefaultGroupRoleId.HasValue )
-                    {
-                        groupMember = new GroupMember();
-                        groupMemberService.Add( groupMember );
-                        groupMember.GroupId = group.Id;
-                        groupMember.PersonId = person.Id;
-
-                        if ( RegistrationTemplate.GroupTypeId.HasValue &&
-                            RegistrationTemplate.GroupTypeId == group.GroupTypeId &&
-                            RegistrationTemplate.GroupMemberRoleId.HasValue )
-                        {
-                            groupMember.GroupRoleId = RegistrationTemplate.GroupMemberRoleId.Value;
-                            groupMember.GroupMemberStatus = RegistrationTemplate.GroupMemberStatus;
-                        }
-                        else
-                        {
-                            groupMember.GroupRoleId = group.GroupType.DefaultGroupRoleId.Value;
-                            groupMember.GroupMemberStatus = GroupMemberStatus.Active;
-                        }
-
-                        registrantChanges.Add( "Added to Group: " + group.Name );
-                    }
-
-                    rockContext.SaveChanges();
-
-                    // Set any of the template's group member attributes 
-                    groupMember.LoadAttributes();
-
-                    foreach ( var field in RegistrationTemplate.Forms
-                        .SelectMany( f => f.Fields
-                            .Where( t =>
-                                t.FieldSource == RegistrationFieldSource.GroupMemberAttribute &&
-                                t.AttributeId.HasValue ) ) )
-                    {
-                        // Find the registrant's value
-                        var fieldValue = registrantInfo.FieldValues
-                            .Where( f => f.Key == field.Id )
-                            .Select( f => f.Value )
-                            .FirstOrDefault();
-
-                        if ( fieldValue != null )
-                        {
-                            var attribute = AttributeCache.Read( field.AttributeId.Value );
-                            if ( attribute != null )
-                            {
-                                string originalValue = groupMember.GetAttributeValue( attribute.Key );
-                                string newValue = fieldValue.ToString();
-                                groupMember.SetAttributeValue( attribute.Key, fieldValue.ToString() );
-
-                                if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
-                                {
-                                    string formattedOriginalValue = string.Empty;
-                                    if ( !string.IsNullOrWhiteSpace( originalValue ) )
-                                    {
-                                        formattedOriginalValue = attribute.FieldType.Field.FormatValue( null, originalValue, attribute.QualifierValues, false );
-                                    }
-
-                                    string formattedNewValue = string.Empty;
-                                    if ( !string.IsNullOrWhiteSpace( newValue ) )
-                                    {
-                                        formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
-                                    }
-
-                                    Helper.SaveAttributeValue( groupMember, attribute, newValue, rockContext );
-                                    History.EvaluateChange( registrantChanges, attribute.Name, formattedOriginalValue, formattedNewValue );
-                                }
-                            }
-                        }
-                    }
-                }
-
                 if ( registrant == null )
                 {
                     registrant = new RegistrationRegistrant();
+                    registrant.Guid = registrantInfo.Guid;
                     registrantService.Add( registrant );
                     registrant.RegistrationId = registration.Id;
                 }
 
                 registrant.PersonAliasId = person.PrimaryAliasId;
                 registrant.Cost = registrantInfo.Cost;
-                registrant.GroupMemberId = groupMember != null ? groupMember.Id : (int?)null;
+
+                // Remove fees
+                // Remove/delete any registrant fees that are no longer in UI with quantity 
+                foreach ( var dbFee in registrant.Fees.ToList() )
+                {
+                    if ( !registrantInfo.FeeValues.Keys.Contains( dbFee.RegistrationTemplateFeeId ) ||
+                        registrantInfo.FeeValues[dbFee.RegistrationTemplateFeeId] == null ||
+                        !registrantInfo.FeeValues[dbFee.RegistrationTemplateFeeId]
+                            .Any( f =>
+                                f.Option == dbFee.Option &&
+                                f.Quantity > 0 ) )
+                    {
+                        registrantChanges.Add( string.Format( "Removed '{0}' Fee (Quantity:{1:N0}, Cost:{2:C2}, Option:{3}",
+                            dbFee.RegistrationTemplateFee.Name, dbFee.Quantity, dbFee.Cost, dbFee.Option ) );
+
+                        registrant.Fees.Remove( dbFee );
+                        registrantFeeService.Delete( dbFee );
+                    }
+                }
 
                 // Add or Update fees
-                foreach ( var feeValue in registrantInfo.FeeValues.Where( f => f.Value != null ) )
+                foreach ( var uiFee in registrantInfo.FeeValues.Where( f => f.Value != null ) )
                 {
-                    foreach ( var uiFee in feeValue.Value )
+                    foreach ( var uiFeeOption in uiFee.Value )
                     {
-                        var templateFee = RegistrationTemplate.Fees.Where( f => f.Id == feeValue.Key ).FirstOrDefault();
-                        string feeName = templateFee != null ? templateFee.Name : "Fee";
-                        if ( !string.IsNullOrWhiteSpace( uiFee.Option ) )
+                        var dbFee = registrant.Fees
+                            .Where( f =>
+                                f.RegistrationTemplateFeeId == uiFee.Key &&
+                                f.Option == uiFeeOption.Option )
+                            .FirstOrDefault();
+
+                        if ( dbFee == null )
                         {
-                            feeName = string.Format( "{0} ({1})", feeName, uiFee.Option );
+                            dbFee = new RegistrationRegistrantFee();
+                            dbFee.RegistrationTemplateFeeId = uiFee.Key;
+                            dbFee.Option = uiFeeOption.Option;
+                            registrant.Fees.Add( dbFee );
                         }
-                        registrantChanges.Add( feeName + " Fee Added" );
 
-                        var fee = new RegistrationRegistrantFee();
-                        registrant.Fees.Add( fee );
-                        fee.RegistrationTemplateFeeId = feeValue.Key;
-                        fee.Option = uiFee.Option;
+                        var templateFee = dbFee.RegistrationTemplateFee;
+                        if ( templateFee == null )
+                        {
+                            templateFee = RegistrationTemplate.Fees.Where( f => f.Id == uiFee.Key ).FirstOrDefault();
+                        }
 
-                        History.EvaluateChange( registrantChanges, feeName + " Quantity", 0.0M, uiFee.Quantity );
-                        fee.Quantity = uiFee.Quantity;
+                        string feeName = templateFee != null ? templateFee.Name : "Fee";
+                        if ( !string.IsNullOrWhiteSpace( uiFeeOption.Option ) )
+                        {
+                            feeName = string.Format( "{0} ({1})", feeName, uiFeeOption.Option );
+                        }
 
-                        History.EvaluateChange( registrantChanges, feeName + " Cost", 0.0M, uiFee.Cost );
-                        fee.Cost = uiFee.Cost;
+                        if ( dbFee.Id <= 0 )
+                        {
+                            registrantChanges.Add( feeName + " Fee Added" );
+                        }
+
+                        History.EvaluateChange( registrantChanges, feeName + " Quantity", dbFee.Quantity, uiFeeOption.Quantity );
+                        dbFee.Quantity = uiFeeOption.Quantity;
+
+                        History.EvaluateChange( registrantChanges, feeName + " Cost", dbFee.Cost, uiFeeOption.Cost );
+                        dbFee.Cost = uiFeeOption.Cost;
                     }
                 }
 
@@ -1895,7 +1867,7 @@ namespace RockWeb.Blocks.Event
                     // Find the registrant's value
                     var fieldValue = registrantInfo.FieldValues
                         .Where( f => f.Key == field.Id )
-                        .Select( f => f.Value )
+                        .Select( f => f.Value.FieldValue )
                         .FirstOrDefault();
 
                     if ( fieldValue != null )
@@ -1960,7 +1932,7 @@ namespace RockWeb.Blocks.Event
                         registration.Id,
                         registrantChanges,
                         "Registrant: " + person.FullName,
-                        null, null )
+                        null, null, true, CurrentPersonAliasId )
                 );
 
                 // Clear this registran't family guid so it's not updated again
@@ -2025,6 +1997,8 @@ namespace RockWeb.Blocks.Event
         private Person SavePerson( RockContext rockContext, Person person, Guid familyGuid, int? campusId, Location location, int adultRoleId, int childRoleId,
             Dictionary<Guid, int> multipleFamilyGroupIds, ref int? singleFamilyId )
         {
+            int? familyId = null;
+
             if ( person.Id > 0 )
             {
                 rockContext.SaveChanges();
@@ -2033,6 +2007,7 @@ namespace RockWeb.Blocks.Event
                 var family = person.GetFamilies( rockContext ).FirstOrDefault();
                 if ( family != null )
                 {
+                    familyId = family.Id;
                     multipleFamilyGroupIds.AddOrIgnore( familyGuid, family.Id );
                     if ( !singleFamilyId.HasValue )
                     {
@@ -2053,32 +2028,11 @@ namespace RockWeb.Blocks.Event
                     var age = person.Age;
                     int familyRoleId = age.HasValue && age < 18 ? childRoleId : adultRoleId;
 
-                    int familyId = RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask ?
+                    familyId = RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask ?
                         multipleFamilyGroupIds[familyGuid] :
                         singleFamilyId.Value;
                     PersonService.AddPersonToFamily( person, true, multipleFamilyGroupIds[familyGuid], familyRoleId, rockContext );
 
-                    if ( location != null )
-                    {
-                        var homeLocationType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
-                        if ( homeLocationType != null )
-                        {
-                            var familyGroup = new GroupService( rockContext ).Get( familyId );
-
-                            // Do not update existing location on an existing family ( only update when creating new family or location doesn't already exist )
-                            if ( familyGroup != null && !familyGroup.GroupLocations
-                                .Any( l =>
-                                    l.GroupLocationTypeValueId.HasValue &&
-                                    l.GroupLocationTypeValueId.Value == homeLocationType.Id ) )
-                            {
-                                GroupService.AddNewFamilyAddress(
-                                    rockContext,
-                                    familyGroup,
-                                    Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
-                                    location.Street1, location.Street2, location.City, location.State, location.PostalCode, location.Country );
-                            }
-                        }
-                    }
                 }
 
                 // otherwise create a new family
@@ -2088,14 +2042,7 @@ namespace RockWeb.Blocks.Event
                     var familyGroup = PersonService.SaveNewPerson( person, rockContext, campusId, false );
                     if ( familyGroup != null )
                     {
-                        if ( location != null )
-                        {
-                            GroupService.AddNewFamilyAddress(
-                                rockContext,
-                                familyGroup,
-                                Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
-                                location.Street1, location.Street2, location.City, location.State, location.PostalCode, location.Country );
-                        }
+                        familyId = familyGroup.Id;
 
                         // Store the family id for next person 
                         multipleFamilyGroupIds.AddOrIgnore( familyGuid, familyGroup.Id );
@@ -2103,6 +2050,24 @@ namespace RockWeb.Blocks.Event
                         {
                             singleFamilyId = familyGroup.Id;
                         }
+                    }
+                }
+            }
+
+
+            if ( familyId.HasValue && location != null )
+            {
+                var homeLocationType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
+                if ( homeLocationType != null )
+                {
+                    var familyGroup = new GroupService( rockContext ).Get( familyId.Value );
+                    if ( familyGroup != null )
+                    {
+                        GroupService.AddNewGroupAddress(
+                            rockContext,
+                            familyGroup,
+                            Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
+                            location.Street1, location.Street2, location.City, location.State, location.PostalCode, location.Country, true );
                     }
                 }
             }
@@ -2119,32 +2084,143 @@ namespace RockWeb.Blocks.Event
         /// <param name="changes">The changes.</param>
         private void SavePhone( object fieldValue, Person person, Guid phoneTypeGuid, List<string> changes )
         {
-            var phoneNumber = fieldValue.ToString().FromJsonOrNull<PhoneNumber>();
+            var phoneNumber = fieldValue as PhoneNumber;
             if ( phoneNumber != null )
             {
-                var numberType = DefinedValueCache.Read( phoneTypeGuid );
-                if ( numberType != null )
+                string cleanNumber = PhoneNumber.CleanNumber( phoneNumber.Number );
+                if ( !string.IsNullOrWhiteSpace( cleanNumber ) )
                 {
-                    var phone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberType.Id );
-                    string oldPhoneNumber = string.Empty;
-                    if ( phone == null )
+                    var numberType = DefinedValueCache.Read( phoneTypeGuid );
+                    if ( numberType != null )
                     {
-                        phone = new PhoneNumber();
-                        person.PhoneNumbers.Add( phone );
-                        phone.NumberTypeValueId = numberType.Id;
-                    }
-                    else
-                    {
-                        oldPhoneNumber = phone.NumberFormattedWithCountryCode;
-                    }
-                    phone.CountryCode = PhoneNumber.CleanNumber( phoneNumber.CountryCode );
-                    phone.Number = PhoneNumber.CleanNumber( phoneNumber.Number );
+                        var phone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberType.Id );
+                        string oldPhoneNumber = string.Empty;
+                        if ( phone == null )
+                        {
+                            phone = new PhoneNumber();
+                            person.PhoneNumbers.Add( phone );
+                            phone.NumberTypeValueId = numberType.Id;
+                        }
+                        else
+                        {
+                            oldPhoneNumber = phone.NumberFormattedWithCountryCode;
+                        }
+                        phone.CountryCode = PhoneNumber.CleanNumber( phoneNumber.CountryCode );
+                        phone.Number = cleanNumber;
 
-                    History.EvaluateChange(
-                        changes,
-                        string.Format( "{0} Phone", numberType.Value ),
-                        oldPhoneNumber,
-                        phoneNumber.NumberFormattedWithCountryCode );
+                        History.EvaluateChange(
+                            changes,
+                            string.Format( "{0} Phone", numberType.Value ),
+                            oldPhoneNumber,
+                            phoneNumber.NumberFormattedWithCountryCode );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds the registrants to group.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="registration">The registration.</param>
+        private void AddRegistrantsToGroup( RockContext rockContext, Registration registration )
+        {
+            // If the registration instance linkage specified a group to add registrant to, add them if they're not already
+            // part of that group
+            if ( registration.GroupId.HasValue )
+            {
+                var groupService = new GroupService( rockContext );
+                var personAliasService = new PersonAliasService( rockContext );
+                var groupMemberService = new GroupMemberService( rockContext );
+
+                var group = groupService.Get( registration.GroupId.Value );
+                if ( group != null )
+                {
+                    foreach ( var registrant in registration.Registrants.Where( r => r.PersonAliasId.HasValue ).ToList() )
+                    {
+                        var personAlias = personAliasService.Get( registrant.PersonAliasId.Value );
+                        GroupMember groupMember = group.Members.Where( m => m.PersonId == personAlias.PersonId ).FirstOrDefault();
+                        if ( groupMember == null )
+                        {
+                            groupMember = new GroupMember();
+                            groupMemberService.Add( groupMember );
+                            groupMember.GroupId = group.Id;
+                            groupMember.PersonId = personAlias.PersonId;
+
+                            if ( RegistrationTemplate.GroupTypeId.HasValue &&
+                                RegistrationTemplate.GroupTypeId == group.GroupTypeId &&
+                                RegistrationTemplate.GroupMemberRoleId.HasValue )
+                            {
+                                groupMember.GroupRoleId = RegistrationTemplate.GroupMemberRoleId.Value;
+                                groupMember.GroupMemberStatus = RegistrationTemplate.GroupMemberStatus;
+                            }
+                            else
+                            {
+                                if ( group.GroupType.DefaultGroupRoleId.HasValue )
+                                {
+                                    groupMember.GroupRoleId = group.GroupType.DefaultGroupRoleId.Value;
+                                }
+                                else
+                                {
+                                    groupMember.GroupRoleId = group.GroupType.Roles.Select( r => r.Id ).FirstOrDefault();
+                                }
+                                groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+                            }
+                        }
+
+                        rockContext.SaveChanges();
+
+                        registrant.GroupMemberId = groupMember != null ? groupMember.Id : (int?)null;
+                        rockContext.SaveChanges();
+
+                        // Set any of the template's group member attributes 
+                        groupMember.LoadAttributes();
+
+                        var registrantInfo = RegistrationState.Registrants.FirstOrDefault( r => r.Guid == registrant.Guid );
+                        if ( registrantInfo != null )
+                        {
+                            foreach ( var field in RegistrationTemplate.Forms
+                                .SelectMany( f => f.Fields
+                                    .Where( t =>
+                                        t.FieldSource == RegistrationFieldSource.GroupMemberAttribute &&
+                                        t.AttributeId.HasValue ) ) )
+                            {
+                                // Find the registrant's value
+                                var fieldValue = registrantInfo.FieldValues
+                                    .Where( f => f.Key == field.Id )
+                                    .Select( f => f.Value.FieldValue )
+                                    .FirstOrDefault();
+
+                                if ( fieldValue != null )
+                                {
+                                    var attribute = AttributeCache.Read( field.AttributeId.Value );
+                                    if ( attribute != null )
+                                    {
+                                        string originalValue = groupMember.GetAttributeValue( attribute.Key );
+                                        string newValue = fieldValue.ToString();
+                                        groupMember.SetAttributeValue( attribute.Key, fieldValue.ToString() );
+
+                                        if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
+                                        {
+                                            string formattedOriginalValue = string.Empty;
+                                            if ( !string.IsNullOrWhiteSpace( originalValue ) )
+                                            {
+                                                formattedOriginalValue = attribute.FieldType.Field.FormatValue( null, originalValue, attribute.QualifierValues, false );
+                                            }
+
+                                            string formattedNewValue = string.Empty;
+                                            if ( !string.IsNullOrWhiteSpace( newValue ) )
+                                            {
+                                                formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
+                                            }
+
+                                            Helper.SaveAttributeValue( groupMember, attribute, newValue, rockContext );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -2246,55 +2322,72 @@ namespace RockWeb.Blocks.Event
 
                 History.EvaluateChange( txnChanges, RegistrationInstanceState.Account.Name, 0.0M.FormatAsCurrency(), transactionDetail.Amount.FormatAsCurrency() );
 
-                var batchService = new FinancialBatchService( rockContext );
-
-                // Get the batch
-                var batch = batchService.Get(
-                    GetAttributeValue( "BatchNamePrefix" ),
-                    paymentInfo.CurrencyTypeValue,
-                    paymentInfo.CreditCardTypeValue,
-                    transaction.TransactionDateTime.Value,
-                    RegistrationTemplate.FinancialGateway.GetBatchTimeOffset() );
-
                 var batchChanges = new List<string>();
 
-                if ( batch.Id == 0 )
+                rockContext.WrapTransaction( () =>
                 {
-                    batchChanges.Add( "Generated the batch" );
-                    History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
-                    History.EvaluateChange( batchChanges, "Status", null, batch.Status );
-                    History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
-                    History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
+                    var batchService = new FinancialBatchService( rockContext );
+
+                    // Get the batch
+                    var batch = batchService.Get(
+                        GetAttributeValue( "BatchNamePrefix" ),
+                        paymentInfo.CurrencyTypeValue,
+                        paymentInfo.CreditCardTypeValue,
+                        transaction.TransactionDateTime.Value,
+                        RegistrationTemplate.FinancialGateway.GetBatchTimeOffset() );
+
+                    if ( batch.Id == 0 )
+                    {
+                        batchChanges.Add( "Generated the batch" );
+                        History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
+                        History.EvaluateChange( batchChanges, "Status", null, batch.Status );
+                        History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
+                        History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
+                    }
+
+                    decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
+                    History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
+                    batch.ControlAmount = newControlAmount;
+
+                    transaction.BatchId = batch.Id;
+                    batch.Transactions.Add( transaction );
+
+                    rockContext.SaveChanges();
+                } );
+
+                if ( transaction.BatchId.HasValue )
+                {
+                    Task.Run( () =>
+                        HistoryService.SaveChanges(
+                            new RockContext(),
+                            typeof( FinancialBatch ),
+                            Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                            transaction.BatchId.Value,
+                            batchChanges, true, CurrentPersonAliasId )
+                    );
+
+                    Task.Run( () =>
+                        HistoryService.SaveChanges(
+                            new RockContext(),
+                            typeof( FinancialBatch ),
+                            Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
+                            transaction.BatchId.Value,
+                            txnChanges,
+                            CurrentPerson != null ? CurrentPerson.FullName : string.Empty,
+                            typeof( FinancialTransaction ),
+                            transaction.Id, true, CurrentPersonAliasId )
+                    );
                 }
 
-                decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
-                History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
-                batch.ControlAmount = newControlAmount;
-
-                transaction.BatchId = batch.Id;
-                batch.Transactions.Add( transaction );
-
-                rockContext.SaveChanges();
-
-                Task.Run( () => 
+                List<string> registrationChanges = new List<string>();
+                registrationChanges.Add( string.Format( "Made {0} payment", transaction.TotalAmount.FormatAsCurrency() ) );
+                Task.Run( () =>
                     HistoryService.SaveChanges(
                         new RockContext(),
-                        typeof( FinancialBatch ),
-                        Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
-                        batch.Id,
-                        batchChanges )
-                );
-
-                Task.Run( () => 
-                    HistoryService.SaveChanges(
-                        new RockContext(),
-                        typeof( FinancialBatch ),
-                        Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
-                        batch.Id,
-                        txnChanges,
-                        CurrentPerson != null ? CurrentPerson.FullName : string.Empty,
-                        typeof( FinancialTransaction ),
-                        transaction.Id )
+                        typeof( Registration ),
+                        Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
+                        registration.Id,
+                        registrationChanges, true, CurrentPersonAliasId )
                 );
 
                 TransactionCode = transaction.TransactionCode;
@@ -2719,12 +2812,12 @@ namespace RockWeb.Blocks.Event
                     object value = null;
                     if ( registrant != null && registrant.FieldValues.ContainsKey( field.Id ) )
                     {
-                        value = registrant.FieldValues[field.Id];
+                        value = registrant.FieldValues[field.Id].FieldValue;
                     }
 
                     if ( value == null && field.IsSharedValue && previousRegistrant != null && previousRegistrant.FieldValues.ContainsKey( field.Id ) )
                     {
-                        value = previousRegistrant.FieldValues[field.Id];
+                        value = previousRegistrant.FieldValues[field.Id].FieldValue;
                     } 
                     
                     if ( !string.IsNullOrWhiteSpace( field.PreText ) )
@@ -2844,7 +2937,7 @@ namespace RockWeb.Blocks.Event
 
                         if ( setValue && fieldValue != null )
                         {
-                            var value = fieldValue.ToString().FromJsonOrNull<Location>();
+                            var value = fieldValue as Location;
                             acAddress.SetValues( value );
                         }
 
@@ -2999,7 +3092,7 @@ namespace RockWeb.Blocks.Event
 
                             if ( setValue && fieldValue != null )
                             {
-                                var value = fieldValue.ToString().FromJsonOrNull<PhoneNumber>();
+                                var value = fieldValue as PhoneNumber;
                                 if ( value != null )
                                 {
                                     ppWork.CountryCode = value.CountryCode;
@@ -3190,7 +3283,7 @@ namespace RockWeb.Blocks.Event
 
                     if ( value != null )
                     {
-                        registrant.FieldValues.AddOrReplace( field.Id, value );
+                        registrant.FieldValues.AddOrReplace( field.Id, new FieldValueObject( field, value ) );
                     }
                     else
                     {
@@ -3253,7 +3346,7 @@ namespace RockWeb.Blocks.Event
                         if ( acAddress != null )
                         {
                             acAddress.GetValues( location );
-                            return string.IsNullOrWhiteSpace( location.ToString() ) ? null : location.ToJson();
+                            return location;
                         }
                         break;
                     }
@@ -3291,7 +3384,7 @@ namespace RockWeb.Blocks.Event
                         {
                             phoneNumber.CountryCode = PhoneNumber.CleanNumber( ppMobile.CountryCode );
                             phoneNumber.Number = PhoneNumber.CleanNumber( ppMobile.Number );
-                            return string.IsNullOrWhiteSpace( phoneNumber.Number ) ? null : phoneNumber.ToJson();
+                            return phoneNumber;
                         }
                         break;
                     }
@@ -3304,7 +3397,7 @@ namespace RockWeb.Blocks.Event
                         {
                             phoneNumber.CountryCode = PhoneNumber.CleanNumber( ppHome.CountryCode );
                             phoneNumber.Number = PhoneNumber.CleanNumber( ppHome.Number );
-                            return string.IsNullOrWhiteSpace( phoneNumber.Number ) ? null : phoneNumber.ToJson();
+                            return phoneNumber;
                         }
                         break;
                     }
@@ -3317,7 +3410,7 @@ namespace RockWeb.Blocks.Event
                         {
                             phoneNumber.CountryCode = PhoneNumber.CleanNumber( ppWork.CountryCode );
                             phoneNumber.Number = PhoneNumber.CleanNumber( ppWork.Number );
-                            return string.IsNullOrWhiteSpace( phoneNumber.Number ) ? null : phoneNumber.ToJson();
+                            return phoneNumber;
                         }
                         break;
                     }
@@ -3443,7 +3536,7 @@ namespace RockWeb.Blocks.Event
         {
             lDiscountCodeLabel.Text = DiscountCodeTerm;
 
-            if ( setValues && RegistrationState != null )
+            if ( setValues && RegistrationState != null && RegistrationInstanceState != null )
             {
                 // Check to see if this is an existing registration or information has already been entered
                 if ( RegistrationState.RegistrationId.HasValue ||
@@ -3529,6 +3622,12 @@ namespace RockWeb.Blocks.Event
                     divDiscountCode.Visible = false;
                 }
 
+                decimal? minimumInitialPayment = RegistrationTemplate.MinimumInitialPayment;
+                if ( RegistrationTemplate.SetCostOnInstance ?? false )
+                {
+                    minimumInitialPayment = RegistrationInstanceState.MinimumInitialPayment;
+                }
+
                 // Get the cost/fee summary
                 var costs = new List<RegistrationCostSummaryInfo>();
                 foreach( var registrant in RegistrationState.Registrants )
@@ -3551,8 +3650,7 @@ namespace RockWeb.Blocks.Event
                         }
 
                         // If registration allows a minimum payment calculate that amount, otherwise use the discounted amount as minimum
-                        costSummary.MinPayment = RegistrationTemplate.MinimumInitialPayment.HasValue ? 
-                            RegistrationTemplate.MinimumInitialPayment.Value : costSummary.DiscountedCost;
+                        costSummary.MinPayment = minimumInitialPayment.HasValue ? minimumInitialPayment.Value : costSummary.DiscountedCost;
 
                         costs.Add( costSummary );
                     }
@@ -3586,7 +3684,7 @@ namespace RockWeb.Blocks.Event
                                 }
 
                                 // If template allows a minimum payment, then fees are not included, otherwise it is included
-                                costSummary.MinPayment = RegistrationTemplate.MinimumInitialPayment.HasValue ? 0 : costSummary.DiscountedCost;
+                                costSummary.MinPayment = minimumInitialPayment.HasValue ? 0 : costSummary.DiscountedCost;
 
                                 costs.Add( costSummary );
                             }

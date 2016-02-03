@@ -400,5 +400,11 @@ namespace RockWeb.Blocks.Examples
             string physicalFileName = this.Request.MapPath( fuprExampleContentFile.UploadedContentFilePath );
             lblPhysicalFileName.Text = "Uploaded File: " + physicalFileName;
         }
+        
+        protected void lbTestSlider_Click( object sender, EventArgs e )
+        {
+            var val1 = rsSlider.SelectedValue;
+            var val2 = rsSlider2.SelectedValue;
+        }
 }
 }

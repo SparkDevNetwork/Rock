@@ -79,6 +79,7 @@
                         <Rock:RockCheckBox ID="cbRequiresEncryption" runat="server" Text="Force SSL"/>
                         <Rock:RockCheckBox ID="cbEnableViewState" runat="server" Text="Enable ViewState"/>
                         <Rock:RockCheckBox ID="cbIncludeAdminFooter" runat="server" Text="Allow Configuration"/>
+                        <Rock:RockCheckBox ID="cbAllowIndexing" runat="server" Text="Allow Indexing"/>
                         <Rock:DataTextBox ID="tbCacheDuration" runat="server" Label="Cache Duration" SourceTypeName="Rock.Model.Page, Rock" PropertyName="OutputCacheDuration"/>
                     </div>
                     <div class="col-md-6">

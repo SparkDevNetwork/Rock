@@ -29,6 +29,7 @@ namespace Rock.Client.SystemGuid
     /// </summary>
     public class Attribute
     {
+        public const string GLOBAL_EMAIL_LINK_PREFERENCE = "F1BECEF9-1047-E89F-4CC8-8F856750E5D0";
         public const string PERSON_ALLERGY = "DBD192C9-0AA1-46EC-92AB-A3DA8E056D31";
         public const string PERSON_FACEBOOK = "2B8A03D3-B7DC-4DA3-A31E-826D655435D5";
         public const string PERSON_INSTAGRAM = "8796567C-4047-43C1-AF32-2FDBE030BEAC";
@@ -112,6 +113,7 @@ namespace Rock.Client.SystemGuid
         public const string FINANCIAL_TRANSACTION_TYPE = "FFF62A4B-5D88-4DEB-AF8F-8E6178E41FE5";
         public const string GROUP_LOCATION_TYPE = "2E68D37C-FB7B-4AA5-9E09-3785D52156CB";
         public const string GROUPTYPE_PURPOSE = "B23F1E45-BC26-4E82-BEB3-9B191FE5CCC3";
+        public const string LINKLIST_DEFAULT_LIST = "7E7969BD-945C-4472-8A80-889EF5833776";
         public const string LOCATION_ADDRESS_STATE = "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB";
         public const string LOCATION_COUNTRIES = "D7979EA1-44E9-46E2-BF37-DDAF7F741378";
         public const string LOCATION_TYPE = "3285DCEF-FAA4-43B9-9338-983F4A384ABA";
@@ -128,6 +130,7 @@ namespace Rock.Client.SystemGuid
         public const string PERSON_REVIEW_REASON = "7680C445-AD69-4E5D-94F0-CBAA96DB0FF8";
         public const string PERSON_SUFFIX = "16f85b3c-b3e8-434c-9094-f3d41f87a740";
         public const string PERSON_TITLE = "4784cd23-518b-43ee-9b97-225bf6e07846";
+        public const string PROTECT_MY_MINISTRY_MVR_JURISDICTION_CODES = "2F8821E8-05B9-4CD5-9FA4-303662AAC85D";
         public const string PROTECT_MY_MINISTRY_PACKAGES = "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF";
         public const string REST_API_ALLOWED_DOMAINS = "DF7C8DF7-49F9-4858-9E5D-20842AF65AD8";
         public const string SCHOOL_GRADES = "24E5A79F-1E62-467A-AD5D-0D10A2328B4D";
@@ -586,8 +589,6 @@ namespace Rock.Client.SystemGuid
         public const string PHOTO_UPLOAD = "8559A9F1-C6A4-4945-B393-74F6706A8FA2";
         public const string PLEDGE_DETAIL = "EF7AA296-CA69-49BC-A28B-901A8AAA9466";
         public const string PLEDGE_LIST = "1570D2AF-4FE2-4FC7-BED9-F20EBCBE9867";
-        public const string PLUGIN_MANAGER = "B13FCF9A-FAE5-4E53-AF7C-32DF9CA5AAE3";
-        public const string PLUGIN_SETTINGS = "1AFDA740-8119-45B8-AF4D-58856D469BE5";
         public const string POWER_TOOLS = "7F1F4130-CB98-473B-9DE1-7A886D2283ED";
         public const string PRAYER_CATEGORIES = "FA2A1171-9308-41C7-948C-C9EBEA5BD668";
         public const string PRAYER_MANAGE = "1A3437C8-D4CB-4329-A366-8D6A4CBF79BF";

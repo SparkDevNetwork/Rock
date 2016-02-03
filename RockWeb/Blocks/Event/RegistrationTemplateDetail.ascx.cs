@@ -138,7 +138,7 @@ namespace RockWeb.Blocks.Event
     This {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase  }} has a remaining balance 
     of {{ currencySymbol }}{{ Registration.BalanceDue | Format:'#,##0.00' }}.
     You can complete the payment for this {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase }}
-    using our <a href='{{ externalSite }}/Registration?RegistrationId={{ Registration.Id }}'>
+    using our <a href='{{ externalSite }}/Registration?RegistrationId={{ Registration.Id }}&rckipid={{ Registration.PersonAlias.Person.UrlEncodedKey }}'>
     online registration page</a>.
 </p>
 {% endif %}
@@ -439,10 +439,13 @@ namespace RockWeb.Blocks.Event
         protected void btnEdit_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
-            var RegistrationTemplate = new RegistrationTemplateService( rockContext ).Get( hfRegistrationTemplateId.Value.AsInteger() );
+            var registrationTemplate = new RegistrationTemplateService( rockContext ).Get( hfRegistrationTemplateId.Value.AsInteger() );
 
-            LoadStateDetails( RegistrationTemplate, rockContext );
-            ShowEditDetails( RegistrationTemplate, rockContext );
+            if ( registrationTemplate != null && ( UserCanEdit || registrationTemplate.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) ) )
+            {
+                LoadStateDetails( registrationTemplate, rockContext );
+                ShowEditDetails( registrationTemplate, rockContext );
+            }
         }
 
         /// <summary>
@@ -459,7 +462,7 @@ namespace RockWeb.Blocks.Event
 
             if ( registrationTemplate != null )
             {
-                if ( !registrationTemplate.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                if ( !UserCanEdit && !registrationTemplate.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
                 {
                     mdDeleteWarning.Show( "You are not authorized to delete this registration template.", ModalAlertType.Information );
                     return;
@@ -530,6 +533,11 @@ namespace RockWeb.Blocks.Event
                             newFormField.Id = 0;
                             newFormField.Guid = Guid.NewGuid();
                             newFormFieldsState[newForm.Guid].Add( newFormField );
+
+                            if ( formField.FieldSource != RegistrationFieldSource.PersonField )
+                            {
+                                newFormField.Attribute = formField.Attribute;
+                            }
 
                             if ( formField.FieldSource == RegistrationFieldSource.RegistrationAttribute && formField.Attribute != null )
                             {
@@ -602,8 +610,10 @@ namespace RockWeb.Blocks.Event
                 RegistrationTemplate = service.Get( RegistrationTemplateId.Value );
             }
 
+            bool newTemplate = false;
             if ( RegistrationTemplate == null )
             {
+                newTemplate = true;
                 RegistrationTemplate = new RegistrationTemplate();
             }
 
@@ -629,6 +639,7 @@ namespace RockWeb.Blocks.Event
             RegistrationTemplate.AllowMultipleRegistrants = cbMultipleRegistrants.Checked;
             RegistrationTemplate.MaxRegistrants = nbMaxRegistrants.Text.AsInteger();
             RegistrationTemplate.RegistrantsSameFamily = rblRegistrantsInSameFamily.SelectedValueAsEnum<RegistrantsSameFamily>();
+            RegistrationTemplate.SetCostOnInstance = !tglSetCostOnTemplate.Checked;
             RegistrationTemplate.Cost = cbCost.Text.AsDecimal();
             RegistrationTemplate.MinimumInitialPayment = cbMinimumInitialPayment.Text.AsDecimalOrNull();
             RegistrationTemplate.FinancialGatewayId = fgpFinancialGateway.SelectedValueAsInt();
@@ -698,9 +709,9 @@ namespace RockWeb.Blocks.Event
 
             // Perform Validation
             var validationErrors = new List<string>();
-            if ( ( RegistrationTemplate.Cost > 0 || FeeState.Any() ) && !RegistrationTemplate.FinancialGatewayId.HasValue )
+            if ( ( ( RegistrationTemplate.SetCostOnInstance ?? false ) || RegistrationTemplate.Cost > 0 || FeeState.Any() ) && !RegistrationTemplate.FinancialGatewayId.HasValue )
             {
-                validationErrors.Add( "A Financial Gateway is required when the registration has a cost or additional fees." );
+                validationErrors.Add( "A Financial Gateway is required when the registration has a cost or additional fees or is configured to allow instances to set a cost." );
             }
 
             if ( validationErrors.Any() )
@@ -722,6 +733,9 @@ namespace RockWeb.Blocks.Event
                 var registrationTemplateFormFieldService = new RegistrationTemplateFormFieldService( rockContext );
                 var registrationTemplateDiscountService = new RegistrationTemplateDiscountService( rockContext );
                 var registrationTemplateFeeService = new RegistrationTemplateFeeService( rockContext );
+                var registrationRegistrantFeeService = new RegistrationRegistrantFeeService( rockContext );
+
+                var groupService = new GroupService( rockContext );
 
                 // delete forms that aren't assigned in the UI anymore
                 var formUiGuids = FormState.Select( f => f.Guid ).ToList();
@@ -758,11 +772,23 @@ namespace RockWeb.Blocks.Event
 
                 // delete fees that aren't assigned in the UI anymore
                 var feeUiGuids = FeeState.Select( u => u.Guid ).ToList();
-                foreach ( var fee in registrationTemplateFeeService
+                var deletedfees = registrationTemplateFeeService
                     .Queryable()
                     .Where( d =>
                         d.RegistrationTemplateId == RegistrationTemplate.Id &&
-                        !feeUiGuids.Contains( d.Guid ) ) )
+                        !feeUiGuids.Contains( d.Guid ) )
+                    .ToList();
+
+                var deletedFeeIds = deletedfees.Select( f => f.Id ).ToList();
+                foreach ( var registrantFee in registrationRegistrantFeeService
+                    .Queryable()
+                    .Where( f => deletedFeeIds.Contains( f.RegistrationTemplateFeeId ) )
+                    .ToList() )
+                {
+                    registrationRegistrantFeeService.Delete( registrantFee );
+                }
+
+                foreach ( var fee in deletedfees )
                 {
                     registrationTemplateFeeService.Delete( fee );
                 }
@@ -886,6 +912,22 @@ namespace RockWeb.Blocks.Event
 
                 AttributeCache.FlushEntityAttributes();
 
+                // If this is a new template, give the current user and the Registration Administrators role administrative 
+                // rights to this template, and staff, and staff like roles edit rights
+                if ( newTemplate )
+                {
+                    RegistrationTemplate.AllowPerson( Authorization.ADMINISTRATE, CurrentPerson, rockContext );
+
+                    var registrationAdmins = groupService.Get( Rock.SystemGuid.Group.GROUP_EVENT_REGISTRATION_ADMINISTRATORS.AsGuid() );
+                    RegistrationTemplate.AllowSecurityRole( Authorization.ADMINISTRATE, registrationAdmins, rockContext );
+
+                    var staffLikeUsers = groupService.Get( Rock.SystemGuid.Group.GROUP_STAFF_LIKE_MEMBERS.AsGuid() );
+                    RegistrationTemplate.AllowSecurityRole( Authorization.EDIT, staffLikeUsers, rockContext );
+
+                    var staffUsers = groupService.Get( Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS.AsGuid() );
+                    RegistrationTemplate.AllowSecurityRole( Authorization.EDIT, staffUsers, rockContext );
+                }
+
                 var qryParams = new Dictionary<string, string>();
                 qryParams["RegistrationTemplateId"] = RegistrationTemplate.Id.ToString();
                 NavigateToPage( RockPage.Guid, qryParams );
@@ -940,6 +982,16 @@ namespace RockWeb.Blocks.Event
             nbMaxRegistrants.Visible = cbMultipleRegistrants.Checked;
             
             BuildControls();
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the tglSetCost control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void tglSetCost_CheckedChanged( object sender, EventArgs e )
+        {
+            SetCostVisibility();
         }
 
         #endregion
@@ -1863,9 +1915,11 @@ namespace RockWeb.Blocks.Event
             nbMaxRegistrants.Visible = RegistrationTemplate.AllowMultipleRegistrants;
             nbMaxRegistrants.Text = RegistrationTemplate.MaxRegistrants.ToString();
             rblRegistrantsInSameFamily.SetValue( RegistrationTemplate.RegistrantsSameFamily.ConvertToInt() );
+            tglSetCostOnTemplate.Checked = !RegistrationTemplate.SetCostOnInstance.HasValue || !RegistrationTemplate.SetCostOnInstance.Value;
             cbCost.Text = RegistrationTemplate.Cost.ToString();
             cbMinimumInitialPayment.Text = RegistrationTemplate.MinimumInitialPayment.HasValue ? RegistrationTemplate.MinimumInitialPayment.Value.ToString( "N2" ) : "";
             fgpFinancialGateway.SetValue( RegistrationTemplate.FinancialGatewayId );
+            SetCostVisibility();
 
             tbConfirmationFromName.Text = RegistrationTemplate.ConfirmationFromName;
             tbConfirmationFromEmail.Text = RegistrationTemplate.ConfirmationFromEmail;
@@ -1886,6 +1940,16 @@ namespace RockWeb.Blocks.Event
             ceSuccessText.Text = RegistrationTemplate.SuccessText;
 
             BuildControls( true );
+        }
+
+        /// <summary>
+        /// Sets the cost visibility.
+        /// </summary>
+        private void SetCostVisibility()
+        {
+            bool setCostOnTemplate = tglSetCostOnTemplate.Checked;
+            cbCost.Visible = setCostOnTemplate;
+            cbMinimumInitialPayment.Visible = setCostOnTemplate;
         }
 
         /// <summary>
@@ -1946,10 +2010,17 @@ namespace RockWeb.Blocks.Event
                 lFormsReadonly.Text = "<div>" + None.TextHtml + "</div>";
             }
 
-            lCost.Text = RegistrationTemplate.Cost.FormatAsCurrency();
-
-            lMinimumInitialPayment.Visible = RegistrationTemplate.MinimumInitialPayment.HasValue;
-            lMinimumInitialPayment.Text = RegistrationTemplate.MinimumInitialPayment.HasValue ? RegistrationTemplate.MinimumInitialPayment.Value.FormatAsCurrency() : "";
+            if ( RegistrationTemplate.SetCostOnInstance ?? false )
+            {
+                lCost.Text = "Set on Instance";
+                lMinimumInitialPayment.Text = "Set on Instance";
+            }
+            else
+            {
+                lCost.Text = RegistrationTemplate.Cost.FormatAsCurrency();
+                lMinimumInitialPayment.Visible = RegistrationTemplate.MinimumInitialPayment.HasValue;
+                lMinimumInitialPayment.Text = RegistrationTemplate.MinimumInitialPayment.HasValue ? RegistrationTemplate.MinimumInitialPayment.Value.FormatAsCurrency() : "";
+            }
 
             rFees.DataSource = RegistrationTemplate.Fees.OrderBy( f => f.Order ).ToList();
             rFees.DataBind();
@@ -2524,5 +2595,5 @@ namespace RockWeb.Blocks.Event
 
         #endregion
 
-    }
+}
 }

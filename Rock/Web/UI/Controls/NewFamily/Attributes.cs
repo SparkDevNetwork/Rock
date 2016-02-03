@@ -28,8 +28,8 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Report Filter control
     /// </summary>
-    [ToolboxData( "<{0}:NewFamilyAttributes runat=server></{0}:NewFamilyAttributes>" )]
-    public class NewFamilyAttributes : CompositeControl, INamingContainer
+    [ToolboxData( "<{0}:NewGroupAttributes runat=server></{0}:NewGroupAttributes>" )]
+    public class NewGroupAttributes : CompositeControl, INamingContainer
     {
         /// <summary>
         /// Gets or sets the category id.
@@ -77,20 +77,20 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The attributes rows.
         /// </value>
-        public List<NewFamilyAttributesRow> AttributesRows
+        public List<NewGroupAttributesRow> AttributesRows
         {
             get
             {
-                var rows = new List<NewFamilyAttributesRow>();
+                var rows = new List<NewGroupAttributesRow>();
 
                 foreach ( Control control in Controls )
                 {
-                    if ( control is NewFamilyAttributesRow )
+                    if ( control is NewGroupAttributesRow )
                     {
-                        var newFamilyAttributesRow = control as NewFamilyAttributesRow;
-                        if ( newFamilyAttributesRow != null )
+                        var newGroupAttributesRow = control as NewGroupAttributesRow;
+                        if ( newGroupAttributesRow != null )
                         {
-                            rows.Add( newFamilyAttributesRow );
+                            rows.Add( newGroupAttributesRow );
                         }
                     }
                 }
@@ -131,7 +131,7 @@ namespace Rock.Web.UI.Controls
 
                 foreach ( Control control in Controls )
                 {
-                    if ( control is NewFamilyAttributesRow )
+                    if ( control is NewGroupAttributesRow )
                     {
                         control.RenderControl( writer );
                     }
@@ -150,7 +150,7 @@ namespace Rock.Web.UI.Controls
         {
             for ( int i = Controls.Count - 1; i >= 0; i-- )
             {
-                if ( Controls[i] is NewFamilyAttributesRow )
+                if ( Controls[i] is NewGroupAttributesRow )
                 {
                     Controls.RemoveAt( i );
                 }

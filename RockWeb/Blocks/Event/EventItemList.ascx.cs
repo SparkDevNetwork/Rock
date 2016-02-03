@@ -473,7 +473,7 @@ namespace RockWeb.Blocks.Event
 
             // Add occurrences Count column
             var occurrencesField = new BadgeField();
-            occurrencesField.ImportantMin = int.MaxValue;
+            occurrencesField.DangerMin = int.MaxValue;
             occurrencesField.WarningMin = 0;
             occurrencesField.WarningMax = 0;
             occurrencesField.InfoMin = 1;

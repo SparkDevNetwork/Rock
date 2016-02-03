@@ -30,6 +30,7 @@ namespace Rock.Workflow.Action.CheckIn
     /// <summary>
     /// Loads the schedules available for each group
     /// </summary>
+    [ActionCategory( "Check-In" )]
     [Description( "Loads the schedules available for each group" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Load Schedules" )]

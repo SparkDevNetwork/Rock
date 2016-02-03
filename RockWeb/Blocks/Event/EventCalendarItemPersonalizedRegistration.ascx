@@ -94,7 +94,7 @@
                         </div>
                     </div>
 
-                    <asp:LinkButton ID="lbRegister" runat="server" Text="Register" CssClass="btn btn-primary margin-b-md margin-t-md" OnClick="lbRegister_Click" />
+                    <asp:LinkButton ID="lbRegister" runat="server" Text="Start Registration" CssClass="btn btn-primary margin-b-md margin-t-md" OnClick="lbRegister_Click" />
 
                     <asp:Literal ID="lMessages" runat="server" />
                 </asp:Panel>

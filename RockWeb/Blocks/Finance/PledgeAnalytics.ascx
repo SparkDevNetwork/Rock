@@ -57,7 +57,11 @@
                                         ExportSource="ColumnOutput" ExportFilename="PledgeAnalytics">
                                         <Columns>
                                             <Rock:SelectField />
-                                            <Rock:RockBoundField DataField="PersonName" HeaderText="Person" SortExpression="LastName,NickName" />
+                                            <Rock:RockTemplateField HeaderText="Person" SortExpression="LastName,NickName">
+                                                <ItemTemplate>
+                                                    <%# FormatName( Eval("LastName"), Eval("NickName") ) %>
+                                                </ItemTemplate>
+                                            </Rock:RockTemplateField>
                                             <Rock:RockBoundField DataField="Email" HeaderText="Email" SortExpression="Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                             <Rock:CurrencyField DataField="PledgeAmount" HeaderText="Pledge Total" SortExpression="PledgeAmount" />
                                             <Rock:CurrencyField DataField="GiftAmount" HeaderText="Total Giving Amount" SortExpression="GiftAmount" />

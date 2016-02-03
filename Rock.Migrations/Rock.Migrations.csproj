@@ -58,9 +58,46 @@
   <ItemGroup>
     <Compile Include="HotFixMigrations\003_AddAttendanceIndex.cs" />
     <Compile Include="HotFixMigrations\002_FixAttendanceEmail.cs" />
+    <Compile Include="HotFixMigrations\004_FixBaptismBadge.cs" />
     <Compile Include="Migrations\201511231524340_GroupPlacement.cs" />
     <Compile Include="Migrations\201511231524340_GroupPlacement.Designer.cs">
       <DependentUpon>201511231524340_GroupPlacement.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201511302138156_PrayerRequestLastName.cs" />
+    <Compile Include="Migrations\201511302138156_PrayerRequestLastName.Designer.cs">
+      <DependentUpon>201511302138156_PrayerRequestLastName.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201512011627334_RegistrationIsTemporary.cs" />
+    <Compile Include="Migrations\201512011627334_RegistrationIsTemporary.Designer.cs">
+      <DependentUpon>201512011627334_RegistrationIsTemporary.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201512082010143_ExtendFamilyBlocks.cs" />
+    <Compile Include="Migrations\201512082010143_ExtendFamilyBlocks.Designer.cs">
+      <DependentUpon>201512082010143_ExtendFamilyBlocks.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201512111225213_RemoveV4ObsoleteProperties.cs" />
+    <Compile Include="Migrations\201512111225213_RemoveV4ObsoleteProperties.Designer.cs">
+      <DependentUpon>201512111225213_RemoveV4ObsoleteProperties.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201512152341221_SitePageUpdates.cs" />
+    <Compile Include="Migrations\201512152341221_SitePageUpdates.Designer.cs">
+      <DependentUpon>201512152341221_SitePageUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201601081201492_LinkList.cs" />
+    <Compile Include="Migrations\201601081201492_LinkList.Designer.cs">
+      <DependentUpon>201601081201492_LinkList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201601100030367_IncreaseDefinedValueSize.cs" />
+    <Compile Include="Migrations\201601100030367_IncreaseDefinedValueSize.Designer.cs">
+      <DependentUpon>201601100030367_IncreaseDefinedValueSize.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201601191845218_AdditionalSqlFunctions.cs" />
+    <Compile Include="Migrations\201601191845218_AdditionalSqlFunctions.Designer.cs">
+      <DependentUpon>201601191845218_AdditionalSqlFunctions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201601241806293_RegistrationInstanceCosts.cs" />
+    <Compile Include="Migrations\201601241806293_RegistrationInstanceCosts.Designer.cs">
+      <DependentUpon>201601241806293_RegistrationInstanceCosts.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.cs" />
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.Designer.cs">
@@ -1953,6 +1990,33 @@
     <EmbeddedResource Include="Migrations\201511231524340_GroupPlacement.resx">
       <DependentUpon>201511231524340_GroupPlacement.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201511302138156_PrayerRequestLastName.resx">
+      <DependentUpon>201511302138156_PrayerRequestLastName.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201512011627334_RegistrationIsTemporary.resx">
+      <DependentUpon>201512011627334_RegistrationIsTemporary.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201512082010143_ExtendFamilyBlocks.resx">
+      <DependentUpon>201512082010143_ExtendFamilyBlocks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201512111225213_RemoveV4ObsoleteProperties.resx">
+      <DependentUpon>201512111225213_RemoveV4ObsoleteProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201512152341221_SitePageUpdates.resx">
+      <DependentUpon>201512152341221_SitePageUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201601081201492_LinkList.resx">
+      <DependentUpon>201601081201492_LinkList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201601100030367_IncreaseDefinedValueSize.resx">
+      <DependentUpon>201601100030367_IncreaseDefinedValueSize.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201601191845218_AdditionalSqlFunctions.resx">
+      <DependentUpon>201601191845218_AdditionalSqlFunctions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201601241806293_RegistrationInstanceCosts.resx">
+      <DependentUpon>201601241806293_RegistrationInstanceCosts.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.resx">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
     </EmbeddedResource>
@@ -3400,13 +3464,6 @@
     <Content Include="Migrations\Version 4.0\Version 1.4.0\201511182310362_ProtectMyMinistry.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
-  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

@@ -455,28 +455,6 @@ namespace Rock.Reporting
         public bool IsPreviewable { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityField"/> class.
-        /// </summary>
-        [Obsolete( "Use one of the other EntityField constructors instead" )]
-        public EntityField()
-        {
-            FieldConfig = new Dictionary<string, ConfigurationValue>();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EntityField"/> class.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="fieldKind">Kind of the field.</param>
-        /// <param name="propertyType">Type of the property.</param>
-        /// <param name="attributeGuid">The attribute unique identifier.</param>
-        [Obsolete( "Use one of the other EntityField constructors instead" )]
-        public EntityField( string name, FieldKind fieldKind, Type propertyType, Guid? attributeGuid = null )
-            : this( name, fieldKind, propertyType, null, attributeGuid )
-        {
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="EntityField" /> class.
         /// </summary>
         /// <param name="name">The name.</param>

@@ -95,6 +95,16 @@ namespace Rock
         }
 
         /// <summary>
+        /// URLs the encode.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string UrlEncode( this string str )
+        {
+            return Uri.EscapeDataString( str );
+        }
+
+        /// <summary>
         /// Sanitizes the HTML by removing tags.  If strict is true, all html tags will be removed, if false, only a blacklist of specific XSS dangerous tags and attribute values are removed.
         /// </summary>
         /// <param name="html">The HTML.</param>
@@ -144,7 +154,12 @@ namespace Rock
         /// <returns>true if valid email, false otherwise</returns>
         public static bool IsValidEmail( this string email )
         {
-            return Regex.IsMatch( email, @"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+" );
+            Match match = Regex.Match( email, @"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+" );
+            if ( !match.Success || match.Index != 0 )
+            {
+                return false;
+            }
+            return match.Length == email.Length;
         }
     }
 }

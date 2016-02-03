@@ -513,6 +513,11 @@ namespace Rock
         }
 
         /// <summary>
+        /// Compiled RegEx for detecting if a string has Lava merge fields
+        /// </summary>
+        private static Regex hasLavaMergeFields = new Regex( @".*\{.+\}.*", RegexOptions.Compiled );
+
+        /// <summary>
         /// Determines whether the string potentially has merge fields in it.
         /// NOTE: Might return true even though it doesn't really have merge fields, but something like looks like it. For example '{56408602-5E41-4D66-98C7-BD361CD93AED}'
         /// </summary>
@@ -524,7 +529,7 @@ namespace Rock
                 return false;
 
             // If there's no merge codes, just return the content
-            if ( !Regex.IsMatch( content, @".*\{.+\}.*" ) )
+            if (!hasLavaMergeFields.IsMatch( content ))
                 return false;
 
             return true;

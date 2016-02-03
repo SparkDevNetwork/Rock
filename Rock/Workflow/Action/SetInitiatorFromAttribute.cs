@@ -30,6 +30,7 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sets the workflow initiator to the value of an attribute.
     /// </summary>
+    [ActionCategory( "Workflow Control" )]
     [Description( "Sets the workflow initiator to the value of an attribute." )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Set Initiator from Attribute" )]

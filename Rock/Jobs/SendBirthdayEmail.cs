@@ -119,6 +119,7 @@ namespace Rock.Jobs
 
             var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
             Email.Send( systemEmail.Guid, recipients, appRoot );
+            context.Result = string.Format( "{0} birthday emails sent", recipients.Count() );
         }
     }
 }

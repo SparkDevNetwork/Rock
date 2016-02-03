@@ -51,13 +51,6 @@
         <div class="actions margin-t-xl">
             <asp:Button runat="server" ID="btnFlushCache" CssClass="btn btn-primary" Text="Clear Cache" OnClick="btnClearCache_Click" ToolTip="Flushes all cached items from the Rock cache (e.g. Pages, BlockTypes, Blocks, Attributes, etc." />
             <asp:Button runat="server" ID="btnRestart" CssClass="btn btn-link js-restart" Text="Restart Rock" OnClick="btnRestart_Click" ToolTip="Restarts the Application." />
-            <div class="pull-right">
-                <asp:Button runat="server" ID="btn1" CssClass="btn btn-default btn-small" Text="1" OnClick="btnClearCache_Click"  />
-                <asp:Button runat="server" ID="btn2" CssClass="btn btn-default btn-small" Text="2" OnClick="btnClearCache_Click"  />
-                <asp:Button runat="server" ID="btn3" CssClass="btn btn-default btn-small" Text="3" OnClick="btnClearCache_Click"  />
-                <asp:Button runat="server" ID="btn4" CssClass="btn btn-default btn-small" Text="4" OnClick="btnClearCache_Click"  />
-                <asp:Button runat="server" ID="btn5" CssClass="btn btn-default btn-small" Text="5" OnClick="btnClearCache_Click"  />
-            </div>
         </div>
     </div>
 

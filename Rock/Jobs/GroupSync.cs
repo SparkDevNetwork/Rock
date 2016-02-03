@@ -59,6 +59,7 @@ namespace Rock.Jobs
         public virtual void Execute( IJobExecutionContext context )
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
+            int groupsSynced = 0;
 
             try
             {
@@ -69,6 +70,8 @@ namespace Rock.Jobs
 
                 foreach ( var syncGroup in groupsThatSync )
                 {
+                    bool hasGroupChanged = false;
+
                     GroupMemberService groupMemberService = new GroupMemberService( rockContext );
 
                     var syncSource = new DataViewService( rockContext ).Get( syncGroup.SyncDataViewId.Value );
@@ -84,7 +87,7 @@ namespace Rock.Jobs
                         List<string> errorMessages = new List<string>();
 
                         var sourceItems = syncSource.GetQuery( sortById, 180, out errorMessages ).Select( q => q.Id ).ToList();
-                        var targetItems = groupMemberService.Queryable("Person").Where( gm => gm.GroupId == syncGroup.Id ).ToList();
+                        var targetItems = groupMemberService.Queryable( "Person" ).Where( gm => gm.GroupId == syncGroup.Id ).ToList();
 
                         // delete items from the target not in the source
                         foreach ( var targetItem in targetItems.Where( t => !sourceItems.Contains( t.PersonId ) ) )
@@ -96,6 +99,8 @@ namespace Rock.Jobs
                             groupMemberService.Delete( targetItem );
 
                             rockContext.SaveChanges();
+
+                            hasGroupChanged = true;
 
                             if ( syncGroup.ExitSystemEmailId.HasValue )
                             {
@@ -114,6 +119,8 @@ namespace Rock.Jobs
                             newGroupMember.GroupRoleId = syncGroup.GroupType.DefaultGroupRoleId ?? syncGroup.GroupType.Roles.FirstOrDefault().Id;
                             groupMemberService.Add( newGroupMember );
 
+                            hasGroupChanged = true;
+
                             if ( syncGroup.WelcomeSystemEmailId.HasValue )
                             {
                                 SendWelcomeEmail( syncGroup.WelcomeSystemEmailId.Value, sourceItem, syncGroup, syncGroup.AddUserAccountsDuringSync ?? false );
@@ -121,7 +128,25 @@ namespace Rock.Jobs
                         }
 
                         rockContext.SaveChanges();
+
+                        if ( hasGroupChanged && ( syncGroup.IsSecurityRole || syncGroup.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) ) )
+                        {
+                            Rock.Security.Role.Flush( syncGroup.Id );
+                        }
                     }
+                }
+
+                if ( groupsSynced == 0 )
+                {
+                    context.Result = "No groups to sync";
+                }
+                else if ( groupsSynced == 1 )
+                {
+                    context.Result = "1 group was sync'ed";
+                }
+                else
+                {
+                    context.Result = string.Format( "{0} groups were sync'ed", groupsSynced );
                 }
             }
             catch ( System.Exception ex )

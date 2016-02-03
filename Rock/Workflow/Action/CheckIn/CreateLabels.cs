@@ -29,9 +29,10 @@ using Rock.Web.Cache;
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
-    /// Saves the selected check-in data as attendance
+    /// Creates Check-in Labels
     /// </summary>
-    [Description( "Saves the selected check-in data as attendance" )]
+    [ActionCategory( "Check-In" )]
+    [Description( "Creates Check-in Labels" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Save Attendance" )]
     public class CreateLabels : CheckInActionComponent

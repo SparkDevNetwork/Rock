@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Crm
             gPersonBadge.Actions.ShowAdd = canAddEditDelete;
             gPersonBadge.IsDeleteEnabled = canAddEditDelete;
 
-            SecurityField securityField = gPersonBadge.Columns[3] as SecurityField;
+            SecurityField securityField = gPersonBadge.Columns[4] as SecurityField;
             securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.PersonBadge ) ).Id;
         }
 
@@ -169,7 +169,7 @@ namespace RockWeb.Blocks.Crm
         private void BindGrid()
         {
             gPersonBadge.DataSource = new PersonBadgeService( new RockContext() )
-                .Queryable().OrderBy( b => b.Order ).ToList();
+                .Queryable( "EntityType").OrderBy( b => b.Order ).ToList();
             gPersonBadge.DataBind();
         }
 

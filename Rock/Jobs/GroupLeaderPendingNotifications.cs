@@ -41,6 +41,7 @@ namespace Rock.Jobs
     [BooleanField( "Include Previously Notified", "Includes pending group members that have already been notified.", false, "", 1 )]
     [SystemEmailField( "Notification Email", "", true, "", "", 2 )]
     [GroupRoleField( null, "Group Role Filter", "Optional group role to filter the pending members by. To select the role you'll need to select a group type.", false, null, null, 3 )]
+    [IntegerField("Pending Age", "The number of days since the record was last updated. This keeps the job from notifing all the pending registrations on first run.", false, 1, order:4)]
     [DisallowConcurrentExecution]
     public class GroupLeaderPendingNotifications : IJob
     {
@@ -68,12 +69,17 @@ namespace Rock.Jobs
 
             try
             {
+                int notificationsSent = 0;
+                int pendingMembersCount = 0;
+                
                 // get groups set to sync
                 RockContext rockContext = new RockContext();
 
                 Guid? groupTypeGuid = dataMap.GetString( "GroupType" ).AsGuidOrNull();
                 Guid? systemEmailGuid = dataMap.GetString( "NotificationEmail" ).AsGuidOrNull();
                 Guid? groupRoleFilterGuid = dataMap.GetString( "GroupRoleFilter" ).AsGuidOrNull();
+                int? pendingAge = dataMap.GetString( "PendingAge" ).AsIntegerOrNull();
+
 
                 bool includePreviouslyNotificed = dataMap.GetString( "IncludePreviouslyNotified" ).AsBoolean();
 
@@ -107,6 +113,12 @@ namespace Rock.Jobs
                     if ( groupRoleFilterGuid.HasValue )
                     {
                         qry = qry.Where( m => m.GroupRole.Guid == groupRoleFilterGuid.Value );
+                    }
+
+                    if ( pendingAge.HasValue )
+                    {
+                        var ageDate = RockDateTime.Now.AddDays( pendingAge.Value * -1 );
+                        qry = qry.Where( m => m.ModifiedDateTime > ageDate );
                     }
 
                     var pendingGroupMembers = qry.ToList();
@@ -153,6 +165,8 @@ namespace Rock.Jobs
                         if ( pendingIndividuals.Count() > 0 )
                         {
                             Email.Send( systemEmail.Guid, recipients, appRoot );
+                            pendingMembersCount += pendingIndividuals.Count();
+                            notificationsSent += recipients.Count();
                         }
 
                         // mark pending members as notified as we go in case the job fails
@@ -167,7 +181,7 @@ namespace Rock.Jobs
                     }
                 }
 
-
+                context.Result = string.Format( "Sent {0} emails to leaders for {1} pending individuals", notificationsSent, pendingMembersCount );
             }
             catch ( System.Exception ex )
             {

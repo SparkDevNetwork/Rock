@@ -61,7 +61,7 @@ namespace Rock.PersonProfile.Badge
                 annimateClass = " annimate";
             }
 
-            writer.Write(String.Format("<div class='badge badge-attendance{0} badge-id-{1}' data-original-title='Family attendance for the last 24 months. Each bar is a month.'>", annimateClass, badge.Id));
+            writer.Write(String.Format( "<div class='badge badge-attendance{0} badge-id-{1}' data-toggle='tooltip' data-original-title='Family attendance for the last 24 months. Each bar is a month.'>", annimateClass, badge.Id));
 
             writer.Write("</div>");
 

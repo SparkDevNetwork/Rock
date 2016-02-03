@@ -52,7 +52,7 @@ namespace Rock.PersonProfile.Badge
         {
             int duration = GetAttributeValue(badge, "Duration").AsIntegerOrNull() ?? 16;
             
-            writer.Write(string.Format("<div class='badge badge-weeksattendanceduration badge-id-{0}' data-original-title='Family attendance for the last {1} weeks.'>", badge.Id, duration));
+            writer.Write(string.Format( "<div class='badge badge-weeksattendanceduration badge-id-{0}' data-toggle='tooltip' data-original-title='Family attendance for the last {1} weeks.'>", badge.Id, duration));
 
             writer.Write("</div>");
 

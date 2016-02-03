@@ -31,6 +31,7 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sets an attribute's value to the selected person 
     /// </summary>
+    [ActionCategory( "Tags" )]
     [Description( "Removes a person from an organization tag." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Person Tag Remove" )]

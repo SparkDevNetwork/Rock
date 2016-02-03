@@ -114,32 +114,46 @@ namespace Rock.Transactions
 
                 var userAgent = ( this.UserAgent ?? string.Empty ).Trim();
 
-                // lookup the pageViewUserAgent, and create it if it doesn't exist
-                int? pageViewUserAgentId = pageViewUserAgentService.Queryable().Where( a => a.UserAgent == userAgent ).Select( a => (int?)a.Id ).FirstOrDefault();
-                if ( !pageViewUserAgentId.HasValue )
-                {
-                    var pageViewUserAgent = new PageViewUserAgent();
-                    pageViewUserAgent.UserAgent = userAgent;
-                    pageViewUserAgent.ClientType = PageViewUserAgent.GetClientType( userAgent );
+                // get user agent info
+                var clientType = PageViewUserAgent.GetClientType( userAgent );
 
-                    Parser uaParser = Parser.GetDefault();
-                    ClientInfo client = uaParser.Parse( userAgent );
-                    pageViewUserAgent.OperatingSystem = client.OS.ToString();
-                    pageViewUserAgent.Browser = client.UserAgent.ToString();
+                Parser uaParser = Parser.GetDefault();
+                ClientInfo client = uaParser.Parse( userAgent );
+                var clientOs = client.OS.ToString();
+                var clientBrowser = client.UserAgent.ToString();
+
+                // lookup the pageViewUserAgent, and create it if it doesn't exist
+                var pageViewUserAgent = pageViewUserAgentService.Queryable().Where( a => a.UserAgent == userAgent ).FirstOrDefault();
+                if ( pageViewUserAgent == null)
+                {
+                    pageViewUserAgent = new PageViewUserAgent();
+                    pageViewUserAgent.UserAgent = userAgent;
+                    pageViewUserAgent.ClientType = clientType;
+                    
+                    pageViewUserAgent.OperatingSystem = clientOs;
+                    pageViewUserAgent.Browser = clientBrowser;
 
                     pageViewUserAgentService.Add( pageViewUserAgent );
                     rockContext.SaveChanges();
-
-                    pageViewUserAgentId = pageViewUserAgent.Id;
+                } else
+                {
+                    // check if the user agent properties need to be updated
+                    if (clientType != pageViewUserAgent.ClientType || clientOs != pageViewUserAgent.OperatingSystem || clientBrowser != pageViewUserAgent.Browser )
+                    {
+                        pageViewUserAgent.ClientType = clientType;
+                        pageViewUserAgent.OperatingSystem = clientOs;
+                        pageViewUserAgent.Browser = clientBrowser;
+                        rockContext.SaveChanges();
+                    }
                 }
 
                 // lookup PageViewSession, and create it if it doesn't exist
                 Guid sessionId = this.SessionId.AsGuid();
-                int? pageViewSessionId = pageViewSessionService.Queryable().Where( a => a.PageViewUserAgentId == pageViewUserAgentId && a.SessionId == sessionId && a.IpAddress == this.IPAddress ).Select( a => (int?)a.Id ).FirstOrDefault();
+                int? pageViewSessionId = pageViewSessionService.Queryable().Where( a => a.PageViewUserAgentId == pageViewUserAgent.Id && a.SessionId == sessionId && a.IpAddress == this.IPAddress ).Select( a => (int?)a.Id ).FirstOrDefault();
                 if ( !pageViewSessionId.HasValue )
                 {
                     var pageViewSession = new PageViewSession();
-                    pageViewSession.PageViewUserAgentId = pageViewUserAgentId.Value;
+                    pageViewSession.PageViewUserAgentId = pageViewUserAgent.Id;
                     pageViewSession.SessionId = sessionId;
                     pageViewSession.IpAddress = this.IPAddress;
                     pageViewSessionService.Add( pageViewSession );

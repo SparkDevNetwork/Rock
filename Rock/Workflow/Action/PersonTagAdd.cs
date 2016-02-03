@@ -29,9 +29,10 @@ using Rock.Web.Cache;
 namespace Rock.Workflow.Action
 {
     /// <summary>
-    /// Sets an attribute's value to the selected person 
+    /// Adds person to organization tag
     /// </summary>
-    [Description( "Adds person to an organization tag." )]
+    [ActionCategory( "Tags" )]
+    [Description( "Adds a person to an organization tag." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Person Tag Add" )]
 

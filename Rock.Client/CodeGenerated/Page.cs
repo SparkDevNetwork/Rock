@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public bool AllowIndexing { get; set; }
+
+        /// <summary />
         public bool BreadCrumbDisplayIcon { get; set; }
 
         /// <summary />
@@ -153,6 +156,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( Page source )
         {
             this.Id = source.Id;
+            this.AllowIndexing = source.AllowIndexing;
             this.BreadCrumbDisplayIcon = source.BreadCrumbDisplayIcon;
             this.BreadCrumbDisplayName = source.BreadCrumbDisplayName;
             this.BrowserTitle = source.BrowserTitle;

@@ -30,9 +30,11 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Prompts user for attribute values
     /// </summary>
+    [ActionCategory( "Workflow Control" )]
     [Description( "Prompts user for attribute values" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "User Entry Form" )]
+
     public class UserEntryForm : ActionComponent
     {
         /// <summary>

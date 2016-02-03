@@ -749,13 +749,24 @@ namespace Rock.Model
         public IQueryable<GroupMember> GetFamilyMembers( int personId, bool includeSelf = false )
         {
             int groupTypeFamilyId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
+            return GetGroupMembers( groupTypeFamilyId, personId, includeSelf );
+        }
 
+        /// <summary>
+        /// Gets the group members.
+        /// </summary>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="includeSelf">if set to <c>true</c> [include self].</param>
+        /// <returns></returns>
+        public IQueryable<GroupMember> GetGroupMembers( int groupTypeId, int personId, bool includeSelf = false )
+        {
             var groupMemberService = new GroupMemberService( (RockContext)this.Context );
 
             var familyGroupIds = groupMemberService.Queryable()
                 .Where( m =>
                     m.PersonId == personId &&
-                    m.Group.GroupTypeId == groupTypeFamilyId )
+                    m.Group.GroupTypeId == groupTypeId )
                 .Select( m => m.GroupId )
                 .Distinct();
 
@@ -1294,6 +1305,11 @@ namespace Rock.Model
         /// <returns>Family Group</returns>
         public static Group SaveNewPerson( Person person, RockContext rockContext, int? campusId = null, bool savePersonAttributes = false )
         {
+            person.FirstName = person.FirstName.FixCase();
+            person.NickName = person.NickName.FixCase();
+            person.MiddleName = person.MiddleName.FixCase();
+            person.LastName = person.LastName.FixCase();
+
             // Create/Save Known Relationship Group
             var knownRelationshipGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
             if ( knownRelationshipGroupType != null )
@@ -1382,29 +1398,46 @@ namespace Rock.Model
         /// <param name="rockContext">The rock context.</param>
         public static void AddPersonToFamily( Person person, bool newPerson, int familyId, int groupRoleId, RockContext rockContext )
         {
+            AddPersonToGroup( person, newPerson, familyId, groupRoleId, rockContext );
+        }
+
+        /// <summary>
+        /// Adds the person to group.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="newPerson">if set to <c>true</c> [new person].</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="groupRoleId">The group role identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <exception cref="System.Exception">
+        /// Unable to find group with Id  + groupId.ToString()
+        /// or
+        /// Person is already in the specified group
+        /// or
+        /// </exception>
+        public static void AddPersonToGroup( Person person, bool newPerson, int groupId, int groupRoleId, RockContext rockContext )
+        {
             var familyGroupType = GroupTypeCache.GetFamilyGroupType();
 
             var demographicChanges = new List<string>();
             var memberChanges = new List<string>();
             var groupService = new GroupService( rockContext );
 
-            var family = groupService.Get( familyId );
-            if ( family == null )
+            var group = groupService.Get( groupId );
+            if ( group == null )
             {
-                throw new Exception( "Unable to find family (group) with Id " + familyId.ToString() );
+                throw new Exception( "Unable to find group with Id " + groupId.ToString() );
             }
-            else if ( family.GroupTypeId != familyGroupType.Id )
-            {
-                throw new Exception( string.Format( "Specified familyId ({0}) is not a family group type ", familyId ) );
-            }
+
+            bool isFamilyGroup = group.GroupTypeId == familyGroupType.Id;
 
             var groupMemberService = new GroupMemberService( rockContext );
 
-            // make sure the person isn't in the family already
-            bool alreadyInFamily = groupMemberService.Queryable().Any( a => a.GroupId == familyId && a.PersonId == person.Id );
-            if ( alreadyInFamily )
+            // make sure the person isn't in the group already
+            bool alreadyInGroup = groupMemberService.Queryable().Any( a => a.GroupId == groupId && a.PersonId == person.Id );
+            if ( alreadyInGroup )
             {
-                throw new Exception( "Person is already in the specified family" );
+                throw new Exception( "Person is already in the specified group" );
             }
 
             var groupMember = new GroupMember();
@@ -1414,6 +1447,11 @@ namespace Rock.Model
 
             if ( newPerson )
             {
+                person.FirstName = person.FirstName.FixCase();
+                person.NickName = person.NickName.FixCase();
+                person.MiddleName = person.MiddleName.FixCase();
+                person.LastName = person.LastName.FixCase();
+
                 // new person that hasn't be saved to database yet
                 History.EvaluateChange( demographicChanges, "Title", string.Empty, DefinedValueCache.GetName( person.TitleValueId ) );
                 History.EvaluateChange( demographicChanges, "First Name", string.Empty, person.FirstName );
@@ -1425,7 +1463,7 @@ namespace Rock.Model
                 History.EvaluateChange( demographicChanges, "Graduation Year", null, person.GraduationYear );
                 History.EvaluateChange( demographicChanges, "Connection Status", string.Empty, DefinedValueCache.GetName( person.ConnectionStatusValueId ) );
                 History.EvaluateChange( demographicChanges, "Email Active", true.ToString(), person.IsEmailActive.ToString() );
-                History.EvaluateChange( demographicChanges, "Record Type", string.Empty, DefinedValueCache.GetName( person.RecordTypeValueId.Value ) );
+                History.EvaluateChange( demographicChanges, "Record Type", string.Empty, DefinedValueCache.GetName( person.RecordTypeValueId ) );
                 if ( person.GivingGroupId.HasValue )
                 {
                     person.GivingGroup = person.GivingGroup ?? groupService.Get( person.GivingGroupId.Value );
@@ -1442,13 +1480,13 @@ namespace Rock.Model
             }
             else
             {
-                // added from other family
+                // added from other group
                 groupMember.Person = person;
             }
 
-            groupMember.GroupId = familyId;
+            groupMember.GroupId = groupId;
             groupMember.GroupRoleId = groupRoleId;
-            var role = GroupTypeCache.GetFamilyGroupType().Roles.FirstOrDefault( a => a.Id == groupRoleId );
+            var role = group.GroupType.Roles.FirstOrDefault( a => a.Id == groupRoleId );
 
             if ( role != null )
             {
@@ -1456,7 +1494,7 @@ namespace Rock.Model
             }
             else
             {
-                throw new Exception( string.Format( "Specified groupRoleId ({0}) is not a family group type role ", groupRoleId ) );
+                throw new Exception( string.Format( "Specified groupRoleId ({0}) is not a {1} role ", groupRoleId, group.GroupType.Name ) );
             }
 
             groupMemberService.Add( groupMember );
@@ -1470,42 +1508,45 @@ namespace Rock.Model
                 groupMember.Id,
                 demographicChanges );
 
-            HistoryService.SaveChanges(
-                rockContext,
-                typeof( Person ),
-                Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                groupMember.Id,
-                memberChanges,
-                family.Name,
-                typeof( Group ),
-                familyId );
+            if ( isFamilyGroup )
+            {
+                HistoryService.SaveChanges(
+                    rockContext,
+                    typeof( Person ),
+                    Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                    groupMember.Id,
+                    memberChanges,
+                    group.Name,
+                    typeof( Group ),
+                    groupId );
+            }
         }
 
         /// <summary>
-        /// Removes the person from other families, then deletes the other families if nobody is left in them
+        /// Removes the type of the person from other groups of.
         /// </summary>
-        /// <param name="familyId">The groupId of the family that they should stay in</param>
+        /// <param name="groupId">The group identifier.</param>
         /// <param name="personId">The person identifier.</param>
         /// <param name="rockContext">The rock context.</param>
-        public static void RemovePersonFromOtherFamilies( int familyId, int personId, RockContext rockContext )
+        /// <exception cref="System.Exception">Group does not exist, or person is not in the specified group</exception>
+        public static void RemovePersonFromOtherGroupsOfType( int groupId, int personId, RockContext rockContext )
         {
             var groupMemberService = new GroupMemberService( rockContext );
             var groupService = new GroupService( rockContext );
-            var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
-            var family = groupService.Get( familyId );
 
-            // make sure they belong to the specified family before we delete them from other families
-            var isFamilyMember = groupMemberService.Queryable().Any( a => a.GroupId == familyId && a.PersonId == personId );
-            if ( !isFamilyMember )
+            var group = groupService.Get( groupId );
+
+            // make sure the group exists, and person belong to the specified group before deleting them from other groups
+            if ( group == null || !group.Members.Any( m => m.PersonId == personId ))
             {
-                throw new Exception( "Person is not in the specified family" );
+                throw new Exception( "Group does not exist, or person is not in the specified group" );
             }
 
             var memberInOtherFamilies = groupMemberService.Queryable()
                 .Where( m =>
                     m.PersonId == personId &&
-                    m.Group.GroupTypeId == familyGroupTypeId &&
-                    m.GroupId != familyId )
+                    m.Group.GroupTypeId == group.GroupTypeId &&
+                    m.GroupId != groupId )
                     .Select( a => new
                     {
                         GroupMember = a,
@@ -1524,7 +1565,7 @@ namespace Rock.Model
                     var person = fm.Person;
 
                     var demographicChanges = new List<string>();
-                    History.EvaluateChange( demographicChanges, "Giving Group", person.GivingGroup.Name, family.Name );
+                    History.EvaluateChange( demographicChanges, "Giving Group", person.GivingGroup.Name, group.Name );
                     HistoryService.SaveChanges(
                         rockContext,
                         typeof( Person ),
@@ -1532,22 +1573,25 @@ namespace Rock.Model
                         person.Id,
                         demographicChanges );
 
-                    person.GivingGroupId = familyId;
+                    person.GivingGroupId = groupId;
                     rockContext.SaveChanges();
                 }
 
-                var oldMemberChanges = new List<string>();
-                History.EvaluateChange( oldMemberChanges, "Role", fm.GroupRole.Name, string.Empty );
-                History.EvaluateChange( oldMemberChanges, "Family", fm.Group.Name, string.Empty );
-                HistoryService.SaveChanges(
-                    rockContext,
-                    typeof( Person ),
-                    Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                    fm.Person.Id,
-                    oldMemberChanges,
-                    fm.Group.Name,
-                    typeof( Group ),
-                    fm.Group.Id );
+                if ( group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ) )
+                {
+                    var oldMemberChanges = new List<string>();
+                    History.EvaluateChange( oldMemberChanges, "Role", fm.GroupRole.Name, string.Empty );
+                    History.EvaluateChange( oldMemberChanges, "Family", fm.Group.Name, string.Empty );
+                    HistoryService.SaveChanges(
+                        rockContext,
+                        typeof( Person ),
+                        Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                        fm.Person.Id,
+                        oldMemberChanges,
+                        fm.Group.Name,
+                        typeof( Group ),
+                        fm.Group.Id );
+                }
 
                 groupMemberService.Delete( fm.GroupMember );
                 rockContext.SaveChanges();
@@ -1564,6 +1608,18 @@ namespace Rock.Model
                     rockContext.SaveChanges();
                 }
             }
+
+        }
+
+        /// <summary>
+        /// Removes the person from other families, then deletes the other families if nobody is left in them
+        /// </summary>
+        /// <param name="familyId">The groupId of the family that they should stay in</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        public static void RemovePersonFromOtherFamilies( int familyId, int personId, RockContext rockContext )
+        {
+            RemovePersonFromOtherGroupsOfType( familyId, personId, rockContext );
         }
 
         #region User Preferences

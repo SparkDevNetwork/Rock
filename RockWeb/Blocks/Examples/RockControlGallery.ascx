@@ -207,6 +207,19 @@
                         <Rock:RockRating ID="rrRating" runat="server" Label="Rock:RatingInput" /><br />
                     </div>
 
+                    <a id="RangeSlider"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:RangeSlider ID="rsSlider" runat="server" Label="Rock:RangeSlider" MaxValue="250" MinValue="125" SelectedValue="200" />
+                        <br />
+                    </div>
+
+                    <div runat="server" class="r-example">
+                        <Rock:RangeSlider ID="rsSlider2" runat="server" Label="Rock:RangeSlider" />
+                        <br />
+                    </div>
+
+                    <asp:LinkButton ID="lbTestSlider" runat="server" CssClass="btn btn-default" Text="Test" OnClick="lbTestSlider_Click" />
+
                     <a id="Pickers"></a>
                     <h1 runat="server">Pickers</h1>
 
@@ -332,8 +345,18 @@
                     </div>
 
                     <a id="GroupRolePicker"></a>
-                    <div id="Div1" runat="server" class="r-example">
+                    <div runat="server" class="r-example">
                         <Rock:GroupRolePicker ID="grpExample" runat="server" Label="Rock:GroupRolePicker" />
+                    </div>
+                    
+                    <a id="WorkflowActionPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:WorkflowActionTypePicker ID="wfatpExample" runat="server" Label="Rock:WorkflowActionTypePicker" />
+                    </div>
+
+                    <a id="WorkflowTypePicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:WorkflowTypePicker ID="wftpExample" runat="server" Label="Rock:WorkflowTypePicker" />
                     </div>
 
                     <a id="Other"></a>

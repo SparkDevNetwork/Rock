@@ -7,15 +7,22 @@ tasks:
       "rock-cybersource": "NewSpring/rock-cybersource"
       "rock-attended-checkin": "NewSpring/rock-attended-checkin"
       "rock-apollos": "NewSpring/rock-apollos"
+      "rock-f1": "NewSpring/rock-f1"
       # "rock-spiritual-gifts": "NewSpring/rock-spiritual-gifts"
 
   # copy over all plugin blocks/styles/etc
   copy:
     endpoint: "NewSpring/norma-copy#feature-base-name"
-    src: ".remote/**/*(cc_newspring|com_centralaz|org_sparkdevnetwork)/**/*"
+    src: ".remote/**/*(cc_newspring|com_centralaz|org_sparkdevnetwork|com_mineCartStudio)/**/*"
     dest: "RockWeb/Plugins/"
     base: true
 
+  # copy over any webooks
+  "copy-webhooks":
+    "@extend": "copy"
+    src: ".remote/**/Webhooks/**/*"
+    dest: "./RockWeb/"
+    base: true
 
   # copy over any DLLs
   "copy-dlls":
@@ -27,6 +34,8 @@ tasks:
     ext: [
       "dll"
     ]
+
+
 
   "browser-sync":
     "dev": true

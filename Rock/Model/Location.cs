@@ -503,12 +503,15 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the distance.
+        /// Gets the distance (in miles). 
+        /// Note, this just stores whatever value was passed into SetDistance
+        /// Some of the REST apis, such as Groups/ByLocation, will set this for you
         /// </summary>
         /// <value>
         /// The distance.
         /// </value>
         [DataMember]
+        [RockClientInclude( "If returned from an endpoint that calculates distance, this will be the result distance (in miles)" )]
         public virtual double Distance
         {
             get { return _distance; }
@@ -730,7 +733,8 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Sets the distance.
+        /// Sets the distance (in miles)
+        /// Use this if you have calculated the distance from a particular point and want to store the result in the Distance variable (not stored in database)
         /// </summary>
         /// <param name="distance">The distance.</param>
         public void SetDistance( double distance )

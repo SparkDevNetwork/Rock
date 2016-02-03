@@ -145,6 +145,20 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets the add button.
+        /// </summary>
+        /// <value>
+        /// The add button.
+        /// </value>
+        public LinkButton AddButton
+        {
+            get
+            {
+                EnsureChildControls();
+                return _lbAdd;
+            }
+        }
+        /// <summary>
         /// Gets or sets a value indicating whether [show excel export].
         /// </summary>
         /// <value>
@@ -556,24 +570,7 @@ namespace Rock.Web.UI.Controls
         #endregion
 
         #region Event Handlers
-
-        /// <summary>
-        /// Occurs when Person merge action is clicked.
-        /// </summary>
-        [Obsolete("Use PersonMergeClick instead")]
-        public event EventHandler MergeClick
-        {
-            add
-            {
-                PersonMergeClick += value;
-            }
-
-            remove
-            {
-                PersonMergeClick -= value;
-            }
-        }
-               
+    
         /// <summary>
         /// Occurs when Person merge action is clicked.
         /// </summary>

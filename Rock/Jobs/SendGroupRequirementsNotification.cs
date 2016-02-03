@@ -254,6 +254,12 @@ namespace Rock.Jobs
 
                 Email.Send( systemEmailGuid.Value, recipients, appRoot );
 
+                context.Result = string.Format( "{0} requirement notification {1} sent", recipients.Count, "email".PluralizeIf( recipients.Count() != 1 ) );
+
+            }
+            else
+            {
+                context.Result = "Warning: No NotificationEmailTemplate found";
             }
         }
     }
