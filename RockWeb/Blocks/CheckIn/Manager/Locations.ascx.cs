@@ -239,6 +239,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         a.DidAttend.HasValue &&
                         a.DidAttend.Value &&
                         a.StartDateTime > today &&
+                        !a.EndDateTime.HasValue &&
                         activeScheduleIds.Contains( a.ScheduleId.Value ) &&
                         groupIds.Contains( a.GroupId.Value ) )
                     .Select( a =>
@@ -545,6 +546,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                                     .Where( a =>
                                         a.StartDateTime > dayStart &&
                                         a.StartDateTime < now &&
+                                        !a.EndDateTime.HasValue &&
                                         a.LocationId.HasValue &&
                                         a.LocationId.Value == itemId.Value &&
                                         a.PersonAlias != null &&
@@ -840,6 +842,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                             a.LocationId.HasValue &&
                             a.StartDateTime > dayStart &&
                             a.StartDateTime < now &&
+                            !a.EndDateTime.HasValue &&
                             a.DidAttend.HasValue &&
                             a.DidAttend.Value &&
                             groupIds.Contains( a.GroupId.Value ) &&
@@ -1232,6 +1235,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                             .Where( a =>
                                 a.StartDateTime > dayStart &&
                                 a.StartDateTime < now &&
+                                !a.EndDateTime.HasValue &&
                                 a.LocationId.HasValue &&
                                 a.LocationId == locationItem.Id &&
                                 a.DidAttend.HasValue &&
