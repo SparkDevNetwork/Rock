@@ -143,3 +143,149 @@ span.data-view-filter-label {
 table th[align='right'] {
     text-align: right;
 }
+
+
+@charset "UTF-8";
+@font-face {
+  font-family: "ccv-icons";
+  src:url("../../../Plugins/church_ccv/Badges/Assets/Fonts/ccv-icons.eot");
+  src:url("../../../Plugins/church_ccv/Badges/Assets/Fonts/ccv-icons.eot?#iefix") format("embedded-opentype"),
+    url("../../../Plugins/church_ccv/Badges/Assets/Fonts/ccv-icons.woff") format("woff"),
+    url("../../../Plugins/church_ccv/Badges/Assets/Fonts/ccv-icons.ttf") format("truetype"),
+    url("../../../Plugins/church_ccv/Badges/Assets/Fonts/ccv-icons.svg#ccv-icons") format("svg");
+  font-weight: normal;
+  font-style: normal;
+
+}
+
+[data-icon]:before {
+  font-family: "ccv-icons" !important;
+  content: attr(data-icon);
+  font-style: normal !important;
+  font-weight: normal !important;
+  font-variant: normal !important;
+  text-transform: none !important;
+  speak: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+[class^="ccv-"]:before,
+[class*=" ccv-"]:before {
+  font-family: "ccv-icons" !important;
+  font-style: normal !important;
+  font-weight: normal !important;
+  font-variant: normal !important;
+  text-transform: none !important;
+  speak: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+.ccv-baptism:before {
+  content: "\61";
+}
+.ccv-coach:before {
+  content: "\62";
+}
+.ccv-connect:before {
+  content: "\63";
+}
+.ccv-membership:before {
+  content: "\64";
+}
+.ccv-serve:before {
+  content: "\65";
+}
+.ccv-share:before {
+  content: "\66";
+}
+.ccv-tithe:before {
+  content: "\67";
+}
+.ccv-worship:before {
+  content: "\68";
+}
+
+	
+.badge-group.badge-group-steps
+{
+  margin-top: 4px;
+  margin-bottom: 1px;
+  display: inline-block;
+  vertical-align: top;
+}
+	
+.badge-group.badge-group-steps .badge
+{
+  border-radius: 0;
+  padding: 6px 8px 4px;
+  display: table-cell;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0.2);
+  border-width: 1px 0 1px 1px;
+  color: #fff;
+  font-size: 28px;
+  line-height: 1;
+  width: 45px;
+  height: 43px;
+
+  -webkit-transition: background 0.5s ease-in;
+  -moz-transition: background 0.5s ease-in;
+  -ms-transition: background 0.5s ease-in;
+  -o-transition: background 0.5s ease-in;
+  transition: background 0.5s ease-in;
+}
+	
+.badge-group-steps .badge:last-child
+{
+  border-right-width: 1px;
+}
+
+.badge-group.badge-group-steps .badge-baptism {
+  background-color: #45b4d0;
+}
+
+.badge-group.badge-group-steps .badge-baptism {
+  background-color: #45b4d0;
+}
+
+.badge-group.badge-group-steps .badge-membership {
+  background-color: #c46565;
+}
+
+.badge-group.badge-group-steps .badge-worship {
+  background-color: #ecc759;
+}
+
+.badge-group.badge-group-steps .badge-connect {
+  background-color: #6a6a6a;
+}
+
+.badge-group.badge-group-steps .badge-tithe {
+  background-color: #74ad91;
+}
+
+.badge-group.badge-group-steps .badge-serve {
+  background-color: #83758f;
+}
+
+.badge-group.badge-group-steps .badge-share {
+  background-color: #f08f4d;
+}
+
+.badge-group.badge-group-steps .badge-coach {
+  background-color: #95cbcb;
+}
+
+.badge-group.badge-group-steps .badge.step-nottaken {
+  background-color: inherit;
+  color: #c4c4c4;
+}
+
+.badge-group.badge-group-steps .badge.step-partial {
+  opacity: .4;
+}
