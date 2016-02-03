@@ -81,6 +81,8 @@ $('.js-panel-toggle').on('click', function (e) {
 });
 ";
             ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "DefinedValueChecklistScript", script, true );
+
+            
         }
 
         /// <summary>
@@ -89,7 +91,11 @@ $('.js-panel-toggle').on('click', function (e) {
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
+            BuildControls();
+
             base.OnLoad( e );
+
+            
 
             if ( !Page.IsPostBack )
             {
@@ -130,7 +136,7 @@ $('.js-panel-toggle').on('click', function (e) {
 
                 btnSave.Visible = true;
 
-                BuildControls();
+                //BuildControls();
             } else
             {
                 btnSave.Visible = false;
@@ -143,13 +149,35 @@ $('.js-panel-toggle').on('click', function (e) {
             string variableOverrideFile = string.Format( @"{0}Themes/{1}/Styles/_variable-overrides.less", Request.PhysicalApplicationPath, ddlTheme.SelectedValue );
 
             // get list of original values
-            Dictionary<string, string> overrides = GetVariables( variableFile );
+            Dictionary<string, string> originalValues = GetVariables( variableFile );
 
             StringBuilder overrideFile = new StringBuilder();
 
             foreach (var control in phThemeControls.Controls )
             {
-                var variableName = "";
+                if ( control is TextBox )
+                {
+                    var textBoxControl = (TextBox)control;
+                    string variableName = textBoxControl.ID.Replace(" ", "-").ToLower();
+
+                    // find original value
+                    if ( originalValues.ContainsKey( variableName )){
+
+                        string originalValue = originalValues[variableName];
+
+                        // color picker will convert #fff to #ffffff so take that into account
+                        string secondaryValue = string.Empty;
+                        if ( originalValue.Length == 4 && originalValue[0] == '#' )
+                        {
+                            secondaryValue = originalValue + originalValue.Substring( 1, 3 );
+                        }
+
+                        if ( originalValue != textBoxControl.Text && secondaryValue != textBoxControl.Text )
+                        {
+                            overrideFile.Append( string.Format( "{0}: {1};", variableName, textBoxControl.Text ) );
+                        }
+                    }
+                }
             }
 
             overrideFile.Append( "/* Custom CSS */");
@@ -163,174 +191,177 @@ $('.js-panel-toggle').on('click', function (e) {
 
         private void BuildControls()
         {
-            string variableFile = string.Format( @"{0}Themes/{1}/Styles/_variables.less", Request.PhysicalApplicationPath, ddlTheme.SelectedValue );
-            string variableOverrideFile = string.Format( @"{0}Themes/{1}/Styles/_variable-overrides.less", Request.PhysicalApplicationPath, ddlTheme.SelectedValue );
-
-            if ( !File.Exists( variableFile ) || !File.Exists( variableOverrideFile ) )
+            if ( !string.IsNullOrWhiteSpace( ddlTheme.SelectedValue ) )
             {
-                nbMessages.NotificationBoxType = NotificationBoxType.Warning;
-                nbMessages.Text = "This theme does not have a variables file(s) to allow overriding.";
-                return;
-            }
+                string variableFile = string.Format( @"{0}Themes/{1}/Styles/_variables.less", Request.PhysicalApplicationPath, ddlTheme.SelectedValue );
+                string variableOverrideFile = string.Format( @"{0}Themes/{1}/Styles/_variable-overrides.less", Request.PhysicalApplicationPath, ddlTheme.SelectedValue );
 
-
-
-            // get list of current overrides
-            Dictionary<string, string> overrides = GetVariables( variableOverrideFile );
-
-            bool inPanel = false;
-
-            foreach ( string line in File.ReadLines( variableFile ) )
-            {
-                if ( line.Left( 4 ) == @"//--" )
+                if ( !File.Exists( variableFile ) || !File.Exists( variableOverrideFile ) )
                 {
-                    Literal spacing = new Literal();
-                    spacing.Text = "<br/><br/>";
-                    phThemeControls.Controls.Add( spacing );
+                    nbMessages.NotificationBoxType = NotificationBoxType.Warning;
+                    nbMessages.Text = "This theme does not have a variables file(s) to allow overriding.";
+                    return;
                 }
-                else if ( line.Left( 4 ) == @"////" )
+
+
+
+                // get list of current overrides
+                Dictionary<string, string> overrides = GetVariables( variableOverrideFile );
+
+                bool inPanel = false;
+
+                foreach ( string line in File.ReadLines( variableFile ) )
                 {
-                    Literal header = new Literal();
-                    header.Text = string.Format( "<h4>{0}</h4>", line.Replace( @"/", "" ) );
-                    phThemeControls.Controls.Add( header );
-                }
-                else if ( line.Left( 2 ) == @"//" )
-                {
-                    string title = line.Substring( 2 );
-
-                    StringBuilder content = new StringBuilder();
-
-                    // panel
-                    if ( inPanel )
+                    if ( line.Left( 4 ) == @"//--" )
                     {
-                        content.Append( "</div></div>" );
+                        Literal spacing = new Literal();
+                        spacing.Text = "<br/><br/>";
+                        phThemeControls.Controls.Add( spacing );
                     }
-
-                    bool isOpen = false;
-                    if ( title.Contains( "*open*" ) )
+                    else if ( line.Left( 4 ) == @"////" )
                     {
-                        isOpen = true;
-                        title = title.Replace( "*open*", "" );
+                        Literal header = new Literal();
+                        header.Text = string.Format( "<h4>{0}</h4>", line.Replace( @"/", "" ) );
+                        phThemeControls.Controls.Add( header );
                     }
-
-
-                    content.Append( "<div class='panel panel-widget'>" );
-                    content.Append( "<div class='panel-heading'>" );
-
-                    if ( isOpen )
+                    else if ( line.Left( 2 ) == @"//" )
                     {
-                        content.Append( string.Format( "<h1 class='panel-title'>{0} <div class='pull-right'><a class='btn btn-link btn-xs js-panel-toggle'><i class='fa fa-chevron-up'></i></a></div></h1>", title ) );
-                        content.Append( "</div>" );
-                        content.Append( "<div class='panel-body'>" );
-                    }
-                    else
-                    {
-                        content.Append( string.Format( "<h1 class='panel-title'>{0} <div class='pull-right'><a class='btn btn-link btn-xs js-panel-toggle'><i class='fa fa-chevron-down'></i></a></div></h1>", title ) );
-                        content.Append( "</div>" );
-                        content.Append( "<div class='panel-body' style='display: none;'>" );
-                    }
+                        string title = line.Substring( 2 );
 
-                    Literal header = new Literal();
-                    header.Text = content.ToString();
-                    phThemeControls.Controls.Add( header );
-                    inPanel = true;
-                }
-                else if ( line.Left( 1 ) == "@" )
-                {
-                    // variable
-                    char[] delimiters = new char[] { ':', ';' };
-                    string[] variableParts = line.Split( delimiters );
+                        StringBuilder content = new StringBuilder();
 
-                    string helpText = string.Empty;
-
-                    // determine type
-                    VariableType variableType = VariableType.Text;
-                    if ( variableParts.Length >= 3 )
-                    {
-                        if ( variableParts[2].Contains( "#color" ) )
+                        // panel
+                        if ( inPanel )
                         {
-                            variableType = VariableType.Color;
+                            content.Append( "</div></div>" );
                         }
 
-                        // get help
-                        helpText = variableParts[2].Replace( "#color", "" ).Replace( "//", "" ).Trim();
+                        bool isOpen = false;
+                        if ( title.Contains( "*open*" ) )
+                        {
+                            isOpen = true;
+                            title = title.Replace( "*open*", "" );
+                        }
+
+
+                        content.Append( "<div class='panel panel-widget'>" );
+                        content.Append( "<div class='panel-heading'>" );
+
+                        if ( isOpen )
+                        {
+                            content.Append( string.Format( "<h1 class='panel-title'>{0} <div class='pull-right'><a class='btn btn-link btn-xs js-panel-toggle'><i class='fa fa-chevron-up'></i></a></div></h1>", title ) );
+                            content.Append( "</div>" );
+                            content.Append( "<div class='panel-body'>" );
+                        }
+                        else
+                        {
+                            content.Append( string.Format( "<h1 class='panel-title'>{0} <div class='pull-right'><a class='btn btn-link btn-xs js-panel-toggle'><i class='fa fa-chevron-down'></i></a></div></h1>", title ) );
+                            content.Append( "</div>" );
+                            content.Append( "<div class='panel-body' style='display: none;'>" );
+                        }
+
+                        Literal header = new Literal();
+                        header.Text = content.ToString();
+                        phThemeControls.Controls.Add( header );
+                        inPanel = true;
                     }
-
-                    // get variable name
-                    string variableName = variableParts[0].Replace( "@", "" ).Replace( "-", " " ).Titleize();
-
-                    // get variable value
-                    string variableValue = string.Empty;
-                    if ( variableParts.Length > 1 )
+                    else if ( line.Left( 1 ) == "@" )
                     {
-                        variableValue = variableParts[1].Trim();
-                    }
+                        // variable
+                        char[] delimiters = new char[] { ':', ';' };
+                        string[] variableParts = line.Split( delimiters );
 
-                    switch ( variableType )
-                    {
-                        case VariableType.Color:
+                        string helpText = string.Empty;
+
+                        // determine type
+                        VariableType variableType = VariableType.Text;
+                        if ( variableParts.Length >= 3 )
+                        {
+                            if ( variableParts[2].Contains( "#color" )  ) // todo check for less color functions
                             {
-                                if ( phThemeControls.FindControl( variableName ) == null )
-                                {
-                                    ColorPicker colorPicker = new ColorPicker();
-                                    colorPicker.ID = variableName;
-                                    colorPicker.Label = variableName;
-                                    //colorPicker.CssClass = "input-width-lg";
-
-                                    // check if override of the variable exists
-                                    if ( overrides.ContainsKey( variableName ) )
-                                    {
-                                        colorPicker.Value = overrides[variableName];
-                                    }
-                                    else
-                                    {
-                                        colorPicker.Value = variableValue;
-                                    }
-
-                                    if ( !string.IsNullOrWhiteSpace( helpText ) )
-                                    {
-                                        colorPicker.Help = helpText;
-                                    }
-
-                                    colorPicker.OriginalValue = variableValue;
-                                    colorPicker.RequiredFieldValidator = null;
-                                    phThemeControls.Controls.Add( colorPicker );
-                                }
-                                break;
+                                variableType = VariableType.Color;
                             }
-                        default:
-                            {
-                                if ( phThemeControls.FindControl( variableName ) == null )
+
+                            // get help
+                            helpText = variableParts[2].Replace( "#color", "" ).Replace( "//", "" ).Trim();
+                        }
+
+                        // get variable name
+                        string variableName = variableParts[0].Replace( "@", "" ).Replace( "-", " " ).Titleize();
+
+                        // get variable value
+                        string variableValue = string.Empty;
+                        if ( variableParts.Length > 1 )
+                        {
+                            variableValue = variableParts[1].Trim();
+                        }
+
+                        switch ( variableType )
+                        {
+                            case VariableType.Color:
                                 {
-                                    RockTextBox textbox = new RockTextBox();
-                                    textbox.Label = variableName;
-                                    textbox.CssClass = "input-width-xxl";
-
-                                    // check if override of the variable exists
-                                    if ( overrides.ContainsKey( variableName ) )
+                                    if ( phThemeControls.FindControl( variableName ) == null )
                                     {
-                                        textbox.Text = overrides[variableName];
-                                    }
-                                    else
-                                    {
-                                        textbox.Text = variableValue;
-                                    }
+                                        ColorPicker colorPicker = new ColorPicker();
+                                        colorPicker.ID = variableName;
+                                        colorPicker.Label = variableName;
+                                        //colorPicker.CssClass = "input-width-lg";
 
-                                    textbox.RequiredFieldValidator = null;
-                                    textbox.ID = variableName;
-                                    phThemeControls.Controls.Add( textbox );
+                                        // check if override of the variable exists
+                                        if ( overrides.ContainsKey( variableName ) )
+                                        {
+                                            colorPicker.Text = overrides[variableName];
+                                        }
+                                        else
+                                        {
+                                            colorPicker.Text = variableValue;
+                                        }
+
+                                        if ( !string.IsNullOrWhiteSpace( helpText ) )
+                                        {
+                                            colorPicker.Help = helpText;
+                                        }
+
+                                        colorPicker.OriginalValue = variableValue;
+                                        colorPicker.RequiredFieldValidator = null;
+                                        phThemeControls.Controls.Add( colorPicker );
+                                    }
+                                    break;
                                 }
-                                break;
-                            }
+                            default:
+                                {
+                                    if ( phThemeControls.FindControl( variableName ) == null )
+                                    {
+                                        RockTextBox textbox = new RockTextBox();
+                                        textbox.Label = variableName;
+                                        textbox.CssClass = "input-width-xxl";
+
+                                        // check if override of the variable exists
+                                        if ( overrides.ContainsKey( variableName ) )
+                                        {
+                                            textbox.Text = overrides[variableName];
+                                        }
+                                        else
+                                        {
+                                            textbox.Text = variableValue;
+                                        }
+
+                                        textbox.RequiredFieldValidator = null;
+                                        textbox.ID = variableName;
+                                        phThemeControls.Controls.Add( textbox );
+                                    }
+                                    break;
+                                }
+                        }
                     }
                 }
-            }
 
-            if ( inPanel )
-            {
-                Literal header = new Literal();
-                header.Text = "</div></div>";
-                phThemeControls.Controls.Add( header );
+                if ( inPanel )
+                {
+                    Literal header = new Literal();
+                    header.Text = "</div></div>";
+                    phThemeControls.Controls.Add( header );
+                }
             }
         }
 
@@ -352,7 +383,7 @@ $('.js-panel-toggle').on('click', function (e) {
 
                     if (variableParts.Length > 2 )
                     {
-                        overrides.Add( variableParts[0].Replace( "@", "" ), variableParts[1].Trim() );
+                        overrides.Add( variableParts[0].Replace( "@", "" ).ToLower(), variableParts[1].Trim() );
                     }
                 }
             }

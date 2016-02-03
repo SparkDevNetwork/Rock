@@ -8,16 +8,6 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:ColorPicker runat=server></{0}:ColorPicker>" )]
     public class ColorPicker : RockTextBox
     {
-
-        /// <summary>
-        /// Gets or sets the value.
-        /// </summary>
-        /// <value>
-        /// The value.
-        /// </value>
-        public string Value { get; set; }
-
-
         /// <summary>
         /// Gets or sets the original value.
         /// </summary>
@@ -32,8 +22,6 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            this.Text = this.Value;
-
             this.AppendText = "<i></i>";
             this.AddCssClass( "rock-colorpicker-input input-width-lg" );
 
