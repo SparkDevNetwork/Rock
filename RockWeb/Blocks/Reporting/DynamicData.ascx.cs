@@ -153,7 +153,7 @@ namespace RockWeb.Blocks.Reporting
                 GridFilter.SaveUserPreference(key, value);
             }
 
-            // BindGrid();
+            gReport_GridRebind(sender, e);
         }
 
         protected void DynamicData_BlockUpdated( object sender, EventArgs e )
@@ -730,9 +730,64 @@ namespace RockWeb.Blocks.Reporting
         /// <returns></returns>
         private void FilterTable(Grid grid, DataTable dataTable)
         {
+            if( GridFilter == null )
+            {
+                return;
+            }
+
             System.Data.DataView dataView = dataTable.DefaultView;
-            dataView.RowFilter = "FirstName like 'J*'";
-            dataView.RowStateFilter = DataViewRowState.ModifiedCurrent;
+            var query = new List<string>();
+
+            foreach(var control in GridFilter.Controls)
+            {
+                if (control is DateRangePicker)
+                {
+                    var dateRangePicker = control as DateRangePicker;
+                    var minValue = dateRangePicker.LowerValue;
+                    var maxValue = dateRangePicker.UpperValue;
+                    var colName = string.Format("[{0}]", dateRangePicker.ID.Remove(0, 3));
+
+                    if (minValue.HasValue)
+                    {
+                        query.Add(string.Format("{0} >= #{1}#", colName, minValue.Value));
+                    }
+
+                    if (maxValue.HasValue)
+                    {
+                        query.Add(string.Format("{0} <= #{1}#", colName, maxValue.Value));
+                    }
+                }
+                else if (control is RockCheckBox)
+                {
+                    var checkBox = control as RockCheckBox;
+                    var value = checkBox.Checked.ToString();
+                    var colName = string.Format("[{0}]", checkBox.ID.Remove(0, 2));
+                    query.Add(string.Format("{0} = {1}", colName, value));
+                }
+                else if (control is RockTextBox)
+                {
+                    var textBox = control as RockTextBox;
+                    var value = textBox.Text;
+                    var colName = textBox.ID.Remove(0, 2);
+                    var colIndex = dataView.Table.Columns.IndexOf(colName);
+
+                    if (colIndex != -1 && !string.IsNullOrWhiteSpace(value))
+                    {
+                        var col = dataView.Table.Columns[colIndex];
+
+                        if(col.DataType.Name == "String")
+                        {
+                            query.Add(string.Format("[{0}] LIKE '{1}*'", colName, value));
+                        }
+                        else if (col.DataType.Name.StartsWith("Int"))
+                        {
+                            query.Add(string.Format("[{0}] = {1}", colName, value));
+                        }
+                    }
+                }
+            }
+
+            dataView.RowFilter = string.Join(" AND ", query);
         }
 
         #endregion
