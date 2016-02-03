@@ -153,12 +153,13 @@ namespace church.ccv.Badges.Rest.Controllers
                         if ( baptismGroups.Count > 0 ) {
 
                             // ensure baptisms are in the future
-                            var baptismEventItems = new EventItemOccurrenceService( rockContext ).Queryable( "Scheduled,Linkages" )
+                            var baptismEventItems = new EventItemOccurrenceService( rockContext ).Queryable( "Schedule,Linkages" )
                                                 .Where( e => e.Linkages.Any( l => l.GroupId.HasValue && baptismGroups.Contains( l.GroupId.Value ) ) )
                                                 .ToList();
 
                             bool futureBaptismScheduled = false;
                             int? futureBaptismGroupId = null;
+                            DateTime? futureBaptismDate = null;
 
                             foreach (var baptismEventItem in baptismEventItems)
                             {
@@ -166,6 +167,7 @@ namespace church.ccv.Badges.Rest.Controllers
                                 {
                                     futureBaptismScheduled = true;
                                     futureBaptismGroupId = baptismEventItem.Linkages.First().GroupId;
+                                    futureBaptismDate = baptismEventItem.NextStartDateTime;
                                     break;
                                 }
                             }
@@ -174,6 +176,7 @@ namespace church.ccv.Badges.Rest.Controllers
                             {
                                 stepsBarResult.BaptismResult.BaptismStatus = BaptismStatus.Registered;
                                 stepsBarResult.BaptismResult.RegistrationGroupId = futureBaptismGroupId;
+                                stepsBarResult.BaptismResult.BaptismRegistrationDate = futureBaptismDate;
                             }
                             else
                             {
@@ -193,6 +196,7 @@ namespace church.ccv.Badges.Rest.Controllers
                     var neighborhoodGroups = new GroupMemberService( rockContext ).Queryable()
                                                 .Where( m => m.Group.GroupTypeId == GROUPTYPE_NEIGHBORHOOD_ID
                                                      && m.GroupMemberStatus != GroupMemberStatus.Inactive
+                                                     && m.Group.IsActive != false
                                                      && m.PersonId == person.Id)
                                                 .Select(m => new
                                                                 {
@@ -253,6 +257,7 @@ namespace church.ccv.Badges.Rest.Controllers
                     var servingGroups = new GroupMemberService( rockContext ).Queryable()
                                                 .Where( m => m.Group.GroupTypeId == GROUPTYPE_SERVINGTEAM_ID
                                                      && m.GroupMemberStatus != GroupMemberStatus.Inactive
+                                                     && m.Group.IsActive != false
                                                      && m.PersonId == person.Id )
                                                 .Select( m => new
                                                 {
@@ -288,7 +293,13 @@ namespace church.ccv.Badges.Rest.Controllers
                     }
 
                     // coaching
-                    List<int> GROUPTYPES_COACHING_IDS = GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_COACHING_GROUPTYPE_IDS ).Split( ',' ).Select( int.Parse ).ToList(); ;
+                    List<int> GROUPTYPES_COACHING_IDS = new List<int>();
+                    try {
+                        GROUPTYPES_COACHING_IDS = GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_COACHING_GROUPTYPE_IDS ).Split( ',' ).Select( int.Parse ).ToList();
+                    } catch(Exception ex )
+                    {
+
+                    }
 
                     stepsBarResult.CoachingResult = new CoachingResult();
                     stepsBarResult.CoachingResult.Groups = new List<GroupMemberSummary>();
@@ -296,6 +307,7 @@ namespace church.ccv.Badges.Rest.Controllers
                     var coachingGroups = new GroupMemberService( rockContext ).Queryable()
                                                 .Where( m => GROUPTYPES_COACHING_IDS.Contains(m.Group.GroupTypeId)
                                                      && m.GroupMemberStatus != GroupMemberStatus.Inactive
+                                                     && m.Group.IsActive != false
                                                      && m.PersonId == person.Id 
                                                      && m.GroupRole.IsLeader == true)
                                                 .Select( m => new
@@ -605,6 +617,13 @@ namespace church.ccv.Badges.Rest.Controllers
             /// The registration group identifier.
             /// </value>
             public int? RegistrationGroupId { get; set; }
+            /// <summary>
+            /// Gets or sets the baptism registration date.
+            /// </summary>
+            /// <value>
+            /// The baptism registration date.
+            /// </value>
+            public DateTime? BaptismRegistrationDate { get; set; }
         }
 
         /// <summary>
