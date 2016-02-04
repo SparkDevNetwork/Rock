@@ -1033,6 +1033,8 @@ namespace RockWeb.Blocks.Groups
                             + ( !string.IsNullOrEmpty( m.Note )
                             ? " <i class='fa fa-file-text-o text-info'></i>"
                             : string.Empty ) ),
+                        m.Person.BirthDate,
+                        m.Person.Age,
                         m.Person.ConnectionStatusValueId,
                         Email = m.Person.Email,
                         HomePhone = selectAll && homePhoneType != null ?
