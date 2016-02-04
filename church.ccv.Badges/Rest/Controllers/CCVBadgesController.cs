@@ -25,7 +25,7 @@ namespace church.ccv.Badges.Rest.Controllers
 
         const string ATTRIBUTE_ERA = "CurrentlyanERA";
 
-        const int GROUPTYPE_NEIGHBORHOOD_ID = 49;
+        const int GROUPTYPE_NEIGHBORHOOD_ID = 25;
 
         const string ATTRIBUTE_GIVING_IN_LAST_12_MONTHS = "GivingInLast12Months";
         const string ATTRIBUTE_GLOBAL_TITHE_THRESHOLD = "TitheThreshold";
