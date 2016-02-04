@@ -52,7 +52,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "CoachGroupMemberId" ).AsInteger(), PageParameter( "GroupMemberId" ).AsInteger(), null );
+                ShowDetail( PageParameter( "AdminPersonId" ).AsInteger(), PageParameter( "GroupMemberId" ).AsInteger(), null );
             }
         }
 
@@ -235,29 +235,31 @@ namespace RockWeb.Plugins.church_ccv.Groups
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="coachGroupMemberId">The coach's group member identifier.</param>
+        /// <param name="adminPersonId">The admin's person identifier.</param>
         /// <param name="groupMemberId">The group member identifier.</param>
         /// <param name="groupId">The group id.</param>
-        public void ShowDetail( int coachGroupMemberId, int groupMemberId, int? groupId )
+        public void ShowDetail( int adminPersonId, int groupMemberId, int? groupId )
         {
             var rockContext = new RockContext();
+
+            Person adminPerson = new PersonService( rockContext ).Get( adminPersonId );
+
             GroupMember groupMember = new GroupMemberService( rockContext ).Get( groupMemberId );
-            GroupMember coachGroupMember = new GroupMemberService( rockContext ).Get( coachGroupMemberId );
 
             // make sure both exist, otherwise warn one is wrong.
-            if ( groupMember == null || coachGroupMember == null )
+            if ( groupMember == null || adminPerson == null )
             {
-                if ( groupMemberId > 0 && coachGroupMemberId > 0 )
+                if ( groupMemberId > 0 && adminPersonId > 0 )
                 {
                     nbErrorMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Warning;
                     nbErrorMessage.Title = "Warning";
-                    nbErrorMessage.Text = "Group Member or Coach Group Member not found. Group Member may have been moved to another group or deleted.";
+                    nbErrorMessage.Text = "Group Member or Admin Person not found. Group Member may have been moved to another group or deleted.";
                 }
                 else
                 {
                     nbErrorMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
                     nbErrorMessage.Title = "Invalid Request";
-                    nbErrorMessage.Text = "An incorrect querystring parameter was used.  Valid GroupMemberId and CoachGroupMemberId parameters are required.";
+                    nbErrorMessage.Text = "An incorrect querystring parameter was used.  Valid GroupMemberId and AdminPersonId parameters are required.";
                 }
 
                 pnlEditDetails.Visible = false;
@@ -268,7 +270,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
 
             hfGroupId.Value = groupMember.GroupId.ToString();
             hfGroupMemberId.Value = groupMember.Id.ToString();
-            hfCoachGroupMemberId.Value = coachGroupMember.Id.ToString();
+            hfAdminPersonId.Value = adminPerson.Id.ToString();
 
             LoadDropDowns();
 

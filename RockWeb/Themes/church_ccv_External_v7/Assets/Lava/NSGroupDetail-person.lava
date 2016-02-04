@@ -30,24 +30,8 @@
     </div>
   </a>
   <div class="pull-left">
-	
-	{% assign coachMemberId = 0 %}
-	
-	{% for coachMember in Group.Members %}
-		{% if coachMember.Person.Id == {{CurrentPerson.Id}} %}
-			{% assign coachMemberId = coachMember.Id %}
-		{% endif %}
-	{% endfor %}
-	
-	{% if coachMemberId == 0 %}
-		{% for coachMember in Group.Members %}
-			{% if coachMember.GroupRole.IsLeader %}
-				{% assign coachMemberId = coachMember.Id %}
-			{% endif %}
-		{% endfor %}
-	{% endif %}
-		
-	<a href="{{ groupMemberDetailPage }}?GroupMemberId={{ member.Id }}&CoachGroupMemberId={{ coachMemberId }}">
+				
+	<a href="{{ groupMemberDetailPage }}?GroupMemberId={{ member.Id }}&AdminPersonId={{ CurrentPerson.Id }}">
 		<strong>{{ member.Person.FullName }}</strong>
 	</a>
 		

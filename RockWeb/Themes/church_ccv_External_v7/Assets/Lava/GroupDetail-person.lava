@@ -29,15 +29,11 @@
     </div>
   </a>
   <div class="pull-left">
-    {% for coachMember in Group.Members %}
-		{% if coachMember.Person.Id == {{CurrentPerson.Id}} %}
-			
-			<a href="{{ nhMemberDetailPage }}?GroupMemberId={{ member.Id }}&CoachGroupMemberId={{coachMember.Id}}">
-				<strong>{{ member.Person.FullName }}</strong>
-			</a>
-		
-		{% endif %}
-	{% endfor %}
+    
+    <a href="{{ nhMemberDetailPage }}?GroupMemberId={{ member.Id }}&AdminPersonId={{ CurrentPerson.Id }}">
+		<strong>{{ member.Person.FullName }}</strong>
+	</a>
+
 
     <br />
     <a href="{{ communicationPage }}?person={{ member.Person.Id }}">

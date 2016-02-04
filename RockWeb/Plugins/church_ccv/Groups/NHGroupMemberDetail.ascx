@@ -5,7 +5,7 @@
 
         <asp:HiddenField ID="hfGroupId" runat="server" />
         <asp:HiddenField ID="hfGroupMemberId" runat="server" />
-        <asp:HiddenField ID="hfCoachGroupMemberId" runat="server" />
+        <asp:HiddenField ID="hfAdminPersonId" runat="server" />
 
         <div class="panel panel-block">
             <div class="panel-heading">

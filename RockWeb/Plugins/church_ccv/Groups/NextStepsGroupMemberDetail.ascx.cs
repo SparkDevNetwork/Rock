@@ -52,7 +52,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "CoachGroupMemberId" ).AsInteger(), PageParameter( "GroupMemberId" ).AsInteger(), null );
+                ShowDetail( PageParameter( "AdminPersonId" ).AsInteger(), PageParameter( "GroupMemberId" ).AsInteger(), null );
             }
         }
 
@@ -85,6 +85,8 @@ namespace RockWeb.Plugins.church_ccv.Groups
             if ( Page.IsValid )
             {
                 var rockContext = new RockContext();
+
+                PersonService personService = new PersonService( rockContext );
 
                 GroupMemberService groupMemberService = new GroupMemberService( rockContext );
                 GroupMember groupMember;
@@ -172,7 +174,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
                 {
                     case OptOutReason.Reassign:
                     {
-                        HandleOptOut_Reassign( groupMemberService, groupMember, rockContext );
+                        HandleOptOut_Reassign( personService, groupMember, rockContext );
                         break;
                     }
 
@@ -191,19 +193,19 @@ namespace RockWeb.Plugins.church_ccv.Groups
             }
         }
 
-        private void HandleOptOut_Reassign( GroupMemberService groupMemberService, GroupMember groupMember, RockContext rockContext )
+        private void HandleOptOut_Reassign( PersonService personService, GroupMember groupMember, RockContext rockContext )
         {
             // we need to send off a communcation email. 
 
-            // Get the coach for this group.
-            int coachGroupMemberId = int.Parse( hfCoachGroupMemberId.Value );
+            // Get the admin making changes
+            int adminPersonId = int.Parse( hfAdminPersonId.Value );
 
             // load existing group member
-            GroupMember coachGroupMember = groupMemberService.Get( coachGroupMemberId );
+            Person adminPerson = personService.Get( adminPersonId );
 
 
             var mergeObjects = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
-            mergeObjects.Add( "Coach", coachGroupMember );
+            mergeObjects.Add( "Admin", adminPerson );
             mergeObjects.Add( "Member", groupMember );
             mergeObjects.Add( "Reason", tbReassignReason.Text );
             lReceipt.Text = GetAttributeValue( "ReceiptText" ).ResolveMergeFields( mergeObjects );
@@ -283,23 +285,23 @@ namespace RockWeb.Plugins.church_ccv.Groups
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="coachGroupMemberId">The coach's group member identifier.</param>
+        /// <param name="adminPersonId">The admin's person identifier.</param>
         /// <param name="groupMemberId">The group member identifier.</param>
         /// <param name="groupId">The group id.</param>
-        public void ShowDetail( int coachGroupMemberId, int groupMemberId, int? groupId )
+        public void ShowDetail( int adminPersonId, int groupMemberId, int? groupId )
         {
             var rockContext = new RockContext();
             GroupMember groupMember = new GroupMemberService( rockContext ).Get( groupMemberId );
-            GroupMember coachGroupMember = new GroupMemberService( rockContext ).Get( coachGroupMemberId );
+            Person adminPerson = new PersonService( rockContext ).Get( adminPersonId );
 
             // make sure both exist, otherwise warn one is wrong.
-            if ( groupMember == null || coachGroupMember == null )
+            if ( groupMember == null || adminPerson == null )
             {
-                if ( groupMemberId > 0 && coachGroupMemberId > 0 )
+                if ( groupMemberId > 0 && adminPersonId > 0 )
                 {
                     nbErrorMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Warning;
                     nbErrorMessage.Title = "Warning";
-                    nbErrorMessage.Text = "Group Member or Coach Group Member not found. Group Member may have been moved to another group or deleted.";
+                    nbErrorMessage.Text = "Group Member or Admin not found. Group Member may have been moved to another group or deleted.";
                 }
                 else
                 {
@@ -316,7 +318,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
 
             hfGroupId.Value = groupMember.GroupId.ToString();
             hfGroupMemberId.Value = groupMember.Id.ToString();
-            hfCoachGroupMemberId.Value = coachGroupMember.Id.ToString();
+            hfAdminPersonId.Value = adminPerson.Id.ToString();
 
             LoadDropDowns();
 
