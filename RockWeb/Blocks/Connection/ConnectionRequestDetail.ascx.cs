@@ -251,7 +251,10 @@ namespace RockWeb.Blocks.Connection
                     {
                         connectionRequest = new ConnectionRequest();
                         connectionRequest.ConnectionOpportunityId = hfConnectionOpportunityId.ValueAsInt();
-                        SetUserPreference( CAMPUS_SETTING, ddlCampus.SelectedValueAsId().Value.ToString() );
+                        if ( ddlCampus.SelectedValueAsId().HasValue )
+                        {
+                            SetUserPreference( CAMPUS_SETTING, ddlCampus.SelectedValueAsId().Value.ToString() );
+                        }
                     }
                     else
                     {
@@ -270,7 +273,10 @@ namespace RockWeb.Blocks.Connection
                     connectionRequest.ConnectionState = rblState.SelectedValueAsEnum<ConnectionState>();
                     connectionRequest.ConnectionStatusId = rblStatus.SelectedValueAsId().Value;
                     connectionRequest.AssignedGroupId = ddlPlacementGroup.SelectedValueAsId();
-                    connectionRequest.CampusId = ddlCampus.SelectedValueAsId().Value;
+                    if ( ddlCampus.SelectedValueAsId().HasValue )
+                    {
+                        connectionRequest.CampusId = ddlCampus.SelectedValueAsId().Value;
+                    }
                     connectionRequest.Comments = tbComments.Text.ScrubHtmlAndConvertCrLfToBr();
                     connectionRequest.FollowupDate = dpFollowUp.SelectedDate;
 
