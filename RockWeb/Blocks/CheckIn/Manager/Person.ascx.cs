@@ -31,7 +31,7 @@ using Rock.Security;
 namespace RockWeb.Blocks.CheckIn.Manager
 {
     /// <summary>
-    /// Template block for developers to use to start a new block.
+    /// Block used to display person and details about recent check-ins
     /// </summary>
     [DisplayName( "Person Profile" )]
     [Category( "Check-in > Manager" )]
