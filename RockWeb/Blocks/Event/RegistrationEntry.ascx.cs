@@ -787,6 +787,15 @@ namespace RockWeb.Blocks.Event
                         return;
                     }
 
+                    if ( !UserLoginService.IsPasswordValid( txtPassword.Text ) )
+                    {
+                        nbSaveAccount.Title = string.Empty;
+                        nbSaveAccount.Text = UserLoginService.FriendlyPasswordRules();
+                        nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
+                        nbSaveAccount.Visible = true;
+                        return;
+                    }   
+                    
                     if ( txtPasswordConfirm.Text != txtPassword.Text )
                     {
                         nbSaveAccount.Title = "Invalid Password";
