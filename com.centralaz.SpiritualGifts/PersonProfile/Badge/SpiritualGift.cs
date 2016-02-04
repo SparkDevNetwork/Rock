@@ -85,7 +85,7 @@ namespace com.centralaz.SpiritualGifts.PersonProfile.Badge
                 }
 
                 //Badge HTML
-                writer.Write( "<div class='badge' data-original-title='Spiritual Gift is {0}' ><a href='{1}'>", giftingValue.Value, !String.IsNullOrEmpty( detailPageUrl ) ? detailPageUrl  : "#" );
+                writer.Write( "<div class='badge' data-toggle='tooltip' data-original-title='Spiritual Gift is {0}' ><a href='{1}'>", giftingValue.Value, !String.IsNullOrEmpty( detailPageUrl ) ? detailPageUrl  : "#" );
                 writer.Write( String.Format( "<i class='{0}'></i>", iconClass ) );
                 writer.Write( "</a></div>" );
             }
