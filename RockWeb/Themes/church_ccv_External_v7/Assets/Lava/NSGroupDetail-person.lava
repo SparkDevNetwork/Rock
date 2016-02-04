@@ -30,17 +30,27 @@
     </div>
   </a>
   <div class="pull-left">
-  
+	
+	{% assign coachMemberId = 0 %}
+	
 	{% for coachMember in Group.Members %}
 		{% if coachMember.Person.Id == {{CurrentPerson.Id}} %}
-			
-			<a href="{{ groupMemberDetailPage }}?GroupMemberId={{ member.Id }}&CoachGroupMemberId={{coachMember.Id}}">
-				<strong>{{ member.Person.FullName }}</strong>
-			</a>
-		
+			{% assign coachMemberId = coachMember.Id %}
 		{% endif %}
 	{% endfor %}
 	
+	{% if coachMemberId == 0 %}
+		{% for coachMember in Group.Members %}
+			{% if coachMember.GroupRole.IsLeader %}
+				{% assign coachMemberId = coachMember.Id %}
+			{% endif %}
+		{% endfor %}
+	{% endif %}
+		
+	<a href="{{ groupMemberDetailPage }}?GroupMemberId={{ member.Id }}&CoachGroupMemberId={{ coachMemberId }}">
+		<strong>{{ member.Person.FullName }}</strong>
+	</a>
+		
     {% if member.GroupMemberStatus == 'Pending' %}
       <a class="btn btn-link btn-xs" href="{{ videoPage }}?person={{ member.Person.Id }}" title="Send T-Up Video"><i class="fa fa-video-camera"></i></a>
     {% endif %}
