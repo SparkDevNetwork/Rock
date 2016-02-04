@@ -107,6 +107,10 @@
     <Compile Include="Migrations\201602041745307_TuneDuplicateFinder.Designer.cs">
       <DependentUpon>201602041745307_TuneDuplicateFinder.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201602042011520_DashboardWorkflowPages.cs" />
+    <Compile Include="Migrations\201602042011520_DashboardWorkflowPages.Designer.cs">
+      <DependentUpon>201602042011520_DashboardWorkflowPages.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.cs" />
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.Designer.cs">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
@@ -2030,6 +2034,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201602041745307_TuneDuplicateFinder.resx">
       <DependentUpon>201602041745307_TuneDuplicateFinder.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201602042011520_DashboardWorkflowPages.resx">
+      <DependentUpon>201602042011520_DashboardWorkflowPages.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.resx">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
