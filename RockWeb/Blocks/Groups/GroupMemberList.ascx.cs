@@ -967,7 +967,7 @@ namespace RockWeb.Blocks.Groups
                         .GroupBy( r => r.GroupMemberId.Value )
                         .Select( g => new
                         {
-                            GroupMemberId = g.Key,
+                            GroupMemberId = g.Key,  
                             Registrations = g.ToList()
                                 .Select( r => new {
                                     Id = r.Registration.Id,
@@ -1007,7 +1007,6 @@ namespace RockWeb.Blocks.Groups
                             ? " <i class='fa fa-file-text-o text-info'></i>"
                             : string.Empty ) ),
                         m.Person.ConnectionStatusValueId,
-                        m.Person.ConnectionStatusValue.Value,
                         Email = m.Person.Email,
                         HomePhone = selectAll && homePhoneType != null ?
                             m.Person.PhoneNumbers
