@@ -1,11 +1,39 @@
-<img src="/Content/ExternalSite/CentralLogo2008Black.png" width="150" style="margin-bottom: 10px">
-</br>
-</br>
+<style>
+  @media print
+  {
+  body
+  {
+  font-size: 10px;
+  }
+  .panel
+  {
+  margin-bottom: 5px;
+  }
+  h1, .panel-title
+  {
+  font-size: 12px;
+  padding: 5px;
+  }
+  .navbar, header, .site-footer, .no-print, .no-print *
+  {
+  display: none !important;
+  visibility: hidden;
+  }
+  .container
+  {
+  padding-bottom: 0px;
+  padding-top: 0px;
+  }
+  }
+</style>
 
-Central Christian Church</br>
-933 N. Lindsay Rd.</br>
-Mesa, AZ 85213</br>
-</br>
+<a class="pull-right btn btn-primary no-print" href="javascript:window.print()">print page</a>
+<img src="/Content/ExternalSite/CentralLogo2008Black.png" width="150" style="margin-bottom: 10px" />
+<br/>
+Central Christian Church<br/>
+933 N. Lindsay Rd.<br/>
+Mesa, AZ 85213<br/>
+<br/>
 
 {% assign sameName = true %}
 {% for person in GivingAdults %}
@@ -15,18 +43,18 @@ Mesa, AZ 85213</br>
 {% endfor %}
 
 {% if sameName != true %}
-  {{ GivingAdults | Map:'FullName' | Join:', ' | ReplaceLast:',',' and' }}</br>
+  {{ GivingAdults | Map:'FullName' | Join:', ' | ReplaceLast:',',' and' }}<br/>
 {% else %}
-  {{ GivingAdults | Map:'NickName' | Join:', ' | ReplaceLast:',',' and' }} {{ CurrentPerson.LastName }}</br>
+  {{ GivingAdults | Map:'NickName' | Join:', ' | ReplaceLast:',',' and' }} {{ CurrentPerson.LastName }}<br/>
 {% endif %}
 
-{{ CurrentPerson | Address:'Home','[[Street1]] [[Street2]]</br>[[City]], [[State]] [[PostalCode]]' }}</br>
-</br>
+{{ CurrentPerson | Address:'Home','[[Street1]] [[Street2]]<br/>[[City]], [[State]] [[PostalCode]]' }}<br/>
+<br/>
 
-Dear {{ GivingAdults | Map:'NickName' | Join:', ' | ReplaceLast:',',' and' }},</br>
-</br>
-On behalf of Central Christian Church, thank you for your faithful giving.</br>
-</br>
+Dear {{ GivingAdults | Map:'NickName' | Join:', ' | ReplaceLast:',',' and' }},<br/>
+<br/>
+On behalf of Central Christian Church, thank you for your faithful giving.<br/>
+<br/>
 
 <div class="panel panel-default">
   <div class="panel-heading">
@@ -37,32 +65,31 @@ On behalf of Central Christian Church, thank you for your faithful giving.</br>
   <div class="panel-body">
     <div>
       <div class="row">
-        <div class="col-md-3">
+        <div class="col-xs-2">
           <b>Date</b>
         </div>
-        <div class="col-md-3">
+        <div class="col-xs-3">
           <b>Type</b>
         </div>
-        <div class="col-md-3">
+        <div class="col-xs-3">
           <b>Amount</b>
         </div>
-        <div class="col-md-3">
+        <div class="col-xs-4">
           <b>Fund(s)</b>
         </div>
       </div>
-      </br>
       {% for transaction in Transactions %}
       <div class="row">
-        <div class="col-md-3">
+        <div class="col-xs-2">
           {{ transaction.Date | Date:'MM/dd/yyyy' }}
         </div>
-        <div class="col-md-3">
+        <div class="col-xs-3">
           {{ transaction.Type }}
         </div>
-        <div class="col-md-3">
+        <div class="col-xs-3">
           {{ transaction.Amount }}
         </div>
-        <div class="col-md-3">
+        <div class="col-xs-4">
           {% for fund in transaction.Funds %}
           <div class="row">
             {{ fund.Fund}} : {{ fund.Amount | FormatAsCurrency }}
@@ -70,14 +97,13 @@ On behalf of Central Christian Church, thank you for your faithful giving.</br>
           {% endfor %}
         </div>
       </div>
-      </br>
       {% endfor %}
     </div>
   </div>
 </div>
 
 <div class="row">
-  <div class="col-md-4">
+  <div class="col-xs-6">
     <div class="panel panel-default">
       <div class="panel-heading">
         <h1 class="panel-title">
@@ -87,10 +113,10 @@ On behalf of Central Christian Church, thank you for your faithful giving.</br>
       <div class="panel-body">
         {% for total in Totals %}
         <div class="row" style="text-align:right">
-          <div class="col-md-6">
+          <div class="col-xs-6">
             <b>{{ total.Name }}</b>
           </div>
-          <div class="col-md-6">
+          <div class="col-xs-6">
             {{ total.TotalAmount | FormatAsCurrency }}
           </div>
         </div>
@@ -104,8 +130,6 @@ On behalf of Central Christian Church, thank you for your faithful giving.</br>
     </div>
   </div>
 </div>
-</br>
-
-Thank you for your continued generous support of the ministry of Central Christian Church! "We have not provided you with any goods or services in exchange for this contribution. We have provided you with intangible religious benefits only and consistent with the tenets of our faith and practice, incidental tangible benefits."</br>
-</br>
-For your convenience you can give online and view your contributions. Go to centralaz.com and click on give. If you have any questions or concerns regarding your contributions please contact Marla Johnson at 480-305-7500 Ext 2226 (Gilbert/Queen Creek/Ahwatukee), Sylvia Greason at 480-924-4946 Ext 248 (Mesa), or Kathy Gross at 623-937-2741 (Glendale).
+<small>Thank you for your continued generous support of the ministry of Central Christian Church! "We have not provided you with any goods or services in exchange for this contribution. We have provided you with intangible religious benefits only and consistent with the tenets of our faith and practice, incidental tangible benefits."<br/></small>
+<br/>
+<small>For your convenience you can give online and view your contributions. Go to centralaz.com and click on give. If you have any questions or concerns regarding your contributions please contact Marla Johnson at 480-305-7500 Ext 2226 (Gilbert/Queen Creek/Ahwatukee), Sylvia Greason at 480-924-4946 Ext 248 (Mesa), or Kathy Gross at 623-937-2741 (Glendale).</small>
