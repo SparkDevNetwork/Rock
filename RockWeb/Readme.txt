@@ -1,6 +1,6 @@
 Rock McKinley 4.2
 
-+ Update Registration Entry so that discount code is still applied correctly when user returns to make a payment on existing registration.
++ Updated Registration Entry so that discount code is still applied correctly when user returns to make a payment on existing registration.
 + Updated Registration Entry to correctly delete a registration if it was just created but an error occurred during save of registrants or attributes.
 + Fixed exception that would occur when copying a registration template that included an additional form(s) (in addition to the default form) and that form contained a person or group attribute (Fixes #1356).
 + Fixed registration issue that would result in registered person getting added to target group even if registration failed due to payment issue.
@@ -15,6 +15,12 @@ Rock McKinley 4.2
 + Removed unnecesary clearing of authorization cache whenever a group member was added/edited/removed from a security group.
 + Updated the Group Type Detail so that if a group member attribute is removed, it is also removed from any registration template that was configured to use that attribute.
 + Updated the Twilio webhook so that if it gets an IOException when writing to log file that it will wait and try again a few times before causing an error.
++ Fixed issues with numeric attribute field comparisons on data views (Fixes #1377).
++ Fixed issue with Group and Role picker not saving the selected role (Fixes #1380).
++ Updated the Transaction Entry and Registration Entry blocks to validate new passwords against configured pattern when user is creating a new login in order to save their payment account information (Fixes #1371).
++ Fixed bug where event name not showing in page title (Fixes #1373)
++ Fixed issue with attendance block not saving the location or schedule for a new attendance being entered.
++ Fixed issue in Statement Generator where some transactions might not show up if it is split into multiple accounts and at least one of those accounts wasn't included in the filter.
 
 Rock McKinley 4.1
 
