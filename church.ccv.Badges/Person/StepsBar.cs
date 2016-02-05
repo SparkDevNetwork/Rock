@@ -73,8 +73,6 @@ namespace church.ccv.Badges.Person
                 , connectionGroupRegistrationPageId // 5
             ) );
             
-            //writer.Write(string.Format("<script src='{0}' type='text/javascript'></script>", System.Web.VirtualPathUtility.ToAbsolute( "~/Plugins/church_ccv/Badges/Scripts/steps-badge.js" ) ) );
-
             writer.Write( string.Format(
                 @"
                     <script>

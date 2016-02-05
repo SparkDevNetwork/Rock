@@ -17,22 +17,17 @@ namespace church.ccv.Badges.Rest.Controllers
     /// </summary>
     public partial class CCVBadgesController : Rock.Rest.ApiControllerBase
     {
-        const int MEMBERSHIP_CONNECTION_VALUE_ID = 65;
-        const string ATTRIBUTE_DATE_OF_MEMBERSHIP = "DateofMembership";
+        const string ATTRIBUTE_PERSON_DATE_OF_BAPTISM = "BaptismDate";
+        const string ATTRIBUTE_PERSON_ERA = "CurrentlyanERA";
+        const string ATTRIBUTE_PERSON_GIVING_IN_LAST_12_MONTHS = "GivingInLast12Months";
+        const string ATTRIBUTE_PERSON_DATE_OF_MEMBERSHIP = "DateofMembership";
 
-        const int GROUPTYPE_BAPTISM_ID = 58;
-        const string ATTRIBUTE_DATE_OF_BAPTISM = "BaptismDate";
-
-        const string ATTRIBUTE_ERA = "CurrentlyanERA";
-
-        const int GROUPTYPE_NEIGHBORHOOD_ID = 25;
-
-        const string ATTRIBUTE_GIVING_IN_LAST_12_MONTHS = "GivingInLast12Months";
         const string ATTRIBUTE_GLOBAL_TITHE_THRESHOLD = "TitheThreshold";
-
-        const int GROUPTYPE_SERVINGTEAM_ID = 23;
-
         const string ATTRIBUTE_GLOBAL_COACHING_GROUPTYPE_IDS = "CoachingGroupTypeIds";
+        const string ATTRIBUTE_GLOBAL_CONNECTION_GROUPTYPE_IDS = "ConnectionGroupTypeIds";
+        const string ATTRIBUTE_GLOBAL_SERVING_GROUPTYPE_IDS = "ServingGroupTypeIds";
+        const string ATTRIBUTE_GLOBAL_BAPTISM_GROUPTYPE_IDS = "BaptismGroupTypeIds";
+        const string ATTRIBUTE_GLOBAL_MEMBERSHIP_VALUE_ID = "MembershipValueId";
 
         /// <summary>
         /// Returns groups that are a specified type and geofence a given person for their home campus
@@ -121,13 +116,14 @@ namespace church.ccv.Badges.Rest.Controllers
                     person.LoadAttributes();
 
                     // membership
+                    int MEMBERSHIP_CONNECTION_VALUE_ID = DefinedValueCache.Read( GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_MEMBERSHIP_VALUE_ID ) ).Id;
                     stepsBarResult.MembershipResult = new MembershipResult();
                     if ( person.ConnectionStatusValueId == MEMBERSHIP_CONNECTION_VALUE_ID )
                     {
                         stepsBarResult.MembershipResult.IsMember = true;
-                        if ( person.AttributeValues.ContainsKey( ATTRIBUTE_DATE_OF_MEMBERSHIP ) )
+                        if ( person.AttributeValues.ContainsKey( ATTRIBUTE_PERSON_DATE_OF_MEMBERSHIP ) )
                         {
-                            stepsBarResult.MembershipResult.MembershipDate = person.GetAttributeValue(ATTRIBUTE_DATE_OF_MEMBERSHIP).AsDateTime();
+                            stepsBarResult.MembershipResult.MembershipDate = person.GetAttributeValue(ATTRIBUTE_PERSON_DATE_OF_MEMBERSHIP).AsDateTime();
                         }
                     }
                     else
@@ -137,7 +133,7 @@ namespace church.ccv.Badges.Rest.Controllers
 
                     // baptism - baptism is driven by the baptism date person attribute
                     stepsBarResult.BaptismResult = new BaptismResult();
-                    stepsBarResult.BaptismResult.BaptismDate = person.GetAttributeValue( ATTRIBUTE_DATE_OF_BAPTISM ).AsDateTime();
+                    stepsBarResult.BaptismResult.BaptismDate = person.GetAttributeValue( ATTRIBUTE_PERSON_DATE_OF_BAPTISM ).AsDateTime();
 
                     if ( stepsBarResult.BaptismResult.BaptismDate.HasValue )
                     {
@@ -145,8 +141,15 @@ namespace church.ccv.Badges.Rest.Controllers
                     } else
                     {
                         // check if registered for baptism
+                        List<int> GROUPTYPES_BAPTISM_IDS = new List<int>();
+                        try
+                        {
+                            GROUPTYPES_BAPTISM_IDS = GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_BAPTISM_GROUPTYPE_IDS ).Split( ',' ).Select( int.Parse ).ToList();
+                        }
+                        catch ( Exception ex ) { }
+
                         var baptismGroups = new GroupMemberService( rockContext ).Queryable()
-                                                        .Where( m => m.Group.GroupTypeId == GROUPTYPE_BAPTISM_ID
+                                                        .Where( m => GROUPTYPES_BAPTISM_IDS.Contains(m.Group.GroupTypeId)
                                                              && m.GroupMemberStatus == GroupMemberStatus.Active
                                                              && m.PersonId == person.Id )
                                                         .Select( m => m.GroupId ).ToList();
@@ -186,15 +189,21 @@ namespace church.ccv.Badges.Rest.Controllers
                     }
 
                     // is worshiper
-                    stepsBarResult.IsWorshipper = person.GetAttributeValue( ATTRIBUTE_ERA ).AsBoolean();
+                    stepsBarResult.IsWorshipper = person.GetAttributeValue( ATTRIBUTE_PERSON_ERA ).AsBoolean();
 
                     // connect - in NG group
                     stepsBarResult.ConnectionResult = new ConnectionResult();
                     stepsBarResult.ConnectionResult.Groups = new List<GroupMemberSummary>();
 
                     // get group list
+                    List<int> GROUPTYPES_CONNECTION_IDS = new List<int>();
+                    try
+                    {
+                        GROUPTYPES_CONNECTION_IDS = GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_CONNECTION_GROUPTYPE_IDS ).Split( ',' ).Select( int.Parse ).ToList();
+                    }
+                    catch ( Exception ex ) { }
                     var neighborhoodGroups = new GroupMemberService( rockContext ).Queryable()
-                                                .Where( m => m.Group.GroupTypeId == GROUPTYPE_NEIGHBORHOOD_ID
+                                                .Where( m => GROUPTYPES_CONNECTION_IDS.Contains(m.Group.GroupTypeId)
                                                      && m.GroupMemberStatus != GroupMemberStatus.Inactive
                                                      && m.Group.IsActive != false
                                                      && m.PersonId == person.Id)
@@ -245,17 +254,24 @@ namespace church.ccv.Badges.Rest.Controllers
                     }
 
                     // is tithing
-                    decimal givingInLast12Months = person.GetAttributeValue( ATTRIBUTE_GIVING_IN_LAST_12_MONTHS ).AsDecimal();
+                    decimal givingInLast12Months = person.GetAttributeValue( ATTRIBUTE_PERSON_GIVING_IN_LAST_12_MONTHS ).AsDecimal();
                     decimal titheThreshold = GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_TITHE_THRESHOLD ).AsDecimal();
 
                     stepsBarResult.IsTithing = (givingInLast12Months >= titheThreshold);
 
                     // serving results
+                    List<int> GROUPTYPES_SERVING_IDS = new List<int>();
+                    try
+                    {
+                        GROUPTYPES_SERVING_IDS = GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_SERVING_GROUPTYPE_IDS ).Split( ',' ).Select( int.Parse ).ToList();
+                    }
+                    catch ( Exception ex ) { }
+
                     stepsBarResult.ServingResult = new ServingResult();
                     stepsBarResult.ServingResult.Groups = new List<GroupMemberSummary>();
 
                     var servingGroups = new GroupMemberService( rockContext ).Queryable()
-                                                .Where( m => m.Group.GroupTypeId == GROUPTYPE_SERVINGTEAM_ID
+                                                .Where( m => GROUPTYPES_SERVING_IDS.Contains(m.Group.GroupTypeId)
                                                      && m.GroupMemberStatus != GroupMemberStatus.Inactive
                                                      && m.Group.IsActive != false
                                                      && m.PersonId == person.Id )
@@ -296,10 +312,7 @@ namespace church.ccv.Badges.Rest.Controllers
                     List<int> GROUPTYPES_COACHING_IDS = new List<int>();
                     try {
                         GROUPTYPES_COACHING_IDS = GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_COACHING_GROUPTYPE_IDS ).Split( ',' ).Select( int.Parse ).ToList();
-                    } catch(Exception ex )
-                    {
-
-                    }
+                    } catch(Exception ex ){}
 
                     stepsBarResult.CoachingResult = new CoachingResult();
                     stepsBarResult.CoachingResult.Groups = new List<GroupMemberSummary>();
