@@ -502,6 +502,8 @@
     <Compile Include="Reporting\DataFilter\Person\NotInGroupGroupTypeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\NotInGroupFilter.cs" />
     <Compile Include="Reporting\DataSelect\FinancialTransaction\TotalAmountSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Group\CampusSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Group\GroupTypeSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\ParentGroupMemberListSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\MemberListSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\MemberCountSelect.cs" />
