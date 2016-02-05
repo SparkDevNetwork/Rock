@@ -101,6 +101,9 @@ namespace Rockweb.Plugins.com_centralaz.SpiritualGifts
                 catch
                 {
                     nbError.Visible = true;
+                    pnlInstructions.Visible = false;
+                    pnlQuestions.Visible = false;
+                    pnlResults.Visible = false;
                 }
             }
             else
@@ -113,6 +116,9 @@ namespace Rockweb.Plugins.com_centralaz.SpiritualGifts
                 else
                 {
                     nbError.Visible = true;
+                    pnlInstructions.Visible = false;
+                    pnlQuestions.Visible = false;
+                    pnlResults.Visible = false;
                 }
             }
 

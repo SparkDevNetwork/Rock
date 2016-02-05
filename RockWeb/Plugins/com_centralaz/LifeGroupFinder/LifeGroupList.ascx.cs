@@ -213,7 +213,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                 {
                     Id = group.Id,
                     Name = group.Name,
-                    LeaderImageUrl = leader != null ? leader.Person.PhotoUrl : "",
+                    LeaderImageUrl = group.GetAttributeValue( "MainPhoto" ) ?? "",
                     Distance = GetDistance( group, personLocation ),
                     HasKids = group.GetAttributeValues( "HasChildren" ).Any(),
                     Crossroads = group.GetAttributeValue( "Crossroads" ) ?? "",

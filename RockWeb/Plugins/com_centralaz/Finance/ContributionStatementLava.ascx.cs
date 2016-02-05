@@ -90,6 +90,7 @@ namespace RockWeb.Plugins.com_centralaz.Finance
         private void GenerateStatement()
         {
             RockContext rockContext = new RockContext();
+            var adultRoleId = new GroupTypeRoleService( rockContext ).Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
             var year = PageParameter( "Year" ).AsIntegerOrNull();
             if ( year != null )
             {
@@ -166,7 +167,14 @@ namespace RockWeb.Plugins.com_centralaz.Finance
                         .Where( p => p.GivingId == targetPerson.GivingId )
                         .ToList();
 
+                    var givingAdultList = givingPeopleList.Where( p =>
+                            p.GetFamilyMembers( true ).Any( m =>
+                                m.PersonId == p.Id &&
+                                m.GroupRoleId == adultRoleId ) )
+                                .ToList();
+
                     mergeObjects.Add( "GivingPeople", givingPeopleList );
+                    mergeObjects.Add( "GivingAdults", givingAdultList );
                     mergeObjects.Add( "CurrentPerson", CurrentPerson );
 
                     lContent.Text = string.Empty;
