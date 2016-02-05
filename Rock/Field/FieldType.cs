@@ -687,10 +687,8 @@ namespace Rock.Field
                 if ( comparisonValue != "0" )
                 {
                     ComparisonType comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-                    MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
-                    ConstantExpression constantExpression = Expression.Constant( filterValues[1], typeof( string ) );
-
-                    return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+                    MemberExpression propertyExpression = Expression.Property( parameterExpression, this.AttributeValueFieldName );
+                    return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( filterValues[1] ) );
                 }
             }
 
@@ -709,6 +707,16 @@ namespace Rock.Field
             {
                 return "Value";
             }
+        }
+
+        /// <summary>
+        /// Attributes the constant expression.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public virtual ConstantExpression AttributeConstantExpression( string value )
+        {
+            return Expression.Constant( value, this.AttributeValueFieldType );
         }
 
         /// <summary>
