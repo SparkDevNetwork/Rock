@@ -95,7 +95,7 @@ namespace Rock.Rest.Controllers
                         treeViewItem.IconCssClass = groupType.IconCssClass;
                     }
 
-                    if ( countsType == TreeViewItem.GetCountsType.MemberCount )
+                    if ( countsType == TreeViewItem.GetCountsType.GroupMembers )
                     {
                         treeViewItem.CountInfo = group.Members.Count();
                     }

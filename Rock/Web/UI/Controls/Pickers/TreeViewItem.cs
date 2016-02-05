@@ -28,7 +28,7 @@ namespace Rock.Web.UI.Controls
         {
             None = 0,
             ChildGroups = 1,
-            MemberCount = 2
+            GroupMembers = 2
         }
 
         /// <summary>

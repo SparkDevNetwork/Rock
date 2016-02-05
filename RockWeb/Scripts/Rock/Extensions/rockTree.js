@@ -313,7 +313,7 @@
 
 				    var countInfoHtml = '';
 				    if (typeof (node.countInfo) != 'undefined' && node.countInfo != null) {
-				        countInfoHtml = '<span class="label label-default margin-l-sm">' + node.countInfo + '</span>';
+				        countInfoHtml = '<span class="label label-tree margin-l-sm">' + node.countInfo + '</span>';
 				    }
 
 				    $li.append('<span class="rocktree-name" title="' + nodeText.trim() + '"> ' + node.name + countInfoHtml + '</span>');
