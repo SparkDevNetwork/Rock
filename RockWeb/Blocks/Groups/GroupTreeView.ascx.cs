@@ -128,7 +128,7 @@ namespace RockWeb.Blocks.Groups
             ddlCountsType.Items.Clear();
             ddlCountsType.Items.Add( new ListItem( string.Empty, TreeViewItem.GetCountsType.None.ConvertToInt().ToString() ) );
             ddlCountsType.Items.Add( new ListItem( TreeViewItem.GetCountsType.ChildGroups.ConvertToString(), TreeViewItem.GetCountsType.ChildGroups.ConvertToInt().ToString() ) );
-            ddlCountsType.Items.Add( new ListItem( TreeViewItem.GetCountsType.MemberCount.ConvertToString(), TreeViewItem.GetCountsType.MemberCount.ConvertToInt().ToString() ) );
+            ddlCountsType.Items.Add( new ListItem( TreeViewItem.GetCountsType.GroupMembers.ConvertToString(), TreeViewItem.GetCountsType.GroupMembers.ConvertToInt().ToString() ) );
 
             var countsType = this.GetUserPreference( "CountsType" );
             if ( string.IsNullOrEmpty( countsType ) )
