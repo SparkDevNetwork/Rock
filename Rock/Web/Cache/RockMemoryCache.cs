@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Specialized;
+using System.Configuration;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Caching;
@@ -47,6 +48,9 @@ namespace Rock.Web.Cache
 
         // Whether or not the polling interval has been set
         private bool _isPollingIntervalSet = false;
+
+        // Whether caching is being disabled or not
+        private bool _isCachingDisabled = false;
 
         /// <summary>
         /// Initializes the <see cref="RockMemoryCache"/> class.
@@ -104,6 +108,9 @@ namespace Rock.Web.Cache
 
             // Fire this method initially after a 1000 ms delay
             _setMemoryCacheLastTrimGen2CountTimer = new Timer( SetMemoryCacheLastTrimGen2Count, null, 1000, Timeout.Infinite );
+
+            // Check to see if caching has been disabled
+            _isCachingDisabled = ConfigurationManager.AppSettings["DisableCaching"].AsBoolean();
         }
 
         /// <summary>
@@ -157,6 +164,11 @@ namespace Rock.Web.Cache
         {
             get
             {
+                if ( _isCachingDisabled )
+                {
+                    return null;
+                }
+
                 object obj = base[key];
                 UpdateCacheHitMiss( key, obj != null );
                 return obj;
@@ -179,6 +191,11 @@ namespace Rock.Web.Cache
         /// </returns>
         public override object AddOrGetExisting( string key, object value, CacheItemPolicy policy, string regionName = null )
         {
+            if ( _isCachingDisabled )
+            {
+                return null;
+            }
+
             UpdateCacheHitMiss( key, Contains( key ) );
             return base.AddOrGetExisting( key, value, policy, regionName );
         }
@@ -195,6 +212,11 @@ namespace Rock.Web.Cache
         /// </returns>
         public override object AddOrGetExisting( string key, object value, DateTimeOffset absoluteExpiration, string regionName = null )
         {
+            if ( _isCachingDisabled )
+            {
+                return null;
+            }
+
             UpdateCacheHitMiss( key, Contains( key ) );
             return base.AddOrGetExisting( key, value, absoluteExpiration, regionName );
         }
@@ -209,6 +231,11 @@ namespace Rock.Web.Cache
         /// </returns>
         public override object Get( string key, string regionName = null )
         {
+            if ( _isCachingDisabled )
+            {
+                return null;
+            }
+
             object obj = base.Get( key, regionName );
             UpdateCacheHitMiss( key, obj != null );
             return obj;
