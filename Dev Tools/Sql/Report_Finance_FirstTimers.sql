@@ -34,6 +34,7 @@ SELECT
 	l.PostalCode,
 	fap.PublicName AS Fund,
 	fa.PublicName AS SubFund,
+	c.Name AS Campus,
 	ftd.Amount
 FROM
 	FinancialTransaction ft
@@ -55,6 +56,7 @@ FROM
 	LEFT JOIN [Group] g ON g.Id = gm.GroupId
 	LEFT JOIN GroupLocation gl ON gl.GroupId = g.Id
 	LEFT JOIN Location l ON l.Id = gl.LocationId
+	LEFT JOIN Campus c ON c.Id = fa.CampusId
 WHERE
 	(g.Id IS NULL OR g.GroupTypeId = 10)
 	AND (g.Id IS NULL OR g.IsActive = 1)
