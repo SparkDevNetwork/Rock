@@ -59,5 +59,14 @@ namespace Rock.Chart
         /// </value>
         [Previewable]
         public string SeriesId { get; set; }
+
+        /// <summary>
+        /// Gets or sets additional information about the series (i.e. for account, would be GL#)
+        /// </summary>
+        /// <value>
+        /// The series additional information.
+        /// </value>
+        [Previewable]
+        public string SeriesAddlInfo { get; set; }
     }
 }
