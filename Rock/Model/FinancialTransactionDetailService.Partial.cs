@@ -179,7 +179,7 @@ namespace Rock.Model
         /// <param name="accountIds">The account ids.</param>
         /// <param name="dataViewId">The data view identifier.</param>
         /// <returns></returns>
-        public IEnumerable<IChartData> GetChartData(
+        public IEnumerable<SummaryData> GetChartData(
             ChartGroupBy groupBy, TransactionGraphBy graphBy, DateTime? start, DateTime? end, decimal? minAmount, decimal? maxAmount,
             List<int> currencyTypeIds, List<int> sourceTypeIds, List<int> accountIds, int? dataViewId )
         {
@@ -199,7 +199,8 @@ namespace Rock.Model
                 Account = new
                 {
                     Id = d.FinancialTransactionDetail.AccountId,
-                    Name = d.FinancialTransactionDetail.Account.Name
+                    Name = d.FinancialTransactionDetail.Account.Name,
+                    GLCode = d.FinancialTransactionDetail.Account.GlCode
                 },
                 Amount = d.FinancialTransactionDetail.Amount
             } );
@@ -236,6 +237,7 @@ namespace Rock.Model
                     DateTimeStamp = d.Key.SummaryDateTime.ToJavascriptMilliseconds(),
                     DateTime = d.Key.SummaryDateTime,
                     SeriesId = d.Key.Series.Name,
+                    SeriesAddlInfo = d.Key.Series.GLCode,
                     YValue = d.Amount
                 } ).ToList();
             }

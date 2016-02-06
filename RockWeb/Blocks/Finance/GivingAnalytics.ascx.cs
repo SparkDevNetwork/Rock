@@ -748,7 +748,7 @@ function(item) {
             rblDataViewAction.Visible = dvpDataView.SelectedValueAsInt().HasValue;
         }
 
-        private IEnumerable<Rock.Chart.IChartData> GetChartData()
+        private IEnumerable<Rock.Chart.SummaryData> GetChartData()
         {
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
 
@@ -782,8 +782,28 @@ function(item) {
         /// <summary>
         /// Binds the chart attendance grid.
         /// </summary>
-        private void BindChartAmountGrid( IEnumerable<Rock.Chart.IChartData> chartData )
+        private void BindChartAmountGrid( IEnumerable<Rock.Chart.SummaryData> chartData )
         {
+            var graphBy = hfGraphBy.Value.ConvertToEnumOrNull<TransactionGraphBy>() ?? TransactionGraphBy.Total;
+            switch( graphBy )
+            {
+                case TransactionGraphBy.Campus:
+                    gChartAmount.Columns[1].Visible = true;
+                    gChartAmount.Columns[1].HeaderText = "Campus";
+                    gChartAmount.Columns[2].Visible = false;
+                    break;
+                case TransactionGraphBy.FinancialAccount:
+                    gChartAmount.Columns[1].Visible = true;
+                    gChartAmount.Columns[1].HeaderText = "Account";
+                    gChartAmount.Columns[2].Visible = true;
+                    gChartAmount.Columns[2].HeaderText = "GL Code";
+                    break;
+                case TransactionGraphBy.Total:
+                    gChartAmount.Columns[1].Visible = false;
+                    gChartAmount.Columns[2].Visible = false;
+                    break;
+            }
+
             SortProperty sortProperty = gChartAmount.SortProperty;
 
             if ( sortProperty != null )
