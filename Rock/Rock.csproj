@@ -531,6 +531,7 @@
     <Compile Include="Web\Cache\AttributeValueCache.cs" />
     <Compile Include="Web\InternalContext.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ConnectionRequestPicker.cs" />
+    <Compile Include="Web\Utilities\RockUpdateHelper.cs" />
     <Compile Include="Web\Utilities\WebControlHelper.cs" />
     <Compile Include="Security\Authentication\Facebook.cs">
       <SubType>Code</SubType>
