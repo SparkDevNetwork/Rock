@@ -25,5 +25,59 @@ namespace LoadTester
                 return String.Join( delimiter, strings.ToArray() );
             }
         }
+
+        public static double Median( this IEnumerable<double> source )
+        {
+            var sortedList = from number in source
+                             orderby number
+                             select number;
+
+            int count = sortedList.Count();
+            int itemIndex = count / 2;
+            if ( count % 2 == 0 ) // Even number of items. 
+                return ( sortedList.ElementAt( itemIndex ) +
+                        sortedList.ElementAt( itemIndex - 1 ) ) / 2;
+
+            // Odd number of items. 
+            return sortedList.ElementAt( itemIndex );
+        }
+
+        public static T? Mode<T>( this IEnumerable<T> source ) where T : struct
+        {
+            var sortedList = from number in source
+                             orderby number
+                             select number;
+
+            int count = 0;
+            int max = 0;
+            T current = default( T );
+            T? mode = new T?();
+
+            foreach ( T next in sortedList )
+            {
+                if ( current.Equals( next ) == false )
+                {
+                    current = next;
+                    count = 1;
+                }
+                else
+                {
+                    count++;
+                }
+
+                if ( count > max )
+                {
+                    max = count;
+                    mode = current;
+                }
+            }
+
+            if ( max > 1 )
+                return mode;
+
+            return null;
+        }
     }
+
+
 }
