@@ -39,6 +39,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve HTML content." )]
 
     [TextField( "Image Subfolder", "The subfolder to use when displaying or uploading images. It will be appended to the base folder ~/Content/ExternalSite/Headers/", false, "", "", 2 )]
+    [TextField( "Default Image", "The image that will appear if nothing is in the specified sub-folder", true, "https://www.centralaz.com/Content/ExternalSite/Headers/Mainbanner.jpg" )]
     [TextField( "Feature Title" )]
 
     [CodeEditorField( "Lava Template", "Lava template to use to display the header.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~/Plugins/com_centralaz/Widgets/Lava/FeatureBlock.lava' %}", "", 2 )]
@@ -278,14 +279,14 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
 
             var mergeFields = new Dictionary<string, object>();
 
-            // add linked pages
-            if (images.Count > 0)
+            // add image
+            if ( images.Count > 0 )
             {
                 mergeFields.Add( "ImageUrl", ResolveRockUrlIncludeRoot( images.FirstOrDefault() ) );
             }
             else
             {
-                mergeFields.Add( "ImageUrl", Request.Url.ToString() );
+                mergeFields.Add( "ImageUrl", GetAttributeValue( "DefaultImage" ) );
             }
 
             mergeFields.Add( "ImageTitle", GetAttributeValue( "FeatureTitle" ) );
@@ -318,8 +319,12 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                 {
                     if ( item is FileInfo )
                     {
-                        //add virtual path of the image to the images list
-                        images.Add( string.Format( "{0}/{1}", ImageFolderPath, item.Name ) );
+                        if ( item.Name != "Thumbs.db" )
+                        {
+                            //add virtual path of the image to the images list
+                            images.Add( string.Format( "{0}/{1}", ImageFolderPath, item.Name ) );
+                        }
+
                     }
                 }
             }
