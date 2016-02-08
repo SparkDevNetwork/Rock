@@ -1,4 +1,5 @@
 DECLARE @etid_workflowType AS INT = (SELECT Id FROM EntityType WHERE Name = 'Rock.Model.WorkflowType');
+DECLARE @etid_workflow AS INT = (SELECT Id FROM EntityType WHERE Name = 'Rock.Model.Workflow');
 
 -- STEP 1: Generate code to insert categories
 SELECT 
@@ -72,3 +73,52 @@ SELECT
 FROM 
 	WorkflowType wt
 	LEFT JOIN Category c ON c.Id = wt.CategoryId;
+
+-- STEP 3: WorkflowType Attributes
+SELECT
+	CONCAT(
+		'INSERT [Attribute] ([IsSystem], [FieldTypeId], [EntityTypeId], [EntityTypeQualifierColumn], [EntityTypeQualifierValue], [Key], [Name], [Description], [Order], [IsGridColumn], [DefaultValue], [IsMultiValue], [IsRequired], [Guid], [IconCssClass], [AllowSearch]) VALUES (',
+		a.IsSystem,
+		', ',
+		a.FieldTypeId,
+		', ',
+		'@etid_workflow',
+		', ''',
+		a.EntityTypeQualifierColumn,
+		''', ',
+		CASE WHEN wt.Id IS NOT NULL THEN
+			CONCAT(
+				'(SELECT Id FROM WorkflowType WHERE [Guid] = ''',
+				wt.[Guid],
+				'''), '
+			)
+		ELSE
+			'NULL, '
+		END,
+		'''',
+		REPLACE(a.[Key], '''', ''''''),
+		''', ''',
+		REPLACE(a.[Name], '''', ''''''),
+		''', ''',
+		REPLACE(a.[Description], '''', ''''''),
+		''', ',
+		a.[Order],
+		', ',
+		a.IsGridColumn,
+		', ''',
+		ISNULL(REPLACE(a.[DefaultValue], '''', ''''''), 'NULL'),
+		''', ',
+		a.IsMultiValue,
+		', ',
+		a.IsRequired,
+		', ''',
+		a.[Guid],
+		''', ''',
+		a.IconCssClass,
+		''', ',
+		a.AllowSearch,
+		');'
+	) AS Step3
+FROM
+	Attribute a
+	JOIN WorkflowType wt ON wt.Id = a.EntityTypeQualifierValue AND a.EntityTypeQualifierColumn = 'WorkflowTypeId'
