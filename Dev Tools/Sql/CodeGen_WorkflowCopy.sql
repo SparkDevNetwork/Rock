@@ -121,4 +121,83 @@ SELECT
 	) AS Step3
 FROM
 	Attribute a
-	JOIN WorkflowType wt ON wt.Id = a.EntityTypeQualifierValue AND a.EntityTypeQualifierColumn = 'WorkflowTypeId'
+	JOIN WorkflowType wt ON wt.Id = a.EntityTypeQualifierValue AND a.EntityTypeQualifierColumn = 'WorkflowTypeId';
+
+-- STEP 4: Workflow Activity Types
+SELECT 
+	CONCAT(
+		'INSERT [WorkflowActivityType] ([IsActive], [Name], [Description], [WorkflowTypeId], [IsActivatedWithWorkflow], [Order], [Guid]) VALUES (',
+		wat.IsActive,
+		', ''',
+		REPLACE(wat.Name, '''', ''''''),
+		''', ''',
+		REPLACE(wat.[Description], '''', ''''''),
+		''', ',
+		CASE WHEN wt.Id IS NOT NULL THEN
+			CONCAT(
+				'(SELECT Id FROM WorkflowType WHERE [Guid] = ''',
+				wt.[Guid],
+				'''), '
+			)
+		ELSE
+			'NULL, '
+		END,
+		wat.IsActivatedWithWorkflow,
+		', ',
+		wat.[Order],
+		', ''',
+		wat.[Guid],
+		''');'
+	) AS Step4
+FROM 
+	WorkflowActivityType wat
+	LEFT JOIN WorkflowType wt ON wat.WorkflowTypeId = wt.Id;
+
+-- Step 5: Workflow Activity Type Attributes
+SELECT
+	CONCAT(
+		'INSERT [Attribute] ([IsSystem], [FieldTypeId], [EntityTypeId], [EntityTypeQualifierColumn], [EntityTypeQualifierValue], [Key], [Name], [Description], [Order], [IsGridColumn], [DefaultValue], [IsMultiValue], [IsRequired], [Guid], [IconCssClass], [AllowSearch]) VALUES (',
+		a.IsSystem,
+		', ',
+		a.FieldTypeId,
+		', ',
+		'@etid_workflowActivity',
+		', ''',
+		a.EntityTypeQualifierColumn,
+		''', ',
+		CASE WHEN wat.Id IS NOT NULL THEN
+			CONCAT(
+				'(SELECT Id FROM WorkflowActivityType WHERE [Guid] = ''',
+				wat.[Guid],
+				'''), '
+			)
+		ELSE
+			'NULL, '
+		END,
+		'''',
+		REPLACE(a.[Key], '''', ''''''),
+		''', ''',
+		REPLACE(a.[Name], '''', ''''''),
+		''', ''',
+		REPLACE(a.[Description], '''', ''''''),
+		''', ',
+		a.[Order],
+		', ',
+		a.IsGridColumn,
+		', ''',
+		ISNULL(REPLACE(a.[DefaultValue], '''', ''''''), 'NULL'),
+		''', ',
+		a.IsMultiValue,
+		', ',
+		a.IsRequired,
+		', ''',
+		a.[Guid],
+		''', ''',
+		a.IconCssClass,
+		''', ',
+		a.AllowSearch,
+		');'
+	) AS Step5
+FROM
+	Attribute a
+	JOIN WorkflowActivityType wat ON wat.Id = a.EntityTypeQualifierValue AND a.EntityTypeQualifierColumn = 'ActivityTypeId';
