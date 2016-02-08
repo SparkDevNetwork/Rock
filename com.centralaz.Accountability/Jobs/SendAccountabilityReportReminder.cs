@@ -39,6 +39,7 @@ namespace com.centralaz.Accountability.Jobs
     /// Job to send reminders to accountability group members to submit a report.
     /// </summary>
     [CommunicationTemplateField( "Template", "", true, "" )]
+    [PersonField("Sender", "The person who the emails will be send on account of.")]
     [DisallowConcurrentExecution]
     public class SendAccountabilityReportReminder : IJob
     {
@@ -57,37 +58,42 @@ namespace com.centralaz.Accountability.Jobs
         public virtual void Execute( IJobExecutionContext context )
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
-
+            var rockContext = new RockContext();
             var emailTemplate = dataMap.Get( "Template" ).ToString().AsGuid();
-            var pageId = ( new PageService( new RockContext() ).Get( "64B5B1F6-472A-4C64-85B5-1F6864FE1992".AsGuid() ) ).Id;
-            foreach ( var groupType in new GroupTypeService( new RockContext() ).Queryable() )
+            var senderAliasGuid = dataMap.Get( "Sender" ).ToString().AsGuid();
+            var senderAlias = new PersonAliasService( rockContext ).Get( senderAliasGuid );
+            if ( senderAlias != null )
             {
-                if ( groupType.InheritedGroupType != null )
+                var pageId = ( new PageService( rockContext ).Get( "64B5B1F6-472A-4C64-85B5-1F6864FE1992".AsGuid() ) ).Id;
+                foreach ( var groupType in new GroupTypeService( rockContext ).Queryable() )
                 {
-                    if ( groupType.InheritedGroupType.Guid == "DC99BF69-8A1A-411F-A267-1AE75FDC2341".AsGuid() )
+                    if ( groupType.InheritedGroupType != null )
                     {
-                        foreach ( Group group in groupType.Groups )
+                        if ( groupType.InheritedGroupType.Guid == "DC99BF69-8A1A-411F-A267-1AE75FDC2341".AsGuid() )
                         {
-                            group.LoadAttributes();
-                            DateTime reportStartDate = DateTime.Parse( group.GetAttributeValue( "ReportStartDate" ).ToString() );
-                            if ( reportStartDate.DayOfWeek == DateTime.Now.DayOfWeek )
+                            foreach ( Group group in groupType.Groups )
                             {
-                                DateTime nextDueDate = NextReportDate( reportStartDate );
-                                int daysUntilDueDate = ( nextDueDate - DateTime.Today ).Days;
-                                foreach ( GroupMember groupMember in group.Members )
+                                group.LoadAttributes();
+                                DateTime reportStartDate = DateTime.Parse( group.GetAttributeValue( "ReportStartDate" ).ToString() );
+                                if ( reportStartDate.DayOfWeek == DateTime.Now.DayOfWeek )
                                 {
-                                    ResponseSetService responseSetService = new ResponseSetService( new AccountabilityContext() );
-                                    //All caught up case
-                                    if ( daysUntilDueDate == 0 && !responseSetService.DoesResponseSetExistWithSubmitDate( nextDueDate, groupMember.PersonId, group.Id ) )
+                                    DateTime nextDueDate = NextReportDate( reportStartDate );
+                                    int daysUntilDueDate = ( nextDueDate - DateTime.Today ).Days;
+                                    foreach ( GroupMember groupMember in group.Members )
                                     {
-                                        Send( groupMember, pageId, emailTemplate );
+                                        ResponseSetService responseSetService = new ResponseSetService( new AccountabilityContext() );
+                                        //All caught up case
+                                        if ( daysUntilDueDate == 0 && !responseSetService.DoesResponseSetExistWithSubmitDate( nextDueDate, groupMember.PersonId, group.Id ) )
+                                        {
+                                            Send( groupMember, pageId, emailTemplate, senderAlias.Id );
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
-            }
+            }           
         }
 
 
@@ -114,7 +120,7 @@ namespace com.centralaz.Accountability.Jobs
         }
 
 
-        private void Send( GroupMember recipient, int pageId, Guid emailTemplateGuid, string appRoot = "", string themeRoot = "" )
+        private void Send( GroupMember recipient, int pageId, Guid emailTemplateGuid, int senderAliasId,  string appRoot = "", string themeRoot = "" )
         {
             var rockContext = new RockContext();
             var communication = UpdateCommunication( rockContext, recipient, emailTemplateGuid, pageId );
@@ -125,6 +131,7 @@ namespace com.centralaz.Accountability.Jobs
 
                 communication.Status = CommunicationStatus.Approved;
                 communication.ReviewedDateTime = RockDateTime.Now;
+                communication.CreatedByPersonAliasId = senderAliasId;
 
                 message = "Communication has been queued for sending.";
                 rockContext.SaveChanges();
@@ -135,25 +142,6 @@ namespace com.centralaz.Accountability.Jobs
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
             }
 
-            //var recipients = new List<RecipientData>();
-            //var newRecipient = new RecipientData( recipient.Person.Email, CombineMergeFields( recipient, pageId ) );
-            //recipients.Add( newRecipient );
-            //var template = new SystemEmailService( new RockContext() ).Get( emailTemplateGuid );
-
-            //var mediumEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
-            //if ( mediumEntity != null )
-            //{
-            //    var medium = MediumContainer.GetComponent( mediumEntity.Name );
-            //    if ( medium != null && medium.IsActive )
-            //    {
-            //        var transport = medium.Transport;
-            //        if ( transport != null && transport.IsActive )
-            //        {
-            //            appRoot = GlobalAttributesCache.Read( new RockContext() ).GetValue( "InternalApplicationRoot" );
-            //            transport.Send( template, recipients, appRoot, themeRoot );
-            //        }
-            //    }
-            //}
         }
 
 
