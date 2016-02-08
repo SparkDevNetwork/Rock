@@ -111,7 +111,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
             var accountPersonService = new AccountPersonService( rockContext );
             var accountService = new AccountService( rockContext );
 
-            Account type = accountService.Get( e.RowKeyId );
+            PCOAccount type = accountService.Get( e.RowKeyId );
 
             if ( type != null )
             {

@@ -59,7 +59,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlSettings );
 
-            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Account.FriendlyTypeName );
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", PCOAccount.FriendlyTypeName );
         }
 
         /// <summary>
@@ -115,7 +115,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
         {
             var rockContext = new RockContext();
 
-            Account account = null;
+            PCOAccount account = null;
             AccountService accountService = new AccountService( rockContext );
 
             int accountId = hfAccountId.ValueAsInt();
@@ -126,7 +126,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
 
             if ( account == null )
             {
-                account = new Account();
+                account = new PCOAccount();
                 accountService.Add( account );
             }
 
@@ -159,7 +159,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
         protected void btnEdit_Click( object sender, EventArgs e )
         {
             AccountService accountService = new AccountService( new RockContext() );
-            Account account = accountService.Get( hfAccountId.ValueAsInt() );
+            PCOAccount account = accountService.Get( hfAccountId.ValueAsInt() );
             ShowEditDetails( account );
         }
 
@@ -172,7 +172,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
         {
             RockContext rockContext = new RockContext();
             AccountService accountService = new AccountService( rockContext );
-            Account account = accountService.Get( int.Parse( hfAccountId.Value ) );
+            PCOAccount account = accountService.Get( int.Parse( hfAccountId.Value ) );
 
             if ( account != null )
             {
@@ -213,7 +213,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
             {
                 // Cancelling on Edit.  Return to Details
                 AccountService accountService = new AccountService(new RockContext());
-                Account account = accountService.Get( hfAccountId.ValueAsInt() );
+                PCOAccount account = accountService.Get( hfAccountId.ValueAsInt() );
                 ShowReadonlyDetails( account );
             }
         }
@@ -222,7 +222,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
         /// Shows the readonly details.
         /// </summary>
         /// <param name="account">Type of the defined.</param>
-        private void ShowReadonlyDetails( Account account )
+        private void ShowReadonlyDetails( PCOAccount account )
         {
             SetEditMode( false );
 
@@ -244,7 +244,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
         /// Shows the edit details.
         /// </summary>
         /// <param name="account">Type of the defined.</param>
-        private void ShowEditDetails( Account account )
+        private void ShowEditDetails( PCOAccount account )
         {
 
             // Load dropdowns
@@ -280,11 +280,11 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
 
             if ( account.Id > 0 )
             {
-                lTitle.Text = ActionTitle.Edit( Account.FriendlyTypeName ).FormatAsHtmlTitle();
+                lTitle.Text = ActionTitle.Edit( PCOAccount.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
-                lTitle.Text = ActionTitle.Add( Account.FriendlyTypeName ).FormatAsHtmlTitle();
+                lTitle.Text = ActionTitle.Add( PCOAccount.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 
             SetEditMode( true );
@@ -320,7 +320,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
         public void ShowDetail( int accountId )
         {
             pnlDetails.Visible = true;
-            Account account = null;
+            PCOAccount account = null;
 
             if ( !accountId.Equals( 0 ) )
             {
@@ -329,7 +329,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
 
             if ( account == null )
             {
-                account = new Account { Id = 0 };
+                account = new PCOAccount { Id = 0 };
             }
 
             hfAccountId.SetValue( account.Id );
@@ -341,7 +341,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
             if ( !UserCanEdit )
             {
                 readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Account.FriendlyTypeName );
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( PCOAccount.FriendlyTypeName );
             }
 
             if ( readOnly )

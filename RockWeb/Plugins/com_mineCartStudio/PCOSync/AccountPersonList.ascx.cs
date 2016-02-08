@@ -47,7 +47,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
     {
         #region Private Variables
 
-        private Account _account = null;
+        private PCOAccount _account = null;
 
         #endregion
 
@@ -164,7 +164,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
 
         protected void gAccountPersons_RowSelected( object sender, RowEventArgs e )
         {
-            AccountPerson accountPerson = new AccountPersonService( new RockContext() ).Get( e.RowKeyId );
+            PCOAccountPerson accountPerson = new AccountPersonService( new RockContext() ).Get( e.RowKeyId );
             if ( accountPerson != null &&
                 accountPerson.PersonAlias != null &&
                 accountPerson.PersonAlias.Person != null )
@@ -187,7 +187,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSaveValue_Click( object sender, EventArgs e )
         {
-            AccountPerson accountPerson;
+            PCOAccountPerson accountPerson;
             var rockContext = new RockContext();
             AccountPersonService accountPersonService = new AccountPersonService( rockContext );
 
@@ -309,7 +309,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
                             int? personAliasId = person.PrimaryAliasId;
                             if ( personAliasId.HasValue )
                             {
-                                var accountPerson = new AccountPerson();
+                                var accountPerson = new PCOAccountPerson();
                                 accountPerson.AccountId = _account.Id;
                                 accountPerson.PersonAliasId = personAliasId.Value;
                                 accountPersonService.Add( accountPerson );
@@ -560,7 +560,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
             public string RockPermissionLabel { get; set; }
             public string PCOPermissionLabel { get; set; }
 
-            public AccountPersonHelper( AccountPerson accountPerson, bool current )
+            public AccountPersonHelper( PCOAccountPerson accountPerson, bool current )
             {
                 if ( accountPerson != null )
                 {
