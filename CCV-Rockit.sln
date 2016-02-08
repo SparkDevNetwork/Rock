@@ -1,12 +1,12 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb(3)", "http://localhost:50345", "{22348267-9BDF-4B5E-BB6E-37B5FA770224}"
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb(1)", "http://localhost:50345", "{22348267-9BDF-4B5E-BB6E-37B5FA770224}"
 	ProjectSection(WebsiteProperties) = preProject
 		UseIISExpress = "true"
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5.1"
-		ProjectReferences = "{496ec024-71ed-4ad1-b677-2a3fa60ccd05}|church.ccv.SampleProject.dll;{a5b47749-d8b2-4223-822b-26208bce34f4}|church.ccv.CommandCenter.dll;{10702916-bb67-4be9-a507-e1f8932bd05f}|church.ccv.Authentication.dll;{629a186e-1ed2-49bc-95d4-76d65950ae73}|church.ccv.Residency.dll;{8f8c2a79-24f4-4157-8b99-45f75fa85799}|Rock.dll;{b89dfd33-ce93-44e1-8616-c31acdfe89cb}|Rock.Rest.dll;{CB9372CD-9C1D-47AB-92D8-702D4D68324F}|DotLiquid.dll;{f9f3319c-19d7-43a8-bc3a-4781b0b3f281}|church.ccv.Hr.dll;{8280012c-bb74-46ab-baa7-8a4004570829}|church.ccv.Datamart.dll;{9199bfe3-3c75-486b-afa0-d043da822afa}|church.ccv.Utility.dll;{da93ffd7-95fa-479b-bf60-b60979d846b9}|church.ccv.SafetySecurity.dll;{0ea13d43-bd98-48cf-8a15-d902c8a3ed99}|church.ccv.Badges.dll;{f0e9e6bc-9e66-493a-975a-638162fa22b1}|church.ccv.Reporting.dll;"
+		ProjectReferences = "{496ec024-71ed-4ad1-b677-2a3fa60ccd05}|church.ccv.SampleProject.dll;{a5b47749-d8b2-4223-822b-26208bce34f4}|church.ccv.CommandCenter.dll;{10702916-bb67-4be9-a507-e1f8932bd05f}|church.ccv.Authentication.dll;{629a186e-1ed2-49bc-95d4-76d65950ae73}|church.ccv.Residency.dll;{8f8c2a79-24f4-4157-8b99-45f75fa85799}|Rock.dll;{b89dfd33-ce93-44e1-8616-c31acdfe89cb}|Rock.Rest.dll;{CB9372CD-9C1D-47AB-92D8-702D4D68324F}|DotLiquid.dll;{f9f3319c-19d7-43a8-bc3a-4781b0b3f281}|church.ccv.Hr.dll;{8280012c-bb74-46ab-baa7-8a4004570829}|church.ccv.Datamart.dll;{9199bfe3-3c75-486b-afa0-d043da822afa}|church.ccv.Utility.dll;{da93ffd7-95fa-479b-bf60-b60979d846b9}|church.ccv.SafetySecurity.dll;{0ea13d43-bd98-48cf-8a15-d902c8a3ed99}|church.ccv.Badges.dll;{f0e9e6bc-9e66-493a-975a-638162fa22b1}|church.ccv.Reporting.dll;{da1fbd70-3d06-46f7-8aa0-a27f18fdfdcd}|church.ccv.Steps.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/localhost_50345"
 		Debug.AspNetCompiler.PhysicalPath = "RockWeb\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_50345\"
@@ -49,6 +49,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.Badges", "church.ccv.Badges\church.ccv.Badges.csproj", "{0EA13D43-BD98-48CF-8A15-D902C8A3ED99}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.Reporting", "church.ccv.Reporting\church.ccv.Reporting.csproj", "{F0E9E6BC-9E66-493A-975A-638162FA22B1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.Steps", "church.ccv.Steps\church.ccv.Steps.csproj", "{DA1FBD70-3D06-46F7-8AA0-A27F18FDFDCD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -112,6 +114,10 @@ Global
 		{F0E9E6BC-9E66-493A-975A-638162FA22B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F0E9E6BC-9E66-493A-975A-638162FA22B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F0E9E6BC-9E66-493A-975A-638162FA22B1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA1FBD70-3D06-46F7-8AA0-A27F18FDFDCD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA1FBD70-3D06-46F7-8AA0-A27F18FDFDCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA1FBD70-3D06-46F7-8AA0-A27F18FDFDCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA1FBD70-3D06-46F7-8AA0-A27F18FDFDCD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

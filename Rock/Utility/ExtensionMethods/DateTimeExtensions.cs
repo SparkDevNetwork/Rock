@@ -329,6 +329,24 @@ namespace Rock
             return dt.StartOfWeek( startOfWeek ).AddDays( 6 );
         }
 
+        /// <summary>
+        /// Sundays the date.
+        /// </summary>
+        /// <param name="dt">The date to check.</param>
+        /// <param name="startOfWeek">The start of week.</param>
+        /// <returns></returns>
+        public static DateTime SundayDate( this DateTime dt, DayOfWeek startOfWeek = DayOfWeek.Monday )
+        {
+            if (dt.DayOfWeek == DayOfWeek.Sunday )
+            {
+                return dt.Date;
+            } else
+            {
+                int intDayofWeek = (int)dt.DayOfWeek;
+                int diff = 7 - (int)dt.DayOfWeek;
+                return dt.AddDays( diff ).Date;
+            }
+        }
 
         #endregion DateTime Extensions
 

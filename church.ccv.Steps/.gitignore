@@ -1,0 +1,9 @@
+*.csproj.user
+/obj
+/bin/Release/*/
+/bin/Release/*.*
+/bin/Debug/*/
+/bin/Debug/*.*
+!RestSharp.dll
+!System.Net.Http.Extensions.dll
+!System.Net.Http.Primitives.dll
