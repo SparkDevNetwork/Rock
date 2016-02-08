@@ -1,1 +1,6 @@
-/Rock.dll
+/debug/*
+/release/*
+*.xml
+*.Rest.dll.config
+*.pdb
+*.dll

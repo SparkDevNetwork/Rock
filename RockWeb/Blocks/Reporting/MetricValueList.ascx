@@ -22,7 +22,7 @@
                     </Rock:GridFilter>
                     <Rock:Grid ID="gMetricValues" runat="server" AllowSorting="true" OnRowSelected="gMetricValues_Edit" OnRowDataBound="gMetricValues_RowDataBound" ExportSource="ColumnOutput">
                         <Columns>
-                            <Rock:DateField DataField="MetricValueDateTime" HeaderText="Date" SortExpression="MetricValueDateTime" />
+                            <Rock:DateTimeField DataField="MetricValueDateTime" HeaderText="Timestamp" SortExpression="MetricValueDateTime" />
                             <Rock:EnumField DataField="MetricValueType" HeaderText="Type" SortExpression="MetricValueType" />
                             <Rock:RockBoundField DataField="YValue" HeaderText="Value" SortExpression="YValue" ItemStyle-HorizontalAlign="Right" />
                             <Rock:RockLiteralField ID="lEntityTypeName" HeaderText="EntityTypeName" />

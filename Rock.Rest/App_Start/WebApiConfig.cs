@@ -24,7 +24,7 @@ using System.Web.Http.ExceptionHandling;
 using System.Web.Http.OData.Builder;
 using System.Web.Http.OData.Extensions;
 using System.Web.Routing;
-
+using Microsoft.Data.Edm;
 using Rock;
 
 namespace Rock.Rest
