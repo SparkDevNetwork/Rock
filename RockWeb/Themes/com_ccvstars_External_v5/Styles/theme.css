@@ -3619,6 +3619,9 @@ fieldset .actions {
 .label-communicationstatus-transient {
   background-color: #777777;
 }
+.label-tree {
+  background-color: #d0e092;
+}
 .datepicker {
   padding: 10px;
 }
