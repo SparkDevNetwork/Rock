@@ -1,5 +1,7 @@
 DECLARE @etid_workflowType AS INT = (SELECT Id FROM EntityType WHERE Name = 'Rock.Model.WorkflowType');
 DECLARE @etid_workflow AS INT = (SELECT Id FROM EntityType WHERE Name = 'Rock.Model.Workflow');
+DECLARE @etid_workflowActivity AS INT = (SELECT Id FROM EntityType WHERE Name = 'Rock.Model.WorkflowActivity');
+DECLARE @etid_systemEmail AS INT = (SELECT Id FROM EntityType WHERE Name = 'Rock.Model.SystemEmail');
 
 -- STEP 1: Generate code to insert categories
 SELECT 
@@ -201,3 +203,198 @@ SELECT
 FROM
 	Attribute a
 	JOIN WorkflowActivityType wat ON wat.Id = a.EntityTypeQualifierValue AND a.EntityTypeQualifierColumn = 'ActivityTypeId';
+
+-- STEP 6: System Email Categories
+SELECT 
+	CONCAT(
+		'INSERT [Category] ([IsSystem], [ParentCategoryId], [EntityTypeId], [Name], [IconCssClass], [Guid], [Order]) VALUES (',
+		c.IsSystem,
+		', ',
+		CASE WHEN pc.Id IS NOT NULL THEN
+			CONCAT(
+				'(SELECT Id FROM Category WHERE [Guid] = ''',
+				pc.[Guid],
+				'''), '
+			)
+		ELSE
+			'NULL, '
+		END,
+		'@etid_systemEmail',
+		', ''',
+		REPLACE(c.Name, '''', ''''''),
+		''', ''',
+		c.IconCssClass,
+		''', ''',
+		c.[Guid],
+		''', ',
+		c.[Order],
+		');'
+	) AS Step6
+FROM 
+	Category c
+	LEFT JOIN Category pc ON c.ParentCategoryId = pc.Id
+WHERE 
+	c.EntityTypeId = @etid_systemEmail;
+
+-- STEP 7: System Emails
+SELECT 
+	CONCAT(
+		'INSERT [SystemEmail] ([IsSystem], [CategoryId], [Title], [From], [To], [Cc], [Bcc], [Subject], [Body], [FromName], [Guid]) VALUES (',
+		se.IsSystem,
+		', ',
+		CASE WHEN c.Id IS NOT NULL THEN
+			CONCAT(
+				'(SELECT Id FROM Category WHERE [Guid] = ''',
+				c.[Guid],
+				'''), '
+			)
+		ELSE
+			'NULL, '
+		END,
+		'''',
+		REPLACE(se.Title, '''', ''''''),
+		''', ''',
+		ISNULL(REPLACE(se.[From], '''', ''''''), 'NULL'),
+		''', ''',
+		ISNULL(REPLACE(se.[To], '''', ''''''), 'NULL'),
+		''', ''',
+		ISNULL(REPLACE(se.[Cc], '''', ''''''), 'NULL'),
+		''', ''',
+		ISNULL(REPLACE(se.[Bcc], '''', ''''''), 'NULL'),
+		''', ''',
+		ISNULL(REPLACE(se.[Subject], '''', ''''''), 'NULL'),
+		''', ''',
+		ISNULL(REPLACE(se.[Body], '''', ''''''), 'NULL'),
+		''', ''',
+		ISNULL(REPLACE(se.[FromName], '''', ''''''), 'NULL'),
+		''', ''',
+		se.[Guid],
+		''');'
+	) AS Step7
+FROM 
+	SystemEmail se
+	LEFT JOIN Category c ON c.Id = se.CategoryId;
+
+-- STEP 8: Workflow Action Forms
+SELECT
+	CONCAT(
+		'INSERT [WorkflowActionForm] ([Header], [Footer], [Actions], [Guid], [NotificationSystemEmailId], [IncludeActionsInNotification], [ActionAttributeGuid], [AllowNotes]) VALUES (',
+		CASE WHEN waf.Header IS NULL THEN
+			'NULL'
+		ELSE
+			CONCAT(
+				'''',
+				REPLACE(waf.Header, '''', ''''''),
+				''''
+			)
+		END,
+		', ',
+		CASE WHEN waf.Footer IS NULL THEN
+			'NULL'
+		ELSE
+			CONCAT(
+				'''',
+				REPLACE(waf.Footer, '''', ''''''),
+				''''
+			)
+		END,
+		', ',
+		CASE WHEN waf.Actions IS NULL THEN
+			'NULL'
+		ELSE
+			CONCAT(
+				'''',
+				REPLACE(waf.Actions, '''', ''''''),
+				''''
+			)
+		END,
+		', ''',
+		waf.[Guid],
+		''', ',
+		CASE WHEN sa.Id IS NOT NULL THEN
+			CONCAT(
+				'(SELECT Id FROM SystemEmail WHERE [Guid] = ''',
+				sa.[Guid],
+				'''), '
+			)
+		ELSE
+			'NULL, '
+		END,
+		waf.IncludeActionsInNotification,
+		', ',
+		CASE WHEN waf.ActionAttributeGuid IS NULL THEN
+			'NULL'
+		ELSE
+			CONCAT(
+				'''',
+				waf.ActionAttributeGuid,
+				''''
+			)
+		END,
+		', ',
+		ISNULL(CONVERT(NVARCHAR, waf.AllowNotes), 'NULL'),
+		');'
+	) AS Step8
+FROM
+	WorkflowActionForm waf
+	LEFT JOIN SystemEmail sa ON sa.Id = waf.NotificationSystemEmailId;
+
+-- STEP 9: Workflow Action Form Attributes
+SELECT
+	CONCAT(
+		'INSERT [WorkflowActionFormAttribute] ([WorkflowActionFormId], [AttributeId], [Order], [IsVisible], [IsReadOnly], [IsRequired], [Guid], [HideLabel], [PreHtml], [PostHtml]) VALUES (',
+		CASE WHEN waf.Id IS NOT NULL THEN
+			CONCAT(
+				'(SELECT Id FROM WorkflowActionForm WHERE [Guid] = ''',
+				waf.[Guid],
+				'''), '
+			)
+		ELSE
+			'NULL, '
+		END,
+		CASE WHEN a.Id IS NOT NULL THEN
+			CONCAT(
+				'(SELECT Id FROM Attribute WHERE [Guid] = ''',
+				a.[Guid],
+				'''), '
+			)
+		ELSE
+			'NULL, '
+		END,
+		wafa.[Order],
+		', ',
+		wafa.IsVisible,
+		', ',
+		wafa.IsReadOnly,
+		', ',
+		wafa.IsRequired,
+		', ''',
+		wafa.[Guid],
+		''', ',
+		wafa.HideLabel,
+		', ',
+		CASE WHEN wafa.PreHtml IS NULL THEN
+			'NULL'
+		ELSE
+			CONCAT(
+				'''',
+				REPLACE(wafa.PreHtml, '''', ''''''),
+				''''
+			)
+		END,
+		', ',
+		CASE WHEN wafa.PostHtml IS NULL THEN
+			'NULL'
+		ELSE
+			CONCAT(
+				'''',
+				REPLACE(wafa.PostHtml, '''', ''''''),
+				''''
+			)
+		END,
+		');'
+	) AS Step9
+FROM
+	WorkflowActionFormAttribute wafa
+	LEFT JOIN WorkflowActionForm waf ON waf.Id = wafa.WorkflowActionFormId
+	LEFT JOIN Attribute a ON a.Id = wafa.AttributeId;
