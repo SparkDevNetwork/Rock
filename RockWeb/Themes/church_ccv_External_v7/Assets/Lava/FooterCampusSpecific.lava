@@ -98,4 +98,8 @@
     </div>
   </div>
 
+{% else %}
+  <p class="hidden-xs margin-t-md">&nbsp;</p>
+  {% assign selectCampusBtnClasses = 'btn btn-primary' %}
+  {% include '~~/Assets/Lava/SelectACampus.lava' %}
 {% endif %}

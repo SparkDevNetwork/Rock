@@ -1,0 +1,22 @@
+{% comment %}
+
+  {% assign selectCampusBtnClasses = 'btn btn-default' %}
+  {% assign selectCampusBtnShowDescription = true %}
+  {% assign selectCampusBtnDescription = 'Select a campus to view service times, location info, and campus events.' %}
+
+  {% include '~~/Assets/Lava/SelectACampus.lava' %}
+
+{% endcomment %}
+
+{% assign selectCampusBtnClasses = selectCampusBtnClasses | Default: 'btn btn-default' %}
+{% if selectCampusBtnShowDescription == null %}
+  {% assign selectCampusBtnShowDescription = true %}
+{% endif %}
+{% assign selectCampusBtnDescription = selectCampusBtnDescription | Default: 'Select a campus to view service times, location info, and campus events.' %}
+
+<p>
+  <a data-mfp-src="#campusmodal" class="{{ selectCampusBtnClasses }} js-choose-campus">Select a Campus</a>
+</p>
+{% if selectCampusBtnShowDescription %}
+  <p class="small">{{ selectCampusBtnDescription }}</p>
+{% endif %}

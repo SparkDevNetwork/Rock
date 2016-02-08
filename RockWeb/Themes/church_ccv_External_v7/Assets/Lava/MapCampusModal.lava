@@ -1,17 +1,8 @@
 {% if Context.Campus == null %}
 
-  <div class="campusmodal">
-
-    <div class="modal-backdrop"></div>
-
-    <div class="campusmodal-wrapper">
-      <div id="campusmodal-holder" class="campusmodal-holder">Loading...</div>
-      <footer class="campusmodal-footer">
-        <h3 class="campusmodal-footertitle">Select a campus</h3>
-        <p class="campusmodal-footertext">We tailor content on this site to the campus you select. <span class="text-muted">If you do not live in the Phoenix area, choose any campus.</span></p>
-      </footer>
-    </div>
-
+  <div id="campusmodal" class="campusmodal mfp-hide">
+    <div id="campusmodal-map" class="campusmodal-map">Loading...</div>
+    <div class="campusmodal-instructions">Click on a map marker to select a campus</div>
   </div>
 
   {% include '~~/Assets/Lava/ScriptCampusLocations.lava' %}
@@ -21,6 +12,6 @@
   <script src="~~/Scripts/map-campus-modal.js"></script>
 {% endcomment %}
 
-  <script src="~~/Scripts/min/map-campus-modal.min.js"></script>
+  <script src="~~/Scripts/min/map-campus-modal.min.js?v=2"></script>
 
 {% endif %}

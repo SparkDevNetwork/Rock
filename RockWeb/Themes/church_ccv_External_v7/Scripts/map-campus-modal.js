@@ -15,21 +15,32 @@
 Rock.controls.util.loadGoogleMapsApi('https://maps.googleapis.com/maps/api/js?sensor=false&libraries=drawing')
 
 
-// Map Object
+// Modal Functionality
 // -------------------------
 
-$(window).on('googleMapsIsLoaded', function(){
+window.CCV = window.CCV || {}
 
-  window.campusModalMap = new CCV.campusInfoWindowMap(document.getElementById('campusmodal-holder'))
-
-  campusModalMap.selectCampus = function (campusId) {
-    CCV.selectCampus(campusId)
+CCV.showMapCampusModal = function() {
+  if (!CCV.campusModalMapHasBeenDrawn) {
+    window.campusModalMap = new CCV.campusInfoWindowMap(document.getElementById('campusmodal-map'))
+    campusModalMap.selectCampus = function (campusId) {
+      CCV.selectCampus(campusId)
+    }
+    campusModalMap.draw()
+    CCV.campusModalMapHasBeenDrawn = true
   }
+}
 
-  campusModalMap.draw()
+$('document').ready(function(){
 
-  $('document').ready(function(){
-    $('body').addClass('modal-open')
+  $('.js-choose-campus').magnificPopup({
+    type:'inline',
+    midClick: true,
+    fixedContentPos: true,
+    callbacks: {
+      beforeOpen: function() {
+        CCV.showMapCampusModal()
+      }
+    }
   })
-
 })

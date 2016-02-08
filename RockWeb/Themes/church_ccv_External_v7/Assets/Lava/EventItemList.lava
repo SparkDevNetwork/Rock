@@ -1,104 +1,118 @@
 {% comment %}{% include '~~/Assets/Lava/EventItemList.lava' %}{% endcomment %}
 
-{% assign firstEventOccurrenceSummary = EventOccurrenceSummaries | First %}
-{% assign firstMonth = firstEventOccurrenceSummary.DateTime | Date: 'MMMM' %}
-{% assign currentMonth = firstMonth %}
 
-{% assign tier1Classes = "panel panel-card panel-card-half" %}
-{% assign tier2Classes = "panel panel-card panel-card-half panel-card-black" %}
-{% assign tier3Classes = "panel panel-card panel-card-half panel-card-primary" %}
-{% assign tier4Classes = "panel panel-default panel-card" %}
+{% if Context.Campus %}
+  {% assign firstEventOccurrenceSummary = EventOccurrenceSummaries | First %}
+  {% assign firstMonth = firstEventOccurrenceSummary.DateTime | Date: 'MMMM' %}
+  {% assign currentMonth = firstMonth %}
 
-{% assign fullSizeClasses = "masonry-item col-xs-12 col-sm-12 col-md-8 col-lg-6" %}
-{% assign halfSizeClasses = "masonry-item col-xs-12 col-sm-6 col-md-4 col-lg-3" %}
+  {% assign tier1Classes = "panel panel-card panel-card-half" %}
+  {% assign tier2Classes = "panel panel-card panel-card-half panel-card-black" %}
+  {% assign tier3Classes = "panel panel-card panel-card-half panel-card-primary" %}
+  {% assign tier4Classes = "panel panel-default panel-card" %}
 
-<h2 class="page-header">{{ firstMonth }}</h2>
+  {% assign fullSizeClasses = "masonry-item col-xs-12 col-sm-12 col-md-8 col-lg-6" %}
+  {% assign halfSizeClasses = "masonry-item col-xs-12 col-sm-6 col-md-4 col-lg-3" %}
 
-<div class="row masonry">
+  <h2 class="page-header">{{ firstMonth }}</h2>
 
-  {% for eventOccurrenceSummary in EventOccurrenceSummaries %}
-    {% if eventOccurrenceSummary.EventItem.IsApproved %}
+  <div class="row masonry">
 
-      {% comment %} EventCalendarId 1 is public calendar {% endcomment %}
-      {% assign eventCalendarItem = eventOccurrenceSummary.EventItem.EventCalendarItems | Where: 'EventCalendarId', 1 | First %}
+    {% for eventOccurrenceSummary in EventOccurrenceSummaries %}
+      {% if eventOccurrenceSummary.EventItem.IsApproved %}
 
-      {% assign tierLevel = 0 %} {% comment %} Reset {% endcomment %}
-      {% assign tierLevel = eventCalendarItem | Attribute: 'TierLevel' %}
+        {% comment %} EventCalendarId 1 is public calendar {% endcomment %}
+        {% assign eventCalendarItem = eventOccurrenceSummary.EventItem.EventCalendarItems | Where: 'EventCalendarId', 1 | First %}
 
-      {% case tierLevel %}
-        {% when 1 %}
-          {% assign cardClasses = tier1Classes %}
-          {% assign wrapperClasses = halfSizeClasses %}
-        {% when 2 %}
-          {% assign cardClasses = tier2Classes %}
-          {% assign wrapperClasses = halfSizeClasses %}
-        {% when 3 %}
-          {% assign cardClasses = tier3Classes %}
-          {% assign wrapperClasses = halfSizeClasses %}
-        {% when 4 %}
-          {% assign cardClasses = tier4Classes %}
-          {% assign wrapperClasses = fullSizeClasses %}
-        {% else %}
-          {% assign cardClasses = tier1Classes %}
-          {% assign wrapperClasses = halfSizeClasses %}
-      {% endcase %}
+        {% assign tierLevel = 0 %} {% comment %} Reset {% endcomment %}
+        {% assign tierLevel = eventCalendarItem | Attribute: 'TierLevel' %}
 
-      {% assign panelCardImg = "" %}
-      {% if eventOccurrenceSummary.EventItem.Photo and tierLevel == 4 %}
-        {% capture cardClasses %}{{ cardClasses }} panel-card-withimg{% endcapture %}
-        {% capture panelCardImg %}<div class="panel-card-img" style="background-image: url('{{ eventOccurrenceSummary.EventItem.Photo.Url }}');"></div>{% endcapture %}
-      {% endif %}
+        {% case tierLevel %}
+          {% when 1 %}
+            {% assign cardClasses = tier1Classes %}
+            {% assign wrapperClasses = halfSizeClasses %}
+          {% when 2 %}
+            {% assign cardClasses = tier2Classes %}
+            {% assign wrapperClasses = halfSizeClasses %}
+          {% when 3 %}
+            {% assign cardClasses = tier3Classes %}
+            {% assign wrapperClasses = halfSizeClasses %}
+          {% when 4 %}
+            {% assign cardClasses = tier4Classes %}
+            {% assign wrapperClasses = fullSizeClasses %}
+          {% else %}
+            {% assign cardClasses = tier1Classes %}
+            {% assign wrapperClasses = halfSizeClasses %}
+        {% endcase %}
 
-      {% assign overlayTextColor = "" %} {% comment %} Reset {% endcomment %}
-      {% assign overlayTextColor = eventCalendarItem | Attribute: 'OverlayTextColor' %}
-      {% if overlayTextColor == "dark" %}
-        {% capture cardClasses %}{{ cardClasses }} panel-card-light{% endcapture %}
-      {% endif %}
+        {% assign panelCardImg = "" %}
+        {% if eventOccurrenceSummary.EventItem.Photo and tierLevel == 4 %}
+          {% capture cardClasses %}{{ cardClasses }} panel-card-withimg{% endcapture %}
+          {% capture panelCardImg %}<div class="panel-card-img" style="background-image: url('{{ eventOccurrenceSummary.EventItem.Photo.Url }}');"></div>{% endcapture %}
+        {% endif %}
 
-      {% assign thisMonth = eventOccurrenceSummary.DateTime | Date: 'MMMM' %}
+        {% assign overlayTextColor = "" %} {% comment %} Reset {% endcomment %}
+        {% assign overlayTextColor = eventCalendarItem | Attribute: 'OverlayTextColor' %}
+        {% if overlayTextColor == "dark" %}
+          {% capture cardClasses %}{{ cardClasses }} panel-card-light{% endcapture %}
+        {% endif %}
 
-      {% if thisMonth != currentMonth %}
-  <div class="masonry-sizer {{ halfSizeClasses }}"></div>
-</div>
-<h2 class="page-header">{{ thisMonth }}</h2>
+        {% assign thisMonth = eventOccurrenceSummary.DateTime | Date: 'MMMM' %}
 
-<div class="row masonry">
-      {% endif %}
+        {% if thisMonth != currentMonth %}
+    <div class="masonry-sizer {{ halfSizeClasses }}"></div>
+  </div>
+  <h2 class="page-header">{{ thisMonth }}</h2>
 
-      <div class="{{ wrapperClasses }}">
-        <div class="{{ cardClasses }}">
-          <a class="panel-body" href="{{ DetailsPage }}?EventOccurrenceId={{ eventOccurrenceSummary.EventItemOccurrence.Id }}" title="{{ eventOccurrenceSummary.Name }}">
-            {{ panelCardImg }}
-            <h3 class="panel-title">{{ eventOccurrenceSummary.Name }}</h3>
-          </a>
-          <div class="panel-footer clearfix">
-            {% if DetailsPage != empty %}
-              <a class="btn btn-default btn-sm pull-right" href="{{ DetailsPage }}?EventOccurrenceId={{ eventOccurrenceSummary.EventItemOccurrence.Id }}">More <i class="fa fa-caret-right"></i></a>
-            {% endif %}
-            {{ eventOccurrenceSummary.DateTime | Date: 'ddd, MMM d / h:mmtt' }}
+  <div class="row masonry">
+        {% endif %}
+
+        <div class="{{ wrapperClasses }}">
+          <div class="{{ cardClasses }}">
+            <a class="panel-body" href="{{ DetailsPage }}?EventOccurrenceId={{ eventOccurrenceSummary.EventItemOccurrence.Id }}" title="{{ eventOccurrenceSummary.Name }}">
+              {{ panelCardImg }}
+              <h3 class="panel-title">{{ eventOccurrenceSummary.Name }}</h3>
+            </a>
+            <div class="panel-footer clearfix">
+              {% if DetailsPage != empty %}
+                <a class="btn btn-default btn-sm pull-right" href="{{ DetailsPage }}?EventOccurrenceId={{ eventOccurrenceSummary.EventItemOccurrence.Id }}">More <i class="fa fa-caret-right"></i></a>
+              {% endif %}
+              {{ eventOccurrenceSummary.DateTime | Date: 'ddd, MMM d / h:mmtt' }}
+            </div>
           </div>
         </div>
-      </div>
 
-      {% assign currentMonth = thisMonth %}
+        {% assign currentMonth = thisMonth %}
 
-    {% endif %}
-  {% endfor %}
+      {% endif %}
+    {% endfor %}
 
-  <div class="masonry-sizer {{ halfSizeClasses }}"></div>
+    <div class="masonry-sizer {{ halfSizeClasses }}"></div>
 
-</div>
-{% comment %} TODO: package these together {% endcomment %}
-<script src="/Themes/church_ccv_External_v7/Scripts/Vendor/clamp.min.js"></script>
-<script src="/Themes/church_ccv_External_v7/Scripts/Vendor/masonry.pkgd.min.js"></script>
-<script>
-  $('.panel-title').each(function(){
-    $clamp(this, {clamp: 2})
-  })
-  $('.masonry').masonry({
-    itemSelector: '.masonry-item',
-    columnWidth: '.masonry-sizer',
-    percentPosition: true
-  })
-</script>
-
+  </div>
+  {% comment %} TODO: package these together {% endcomment %}
+  <script src="/Themes/church_ccv_External_v7/Scripts/Vendor/clamp.min.js"></script>
+  <script src="/Themes/church_ccv_External_v7/Scripts/Vendor/masonry.pkgd.min.js"></script>
+  <script>
+    $('.panel-title').each(function(){
+      $clamp(this, {clamp: 2})
+    })
+    $('.masonry').masonry({
+      itemSelector: '.masonry-item',
+      columnWidth: '.masonry-sizer',
+      percentPosition: true
+    })
+  </script>
+{% else %}
+  <p class="hidden-xs">&nbsp;</p>
+  <p class="hidden-xs">&nbsp;</p>
+  <p class="hidden-xs">&nbsp;</p>
+  <div class="text-center">
+    <p class="lead">Select a campus to view upcoming events.</p>
+    {% assign selectCampusBtnClasses = 'btn btn-primary btn-lg' %}
+    {% assign selectCampusBtnShowDescription = false %}
+    {% include '~~/Assets/Lava/SelectACampus.lava' %}
+  </div>
+  <p class="hidden-xs">&nbsp;</p>
+  <p class="hidden-xs">&nbsp;</p>
+{% endif %}
