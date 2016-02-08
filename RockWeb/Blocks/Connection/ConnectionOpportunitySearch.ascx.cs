@@ -157,8 +157,11 @@ namespace RockWeb.Blocks.Connection
             {
                 var searchSelections = new Dictionary<string, string>();
 
-                var connectionType = new ConnectionTypeService( rockContext ).Get( GetAttributeValue( "ConnectionTypeId" ).AsInteger() );
-                var qrySearch = connectionType.ConnectionOpportunities.ToList();
+                var connectionTypeId = GetAttributeValue( "ConnectionTypeId" ).AsInteger();
+                var connectionType = new ConnectionTypeService( rockContext ).Get( connectionTypeId );
+                var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
+
+                var qrySearch = connectionOpportunityService.Queryable().Where( a => a.ConnectionTypeId == connectionTypeId && a.IsActive == true ).ToList();
 
                 if ( GetAttributeValue( "DisplayNameFilter" ).AsBoolean() )
                 {

@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.CheckIn
     [Category( "Check-in" )]
     [Description( "Shows a graph of attendance statistics which can be configured for specific groups, date range, etc." )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK )]
-    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked" )]
+    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", false )]
     [BooleanField( "Show Group Ancestry", "By default the group ancestry path is shown.  Unselect this to show only the group name.", true )]
     [GroupTypeField( "Attendance Type", required: false, key: "GroupTypeTemplate" )]
     [LinkedPage( "Check-in Detail Page", "Page that shows the user details for the check-in data.", false )]
@@ -688,6 +688,16 @@ function(item) {
         /// <param name="chartData">The chart data.</param>
         private void BindChartAttendanceGrid( IEnumerable<Rock.Chart.IChartData> chartData )
         {
+            var graphBy = hfGraphBy.Value.ConvertToEnumOrNull<AttendanceGraphBy>() ?? AttendanceGraphBy.Total;
+            gChartAttendance.Columns[1].Visible = graphBy != AttendanceGraphBy.Total;
+            switch ( graphBy )
+            {
+                case AttendanceGraphBy.Group: gChartAttendance.Columns[1].HeaderText = "Group"; break;
+                case AttendanceGraphBy.Campus: gChartAttendance.Columns[1].HeaderText = "Campus"; break;
+                case AttendanceGraphBy.Location: gChartAttendance.Columns[1].HeaderText = "Location"; break;
+                case AttendanceGraphBy.Schedule: gChartAttendance.Columns[1].HeaderText = "Schedule"; break;
+            }
+
             SortProperty sortProperty = gChartAttendance.SortProperty;
 
             if ( sortProperty != null )

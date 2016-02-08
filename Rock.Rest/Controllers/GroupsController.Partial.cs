@@ -47,10 +47,18 @@ namespace Rock.Rest.Controllers
         /// <param name="includedGroupTypeIds">The included group type ids.</param>
         /// <param name="excludedGroupTypeIds">The excluded group type ids.</param>
         /// <param name="includeInactiveGroups">if set to <c>true</c> [include inactive groups].</param>
+        /// <param name="includeCounts">if set to <c>true</c> [include counts].</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Groups/GetChildren/{id}" )]
-        public IQueryable<TreeViewItem> GetChildren( int id, int rootGroupId = 0, bool limitToSecurityRoleGroups = false, string includedGroupTypeIds = "", string excludedGroupTypeIds = "", bool includeInactiveGroups = false )
+        public IQueryable<TreeViewItem> GetChildren(
+            int id,
+            int rootGroupId = 0,
+            bool limitToSecurityRoleGroups = false,
+            string includedGroupTypeIds = "",
+            string excludedGroupTypeIds = "",
+            bool includeInactiveGroups = false,
+            TreeViewItem.GetCountsType countsType = TreeViewItem.GetCountsType.None )
         {
             // Enable proxy creation since security is being checked and need to navigate parent authorities
             SetProxyCreation( true );
@@ -85,6 +93,15 @@ namespace Rock.Rest.Controllers
                     if ( groupType != null )
                     {
                         treeViewItem.IconCssClass = groupType.IconCssClass;
+                    }
+
+                    if ( countsType == TreeViewItem.GetCountsType.GroupMembers )
+                    {
+                        treeViewItem.CountInfo = group.Members.Count();
+                    }
+                    else if ( countsType == TreeViewItem.GetCountsType.ChildGroups )
+                    {
+                        treeViewItem.CountInfo = groupService.Queryable().Where( a => a.ParentGroupId.HasValue && a.ParentGroupId == group.Id ).Count();
                     }
 
                     groupNameList.Add( treeViewItem );

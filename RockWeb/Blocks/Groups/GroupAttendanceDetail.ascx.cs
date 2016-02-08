@@ -483,12 +483,14 @@ namespace RockWeb.Blocks.Groups
 
                 if ( !locationIds.Any() && ddlLocation.SelectedValueAsInt().HasValue )
                 {
-                    locationIds.Add( ddlLocation.SelectedValueAsInt().Value );
+                    locationId = ddlLocation.SelectedValueAsInt().Value;
+                    locationIds.Add( locationId.Value );
                 }
 
                 if ( !scheduleIds.Any() && ddlSchedule.SelectedValueAsInt().HasValue )
                 {
-                    scheduleIds.Add( ddlSchedule.SelectedValueAsInt().Value );
+                    scheduleId = ddlSchedule.SelectedValueAsInt().Value;
+                    scheduleIds.Add( scheduleId.Value );
                 }
             }
 

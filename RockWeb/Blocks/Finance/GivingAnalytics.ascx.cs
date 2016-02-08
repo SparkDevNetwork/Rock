@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Finance
     [Description( "Shows a graph of giving statistics which can be configured for specific date range, amounts, currency types, campus, etc." )]
 
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK, Order = 0 )]
-    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", Order = 1 )]
+    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", false, Order = 1 )]
     [BooleanField("Hide View By Options", "Should the View By options be hidden (Giver, Adults, Children, Family)?", Order = 2 )]
     public partial class GivingAnalytics : RockBlock
     {
@@ -748,7 +748,7 @@ function(item) {
             rblDataViewAction.Visible = dvpDataView.SelectedValueAsInt().HasValue;
         }
 
-        private IEnumerable<Rock.Chart.IChartData> GetChartData()
+        private IEnumerable<Rock.Chart.SummaryData> GetChartData()
         {
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
 
@@ -782,8 +782,28 @@ function(item) {
         /// <summary>
         /// Binds the chart attendance grid.
         /// </summary>
-        private void BindChartAmountGrid( IEnumerable<Rock.Chart.IChartData> chartData )
+        private void BindChartAmountGrid( IEnumerable<Rock.Chart.SummaryData> chartData )
         {
+            var graphBy = hfGraphBy.Value.ConvertToEnumOrNull<TransactionGraphBy>() ?? TransactionGraphBy.Total;
+            switch( graphBy )
+            {
+                case TransactionGraphBy.Campus:
+                    gChartAmount.Columns[1].Visible = true;
+                    gChartAmount.Columns[1].HeaderText = "Campus";
+                    gChartAmount.Columns[2].Visible = false;
+                    break;
+                case TransactionGraphBy.FinancialAccount:
+                    gChartAmount.Columns[1].Visible = true;
+                    gChartAmount.Columns[1].HeaderText = "Account";
+                    gChartAmount.Columns[2].Visible = true;
+                    gChartAmount.Columns[2].HeaderText = "GL Code";
+                    break;
+                case TransactionGraphBy.Total:
+                    gChartAmount.Columns[1].Visible = false;
+                    gChartAmount.Columns[2].Visible = false;
+                    break;
+            }
+
             SortProperty sortProperty = gChartAmount.SortProperty;
 
             if ( sortProperty != null )

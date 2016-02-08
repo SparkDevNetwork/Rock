@@ -147,9 +147,8 @@ namespace Rock.Field.Types
             if ( filterValues.Count == 1 )
             {
                 MemberExpression propertyExpression = Expression.Property( parameterExpression, "ValueAsNumeric" );
-                ConstantExpression constantExpression = Expression.Constant( filterValues[0].AsDecimal(), typeof( decimal ) );
                 ComparisonType comparisonType = ComparisonType.EqualTo;
-                return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+                return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( filterValues[0] ) );
             }
 
             return null;
@@ -167,6 +166,16 @@ namespace Rock.Field.Types
             {
                 return "ValueAsNumeric";
             }
+        }
+
+        /// <summary>
+        /// Attributes the constant expression.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public override ConstantExpression AttributeConstantExpression( string value )
+        {
+            return Expression.Constant( value.AsDecimal(), typeof( decimal ) );
         }
 
         /// <summary>
