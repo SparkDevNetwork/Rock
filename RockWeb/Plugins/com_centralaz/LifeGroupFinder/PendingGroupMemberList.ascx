@@ -23,11 +23,9 @@
                             <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
                                 <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" />
                                 <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" />
-                                <Rock:RockCheckBoxList ID="cblRole" runat="server" Label="Role" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
                                 <Rock:CampusPicker ID="cpCampusFilter" runat="server" />
-                                <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                             </Rock:GridFilter>
-                            <Rock:Grid ID="gGroupMembers" runat="server" DisplayType="Full" AllowSorting="true">
+                            <Rock:Grid ID="gGroupMembers" runat="server" DisplayType="Full">
                                 <Columns>
                                     <Rock:RockBoundField DataField="GroupTree" HeaderText="Group" SortExpression="Group" HtmlEncode="false" />
                                     <Rock:RockBoundField DataField="Name" HeaderText="Group Member" SortExpression="Person.LastName,Person.NickName" HtmlEncode="false" />

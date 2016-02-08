@@ -37,7 +37,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
     [Category( "com_centralaz > Groups" )]
     [Description( "Lists all the pending members of a group type" )]
 
-    [GroupTypeField( "Group Type", "Pending members from groups of this grouptype will be displayed", true )]
+    [GroupTypesField( "Group Types", "Pending members from groups of these grouptypes will be displayed", true )]
     [GroupField( "Root Group", "Pending members from groups under this group will be displayed", true )]
     [LinkedPage( "Group Member Detail Page" )]
     [LinkedPage( "Group Detail Page" )]
@@ -46,36 +46,10 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
         #region Private Variables
 
         private bool _canView = false;
-        private GroupType _groupType;
-
-        #endregion
-
-        #region Properties
-
-        /// <summary>
-        /// Gets or sets the available attributes.
-        /// </summary>
-        /// <value>
-        /// The available attributes.
-        /// </value>
-        public List<AttributeCache> AvailableAttributes { get; set; }
 
         #endregion
 
         #region Control Methods
-
-        /// <summary>
-        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
-        /// </summary>
-        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
-        protected override void LoadViewState( object savedState )
-        {
-            base.LoadViewState( savedState );
-
-            AvailableAttributes = ViewState["AvailableAttributes"] as List<AttributeCache>;
-
-            AddDynamicControls();
-        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -125,15 +99,6 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
 ";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "person-link-popover", script, true );
 
-            if ( _groupType == null )
-            {
-                var groupTypeGuid = GetAttributeValue( "GroupType" ).AsGuidOrNull();
-                if ( groupTypeGuid != null )
-                {
-                    _groupType = new GroupTypeService( new RockContext() ).Get( groupTypeGuid.Value );
-                }
-            }
-
             if ( IsUserAuthorized( Authorization.VIEW ) )
             {
                 _canView = true;
@@ -143,10 +108,6 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                 gGroupMembers.CommunicateMergeFields = new List<string> { "GroupRole" };
                 gGroupMembers.PersonIdField = "PersonId";
                 gGroupMembers.GridRebind += gGroupMembers_GridRebind;
-                if ( _groupType != null )
-                {
-                    gGroupMembers.RowItemText = _groupType.GroupTerm + " " + _groupType.GroupMemberTerm;
-                }
 
                 // make sure they have Auth to edit the block OR edit to the Group
                 bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
@@ -193,19 +154,6 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             }
         }
 
-        /// <summary>
-        /// Saves any user control view-state changes that have occurred since the last page postback.
-        /// </summary>
-        /// <returns>
-        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
-        /// </returns>
-        protected override object SaveViewState()
-        {
-            ViewState["AvailableAttributes"] = AvailableAttributes;
-
-            return base.SaveViewState();
-        }
-
         #endregion
 
         #region GroupMembers Grid
@@ -219,28 +167,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
         {
             rFilter.SaveUserPreference( "First Name", "First Name", tbFirstName.Text );
             rFilter.SaveUserPreference( "Last Name", "Last Name", tbLastName.Text );
-            rFilter.SaveUserPreference( "Role", "Role", cblRole.SelectedValues.AsDelimited( ";" ) );
             rFilter.SaveUserPreference( "Campus", "Campus", cpCampusFilter.SelectedCampusId.ToString() );
-
-            if ( AvailableAttributes != null )
-            {
-                foreach ( var attribute in AvailableAttributes )
-                {
-                    var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
-                    if ( filterControl != null )
-                    {
-                        try
-                        {
-                            var values = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                            rFilter.SaveUserPreference( attribute.Key, attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
-                        }
-                        catch
-                        {
-                            // intentionally ignore
-                        }
-                    }
-                }
-            }
 
             BindGroupMembersGrid();
         }
@@ -252,24 +179,6 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
         /// <param name="e">The e.</param>
         protected void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
-            if ( AvailableAttributes != null )
-            {
-                var attribute = AvailableAttributes.FirstOrDefault( a => a.Key == e.Key );
-                if ( attribute != null )
-                {
-                    try
-                    {
-                        var values = JsonConvert.DeserializeObject<List<string>>( e.Value );
-                        e.Value = attribute.FieldType.Field.FormatFilterValues( attribute.QualifierValues, values );
-                        return;
-                    }
-                    catch
-                    {
-                        // intentionally ignore
-                    }
-                }
-            }
-
             if ( e.Key == "First Name" )
             {
                 return;
@@ -277,10 +186,6 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             else if ( e.Key == "Last Name" )
             {
                 return;
-            }
-            else if ( e.Key == "Role" )
-            {
-                e.Value = ResolveValues( e.Value, cblRole );
             }
             else if ( e.Key == "Campus" )
             {
@@ -321,124 +226,11 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
         /// </summary>
         private void SetFilter()
         {
-            if ( _groupType != null )
-            {
-                cblRole.DataSource = _groupType.Roles.OrderBy( a => a.Order ).ToList();
-                cblRole.DataBind();
-            }
-
             cpCampusFilter.Campuses = CampusCache.All();
-
-            BindAttributes();
-            AddDynamicControls();
 
             tbFirstName.Text = rFilter.GetUserPreference( "First Name" );
             tbLastName.Text = rFilter.GetUserPreference( "Last Name" );
             cpCampusFilter.SelectedCampusId = rFilter.GetUserPreference( "Campus" ).AsIntegerOrNull();
-
-            string roleValue = rFilter.GetUserPreference( "Role" );
-            if ( !string.IsNullOrWhiteSpace( roleValue ) )
-            {
-                cblRole.SetValues( roleValue.Split( ';' ).ToList() );
-            }
-        }
-
-        /// <summary>
-        /// Binds the attributes.
-        /// </summary>
-        private void BindAttributes()
-        {
-            // Parse the attribute filters 
-            AvailableAttributes = new List<AttributeCache>();
-            if ( _groupType != null )
-            {
-                int entityTypeId = new GroupMember().TypeId;
-                string groupTypeQualifier = _groupType.Id.ToString();
-                foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
-                    .Where( a =>
-                        a.EntityTypeId == entityTypeId &&
-                        a.IsGridColumn &&
-                        ( a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) && a.EntityTypeQualifierValue.Equals( groupTypeQualifier ) ) )
-                    .OrderByDescending( a => a.EntityTypeQualifierColumn )
-                    .ThenBy( a => a.Order )
-                    .ThenBy( a => a.Name ) )
-                {
-                    AvailableAttributes.Add( AttributeCache.Read( attributeModel ) );
-                }
-            }
-        }
-
-        /// <summary>
-        /// Adds the attribute columns.
-        /// </summary>
-        private void AddDynamicControls()
-        {
-            // Clear the filter controls
-            phAttributeFilters.Controls.Clear();
-
-            // Remove attribute columns
-            foreach ( var column in gGroupMembers.Columns.OfType<AttributeField>().ToList() )
-            {
-                gGroupMembers.Columns.Remove( column );
-            }
-
-            if ( AvailableAttributes != null )
-            {
-                foreach ( var attribute in AvailableAttributes )
-                {
-                    var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filter_" + attribute.Id.ToString(), false, Rock.Reporting.FilterMode.SimpleFilter );
-                    if ( control != null )
-                    {
-                        if ( control is IRockControl )
-                        {
-                            var rockControl = (IRockControl)control;
-                            rockControl.Label = attribute.Name;
-                            rockControl.Help = attribute.Description;
-                            phAttributeFilters.Controls.Add( control );
-                        }
-                        else
-                        {
-                            var wrapper = new RockControlWrapper();
-                            wrapper.ID = control.ID + "_wrapper";
-                            wrapper.Label = attribute.Name;
-                            wrapper.Controls.Add( control );
-                            phAttributeFilters.Controls.Add( wrapper );
-                        }
-
-                        string savedValue = rFilter.GetUserPreference( attribute.Key );
-                        if ( !string.IsNullOrWhiteSpace( savedValue ) )
-                        {
-                            try
-                            {
-                                var values = JsonConvert.DeserializeObject<List<string>>( savedValue );
-                                attribute.FieldType.Field.SetFilterValues( control, attribute.QualifierValues, values );
-                            }
-                            catch
-                            {
-                                // intentionally ignore
-                            }
-                        }
-                    }
-
-                    string dataFieldExpression = attribute.Key;
-                    bool columnExists = gGroupMembers.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
-                    if ( !columnExists )
-                    {
-                        AttributeField boundField = new AttributeField();
-                        boundField.DataField = dataFieldExpression;
-                        boundField.HeaderText = attribute.Name;
-                        boundField.SortExpression = string.Empty;
-
-                        var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
-                        if ( attributeCache != null )
-                        {
-                            boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
-                        }
-
-                        gGroupMembers.Columns.Add( boundField );
-                    }
-                }
-            }
         }
 
         /// <summary>
@@ -455,150 +247,71 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                 var rootGroup = groupService.Get( rootGroupGuid.Value );
                 if ( rootGroup != null )
                 {
-                    if ( _groupType == null )
+                    pnlGroupMembers.Visible = true;
+
+                    nbRoleWarning.Visible = false;
+                    rFilter.Visible = true;
+                    gGroupMembers.Visible = true;
+
+                    //GetGroups
+                    List<GroupTreeItem> groupQry = groupService.GetAllDescendents( rootGroup.Id )
+                        .Select( g => new GroupTreeItem { Id = g.Id, ParentGroupId = g.ParentGroupId, Name = g.Name } )
+                        .ToList();
+                    groupQry.Add( new GroupTreeItem { Id = rootGroup.Id, ParentGroupId = rootGroup.ParentGroupId, Name = rootGroup.Name } );
+
+                    List<int> groupIdList = groupQry.Select( g => g.Id ).ToList();
+                    List<Guid> groupTypeIncludeGuids = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().AsGuidList();
+
+                    // Get Group Members
+                    var qry = groupMemberService.Queryable( "Person,GroupRole", true ).AsNoTracking()
+                        .Where( m =>
+                            groupIdList.Contains( m.GroupId ) &&
+                            groupTypeIncludeGuids.Contains( m.Group.GroupType.Guid )
+                            );
+
+                    // Filter by First Name
+                    string firstName = tbFirstName.Text;
+                    if ( !string.IsNullOrWhiteSpace( firstName ) )
                     {
-                        var groupTypeGuid = GetAttributeValue( "GroupType" ).AsGuidOrNull();
-                        if ( groupTypeGuid != null )
-                        {
-                            _groupType = new GroupTypeService( rockContext ).Get( groupTypeGuid.Value );
-                        }
+                        qry = qry.Where( m => m.Person.FirstName.StartsWith( firstName ) );
                     }
 
-                    if ( _groupType != null )
+                    // Filter by Last Name
+                    string lastName = tbLastName.Text;
+                    if ( !string.IsNullOrWhiteSpace( lastName ) )
                     {
-                        pnlGroupMembers.Visible = true;
-                        lHeading.Text = string.Format( "Pending {0} {1}", _groupType.GroupTerm, _groupType.GroupMemberTerm.Pluralize() );
-
-                        if ( _groupType.Roles.Any() )
-                        {
-                            nbRoleWarning.Visible = false;
-                            rFilter.Visible = true;
-                            gGroupMembers.Visible = true;
-
-                            //GetGroups
-                            List<GroupTreeItem> groupQry = groupService.GetAllDescendents( rootGroup.Id )
-                                .Select( g => new GroupTreeItem { Id = g.Id, ParentGroupId = g.ParentGroupId, Name = g.Name } )
-                                .ToList();
-                            groupQry.Add( new GroupTreeItem { Id = rootGroup.Id, ParentGroupId = rootGroup.ParentGroupId, Name = rootGroup.Name } );
-
-                            List<int> groupIdList = groupQry.Select( g => g.Id ).ToList();
-
-                            // Get Group Members
-                            var qry = groupMemberService.Queryable( "Person,GroupRole", true ).AsNoTracking()
-                                .Where( m =>
-                                    groupIdList.Contains( m.GroupId ) &&
-                                    m.Group.GroupTypeId == _groupType.Id );
-
-                            // Filter by First Name
-                            string firstName = tbFirstName.Text;
-                            if ( !string.IsNullOrWhiteSpace( firstName ) )
-                            {
-                                qry = qry.Where( m => m.Person.FirstName.StartsWith( firstName ) );
-                            }
-
-                            // Filter by Last Name
-                            string lastName = tbLastName.Text;
-                            if ( !string.IsNullOrWhiteSpace( lastName ) )
-                            {
-                                qry = qry.Where( m => m.Person.LastName.StartsWith( lastName ) );
-                            }
-
-                            // Filter by role
-                            var validGroupTypeRoles = _groupType.Roles.Select( r => r.Id ).ToList();
-                            var roles = new List<int>();
-                            foreach ( string role in cblRole.SelectedValues )
-                            {
-                                if ( !string.IsNullOrWhiteSpace( role ) )
-                                {
-                                    int roleId = int.MinValue;
-                                    if ( int.TryParse( role, out roleId ) && validGroupTypeRoles.Contains( roleId ) )
-                                    {
-                                        roles.Add( roleId );
-                                    }
-                                }
-                            }
-
-                            if ( roles.Any() )
-                            {
-                                qry = qry.Where( m => roles.Contains( m.GroupRoleId ) );
-                            }
-
-                            // Filter by Pending Status
-                            qry = qry.Where( m => m.GroupMemberStatus == GroupMemberStatus.Pending );
-
-                            // Filter by Campus
-                            if ( cpCampusFilter.SelectedCampusId.HasValue )
-                            {
-                                Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
-                                int campusId = cpCampusFilter.SelectedCampusId.Value;
-                                var qryFamilyMembersForCampus = new GroupMemberService( rockContext ).Queryable().Where( a => a.Group.GroupType.Guid == familyGuid && a.Group.CampusId == campusId );
-                                qry = qry.Where( a => qryFamilyMembersForCampus.Any( f => f.PersonId == a.PersonId ) );
-                            }
-
-                            // Filter query by any configured attribute filters
-                            if ( AvailableAttributes != null && AvailableAttributes.Any() )
-                            {
-                                var attributeValueService = new AttributeValueService( rockContext );
-                                var parameterExpression = attributeValueService.ParameterExpression;
-
-                                foreach ( var attribute in AvailableAttributes )
-                                {
-                                    var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
-                                    if ( filterControl != null )
-                                    {
-                                        var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                                        var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                                        if ( expression != null )
-                                        {
-                                            var attributeValues = attributeValueService
-                                                .Queryable()
-                                                .Where( v => v.Attribute.Id == attribute.Id );
-
-                                            attributeValues = attributeValues.Where( parameterExpression, expression, null );
-
-                                            qry = qry.Where( w => attributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
-                                        }
-                                    }
-                                }
-                            }
-
-                            List<GroupMember> groupMembersList = qry.ToList();
-
-                            gGroupMembers.DataSource = groupMembersList.Select( m => new
-                            {
-                                m.Id,
-                                m.Guid,
-                                m.PersonId,
-                                GroupTree = GetGroupTree( groupQry, groupQry.Where( g => g.Id == m.GroupId ).FirstOrDefault(), rootGroup ),
-                                Name = GetMemberDetailLink( m.Id, m.Person.FullName ),
-                                LastName = m.Person.LastName,
-                                GroupRole = m.GroupRole.Name,
-                                m.GroupMemberStatus,
-                                RecordStatusValueId = m.Person.RecordStatusValueId,
-                            } )
-                            .OrderBy( m => m.GroupTree ).ThenBy( m => m.LastName )
-                            .ToList();
-                            gGroupMembers.DataBind();
-                        }
-                        else
-                        {
-                            nbRoleWarning.Text = string.Format(
-                                "{0} cannot be added to this {1} because the '{2}' group type does not have any roles defined.",
-                                _groupType.GroupMemberTerm.Pluralize(),
-                                _groupType.GroupTerm,
-                                _groupType.Name );
-
-                            nbRoleWarning.Visible = true;
-                            rFilter.Visible = false;
-                            gGroupMembers.Visible = false;
-                        }
+                        qry = qry.Where( m => m.Person.LastName.StartsWith( lastName ) );
                     }
-                    else
+
+                    // Filter by Pending Status
+                    qry = qry.Where( m => m.GroupMemberStatus == GroupMemberStatus.Pending );
+
+                    // Filter by Campus
+                    if ( cpCampusFilter.SelectedCampusId.HasValue )
                     {
-                        nbRoleWarning.Text = "Please provide a group type.";
-                        nbRoleWarning.Visible = true;
-                        pnlGroupMembers.Visible = false;
+                        Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+                        int campusId = cpCampusFilter.SelectedCampusId.Value;
+                        var qryFamilyMembersForCampus = new GroupMemberService( rockContext ).Queryable().Where( a => a.Group.GroupType.Guid == familyGuid && a.Group.CampusId == campusId );
+                        qry = qry.Where( a => qryFamilyMembersForCampus.Any( f => f.PersonId == a.PersonId ) );
                     }
+
+                    List<GroupMember> groupMembersList = qry.ToList();
+
+                    gGroupMembers.DataSource = groupMembersList.Select( m => new
+                    {
+                        m.Id,
+                        m.Guid,
+                        m.PersonId,
+                        GroupTree = GetGroupTree( groupQry, groupQry.Where( g => g.Id == m.GroupId ).FirstOrDefault(), rootGroup ),
+                        Name = GetMemberDetailLink( m.Id, m.Person.FullName ),
+                        LastName = m.Person.LastName,
+                        GroupRole = m.GroupRole.Name,
+                        m.GroupMemberStatus,
+                        RecordStatusValueId = m.Person.RecordStatusValueId,
+                    } )
+                    .OrderBy( m => m.GroupTree ).ThenBy( m => m.LastName )
+                    .ToList();
+                    gGroupMembers.DataBind();
                 }
                 else
                 {
