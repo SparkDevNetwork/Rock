@@ -112,7 +112,7 @@ namespace Rock.Transactions
                 PageViewUserAgentService pageViewUserAgentService = new PageViewUserAgentService( rockContext );
                 PageViewSessionService pageViewSessionService = new PageViewSessionService( rockContext );
 
-                var userAgent = ( this.UserAgent ?? string.Empty ).Trim();
+                var userAgent = ( this.UserAgent ?? string.Empty ).Trim().Substring(0, 500); // trim super long useragents
 
                 // get user agent info
                 var clientType = PageViewUserAgent.GetClientType( userAgent );
