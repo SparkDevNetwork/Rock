@@ -507,7 +507,7 @@ namespace Rock.Model
                 // intentionally blank
             }
         }
-
+        
         /// <summary>
         /// Gets a value indicating whether this instance is business.
         /// </summary>
@@ -2000,6 +2000,64 @@ namespace Rock.Model
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Updates, adds or removes a PhoneNumber of the given type.
+        /// </summary>
+        public static void UpdatePhoneNumber( this Person person, int numberTypeValueId, string phoneCountryCode, string phoneNumber, bool? isMessagingEnabled, bool? isUnlisted, RockContext rockContext )
+        {
+            // try to find the phone number based on the typeGuid.
+            var phoneObject = person.PhoneNumbers
+                .Where( p =>
+                    p.NumberTypeValueId.HasValue &&
+                    p.NumberTypeValueId.Value == numberTypeValueId )
+                .FirstOrDefault();
+
+            // do they currently have this type of number?
+            if ( phoneObject != null )
+            {
+                // if the text field is blank, we'll delete this phone number type from their list.
+                if ( string.IsNullOrWhiteSpace( phoneNumber ) )
+                {
+                    person.PhoneNumbers.Remove( phoneObject );
+
+                    var phoneNumberService = new PhoneNumberService( rockContext );
+                    phoneNumberService.Delete( phoneObject );
+                }
+                else
+                {
+                    // otherwise update it with the new info
+                    phoneObject.CountryCode = PhoneNumber.CleanNumber( phoneCountryCode );
+                    phoneObject.Number = PhoneNumber.CleanNumber( phoneNumber );
+
+                    // for an existing number, if they don't provide messaging / unlisted, use the current values.
+                    phoneObject.IsMessagingEnabled = isMessagingEnabled ?? phoneObject.IsMessagingEnabled;
+                    phoneObject.IsUnlisted = isUnlisted ?? phoneObject.IsUnlisted;
+                }
+            }
+            // they don't have a number of this type. If one is being added, we'll add it.
+            // (otherwise we'll just do nothing, leaving it as it)
+            else if ( !string.IsNullOrWhiteSpace( phoneNumber ) )
+            {
+                // create a new phone number and add it to their list.
+                phoneObject = new PhoneNumber();
+                person.PhoneNumbers.Add( phoneObject );
+
+                var phoneNumberService = new PhoneNumberService( rockContext );
+                phoneNumberService.Add( phoneObject );
+
+                // get the typeId for this phone number so we set it correctly
+                //var numberType = Rock.Web.Cache.DefinedValueCache.Read( phoneTypeGuid );
+                phoneObject.NumberTypeValueId = numberTypeValueId;
+
+                phoneObject.CountryCode = PhoneNumber.CleanNumber( phoneCountryCode );
+                phoneObject.Number = PhoneNumber.CleanNumber( phoneNumber );
+
+                // for a new number, if they don't specify messaging / unlisted, assume no texting and not unlisted.
+                phoneObject.IsMessagingEnabled = isMessagingEnabled ?? false;
+                phoneObject.IsUnlisted = isUnlisted ?? false;
+            }
         }
 
         /// <summary>
