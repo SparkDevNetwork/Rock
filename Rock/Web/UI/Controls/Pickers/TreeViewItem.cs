@@ -26,8 +26,19 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public enum GetCountsType
         {
+            /// <summary>
+            /// none
+            /// </summary>
             None = 0,
+
+            /// <summary>
+            /// child groups
+            /// </summary>
             ChildGroups = 1,
+
+            /// <summary>
+            /// group members
+            /// </summary>
             GroupMembers = 2
         }
 
