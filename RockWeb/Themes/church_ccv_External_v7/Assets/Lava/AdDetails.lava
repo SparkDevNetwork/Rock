@@ -27,7 +27,7 @@
     {{ pageTitle | SetPageTitle }}
 
     {% if item.DetailImage_unformatted != '' %}
-      <img src="/GetImage.ashx?Guid={{ item.DetailImage_unformatted }}" class="title-image img-responsive">
+      <img src="/GetImage.ashx?Guid={{ item.DetailImage_unformatted }}&width=2280" class="title-image img-responsive">
       <div class="container-md">
         <h1>{{ item.Title }}</h1>
         {% if item.SummaryText != empty %}
