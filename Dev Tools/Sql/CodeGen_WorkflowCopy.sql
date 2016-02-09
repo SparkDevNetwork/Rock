@@ -2,6 +2,7 @@ DECLARE @etid_workflowType AS INT = (SELECT Id FROM EntityType WHERE Name = 'Roc
 DECLARE @etid_workflow AS INT = (SELECT Id FROM EntityType WHERE Name = 'Rock.Model.Workflow');
 DECLARE @etid_workflowActivity AS INT = (SELECT Id FROM EntityType WHERE Name = 'Rock.Model.WorkflowActivity');
 DECLARE @etid_systemEmail AS INT = (SELECT Id FROM EntityType WHERE Name = 'Rock.Model.SystemEmail');
+DECLARE @etid_workflowActionType AS INT = (SELECT Id FROM EntityType WHERE Name = 'Rock.Model.WorkflowActionType');
 
 -- STEP 1: Generate code to insert categories
 SELECT 
@@ -429,10 +430,88 @@ SELECT
 		wat.IsActionCompletedOnSuccess,
 		', ',
 		wat.IsActivityCompletedOnSuccess,
-		''');'
+		', ''',
+		wat.[Guid],
+		''', ',
+		CASE WHEN waf.Id IS NOT NULL THEN
+			CONCAT(
+				'(SELECT Id FROM WorkflowActionForm WHERE [Guid] = ''',
+				waf.[Guid],
+				'''), '
+			)
+		ELSE
+			'NULL, '
+		END,
+		CASE WHEN wat.CriteriaAttributeGuid IS NULL THEN
+			'NULL'
+		ELSE
+			CONCAT(
+				'''',
+				wat.CriteriaAttributeGuid,
+				''''
+			)
+		END,
+		', ',
+		wat.CriteriaComparisonType,
+		', ',
+		CASE WHEN wat.CriteriaValue IS NULL THEN
+			'NULL'
+		ELSE
+			CONCAT(
+				'''',
+				REPLACE(wat.CriteriaValue, '''', ''''''),
+				''''
+			)
+		END,
+		');'
 	) AS Step10
 FROM 
 	WorkflowActionType wat
 	LEFT JOIN WorkflowActivityType wactt ON wat.ActivityTypeId = wactt.Id
 	LEFT JOIN WorkflowActionForm waf ON waf.Id = wat.WorkflowFormId
 	LEFT JOIN EntityType et ON wat.EntityTypeId = et.Id;
+
+-- STEP 11 - Workflow Action Type Attribute Values
+SELECT
+	CONCAT(
+		'INSERT [AttributeValue] ([IsSystem], [AttributeId], [EntityId], [Value], [Guid]) VALUES (',
+		av.IsSystem,
+		', ',
+		CASE WHEN a.Id IS NOT NULL THEN
+			CONCAT(
+				'(SELECT Id FROM Attribute WHERE [Guid] = ''',
+				a.[Guid],
+				'''), '
+			)
+		ELSE
+			'NULL, '
+		END,
+		CASE WHEN wat.Id IS NOT NULL THEN
+			CONCAT(
+				'(SELECT Id FROM WorkflowActionType WHERE [Guid] = ''',
+				wat.[Guid],
+				'''), '
+			)
+		ELSE
+			'NULL, '
+		END,
+		CASE WHEN av.Value IS NULL THEN
+			'NULL'
+		ELSE
+			CONCAT(
+				'''',
+				REPLACE(av.Value, '''', ''''''),
+				''''
+			)
+		END,
+		', ''',
+		av.[Guid],
+		'''', 
+		');'
+	) AS Step11
+FROM
+	AttributeValue av
+	JOIN WorkflowActionType wat ON wat.Id = av.EntityId
+	JOIN Attribute a ON a.Id = av.AttributeId
+WHERE
+	a.EntityTypeId = @etid_workflowActionType;
