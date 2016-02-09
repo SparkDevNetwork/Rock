@@ -398,3 +398,41 @@ FROM
 	WorkflowActionFormAttribute wafa
 	LEFT JOIN WorkflowActionForm waf ON waf.Id = wafa.WorkflowActionFormId
 	LEFT JOIN Attribute a ON a.Id = wafa.AttributeId;
+
+-- STEP 10: Workflow Action Type
+SELECT 
+	CONCAT(
+		'INSERT [WorkflowActionType] ([ActivityTypeId], [Name], [Order], [EntityTypeId], [IsActionCompletedOnSuccess], [IsActivityCompletedOnSuccess], [Guid], [WorkflowFormId], [CriteriaAttributeGuid], [CriteriaComparisonType], [CriteriaValue]) VALUES (',
+		CASE WHEN wactt.Id IS NOT NULL THEN
+			CONCAT(
+				'(SELECT Id FROM WorkflowActivityType WHERE [Guid] = ''',
+				wactt.[Guid],
+				'''), '
+			)
+		ELSE
+			'NULL, '
+		END,
+		'''',
+		REPLACE(wat.Name, '''', ''''''),
+		''', ',
+		wat.[Order],
+		', ',
+		CASE WHEN et.Id IS NOT NULL THEN
+			CONCAT(
+				'(SELECT Id FROM EntityType WHERE [Name] = ''',
+				et.[Name],
+				'''), '
+			)
+		ELSE
+			'NULL, '
+		END,
+		wat.IsActionCompletedOnSuccess,
+		', ',
+		wat.IsActivityCompletedOnSuccess,
+		''');'
+	) AS Step10
+FROM 
+	WorkflowActionType wat
+	LEFT JOIN WorkflowActivityType wactt ON wat.ActivityTypeId = wactt.Id
+	LEFT JOIN WorkflowActionForm waf ON waf.Id = wat.WorkflowFormId
+	LEFT JOIN EntityType et ON wat.EntityTypeId = et.Id;
