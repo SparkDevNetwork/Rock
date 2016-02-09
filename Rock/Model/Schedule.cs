@@ -242,27 +242,8 @@ namespace Rock.Model
         {
             get
             {
-                DDay.iCal.Event calEvent = GetCalenderEvent();
-                if ( calEvent != null )
-                {
-                    var occurrences = ScheduleICalHelper.GetOccurrences( calEvent, RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) );
-                    if ( occurrences.Any() )
-                    {
-                        var minDateTime = occurrences
-                            .Where( a =>
-                                a.Period != null &&
-                                a.Period.StartTime != null )
-                            .Select( a => a.Period.StartTime.Value )
-                            .Min( d => (DateTime?)d );
-                        if ( minDateTime.HasValue )
-                        {
-                            // ensure the the datetime is DateTimeKind.Local since iCal returns DateTimeKind.UTC
-                            return DateTime.SpecifyKind( minDateTime.Value, DateTimeKind.Local );
-                        }
-                    }
-                }
-
-                return null;
+                var occurrences = GetScheduledStartTimes( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) );
+                return occurrences.Min( o => (DateTime?)o );
             }
         }
 
@@ -356,15 +337,11 @@ namespace Rock.Model
 
             if ( IsCheckInEnabled )
             {
-                DDay.iCal.Event calEvent = GetCalenderEvent();
-                if ( calEvent != null )
+                var scheduledStartTimes = this.GetScheduledStartTimes( beginDateTime, beginDateTime.Date.AddDays( 1 ) );
+                if ( scheduledStartTimes.Count > 0 )
                 {
-                    var scheduledStartTimes = this.GetScheduledStartTimes( beginDateTime, beginDateTime.AddMonths( 1 ) );
-                    if ( scheduledStartTimes.Count > 0 )
-                    {
-                        var nextScheduledStartTime = scheduledStartTimes[0];
-                        nextStartTime = nextScheduledStartTime.AddMinutes( 0 - CheckInStartOffsetMinutes.Value );
-                    }
+                    var nextScheduledStartTime = scheduledStartTimes[0];
+                    nextStartTime = nextScheduledStartTime.AddMinutes( 0 - CheckInStartOffsetMinutes.Value );
                 }
             }
 
@@ -382,20 +359,17 @@ namespace Rock.Model
             var result = new List<DateTime>();
 
             DDay.iCal.Event calEvent = GetCalenderEvent();
-            if ( calEvent != null )
+            if ( calEvent != null && calEvent.DTStart != null )
             {
-                if ( this.HasSchedule() )
+                var occurrences = ScheduleICalHelper.GetOccurrences( calEvent, beginDateTime, endDateTime );
+                foreach ( var startDateTime in occurrences
+                    .Where( a =>
+                        a.Period != null &&
+                        a.Period.StartTime != null )
+                    .Select( a => a.Period.StartTime.Value ) )
                 {
-                    var occurrences = ScheduleICalHelper.GetOccurrences( calEvent, beginDateTime, endDateTime );
-                    foreach ( var startDateTime in occurrences
-                        .Where( a =>
-                            a.Period != null &&
-                            a.Period.StartTime != null )
-                        .Select( a => a.Period.StartTime.Value ) )
-                    {
-                        // ensure the the datetime is DateTimeKind.Local since iCal returns DateTimeKind.UTC
-                        result.Add( DateTime.SpecifyKind( startDateTime, DateTimeKind.Local ) );
-                    }
+                    // ensure the the datetime is DateTimeKind.Local since iCal returns DateTimeKind.UTC
+                    result.Add( DateTime.SpecifyKind( startDateTime, DateTimeKind.Local ) );
                 }
             }
 
@@ -411,16 +385,12 @@ namespace Rock.Model
         {
             DateTime? firstStartTime = null;
             
-            DDay.iCal.Event calEvent = GetCalenderEvent();
-            if ( calEvent != null )
+            if ( this.EffectiveStartDate.HasValue )
             {
-                if ( this.EffectiveStartDate.HasValue )
+                var scheduledStartTimes = this.GetScheduledStartTimes( this.EffectiveStartDate.Value, this.EffectiveStartDate.Value.AddMonths( 1 ) );
+                if ( scheduledStartTimes.Count > 0 )
                 {
-                    var scheduledStartTimes = this.GetScheduledStartTimes( this.EffectiveStartDate.Value, this.EffectiveStartDate.Value.AddMonths( 1 ) );
-                    if ( scheduledStartTimes.Count > 0 )
-                    {
-                        firstStartTime = scheduledStartTimes[0];
-                    }
+                    firstStartTime = scheduledStartTimes[0];
                 }
             }
 

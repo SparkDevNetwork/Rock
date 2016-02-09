@@ -37,6 +37,20 @@ namespace Rock.CheckIn
         public Schedule Schedule { get; set; }
 
         /// <summary>
+        /// Gets a value indicating whether check in is active
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsCheckInActive
+        {
+            get
+            {
+                return Schedule != null && Schedule.IsCheckInActive;
+            }
+        }
+
+        /// <summary>
         /// Gets the start time.
         /// </summary>
         /// <value>
@@ -44,6 +58,31 @@ namespace Rock.CheckIn
         /// </value>
         [DataMember]
         public DateTime? StartTime { get; private set; }
+
+        /// <summary>
+        /// Gets the next active date time.
+        /// </summary>
+        /// <value>
+        /// The next active date time.
+        /// </value>
+        public DateTime? NextActiveDateTime
+        {
+            get
+            {
+                if ( ( !_nextActiveDateTime.HasValue || _nextActiveDateTime.Value.CompareTo( RockDateTime.Now ) < 0 ) && Schedule != null )
+                {
+                    _nextActiveDateTime = Schedule.GetNextCheckInStartTime( RockDateTime.Now );
+                }
+                return _nextActiveDateTime;
+            }
+            set
+            {
+                _nextActiveDateTime = value;
+            }
+        }
+
+        [DataMember]
+        private DateTime? _nextActiveDateTime = null;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KioskSchedule" /> class.
