@@ -954,28 +954,7 @@ namespace RockWeb.Blocks.Event
                         }
                     }
                 }
-
-                // Set the phones
-                var lPhone = e.Row.FindControl( "lPhone" ) as Literal;
-                if ( lPhone != null )
-                {
-                    if ( registrant.PersonAlias != null &&
-                        registrant.PersonAlias.Person != null &&
-                        registrant.PersonAlias.Person.PhoneNumbers != null )
-                    {
-                        var phones = new List<string>();
-                        foreach ( var phoneNumber in registrant.PersonAlias.Person.PhoneNumbers
-                            .Where( n => !n.IsUnlisted ) )
-                        {
-                            phones.Add( string.Format( "{0} <small>({1})</small>",
-                                phoneNumber.NumberFormatted,
-                                phoneNumber.NumberTypeValue != null ? phoneNumber.NumberTypeValue.Value : "" ) );
-
-                        }
-                        lPhone.Text = phones.AsDelimited( "<br/>" );
-                    }
-                }
-
+                
                 // Set the Fees
                 var lFees = e.Row.FindControl( "lFees" ) as Literal;
                 if ( lFees != null )
@@ -2636,15 +2615,15 @@ namespace RockWeb.Blocks.Event
                                     tbPhoneFilter.Text = fRegistrants.GetUserPreference( "Phone" );
                                     phRegistrantFormFieldFilters.Controls.Add( tbPhoneFilter );
 
-                                    var literalField = new RockLiteralField( );
-                                    literalField.ID = "lPhone";
-                                    literalField.HeaderText = "Phone(s)";
-                                    gRegistrants.Columns.Add( literalField );
+                                    var phoneNumbersField = new PhoneNumbersField();
+                                    phoneNumbersField.DataField = "PersonAlias.Person.PhoneNumbers";
+                                    phoneNumbersField.HeaderText = "Phone(s)";
+                                    gRegistrants.Columns.Add( phoneNumbersField );
 
-                                    var literalField2 = new RockLiteralField();
-                                    literalField2.ID = "lPhone";
-                                    literalField2.HeaderText = "Phone(s)";
-                                    gGroupPlacements.Columns.Add( literalField2 );
+                                    var phoneNumbersField2 = new PhoneNumbersField();
+                                    phoneNumbersField2.DataField = "PersonAlias.Person.PhoneNumbers";
+                                    phoneNumbersField2.HeaderText = "Phone(s)";
+                                    gGroupPlacements.Columns.Add( phoneNumbersField2 );
 
                                     break;
                                 }
