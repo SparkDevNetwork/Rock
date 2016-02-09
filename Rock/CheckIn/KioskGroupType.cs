@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Model;
@@ -39,6 +40,29 @@ namespace Rock.CheckIn
         public GroupTypeCache GroupType { get; set; }
 
         /// <summary>
+        /// All groups with active schedules
+        /// </summary>
+        /// <value>
+        /// The groups.
+        /// </value>
+        [DataMember]
+        public List<KioskGroup> KioskGroups { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether check in is active
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsCheckInActive
+        {
+            get
+            {
+                return KioskGroups != null && KioskGroups.Any( s => s.IsCheckInActive );
+            }
+        }
+
+        /// <summary>
         /// Next time that a location/group/schedule will be active for
         /// this group type.  If the group type has locations, this time
         /// will be in the past, if there are no locations, this time would
@@ -47,17 +71,13 @@ namespace Rock.CheckIn
         /// <value>
         /// The next active time.
         /// </value>
-        [DataMember]
-        public DateTime NextActiveTime { get; set; }
-
-        /// <summary>
-        /// All groups with active schedules
-        /// </summary>
-        /// <value>
-        /// The groups.
-        /// </value>
-        [DataMember]
-        public List<KioskGroup> KioskGroups { get; set; }
+        public DateTime NextActiveTime
+        {
+            get
+            {
+                return KioskGroups.Min( s => (DateTime?)s.NextActiveDateTime ) ?? DateTime.MaxValue;
+            }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KioskGroupType" /> class.
