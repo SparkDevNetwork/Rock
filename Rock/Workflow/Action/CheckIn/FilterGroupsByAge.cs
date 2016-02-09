@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Globalization;
 using System.Linq;
 
 using Rock.Attribute;
@@ -85,10 +86,24 @@ namespace Rock.Workflow.Action.CheckIn
 
                             if ( minAgeValue != null )
                             {
-                                double minAge = 0;
-                                if ( double.TryParse( minAgeValue, out minAge ) )
+                                decimal minAge = 0;
+
+                                if ( decimal.TryParse( minAgeValue, out minAge ) )
                                 {
-                                    if ( !age.HasValue || age < minAge )
+                                    decimal? personAgePrecise = null;
+                                    if ( age.HasValue )
+                                    {
+                                        int groupMinAgePrecision = 0;
+                                        var decimalIndex = minAgeValue.IndexOf( NumberFormatInfo.CurrentInfo.NumberDecimalSeparator );
+                                        if ( decimalIndex > 0 )
+                                        {
+                                            groupMinAgePrecision = minAgeValue.Length - decimalIndex - 1;
+                                        }
+
+                                        personAgePrecise = Math.Round( Convert.ToDecimal( age ), groupMinAgePrecision, MidpointRounding.ToEven );
+                                    }
+
+                                    if ( !age.HasValue || personAgePrecise < minAge )
                                     {
                                         if ( remove )
                                         {
@@ -105,10 +120,24 @@ namespace Rock.Workflow.Action.CheckIn
 
                             if ( maxAgeValue != null )
                             {
-                                double maxAge = 0;
-                                if ( double.TryParse( maxAgeValue, out maxAge ) )
+                                decimal maxAge = 0;
+
+                                if ( decimal.TryParse( maxAgeValue, out maxAge ) )
                                 {
-                                    if ( !age.HasValue || age > maxAge )
+                                    decimal? personAgePrecise = null;
+                                    if ( age.HasValue )
+                                    {
+                                        int groupMaxAgePrecision = 0;
+                                        var decimalIndex = maxAgeValue.IndexOf( NumberFormatInfo.CurrentInfo.NumberDecimalSeparator );
+                                        if ( decimalIndex > 0 )
+                                        {
+                                            groupMaxAgePrecision = maxAgeValue.Length - decimalIndex - 1;
+                                        }
+
+                                        personAgePrecise = Math.Round( Convert.ToDecimal( age ), groupMaxAgePrecision, MidpointRounding.ToEven );
+                                    }
+
+                                    if ( !age.HasValue || personAgePrecise > maxAge )
                                     {
                                         if ( remove )
                                         {
