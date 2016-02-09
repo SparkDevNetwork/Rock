@@ -688,6 +688,16 @@ function(item) {
         /// <param name="chartData">The chart data.</param>
         private void BindChartAttendanceGrid( IEnumerable<Rock.Chart.IChartData> chartData )
         {
+            var graphBy = hfGraphBy.Value.ConvertToEnumOrNull<AttendanceGraphBy>() ?? AttendanceGraphBy.Total;
+            gChartAttendance.Columns[1].Visible = graphBy != AttendanceGraphBy.Total;
+            switch ( graphBy )
+            {
+                case AttendanceGraphBy.Group: gChartAttendance.Columns[1].HeaderText = "Group"; break;
+                case AttendanceGraphBy.Campus: gChartAttendance.Columns[1].HeaderText = "Campus"; break;
+                case AttendanceGraphBy.Location: gChartAttendance.Columns[1].HeaderText = "Location"; break;
+                case AttendanceGraphBy.Schedule: gChartAttendance.Columns[1].HeaderText = "Schedule"; break;
+            }
+
             SortProperty sortProperty = gChartAttendance.SortProperty;
 
             if ( sortProperty != null )

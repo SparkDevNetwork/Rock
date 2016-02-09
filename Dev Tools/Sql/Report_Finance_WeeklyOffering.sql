@@ -1,5 +1,5 @@
 /* ====================================================== */
--- Finance Weekly Offering Report
+-- Finance First Time Givers Report
 
 -- @StartDate and @EndDate can be set by Rock using query params.
 -- If they are not set, reportStartDate and reportEndDate are the
@@ -21,12 +21,12 @@ BEGIN
 END
 
 SELECT
-  p.Id AS PersonId,
+    p.Id AS PersonId,
 	CONCAT(p.LastName, ', ', p.FirstName) AS ContributorName,
 	p.Email,
 	fb.Name AS BatchName,
 	fap.PublicName AS Fund,
-	fa.PublicName AS SubFund,
+	c.Name AS Campus,
 	fa.GlCode AS GeneralLedger,
 	stv.Value AS OriginatingSource,
 	CONVERT(DATE, ft.TransactionDateTime) AS RecievedDate,
@@ -47,15 +47,14 @@ FROM
 	LEFT JOIN DefinedValue stv ON stv.Id = ft.SourceTypeValueId
 	LEFT JOIN DefinedValue ctv ON ctv.Id = pd.CurrencyTypeValueId
 	LEFT JOIN DefinedValue cctv ON cctv.Id = pd.CreditCardTypeValueId
+	LEFT JOIN Campus c ON c.Id = fa.CampusId
 WHERE
 	CONVERT(DATE, ft.TransactionDateTime) BETWEEN @reportStartDate AND @reportEndDate
 ORDER BY
-	ft.TransactionDateTime DESC;
+	ft.TransactionDateTime DESC
 
 /*
-
 -- HTML Content block to mimic filters in Rock
-
 <div class="form-group date-range-picker ">
     <label class="control-label" for="ctl00_main_ctl23_ctl01_ctl06_gfTransactions_drpDates">Date Range</label>
     <div id="ctl00_main_ctl23_ctl01_ctl06_gfTransactions_drpDates">
@@ -81,9 +80,7 @@ ORDER BY
 <div class='actions margin-b-md'>
     <a id="aGo" class="btn btn-primary" href="javascript:showReport();">Go</a>
 </div>
-
 <script language='javascript'>
-
 $(function() {
     $('#drpDates_lower').datepicker({ format: 'mm/dd/yy', todayHighlight: true }).on('changeDate', function (ev) {
         if (ev.date.valueOf() > $('#drpDates_upper').data('datepicker').dates[0]) {
@@ -97,15 +94,12 @@ $(function() {
             $('#drpDates_lower')[0].focus();
         }
     });
-
     $('#drpDates_upper').datepicker({ format: 'mm/dd/yy', todayHighlight: true }).on('changeDate', function (ev) {
         $('#drpDates_upper').data('datepicker').hide();
     });
-
     $('.date-range-picker').find('.input-group-addon').on('click', function () {
         $(this).siblings('.form-control').select();
     });
-
     var getParameterByName = function (name) {
         var url = window.location.href;
         name = name.replace(/[\[\]]/g, "\\$&");
@@ -115,26 +109,20 @@ $(function() {
         if (!results[2]) return '';
         return decodeURIComponent(results[2].replace(/\+/g, " "));
     };
-
     window.showReport = function () {
         var url = [location.protocol, '//', location.host, location.pathname].join('');
         window.location = url + '?StartDate=' + $('#drpDates_lower').val() + '&EndDate=' + $('#drpDates_upper').val();
     };
-
     $(document).ready(function () {
         var start = getParameterByName("StartDate");
         var end = getParameterByName("EndDate");
-
         if(start) {
             $('#drpDates_lower').datepicker("setDate", start);
         }
-
         if(end) {
             $('#drpDates_upper').datepicker("setDate", end);
         }
     });
 });
-
 </script>
-
 */
