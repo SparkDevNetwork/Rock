@@ -14,7 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.ServiceProcess;
 
 namespace RockJobSchedulerService
@@ -26,9 +29,10 @@ namespace RockJobSchedulerService
         /// </summary>
         static void Main()
         {
-            SqlServerTypes.Utilities.LoadNativeAssemblies( Path.GetDirectoryName( System.Reflection.Assembly.GetExecutingAssembly().Location ));
 
             string serviceFolder = Path.GetDirectoryName( System.Reflection.Assembly.GetExecutingAssembly().Location );
+            SqlServerTypes.Utilities.LoadNativeAssemblies( serviceFolder );
+
 
             // set the current directory to the same as the current exe so that we can find the web.connectionstrings.config
             Directory.SetCurrentDirectory( serviceFolder );
@@ -44,6 +48,7 @@ namespace RockJobSchedulerService
             //debug.StartJobScheduler();
 
             ServiceBase.Run( ServicesToRun );
+            
         }
     }
 }
