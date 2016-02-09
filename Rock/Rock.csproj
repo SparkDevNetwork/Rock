@@ -1130,6 +1130,7 @@
     <Compile Include="Workflow\Action\RemovePersonFromGroupAttribute.cs" />
     <Compile Include="Workflow\Action\RemovePersonFromGroup.cs" />
     <Compile Include="Workflow\Action\GetPersonFromFields.cs" />
+    <Compile Include="Workflow\Action\SetGroupMemberNote.cs" />
     <Compile Include="Workflow\Action\UpdateGroupMemberStatus.cs" />
     <Compile Include="Workflow\Action\AddPersonToGroupAttribute.cs" />
     <Compile Include="Workflow\Action\AssignActivityFromAttributeValue.cs" />
