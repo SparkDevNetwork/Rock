@@ -57,6 +57,12 @@
           {% capture cardClasses %}{{ cardClasses }} panel-card-light{% endcapture %}
         {% endif %}
 
+        {% if eventOccurrenceSummary.EventItem.DetailsUrl != empty %}
+          {% assign detailUrl = eventOccurrenceSummary.EventItem.DetailsUrl %}
+        {% else %}
+          {% capture detailUrl %}{{ DetailsPage }}?EventOccurrenceId={{ eventOccurrenceSummary.EventItemOccurrence.Id }}{% endcapture %}
+        {% endif %}
+
         {% assign thisMonth = eventOccurrenceSummary.DateTime | Date: 'MMMM' %}
 
         {% if thisMonth != currentMonth %}
@@ -69,13 +75,13 @@
 
         <div class="{{ wrapperClasses }}">
           <div class="{{ cardClasses }}">
-            <a class="panel-body" href="{{ DetailsPage }}?EventOccurrenceId={{ eventOccurrenceSummary.EventItemOccurrence.Id }}" title="{{ eventOccurrenceSummary.Name }}">
+            <a class="panel-body" href="{{ detailUrl }}" title="{{ eventOccurrenceSummary.Name }}">
               {{ panelCardImg }}
               <h3 class="panel-title">{{ eventOccurrenceSummary.Name }}</h3>
             </a>
             <div class="panel-footer clearfix">
               {% if DetailsPage != empty %}
-                <a class="btn btn-default btn-sm pull-right" href="{{ DetailsPage }}?EventOccurrenceId={{ eventOccurrenceSummary.EventItemOccurrence.Id }}">More <i class="fa fa-caret-right"></i></a>
+                <a class="btn btn-default btn-sm pull-right" href="{{ detailUrl }}">More <i class="fa fa-caret-right"></i></a>
               {% endif %}
               {{ eventOccurrenceSummary.DateTime | Date: 'ddd, MMM d / h:mmtt' }}
             </div>
