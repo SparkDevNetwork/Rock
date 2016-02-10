@@ -1048,7 +1048,8 @@ namespace RockWeb.Blocks.Groups
 
                 service.Add( communication );
 
-                var personAliasIds = new GroupMemberService( rockContext ).Queryable().Where( m => m.GroupId == _groupId )
+                var personAliasIds = new GroupMemberService( rockContext ).Queryable()
+                                    .Where( m => m.GroupId == _groupId && m.GroupMemberStatus != GroupMemberStatus.Inactive )
                                     .ToList()
                                     .Select( m => m.Person.PrimaryAliasId )
                                     .ToList();
