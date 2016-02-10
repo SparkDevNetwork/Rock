@@ -53,9 +53,9 @@ namespace Rock.Workflow.Action.CheckIn
                 {
                     foreach ( var person in family.People )
                     {
-                        foreach ( var kioskGroupType in checkInState.Kiosk.FilteredGroupTypes( checkInState.ConfiguredGroupTypes ) )
+                        foreach ( var kioskGroupType in checkInState.Kiosk.ActiveGroupTypes( checkInState.ConfiguredGroupTypes ) )
                         {
-                            if ( kioskGroupType.KioskGroups.SelectMany( g => g.KioskLocations ).Any( l => l.Location.IsActive ) )
+                            if ( kioskGroupType.KioskGroups.SelectMany( g => g.KioskLocations ).Any( l => l.IsCheckInActive && l.Location.IsActive ) )
                             {
                                 if ( !person.GroupTypes.Any( g => g.GroupType.Id == kioskGroupType.GroupType.Id ) )
                                 {
