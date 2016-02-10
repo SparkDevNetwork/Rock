@@ -1240,7 +1240,7 @@ namespace Rock.Web.UI
                         transaction.PersonAliasId = CurrentPersonAlias.Id;
                     }
 
-                    transaction.IPAddress = Request.UserHostAddress;
+                    transaction.IPAddress = GetClientIpAddress();
                     transaction.UserAgent = Request.UserAgent ?? "";
                     transaction.Url = Request.Url.ToString();
                     transaction.PageTitle = _pageCache.PageTitle;
@@ -2280,6 +2280,63 @@ namespace Rock.Web.UI
 
                 header.Controls.Add( l );
             }
+        }
+
+        /// <summary>
+        /// Gets the client's ip address.
+        /// </summary>
+        /// <returns></returns>
+        public static string GetClientIpAddress()
+        {
+            string ipAddress = HttpContext.Current.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
+
+            if ( String.IsNullOrWhiteSpace( ipAddress ) )
+            {
+                ipAddress = HttpContext.Current.Request.ServerVariables["REMOTE_ADDR"];
+            }
+
+            if ( string.IsNullOrWhiteSpace( ipAddress ) )
+            {
+                ipAddress = HttpContext.Current.Request.UserHostAddress;
+            }
+
+            if ( string.IsNullOrWhiteSpace( ipAddress ) || ipAddress.Trim() == "::1" )
+            {
+                ipAddress = string.Empty;
+            }
+
+            if ( string.IsNullOrWhiteSpace( ipAddress ) )
+            {
+                string stringHostName = System.Net.Dns.GetHostName();
+                var ipHostEntries = System.Net.Dns.GetHostEntry( stringHostName );
+                System.Net.IPAddress[] arrIpAddress = ipHostEntries.AddressList;
+
+                try
+                {
+                    ipAddress = arrIpAddress[arrIpAddress.Length - 2].ToString();
+                }
+                catch
+                {
+                    try
+                    {
+                        ipAddress = arrIpAddress[0].ToString();
+                    }
+                    catch
+                    {
+                        try
+                        {
+                            arrIpAddress = System.Net.Dns.GetHostAddresses( stringHostName );
+                            ipAddress = arrIpAddress[0].ToString();
+                        }
+                        catch
+                        {
+                            ipAddress = "127.0.0.1";
+                        }
+                    }
+                }
+            }
+
+            return ipAddress;
         }
 
         #region User Preferences
