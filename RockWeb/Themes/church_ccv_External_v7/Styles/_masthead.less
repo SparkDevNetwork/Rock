@@ -89,6 +89,9 @@
         @media @sm {
           margin-left: @grid-gutter-width;
           height: 50px;
+          width: 222px; // see above note
+        }
+        @media @md {
           width: 244px; // see above note
         }
       }
@@ -116,9 +119,10 @@
           @media @sm {
             line-height: 50px;
             text-align: right;
-            padding: 0 @grid-gutter-width;
+            padding: 0 @grid-gutter-width/4;
           }
           @media @md {
+            padding: 0 @grid-gutter-width;
             margin-left: -@grid-gutter-width/2;
           }
         }
@@ -342,6 +346,14 @@
   }
   @media @sm {
     display: inline-block;
+    position: absolute;
+    margin-left: -45px;
+    margin-top: 8px;
+  }
+  @media @md {
+    position: relative;
+    margin-left: 0;
+    margin-top: 0;
   }
   [id=search-input] {
     border-radius: @grid-gutter-width*2;
@@ -356,12 +368,18 @@
       background: @gray-dark;
       border-color: @gray-dark;
       color: @gray-dark;
+      &:hover {
+        cursor: pointer;
+      }
       &:focus {
         // border-color: red;
         background: #fff;
         border-color: @gray-light;
         width: @grid-gutter-width*8;
         padding-left: @grid-gutter-width;
+        &:hover {
+          cursor: auto;
+        }
       }
     }
   }
