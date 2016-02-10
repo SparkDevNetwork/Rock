@@ -52,7 +52,7 @@ namespace Rock.Web.UI.Controls
         /// <returns></returns>
         public override object GetExportValue( GridViewRow row )
         {
-            return GetRowValue( row );
+            return GetRowValue( row, false, false );
         }
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace Rock.Web.UI.Controls
             var row = controlContainer as GridViewRow;
             if ( row != null )
             {
-                return GetRowValue( row );
+                return GetRowValue( row, this.Condensed, true );
             }
 
             return string.Empty;
@@ -78,7 +78,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="row">The row.</param>
         /// <returns></returns>
-        private object GetRowValue( GridViewRow row )
+        private object GetRowValue( GridViewRow row, bool condensed, bool formatAsHtml )
         {
             // First try to get an IHasAttributes from the grid's object list
             IHasAttributes dataItem = GetAttributeObject( row );
@@ -100,8 +100,16 @@ namespace Rock.Web.UI.Controls
                 {
                     var attrib = dataItem.Attributes[this.DataField];
                     string rawValue = dataItem.GetAttributeValue( this.DataField );
-                    string resultHtml = attrib.FieldType.Field.FormatValueAsHtml( null, rawValue, attrib.QualifierValues, Condensed );
-                    return new HtmlString( resultHtml ?? string.Empty );
+                    if ( formatAsHtml )
+                    {
+                        string resultHtml = attrib.FieldType.Field.FormatValueAsHtml( null, rawValue, attrib.QualifierValues, condensed );
+                        return new HtmlString( resultHtml ?? string.Empty );
+                    }
+                    else
+                    {
+                        string result = attrib.FieldType.Field.FormatValue( null, rawValue, attrib.QualifierValues, condensed );
+                        return result ?? string.Empty;
+                    }
                 }
             }
 
