@@ -592,8 +592,25 @@ namespace Rock.Lava
         /// <param name="input">The input.</param>
         /// <param name="returnCount">The return count.</param>
         /// <returns></returns>
-        public static List<DateTime> DatesFromICal( object input, int returnCount = 1 )
+        public static List<DateTime> DatesFromICal( object input, object option = null )
         {
+            // if no option was specified, default to returning just 1 (to preserve previous behavior)
+            option = option ?? 1;
+
+            int returnCount = 1;
+            if (option.GetType() == typeof(int))
+            {
+                returnCount = (int)option;
+            }
+            else if (option.GetType() == typeof(string))
+            {
+                // if a string of "all" is specified for the option, return all of the dates
+                if ( string.Equals((string)option, "all", StringComparison.OrdinalIgnoreCase) )
+                {
+                    returnCount = int.MaxValue;
+                }
+            }
+            
             List<DateTime> nextOccurrences = new List<DateTime>();
             
             if ( input is string )
