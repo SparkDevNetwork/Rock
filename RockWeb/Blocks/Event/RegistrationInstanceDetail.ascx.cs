@@ -1699,7 +1699,9 @@ namespace RockWeb.Blocks.Event
         {
             var registrationIdQry = new RegistrationService( rockContext )
                 .Queryable().AsNoTracking()
-                .Where( r => r.RegistrationInstanceId == registrationInstanceId )
+                .Where( r => 
+                    r.RegistrationInstanceId == registrationInstanceId &&
+                    !r.IsTemporary )
                 .Select( r => r.Id );
 
             var registrationEntityType = EntityTypeCache.Read( typeof( Rock.Model.Registration ) );
@@ -1753,7 +1755,9 @@ namespace RockWeb.Blocks.Event
                     var qry = new RegistrationService( rockContext )
                         .Queryable( "PersonAlias.Person,Registrants.PersonAlias.Person,Registrants.Fees.RegistrationTemplateFee" )
                         .AsNoTracking()
-                        .Where( r => r.RegistrationInstanceId == instanceId.Value );
+                        .Where( r => 
+                            r.RegistrationInstanceId == instanceId.Value &&
+                            !r.IsTemporary );
 
                     if ( drpRegistrationDateRange.LowerValue.HasValue )
                     {
@@ -2740,7 +2744,9 @@ namespace RockWeb.Blocks.Event
                     // Get all the registrations for this instance
                     PaymentRegistrations = new RegistrationService( rockContext )
                         .Queryable( "PersonAlias.Person,Registrants.PersonAlias.Person" ).AsNoTracking()
-                        .Where( r => r.RegistrationInstanceId == instanceId.Value )
+                        .Where( r => 
+                            r.RegistrationInstanceId == instanceId.Value &&
+                            !r.IsTemporary )
                         .ToList();
 
                     // Get the Registration Ids
