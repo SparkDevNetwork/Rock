@@ -1244,43 +1244,59 @@ namespace RockWeb.Blocks.Event
         /// <returns></returns>
         private int? SaveChanges()
         {
-            Registration registration = null;
-
             if ( !string.IsNullOrWhiteSpace( TransactionCode ) )
             {
                 ShowError( string.Empty, "You have already completed this " + RegistrationTerm.ToLower() );
+                return null;
             }
-            else
+
+            Registration registration = null;
+
+            if ( RegistrationState != null && RegistrationState.Registrants.Any() && RegistrationTemplate != null )
             {
                 var rockContext = new RockContext();
 
                 var registrationService = new RegistrationService( rockContext );
-                
-                bool isNewRegistration = !RegistrationState.RegistrationId.HasValue;
+
+                bool isNewRegistration = true;
+                var previousRegistrants = new List<int>();
+                if ( RegistrationState.RegistrationId.HasValue )
+                {
+                    var previousRegistration = registrationService.Get( RegistrationState.RegistrationId.Value );
+                    if ( previousRegistration != null )
+                    {
+                        isNewRegistration = false;
+                        previousRegistrants = previousRegistration.Registrants
+                            .Where( r => r.PersonAlias != null )
+                            .Select( r => r.PersonAlias.PersonId )
+                            .ToList();
+                    }
+                }
 
                 try
                 {
-                    if ( RegistrationState != null && RegistrationState.Registrants.Any() && RegistrationTemplate != null )
+                    bool hasPayment = ( RegistrationState.PaymentAmount ?? 0.0m ) > 0.0m;
+
+                    // Save the registration
+                    registration = SaveRegistration( rockContext, hasPayment );
+                    if ( registration != null )
                     {
-                        bool hasPayment = ( RegistrationState.PaymentAmount ?? 0.0m ) > 0.0m;
-
-                        // Save the registration
-                        registration = SaveRegistration( rockContext, hasPayment );
-                        if ( registration != null )
+                        // If there is a payment being made, process the payment
+                        if ( hasPayment )
                         {
-                            // If there is a payment being made, process the payment
-                            if ( hasPayment )
+                            string errorMessage = string.Empty;
+                            if ( !ProcessPayment( rockContext, registration, out errorMessage ) )
                             {
-                                string errorMessage = string.Empty;
-                                if ( !ProcessPayment( rockContext, registration, out errorMessage ) )
-                                {
-                                    throw new Exception( errorMessage );
-                                }
+                                throw new Exception( errorMessage );
                             }
+                        }
 
+                        try 
+                        {
                             // If there is a valid registration, and nothing went wrong processing the payment, add registrants to group and send the notifications
                             if ( registration != null )
                             {
+                                SavePersonNotes( rockContext, previousRegistrants, registration );
                                 AddRegistrantsToGroup( rockContext, registration );
 
                                 string appRoot = ResolveRockUrl( "~/" );
@@ -1310,14 +1326,20 @@ namespace RockWeb.Blocks.Event
                                 }
                             }
                         }
+                        catch ( Exception postSaveEx )
+                        {
+                            ShowWarning( "The following occurred after processing your " + RegistrationTerm, postSaveEx.Message );
+                            ExceptionLogService.LogException( postSaveEx, Context, RockPage.PageId, RockPage.Layout.SiteId, CurrentPersonAlias );
+                        }
                     }
+
                 }
                 catch ( Exception ex )
                 {
                     ExceptionLogService.LogException( ex, Context, this.RockPage.PageId, this.RockPage.Site.Id, CurrentPersonAlias );
 
                     string message = ex.Message;
-                    while( ex.InnerException != null )
+                    while ( ex.InnerException != null )
                     {
                         ex = ex.InnerException;
                         message = ex.Message;
@@ -1333,6 +1355,8 @@ namespace RockWeb.Blocks.Event
                             RegistrationState.RegistrationId = null;
                             using ( var newRockContext = new RockContext() )
                             {
+                                HistoryService.DeleteChanges( newRockContext, typeof( Registration ), registration.Id );
+
                                 var newRegistrationService = new RegistrationService( newRockContext );
                                 var newRegistration = newRegistrationService.Get( registration.Id );
                                 if ( newRegistration != null )
@@ -1347,7 +1371,6 @@ namespace RockWeb.Blocks.Event
 
                     return (int?)null;
                 }
-
             }
 
             return registration != null ? registration.Id : (int?)null;
@@ -1365,9 +1388,7 @@ namespace RockWeb.Blocks.Event
             var registrantService = new RegistrationRegistrantService( rockContext );
             var registrantFeeService = new RegistrationRegistrantFeeService( rockContext );
             var personService = new PersonService( rockContext );
-            var groupMemberService = new GroupMemberService( rockContext );
             var groupService = new GroupService( rockContext );
-            var noteService = new NoteService( rockContext );
 
             // variables to keep track of the family that new people should be added to
             int? singleFamilyId = null;
@@ -1527,13 +1548,6 @@ namespace RockWeb.Blocks.Event
 
             try
             {
-                // Setup Note settings
-                NoteTypeCache noteType = null;
-                var registrantNames = new Dictionary<int, string>();
-                if ( RegistrationTemplate != null && RegistrationTemplate.AddPersonNote )
-                {
-                    noteType = NoteTypeCache.Read( Rock.SystemGuid.NoteType.PERSON_EVENT_REGISTRATION.AsGuid() );
-                }
 
                 Task.Run( () =>
                     HistoryService.SaveChanges(
@@ -1554,7 +1568,6 @@ namespace RockWeb.Blocks.Event
 
                     RegistrationRegistrant registrant = null;
                     Person person = null;
-                    bool newPerson = true;
 
                     string firstName = registrantInfo.GetFirstName( RegistrationTemplate );
                     string lastName = registrantInfo.GetLastName( RegistrationTemplate );
@@ -1570,7 +1583,7 @@ namespace RockWeb.Blocks.Event
                                 ( registrant.Person.FirstName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) || registrant.Person.NickName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) ) &&
                                 registrant.Person.LastName.Equals( lastName, StringComparison.OrdinalIgnoreCase ) ) )
                             {
-                                newPerson = false;
+                                //
                             }
                             else
                             {
@@ -1736,10 +1749,6 @@ namespace RockWeb.Blocks.Event
 
                     // Save the person ( and family if needed )
                     SavePerson( rockContext, person, registrantInfo.FamilyGuid, campusId, location, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId );
-                    if ( newPerson )
-                    {
-                        registrantNames.Add( person.Id, person.FullName );
-                    }
 
                     // Load the person's attributes
                     person.LoadAttributes();
@@ -1912,30 +1921,6 @@ namespace RockWeb.Blocks.Event
                         }
                     }
 
-                    // Add a note to the registrant's person notes (if they aren't the one doing the registering)
-                    if ( newPerson && noteType != null )
-                    {
-                        var noteText = new StringBuilder();
-                        if ( registrar == null || registrar.Id != person.Id )
-                        {
-                            noteText.AppendFormat( "Registered for {0}", RegistrationInstanceState.Name );
-                            if ( registrar != null )
-                            {
-                                noteText.AppendFormat( " by {0}", registrar.FullName );
-                            }
-
-                            var note = new Note();
-                            note.NoteTypeId = noteType.Id;
-                            note.IsSystem = false;
-                            note.IsAlert = false;
-                            note.IsPrivateNote = false;
-                            note.EntityId = person.Id;
-                            note.Caption = string.Empty;
-                            note.Text = noteText.ToString();
-                            noteService.Add( note );
-                        }
-                    }
-
                     Task.Run( () =>
                         HistoryService.SaveChanges(
                             new RockContext(),
@@ -1952,41 +1937,6 @@ namespace RockWeb.Blocks.Event
 
                 }
 
-                // Add a note to the registrars notes
-                if ( noteType != null && registrar != null && registrantNames.Any() )
-                {
-                    string namesText = string.Empty;
-                    if ( registrantNames.Count > 1 || registrantNames.First().Key != registrar.Id )
-                    {
-                        if ( registrantNames.ContainsKey( registrar.Id ) )
-                        {
-                            registrantNames[registrar.Id] = registrar.Gender == Gender.Male ? "himself" : registrar.Gender == Gender.Female ? "herself" : "themselves";
-                        }
-
-                        if ( registrantNames.Count >= 2 )
-                        {
-                            int lessOne = registrantNames.Count - 1;
-                            namesText = registrantNames.Take( lessOne ).Select( n => n.Value ).ToList().AsDelimited( ", " ) +
-                                " and " +
-                                registrantNames.Skip( lessOne ).Take( 1 ).First().Value + " ";
-                        }
-                        else
-                        {
-                            namesText = registrantNames.First().Value + " ";
-                        }
-                    }
-
-                    var note = new Note();
-                    note.NoteTypeId = noteType.Id;
-                    note.IsSystem = false;
-                    note.IsAlert = false;
-                    note.IsPrivateNote = false;
-                    note.EntityId = registrar.Id;
-                    note.Caption = string.Empty;
-                    note.Text = string.Format( "Registered {0} for {1}", namesText, RegistrationInstanceState.Name );
-                    noteService.Add( note );
-                }
-
                 rockContext.SaveChanges();
             }
 
@@ -1996,12 +1946,17 @@ namespace RockWeb.Blocks.Event
                 {
                     using ( var newRockContext = new RockContext() )
                     {
-                        var newRegistrationService = new RegistrationService( newRockContext );
-                        var savedRegistration = new RegistrationService( newRockContext ).Get( registration.Id );
-                        if ( savedRegistration != null )
+                        if ( newRegistration )
                         {
-                            newRegistrationService.Delete( savedRegistration );
-                            newRockContext.SaveChanges();
+                            var newRegistrationService = new RegistrationService( newRockContext );
+                            var savedRegistration = new RegistrationService( newRockContext ).Get( registration.Id );
+                            if ( savedRegistration != null )
+                            {
+                                HistoryService.DeleteChanges( newRockContext, typeof( Registration ), savedRegistration.Id );
+
+                                newRegistrationService.Delete( savedRegistration );
+                                newRockContext.SaveChanges();
+                            }
                         }
                     }
                 }
@@ -2152,6 +2107,104 @@ namespace RockWeb.Blocks.Event
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Saves the person notes.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="previousRegistrants">The previous registrants.</param>
+        /// <param name="registration">The registration.</param>
+        private void SavePersonNotes( RockContext rockContext, List<int> previousRegistrants, Registration registration )
+        {
+            // Setup Note settings
+            NoteTypeCache noteType = null;
+            if ( RegistrationTemplate != null && RegistrationTemplate.AddPersonNote )
+            {
+                noteType = NoteTypeCache.Read( Rock.SystemGuid.NoteType.PERSON_EVENT_REGISTRATION.AsGuid() );
+                if ( noteType != null )
+                {
+                    var noteService = new NoteService( rockContext );
+                    var personAliasService = new PersonAliasService( rockContext );
+
+                    Person registrar = null;
+                    if ( registration.PersonAliasId.HasValue )
+                    {
+                        registrar = personAliasService.GetPerson( registration.PersonAliasId.Value );
+                    }
+
+                    var registrantNames = new List<string>();
+
+                    // Get each registrant
+                    foreach ( var registrantPersonAliasId in registration.Registrants
+                        .Where( r => r.PersonAliasId.HasValue )
+                        .Select( r => r.PersonAliasId.Value )
+                        .ToList() )
+                    {
+                        var registrant = personAliasService.GetPerson( registrantPersonAliasId );
+                        if ( registrant != null && !previousRegistrants.Contains( registrant.Id ) )
+                        {
+                            var noteText = new StringBuilder();
+                            noteText.AppendFormat( "Registered for {0}", RegistrationInstanceState.Name);
+
+                            if ( registrar != null && registrar.Id != registrant.Id )
+                            {
+                                noteText.AppendFormat( " by {0}", registrar.FullName );
+                                registrantNames.Add( registrant.FullName );
+                            }
+
+                            if ( registrar == null && ( RegistrationState.FirstName != registrar.NickName || RegistrationState.LastName != registrar.LastName ) )
+                            {
+                                noteText.AppendFormat( " by {0}", RegistrationState.FirstName + " " + RegistrationState.LastName );
+                            }
+
+                            if ( noteText.Length > 0 )
+                            {
+                                var note = new Note();
+                                note.NoteTypeId = noteType.Id;
+                                note.IsSystem = false;
+                                note.IsAlert = false;
+                                note.IsPrivateNote = false;
+                                note.EntityId = registrant.Id;
+                                note.Caption = string.Empty;
+                                note.Text = noteText.ToString();
+                                noteService.Add( note );
+                            }
+                        }
+
+                    }
+
+                    if ( registrar != null && registrantNames.Any() )
+                    {
+                        string namesText = string.Empty;
+                        if ( registrantNames.Count >= 2 )
+                        {
+                            int lessOne = registrantNames.Count - 1;
+                            namesText = registrantNames.Take( lessOne ).ToList().AsDelimited( ", " ) +
+                                " and " +
+                                registrantNames.Skip( lessOne ).Take( 1 ).First() + " ";
+                        }
+                        else
+                        {
+                            namesText = registrantNames.First() + " ";
+                        }
+
+                        var note = new Note();
+                        note.NoteTypeId = noteType.Id;
+                        note.IsSystem = false;
+                        note.IsAlert = false;
+                        note.IsPrivateNote = false;
+                        note.EntityId = registrar.Id;
+                        note.Caption = string.Empty;
+                        note.Text = string.Format( "Registered {0} for {1}", namesText, RegistrationInstanceState.Name );
+                        noteService.Add( note );
+
+                    }
+
+                    rockContext.SaveChanges();
+                }
+            }
+
         }
 
         /// <summary>
