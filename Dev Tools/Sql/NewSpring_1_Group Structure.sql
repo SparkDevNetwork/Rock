@@ -230,7 +230,7 @@ PRODID:-//ddaysoftware.com//NONSGML DDay.iCal 1.0//EN
 BEGIN:VEVENT
 DTEND:20130501T100000
 DTSTAMP:20130501T00000Z
-DTSTART:20130501T170000
+DTSTART:20130501T190000
 RRULE:FREQ=WEEKLY;BYDAY=WE
 SEQUENCE:0
 UID:' + CONVERT(VARCHAR(36), NEWID()) + '
@@ -684,6 +684,7 @@ INSERT #collegeGroups
 VALUES
 ('NewSpring College', 'Acts', 'Acts'), 
 ('NewSpring College', 'All-Staff', 'All-Staff'), 
+('NewSpring College', 'Audio I', 'Audio I'), 
 ('NewSpring College', 'Bible', 'Bible'), 
 ('NewSpring College', 'Builders & Shepherds', 'Builders & Shepherds'), 
 ('NewSpring College', 'Character Forum', 'Character Forum'), 
