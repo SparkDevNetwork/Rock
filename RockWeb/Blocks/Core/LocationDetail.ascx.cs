@@ -533,7 +533,6 @@ namespace RockWeb.Blocks.Core
             }
 
             location.LoadAttributes( rockContext );
-            //BuildAttributeEdits( location, true );
         }
 
         private void BuildAttributeEdits( Location location, bool setValues )
@@ -670,22 +669,6 @@ namespace RockWeb.Blocks.Core
                 CampusCache.Flush( campus.Id );
             }
         }
-        
-
-        /// <summary>
-        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
-        /// </summary>
-        //protected override void CreateChildControls()
-        //{
-
-        //    string locationId = PageParameter("LocationId");
-        //    if (!String.IsNullOrEmpty(locationId ))
-        //    {
-        //        var location = new LocationService(new RockContext()).Get(locationId.AsInteger());
-        //        location.LoadAttributes();
-        //        BuildAttributeEdits(location, true);
-        //    }
-        //}
             #endregion
         }
 }
