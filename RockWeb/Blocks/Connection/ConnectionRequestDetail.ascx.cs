@@ -1174,7 +1174,7 @@ namespace RockWeb.Blocks.Connection
 
             if ( person != null )
             {
-                string imgTag = Rock.Model.Person.GetPhotoImageTag( person.PhotoId, person.Age, person.Gender, 200, 200, className: "img-thumbnail", personId: person.Id );
+                string imgTag = Rock.Model.Person.GetPersonPhotoImageTag( person, 200, 200, className: "img-thumbnail" );
                 if ( person.PhotoId.HasValue )
                 {
                     lPortrait.Text = string.Format( "<a href='{0}'>{1}</a>", person.PhotoUrl, imgTag );

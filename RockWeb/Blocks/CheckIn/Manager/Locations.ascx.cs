@@ -395,7 +395,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 var img = e.Item.FindControl( "imgPerson" ) as Literal;
                 if ( img != null )
                 {
-                    img.Text = Rock.Model.Person.GetPhotoImageTag( person.PhotoId, null, person.Gender, 50, 50, "", "", person.Id );
+                    img.Text = Rock.Model.Person.GetPersonPhotoImageTag( person.Id, person.PhotoId, person.Age.AsIntegerOrNull(), person.Gender, null, 50, 50 );
                 }
 
                 var lStatus = e.Item.FindControl( "lStatus" ) as Literal;

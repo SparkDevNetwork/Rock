@@ -660,7 +660,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     personInfoHtml.AppendFormat(
                         "<img src='{0}' class='img-thumbnail'>",
-                        Person.GetPhotoUrl( person.PhotoId.Value, person.Age, person.Gender, recordTypeValueGuid, 65, 65, person.Id ) );
+                        Person.GetPersonPhotoUrl( person, 200, 200 ) );
                 }
                 personInfoHtml.Append( "</div>" );
             }

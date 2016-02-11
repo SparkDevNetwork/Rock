@@ -455,7 +455,7 @@ namespace RockWeb.Blocks.Prayer
             // put the request's id in the hidden field in case it needs to be flagged.
             hfIdValue.SetValue( prayerRequest.Id );
 
-            lPersonIconHtml.Text = Person.GetPhotoImageTag( prayerRequest.RequestedByPersonAlias, 50, 50, "pull-left margin-r-md img-thumbnail" );
+            lPersonIconHtml.Text = Person.GetPersonPhotoImageTag( prayerRequest.RequestedByPersonAlias, 50, 50, "pull-left margin-r-md img-thumbnail" );
 
             pnlPrayerComments.Visible = prayerRequest.AllowComments ?? false;
             if ( notesComments.Visible )

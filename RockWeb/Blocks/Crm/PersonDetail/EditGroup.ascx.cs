@@ -374,7 +374,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     HtmlControl divPersonImage = e.Item.FindControl( "divPersonImage" ) as HtmlControl;
                     if ( divPersonImage != null )
                     {
-                        divPersonImage.Style.Add( "background-image", @String.Format( @"url({0})", Person.GetPhotoUrl( groupMember.PhotoId, groupMember.Age, groupMember.Gender, 200, 200, groupMember.Id ) + "&width=65" ) );
+                        divPersonImage.Style.Add( "background-image", @String.Format( @"url({0})", Person.GetPersonPhotoUrl( groupMember.Id, groupMember.PhotoId, groupMember.Age, groupMember.Gender, null ) + "&width=65" ) );
                         divPersonImage.Style.Add( "background-size", "cover" );
                         divPersonImage.Style.Add( "background-position", "50%" );
                     }
