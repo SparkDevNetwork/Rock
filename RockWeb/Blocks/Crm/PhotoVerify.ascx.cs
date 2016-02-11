@@ -140,7 +140,7 @@ namespace RockWeb.Blocks.Crm
                     Literal lImage = e.Row.FindControl( "lImage" ) as Literal;
                     if ( lImage != null )
                     {
-                        string imgTag = Person.GetPhotoImageTag( groupMember.Person.PhotoId, groupMember.Person.Gender, size, size );
+                        string imgTag = Person.GetPhotoImageTag( groupMember.Person.PhotoId, groupMember.Person.Gender, size, size, personId: groupMember.Person.Id );
 
                         if ( groupMember.Person.PhotoId.HasValue )
                         {

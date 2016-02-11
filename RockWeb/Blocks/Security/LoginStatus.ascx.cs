@@ -108,7 +108,7 @@ namespace RockWeb.Blocks.Security
 
                 lbLoginLogout.Text = "Logout";
                 
-                divProfilePhoto.Attributes.Add( "style", String.Format( "background-image: url('{0}'); background-size: cover; background-repeat: no-repeat;", Rock.Model.Person.GetPhotoUrl( currentPerson.PhotoId, currentPerson.Age, currentPerson.Gender )));
+                divProfilePhoto.Attributes.Add( "style", String.Format( "background-image: url('{0}'); background-size: cover; background-repeat: no-repeat;", Rock.Model.Person.GetPhotoUrl( currentPerson.PhotoId, currentPerson.Age, currentPerson.Gender, 200, 200, currentPerson.Id )));
 
                 var navPagesString = GetAttributeValue( "LoggedInPageList" );
 
