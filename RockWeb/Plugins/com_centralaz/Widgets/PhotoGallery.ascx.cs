@@ -42,7 +42,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
     [TextField( "Image Subfolder", "The subfolder to use when displaying or uploading images. It will be appended to the base folder ~/Content/ExternalSite/", false, "PhotoGallery", "", 2 )]
     [IntegerField( "Pause Seconds", "The number of seconds to pause on each photo (default 4 seconds).", false, 4 )]
 
-    [CustomRadioListField( "Display Mode", "", "1^Slideshow, 2^Gallery", true, "1")]
+    [CustomRadioListField( "Display Mode", "", "1^Slideshow, 2^Gallery", true, "1" )]
 
     [BooleanField( "Set Size", "If set to true, the Height and Width settings will be used in the image tag's style setting. NOTE: Constraining size can cause distortion to responsive images when user resizes browser window.", false, "Sizing", 0 )]
     [IntegerField( "Height", "The height (in px) to constrain the photo.", false, -1, "Sizing", 1 )]
@@ -184,7 +184,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             }
 
             _physicalPath = Server.MapPath( ImageFolderPath );
-            if ( ! Directory.Exists( _physicalPath ) )
+            if ( !Directory.Exists( _physicalPath ) )
             {
                 Directory.CreateDirectory( _physicalPath );
             }
@@ -274,7 +274,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         {
             if ( SpecifyingSize )
             {
-                if (e.Item.ItemType == ListViewItemType.DataItem)
+                if ( e.Item.ItemType == ListViewItemType.DataItem )
                 {
                     var imgPhoto = e.Item.FindControl( "imbGalleryItem" ) as HtmlImage;
                     if ( imgPhoto != null )
@@ -442,8 +442,11 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                 {
                     if ( item is FileInfo )
                     {
-                        //add virtual path of the image to the images list
-                        images.Add( string.Format( "{0}/{1}", ImageFolderPath, item.Name ) );
+                        if ( item.Name != "Thumbs.db" )
+                        {
+                            //add virtual path of the image to the images list
+                            images.Add( string.Format( "{0}/{1}", ImageFolderPath, item.Name ) );
+                        }
                     }
                 }
             }
