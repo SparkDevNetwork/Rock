@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Security
                 lName.Text = CurrentPerson.FullName;
 
                 // Setup Image
-                var imgTag = new LiteralControl( Rock.Model.Person.GetPhotoImageTag( CurrentPerson.PhotoId, CurrentPerson.Age, CurrentPerson.Gender, 188, 188, personId: CurrentPerson.Id ) );
+                var imgTag = new LiteralControl( Rock.Model.Person.GetPersonPhotoImageTag( CurrentPerson, 188, 188 ) );
                 if ( CurrentPerson.PhotoId.HasValue )
                 {
                     var imgLink = new HyperLink();
