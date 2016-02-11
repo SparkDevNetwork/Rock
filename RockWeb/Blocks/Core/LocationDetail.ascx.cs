@@ -243,7 +243,7 @@ namespace RockWeb.Blocks.Core
             location.GeoFence = geopFence.SelectedValue;
 
             location.IsGeoPointLocked = cbGeoPointLocked.Checked;
-            var r = Request;
+            
             location.LoadAttributes( rockContext );
             Rock.Attribute.Helper.GetEditValues( phAttributeEdits, location );
 
