@@ -406,10 +406,10 @@ namespace RockWeb.Blocks.Crm
                     var recordType = DefinedValueCache.Read( RecordTypeValueId.Value );
                     if ( recordType != null )
                     {
-                        return Person.GetPhotoUrl( this.PhotoId, this.Age, this.Gender, recordType.Guid );
+                        return Person.GetPhotoUrl( this.PhotoId, this.Age, this.Gender, recordType.Guid, 200, 200, this.Id );
                     }
                 }
-                return Person.GetPhotoUrl( this.PhotoId, this.Age, this.Gender );
+                return Person.GetPhotoUrl( this.PhotoId, this.Age, this.Gender, 200, 200, this.Id );
             }
             private set { }
         }
