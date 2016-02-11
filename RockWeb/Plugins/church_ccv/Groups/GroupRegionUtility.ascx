@@ -25,14 +25,9 @@ Select 'Neighborhood Area'
                         </pre>
                         <Rock:GroupTypePicker ID="gtpGeofencingGroupType" runat="server" Label="Geofence Group Type" />
                         <pre>
-Step 1) 
-        a) Parent: Next Step Group Section
-        b) Group Type: Next Step Group
-        c) Run/Apply
-Step 2) 
-        a) Parent: Neighborhood Group Section
-        b) Group Type: Neighborhood Group
-        c) Run/Apply
+a) Parent: Neighborhood Group Sub Section
+b) Group Type: Neighborhood Group
+c) Run/Apply        
                         </pre>
                         <Rock:GroupTypePicker ID="gtpParentGroupType" runat="server" Label="Parent Group Type" />
                         <Rock:GroupTypePicker ID="gtpGroupType" runat="server" Label="Group Type" />
@@ -43,14 +38,19 @@ Step 2)
                     <asp:LinkButton ID="btnRun" runat="server" Text="Run" CssClass="btn btn-primary" OnClick="btnRun_Click" />
                 </div>
 
-                <Rock:Grid ID="grdPreview" runat="server" DataKeyNames="Id">
+                <Rock:Grid ID="grdPreview" runat="server" DataKeyNames="Id" AllowPaging="false">
                     <Columns>
                         <asp:BoundField DataField="GroupId" HeaderText="GroupId" />
                         <asp:BoundField DataField="GroupName" HeaderText="GroupName" />
-                        <asp:BoundField DataField="NewParentRegionId" HeaderText="NewParentRegionId" />
-                        <asp:BoundField DataField="NewParentRegionName" HeaderText="NewParentRegionName" />
-                        <asp:BoundField DataField="NewParentGroup.Id" HeaderText="NewParentGroupId" />
+                        <asp:BoundField DataField="CurrentParentRegion.Id" HeaderText="CurrentParentRegionId" Visible="false" />
+                        <asp:BoundField DataField="CurrentParentRegion.Name" HeaderText="CurrentParentRegionName" />
+                        <asp:BoundField DataField="CurrentParentGroup.Id" HeaderText="CurrentParentGroupId" Visible="false"/>
+                        <asp:BoundField DataField="CurrentParentGroup.Name" HeaderText="CurrentParentGroupName" />
+                        <asp:BoundField DataField="NewParentRegion.Id" HeaderText="NewParentRegionId" Visible="false"/>
+                        <asp:BoundField DataField="NewParentRegion.Name" HeaderText="NewParentRegionName" />
+                        <asp:BoundField DataField="NewParentGroup.Id" HeaderText="NewParentGroupId" Visible="false"/>
                         <asp:BoundField DataField="NewParentGroup.Name" HeaderText="NewParentGroupName" />
+                        <Rock:BoolField DataField="RegionChanged" HeaderText="Region Changed" />
                     </Columns>
                 </Rock:Grid>
 

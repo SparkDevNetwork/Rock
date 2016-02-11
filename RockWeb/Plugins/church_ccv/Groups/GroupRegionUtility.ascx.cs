@@ -121,10 +121,14 @@ namespace RockWeb.Plugins.church_ccv.Groups
                 Id = a.Key.Id,
                 GroupId = a.Key.Id,
                 GroupName = a.Key.Name,
-                NewParentRegionId = a.Value.Id,
-                NewParentRegionName = a.Value.Name,
-                NewParentGroup = groupService.GetAllDescendents( a.Value.Id ).Where( x => x.GroupTypeId == parentGroupTypeId ).FirstOrDefault()
+                CurrentParentRegion = this.FirstParentGroupOfType(a.Key, geofencingGroupTypeId),
+                CurrentParentGroup = this.FirstParentGroupOfType( a.Key, parentGroupTypeId ),
+                NewParentRegion = a.Value,
+                NewParentGroup = groupService.GetAllDescendents( a.Value.Id ).Where( x => x.GroupTypeId == parentGroupTypeId ).FirstOrDefault(),
+                RegionChanged =  this.FirstParentGroupOfType(a.Key, geofencingGroupTypeId).Id != a.Value.Id
             } ).ToList();
+
+            mappedList = mappedList.OrderByDescending( a => a.RegionChanged ).ToList();
 
             grdPreview.DataSource = mappedList;
 
@@ -135,10 +139,30 @@ namespace RockWeb.Plugins.church_ccv.Groups
                 foreach ( var item in mappedList )
                 {
                     var group = groupService.Get( item.GroupId );
-                    group.ParentGroupId = item.NewParentGroup.Id;
-                    rockContext.SaveChanges();
+                    if ( group.ParentGroupId != item.NewParentGroup.Id )
+                    {
+                        group.ParentGroupId = item.NewParentGroup.Id;
+                        rockContext.SaveChanges();
+                    }
                 }
             }
+        }
+
+        /// <summary>
+        /// Firsts the type of the parent group of.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <param name="parentGroupTypeId">The parent group type identifier.</param>
+        /// <returns></returns>
+        private Group FirstParentGroupOfType( Group group, int parentGroupTypeId )
+        {
+            var parentGroup = group.ParentGroup;
+            while (parentGroup != null && parentGroup.GroupTypeId != parentGroupTypeId)
+            {
+                parentGroup = parentGroup.ParentGroup;
+            }
+
+            return parentGroup;
         }
 
         /// <summary>
