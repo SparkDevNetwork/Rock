@@ -10,8 +10,12 @@ $(document).ready(function() {
       pauseOnAction: false,
       pauseOnHover: true,
       start: function(s) {
+        console.log('starting')
+        var $sliderWrap = $('.announcement-rotator')
+        if ($sliderWrap[0]) {
+          $sliderWrap.removeClass('loading')
+        }
         CCVSlider = s
-        CCVSlider.pause()
         moveTipper($('.slide-control li').eq(s.animatingTo), 'loaded')
       },
       before: function(s) {
@@ -28,13 +32,5 @@ $(document).ready(function() {
       var $current = $('.slide-control ul > li.flex-active')
       moveTipper($current)
     })
-  }
-})
-// Flexslider wants to load everything first, so images flicker around when using doc.ready
-$(window).load(function() {
-  var $sliderWrap = $('.announcement-rotator')
-  if ($sliderWrap[0]) {
-    $sliderWrap.removeClass('loading')
-    CCVSlider.play()
   }
 })

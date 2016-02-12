@@ -52,6 +52,7 @@
 	}
 	.tipper {
 		@media (max-width: 767px) { visibility: hidden; }
+    .transition(~'opacity .5s ease-in,left .5s');
 		.opacity(0);
 		display: inline-block;
 		position: absolute;
@@ -66,7 +67,6 @@
 
 		&.loaded {
 			.opacity(1);
-			.transition(~'opacity .25s ease-in,left .5s');
 		}
 	}
 	li {
