@@ -123,6 +123,13 @@
         </p>
         {% endif %}
 
+        {% assign bookstoreInfo = campus | Attribute: 'BookstoreInformation' %}
+        <p class="hidden-xs">&nbsp;</p>
+        {% if bookstoreInfo != empty %}
+          <h3>Bookstore</h3>
+          {{ bookstoreInfo }}
+        {% endif %}
+
       </div>
     </div>
 
