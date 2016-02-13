@@ -227,7 +227,6 @@ namespace RockWeb.Blocks.Connection
             {
                 NavigateToParentPage();
             }
-
         }
 
         /// <summary>
@@ -330,7 +329,6 @@ namespace RockWeb.Blocks.Connection
                     NavigateToPage( RockPage.Guid, qryParams );
                 }
             }
-
         }
 
         /// <summary>
@@ -346,27 +344,32 @@ namespace RockWeb.Blocks.Connection
                 var groupMemberService = new GroupMemberService( rockContext );
                 var connectionActivityTypeService = new ConnectionActivityTypeService( rockContext );
                 var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
-
                 var connectionRequest = connectionRequestService.Get( hfConnectionRequestId.ValueAsInt() );
+
                 if ( connectionRequest != null &&
                     connectionRequest.PersonAlias != null &&
-                    connectionRequest.ConnectionOpportunity != null &&
-                    connectionRequest.ConnectionOpportunity.GroupMemberRoleId.HasValue &&
-                    connectionRequest.AssignedGroupId.HasValue )
+                    connectionRequest.ConnectionOpportunity != null )
                 {
-                    // Only attempt the add if person does not already exist in group with same role
-                    var groupMember = groupMemberService.GetByGroupIdAndPersonIdAndGroupRoleId( connectionRequest.AssignedGroupId.Value,
-                        connectionRequest.PersonAlias.PersonId, connectionRequest.ConnectionOpportunity.GroupMemberRoleId.Value );
-                    if ( groupMember == null )
+
+                    // Only do group member placement if the request has an assigned placement group
+                    if ( connectionRequest.ConnectionOpportunity.GroupMemberRoleId.HasValue &&
+                        connectionRequest.AssignedGroupId.HasValue )
                     {
-                        groupMember = new GroupMember();
-                        groupMember.PersonId = connectionRequest.PersonAlias.PersonId;
-                        groupMember.GroupRoleId = connectionRequest.ConnectionOpportunity.GroupMemberRoleId.Value;
-                        groupMember.GroupMemberStatus = connectionRequest.ConnectionOpportunity.GroupMemberStatus;
-                        groupMember.GroupId = connectionRequest.AssignedGroupId.Value;
-                        groupMemberService.Add( groupMember );
+                        // Only attempt the add if person does not already exist in group with same role
+                        var groupMember = groupMemberService.GetByGroupIdAndPersonIdAndGroupRoleId( connectionRequest.AssignedGroupId.Value,
+                            connectionRequest.PersonAlias.PersonId, connectionRequest.ConnectionOpportunity.GroupMemberRoleId.Value );
+                        if ( groupMember == null )
+                        {
+                            groupMember = new GroupMember();
+                            groupMember.PersonId = connectionRequest.PersonAlias.PersonId;
+                            groupMember.GroupRoleId = connectionRequest.ConnectionOpportunity.GroupMemberRoleId.Value;
+                            groupMember.GroupMemberStatus = connectionRequest.ConnectionOpportunity.GroupMemberStatus;
+                            groupMember.GroupId = connectionRequest.AssignedGroupId.Value;
+                            groupMemberService.Add( groupMember );
+                        }
                     }
 
+                    // ... but always record the connection activity and change the state to connected.
                     var guid = Rock.SystemGuid.ConnectionActivityType.CONNECTED.AsGuid();
                     var connectedActivityId = connectionActivityTypeService.Queryable()
                         .Where( t => t.Guid == guid )
@@ -485,7 +488,6 @@ namespace RockWeb.Blocks.Connection
                 RebindConnectors( connectionRequest, ddlCampus.SelectedValueAsInt(), rockContext );
             }
         }
-
 
         #endregion
 
@@ -1106,7 +1108,7 @@ namespace RockWeb.Blocks.Connection
         /// <summary>
         /// Shows the readonly details.
         /// </summary>
-        /// <param name="_connectionRequest">The _connection request.</param>
+        /// <param name="connectionRequest">The connection request.</param>
         private void ShowReadonlyDetails( ConnectionRequest connectionRequest )
         {
             if ( connectionRequest.AssignedGroupId != null )
@@ -1117,7 +1119,10 @@ namespace RockWeb.Blocks.Connection
             else
             {
                 pnlRequirements.Visible = false;
-                lbConnect.Enabled = false;
+                // This will be changed in v5.0 to check the opportunity's ConnectionType
+                // RequiresPlacementGroupToConnect bit to see if it should be enabled
+                // or disabled.
+                //lbConnect.Enabled = false;
             }
 
             if ( connectionRequest.ConnectionState == ConnectionState.Inactive || connectionRequest.ConnectionState == ConnectionState.Connected )
@@ -1152,7 +1157,6 @@ namespace RockWeb.Blocks.Connection
                 }
 
                 lContactInfo.Text = contactList.AsDelimited( "</br>" );
-
             }
             else
             {
@@ -1388,6 +1392,12 @@ namespace RockWeb.Blocks.Connection
             }
         }
 
+        /// <summary>
+        /// Rebinds the connectors.
+        /// </summary>
+        /// <param name="connectionRequest">The connection request.</param>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
         public void RebindConnectors( ConnectionRequest connectionRequest, int? campusId, RockContext rockContext )
         {
             int? currentValue = ddlConnectorEdit.SelectedValueAsInt();
@@ -1422,9 +1432,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         currentValue = connectionRequest.ConnectionOpportunity.GetDefaultConnectorPersonId( campusId.Value );
                     }
-
                 }
-
             }
 
             // Add the current person as possible connector
