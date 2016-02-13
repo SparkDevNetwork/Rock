@@ -41,7 +41,7 @@ namespace com.centralaz.GeneralJobs.Jobs
     {
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SendCommunications"/> class.
+        /// Initializes a new instance of the <see cref="MatchEmailPreference"/> class.
         /// </summary>
         public MatchEmailPreference()
         {
