@@ -1005,7 +1005,8 @@ namespace RockWeb.Blocks.Communication
 
                 foreach ( var dataItem in mediumData )
                 {
-                    if ( !string.IsNullOrWhiteSpace( dataItem.Value ) )
+                    // Also check Subject so that empty subject values not set in template are cleared. (Fixes #1393)
+                    if ( !string.IsNullOrWhiteSpace( dataItem.Value ) || dataItem.Key == "Subject" )
                     {
                         if ( MediumData.ContainsKey( dataItem.Key ) )
                         {
