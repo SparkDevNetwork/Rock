@@ -43,7 +43,7 @@ SELECT @MetricSourceSQLId = [Id] FROM DefinedValue WHERE [Guid] = '6A1E1A1B-A636
 /* ====================================================== */
 -- metric category and schedules
 /* ====================================================== */
-DECLARE @MetricScheduleCategoryId int, @MetricScheduleId int, @MetriciCalSchedule nvarchar(max)
+DECLARE @MetricScheduleCategoryId int, @SundayScheduleId int, @FuseScheduleId int, @MetriciCalSchedule nvarchar(max)
 
 SELECT @MetricScheduleCategoryId = [Id] FROM [Category]
 WHERE EntityTypeId = @ScheduleEntityTypeId
@@ -59,11 +59,11 @@ BEGIN
 END
 
 -- create the metric schedule
-SELECT @MetricScheduleId = [Id] FROM Schedule
+SELECT @SundayScheduleId = [Id] FROM Schedule
 WHERE CategoryId = @MetricScheduleCategoryId
-AND Name = 'Metric Schedule'
+AND Name = 'Sunday Metric Schedule'
 
-IF @MetricScheduleId IS NULL
+IF @SundayScheduleId IS NULL
 BEGIN
 
 	SELECT @MetriciCalSchedule = N'BEGIN:VCALENDAR
@@ -80,9 +80,35 @@ END:VEVENT
 END:VCALENDAR'
 	
 	INSERT [Schedule] (Name, [Description], iCalendarContent, EffectiveStartDate, EffectiveEndDate, CategoryId, [Guid])
-	SELECT 'Metric Schedule', 'The job schedule to run group metrics', @MetriciCalSchedule, GETDATE(), GETDATE(), @MetricScheduleCategoryId, NEWID()
+	SELECT 'Sunday Metric Schedule', 'The job schedule to run Sunday metrics', @MetriciCalSchedule, GETDATE(), GETDATE(), @MetricScheduleCategoryId, NEWID()
 
-	SELECT @MetricScheduleId = SCOPE_IDENTITY()
+	SELECT @SundayScheduleId = SCOPE_IDENTITY()
+END
+
+SELECT @FuseScheduleId = [Id] FROM Schedule
+WHERE CategoryId = @MetricScheduleCategoryId
+AND Name = 'Fuse Metric Schedule'
+
+IF @FuseScheduleId IS NULL
+BEGIN
+
+	SELECT @MetriciCalSchedule = N'BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//ddaysoftware.com//NONSGML DDay.iCal 1.0//EN
+BEGIN:VEVENT
+DTEND:20150928T020001
+DTSTAMP:20150928T201239Z
+DTSTART:20150928T020000
+RRULE:FREQ=WEEKLY;BYDAY=TH
+SEQUENCE:0
+UID:' + CONVERT(VARCHAR(36), NEWID()) + '
+END:VEVENT
+END:VCALENDAR'
+	
+	INSERT [Schedule] (Name, [Description], iCalendarContent, EffectiveStartDate, EffectiveEndDate, CategoryId, [Guid])
+	SELECT 'Fuse Metric Schedule', 'The job schedule to run Fuse metrics', @MetriciCalSchedule, GETDATE(), GETDATE(), @MetricScheduleCategoryId, NEWID()
+
+	SELECT @FuseScheduleId = SCOPE_IDENTITY()
 END
 
 /* ====================================================== */
@@ -335,7 +361,7 @@ SELECT @ServiceRolesTitle = 'Service Attendance', @ServiceRosterTitle = 'Service
 SELECT @MetricServiceRolesSQL = N'
 	/* ====================================================================== */
 	-- Returns roles filled served by Campus and Service from the previous day
-	-- Returns a timestamp of 00:00:00 when no schedule exists
+	-- Returns a timestamp of 00:00:00 when no schedule is assigned
 	/* ====================================================================== */
 	SELECT COUNT(1) AS Value, Attendance.CampusId AS EntityId
 		, DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + LEFT(ISNULL(Schedule.Value, ''00:00''), 5) AS ScheduleDate
@@ -363,7 +389,7 @@ SELECT @MetricServiceRolesSQL = N'
 SELECT @MetricServiceRosterSQL = N'
 	/* ====================================================================== */
 	-- Returns roster numbers by Campus and Service from the previous day
-	-- Returns a timestamp of 00:00:00 when no schedule exists
+	-- Returns a timestamp of 00:00:00 when no schedule is assigned
 	/* ====================================================================== */
 	SELECT COUNT(1) AS Value, Campus.Id AS EntityId, 
 		DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + LEFT(ISNULL(Schedule.Value, ''00:00''), 5) AS ScheduleDate
@@ -510,16 +536,16 @@ SELECT @MetricFirstAttendedSQL = N'
 SELECT @MetricMiddleSchoolSQL  = N'
 	/* ====================================================================== */
 	-- Returns total MS attended by Campus from the previous day
-	-- Returns a timestamp of 00:00:00 since this is by total and not service
+	-- Returns a schedule of 19:00 (Fuse 7pm service)
 	/* ====================================================================== */
-	SELECT COUNT(1) AS Value, CampusId AS EntityId, DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + ''00:00'' AS ScheduleDate
+	SELECT COUNT(1) AS Value, CampusId AS EntityId, DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + ''19:00'' AS ScheduleDate
 	FROM PersonAlias PA 
 	INNER JOIN (
 		SELECT PersonAliasId, A.CampusId
 		FROM [Attendance] A	
 		INNER JOIN [Group] G
 			ON A.GroupId = G.Id
-			AND G.GroupTypeId = {{GroupTypeId}}
+			AND G.GroupTypeId = (SELECT [Id] FROM [GroupType] WHERE [Name] = ''Fuse Attendee'')
 		WHERE DidAttend = 1	
 		AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0)
 		AND StartDateTime < CONVERT(DATE, GETDATE())
@@ -536,16 +562,16 @@ SELECT @MetricMiddleSchoolSQL  = N'
 SELECT @MetricHighSchoolSQL = N'
 	/* ====================================================================== */
 	-- Returns total HS attended by Campus from the previous day
-	-- Returns a timestamp of 00:00:00 since this is by total and not service
+	-- Returns a schedule of 19:00 (Fuse 7pm service)
 	/* ====================================================================== */
-	SELECT COUNT(1) AS Value, CampusId AS EntityId, DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + ''00:00'' AS ScheduleDate
+	SELECT COUNT(1) AS Value, CampusId AS EntityId, DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + ''19:00'' AS ScheduleDate
 	FROM PersonAlias PA 
 	INNER JOIN (
 		SELECT PersonAliasId, A.CampusId
 		FROM [Attendance] A	
 		INNER JOIN [Group] G
 			ON A.GroupId = G.Id
-			AND G.GroupTypeId = {{GroupTypeId}}
+			AND G.GroupTypeId = (SELECT [Id] FROM [GroupType] WHERE [Name] = ''Fuse Attendee'')
 		WHERE DidAttend = 1	
 		AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0)
 		AND StartDateTime < CONVERT(DATE, GETDATE())
@@ -732,7 +758,7 @@ BEGIN
 		BEGIN
 			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, ScheduleId, EntityTypeId, [Guid], ForeignId)
 			VALUES ( 0, @GroupName + ' ' + @ServiceRolesTitle, 'Metric to track ' + @GroupName + ' roles by campus and service', @False, 
-				@MetricSourceSQLId, @MetricServiceRolesSQL, '', '', @MetricScheduleId, @CampusEntityTypeId, NEWID(), @GroupId )
+				@MetricSourceSQLId, @MetricServiceRolesSQL, '', '', @SundayScheduleId, @CampusEntityTypeId, NEWID(), @GroupId )
 
 			SELECT @MetricServiceRolesId = SCOPE_IDENTITY()
 
@@ -757,7 +783,7 @@ BEGIN
 		BEGIN
 			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, ScheduleId, EntityTypeId, [Guid], ForeignId)
 			VALUES ( 0, @GroupName + ' ' + @ServiceRosterTitle, 'Metric to track ' + @GroupName + ' roster by campus and service', @False, 
-				@MetricSourceSQLId, @MetricServiceRosterSQL, '', '', @MetricScheduleId, @CampusEntityTypeId, NEWID(), @GroupId )
+				@MetricSourceSQLId, @MetricServiceRosterSQL, '', '', @SundayScheduleId, @CampusEntityTypeId, NEWID(), @GroupId )
 
 			SELECT @MetricServiceRosterId = SCOPE_IDENTITY()
 
@@ -782,7 +808,7 @@ BEGIN
 		BEGIN
 			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, ScheduleId, EntityTypeId, [Guid], ForeignId)
 			VALUES ( 0, @GroupName + ' ' + @TotalRolesTitle, 'Metric to track ' + @GroupName + ' total roles filled by campus', @False, 
-				@MetricSourceSQLId, @MetricTotalRolesSQL, '', '', @MetricScheduleId, @CampusEntityTypeId, NEWID(), @GroupId )
+				@MetricSourceSQLId, @MetricTotalRolesSQL, '', '', @SundayScheduleId, @CampusEntityTypeId, NEWID(), @GroupId )
 
 			SELECT @MetricTotalRolesId = SCOPE_IDENTITY()
 
@@ -807,7 +833,7 @@ BEGIN
 		BEGIN
 			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, ScheduleId, EntityTypeId, [Guid], ForeignId)
 			VALUES ( 0, @GroupName + ' ' + @TotalRosterTitle, 'Metric to track ' + @GroupName + ' total roster by campus', @False, 
-				@MetricSourceSQLId, @MetricTotalRosterSQL, '', '', @MetricScheduleId, @CampusEntityTypeId, NEWID(), @GroupId )
+				@MetricSourceSQLId, @MetricTotalRosterSQL, '', '', @SundayScheduleId, @CampusEntityTypeId, NEWID(), @GroupId )
 
 			SELECT @MetricTotalRosterId = SCOPE_IDENTITY()
 
@@ -832,7 +858,7 @@ BEGIN
 		BEGIN
 			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, ScheduleId, EntityTypeId, [Guid], ForeignId)
 			VALUES ( 0, @GroupName + ' ' + @UniqueServingTitle, 'Metric to track ' + @GroupName + ' total unique volunteers by campus', @False, 
-				@MetricSourceSQLId, @MetricUniqueServingSQL, '', '', @MetricScheduleId, @CampusEntityTypeId, NEWID(), @GroupId )
+				@MetricSourceSQLId, @MetricUniqueServingSQL, '', '', @SundayScheduleId, @CampusEntityTypeId, NEWID(), @GroupId )
 
 			SELECT @MetricUniqueServingId = SCOPE_IDENTITY()
 
@@ -893,7 +919,7 @@ VALUES (
 	@MetricHighSchoolSQL, 
 	'', 
 	'', 
-	@MetricScheduleId, 
+	@FuseScheduleId, 
 	@CampusEntityTypeId, 
 	NEWID());
 
@@ -924,7 +950,7 @@ VALUES (
 	@MetricMiddleSchoolSQL, 
 	'', 
 	'', 
-	@MetricScheduleId, 
+	@FuseScheduleId, 
 	@CampusEntityTypeId, 
 	NEWID());
 

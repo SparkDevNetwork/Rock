@@ -232,7 +232,7 @@ namespace RockWeb.Blocks.Groups
                                 attendance.GroupId = _group.Id;
                                 attendance.ScheduleId = _group.ScheduleId;
                                 attendance.PersonAliasId = personAliasId;
-                                attendance.StartDateTime = _occurrence.Date;
+                                attendance.StartDateTime = _occurrence.Date.Date.Add( _occurrence.StartTime );
                                 attendance.LocationId = _occurrence.LocationId;
                                 attendance.CampusId = locationService.GetCampusIdForLocation( _occurrence.LocationId );
                                 attendance.ScheduleId = _occurrence.ScheduleId;
@@ -455,6 +455,10 @@ namespace RockWeb.Blocks.Groups
         private ScheduleOccurrence GetOccurrence()
         {
             DateTime? occurrenceDate = PageParameter( "Date" ).AsDateTime();
+            if ( !occurrenceDate.HasValue )
+            {
+                occurrenceDate = PageParameter( "Occurrence" ).AsDateTime();
+            }
 
             List<int> locationIds = new List<int>();
             int? locationId = PageParameter( "LocationId" ).AsIntegerOrNull();

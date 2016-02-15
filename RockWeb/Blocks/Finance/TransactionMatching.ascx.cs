@@ -71,6 +71,10 @@ namespace RockWeb.Blocks.Finance
         $(this).attr('src', primarySrc);
     });
 ";
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlContent );
+
             ScriptManager.RegisterStartupScript( imgPrimary, imgPrimary.GetType(), "imgPrimarySwap", script, true );
         }
 
@@ -107,6 +111,12 @@ namespace RockWeb.Blocks.Finance
             //// btnNext.AccessKey = new string(new char[] { (char)39 });
 
             base.OnPreRender( e );
+        }
+
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            LoadDropDowns();
+            ShowDetail( PageParameter( "BatchId" ).AsInteger() );
         }
 
         #endregion

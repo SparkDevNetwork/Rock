@@ -26,8 +26,8 @@ DECLARE @FuseAttendanceCategoryId AS INT = (SELECT TOP 1 Id From [Category] WHER
 DECLARE @KSAttendanceCategoryId AS INT = (SELECT TOP 1 Id From [Category] WHERE EntityTypeId = @MetricCategoryEntityTypeId AND Name = 'KidSpring Attendance' AND ParentCategoryId = @AttendanceCategoryId);
 
 /* ======================================================
-	TOTAL HOME GROUP MEMBERS 
-	The number of people that are active members of active groups falling under "Home Groups"
+--	TOTAL HOME GROUP MEMBERS 
+--	The number of active members of active groups falling under "Home Groups"
    ======================================================*/
 
 SET @SQL = N'
@@ -82,8 +82,8 @@ INSERT [MetricCategory] (MetricId, CategoryId, [Order], [Guid])
 VALUES ( @InsertedId, @NextStepsCategoryId, @Order, NEWID() );
 
 /* ======================================================
-	TOTAL HOME/FUSE GROUP MEMBERS 
-	The number of people that are active members of active groups falling under "Home Groups" or "Fuse Groups"
+--	TOTAL HOME/FUSE GROUP MEMBERS 
+--	The number of active members of active groups falling under "Home Groups" or "Fuse Groups"
    ======================================================*/
 
 SET @SQL = N'
@@ -141,8 +141,8 @@ INSERT [MetricCategory] (MetricId, CategoryId, [Order], [Guid])
 VALUES ( @InsertedId, @NextStepsCategoryId, @Order, NEWID() );
 
 /* ======================================================
-	AVERAGE HOME/FUSE GROUP SIZE 
-	The average number of people that are active members of an active group falling under "Home Groups" or "Fuse Groups"
+--	AVERAGE HOME/FUSE GROUP SIZE 
+--	The average number of active members of an active group falling under "Home Groups" or "Fuse Groups"
    ======================================================*/
 
 SET @SQL = N'
@@ -209,8 +209,10 @@ INSERT [MetricCategory] (MetricId, CategoryId, [Order], [Guid])
 VALUES ( @InsertedId, @NextStepsCategoryId, @Order, NEWID() );
 
 /* ======================================================
-	PERCENT OF SUNDAY ATTENDANCE IN A GROUP 
-	The percent of the latest sunday attendance population that are active members of an active group falling under "Home Groups" or "Fuse Groups"
+--	PERCENT OF SUNDAY ATTENDANCE IN A GROUP 
+--	The percent of the latest sunday attendance population 
+--	that are active members of an active group falling under 
+--	"Home Groups" or "Fuse Groups"
    ======================================================*/
 
 SET @SQL = N'
@@ -291,8 +293,8 @@ INSERT [MetricCategory] (MetricId, CategoryId, [Order], [Guid])
 VALUES ( @InsertedId, @NextStepsCategoryId, @Order, NEWID() );
 
 /* ======================================================
-	NUMBER OF ACTIVE HOME/FUSE GROUP LEADERS 
-	The number of active leaders in active Home or Fuse Groups
+--	NUMBER OF ACTIVE HOME/FUSE GROUP LEADERS 
+--	The number of active leaders in active Home or Fuse Groups
    ======================================================*/
 
 SET @SQL = N'
@@ -352,8 +354,9 @@ INSERT [MetricCategory] (MetricId, CategoryId, [Order], [Guid])
 VALUES ( @InsertedId, @NextStepsCategoryId, @Order, NEWID() );
 
 /* ======================================================
-	KidSpring 4 Week Percent of Return 
-	The percent of attendances that a KidSpring newcomer completes including their initial visit and three weeks thereafter
+--	KidSpring 4 Week Percent of Return 
+--	The percent of attendances that a KidSpring newcomer completes,
+--	including their initial visit and three weeks thereafter
    ======================================================*/
 
 SET @SQL = N'
@@ -447,14 +450,15 @@ INSERT [MetricCategory] (MetricId, CategoryId, [Order], [Guid])
 VALUES ( @InsertedId, @KSAttendanceCategoryId, @Order, NEWID() );
 
 /* ======================================================
-	Fuse 4 Week Percent of Return 
-	The percent of attendances that a Fuse newcomer completes including their initial visit and three weeks thereafter
+--	Fuse 4 Week Percent of Return 
+--	The percent of attendances that a Fuse newcomer completes, 
+--	including their initial visit and three weeks thereafter
    ======================================================*/
 
 SET @SQL = N'
 	DECLARE @today AS DATE = GETDATE();
-	DECLARE @recentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @today), @today));
-	DECLARE @firstTimeSundayDate AS DATE = DATEADD(WEEK, -3, @recentSundayDate);
+	DECLARE @recentWednesday AS DATE = CONVERT(DATE, DATEADD(DAY, 4 - DATEPART(DW, @today), @today));
+	DECLARE @firstTimeWednesday AS DATE = DATEADD(WEEK, -3, @recentWednesday);
 
 	WITH cte_GroupIds AS (
 		SELECT
@@ -478,7 +482,7 @@ SET @SQL = N'
 		GROUP BY
 			pa.PersonId
 		HAVING
-			CONVERT(DATE, MIN([StartDateTime])) = @firstTimeSundayDate
+			CONVERT(DATE, MIN([StartDateTime])) = @firstTimeWednesday
 	),
 	cte_4WeekAttendance AS (
 		SELECT
@@ -490,7 +494,7 @@ SET @SQL = N'
 			JOIN [PersonAlias] pa ON pa.PersonId = ftp.Id
 			JOIN [Attendance] a ON a.PersonAliasId = pa.Id
 		WHERE
-			a.StartDateTime BETWEEN @firstTimeSundayDate AND @recentSundayDate
+			a.StartDateTime BETWEEN @firstTimeWednesday AND @recentWednesday
 		GROUP BY
 			ftp.Id
 			, ftp.CampusId
@@ -498,7 +502,7 @@ SET @SQL = N'
 	SELECT
 		CONVERT(INT, ROUND(AVG(CONVERT(DECIMAL, Attendances)) / 4 * 100, 0)) AS Value
 		, CampusId AS EntityId
-		, DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + ''00:00'' AS ScheduleDate
+		, DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + ''19:00'' AS ScheduleDate
 	FROM
 		[cte_4WeekAttendance]
 	GROUP BY
@@ -539,13 +543,13 @@ VALUES ( @InsertedId, @FuseAttendanceCategoryId, @Order, NEWID() );
 
 
 /* ======================================================
-	Fuse 1st timers
-	The number of attendances that are Fuse newcomers
+--	Fuse 1st timers
+--	The number of attendances that are Fuse newcomers
    ======================================================*/
 
 SET @SQL = N'
 	DECLARE @today AS DATE = GETDATE();
-	DECLARE @recentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @today), @today));
+	DECLARE @recentWednesday AS DATE = CONVERT(DATE, DATEADD(DAY, 4 - DATEPART(DW, @today), @today));
 
 	WITH cte_GroupIds AS (
 		SELECT
@@ -569,12 +573,12 @@ SET @SQL = N'
 		GROUP BY
 			pa.PersonId
 		HAVING
-			CONVERT(DATE, MIN([SundayDate])) = @recentSundayDate
+			CONVERT(DATE, MIN([StartDateTime])) = @recentWednesday
 	)
 	SELECT
 		COUNT(Id) AS Value
 		, CampusId AS EntityId
-		, DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + ''00:00'' AS ScheduleDate
+		, DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + ''19:00'' AS ScheduleDate
 	FROM
 		[cte_FirstTimePersonIds]
 	GROUP BY
@@ -614,8 +618,8 @@ INSERT [MetricCategory] (MetricId, CategoryId, [Order], [Guid])
 VALUES ( @InsertedId, @FuseAttendanceCategoryId, @Order, NEWID() );
 
 /* ======================================================
-	KidSpring 1st timers
-	The number of attendances that are KidSpring newcomers
+--	KidSpring 1st timers
+--	The number of attendances that are KidSpring newcomers
    ======================================================*/
 
 SET @SQL = N'

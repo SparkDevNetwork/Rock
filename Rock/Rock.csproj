@@ -274,6 +274,7 @@
     <Compile Include="Field\Types\NoteTypeFieldType.cs" />
     <Compile Include="Field\Types\EnumFieldType.cs" />
     <Compile Include="Field\Types\RangeSliderFieldType.cs" />
+    <Compile Include="Financial\NMIGateway.cs" />
     <Compile Include="Follow\Event\PersonFirstAttendedGroupType.cs" />
     <Compile Include="Follow\Event\PersonFirstJoinedGroupType.cs" />
     <Compile Include="Follow\Event\PersonBaptized.cs" />
@@ -473,8 +474,6 @@
     <Compile Include="Model\RestActionService.partial.cs" />
     <Compile Include="Model\ScheduleService.Partial.cs" />
     <Compile Include="Model\WorkflowActionService.Partial.cs" />
-    <Compile Include="Model\WorkflowActivityTypeService.Partial.cs" />
-    <Compile Include="Model\WorkflowActionTypeService.Partial.cs" />
     <Compile Include="Model\GroupMemberWorkflowTrigger.cs" />
     <Compile Include="Net\RockWebRequest.cs" />
     <Compile Include="PersonProfile\Badge\AlertNote.cs" />
@@ -482,6 +481,7 @@
     <Compile Include="PersonProfile\Badge\DISC.cs" />
     <Compile Include="PersonProfile\Badge\InGroupWithPurpose.cs" />
     <Compile Include="Reporting\ComparisonHelper.cs" />
+    <Compile Include="Reporting\DataFilter\NotInOtherDataViewFilter.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupMemberAttributeSelect.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupStatusSelect.cs" />
@@ -514,6 +514,8 @@
     <Compile Include="Reporting\DataFilter\Person\NotInGroupGroupTypeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\NotInGroupFilter.cs" />
     <Compile Include="Reporting\DataSelect\FinancialTransaction\TotalAmountSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Group\CampusSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Group\GroupTypeSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\ParentGroupMemberListSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\MemberListSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\MemberCountSelect.cs" />
@@ -546,6 +548,7 @@
     <Compile Include="Web\UI\Controls\Pickers\WorkflowActionTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ConnectionRequestPicker.cs" />
     <Compile Include="Web\UI\Controls\RangeSlider.cs" />
+    <Compile Include="Web\Utilities\RockUpdateHelper.cs" />
     <Compile Include="Web\Utilities\WebControlHelper.cs" />
     <Compile Include="Security\Authentication\Facebook.cs">
       <SubType>Code</SubType>
@@ -1138,6 +1141,7 @@
     <Compile Include="Workflow\Action\RemovePersonFromGroupAttribute.cs" />
     <Compile Include="Workflow\Action\RemovePersonFromGroup.cs" />
     <Compile Include="Workflow\Action\GetPersonFromFields.cs" />
+    <Compile Include="Workflow\Action\SetGroupMemberNote.cs" />
     <Compile Include="Workflow\Action\UpdateGroupMemberStatus.cs" />
     <Compile Include="Workflow\Action\AddPersonToGroupAttribute.cs" />
     <Compile Include="Workflow\Action\AssignActivityFromAttributeValue.cs" />

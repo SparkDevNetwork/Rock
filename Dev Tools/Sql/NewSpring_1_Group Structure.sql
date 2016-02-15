@@ -230,7 +230,7 @@ PRODID:-//ddaysoftware.com//NONSGML DDay.iCal 1.0//EN
 BEGIN:VEVENT
 DTEND:20130501T100000
 DTSTAMP:20130501T00000Z
-DTSTART:20130501T170000
+DTSTART:20130501T190000
 RRULE:FREQ=WEEKLY;BYDAY=WE
 SEQUENCE:0
 UID:' + CONVERT(VARCHAR(36), NEWID()) + '
@@ -577,13 +577,10 @@ VALUES
 ('Next Steps Volunteer', 'Care Office Team', 'Care Office Team'), 
 ('Next Steps Volunteer', 'Care Visitation Team', 'Care Visitation Team'), 
 ('Next Steps Volunteer', 'Church Online Volunteer', 'Church Online Volunteer'), 
-('Next Steps Volunteer', 'District Leader', 'District Leader'), 
 ('Next Steps Volunteer', 'Events Office Team', 'Events Office Team'), 
 ('Next Steps Volunteer', 'Financial Coaching Volunteer', 'Financial Coaching Volunteer'), 
-('Next Steps Volunteer', 'Financial Planning Office Team', 'Financial Planning Office Team'), 
+('Next Steps Volunteer', 'Financial Coaching Office Team', 'Financial Coaching Office Team'), 
 ('Next Steps Volunteer', 'Group Leader', 'Group Leader'), 
-('Next Steps Volunteer', 'Group Training', 'Group Training'), 
-('Next Steps Volunteer', 'Groups Connector', 'Groups Connector'), 
 ('Next Steps Volunteer', 'Groups Office Team', 'Groups Office Team'), 
 ('Next Steps Volunteer', 'Load In', 'Load In'), 
 ('Next Steps Volunteer', 'Load Out', 'Load Out'), 
@@ -687,6 +684,7 @@ INSERT #collegeGroups
 VALUES
 ('NewSpring College', 'Acts', 'Acts'), 
 ('NewSpring College', 'All-Staff', 'All-Staff'), 
+('NewSpring College', 'Audio I', 'Audio I'), 
 ('NewSpring College', 'Bible', 'Bible'), 
 ('NewSpring College', 'Builders & Shepherds', 'Builders & Shepherds'), 
 ('NewSpring College', 'Character Forum', 'Character Forum'), 

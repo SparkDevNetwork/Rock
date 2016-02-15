@@ -224,7 +224,7 @@ namespace Rock.CheckIn
                                 LoadKioskLocations( device, location, campusLocations, rockContext );
                             }
 
-                            cache.Set( cacheKey, device, new CacheItemPolicy() );
+                            cache.Set( cacheKey, device, new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.Date.AddDays( 1 ) } );
 
                             return device;
                         }

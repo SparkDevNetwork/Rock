@@ -243,7 +243,7 @@ namespace Rock.Rest.Controllers
 
             if ( options.AccountIds != null )
             {
-                qry = qry.Where( a => options.AccountIds.Contains( a.TransactionDetails.FirstOrDefault().AccountId ) );
+                qry = qry.Where( a => a.TransactionDetails.Any( x => options.AccountIds.Contains( x.AccountId ) ) );
             }
 
             var selectQry = qry.Select( a => new
@@ -277,7 +277,15 @@ namespace Rock.Rest.Controllers
                 detailTable.Columns.Add( "AccountName" );
                 detailTable.Columns.Add( "Summary" );
                 detailTable.Columns.Add( "Amount", typeof( decimal ) );
-                foreach ( var detail in fieldItems.Details )
+                var transactionDetails = fieldItems.Details.ToList();
+
+                // remove any Accounts that were not included (in case there was a mix of included and not included accounts in the transaction)
+                if ( options.AccountIds != null )
+                {
+                    transactionDetails = transactionDetails.Where( a => options.AccountIds.Contains( a.AccountId ) ).ToList();
+                }
+
+                foreach ( var detail in transactionDetails )
                 {
                     var detailArray = new object[] {
                         detail.AccountId,
@@ -293,7 +301,7 @@ namespace Rock.Rest.Controllers
                     fieldItems.TransactionDateTime,
                     fieldItems.CurrencyTypeValueName,
                     fieldItems.Summary,
-                    fieldItems.Details.Sum(a => a.Amount),
+                    transactionDetails.Sum(a => a.Amount),
                     detailTable
                 };
 
