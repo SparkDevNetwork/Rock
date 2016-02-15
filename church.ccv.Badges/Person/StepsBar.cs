@@ -52,12 +52,12 @@ namespace church.ccv.Badges.Person
                 <a class='badge badge-connect badge-icon step-nottaken' data-toggle='tooltip' data-original-title='{1} is not connected to a neighborhood group' data-container='body' href='/page/{5}?PersonGuid={2}'>
                     <i class='icon ccv-connect'></i>
                 </a>
-                <div class='badge badge-tithe badge-icon step-nottaken' data-toggle='tooltip' data-original-title='{1} is not tithing' data-container='body'>
+                <div class='badge badge-tithe badge-icon step-nottaken' data-toggle='tooltip' data-original-title='{1} is not giving' data-container='body'>
                     <i class='icon ccv-tithe'></i>
                 </div>
-                <div class='badge badge-serve badge-icon step-nottaken' data-toggle='tooltip' data-original-title='{1} is not serving (Click for more options)' data-container='body'>
+                <a class='badge badge-serve badge-icon step-nottaken' data-toggle='tooltip' data-original-title='{1} is not serving (Click for more options)' data-container='body' href='/page/{6}?PersonGuid={2}'>
                     <i class='icon ccv-serve'></i>
-                </div>
+                </a>
                 <div class='badge badge-share badge-icon step-nottaken' data-toggle='tooltip' data-original-title='Coming Soon...' data-container='body'>
                     <i class='icon ccv-share'></i>
                 </div>
@@ -71,6 +71,7 @@ namespace church.ccv.Badges.Person
                 , GetAttributeValue(badge, "BaptismEventId") // 3
                 , baptismRegistrationPageId // 4
                 , connectionGroupRegistrationPageId // 5
+                , servingConnectionPageId // 6
             ) );
             
             writer.Write( string.Format(
@@ -139,7 +140,7 @@ namespace church.ccv.Badges.Person
 
                     $.each( data.ConnectionResult.Groups, function( index, group ) {{
 
-                popoverContent = popoverContent + ""<li><a href='/page/"" + groupDetailPageId + ""?GroupId="" + group.GroupId + ""'>"" + group.GroupName + ""</a></li>"";
+                        popoverContent = popoverContent + ""<li><a href='/page/"" + groupDetailPageId + ""?GroupId="" + group.GroupId + ""'>"" + group.GroupName + ""</a> <small>"" + group.Role + ""</small></li>"";
 
                 // only display 2
                 if ( index == 1 )
@@ -167,10 +168,19 @@ namespace church.ccv.Badges.Person
             var popoverContent = popoverContent + ""<p class='margin-b-none'><a href='/page/"" + connectionGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find Group</a></p>"";
 
                     $badge.find( '.badge-connect' ).removeClass( 'step-nottaken' );
+
+                    if (data.ConnectionResult.ConnectionStatus == 2) {{
+                        $badge.find('.badge-connect').addClass('step-partial');
+                    }}
+
                     $badge.find( '.badge-connect' ).attr( 'data-toggle', 'popover' );
                     $badge.find( '.badge-connect' ).attr( 'data-container', 'body' );
                     $badge.find( '.badge-connect' ).attr( 'data-content', popoverContent );
-                    $badge.find( '.badge-connect' ).attr( 'data-original-title', firstName + ' is in a connection group &nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>' );
+
+                    var connectSinceDate = new Date(data.ConnectionResult.ConnectedSince);
+                    var connectSinceDateFormatted = (connectSinceDate.getMonth() + 1) + '/' + connectSinceDate.getDate() + '/' + connectSinceDate.getFullYear();
+
+                    $badge.find( '.badge-connect' ).attr( 'data-original-title', firstName + ' is in a connection group (eariest active group ' + connectSinceDateFormatted + ') &nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>' );
 
             var connectPopoverIsOpen = false;
 
@@ -206,6 +216,7 @@ namespace church.ccv.Badges.Person
                 // tithing
                 if (data.IsTithing) {{
                     $badge.find('.badge-tithe').removeClass('step-nottaken');
+                    $badge.find( '.badge-tithe' ).attr( 'data-original-title', firstName + ' is giving' );
     }}
 
                 // serving
@@ -213,6 +224,11 @@ namespace church.ccv.Badges.Person
 
                     // create content for popover
                     var popoverContent = firstName + "" is on the following serving teams: <ul styling='padding-left: 20px;'>"";
+
+                    // disable the anchor tag
+                    $badge.find( '.badge-serve' ).on( ""click"", function( e ) {{
+                        e.preventDefault();
+                    }});
 
                     $.each( data.ServingResult.Groups, function (index, group)
     {{
@@ -246,7 +262,11 @@ namespace church.ccv.Badges.Person
                     $badge.find('.badge-serve').attr('data-toggle', 'popover');
                     $badge.find('.badge-serve').attr('data-container', 'body');
                     $badge.find('.badge-serve').attr('data-content', popoverContent);
-                    $badge.find('.badge-serve').attr('data-original-title', firstName + ' is serving &nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>');
+
+                    var servingSinceDate = new Date(data.ServingResult.ServingSince);
+                    var servingSinceDateFormatted = (servingSinceDate.getMonth() + 1) + '/' + servingSinceDate.getDate() + '/' + servingSinceDate.getFullYear();
+
+                    $badge.find('.badge-serve').attr('data-original-title', firstName + ' is serving (earliest active group ' + servingSinceDateFormatted + ')&nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>');
 
 var servingPopoverIsOpen = false;
 
@@ -263,7 +283,7 @@ var servingPopoverIsOpen = false;
     {{
                             $badge.find( '.badge-serve' ).popover( 'hide' );
         servingPopoverIsOpen = false;
-                            $badge.find( '.badge-serve' ).attr( 'data-original-title', firstName + ' is serving &nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>' );
+                            $badge.find('.badge-serve').attr('data-original-title', firstName + ' is serving (earliest active group ' + servingSinceDateFormatted + ')&nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>');
     }}
     else {{
                             $badge.find( '.badge-serve' ).attr( 'data-original-title', '' );
@@ -315,7 +335,11 @@ var servingPopoverIsOpen = false;
                     $badge.find('.badge-coach').attr('data-toggle', 'popover');
                     $badge.find('.badge-coach').attr('data-container', 'body');
                     $badge.find('.badge-coach').attr('data-content', popoverContent);
-                    $badge.find('.badge-coach').attr('data-original-title', firstName + ' is in a coaching group &nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>');
+
+                    var coachingSinceDate = new Date(data.CoachingResult.CoachingSince);
+                    var coachingSinceDateFormatted = (coachingSinceDate.getMonth() + 1) + '/' + coachingSinceDate.getDate() + '/' + coachingSinceDate.getFullYear();
+
+                    $badge.find('.badge-coach').attr('data-original-title', firstName + ' is in a coaching group (earliest active group  ' + coachingSinceDateFormatted + ') &nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>');
 
 var coachPopoverIsOpen = false;
 
@@ -332,7 +356,7 @@ var coachPopoverIsOpen = false;
     {{
                             $badge.find( '.badge-coach' ).popover( 'hide' );
                             coachPopoverIsOpen = false;
-                            $badge.find( '.badge-coach' ).attr( 'data-original-title', firstName + ' is in a coaching group &nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>' );
+                            $badge.find('.badge-coach').attr('data-original-title', firstName + ' is in a coaching group (earliest active group  ' + coachingSinceDateFormatted + ') &nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>');
     }}
     else {{
                             $badge.find( '.badge-coach' ).attr( 'data-original-title', '' );

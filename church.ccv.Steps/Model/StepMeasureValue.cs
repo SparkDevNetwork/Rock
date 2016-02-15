@@ -74,7 +74,7 @@ namespace church.ccv.Steps.Model
         /// The weekend attendance.
         /// </value>
         [DataMember]
-        public int WeekendAttendance { get; set; }
+        public int? WeekendAttendance { get; set; }
 
         /// <summary>
         /// Gets or sets the active adults.
@@ -83,7 +83,7 @@ namespace church.ccv.Steps.Model
         /// The active adults.
         /// </value>
         [DataMember]
-        public int ActiveAdults { get; set; }
+        public int? ActiveAdults { get; set; }
 
         /// <summary>
         /// Gets or sets the note.
@@ -120,7 +120,7 @@ namespace church.ccv.Steps.Model
         /// <value>
         /// The paster person alias.
         /// </value>
-        public virtual PersonAlias PasterPersonAlias { get; set; }
+        public virtual PersonAlias PastorPersonAlias { get; set; }
 
         #endregion
     }
@@ -137,7 +137,7 @@ namespace church.ccv.Steps.Model
         {
             this.HasRequired( m => m.StepMeasure ).WithMany( c => c.StepMeasureValues ).HasForeignKey( m => m.StepMeasureId ).WillCascadeOnDelete( true );
             this.HasOptional( m => m.Campus ).WithMany().HasForeignKey( m => m.CampusId ).WillCascadeOnDelete( false );
-            this.HasOptional( m => m.PasterPersonAlias ).WithMany().HasForeignKey( m => m.PastorPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( m => m.PastorPersonAlias ).WithMany().HasForeignKey( m => m.PastorPersonAliasId ).WillCascadeOnDelete( false );
         }
     }
 }

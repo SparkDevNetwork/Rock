@@ -71,7 +71,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Jobs\SendPotentialEraLossEmails.cs" />
+    <Compile Include="Jobs\UpdateStepsMeasures.cs" />
     <Compile Include="Migrations\001_CreateDb.cs" />
     <Compile Include="Model\CodeGenerated\StepMeasureService.cs" />
     <Compile Include="Model\CodeGenerated\StepMeasureValueService.cs" />

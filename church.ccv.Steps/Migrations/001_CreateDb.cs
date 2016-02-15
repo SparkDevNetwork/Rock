@@ -31,7 +31,9 @@ namespace church.ccv.Steps.Migrations
 	    [ModifiedDateTime] [datetime] NULL,
 	    [CreatedByPersonAliasId] [int] NULL,
 	    [ModifiedByPersonAliasId] [int] NULL,
-	    [ForeignId] [nvarchar](50) NULL,
+	    [ForeignId] int NULL,
+        [ForeignKey] nvarchar(100) NULL,
+        [ForeignGuid] [uniqueidentifier] NULL
      CONSTRAINT [PK_dbo._church_ccv_Steps_StepMeasure] PRIMARY KEY CLUSTERED 
     (
 	    [Id] ASC
@@ -66,7 +68,9 @@ namespace church.ccv.Steps.Migrations
 	    [ModifiedDateTime] [datetime] NULL,
 	    [CreatedByPersonAliasId] [int] NULL,
 	    [ModifiedByPersonAliasId] [int] NULL,
-	    [ForeignId] [nvarchar](50) NULL,
+	    [ForeignId] int NULL,
+        [ForeignKey] nvarchar(100) NULL,
+        [ForeignGuid] [uniqueidentifier] NULL
      CONSTRAINT [PK_dbo._church_ccv_Steps_StepMeasureValue] PRIMARY KEY CLUSTERED 
     (
 	    [Id] ASC
