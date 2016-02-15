@@ -288,6 +288,7 @@ namespace church.ccv.Steps
                 ProcessCoaching( sundayDate, metricValues, campusAdultCounts, pastorSummary );
                 ProcessConnection( sundayDate, metricValues, campusAdultCounts, pastorSummary );
                 ProcessServing( sundayDate, metricValues, campusAdultCounts, pastorSummary );
+                ProcessSharing( sundayDate, metricValues, campusAdultCounts, pastorSummary );
             }
 
             return wasSuccessful;
@@ -985,6 +986,60 @@ namespace church.ccv.Steps
             }
         }
 
+        private void ProcessSharing( DateTime sundayDate, List<MetricValue> metricValues, List<CampusAdultCount> campusAdultCounts, List<PastorSummary> pastorSummary )
+        {
+            using ( RockContext rockContext = new RockContext() )
+            {
+                StepMeasureValueService stepMeasureValueService = new StepMeasureValueService( rockContext );
+
+                // not implemented but since it's active with IsTba we need values
+
+                foreach ( int campusId in _campusIds )
+                {
+                    // get counts 
+                    int weekendAttendance = metricValues.Where( m => m.EntityId == campusId ).Select( m => m.YValue ).FirstOrDefault() != null ? Decimal.ToInt16( metricValues.Where( m => m.EntityId == campusId ).Select( m => m.YValue ).FirstOrDefault().Value ) : 0;
+                    int activeAdults = campusAdultCounts.Where( c => c.CampusId == campusId ).Select( c => c.AdultCount ).Count() != 0 ? campusAdultCounts.Where( c => c.CampusId == campusId ).Select( c => c.AdultCount ).FirstOrDefault() : 0;
+                    int sharingCountAll =  0;
+                    int sharingCountAdults = 0;
+
+                    // save serving all count / weekend attendance
+                    StepMeasureValue measureValueAll = new StepMeasureValue();
+                    measureValueAll.StepMeasureId = _sharingMeasureId;
+                    measureValueAll.SundayDate = sundayDate;
+                    measureValueAll.Value = sharingCountAll;
+                    measureValueAll.CampusId = campusId;
+                    measureValueAll.WeekendAttendance = weekendAttendance;
+
+                    stepMeasureValueService.Add( measureValueAll );
+
+                    // save serving adult count / campus adult count
+                    StepMeasureValue measureValueAdults = new StepMeasureValue();
+                    measureValueAdults.StepMeasureId = _sharingMeasureId;
+                    measureValueAdults.SundayDate = sundayDate;
+                    measureValueAdults.Value = sharingCountAdults;
+                    measureValueAdults.CampusId = campusId;
+                    measureValueAdults.ActiveAdults = activeAdults;
+
+                    stepMeasureValueService.Add( measureValueAdults );
+                }
+
+                rockContext.SaveChanges();
+
+                foreach ( var pastor in pastorSummary )
+                {
+                    StepMeasureValue measureValueAdults = new StepMeasureValue();
+                    measureValueAdults.StepMeasureId = _sharingMeasureId;
+                    measureValueAdults.SundayDate = sundayDate;
+                    measureValueAdults.Value = 0;
+                    measureValueAdults.PastorPersonAliasId = pastor.PastorPersonAliasId;
+                    measureValueAdults.ActiveAdults = pastor.AdultCount;
+
+                    stepMeasureValueService.Add( measureValueAdults );
+                }
+
+                rockContext.SaveChanges();
+            }
+        }
 
         #region Utilities
         #region Uitlity Methods

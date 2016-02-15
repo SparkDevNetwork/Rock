@@ -23,6 +23,15 @@ namespace church.ccv.Steps.Model
 
 
         /// <summary>
+        /// Gets or sets the title.
+        /// </summary>
+        /// <value>
+        /// The title.
+        /// </value>
+        [DataMember]
+        public string Title { get; set; }
+
+        /// <summary>
         /// Gets or sets the description.
         /// </summary>
         /// <value>
