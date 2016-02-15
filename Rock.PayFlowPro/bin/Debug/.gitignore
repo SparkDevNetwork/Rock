@@ -5,3 +5,5 @@
 /Quartz.pdb
 *.pdb
 *.dll
+*.dll.config
+*.xml
