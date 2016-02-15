@@ -109,7 +109,7 @@ namespace RockWeb.Blocks.Groups
                                 dataType: 'json', 
                                 contentType: 'application/json; charset=utf-8',
                                 async: false }).responseText;
-            
+
             var resultObject = jQuery.parseJSON(result);
 
             return resultObject.PickerItemDetailsHtml;
@@ -1025,7 +1025,7 @@ namespace RockWeb.Blocks.Groups
                         m.Person.NickName,
                         m.Person.LastName,
                         Name =
-                        ( selectAll ? m.Person.LastName + ", " + m.Person.NickName : string.Format(photoFormat, m.PersonId, m.Person.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-male.svg" ) )  +
+                        ( selectAll ? m.Person.LastName + ", " + m.Person.NickName : ( "<i class='fa fa-info-circle person-info-icon js-person-popover' personid=" + m.PersonId.ToString() + "></i> " ) +
                         m.Person.NickName + " " + m.Person.LastName
                             + ( hasGroupRequirements && groupMemberIdsThatLackGroupRequirements.Contains( m.Id )
                                 ? " <i class='fa fa-exclamation-triangle text-warning'></i>"

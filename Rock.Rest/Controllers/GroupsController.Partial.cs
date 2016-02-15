@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,7 +34,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class GroupsController
     {
@@ -442,7 +442,7 @@ namespace Rock.Rest.Controllers
                         fenceGroupLocation.Group = null;
 
                         // Find all the group groupLocation records ( with group of the "groupTypeId" ) that have a location
-                        // within the fence 
+                        // within the fence
                         foreach ( var group in Service
                             .Queryable( "Schedule,GroupLocations.Location" ).AsNoTracking()
                             .Where( g =>
@@ -1007,7 +1007,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class GuestFamilyMember
         {
@@ -1139,7 +1139,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class InfoWindowRequest
         {
@@ -1177,7 +1177,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class InfoWindowResult
         {

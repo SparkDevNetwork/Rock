@@ -30,7 +30,7 @@ namespace Rock.Jobs
     [DisallowConcurrentExecution]
     public class CalculateMetrics : IJob
     {
-        /// <summary> 
+        /// <summary>
         /// Empty constructor for job initialization
         /// <para>
         /// Jobs require a public empty constructor so that the
@@ -65,6 +65,8 @@ namespace Rock.Jobs
             int metricsCalculated = 0;
             int metricValuesCalculated = 0;
 
+            Func<int, decimal, DateTime?, Tuple<int, decimal, DateTime?>> TupleObject = Tuple.Create;
+
             foreach ( var metric in metricsList )
             {
                 try
@@ -77,7 +79,7 @@ namespace Rock.Jobs
                         var scheduledDateTimesToProcess = metric.Schedule.GetScheduledStartTimes( lastRunDateTime.Value, currentDateTime ).Where( a => a > lastRunDateTime.Value ).ToList();
                         foreach ( var scheduleDateTime in scheduledDateTimesToProcess )
                         {
-                            Dictionary<int, decimal> resultValues = new Dictionary<int, decimal>();
+                            var resultValues = new List<Tuple<int, decimal, DateTime?>>();
                             if ( metric.SourceValueType.Guid == metricSourceValueTypeDataviewGuid )
                             {
                                 // get the metric value from the DataView
@@ -91,7 +93,7 @@ namespace Rock.Jobs
                                     }
                                     else
                                     {
-                                        resultValues.Add( 0, qry.Count() );
+                                        resultValues.Add( TupleObject( 0, qry.Count(), null ) );
                                     }
                                 }
                             }
@@ -106,8 +108,10 @@ namespace Rock.Jobs
                                     {
                                         int entityId = 0;
                                         decimal countValue;
+                                        DateTime? schedule = null;
                                         if ( tableResult.Columns.Count >= 2 )
                                         {
+                                            // Check for an entity id
                                             if ( tableResult.Columns.Contains( "EntityId" ) )
                                             {
                                                 entityId = Convert.ToInt32( row["EntityId"] );
@@ -116,6 +120,12 @@ namespace Rock.Jobs
                                             {
                                                 // assume SQL is in the form "SELECT Count(*), EntityId FROM ..."
                                                 entityId = Convert.ToInt32( row[1] );
+                                            }
+
+                                            // Check for a schedule date
+                                            if ( tableResult.Columns.Contains( "ScheduleDate" ) )
+                                            {
+                                                schedule = Convert.ToDateTime( row["ScheduleDate"] );
                                             }
                                         }
 
@@ -129,7 +139,7 @@ namespace Rock.Jobs
                                             countValue = Convert.ToDecimal( row[0] );
                                         }
 
-                                        resultValues.Add( entityId, countValue );
+                                        resultValues.Add( TupleObject( entityId, countValue, schedule ) );
                                     }
                                 }
                             }
@@ -144,10 +154,10 @@ namespace Rock.Jobs
                                 {
                                     var metricValue = new MetricValue();
                                     metricValue.MetricId = metric.Id;
-                                    metricValue.MetricValueDateTime = scheduleDateTime;
                                     metricValue.MetricValueType = MetricValueType.Measure;
-                                    metricValue.YValue = resultValue.Value;
-                                    metricValue.EntityId = resultValue.Key > 0 ? resultValue.Key : (int?)null;
+                                    metricValue.EntityId = resultValue.Item1 > 0 ? resultValue.Item1 : (int?)null;
+                                    metricValue.YValue = resultValue.Item2;
+                                    metricValue.MetricValueDateTime = resultValue.Item3 ?? scheduleDateTime;
 
                                     metricValueService.Add( metricValue );
                                 }
