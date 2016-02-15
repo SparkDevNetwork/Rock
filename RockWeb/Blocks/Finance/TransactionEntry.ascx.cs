@@ -94,7 +94,7 @@ namespace RockWeb.Blocks.Finance
 </p>
 ", "Text Options", 22 )]
     [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
-        CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
+        CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false , @"
 ", "Text Options", 23 )]
     [TextField( "Save Account Title", "The text to display as heading of section for saving payment information.", false, "Make Giving Even Easier", "Text Options", 24 )]
     [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", "", 25 )]
@@ -721,6 +721,15 @@ namespace RockWeb.Blocks.Finance
                         return;
                     }
 
+                    if ( !UserLoginService.IsPasswordValid ( txtPassword.Text ) )
+                    {
+                        nbSaveAccount.Title = string.Empty;
+                        nbSaveAccount.Text = UserLoginService.FriendlyPasswordRules();
+                        nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
+                        nbSaveAccount.Visible = true;
+                        return;
+                    }   
+                    
                     if ( txtPasswordConfirm.Text != txtPassword.Text )
                     {
                         nbSaveAccount.Title = "Invalid Password";

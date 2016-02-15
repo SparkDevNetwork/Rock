@@ -62,6 +62,7 @@
                             <asp:ListItem Text="Connected" Value="3" />
                         </Rock:RockCheckBoxList>
                         <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campus" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
+                        <Rock:RockCheckBoxList ID="cblLastActivity" runat="server" Label="Last Activity" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
                     </Rock:GridFilter>
                     <Rock:Grid ID="gRequests" runat="server" OnRowSelected="gRequests_Edit" CssClass="js-grid-requests" AllowSorting="true" >
                         <Columns>
@@ -70,7 +71,8 @@
                             <Rock:RockBoundField DataField="Campus" HeaderText="Campus" SortExpression="Campus.Name" />
                             <Rock:RockBoundField DataField="Group" HeaderText="Group" SortExpression="AssignedGroup.Name" />
                             <Rock:RockBoundField DataField="Connector" HeaderText="Connector" SortExpression="Connector.PersonAlias.Person.LastName,Connector.PersonAlias.Person.NickName" />
-                            <Rock:RockBoundField DataField="LastActivity" HeaderText="Last Activity" HtmlEncode="false"  />
+                            <Rock:RockBoundField DataField="LastActivity" HeaderText="Last Activity" HtmlEncode="false" />
+                            <Rock:RockBoundField DataField="LastActivityNote" HeaderText="Last Activity Note" HtmlEncode="false" />
                             <asp:TemplateField HeaderText="State" SortExpression="ConnectionState" >
                                 <ItemTemplate>
                                     <%# Eval("StateLabel") %>

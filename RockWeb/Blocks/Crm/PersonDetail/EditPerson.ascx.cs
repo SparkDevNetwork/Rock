@@ -64,9 +64,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( Person != null )
             {
                 var personService = new PersonService( new RockContext() );
-                foreach ( var family in personService.GetFamilies( Person.Id ).Select( a => new { a.Name, a.Id } ) )
+                foreach ( var family in personService.GetFamilies( Person.Id ).Select( a => new { a.Name, a.Id, a.Members } ) )
                 {
-                    ddlGivingGroup.Items.Add( new ListItem( family.Name, family.Id.ToString() ) );
+                    string familyNameWithFirstNames = GetFamilyNameWithFirstNames( family.Name, family.Members );
+                    ddlGivingGroup.Items.Add( new ListItem( familyNameWithFirstNames, family.Id.ToString() ) );
                 }
             }
 
@@ -85,6 +86,31 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             grdPreviousNames.Actions.ShowAdd = true;
             grdPreviousNames.Actions.AddClick += grdPreviousNames_AddClick;
+        }
+
+        /// <summary>
+        /// Gets the family name with first names.
+        /// </summary>
+        /// <param name="familyName">Name of the family.</param>
+        /// <param name="familyMembers">The family members.</param>
+        /// <returns></returns>
+        private string GetFamilyNameWithFirstNames( string familyName, ICollection<GroupMember> familyMembers )
+        {
+            var adultFirstNames = familyMembers.Where( a => a.GroupRole.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).OrderBy( a => a.Person.Gender ).ThenBy( a => a.Person.NickName ).Select( a => a.Person.NickName ?? a.Person.FirstName ).ToList();
+            var otherFirstNames = familyMembers.Where( a => a.GroupRole.Guid != Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).OrderBy( a => a.Person.Gender ).ThenBy( a => a.Person.NickName ).Select( a => a.Person.NickName ?? a.Person.FirstName ).ToList();
+            var firstNames = new List<string>();
+            firstNames.AddRange( adultFirstNames );
+            firstNames.AddRange( otherFirstNames );
+            string familyNameWithFirstNames;
+            if ( firstNames.Any() )
+            {
+                familyNameWithFirstNames = string.Format( "{0} ({1})", familyName, firstNames.AsDelimited( ", ", " and " ) );
+            }
+            else
+            {
+                familyNameWithFirstNames = string.Format( "{0} (no family members)", familyName );
+            }
+            return familyNameWithFirstNames;
         }
 
         /// <summary>
@@ -375,7 +401,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     int? newGivingGroupId = ddlGivingGroup.SelectedValueAsId();
                     if ( person.GivingGroupId != newGivingGroupId )
                     {
-                        string oldGivingGroupName = person.GivingGroup != null ? person.GivingGroup.Name : string.Empty;
+                        string oldGivingGroupName = string.Empty;
+                        if ( Person.GivingGroup != null )
+                        {
+                            oldGivingGroupName = GetFamilyNameWithFirstNames( Person.GivingGroup.Name, Person.GivingGroup.Members );
+                        }
+                        
                         string newGivingGroupName = newGivingGroupId.HasValue ? ddlGivingGroup.Items.FindByValue( newGivingGroupId.Value.ToString() ).Text : string.Empty;
                         History.EvaluateChange( changes, "Giving Group", oldGivingGroupName, newGivingGroupName );
                     }
