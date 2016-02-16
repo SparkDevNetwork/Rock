@@ -629,18 +629,18 @@ BEGIN
 			
 			SELECT @MetricServiceId = NULL, @MetricTotalId = NULL
 
-			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, EntityTypeId, [Guid])
+			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, EntityTypeId, [Guid], IconCssClass)
 			VALUES ( 0, 'Service Numbers', 'Metric to track ' + @ChildCategoryName + ' by service', @False, 
-				@MetricSourceManualId, '', '', '', @CampusEntityTypeId, NEWID() )
+				@MetricSourceManualId, '', '', '', @CampusEntityTypeId, NEWID(), '' )
 
 			SELECT @MetricServiceId = SCOPE_IDENTITY()
 
 			INSERT [MetricCategory] (MetricId, CategoryId, [Order], [Guid])
 			VALUES ( @MetricServiceId, @ChildCategoryId, @Order, NEWID() )
 
-			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, EntityTypeId, [Guid])
+			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, EntityTypeId, [Guid], IconCssClass)
 			VALUES ( 0, 'Total Numbers', 'Metric to track ' + @ChildCategoryName + ' roles by campus and service', @False, 
-				@MetricSourceManualId, '', '', '', @CampusEntityTypeId, NEWID() )
+				@MetricSourceManualId, '', '', '', @CampusEntityTypeId, NEWID(), '' )
 
 			SELECT @MetricTotalId = SCOPE_IDENTITY()
 
