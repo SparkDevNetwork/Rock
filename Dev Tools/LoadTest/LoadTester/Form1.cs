@@ -41,12 +41,12 @@ namespace LoadTester
             int threadCount = 0;
             progressBar1.Maximum = clientCount * requestCountPerClient;
             var requestUrl = new Uri( url );
-            var baseUri = new Uri( requestUrl.Scheme + "://" + requestUrl.Host );
+            var baseUri = new Uri( requestUrl.Scheme + "://" + requestUrl.Host + ":" + requestUrl.Port.ToString() );
 
 
             Parallel.For( 1, clientCount, ( loopState ) =>
             {
-            //    Interlocked.Increment( ref threadCount );
+                Interlocked.Increment( ref threadCount );
                 try
                 {
                     int requestCounter = 0;
@@ -69,7 +69,7 @@ namespace LoadTester
                                     var responseHtml = reader.ReadToEnd();
                                     stopwatch.Stop();
 
-                                    if ( false )
+                                    if ( requestCounter == 1 )
                                     {
                                         var htmlDoc = new HtmlAgilityPack.HtmlDocument();
                                         htmlDoc.LoadHtml( responseHtml );
@@ -77,7 +77,7 @@ namespace LoadTester
                                             .Where( a => a.NodeType == HtmlAgilityPack.HtmlNodeType.Element )
                                             .Where( a => a.Attributes.Any( x => x.Name == "src" ) )
                                             .ToList();
-                                        foreach ( var srcNode in nodesWithSrc )
+                                        Parallel.ForEach( nodesWithSrc, ( srcNode ) =>
                                         {
                                             var srcRef = srcNode.Attributes["src"].Value;
                                             var srcUri = new Uri( baseUri, srcRef );
@@ -97,7 +97,7 @@ namespace LoadTester
                                             {
                                                 exceptions.Add( ex );
                                             }
-                                        }
+                                        } );
                                     }
 
                                     Interlocked.Increment( ref requestCount );
@@ -121,7 +121,7 @@ namespace LoadTester
                     exceptions.Add( ex );
                 }
 
-              //  Interlocked.Decrement( ref threadCount );
+                Interlocked.Decrement( ref threadCount );
             } );
 
             UpdateProgressBar( requestCount, threadCount );
