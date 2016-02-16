@@ -41,15 +41,18 @@ namespace com.centralaz.GeneralJobs.Jobs
     /// <summary>
     /// Connects to an Exchange mailbox, reads the emails, finds a matching person and updates the date on the configured date based attribute.
     /// </summary>
-    [IntegerField( "Organization ID", "Organization ID to process data for." )]
-    [IntegerField( "Attribute ID" )]
+    [IntegerField( "Attribute Id" )]
     [TextField( "AutoDiscoverUrl", "Hostname of the mail server." )]
     [TextField( "Mail Username", "Exchange account to login to." )]
+    [TextField( "Subject Contains", "A String filter that the subject must contain.", true, "Mandated Reporting Quiz Results" )]
     [TextField( "Mail Password", "Password of the account.", isPassword: true )]
     [IntegerField( "Message Batch Size", "Max number of e-mails to process with each running of the agent (recommended 30)." )]
+    [BooleanField( "Enable Logging", "Enable logging", false, "", 8 )]
     [DisallowConcurrentExecution]
     public class EmailToAttribute : IJob
     {
+        private bool _loggingActive = false;
+        private string _pathName;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EmailToAttribute"/> class.
@@ -64,119 +67,138 @@ namespace com.centralaz.GeneralJobs.Jobs
         /// <param name="context">The context.</param>
         public virtual void Execute( IJobExecutionContext context )
         {
+            String root = System.Web.Hosting.HostingEnvironment.MapPath( "~/App_Data/Logs/" );
+            String now = DateTime.Now.ToString( "yyyy-MM-dd-HH-mm-ss" );
+            _pathName = String.Format( "{0}{1}-EmailToAttribute.log", root, now );
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 
-            PropertySet propSet = new PropertySet( BasePropertySet.IdOnly, ItemSchema.Body, EmailMessageSchema.Body );
+            if ( dataMap.Get( "EnableLogging" ).ToString().AsBoolean() )
+            {
+                _loggingActive = true;
+            }
+            else
+            {
+                _loggingActive = false;
+            }
+
             try
             {
-                Regex reFirstName = new Regex( @"Custom variable 1: (\w+)" );
-                Regex reLastName = new Regex( @"Custom variable 2: ([a-zA-Z -]+)" );
-                Regex reBirthDay = new Regex( @"Custom variable 3: (\d+)" );
-                Regex reBirthMonth = new Regex( @"Custom variable 4: (\S+)" );
-                Regex reBirthYear = new Regex( @"Custom variable 5: (\d+)" );
-                Regex reEmailAddress = new Regex( @"Custom variable 7: (\S+)" );
-                Regex reDateCompleted = new Regex( @"Date completed: (\d+/\d+/\d+)" );
-
-                Match matchFirstName;
-                Match matchLastName;
-                Match matchBirthDay;
-                Match matchBirthMonth;
-                Match matchBirthYear;
-                Match matchEmail;
-                Match matchDateCompleted;
-
-                string firstName = string.Empty;
-                string lastName = string.Empty;
-                string birthDay = string.Empty;
-                string birthMonth = string.Empty;
-                string birthYear = string.Empty;
-                string email = string.Empty;
-                string dateCompleted = string.Empty;
-
-                ExchangeService service = new ExchangeService( ExchangeVersion.Exchange2010_SP2 );
-                service.Credentials = new WebCredentials( dataMap.Get( "MailUsername" ).ToString(), dataMap.Get( "MailPassword" ).ToString() );
-                service.AutodiscoverUrl( dataMap.Get( "AutoDiscoverUrl" ).ToString() );
-
-                Folder otherFolder = GetFolder( "Other", service );
-                Folder doneFolder = GetFolder( "Done", service );
-                Folder pendingFolder = GetFolder( "Pending", service );
-
-                int messageBatchSize = dataMap.Get( "MessageBatchSize" ).ToString().AsInteger();
-                ItemView view = new ItemView( messageBatchSize );
-                FindItemsResults<Item> findResults = service.FindItems( WellKnownFolderName.Inbox, new ItemView( messageBatchSize ) );
-
-                if ( findResults != null && findResults.Items != null && findResults.Items.Count > 0 )
+                PropertySet propSet = new PropertySet( BasePropertySet.IdOnly, ItemSchema.Body, EmailMessageSchema.Body );
+                try
                 {
-                    foreach ( Item item in findResults.Items )
+                    Regex reFirstName = new Regex( @"Custom variable 1: (\w+)" );
+                    Regex reLastName = new Regex( @"Custom variable 2: ([a-zA-Z -]+)" );
+                    Regex reBirthDay = new Regex( @"Custom variable 3: (\d+)" );
+                    Regex reBirthMonth = new Regex( @"Custom variable 4: (\S+)" );
+                    Regex reBirthYear = new Regex( @"Custom variable 5: (\d+)" );
+                    Regex reEmailAddress = new Regex( @"Custom variable 7: (\S+)" );
+                    Regex reDateCompleted = new Regex( @"Date completed: (\d+/\d+/\d+)" );
+
+                    Match matchFirstName;
+                    Match matchLastName;
+                    Match matchBirthDay;
+                    Match matchBirthMonth;
+                    Match matchBirthYear;
+                    Match matchEmail;
+                    Match matchDateCompleted;
+
+                    string firstName = string.Empty;
+                    string lastName = string.Empty;
+                    string birthDay = string.Empty;
+                    string birthMonth = string.Empty;
+                    string birthYear = string.Empty;
+                    string email = string.Empty;
+                    string dateCompleted = string.Empty;
+
+                    ExchangeService service = new ExchangeService( ExchangeVersion.Exchange2010_SP2 );
+                    service.Credentials = new WebCredentials( dataMap.Get( "MailUsername" ).ToString(), dataMap.Get( "MailPassword" ).ToString() );
+                    service.AutodiscoverUrl( dataMap.Get( "AutoDiscoverUrl" ).ToString() );
+
+                    Folder otherFolder = GetFolder( "Other", service );
+                    Folder doneFolder = GetFolder( "Done", service );
+                    Folder pendingFolder = GetFolder( "Pending", service );
+
+                    int messageBatchSize = dataMap.Get( "MessageBatchSize" ).ToString().AsInteger();
+                    ItemView view = new ItemView( messageBatchSize );
+                    FindItemsResults<Item> findResults = service.FindItems( WellKnownFolderName.Inbox, new ItemView( messageBatchSize ) );
+
+                    if ( findResults != null && findResults.Items != null && findResults.Items.Count > 0 )
                     {
-                        birthDay = string.Empty;
-                        birthMonth = string.Empty;
-                        birthYear = string.Empty;
-
-                        EmailMessage message = EmailMessage.Bind( service, item.Id, propSet );
-
-                        if ( item.Subject.Contains( "Mandated Reporting Quiz Results" ) )
+                        foreach ( Item item in findResults.Items )
                         {
-                            matchFirstName = reFirstName.Match( message.Body.Text );
-                            matchLastName = reLastName.Match( message.Body.Text );
-                            matchBirthDay = reBirthDay.Match( message.Body.Text );
-                            matchBirthMonth = reBirthMonth.Match( message.Body.Text );
-                            matchBirthYear = reBirthYear.Match( message.Body.Text );
-                            matchEmail = reEmailAddress.Match( message.Body.Text );
-                            matchDateCompleted = reDateCompleted.Match( message.Body.Text );
+                            birthDay = string.Empty;
+                            birthMonth = string.Empty;
+                            birthYear = string.Empty;
 
-                            // If we don't match these things, then it must be moved to the pending folder 
-                            if ( matchFirstName.Success && matchLastName.Success && matchEmail.Success &&
-                                matchDateCompleted.Success
-                                )
+                            EmailMessage message = EmailMessage.Bind( service, item.Id, propSet );
+
+                            if ( item.Subject.Contains( dataMap.Get( "SubjectContains" ).ToString() ) )
                             {
-                                firstName = matchFirstName.Groups[1].Value;
-                                lastName = matchLastName.Groups[1].Value;
-                                email = matchEmail.Groups[1].Value;
-                                dateCompleted = matchDateCompleted.Groups[1].Value;
+                                matchFirstName = reFirstName.Match( message.Body.Text );
+                                matchLastName = reLastName.Match( message.Body.Text );
+                                matchBirthDay = reBirthDay.Match( message.Body.Text );
+                                matchBirthMonth = reBirthMonth.Match( message.Body.Text );
+                                matchBirthYear = reBirthYear.Match( message.Body.Text );
+                                matchEmail = reEmailAddress.Match( message.Body.Text );
+                                matchDateCompleted = reDateCompleted.Match( message.Body.Text );
+
+                                // If we don't match these things, then it must be moved to the pending folder 
+                                if ( matchFirstName.Success && matchLastName.Success && matchEmail.Success &&
+                                    matchDateCompleted.Success
+                                    )
+                                {
+                                    firstName = matchFirstName.Groups[1].Value;
+                                    lastName = matchLastName.Groups[1].Value;
+                                    email = matchEmail.Groups[1].Value;
+                                    dateCompleted = matchDateCompleted.Groups[1].Value;
+                                }
+                                else
+                                {
+                                    MoveMessageToFolder( message, pendingFolder );
+                                    continue;
+                                }
+
+                                // now check these optional values -- we only need them in the case of
+                                // multiple matches of the same email, first and last name.
+                                if ( matchFirstName.Success && matchLastName.Success && matchEmail.Success &&
+                                    matchBirthDay.Success && matchBirthMonth.Success && matchBirthYear.Success &&
+                                    matchDateCompleted.Success
+                                    )
+                                {
+                                    birthDay = matchBirthDay.Groups[1].Value;
+                                    birthMonth = matchBirthMonth.Groups[1].Value;
+                                    birthYear = matchBirthYear.Groups[1].Value;
+                                }
+
+                                // find person records with this email address
+                                List<Person> people = new List<Person>();
+
+                                Person person = BestMatchingPerson( people, firstName, lastName, string.Format( "{0}, {1} {2}", birthMonth, birthDay, birthYear ) );
+                                if ( person != null )
+                                {
+                                    UpdateDateAttributeOnPersonRecord( person, dateCompleted, dataMap );
+                                    MoveMessageToFolder( message, doneFolder );
+                                }
+                                else
+                                {
+                                    MoveMessageToFolder( message, pendingFolder );
+                                }
                             }
                             else
                             {
-                                MoveMessageToFolder( message, pendingFolder );
-                                continue;
+                                MoveMessageToFolder( message, otherFolder );
                             }
-
-                            // now check these optional values -- we only need them in the case of
-                            // multiple matches of the same email, first and last name.
-                            if ( matchFirstName.Success && matchLastName.Success && matchEmail.Success &&
-                                matchBirthDay.Success && matchBirthMonth.Success && matchBirthYear.Success &&
-                                matchDateCompleted.Success
-                                )
-                            {
-                                birthDay = matchBirthDay.Groups[1].Value;
-                                birthMonth = matchBirthMonth.Groups[1].Value;
-                                birthYear = matchBirthYear.Groups[1].Value;
-                            }
-
-                            // find person records with this email address
-                            List<Person> people = new List<Person>();
-
-                            Person person = BestMatchingPerson( people, firstName, lastName, string.Format( "{0}, {1} {2}", birthMonth, birthDay, birthYear ) );
-                            if ( person != null )
-                            {
-                                UpdateDateAttributeOnPersonRecord( person, dateCompleted );
-                                MoveMessageToFolder( message, doneFolder );
-                            }
-                            else
-                            {
-                                MoveMessageToFolder( message, pendingFolder );
-                            }
-                        }
-                        else
-                        {
-                            MoveMessageToFolder( message, otherFolder );
                         }
                     }
                 }
+                catch ( Exception e )
+                {
+                    LogToFile( "Error while reading Inbox of the configured Exchange account." );
+                }
             }
-            catch ( Exception e )
+            catch ( Exception ex )
             {
-                LogError( e, "Error while reading Inbox of the configured Exchange account." );
+                LogToFile( "An error occured while processing the Inbox.\n\nMessage\n------------------------\n" + ex.Message + "\n\nStack Trace\n------------------------\n" + ex.StackTrace );
             }
         }
 
@@ -187,11 +209,18 @@ namespace com.centralaz.GeneralJobs.Jobs
         /// <param name="aDate"></param>
         /// <exception cref="System.ArgumentNullException">If the given date can't be parsed.</exception>
         /// <exception cref="System.FormatException">If the given date can't be parsed.</exception>
-        private void UpdateDateAttributeOnPersonRecord( Person person, string aDate )
+        private void UpdateDateAttributeOnPersonRecord( Person person, string aDate, JobDataMap dataMap )
         {
-            PersonAttribute pa = new PersonAttribute( person.PersonID, AttributeID );
-            pa.DateValue = DateTime.Parse( aDate );
-            pa.Save( OrganizationID, AGENT_NAME );
+            var rockContext = new RockContext();
+            int attributeId = dataMap.Get( "AttributeId" ).ToString().AsInteger();
+            AttributeValue av = new AttributeValueService( rockContext ).GetByAttributeIdAndEntityId( attributeId, person.Id );
+            if ( av == null )
+            {
+                av = new AttributeValue { AttributeId = attributeId, EntityId = person.Id };
+            }
+            av.Value = aDate;
+            rockContext.AttributeValues.Add( av );
+            rockContext.SaveChanges();
         }
 
         /// <summary>
@@ -207,16 +236,16 @@ namespace com.centralaz.GeneralJobs.Jobs
             lastName = lastName.ToLower();
             DateTime birthDate;
 
+            Guid recordStatusActive = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid();
             // If there's only one person that matches the first and last name, return it; it's the match
-            var peopleQuery = from Person p in people
-                              where ( p.FirstName.ToLower() == firstName || p.NickName.ToLower() == firstName )
+            var peopleQuery = new PersonService( new RockContext() ).Queryable().Where( p =>
+                                  ( p.FirstName.ToLower() == firstName || p.NickName.ToLower() == firstName )
                                    && p.LastName.ToLower() == lastName
-                                   && p.RecordStatus == Arena.Enums.RecordStatus.Active
-                              select p;
+                                   && p.RecordStatusValue.Guid == recordStatusActive );
 
             if ( peopleQuery.Count() == 1 )
             {
-                return peopleQuery.SingleOrDefault();
+                return peopleQuery.FirstOrDefault();
             }
             else
             {
@@ -227,7 +256,7 @@ namespace com.centralaz.GeneralJobs.Jobs
 
                     if ( peopleQuery.Count() == 1 )
                     {
-                        return peopleQuery.SingleOrDefault();
+                        return peopleQuery.FirstOrDefault();
                     }
                 }
             }
@@ -280,6 +309,24 @@ namespace com.centralaz.GeneralJobs.Jobs
         {
             // Move the specified mail to the JunkEmail folder and store the returned item.
             Item item = message.Move( otherFolder.Id );
+        }
+
+        /// <summary>
+        /// Logs to file.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="pathName">Name of the path.</param>
+        protected void LogToFile( String message )
+        {
+            if ( _loggingActive )
+            {
+                using ( var str = new StreamWriter( _pathName, true ) )
+                {
+                    str.WriteLine( message );
+                    str.Flush();
+                }
+            }
+
         }
     }
 }
