@@ -111,6 +111,10 @@
     <Compile Include="Migrations\201602042011520_DashboardWorkflowPages.Designer.cs">
       <DependentUpon>201602042011520_DashboardWorkflowPages.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201602161036322_AttendanceAnalyticsQuery.cs" />
+    <Compile Include="Migrations\201602161036322_AttendanceAnalyticsQuery.Designer.cs">
+      <DependentUpon>201602161036322_AttendanceAnalyticsQuery.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.cs" />
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.Designer.cs">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
@@ -2038,6 +2042,9 @@
     <EmbeddedResource Include="Migrations\201602042011520_DashboardWorkflowPages.resx">
       <DependentUpon>201602042011520_DashboardWorkflowPages.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201602161036322_AttendanceAnalyticsQuery.resx">
+      <DependentUpon>201602161036322_AttendanceAnalyticsQuery.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.resx">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
     </EmbeddedResource>
@@ -3442,6 +3449,13 @@
     <None Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase_PopulateData.sql" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Migrations\201602161036322_AttendanceAnalyticsQuery_AttendeeFirstDates.sql" />
+    <Content Include="Migrations\201602161036322_AttendanceAnalyticsQuery_AttendeeLastAttendance.sql" />
+    <Content Include="Migrations\201602161036322_AttendanceAnalyticsQuery_Attendees.sql" />
+    <Content Include="Migrations\201602161036322_AttendanceAnalyticsQuery_GroupTypeAttendance.sql" />
+    <Content Include="Migrations\201602161036322_AttendanceAnalyticsQuery_Indexes.sql" />
+    <Content Include="Migrations\201602161036322_AttendanceAnalyticsQuery_NonAttendees.sql" />
+    <Content Include="Migrations\201602161036322_AttendanceAnalyticsQuery_AttendeeDates.sql" />
     <Content Include="Migrations\201602041745307_TuneDuplicateFinder.sql" />
     <Content Include="Migrations\Version 4.0\Version 1.4.0\201506051749054_AddSampleMergeDocs.sql" />
     <Content Include="Migrations\Version 4.0\Version 1.4.0\201506112030400_PersonDaysUntilBirthday.sql" />
