@@ -65,12 +65,12 @@ namespace Rock.Jobs
                 try
                 {
                     var currentDateTime = RockDateTime.Now;
-                    var expireDaysCount = groupRequirement.GroupRequirementType.ExpireInDays.Value;
                     var qryGroupMemberRequirementsAlreadyOK = groupMemberRequirementService.Queryable().Where( a => a.GroupRequirementId == groupRequirement.Id );
 
                     if ( groupRequirement.GroupRequirementType.CanExpire && groupRequirement.GroupRequirementType.ExpireInDays.HasValue )
                     {
                         // Expirable: don't recalculate members that already met the requirement within the expiredays (unless they are flagged with a warning)
+                        var expireDaysCount = groupRequirement.GroupRequirementType.ExpireInDays.Value;
                         qryGroupMemberRequirementsAlreadyOK = qryGroupMemberRequirementsAlreadyOK.Where( a => !a.RequirementWarningDateTime.HasValue && a.RequirementMetDateTime.HasValue && SqlFunctions.DateDiff( "day", a.RequirementMetDateTime, currentDateTime ) < expireDaysCount );
                     }
                     else
