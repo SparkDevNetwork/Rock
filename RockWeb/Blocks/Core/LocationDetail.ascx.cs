@@ -386,6 +386,7 @@ namespace RockWeb.Blocks.Core
             }
             location.LocationTypeValueId = ddlLocationType.SelectedValueAsId();
 
+            phAttributeEdits.Controls.Clear();
             location.LoadAttributes();
             BuildAttributeEdits( location, true );
         }
@@ -669,6 +670,7 @@ namespace RockWeb.Blocks.Core
                 CampusCache.Flush( campus.Id );
             }
         }
-            #endregion
-        }
+            
+        #endregion
+    }
 }

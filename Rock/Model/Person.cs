@@ -1035,6 +1035,11 @@ namespace Rock.Model
 
                 return null;
             }
+            private set
+            {
+                // intentionally blank
+            }
+
         }
 
         /// <summary>
@@ -1148,6 +1153,11 @@ namespace Rock.Model
 
                 return null;
             }
+            private set
+            {
+                // intentionally blank
+            }
+
         }
 
         /// <summary>
@@ -1214,6 +1224,12 @@ namespace Rock.Model
 
                 return null;
             }
+
+            private set
+            {
+                // intentionally blank
+            }
+
         }
 
         /// <summary>
