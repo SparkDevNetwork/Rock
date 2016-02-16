@@ -217,12 +217,15 @@
                                 <Rock:Grid ID="gAttendeesAttendance" runat="server" AllowSorting="true" RowItemText="Attendee" OnRowDataBound="gAttendeesAttendance_RowDataBound" ExportSource="ColumnOutput" ExportFilename="AttendanceAnalytics">
                                     <Columns>
                                         <Rock:SelectField />
-                                        <Rock:PersonField DataField="Parent" HeaderText="Parent" SortExpression="Parent.LastName, Parent.NickName"/>
+                                        <asp:HyperLinkField DataNavigateUrlFields="ParentId" DataTextField="Parent" HeaderText="Parent" SortExpression="Parent.LastName, Parent.NickName"/>
+                                        <Rock:RockBoundField DataField="Parent" HeaderText="Parent" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockBoundField DataField="Parent.Email" HeaderText="Parent Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
-                                        <Rock:PersonField DataField="Child" HeaderText="Child" SortExpression="Child.LastName, Child.NickName"/>
+                                        <asp:HyperLinkField DataNavigateUrlFields="ChildId" DataTextField="Child" HeaderText="Child" SortExpression="Child.LastName, Child.NickName"/>
+                                        <Rock:RockBoundField DataField="Child" HeaderText="Child" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockBoundField DataField="Child.Email" HeaderText="Child Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockBoundField DataField="Child.Age" HeaderText="Child Age" Visible="false" ExcelExportBehavior="AlwaysInclude" />
-                                        <Rock:PersonField DataField="Person" HeaderText="Name" SortExpression="Person.LastName, Person.NickName" />
+                                        <asp:HyperLinkField DataNavigateUrlFields="PersonId" DataTextField="Person" HeaderText="Name" SortExpression="Person.LastName, Person.NickName"/>
+                                        <Rock:RockBoundField DataField="Person" HeaderText="Person" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockBoundField DataField="Person.Email" HeaderText="Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockBoundField DataField="Person.Age" HeaderText="Age" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockLiteralField HeaderText="First Visit" ID="lFirstVisitDate" SortExpression="FirstVisit.StartDateTime"/>
@@ -233,9 +236,9 @@
                                         <Rock:RockBoundField DataField="LastVisit.GroupName" HeaderText="Check-in Area" SortExpression="LastVisit.GroupName" />
                                         <Rock:RockBoundField DataField="LastVisit.LocationName" HeaderText="Location" SortExpression="LastVisit.LocationName" />
                                         <Rock:RockBoundField DataField="LastVisit.InGroup" HeaderText="In Group" Visible="false" ExcelExportBehavior="AlwaysInclude" />
-                                        <Rock:RockLiteralField HeaderText="Group Role" ID="lGroupRoles" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                        <Rock:RockBoundField DataField="LastVisit.RoleName" HeaderText="Group Role" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockLiteralField HeaderText="Home Address" ID="lHomeAddress" ItemStyle-Wrap="false" />
-                                        <Rock:PhoneNumbersField HeaderText="Phone Numbers" DataField="PhoneNumbers" ItemStyle-Wrap="false" DisplayCountryCode="false" />
+                                        <Rock:RockLiteralField HeaderText="Phone Numbers" ID="lPhoneNumbers"  ItemStyle-Wrap="false" />
                                         <Rock:RockLiteralField HeaderText="Count" ID="lAttendanceCount" SortExpression="AttendanceSummary.Count" />
                                         <Rock:RockLiteralField HeaderText="Attendance %" ID="lAttendancePercent" SortExpression="AttendanceSummary.Count" />
                                     </Columns>

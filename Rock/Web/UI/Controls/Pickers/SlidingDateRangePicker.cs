@@ -873,6 +873,13 @@ namespace Rock.Web.UI.Controls
                         result.End = null;
                     }
                 }
+
+                // If time unit is days, weeks, months or years subtract a second from time so that end time is with same period
+                if ( result.End.HasValue && timeUnit != TimeUnitType.Hour )
+                {
+                    result.End = result.End.Value.AddSeconds( -1 );
+                }
+
             }
 
             return result;
