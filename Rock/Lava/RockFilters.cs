@@ -590,7 +590,7 @@ namespace Rock.Lava
         /// Dateses from i cal.
         /// </summary>
         /// <param name="input">The input.</param>
-        /// <param name="returnCount">The return count.</param>
+        /// <param name="option">The option.</param>
         /// <returns></returns>
         public static List<DateTime> DatesFromICal( object input, object option = null )
         {
