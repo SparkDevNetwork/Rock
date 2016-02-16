@@ -129,9 +129,12 @@ namespace Rock
             dateTimeFormat = dateTimeFormat ?? "g";
             string autoFormat;
             DateTime? humanReadableEnd = End;
-            if ( ( Start.HasValue && Start.Value != Start.Value.Date ) || ( humanReadableEnd.HasValue && humanReadableEnd.Value != humanReadableEnd.Value.Date ) )
+            if ( ( Start.HasValue && Start.Value != Start.Value.Date ) || (
+                humanReadableEnd.HasValue &&
+                humanReadableEnd.Value != humanReadableEnd.Value.Date &&
+                humanReadableEnd.Value.AddSeconds( 1 ).AddDays( -1 ) != humanReadableEnd.Value.Date ) )
             {
-                // one of the dates is not midnight, so show as a date time
+                // one of the dates is not midnight (or the second before midnight), so show as a date time
                 autoFormat = dateTimeFormat;
             }
             else
@@ -141,7 +144,14 @@ namespace Rock
                 if ( humanReadableEnd.HasValue )
                 {
                     // when showing just the Date, the human readable end date is the Last Full Day, not the exact Point-In-Time of Midnite that us computers think of
-                    humanReadableEnd = humanReadableEnd.Value.AddDays( -1 );
+                    if ( humanReadableEnd.Value == humanReadableEnd.Value.Date )
+                    {
+                        humanReadableEnd = humanReadableEnd.Value.AddDays( -1 );
+                    }
+                    else
+                    {
+                        humanReadableEnd = humanReadableEnd.Value.Date;
+                    }
                 }
             }
 

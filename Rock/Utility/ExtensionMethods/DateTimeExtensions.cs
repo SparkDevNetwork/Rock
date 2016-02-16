@@ -337,10 +337,11 @@ namespace Rock
         /// <returns></returns>
         public static DateTime SundayDate( this DateTime dt, DayOfWeek startOfWeek = DayOfWeek.Monday )
         {
-            if (dt.DayOfWeek == DayOfWeek.Sunday )
+            if ( dt.DayOfWeek == DayOfWeek.Sunday )
             {
                 return dt.Date;
-            } else
+            }
+            else
             {
                 int intDayofWeek = (int)dt.DayOfWeek;
                 int diff = 7 - (int)dt.DayOfWeek;

@@ -71,12 +71,16 @@ namespace Rock.Web.UI.Controls
                     this.CreatedByName = value.CreatedByPersonAlias.Person.FullName;
                     this.CreatedByPhotoId = value.CreatedByPersonAlias.Person.PhotoId;
                     this.CreatedByGender = value.CreatedByPersonAlias.Person.Gender;
+                    this.CreatedByPersonId = value.CreatedByPersonAlias.Person.Id;
+                    this.CreatedByAge = value.CreatedByPersonAlias.Person.Age;
                 }
                 else
                 {
                     this.CreatedByName = string.Empty;
                     this.CreatedByPhotoId = null;
                     this.CreatedByGender = Gender.Male;
+                    this.CreatedByPersonId = null;
+                    this.CreatedByAge = null;
                 }
 
                 this.CreatedDateTime = value.CreatedDateTime;
@@ -226,6 +230,30 @@ namespace Rock.Web.UI.Controls
         {
             get { return ViewState["CreatedByPhotoId"] as int?; }
             set { ViewState["CreatedByPhotoId"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the created by person identifier.
+        /// </summary>
+        /// <value>
+        /// The created by person identifier.
+        /// </value>
+        public int? CreatedByPersonId
+        {
+            get { return ViewState["CreatedByPersonId"] as int?; }
+            set { ViewState["CreatedByPersonId"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the created by age.
+        /// </summary>
+        /// <value>
+        /// The created by age.
+        /// </value>
+        public int? CreatedByAge
+        {
+            get { return ViewState["CreatedByAge"] as int?; }
+            set { ViewState["CreatedByAge"] = value; }
         }
 
         /// <summary>
@@ -616,7 +644,7 @@ namespace Rock.Web.UI.Controls
 
             if ( DisplayType == NoteDisplayType.Full && UsePersonIcon )
             {
-                writer.Write( Person.GetPhotoImageTag( CreatedByPhotoId, CreatedByGender, 50, 50 ) );
+                writer.Write( Person.GetPersonPhotoImageTag( CreatedByPersonId, CreatedByPhotoId, null, CreatedByGender, null, 50, 50) );
             }
 
             writer.AddAttribute(HtmlTextWriterAttribute.Class, "noteentry-control");
@@ -695,7 +723,7 @@ namespace Rock.Web.UI.Controls
                 {
                     if ( UsePersonIcon )
                     {
-                        writer.Write( Person.GetPhotoImageTag( CreatedByPhotoId, CreatedByGender, 50, 50 ) );
+                        writer.Write( Person.GetPersonPhotoImageTag( CreatedByPersonId, CreatedByPhotoId, CreatedByAge, CreatedByGender, null, 50, 50) );
                     }
                     else
                     {
