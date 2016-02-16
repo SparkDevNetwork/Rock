@@ -83,7 +83,7 @@ namespace Rock
         {
             // Add protection for stack-overflow if property attributes are not set correctly resulting in child/parent objects being evaluated in loop
             levelsDeep++;
-            if ( levelsDeep > 10 )
+            if ( levelsDeep > 6)
             {
                 return string.Empty;
             }
