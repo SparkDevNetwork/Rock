@@ -1,9 +1,10 @@
-*.csproj.user
-/obj
-/bin/Release/*/
-/bin/Release/*.*
-/bin/Debug/*/
-/bin/Debug/*.*
-!RestSharp.dll
-!System.Net.Http.Extensions.dll
-!System.Net.Http.Primitives.dll
+#file types
+*.user
+
+#specific files
+StyleCop.Cache
+
+#specific folders
+[Oo]bj/
+[Dd]ebug*/
+[Rr]elease*/
