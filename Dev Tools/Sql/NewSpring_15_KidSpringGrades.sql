@@ -1,20 +1,39 @@
 /* ====================================================== */
 -- Calculate Grades for KidSpring Elementary Attendees
 
--- Assumes move up Sunday occurs after August. If today is after august, grad year is next
--- year since school years are split (start senior year 2015, graduate 2016). So if today is
--- December 2015, a fourth grader will graduate 2024. If today is January 2016, a fourth grader 
--- will still graduate 2024.  This is why we add 1 to currentGradYear when month is after
--- August. Fourth grade defined value is 8. 2016 + 8 = 2024.
+-- Assumes grade transition date has been set in the global attributes.  If today is after 
+-- grade transition date, grad year is next year since school years are split (start senior 
+-- year 2015, graduate 2016). So if today is December 2015, a fourth grader will graduate 
+-- 2024. If today is January 2016, a fourth grader will still graduate 2024.  This is why 
+-- we add 1 to currentGradYear when month is after the grade transition date. Fourth grade
+-- defined value is 8. 2016 + 8 = 2024.
 
 /* ====================================================== */
 
-DECLARE @august AS INT = 8;
-DECLARE @minAttendanceDate AS DATE = '2015-09-01';
+-- Should be obvious
+DECLARE @today AS DATE = GETDATE();
+DECLARE @currentYear AS INT = YEAR(@today);
 DECLARE @elementaryGroupId AS INT = (SELECT Id FROM [Group] WHERE Name = 'Elementary Attendee');
 DECLARE @groupEntityTypeId AS INT = (SELECT Id FROM EntityType WHERE Name = 'Rock.Model.Group');
 DECLARE @gradeRangeAttributeId AS INT = (SELECT Id FROM Attribute WHERE Name = 'Grade Range' AND EntityTypeId = @groupEntityTypeId);
-DECLARE @currentGradYear AS INT = YEAR(GETDATE()) + CASE WHEN MONTH(GETDATE()) > @august THEN 1 ELSE 0 END;
+
+-- Returns something like `09-01`
+DECLARE @gradeTransition AS NVARCHAR(10) = (SELECT Value FROM Attribute a LEFT JOIN AttributeValue av ON av.AttributeId = a.Id WHERE a.EntityTypeId IS NULL AND a.[Key] = 'GradeTransitionDate');
+
+-- Returns 9
+DECLARE @gtMonth AS INT = SUBSTRING(@gradeTransition, 0, PATINDEX('%-%', @gradeTransition));
+
+-- Returns 1
+DECLARE @gtDay AS INT = SUBSTRING(@gradeTransition, PATINDEX('%-%', @gradeTransition) + 1, LEN(@gradeTransition));
+
+-- Returns date of 2016-09-01
+DECLARE @gradeTransitionDate AS DATE = CONCAT(@currentYear, '-', @gtMonth, '-', @gtDay);
+
+-- If today is after transition (fall semester), graduation (after spring semester) is next year
+DECLARE @currentGradYear AS INT = @currentYear + CASE WHEN @today > @gradeTransitionDate THEN 1 ELSE 0 END;
+
+-- If today is before grade transition date, then the most recent transition date was last year (2015-09-01)
+SELECT @gradeTransitionDate = CASE WHEN @today < @gradeTransitionDate THEN CONCAT(@currentYear - 1, '-', @gtMonth, '-', @gtDay) ELSE @gradeTransitionDate END;
 
 WITH LastCheckin AS (
 	SELECT
@@ -23,7 +42,7 @@ WITH LastCheckin AS (
 		Attendance a
 		JOIN [Group] g ON a.GroupId = g.Id
 	WHERE
-		a.StartDateTime > @minAttendanceDate
+		a.StartDateTime > @gradeTransitionDate
 		AND g.ParentGroupId = @elementaryGroupId
 	GROUP BY
 		a.PersonAliasId
