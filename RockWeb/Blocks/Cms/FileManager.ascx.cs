@@ -77,7 +77,7 @@ namespace RockWeb.Blocks.Cms
             }
 
             iframeUrl += "?rootFolder=" + HttpUtility.UrlEncode( Encryption.EncryptString( rootFolder ) );
-            iframeUrl += "&browserMode=" + browseMode;
+            iframeUrl += "&browseMode=" + browseMode;
             iframeUrl += "&fileTypeBlackList=" + HttpUtility.UrlEncode( fileTypeBlackList );
             iframeUrl += "&imageFileTypeWhiteList=" + HttpUtility.UrlEncode( imageFileTypeWhiteList );
             iframeUrl += "&theme=" + this.RockPage.Site.Theme;

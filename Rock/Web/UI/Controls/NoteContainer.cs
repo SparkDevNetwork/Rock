@@ -694,12 +694,16 @@ namespace Rock.Web.UI.Controls
                 _noteNew.CreatedByPhotoId = currentPerson.PhotoId;
                 _noteNew.CreatedByGender = currentPerson.Gender;
                 _noteNew.CreatedByName = currentPerson.FullName;
+                _noteNew.CreatedByPersonId = currentPerson.Id;
+                _noteNew.CreatedByAge = currentPerson.Age;
             }
             else
             {
                 _noteNew.CreatedByPhotoId = null;
                 _noteNew.CreatedByGender = Gender.Male;
                 _noteNew.CreatedByName = string.Empty;
+                _noteNew.CreatedByPersonId = null;
+                _noteNew.CreatedByAge = null;
             }
 
             _noteNew.EntityId = EntityId;

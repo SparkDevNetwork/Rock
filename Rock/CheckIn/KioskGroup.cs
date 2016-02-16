@@ -14,7 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Model;
@@ -45,6 +47,34 @@ namespace Rock.CheckIn
         /// </value>
         [DataMember]
         public List<KioskLocation> KioskLocations { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether check in is active
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsCheckInActive
+        {
+            get
+            {
+                return KioskLocations != null && KioskLocations.Any( s => s.IsCheckInActive );
+            }
+        }
+
+        /// <summary>
+        /// Gets the next active date time.
+        /// </summary>
+        /// <value>
+        /// The next active date time.
+        /// </value>
+        public DateTime? NextActiveDateTime
+        {
+            get
+            {
+                return KioskLocations.Min( s => (DateTime?)s.NextActiveDateTime );
+            }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KioskGroup" /> class.

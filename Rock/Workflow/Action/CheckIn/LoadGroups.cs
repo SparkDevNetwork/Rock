@@ -59,10 +59,10 @@ namespace Rock.Workflow.Action.CheckIn
                     {
                         foreach ( var groupType in person.GroupTypes.Where( g => g.Selected || loadAll ).ToList() )
                         {
-                            var kioskGroupType = checkInState.Kiosk.FilteredGroupTypes( checkInState.ConfiguredGroupTypes ).Where( g => g.GroupType.Id == groupType.GroupType.Id ).FirstOrDefault();
+                            var kioskGroupType = checkInState.Kiosk.ActiveGroupTypes( checkInState.ConfiguredGroupTypes ).Where( g => g.GroupType.Id == groupType.GroupType.Id ).FirstOrDefault();
                             if ( kioskGroupType != null )
                             {
-                                foreach ( var kioskGroup in kioskGroupType.KioskGroups )
+                                foreach ( var kioskGroup in kioskGroupType.KioskGroups.Where( g => g.IsCheckInActive ) )
                                 {
                                     bool validGroup = true;
                                     if ( groupType.GroupType.AttendanceRule == AttendanceRule.AlreadyBelongs )
