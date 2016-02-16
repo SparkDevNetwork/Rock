@@ -119,7 +119,10 @@ namespace RockWeb.Blocks.Core
                             gReport.Columns.Add( deleteField );
                             deleteField.Click += gReport_Delete;
 
-                            BindGrid();
+                            if ( !Page.IsPostBack )
+                            {
+                                BindGrid();
+                            }
                         }
                     }
                 }
