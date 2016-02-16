@@ -77,6 +77,8 @@ namespace Rock.Web.UI.Controls
         /// Gets the row value.
         /// </summary>
         /// <param name="row">The row.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <param name="formatAsHtml">if set to <c>true</c> [format as HTML].</param>
         /// <returns></returns>
         private object GetRowValue( GridViewRow row, bool condensed, bool formatAsHtml )
         {
