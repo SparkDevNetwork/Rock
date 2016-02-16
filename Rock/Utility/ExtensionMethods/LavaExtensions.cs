@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 using DotLiquid;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock
 {
@@ -78,7 +79,7 @@ namespace Rock
         /// <param name="rockContext">The rock context.</param>
         /// <param name="parentElement">The parent element.</param>
         /// <returns></returns>
-        private static object LiquidizeChildren( this object myObject, int levelsDeep = 0, RockContext rockContext = null, string parentElement = "" )
+        private static object LiquidizeChildren( this object myObject, int levelsDeep = 0, RockContext rockContext = null, Dictionary<int, List<int>> entityHistory = null, string parentElement = "" )
         {
             // Add protection for stack-overflow if property attributes are not set correctly resulting in child/parent objects being evaluated in loop
             levelsDeep++;
@@ -118,6 +119,29 @@ namespace Rock
                 entityType = entityType.BaseType;
             }
 
+            // If this is an IEntity, check to see if it's already been liquidized in prev heirarchy. If so, just return string indicating "--See Previous Entry--"
+            if ( myObject is IEntity )
+            {
+                var entity = myObject as IEntity;
+                var entityTypeCache = EntityTypeCache.Read( entityType, false, rockContext );
+                if ( entity != null && entityTypeCache != null )
+                {
+                    if ( entityHistory == null )
+                    {
+                        entityHistory = new Dictionary<int, List<int>>();
+                    }
+                    entityHistory.AddOrIgnore( entityTypeCache.Id, new List<int>() );
+                    if ( entityHistory[entityTypeCache.Id].Contains( entity.Id ) )
+                    {
+                        return "--See Previous Entry--";
+                    }
+                    else
+                    {
+                        entityHistory[entityTypeCache.Id].Add( entity.Id );
+                    }
+                }
+            }
+
             // If the object is a Liquid Drop object, return a list of all of the object's properties
             if ( myObject is Drop )
             {
@@ -132,7 +156,7 @@ namespace Rock
                     {
                         try
                         {
-                            result.Add( propInfo.Name, propInfo.GetValue( myObject, null ).LiquidizeChildren( levelsDeep, rockContext ) );
+                            result.Add( propInfo.Name, propInfo.GetValue( myObject, null ).LiquidizeChildren( levelsDeep, rockContext, entityHistory ) );
                         }
                         catch ( Exception ex )
                         {
@@ -158,7 +182,7 @@ namespace Rock
                         {
                             try
                             {
-                                result.Add( propInfo.Name, propInfo.GetValue( myObject, null ).LiquidizeChildren( levelsDeep, rockContext, parentElement + "." + propName ) );
+                                result.Add( propInfo.Name, propInfo.GetValue( myObject, null ).LiquidizeChildren( levelsDeep, rockContext, entityHistory, parentElement + "." + propName ) );
                             }
                             catch ( Exception ex )
                             {
@@ -192,7 +216,7 @@ namespace Rock
                             object propValue = liquidObject[key];
                             if ( propValue != null )
                             {
-                                result.Add( key, propValue.LiquidizeChildren( levelsDeep, rockContext, parentElement + "." + key ) );
+                                result.Add( key, propValue.LiquidizeChildren( levelsDeep, rockContext, entityHistory, parentElement + "." + key ) );
                             }
                             else
                             {
@@ -241,7 +265,7 @@ namespace Rock
                 {
                     try
                     {
-                        result.Add( keyValue.Key, keyValue.Value.LiquidizeChildren( levelsDeep, rockContext, keyValue.Key ) );
+                        result.Add( keyValue.Key, keyValue.Value.LiquidizeChildren( levelsDeep, rockContext, entityHistory, keyValue.Key ) );
                     }
                     catch ( Exception ex )
                     {
@@ -261,7 +285,7 @@ namespace Rock
                 {
                     try
                     {
-                        result.Add( keyValue.Key, keyValue.Value.LiquidizeChildren( levelsDeep, rockContext, keyValue.Key ) );
+                        result.Add( keyValue.Key, keyValue.Value.LiquidizeChildren( levelsDeep, rockContext, entityHistory, keyValue.Key ) );
                     }
                     catch ( Exception ex )
                     {
@@ -289,13 +313,22 @@ namespace Rock
             {
                 var result = new List<object>();
 
+                // Only show first two items in an enumerable list
+                int iEnumCount = 1;
                 foreach ( var value in ( (IEnumerable)myObject ) )
                 {
+                    if ( iEnumCount > 2 )
+                    {
+                        result.Add( "..." );
+                        break;
+                    }
+                    iEnumCount++;
                     try
                     {
-                        result.Add( value.LiquidizeChildren( levelsDeep, rockContext, parentElement ) );
+                        result.Add( value.LiquidizeChildren( levelsDeep, rockContext, entityHistory, parentElement ) );
                     }
                     catch { }
+
                 }
 
                 return result;
