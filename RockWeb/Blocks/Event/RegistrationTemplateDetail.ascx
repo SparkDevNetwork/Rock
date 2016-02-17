@@ -187,6 +187,30 @@
                         </div>
                     </Rock:PanelWidget>
 
+                    <Rock:PanelWidget ID="wpPaymentReminder" runat="server" Title="Payment Reminder Email">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockTextBox ID="tbPaymentReminderFromName" runat="server" Label="From Name" />
+                                <Rock:RockTextBox ID="tbPaymentReminderFromEmail" runat="server" Label="From Email" />
+                            </div>
+                            <div class="col-md-6">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:RockTextBox ID="tbPaymentReminderSubject" runat="server" Label="Subject" />
+                                <Rock:CodeEditor ID="cePaymentReminderEmailTemplate" runat="server" Label="Confirmation Email Template" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:NumberBox ID="nbPaymentReminderTimeSpan" runat="server" Help="The number of days in between automatic payment reminders." CssClass="input-width-xs" Label="Payment Reminder Time Span" />
+                            </div>
+                            <div class="col-md-6">
+                            </div>
+                        </div>
+                    </Rock:PanelWidget>
+
                     <Rock:PanelWidget ID="wpTerms" runat="server" Title="Terms/Text">
                         <div class="row">
                             <div class="col-md-6">
