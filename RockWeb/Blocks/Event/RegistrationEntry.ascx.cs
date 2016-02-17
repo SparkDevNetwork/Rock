@@ -490,7 +490,7 @@ namespace RockWeb.Blocks.Event
         {
             var state = e.State["event"];
 
-            if ( state != null )
+            if ( CurrentPanel > 0 && state != null )
             {
                 string[] commands = state.Split( ',' );
 
@@ -1136,17 +1136,11 @@ namespace RockWeb.Blocks.Event
         {
             if ( RegistrationState != null )
             {
-                decimal cost = RegistrationTemplate.Cost;
-                if ( ( RegistrationTemplate.SetCostOnInstance ?? false ) && RegistrationInstanceState != null )
-                {
-                    cost = RegistrationInstanceState.Cost ?? 0.0m;
-                }
-
                 // If this is the first registrant being added, default it to the current person
                 if ( RegistrationState.RegistrantCount == 0 && registrantCount == 1 && CurrentPerson != null )
                 {
                     var registrant = new RegistrantInfo( RegistrationInstanceState, CurrentPerson );
-                    registrant.Cost = cost;
+                    registrant.Cost = RegistrationTemplate.Cost;
                     registrant.FamilyGuid = RegistrationState.FamilyGuid;
                     RegistrationState.Registrants.Add( registrant );
                 }
@@ -1154,7 +1148,7 @@ namespace RockWeb.Blocks.Event
                 // While the number of registrants belonging to registration is less than the selected count, addd another registrant
                 while ( RegistrationState.RegistrantCount < registrantCount )
                 {
-                    var registrant = new RegistrantInfo { Cost = cost };
+                    var registrant = new RegistrantInfo { Cost = RegistrationTemplate.Cost };
                     if ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.No )
                     {
                         registrant.FamilyGuid = Guid.NewGuid();
@@ -1475,11 +1469,6 @@ namespace RockWeb.Blocks.Event
 
             if ( newRegistrar )
             {
-                if( CurrentPerson != null && CurrentPerson.NickName == null )
-                {
-                    CurrentPerson.NickName = CurrentPerson.FirstName;
-                }
-
                 // If the 'your name' value equals the currently logged in person, use their person alias id
                 if ( CurrentPerson != null &&
                 ( CurrentPerson.NickName.Trim().Equals( registration.FirstName.Trim(), StringComparison.OrdinalIgnoreCase ) ||
@@ -2065,7 +2054,7 @@ namespace RockWeb.Blocks.Event
                     var familyGroup = new GroupService( rockContext ).Get( familyId.Value );
                     if ( familyGroup != null )
                     {
-                        GroupService.AddNewGroupAddress(
+                        GroupService.AddNewFamilyAddress(
                             rockContext,
                             familyGroup,
                             Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
@@ -2602,6 +2591,7 @@ namespace RockWeb.Blocks.Event
         private void ShowSummary()
         {
             lRegistrationTerm.Text = RegistrationTemplate.RegistrationTerm;
+            lRegistrationTerm2.Text = RegistrationTemplate.RegistrationTerm;
             
             SetPanel( 2 );
         }
@@ -3636,7 +3626,30 @@ namespace RockWeb.Blocks.Event
         {
             lDiscountCodeLabel.Text = DiscountCodeTerm;
 
-            if ( setValues && RegistrationState != null && RegistrationInstanceState != null )
+            if ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask )
+            {
+                var familyOptions = RegistrationState.GetFamilyOptions( RegistrationTemplate, RegistrationState.RegistrantCount );
+                if ( familyOptions.Any() )
+                {
+                    familyOptions.Add( familyOptions.ContainsKey( RegistrationState.FamilyGuid ) ?
+                        Guid.NewGuid() :
+                        RegistrationState.FamilyGuid.Equals( Guid.Empty ) ? Guid.NewGuid() : RegistrationState.FamilyGuid,
+                        "None" );
+                    rblRegistrarFamilyOptions.DataSource = familyOptions;
+                    rblRegistrarFamilyOptions.DataBind();
+                    pnlRegistrarFamilyOptions.Visible = true;
+                }
+                else
+                {
+                    pnlRegistrarFamilyOptions.Visible = false;
+                }
+            }
+            else
+            {
+                pnlRegistrarFamilyOptions.Visible = false;
+            }
+
+            if ( setValues && RegistrationState != null )
             {
                 // Check to see if this is an existing registration or information has already been entered
                 if ( RegistrationState.RegistrationId.HasValue ||
@@ -3651,13 +3664,11 @@ namespace RockWeb.Blocks.Event
                 }
                 else
                 {
-                    // If not, find the field information from first registrant
-                    if ( RegistrationState.Registrants.Any() )
+                    if ( CurrentPerson != null )
                     {
-                        var firstRegistrant = RegistrationState.Registrants.First();
-                        tbYourFirstName.Text = firstRegistrant.GetFirstName( RegistrationTemplate );
-                        tbYourLastName.Text = firstRegistrant.GetLastName( RegistrationTemplate );
-                        tbConfirmationEmail.Text = firstRegistrant.GetEmail( RegistrationTemplate );
+                        tbYourFirstName.Text = CurrentPerson.NickName;
+                        tbYourLastName.Text = CurrentPerson.LastName;
+                        tbConfirmationEmail.Text = CurrentPerson.Email;
                     }
                     else
                     {
@@ -3667,33 +3678,7 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
-                if ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask )
-                {
-                    var familyOptions = RegistrationState.GetFamilyOptions( RegistrationTemplate, RegistrationState.RegistrantCount );
-                    if ( familyOptions.Any() )
-                    {
-                        familyOptions.Add( familyOptions.ContainsKey( RegistrationState.FamilyGuid ) ?
-                            Guid.NewGuid() :
-                            RegistrationState.FamilyGuid.Equals( Guid.Empty ) ? Guid.NewGuid() : RegistrationState.FamilyGuid,
-                            "None" );
-                        rblRegistrarFamilyOptions.DataSource = familyOptions;
-                        rblRegistrarFamilyOptions.DataBind();
-                        pnlRegistrarFamilyOptions.Visible = true;
-                    }
-                    else
-                    {
-                        pnlRegistrarFamilyOptions.Visible = false;
-                    }
-                }
-                else
-                {
-                    pnlRegistrarFamilyOptions.Visible = false;
-                }
-
-                if ( setValues )
-                {
-                    rblRegistrarFamilyOptions.SetValue( RegistrationState.FamilyGuid.ToString() );
-                }
+                rblRegistrarFamilyOptions.SetValue( RegistrationState.FamilyGuid.ToString() );
 
                 // Build Discount info
                 nbDiscountCode.Visible = false;
@@ -3722,12 +3707,6 @@ namespace RockWeb.Blocks.Event
                     divDiscountCode.Visible = false;
                 }
 
-                decimal? minimumInitialPayment = RegistrationTemplate.MinimumInitialPayment;
-                if ( RegistrationTemplate.SetCostOnInstance ?? false )
-                {
-                    minimumInitialPayment = RegistrationInstanceState.MinimumInitialPayment;
-                }
-
                 // Get the cost/fee summary
                 var costs = new List<RegistrationCostSummaryInfo>();
                 foreach( var registrant in RegistrationState.Registrants )
@@ -3750,7 +3729,8 @@ namespace RockWeb.Blocks.Event
                         }
 
                         // If registration allows a minimum payment calculate that amount, otherwise use the discounted amount as minimum
-                        costSummary.MinPayment = minimumInitialPayment.HasValue ? minimumInitialPayment.Value : costSummary.DiscountedCost;
+                        costSummary.MinPayment = RegistrationTemplate.MinimumInitialPayment.HasValue ? 
+                            RegistrationTemplate.MinimumInitialPayment.Value : costSummary.DiscountedCost;
 
                         costs.Add( costSummary );
                     }
@@ -3784,7 +3764,7 @@ namespace RockWeb.Blocks.Event
                                 }
 
                                 // If template allows a minimum payment, then fees are not included, otherwise it is included
-                                costSummary.MinPayment = minimumInitialPayment.HasValue ? 0 : costSummary.DiscountedCost;
+                                costSummary.MinPayment = RegistrationTemplate.MinimumInitialPayment.HasValue ? 0 : costSummary.DiscountedCost;
 
                                 costs.Add( costSummary );
                             }
