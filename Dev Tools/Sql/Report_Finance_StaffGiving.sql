@@ -11,8 +11,8 @@
 /* ====================================================== */
 
 -- For testing in sql server management studio, uncomment here:
-DECLARE @StartDate AS NVARCHAR(MAX) = '2015-01-01';
-DECLARE @EndDate AS NVARCHAR(MAX) = '2015-12-31';
+--DECLARE @StartDate AS NVARCHAR(MAX) = '2015-01-01';
+--DECLARE @EndDate AS NVARCHAR(MAX) = '2015-12-31';
 
 DECLARE @today AS DATE = GETDATE();
 DECLARE @reportEndDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(WEEKDAY, @today), @today));
@@ -25,6 +25,8 @@ BEGIN
 END
 
 DECLARE @staffGroupId AS INT = (SELECT Id FROM [Group] WHERE Name = 'RSR - Staff Workers');
+DECLARE @familyType AS INT = (SELECT Id FROM [GroupType] WHERE Name = 'Family' AND IsSystem = 1);
+DECLARE @adultRole AS INT = (SELECT Id FROM GroupTypeRole WHERE GroupTypeId = @familyType AND Name = 'Adult');
 
 DECLARE @fundNames AS NVARCHAR(MAX) = (
 	SELECT 
@@ -54,13 +56,29 @@ DECLARE @fundNames AS NVARCHAR(MAX) = (
 SELECT @fundNames = LEFT(@fundNames, LEN(@fundNames) - 1);
 
 DECLARE @sql AS NVARCHAR(MAX) = CONCAT(N'
-	SELECT 
-		* 
+	SELECT
+		*
 	FROM (
 		SELECT
-			staff.Id AS PersonId,
-			staff.LastName,
-			staff.FirstName,
+			MAX(staff.Id) AS PersonId,
+			CONCAT( 
+				STUFF((
+					SELECT 
+						'' and '' + FirstName
+					FROM 
+						Person personB 
+						JOIN GroupMember familyMember ON familyMember.PersonId = personB.Id
+						JOIN [Group] family ON familyMember.GroupId = family.Id
+					WHERE 
+						family.GroupTypeId = ', @familyType, N'
+						AND familyMember.GroupRoleId = ', @adultRole, N'
+						AND personB.GivingGroupId = givers.GivingGroupId 
+					ORDER BY
+						personB.Gender
+					FOR XML PATH('''')), 1, 5, ''''), 
+				'' '', 
+				givers.LastName) AS StaffFamily,
+			givers.LastName,
 			pfa.PublicName AS Account,
 			SUM(ftd.Amount) AS TotalGiven
 		FROM
@@ -79,16 +97,14 @@ DECLARE @sql AS NVARCHAR(MAX) = CONCAT(N'
 			AND ft.TransactionDateTime >= CONVERT(DATE, ''', @reportStartDate, N''')
 			AND ft.TransactionDateTime <= CONVERT(DATE, ''', @reportEndDate, N''')
 		GROUP BY
-			staff.Id,
+			givers.GivingGroupId,
+			givers.LastName,
 			pfa.Id,
-			pfa.PublicName,
-			staff.FirstName,
-			staff.LastName
+			pfa.PublicName
 	) AS DataTable
 	PIVOT (SUM(TotalGiven) FOR Account IN (', @fundNames, N')) AS PivotTable
-	ORDER BY
-		LastName,
-		FirstName;
+		ORDER BY
+			LastName
 ');
 
 EXEC SP_EXECUTESQL @sql;
