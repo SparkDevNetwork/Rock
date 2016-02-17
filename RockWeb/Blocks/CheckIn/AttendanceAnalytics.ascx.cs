@@ -728,6 +728,24 @@ function(item) {
         private IEnumerable<Rock.Chart.IChartData> GetAttendanceChartData()
         {
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
+            if ( dateRange.End == null )
+            {
+                dateRange.End = RockDateTime.Now;
+            }
+
+            // Adjust the start/end times to reflect the attendance dates who's SundayDate value would fall between the date range selected
+            DateTime start = dateRange.Start.HasValue ? 
+                dateRange.Start.Value.Date.AddDays(  0 - (dateRange.Start.Value.DayOfWeek == DayOfWeek.Sunday ? 6 : (int)dateRange.Start.Value.DayOfWeek - 1)) :
+                new DateTime( 1900, 1, 1 );
+
+            DateTime end = dateRange.End.HasValue ?
+                dateRange.End.Value.AddDays( 0 - (int)dateRange.End.Value.DayOfWeek ) :
+                new DateTime( 2100, 1, 1, 23, 59, 59 );
+
+            if ( end < start )
+            {
+                end = end.AddDays( start.Subtract(end).Days + 6 );
+            }
 
             string groupIds = GetSelectedGroupIds().AsDelimited( "," );
 
@@ -737,8 +755,8 @@ function(item) {
             var chartData = new AttendanceService( _rockContext ).GetChartData(
                 hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week,
                 hfGraphBy.Value.ConvertToEnumOrNull<AttendanceGraphBy>() ?? AttendanceGraphBy.Total,
-                dateRange.Start,
-                dateRange.End,
+                start,
+                end,
                 groupIds,
                 campusIds,
                 dvpDataView.SelectedValueAsInt() );
@@ -759,7 +777,7 @@ function(item) {
 
             // Get the daterange filter
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
-            if ( dateRange.End == null || dateRange.End > RockDateTime.Now )
+            if ( dateRange.End == null )
             {
                 dateRange.End = RockDateTime.Now;
             }
