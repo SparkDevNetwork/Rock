@@ -326,41 +326,53 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
         /// </summary>
         protected void SendEmail()
         {
-            var rockContext = new RockContext();
-            Group group = new GroupService( rockContext ).Get( int.Parse( PageParameter( "GroupId" ) ) );
+            Group group = new GroupService( new RockContext() ).Get( int.Parse( PageParameter( "GroupId" ) ) );
             if ( group.Members.Count > 0 )
             {
+                string fromAddress = CurrentPerson.Email;
+                string subject = string.Format( "{0} for {1} - ", _emailReportSubject, group.Name, CurrentPerson.FullName );
                 string body = CreateMessageBody( group );
-
-                var mediumData = new Dictionary<string, string>();
-                mediumData.Add( "From", CurrentPerson.Email );
-                mediumData.Add( "Subject", string.Format( "{0} for {1} - {2}", _emailReportSubject, group.Name, CurrentPerson.FullName ) );
-                mediumData.Add( "Body", System.Text.RegularExpressions.Regex.Replace( body, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty ) );
-
-                var recipients = new List<string>();
                 foreach ( GroupMember member in group.Members )
                 {
                     if ( !string.IsNullOrWhiteSpace( member.Person.Email ) && member.Person.EmailPreference != EmailPreference.DoNotEmail )
                     {
-                        recipients.Add( member.Person.Email );
+                        Send( member.Person.Email, fromAddress, subject, body, new RockContext() );
                     }
                 }
+            }
+        }
 
-                var mediumEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid(), rockContext );
-                if ( mediumEntity != null )
+        /// <summary>
+        /// Sends an email
+        /// </summary>
+        /// <param name="recipient">The recipient's email address</param>
+        /// <param name="from">The sender's email address</param>
+        /// <param name="subject">The subject</param>
+        /// <param name="body">The body</param>
+        /// <param name="rockContext">The Rock Context</param>
+        private void Send( string recipient, string from, string subject, string body, RockContext rockContext )
+        {
+            var recipients = new List<string>();
+            recipients.Add( recipient );
+
+            var mediumData = new Dictionary<string, string>();
+            mediumData.Add( "From", from );
+            mediumData.Add( "Subject", subject );
+            mediumData.Add( "Body", System.Text.RegularExpressions.Regex.Replace( body, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty ) );
+
+            var mediumEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid(), rockContext );
+            if ( mediumEntity != null )
+            {
+                var medium = MediumContainer.GetComponent( mediumEntity.Name );
+                if ( medium != null && medium.IsActive )
                 {
-                    var medium = MediumContainer.GetComponent( mediumEntity.Name );
-                    if ( medium != null && medium.IsActive )
+                    var transport = medium.Transport;
+                    if ( transport != null && transport.IsActive )
                     {
-                        var transport = medium.Transport;
-                        if ( transport != null && transport.IsActive )
-                        {
-                            var appRoot = GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" );
-                            transport.Send( mediumData, recipients, appRoot, string.Empty );
-                        }
+                        var appRoot = GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" );
+                        transport.Send( mediumData, recipients, appRoot, string.Empty );
                     }
                 }
-
             }
         }
 
