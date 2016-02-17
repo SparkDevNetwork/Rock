@@ -64,16 +64,6 @@ $(window).on('programBlogAllLoaded', function() {
     }
   });
 
-  $('.lightbox').magnificPopup({
-    type: 'image',
-    closeOnContentClick: true,
-    mainClass: 'mfp-img-mobile',
-    image: {
-      verticalFit: true
-    }
-
-  });
-
   $('.lightbox-gallery').each(function() {
     $(this).magnificPopup({
       delegate: 'a',

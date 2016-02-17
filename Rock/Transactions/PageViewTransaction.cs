@@ -112,7 +112,11 @@ namespace Rock.Transactions
                 PageViewUserAgentService pageViewUserAgentService = new PageViewUserAgentService( rockContext );
                 PageViewSessionService pageViewSessionService = new PageViewSessionService( rockContext );
 
-                var userAgent = ( this.UserAgent ?? string.Empty ).Trim().Substring(0, 500); // trim super long useragents
+                var userAgent = ( this.UserAgent ?? string.Empty ).Trim();
+                if ( userAgent.Length > 450 )
+                {
+                    userAgent = userAgent.Substring( 0, 450 ); // trim super long useragents to fit in pageViewUserAgent.UserAgent
+                }
 
                 // get user agent info
                 var clientType = PageViewUserAgent.GetClientType( userAgent );
@@ -124,21 +128,22 @@ namespace Rock.Transactions
 
                 // lookup the pageViewUserAgent, and create it if it doesn't exist
                 var pageViewUserAgent = pageViewUserAgentService.Queryable().Where( a => a.UserAgent == userAgent ).FirstOrDefault();
-                if ( pageViewUserAgent == null)
+                if ( pageViewUserAgent == null )
                 {
                     pageViewUserAgent = new PageViewUserAgent();
                     pageViewUserAgent.UserAgent = userAgent;
                     pageViewUserAgent.ClientType = clientType;
-                    
+
                     pageViewUserAgent.OperatingSystem = clientOs;
                     pageViewUserAgent.Browser = clientBrowser;
 
                     pageViewUserAgentService.Add( pageViewUserAgent );
                     rockContext.SaveChanges();
-                } else
+                }
+                else
                 {
                     // check if the user agent properties need to be updated
-                    if (clientType != pageViewUserAgent.ClientType || clientOs != pageViewUserAgent.OperatingSystem || clientBrowser != pageViewUserAgent.Browser )
+                    if ( clientType != pageViewUserAgent.ClientType || clientOs != pageViewUserAgent.OperatingSystem || clientBrowser != pageViewUserAgent.Browser )
                     {
                         pageViewUserAgent.ClientType = clientType;
                         pageViewUserAgent.OperatingSystem = clientOs;

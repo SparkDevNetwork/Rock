@@ -170,7 +170,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                     Literal lPersonImage = e.Row.FindControl( "lPersonImage" ) as Literal;
                     if ( lPersonImage != null )
                     {
-                        lPersonImage.Text = Person.GetPhotoImageTag( person, 100, 100 );
+                        lPersonImage.Text = Person.GetPersonPhotoImageTag( person, 100, 100 );
                     }
 
                     LinkButton btnIsConfirmMatch = e.Row.FindControl( "btnIsConfirmMatch" ) as LinkButton;

@@ -1,8 +1,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb(1)", "http://localhost:50345", "{22348267-9BDF-4B5E-BB6E-37B5FA770224}"
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb(3)", "http://localhost:50345", "{22348267-9BDF-4B5E-BB6E-37B5FA770224}"
 	ProjectSection(WebsiteProperties) = preProject
 		UseIISExpress = "true"
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5.1"

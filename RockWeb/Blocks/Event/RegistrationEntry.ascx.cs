@@ -490,7 +490,7 @@ namespace RockWeb.Blocks.Event
         {
             var state = e.State["event"];
 
-            if ( state != null )
+            if ( CurrentPanel > 0 && state != null )
             {
                 string[] commands = state.Split( ',' );
 
@@ -2602,6 +2602,7 @@ namespace RockWeb.Blocks.Event
         private void ShowSummary()
         {
             lRegistrationTerm.Text = RegistrationTemplate.RegistrationTerm;
+            lRegistrationTerm2.Text = RegistrationTemplate.RegistrationTerm;
             
             SetPanel( 2 );
         }
@@ -3636,8 +3637,30 @@ namespace RockWeb.Blocks.Event
         {
             lDiscountCodeLabel.Text = DiscountCodeTerm;
 
-            if ( setValues && RegistrationState != null && RegistrationInstanceState != null )
+            if ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask )
             {
+                var familyOptions = RegistrationState.GetFamilyOptions( RegistrationTemplate, RegistrationState.RegistrantCount );
+                if ( familyOptions.Any() )
+                {
+                    familyOptions.Add( familyOptions.ContainsKey( RegistrationState.FamilyGuid ) ?
+                        Guid.NewGuid() :
+                        RegistrationState.FamilyGuid.Equals( Guid.Empty ) ? Guid.NewGuid() : RegistrationState.FamilyGuid,
+                        "None" );
+                    rblRegistrarFamilyOptions.DataSource = familyOptions;
+                    rblRegistrarFamilyOptions.DataBind();
+                    pnlRegistrarFamilyOptions.Visible = true;
+                }
+                else
+                {
+                    pnlRegistrarFamilyOptions.Visible = false;
+                }
+            }
+            else
+            {
+                pnlRegistrarFamilyOptions.Visible = false;
+            }
+
+			if ( setValues && RegistrationState != null && RegistrationInstanceState != null )            {
                 // Check to see if this is an existing registration or information has already been entered
                 if ( RegistrationState.RegistrationId.HasValue ||
                     !string.IsNullOrWhiteSpace( RegistrationState.FirstName) ||
@@ -3651,13 +3674,11 @@ namespace RockWeb.Blocks.Event
                 }
                 else
                 {
-                    // If not, find the field information from first registrant
-                    if ( RegistrationState.Registrants.Any() )
+                    if ( CurrentPerson != null )
                     {
-                        var firstRegistrant = RegistrationState.Registrants.First();
-                        tbYourFirstName.Text = firstRegistrant.GetFirstName( RegistrationTemplate );
-                        tbYourLastName.Text = firstRegistrant.GetLastName( RegistrationTemplate );
-                        tbConfirmationEmail.Text = firstRegistrant.GetEmail( RegistrationTemplate );
+                        tbYourFirstName.Text = CurrentPerson.NickName;
+                        tbYourLastName.Text = CurrentPerson.LastName;
+                        tbConfirmationEmail.Text = CurrentPerson.Email;
                     }
                     else
                     {
@@ -3667,33 +3688,7 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
-                if ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask )
-                {
-                    var familyOptions = RegistrationState.GetFamilyOptions( RegistrationTemplate, RegistrationState.RegistrantCount );
-                    if ( familyOptions.Any() )
-                    {
-                        familyOptions.Add( familyOptions.ContainsKey( RegistrationState.FamilyGuid ) ?
-                            Guid.NewGuid() :
-                            RegistrationState.FamilyGuid.Equals( Guid.Empty ) ? Guid.NewGuid() : RegistrationState.FamilyGuid,
-                            "None" );
-                        rblRegistrarFamilyOptions.DataSource = familyOptions;
-                        rblRegistrarFamilyOptions.DataBind();
-                        pnlRegistrarFamilyOptions.Visible = true;
-                    }
-                    else
-                    {
-                        pnlRegistrarFamilyOptions.Visible = false;
-                    }
-                }
-                else
-                {
-                    pnlRegistrarFamilyOptions.Visible = false;
-                }
-
-                if ( setValues )
-                {
-                    rblRegistrarFamilyOptions.SetValue( RegistrationState.FamilyGuid.ToString() );
-                }
+                rblRegistrarFamilyOptions.SetValue( RegistrationState.FamilyGuid.ToString() );
 
                 // Build Discount info
                 nbDiscountCode.Visible = false;

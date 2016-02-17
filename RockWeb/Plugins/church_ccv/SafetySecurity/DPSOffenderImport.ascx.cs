@@ -354,7 +354,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                                 GetPersonName( person ), // {1}
                                 person.Age == age ? matchIcon + age.ToString() : person.Age.ToString(), // {2}
                                 address, // {3}
-                                Person.GetPhotoImageTag( person, 100, 100 ) ); // {4}
+                                Person.GetPersonPhotoImageTag( person, 100, 100 ) ); // {4}
                         }
                     }
 
@@ -367,7 +367,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                             GetPersonName( person ), // {1}
                             person.Age == age ? matchIcon + age.ToString() : person.Age.ToString(), // {2}
                             address, // {3}
-                            Person.GetPhotoImageTag( person, 100, 100 ) ); // {4}
+                            Person.GetPersonPhotoImageTag( person, 100, 100 ) ); // {4}
                     }
 
                     int otherCount = personList.Where( a => !fullNameMatches.Any( x => x.Id == a.Id ) ).Count();
