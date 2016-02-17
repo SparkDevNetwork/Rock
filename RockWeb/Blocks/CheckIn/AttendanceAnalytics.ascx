@@ -42,7 +42,8 @@
                         </div>
 
                         <Rock:NotificationBox ID="nbDateRangeWarning" runat="server" NotificationBoxType="Warning" Text="Date Range is required" Visible="false" Dismissable="true" />
-                        <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Date Range" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" />
+                        <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Sunday Date Range" 
+                            EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" EnabledSlidingDateRangeUnits="Week, Month, Year" />
 
                         <Rock:RockControlWrapper ID="rcwGroupBy" runat="server" Label="Group By">
                             <div class="controls">
