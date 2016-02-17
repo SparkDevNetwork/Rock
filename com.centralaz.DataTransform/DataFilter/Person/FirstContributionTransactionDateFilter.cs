@@ -264,10 +264,10 @@ function() {
             }
 
             var firstContributionDateQry = financialTransactionsQry
-                .GroupBy( xx => xx.AuthorizedPersonAlias.PersonId )
+                .GroupBy( xx => xx.AuthorizedPersonAlias.Person.GivingId )
                 .Select( ss => new
                 {
-                    PersonId = ss.Key,
+                    GivingId = ss.Key,
                     FirstTransactionDate = ss.Min( a => a.TransactionDateTime )
                 } );
 
@@ -289,10 +289,10 @@ function() {
                 }
             }
 
-            var innerQry = firstContributionDateQry.Select( xx => xx.PersonId ).AsQueryable();
+            var innerQry = firstContributionDateQry.Select( xx => xx.GivingId ).AsQueryable();
 
             var qry = new PersonService( rockContext ).Queryable()
-                .Where( p => innerQry.Any( xx => xx == p.Id ) );
+                .Where( p => innerQry.Any( xx => xx == p.GivingId ) );
 
             Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );
 
