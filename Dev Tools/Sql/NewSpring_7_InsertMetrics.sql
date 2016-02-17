@@ -167,15 +167,19 @@ create table #metricGroups (
 INSERT #metricGroups
 VALUES 
 -- certain attendee groups
-('Creativity & Tech Attendee', 'Choir'),
-('Guest Services Attendee', 'Auditorium Reset Team'),
-('Guest Services Attendee', 'Awake Team'),
-('Guest Services Attendee', 'Facility Cleaning Crew'),
-('Guest Services Attendee', 'Greeting Team'),
-('Guest Services Attendee', 'Load In/Load Out'),
-('Guest Services Attendee', 'Office Team'),
-('Guest Services Attendee', 'Parking Team'),
-('Guest Services Attendee', 'VHQ Team'),
+('Creativity & Tech Attendee', 'Choir'), 
+('Creativity & Tech Attendee', 'Special Event Attendee'), 
+('Guest Services Attendee', 'VIP Room Attendee'), 
+('Guest Services Attendee', 'Special Event Attendee'), 
+('Guest Services Attendee', 'Auditorium Reset Team'), 
+('Guest Services Attendee', 'Awake Team'), 
+('Guest Services Attendee', 'Facility Cleaning Crew'), 
+('Guest Services Attendee', 'Greeting Team'), 
+('Guest Services Attendee', 'Load In'), 
+('Guest Services Attendee', 'Load Out'), 
+('Guest Services Attendee', 'Office Team'), 
+('Guest Services Attendee', 'Parking Team'), 
+('Guest Services Attendee', 'VHQ Team'), 
 
 -- all volunteer groups
 ('Creativity & Tech Volunteer',  'Band'),
