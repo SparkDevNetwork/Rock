@@ -2115,13 +2115,12 @@ namespace Rock.Web.UI.Controls
             idCol.DataField = "Id";
             idCol.Visible = false;
             columns.Add( idCol );
-
+            idCol.HeaderText = "Id";
             columns.AddRange( displayColumns.Count > 0 ? displayColumns : allColumns );
 
             if ( columns.Count == 1 )
             {
                 // if the only column is the Id column, show it
-                idCol.HeaderText = "Id";
                 idCol.Visible = true;
             }
 
