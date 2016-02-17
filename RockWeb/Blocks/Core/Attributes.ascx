@@ -37,7 +37,7 @@
                                     </ItemTemplate>
                                 </Rock:RockTemplateField>
                                 <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" ItemStyle-Wrap="false" />
-                                <Rock:RockTemplateField ItemStyle-Wrap="false">
+                                <Rock:RockTemplateField>
                                     <HeaderTemplate>Categories</HeaderTemplate>
                                     <ItemTemplate>
                                         <asp:Literal ID="lCategories" runat="server"></asp:Literal>
