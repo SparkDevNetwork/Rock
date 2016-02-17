@@ -21,6 +21,7 @@ using System.Linq;
 using System.Text;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Security
 {
@@ -85,12 +86,18 @@ namespace Rock.Security
             {
                 List<AuthEntityRule> authEntityRules = new List<AuthEntityRule>();
 
+                var securityGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid());
+                int securityGroupTypeId = securityGroupType != null ? securityGroupType.Id : 0;
+
                 // query the database for all of the entity auth rules
                 using ( var rockContext = new RockContext() )
                 {
                     foreach ( var auth in new AuthService( rockContext )
-                        .Queryable()
-                        .AsNoTracking()
+                        .Queryable().AsNoTracking()
+                        .Where( t => 
+                            t.Group == null ||
+                            t.Group.IsSecurityRole ||
+                            t.Group.GroupTypeId == securityGroupTypeId )
                         .OrderBy( A => A.EntityTypeId )
                         .ThenBy( A => A.EntityId )
                         .ThenBy( A => A.Action )
@@ -171,9 +178,17 @@ namespace Rock.Security
                 // Query database for the authorizations related to this entitytype, entity, and action
                 using ( var rockContext = new RockContext() )
                 {
+                    var securityGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid(), rockContext );
+                    int securityGroupTypeId = securityGroupType != null ? securityGroupType.Id : 0;
+
                     foreach ( Auth auth in new AuthService( rockContext )
                         .GetAuths( entityTypeId, entityId, action )
-                        .AsNoTracking() )
+                        .AsNoTracking()
+                        .Where( t =>
+                            t.Group == null ||
+                            t.Group.IsSecurityRole ||
+                            t.Group.GroupTypeId == securityGroupTypeId
+                        ) )
                     {
                         newAuthRules.Add( new AuthRule( auth ) );
                     }
@@ -195,12 +210,20 @@ namespace Rock.Security
             // if the authorizations have already been loaded, update just the selected action
             if ( !Load() )
             {
+                var securityGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid(), rockContext );
+                int securityGroupTypeId = securityGroupType != null ? securityGroupType.Id : 0;
+
                 var newAuthRules = new List<AuthRule>();
 
                 // Query database for the authorizations related to this entitytype, entity, and action
                 foreach ( Auth auth in new AuthService( rockContext )
                     .GetAuths( entityTypeId, entityId, action )
-                    .AsNoTracking() )
+                    .AsNoTracking()
+                    .Where( t =>
+                        t.Group == null ||
+                        t.Group.IsSecurityRole ||
+                        t.Group.GroupTypeId == securityGroupTypeId
+                    ) )
                 {
                     newAuthRules.Add( new AuthRule( auth ) );
                 }
@@ -1224,6 +1247,16 @@ namespace Rock.Security
                                 {
                                     return ( role.IsSecurityTypeGroup ? "" : "GROUP - " ) +
                                         role.Name + " <small>(Role)</small>";
+                                }
+                                else
+                                {
+                                    GroupService groupService = new GroupService( new RockContext() );
+                                    Group group = groupService.Get( GroupId.Value );
+                                    if ( group != null )
+                                    {
+                                        return string.Format( "<span class='text-muted'>GROUP - {0} <small>(No longer a valid role)</small></span>",
+                                            group.Name ); ;
+                                    }
                                 }
                             }
                             catch { }
