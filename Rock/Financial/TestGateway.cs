@@ -71,6 +71,16 @@ namespace Rock.Financial
         {
             errorMessage = string.Empty;
 
+            CreditCardPaymentInfo ccPayment = paymentInfo as CreditCardPaymentInfo;
+            if ( ccPayment != null )
+            {
+                if ( ccPayment.Code == "911" )
+                {
+                    errorMessage = "Error processing Credit Card!";
+                    return null;
+                }
+            }
+
             var transaction = new FinancialTransaction();
             transaction.TransactionCode = "T" + RockDateTime.Now.ToString("yyyyMMddHHmmssFFF");
             return transaction;
