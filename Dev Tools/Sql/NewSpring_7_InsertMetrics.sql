@@ -742,9 +742,9 @@ BEGIN
 		-- create if it doesn't exist
 		IF @MetricServiceRolesId IS NULL
 		BEGIN
-			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, ScheduleId, EntityTypeId, [Guid], ForeignId)
+			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, ScheduleId, EntityTypeId, [Guid], ForeignId, IconCssClass)
 			VALUES ( 0, @GroupName + ' ' + @ServiceRolesTitle, 'Metric to track ' + @GroupName + ' roles by campus and service', @False, 
-				@MetricSourceSQLId, @MetricServiceRolesSQL, '', '', @SundayScheduleId, @CampusEntityTypeId, NEWID(), @GroupId )
+				@MetricSourceSQLId, @MetricServiceRolesSQL, '', '', @SundayScheduleId, @CampusEntityTypeId, NEWID(), @GroupId, '' )
 
 			SELECT @MetricServiceRolesId = SCOPE_IDENTITY()
 
@@ -767,9 +767,9 @@ BEGIN
 		-- create if it doesn't exist
 		IF @MetricServiceRosterId IS NULL
 		BEGIN
-			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, ScheduleId, EntityTypeId, [Guid], ForeignId)
+			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, ScheduleId, EntityTypeId, [Guid], ForeignId, IconCssClass)
 			VALUES ( 0, @GroupName + ' ' + @ServiceRosterTitle, 'Metric to track ' + @GroupName + ' roster by campus and service', @False, 
-				@MetricSourceSQLId, @MetricServiceRosterSQL, '', '', @SundayScheduleId, @CampusEntityTypeId, NEWID(), @GroupId )
+				@MetricSourceSQLId, @MetricServiceRosterSQL, '', '', @SundayScheduleId, @CampusEntityTypeId, NEWID(), @GroupId, '' )
 
 			SELECT @MetricServiceRosterId = SCOPE_IDENTITY()
 
@@ -792,9 +792,9 @@ BEGIN
 		-- create if it doesn't exist
 		IF @MetricTotalRolesId IS NULL
 		BEGIN
-			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, ScheduleId, EntityTypeId, [Guid], ForeignId)
+			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, ScheduleId, EntityTypeId, [Guid], ForeignId, IconCssClass)
 			VALUES ( 0, @GroupName + ' ' + @TotalRolesTitle, 'Metric to track ' + @GroupName + ' total roles filled by campus', @False, 
-				@MetricSourceSQLId, @MetricTotalRolesSQL, '', '', @SundayScheduleId, @CampusEntityTypeId, NEWID(), @GroupId )
+				@MetricSourceSQLId, @MetricTotalRolesSQL, '', '', @SundayScheduleId, @CampusEntityTypeId, NEWID(), @GroupId, '' )
 
 			SELECT @MetricTotalRolesId = SCOPE_IDENTITY()
 
@@ -817,9 +817,9 @@ BEGIN
 		-- create if it doesn't exist
 		IF @MetricTotalRosterId IS NULL
 		BEGIN
-			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, ScheduleId, EntityTypeId, [Guid], ForeignId)
+			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, ScheduleId, EntityTypeId, [Guid], ForeignId, IconCssClass)
 			VALUES ( 0, @GroupName + ' ' + @TotalRosterTitle, 'Metric to track ' + @GroupName + ' total roster by campus', @False, 
-				@MetricSourceSQLId, @MetricTotalRosterSQL, '', '', @SundayScheduleId, @CampusEntityTypeId, NEWID(), @GroupId )
+				@MetricSourceSQLId, @MetricTotalRosterSQL, '', '', @SundayScheduleId, @CampusEntityTypeId, NEWID(), @GroupId, '' )
 
 			SELECT @MetricTotalRosterId = SCOPE_IDENTITY()
 
@@ -842,9 +842,9 @@ BEGIN
 		-- create if it doesn't exist
 		IF @MetricUniqueServingId IS NULL
 		BEGIN
-			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, ScheduleId, EntityTypeId, [Guid], ForeignId)
+			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, ScheduleId, EntityTypeId, [Guid], ForeignId, IconCssClass)
 			VALUES ( 0, @GroupName + ' ' + @UniqueServingTitle, 'Metric to track ' + @GroupName + ' total unique volunteers by campus', @False, 
-				@MetricSourceSQLId, @MetricUniqueServingSQL, '', '', @SundayScheduleId, @CampusEntityTypeId, NEWID(), @GroupId )
+				@MetricSourceSQLId, @MetricUniqueServingSQL, '', '', @SundayScheduleId, @CampusEntityTypeId, NEWID(), @GroupId, '' )
 
 			SELECT @MetricUniqueServingId = SCOPE_IDENTITY()
 
@@ -895,7 +895,8 @@ INSERT [Metric] (
 	YAxisLabel, 
 	ScheduleId, 
 	EntityTypeId, 
-	[Guid])
+	[Guid],
+	IconCssClass)
 VALUES ( 
 	@IsSystem, 
 	'Fuse HS Attendance', 
@@ -907,7 +908,8 @@ VALUES (
 	'', 
 	@FuseScheduleId, 
 	@CampusEntityTypeId, 
-	NEWID());
+	NEWID(),
+	'');
 
 SELECT @newId = SCOPE_IDENTITY();
 
@@ -926,7 +928,8 @@ INSERT [Metric] (
 	YAxisLabel, 
 	ScheduleId, 
 	EntityTypeId, 
-	[Guid])
+	[Guid],
+	IconCssClass)
 VALUES ( 
 	@IsSystem, 
 	'Fuse MS Attendance', 
@@ -938,7 +941,8 @@ VALUES (
 	'', 
 	@FuseScheduleId, 
 	@CampusEntityTypeId, 
-	NEWID());
+	NEWID(),
+	'');
 
 SELECT @newId = SCOPE_IDENTITY();
 
