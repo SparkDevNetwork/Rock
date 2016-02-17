@@ -334,7 +334,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
 
                 var mediumData = new Dictionary<string, string>();
                 mediumData.Add( "From", CurrentPerson.Email );
-                mediumData.Add( "Subject", string.Format( "{0} for {1} - ", _emailReportSubject, group.Name, CurrentPerson.FullName ) );
+                mediumData.Add( "Subject", string.Format( "{0} for {1} - {2}", _emailReportSubject, group.Name, CurrentPerson.FullName ) );
                 mediumData.Add( "Body", System.Text.RegularExpressions.Regex.Replace( body, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty ) );
 
                 var recipients = new List<string>();
