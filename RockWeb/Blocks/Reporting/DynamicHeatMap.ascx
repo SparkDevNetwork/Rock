@@ -3,7 +3,7 @@
 <script type="text/javascript" src="https://google-maps-utility-library-v3.googlecode.com/svn/trunk/maplabel/src/maplabel-compiled.js"></script>
 
 
-<asp:UpdatePanel ID="upnlContent" runat="server">
+<asp:UpdatePanel ID="upnlContent" runat="server" UpdateMode="Conditional">
     <ContentTemplate>
 
         <Rock:NotificationBox ID="nbConfigurationWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
@@ -32,10 +32,14 @@
             </asp:Panel>
 
             <div class="margin-all-md">
-                <div class="pull-right">
+                <div class="pull-right js-heatmap-actions">
                     <asp:Panel ID="pnlPieSlicer" runat="server" CssClass="btn btn-default btn-xs js-createpieshape">
                         <i class='fa fa-pie-chart' title="Create pie slices from selected circle"></i>
                     </asp:Panel>
+                    <asp:Panel ID="pnlSaveShape" runat="server" CssClass="btn btn-default btn-xs js-saveshape">
+                        <i class='fa fa-floppy-o' title="Save selected shape to a named location"></i>
+                    </asp:Panel>
+
                     <div class="btn btn-danger btn-xs js-deleteshape"><i class='fa fa-times' title="Delete selected shape"></i></div>
                 </div>
             </div>
@@ -75,6 +79,12 @@
             }
             
             Sys.Application.add_load(function () {
+                
+                // if this is an async postback, the map is already created, so just break out
+                if ($('#map_canvas').data("googleMap"))
+                {
+                    return;
+                }
 
                 // hook into rangeslider
                 var rangeSlider = $('#<%=rsDataPointRadius.ClientID%>');
@@ -86,8 +96,13 @@
                 });
 
                 // configure/display heatmap
-                var allShapes = [];
-                var selectedShape;
+                var pieSlicerState = {
+                    SelectedCenterPt: null,
+                    SelectedRadius: null,
+                    SelectedPieCuts: [],
+                    CurrentPieSlices: []
+                };
+                
                 var map;
 
                 var heatMap;
@@ -119,6 +134,11 @@
                     // Display a map on the page
                     var mapCanvas = document.getElementById('map_canvas');
                     map = new google.maps.Map(mapCanvas, mapOptions);
+
+                    map.AllShapes = [];
+                    map.SelectedShape = null;
+
+                    $(mapCanvas).data("googleMap", map);
                     map.setTilt(45);
                     map.setCenter(centerLatLng);
 
@@ -203,7 +223,25 @@
 
                     heatmap.setMap(map);
 
-                    map.GetNextColor = function GetNextColor() {
+                    map.DeleteShape = function(shape) {
+                        var allShapesIndex = map.AllShapes.indexOf(shape);
+                                    
+                        if (allShapesIndex > -1)
+                        {
+                            map.AllShapes.splice(allShapesIndex, 1);
+                        }
+                                    
+                        shape.setMap(null);
+                        shape.mapCountLabel.setMap(null);
+                        if (shape == map.SelectedShape)
+                        {
+                            map.SelectedShape = null;
+                        }
+                        
+                        shape = null;
+                    };
+
+                    map.GetNextColor = function () {
                         if (polygonColors && polygonColors.length) {
                             if (polygonColorIndex >= polygonColors.length) {
                                 polygonColorIndex = 0;
@@ -216,13 +254,25 @@
                     }
 
                     map.AddUpdateShape = function AddUpdateShape(shape, justUpdate) {
-                        selectedShape = shape;
+                        map.SelectedShape = shape;
                         
                         if (!justUpdate) {
                             google.maps.event.addListener(shape, 'click', function () {
-                                selectedShape = shape
+
+                                map.SelectedShape = shape
+                                map.AllShapes.forEach(function (s) {
+                                    if (s.mapCountLabel && s.mapCountLabel.text.startsWith("*"))
+                                    {
+                                        s.mapCountLabel.text = s.mapCountLabel.text.slice(1);
+                                        s.mapCountLabel.changed('text');
+                                    }
+                                });
+                                
+                                map.SelectedShape.mapCountLabel.text = '*' + map.SelectedShape.mapCountLabel.text;
+                                map.SelectedShape.mapCountLabel.changed('text');
                             });
 
+                            // set the color of the next shape
                             if (polygonColors && polygonColors.length) {
                                 var color = map.GetNextColor();
 
@@ -234,46 +284,75 @@
                                 drawingManager.rectangleOptions.strokeColor = color;
                             }
 
-                            allShapes.push(shape);
+                            map.AllShapes.push(shape);
                         }
-
+                        
+                        // NOTE: bounds is the rectangle bounds of the shape (not the actual shape)
                         var selectedBounds = shape.getBounds();
 
                         var pointCount = 0;
-                        heatmap.data.forEach(function (latLng) {
-                            if (latLng.location) {
-                                if (selectedBounds.contains(latLng.location)) {
-                                    pointCount += latLng.weight;
-                                }
-                            } else {
-                                if (selectedBounds.contains(latLng)) {
-                                    pointCount++;
+
+                        var shapeCenter = null;
+                        if (shape.getCenter)
+                        {
+                            shapeCenter = shape.getCenter();
+                        }
+                        else
+                        {
+                            shapeCenter = selectedBounds.getCenter();
+                        }
+                        
+                        heatmapDataArray = heatmap.data.getArray();
+                        for (var i = 0, len = heatmap.data.length; i < len; i++) {
+                            var latLng = heatmapDataArray[i];
+                            var pointWeight = 1;
+                            var point = latLng;
+                            if (latLng.location)
+                            {
+                                // weighted location
+                                point = latLng.location;
+                                pointWeight = latLng.weight;
+                            }
+
+                            // first check if within bounds to narrow down (for performance)
+                            if (selectedBounds.contains(point)) {
+
+                                if ('polygon' == shape.overlayType) {
+                                    if (google.maps.geometry.poly.containsLocation(point, shape)) {
+                                        pointCount += pointWeight;
+                                    }
+                                } else if ('circle' == shape.overlayType) {
+                                    if (google.maps.geometry.spherical.computeDistanceBetween(shapeCenter, point) < shape.radius) {
+                                        pointCount += pointWeight;
+                                    }
+                                } else if ('rectangle' == shape.overlayType) {
+                                    pointCount += pointWeight;
                                 }
                             }
-                        });
+                        }
 
                         var totalCount = pointCount;
                         var mapLabel = totalCount.toString();
-                        if (selectedShape.Name){
-                            mapLabel = selectedShape.Name + ': ' + mapLabel;
+                        if (map.SelectedShape.Name){
+                            mapLabel = map.SelectedShape.Name + ': ' + mapLabel;
                         }
 
-                        if (!selectedShape.mapCountLabel) {
-                            selectedShape.mapCountLabel = new MapLabel({
+                        if (!map.SelectedShape.mapCountLabel) {
+                            map.SelectedShape.mapCountLabel = new MapLabel({
                                 map:map,
                                 fontSize: <%=this.LabelFontSize%>,
                                 text:'x',
-                                position: selectedBounds.getCenter()
+                                position: shapeCenter
                             });
                         }
 
-                        selectedShape.mapCountLabel.position = selectedBounds.getCenter();
-                        selectedShape.mapCountLabel.changed('position');
-                        selectedShape.mapCountLabel.text = mapLabel;
-                        selectedShape.mapCountLabel.changed('text');
+                        map.SelectedShape.mapCountLabel.position = shapeCenter;
+                        map.SelectedShape.mapCountLabel.changed('position');
+                        map.SelectedShape.mapCountLabel.text = mapLabel;
+                        map.SelectedShape.mapCountLabel.changed('text');
 
                         if (!justUpdate) {
-                            selectedShape.addListener('bounds_changed', function (event) {
+                            map.SelectedShape.addListener('bounds_changed', function (event) {
                                 var resizedShape = this;
                                 map.AddUpdateShape(resizedShape, true);
                             });
@@ -330,17 +409,17 @@
 
                     google.maps.event.addListener(drawingManager, 'polygoncomplete', function (polygon) {
                         google.maps.event.addListener(polygon, 'dragend', function (a,b,c) {
-                            allShapes.forEach( function(s) {
+                            map.AllShapes.forEach( function(s) {
                                 map.AddUpdateShape(s, true);
                             });
                         });
                         google.maps.event.addListener(polygon.getPath(), 'insert_at', function (a,b,c) {
-                            allShapes.forEach( function(s) {
+                            map.AllShapes.forEach( function(s) {
                                 map.AddUpdateShape(s, true);
                             });
                         });
                         google.maps.event.addListener(polygon.getPath(), 'set_at', function (a,b,c) {
-                            allShapes.forEach( function(s) {
+                            map.AllShapes.forEach( function(s) {
                                 map.AddUpdateShape(s, true);
                             });
                         });
@@ -348,70 +427,185 @@
                 }
 
                 $('.js-deleteshape').click(function () {
-                    if (selectedShape) {
-                        var allShapesIndex = allShapes.indexOf(selectedShape);
+                    if (map.SelectedShape) {
+                        map.DeleteShape(map.SelectedShape);
+                    }
+                });
+
+                $('.js-saveshape').click(function () {
+                    if (map.SelectedShape) {
                         
-                        if (allShapesIndex > -1)
+                        var geoFencePath;
+                        if (typeof(map.SelectedShape.getPaths) != 'undefined') {
+                            
+                            var coordinates = new Array();
+                            var vertices = map.SelectedShape.getPaths().getAt(0);
+                            // Iterate over the vertices of the shape's path
+                            for (var i = 0; i < vertices.length; i++) {
+                                var xy = vertices.getAt(i);
+                                coordinates[i] = xy.toUrlValue();
+                            }
+
+                            // if the last coor is not already the first, then
+                            // add the first vertex to the end of the path.
+                            if (coordinates[coordinates.length - 1] != coordinates[0]) {
+                                coordinates.push(coordinates[0]);
+                            }
+
+                            geoFencePath = coordinates.join('|');
+                        } else if ('rectangle' == map.SelectedShape.overlayType)
                         {
-                            allShapes.splice(allShapesIndex, 1);
+                            var ne = map.SelectedShape.getBounds().getNorthEast();
+                            var sw = map.SelectedShape.getBounds().getSouthWest();
+
+                            geoFencePath = ne.toUrlValue() + '|' + sw.lat() + ',' + ne.lng() + '|' + sw.toUrlValue() + '|' + ne.lat() + ',' + sw.lng() + ' | ' + ne.toUrlValue();
+                        } else if ('circle' == map.SelectedShape.overlayType)
+                        {
+                            var center = map.SelectedShape.getCenter();
+                            var radius = map.SelectedShape.radius;
+                            geoFencePath = 'CIRCLE|' + center.lng() + ' ' + center.lat() + '|' + radius;
                         }
 
-                        selectedShape.mapCountLabel.setMap(null);
-                        selectedShape.setMap(null);
-                        selectedShape = null;
+                        $('#<%=hfLocationSavePath.ClientID%>').val(geoFencePath);
+                        
+                        Rock.controls.modal.showModalDialog($('#<%=mdSaveLocation.ClientID%>').find('.rock-modal'), '#<%=upSaveLocation.ClientID%>');
                     }
                 });
 
                 $('.js-createpieshape').click(function () {
-                    if (selectedShape ) {
-                        var selectedBounds = selectedShape.getBounds();
 
-                        var centerPt = selectedBounds.getCenter();
-                        var northEastPt = selectedBounds.getNorthEast();
-                        var radiusMeters = google.maps.geometry.spherical.computeDistanceBetween(centerPt, northEastPt);
-                        var startOffsetDegrees = google.maps.geometry.spherical.computeHeading(centerPt, northEastPt);
+                    // make sure drawing manager mode is the hand so that 'mousemove' will fire
+                    drawingManager.setDrawingMode(null);
 
-                        var allShapesIndex = allShapes.indexOf(selectedShape);
-                        
-                        if (allShapesIndex > -1)
-                        {
-                            allShapes.splice(allShapesIndex, 1);
+                    if ((map.SelectedShape && (typeof(map.SelectedShape.overlayType) != 'undefined') && map.SelectedShape.overlayType == 'circle') || (pieSlicerState.SelectedCenterPt && pieSlicerState.SelectedRadius)) {
+
+                        // if we are starting with a new shape (not a pieslice), start over with a new pieslicer
+                        if (map.SelectedShape && (typeof(map.SelectedShape.overlayType) != 'undefined') && map.SelectedShape.isPieSlice != true) {
+                            if (map.SelectedShape.overlayType == 'circle') {
+                                pieSlicerState.SelectedCenterPt = map.SelectedShape.getCenter();
+                                pieSlicerState.SelectedRadius = map.SelectedShape.radius;
+                            } else {
+                                pieSlicerState.SelectedCenterPt = null;
+                                pieSlicerState.SelectedRadius = null;
+                            }
+                            pieSlicerState.SelectedPieCuts = [];
+                            pieSlicerState.CurrentPieSlices = [];
                         }
 
-                        selectedShape.setMap(null);
-                        selectedShape.mapCountLabel.setMap(null);
-                        selectedShape = null;
-
-                        var i = 0;
-                        var pieSliceCount = <%=this.PieSliceCount%>;
-                        var degreesInc = 360 / pieSliceCount;
-                        for (; i < pieSliceCount; i++) {
-                            var startDegrees = i*degreesInc;
-
-                            var pieSlicePath = Array();
-                            var nextRadialPoint = startDegrees;
-                            var lastRadialPoint = startDegrees + degreesInc;
-                            
-                            while (nextRadialPoint < lastRadialPoint) {
-                                pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, nextRadialPoint + startOffsetDegrees));
-                                nextRadialPoint += 30;
-                            }
-                            
-                            pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, lastRadialPoint + startOffsetDegrees));
-                            
-                            pieSlicePath.unshift(centerPt);
-                            pieSlicePath.push(centerPt);
-                            var pieSlicePoly = new google.maps.Polygon({
-                                path: pieSlicePath,
-                                map: map,
-                                fillColor: map.GetNextColor(),
-                                fillOpacity: 0.6,
-                                draggable: true,
-                                editable: true,
+                        // map to the click event which we'll use to make the pieslice position permanent
+                        if (!map.pieClickListener) {
+                            map.pieClickListener = google.maps.event.addListener(map, 'click', function (event) {
+                                if (map.SelectedShape && map.SelectedShape.isPieDrawing){
+                                    pieSlicerState.SelectedPieCuts = [];
+                                    pieSlicerState.CurrentPieSlices.forEach(function(ps){
+                                        pieSlicerState.SelectedPieCuts.push(ps.startArc);
+                                    })
+                                    
+                                    map.SelectedShape.isPieDrawing = false;
+                                    map.SelectedShape.deleteOnFirstSlice = false;
+                                    map.pieMouseMoveListener.remove();
+                                    map.pieMouseMoveListener = null;
+                                }
                             });
+                        }
+                        
+                        // when the move moves over the map, draw the pie shapes in realtime based on the mouse position relative to the center of the orig circle
+                        if (!map.pieMouseMoveListener) {
+                            map.pieMouseMoveListener = google.maps.event.addListener(map, 'mousemove', function (event) {
+                                if (pieSlicerState.SelectedCenterPt && pieSlicerState.SelectedRadius && map.SelectedShape){
 
-                            google.maps.event.trigger(drawingManager, 'polygoncomplete', pieSlicePoly);
-                            map.AddUpdateShape(pieSlicePoly, false);
+                                    var heading = google.maps.geometry.spherical.computeHeading(pieSlicerState.SelectedCenterPt, event.latLng);
+                                    while (heading < 0)
+                                    {
+                                        heading += 360;
+                                    }
+
+                                    var currentPieCuts = [];
+                                    currentPieCuts.push(heading);
+                                    pieSlicerState.SelectedPieCuts.forEach(function(pc) {
+                                        currentPieCuts.push(pc);
+                                    });
+
+                                    currentPieCuts.sort(function(a,b){
+                                        return a - b;
+                                    });
+
+                                    // if we already have the pieslices, delete them all and we'll redraw them based on the currentPieCuts
+                                    pieSlicerState.CurrentPieSlices.forEach(function(ps) {
+                                        map.DeleteShape(ps);
+                                    });
+
+                                    pieSlicerState.CurrentPieSlices = [];
+
+                                    // if we are starting with a circle, delete it since we are redrawing it as a big pieslice
+                                    if (map.SelectedShape && (map.SelectedShape.isPieDrawing || map.SelectedShape.overlayType == 'circle')){
+                                        map.DeleteShape(map.SelectedShape);
+                                    }
+                                    
+                                    currentPieCuts.forEach(function(pc, i) {
+                                        var centerPt = pieSlicerState.SelectedCenterPt;
+                                        var radiusMeters = pieSlicerState.SelectedRadius;
+                                        
+                                        var pieSlicePath = Array();
+
+                                        var nextRadialPoint = pc;
+                                        lastRadialPoint = pc;
+
+                                        if (i < currentPieCuts.length-1){
+                                            // find the next arc starting point
+                                            lastRadialPoint = currentPieCuts[i+1];
+                                        }
+                                        else{
+                                            // use the first arc of our currentPieCuts
+                                            lastRadialPoint = currentPieCuts[0];
+
+                                            // make sure the pieshape colors don't flash to random colors as it is resized
+                                            polygonColorIndex = 0;
+                                        }
+
+                                        // if the start of the arc is counterclockwise from the current, move it back 360 degrees (because it is probably the last missing piece of the circle)
+                                        if (nextRadialPoint >= lastRadialPoint){
+                                            nextRadialPoint -= 360;
+                                        }
+                                    
+                                        // create a Google Map Path as an array of all the lines from the center to the outer radius for every full degree to make it look like a pie slice
+                                        while (nextRadialPoint < lastRadialPoint) {
+                                            pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, nextRadialPoint));
+                                            nextRadialPoint += 1;
+                                        }
+                            
+                                        // ensure that the last path of the pieslice is there for the last line of the path
+                                        var endArc = lastRadialPoint;
+                                        pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, endArc));
+                            
+                                        // put the center point to the start and end of the pieSlicePath
+                                        pieSlicePath.unshift(centerPt);
+                                        pieSlicePath.push(centerPt);
+
+                                        var pieSlicePoly = new google.maps.Polygon({
+                                            path: pieSlicePath,
+                                            map: map,
+                                            fillColor: map.GetNextColor(),
+                                            fillOpacity: 0.6,
+                                            draggable: false,
+                                            editable: false,
+                                        });
+
+                                        pieSlicePoly.isPieDrawing = true;
+                                        pieSlicePoly.startArc = pc;
+                                        pieSlicePoly.overlayType = 'polygon';
+                                        pieSlicePoly.isPieSlice = true;
+                                        while (pieSlicePoly.startArc < 0){
+                                            pieSlicePoly.startArc += 360;
+                                        }
+
+                                        pieSlicerState.CurrentPieSlices.push(pieSlicePoly);
+
+                                        map.AddUpdateShape(pieSlicePoly, false );
+                                    });
+                                }
+                            
+                            });
                         }
                     }
                 });
@@ -447,5 +641,35 @@
 
         </script>
 
+    </ContentTemplate>
+</asp:UpdatePanel>
+
+
+<asp:UpdatePanel ID="upSaveLocation" runat="server">
+    <ContentTemplate>
+        <Rock:HiddenFieldWithClass ID="hfLocationSavePath" runat="server" CssClass="js-savelocation-value" />
+        <Rock:HiddenFieldWithClass ID="hfLocationId" runat="server" CssClass="js-savelocationid" />
+
+        <script>
+            function saveLocationGeofence() {
+                var locationId = $('#<%=lpLocation.ClientID%> .js-item-id-value').val();
+                var locationName = $('#<%=lpLocation.ClientID%> .js-item-name-value').val();
+                $('#<%=hfLocationId.ClientID%>').val(locationId);
+                __doPostBack('<%=upSaveLocation.ClientID%>');
+
+                var map = $('#map_canvas').data().googleMap;
+
+                map.SelectedShape.Name = locationName;
+                map.AddUpdateShape(map.SelectedShape, true);
+            }
+        </script>
+
+        <%-- Save Shape to Location --%>
+        <Rock:ModalDialog ID="mdSaveLocation" runat="server" CssClass="js-savelocation-modal" ValidationGroup="vgSaveLocation" OnOkScript="saveLocationGeofence();">
+            <Content>
+                <Rock:LocationItemPicker ID="lpLocation" runat="server" AllowMultiSelect="false" />
+            </Content>
+        </Rock:ModalDialog>
+        
     </ContentTemplate>
 </asp:UpdatePanel>

@@ -342,8 +342,15 @@
 		<col def="S0">ISDotNetInstallerArgsUninstall</col>
 		<col def="S0">ISDotNetInstallerArgsRollback</col>
 		<row><td>ISX_DEFAULTCOMPONENT</td><td>{0D335255-CD17-4BD3-A313-B0EBD47D66FB}</td><td>INSTALLDIR</td><td>2</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>ISX_DEFAULTCOMPONENT1</td><td>{B2DF315C-2E95-433D-9128-A12E7DCDEEE1}</td><td>SQLSERVERTYPES</td><td>2</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>ISX_DEFAULTCOMPONENT2</td><td>{F6865500-E6DA-41F8-BBB1-6099DEC7814A}</td><td>X64</td><td>2</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>ISX_DEFAULTCOMPONENT3</td><td>{7A90B8A0-115D-4FF2-A55D-EB29BD453A25}</td><td>X86</td><td>2</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>Quartz.dll</td><td>{5CF786D9-DD90-4D0F-B2F9-8D541C0CF971}</td><td>INSTALLDIR</td><td>2</td><td/><td>quartz.dll</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>RockJobSchedulerService.Primary_output</td><td>{7E5CEDC0-E85B-42F6-A922-3BCF2D03FD52}</td><td>INSTALLDIR</td><td>2</td><td/><td>rockjobschedulerservice.prim</td><td>81</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>SqlServerSpatial110.dll</td><td>{8FAA61E7-E1D0-4B52-B5C9-6089081F09D5}</td><td>X86</td><td>2</td><td/><td>sqlserverspatial110.dll</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>SqlServerSpatial110.dll1</td><td>{DC81C011-F618-42BC-BBB5-6DA902958235}</td><td>X64</td><td>2</td><td/><td>sqlserverspatial110.dll1</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>msvcr100.dll</td><td>{31A6705E-94B1-4FD8-8EBB-22C05F638EBB}</td><td>X86</td><td>2</td><td/><td>msvcr100.dll</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>msvcr100.dll1</td><td>{C1809F28-86F4-45A2-9F8A-1F9A03B47CD5}</td><td>X64</td><td>2</td><td/><td>msvcr100.dll1</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 	</table>
 
 	<table name="Condition">
@@ -1056,6 +1063,20 @@
 	<table name="CreateFolder">
 		<col key="yes" def="s72">Directory_</col>
 		<col key="yes" def="s72">Component_</col>
+		<row><td>INSTALLDIR</td><td>ISX_DEFAULTCOMPONENT1</td></row>
+		<row><td>INSTALLDIR</td><td>ISX_DEFAULTCOMPONENT2</td></row>
+		<row><td>INSTALLDIR</td><td>ISX_DEFAULTCOMPONENT3</td></row>
+		<row><td>INSTALLDIR</td><td>SqlServerSpatial110.dll</td></row>
+		<row><td>INSTALLDIR</td><td>SqlServerSpatial110.dll1</td></row>
+		<row><td>INSTALLDIR</td><td>msvcr100.dll</td></row>
+		<row><td>INSTALLDIR</td><td>msvcr100.dll1</td></row>
+		<row><td>SQLSERVERTYPES</td><td>ISX_DEFAULTCOMPONENT1</td></row>
+		<row><td>X64</td><td>ISX_DEFAULTCOMPONENT2</td></row>
+		<row><td>X64</td><td>SqlServerSpatial110.dll1</td></row>
+		<row><td>X64</td><td>msvcr100.dll1</td></row>
+		<row><td>X86</td><td>ISX_DEFAULTCOMPONENT3</td></row>
+		<row><td>X86</td><td>SqlServerSpatial110.dll</td></row>
+		<row><td>X86</td><td>msvcr100.dll</td></row>
 	</table>
 
 	<table name="CustomAction">
@@ -1154,6 +1175,7 @@
 		<row><td>ISYourDataBaseDir</td><td>INSTALLDIR</td><td>Database</td><td/><td>0</td><td/></row>
 		<row><td>LocalAppDataFolder</td><td>TARGETDIR</td><td>.:LocalA~1|LocalAppData</td><td/><td>0</td><td/></row>
 		<row><td>MyPicturesFolder</td><td>TARGETDIR</td><td>.:MyPict~1|MyPictures</td><td/><td>0</td><td/></row>
+		<row><td>NEW_FOLDER_1</td><td>TARGETDIR</td><td>NEW_FOLDER_1</td><td/><td>0</td><td/></row>
 		<row><td>NetHoodFolder</td><td>TARGETDIR</td><td>.:NetHood</td><td/><td>0</td><td/></row>
 		<row><td>PersonalFolder</td><td>TARGETDIR</td><td>.:Personal</td><td/><td>0</td><td/></row>
 		<row><td>PrimaryVolumePath</td><td>TARGETDIR</td><td>.:Primar~1|PrimaryVolumePath</td><td/><td>0</td><td/></row>
@@ -1164,6 +1186,7 @@
 		<row><td>ROCK_RMS_JOB_SCHEDULER_SERVICE</td><td>SPARK_DEVELOPMENT_NETWORK</td><td>ROCKRM~1|Rock RMS Job Scheduler Service</td><td/><td>0</td><td/></row>
 		<row><td>RecentFolder</td><td>TARGETDIR</td><td>.:Recent</td><td/><td>0</td><td/></row>
 		<row><td>SPARK_DEVELOPMENT_NETWORK</td><td>ProgramFilesFolder</td><td>SPARKD~1|Spark Development Network</td><td/><td>0</td><td/></row>
+		<row><td>SQLSERVERTYPES</td><td>INSTALLDIR</td><td>SQLSER~1|SqlServerTypes</td><td/><td>0</td><td/></row>
 		<row><td>SendToFolder</td><td>TARGETDIR</td><td>.:SendTo</td><td/><td>3</td><td/></row>
 		<row><td>StartMenuFolder</td><td>TARGETDIR</td><td>.:STARTM~1|Start Menu</td><td/><td>3</td><td/></row>
 		<row><td>StartupFolder</td><td>TARGETDIR</td><td>.:StartUp</td><td/><td>3</td><td/></row>
@@ -1176,6 +1199,8 @@
 		<row><td>USERPROFILE</td><td>TARGETDIR</td><td>.:USERPR~1|UserProfile</td><td/><td>0</td><td/></row>
 		<row><td>WindowsFolder</td><td>TARGETDIR</td><td>.:Windows</td><td/><td>0</td><td/></row>
 		<row><td>WindowsVolume</td><td>TARGETDIR</td><td>.:WinRoot</td><td/><td>0</td><td/></row>
+		<row><td>X64</td><td>SQLSERVERTYPES</td><td>x64</td><td/><td>0</td><td/></row>
+		<row><td>X86</td><td>SQLSERVERTYPES</td><td>x86</td><td/><td>0</td><td/></row>
 	</table>
 
 	<table name="DrLocator">
@@ -1868,8 +1893,15 @@
 		<col key="yes" def="s38">Feature_</col>
 		<col key="yes" def="s72">Component_</col>
 		<row><td>AlwaysInstall</td><td>ISX_DEFAULTCOMPONENT</td></row>
+		<row><td>AlwaysInstall</td><td>ISX_DEFAULTCOMPONENT1</td></row>
+		<row><td>AlwaysInstall</td><td>ISX_DEFAULTCOMPONENT2</td></row>
+		<row><td>AlwaysInstall</td><td>ISX_DEFAULTCOMPONENT3</td></row>
 		<row><td>AlwaysInstall</td><td>Quartz.dll</td></row>
 		<row><td>AlwaysInstall</td><td>RockJobSchedulerService.Primary_output</td></row>
+		<row><td>AlwaysInstall</td><td>SqlServerSpatial110.dll</td></row>
+		<row><td>AlwaysInstall</td><td>SqlServerSpatial110.dll1</td></row>
+		<row><td>AlwaysInstall</td><td>msvcr100.dll</td></row>
+		<row><td>AlwaysInstall</td><td>msvcr100.dll1</td></row>
 	</table>
 
 	<table name="File">
@@ -1884,9 +1916,13 @@
 		<col def="S255">ISBuildSourcePath</col>
 		<col def="I4">ISAttributes</col>
 		<col def="S72">ISComponentSubFolder_</col>
-		<row><td>app.config</td><td>ISX_DEFAULTCOMPONENT</td><td>APP~1.CON|app.config</td><td>0</td><td/><td/><td/><td>1</td><td>C:\Projects\Rock\RockJobSchedulerService\app.config</td><td>1</td><td/></row>
-		<row><td>quartz.dll</td><td>Quartz.dll</td><td>Quartz.dll</td><td>0</td><td/><td/><td/><td>1</td><td>C:\Projects\Rock\RockJobSchedulerService\bin\Release\Quartz.dll</td><td>1</td><td/></row>
+		<row><td>app.config</td><td>ISX_DEFAULTCOMPONENT</td><td>APP~1.CON|app.config</td><td>0</td><td/><td/><td/><td>1</td><td>c:\Development\RockRMS\RockJobSchedulerService\app.config</td><td>1</td><td/></row>
+		<row><td>msvcr100.dll</td><td>msvcr100.dll</td><td>msvcr100.dll</td><td>0</td><td/><td/><td/><td>1</td><td>C:\Development\RockRMS\RockJobSchedulerService\bin\Release\SqlServerTypes\x86\msvcr100.dll</td><td>1</td><td/></row>
+		<row><td>msvcr100.dll1</td><td>msvcr100.dll1</td><td>msvcr100.dll</td><td>0</td><td/><td/><td/><td>1</td><td>C:\Development\RockRMS\RockJobSchedulerService\bin\Release\SqlServerTypes\x64\msvcr100.dll</td><td>1</td><td/></row>
+		<row><td>quartz.dll</td><td>Quartz.dll</td><td>Quartz.dll</td><td>0</td><td/><td/><td/><td>1</td><td>c:\Development\RockRMS\RockJobSchedulerService\bin\Release\Quartz.dll</td><td>1</td><td/></row>
 		<row><td>rockjobschedulerservice.prim</td><td>RockJobSchedulerService.Primary_output</td><td>RockJobSchedulerService.Primary output</td><td>0</td><td/><td/><td>0</td><td>1</td><td>&lt;RockJobSchedulerService&gt;|Built</td><td>3</td><td/></row>
+		<row><td>sqlserverspatial110.dll</td><td>SqlServerSpatial110.dll</td><td>SQLSER~1.DLL|SqlServerSpatial110.dll</td><td>0</td><td/><td/><td/><td>1</td><td>C:\Development\RockRMS\RockJobSchedulerService\bin\Release\SqlServerTypes\x86\SqlServerSpatial110.dll</td><td>1</td><td/></row>
+		<row><td>sqlserverspatial110.dll1</td><td>SqlServerSpatial110.dll1</td><td>SQLSER~1.DLL|SqlServerSpatial110.dll</td><td>0</td><td/><td/><td/><td>1</td><td>C:\Development\RockRMS\RockJobSchedulerService\bin\Release\SqlServerTypes\x64\SqlServerSpatial110.dll</td><td>1</td><td/></row>
 	</table>
 
 	<table name="FileSFPCatalog">
@@ -2031,8 +2067,15 @@
 		<col def="S0">HTTPLocation</col>
 		<col def="S0">Miscellaneous</col>
 		<row><td>ISX_DEFAULTCOMPONENT</td><td/><td/><td>_1693B5DC_1480_4807_8211_C0E179A64CCE_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>ISX_DEFAULTCOMPONENT1</td><td/><td/><td>_F1AF3E81_650D_4E58_B277_9FF9B36C16F0_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>ISX_DEFAULTCOMPONENT2</td><td/><td/><td>_B4FB0529_54AF_498C_8D9E_435C48A99A82_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>ISX_DEFAULTCOMPONENT3</td><td/><td/><td>_2C15BD4A_7A4A_48FC_B2FC_92F374C1867D_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>Quartz.dll</td><td/><td/><td>_75DDAC26_9A3D_4378_BB96_9DDD5056B713_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>RockJobSchedulerService.Primary_output</td><td/><td/><td>_67AB93B5_7A52_4E46_87C4_762BC02820FE_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>SqlServerSpatial110.dll</td><td/><td/><td>_C8C7767B_3F76_425F_82A3_B3DF3EFF51CE_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>SqlServerSpatial110.dll1</td><td/><td/><td>_2F5A95E0_250C_4EE5_9497_A1FCF9B647AE_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>msvcr100.dll</td><td/><td/><td>_A11E431F_D967_4843_9B47_392C90BB2BD2_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>msvcr100.dll1</td><td/><td/><td>_182E3E90_036A_456E_A316_03E15E618177_FILTER</td><td/><td/><td/><td/></row>
 	</table>
 
 	<table name="ISCustomActionReference">
@@ -2349,12 +2392,6 @@
 		<row><td>RockJobSchedulerService</td><td>..\..\RockJobSchedulerService\RockJobSchedulerService.csproj</td><td/><td>2</td></row>
 		<row><td>SystemFolder</td><td/><td/><td>1</td></row>
 		<row><td>WindowsFolder</td><td/><td/><td>1</td></row>
-	</table>
-
-	<table name="ISPowerShellWrap">
-		<col key="yes" def="s72">Action_</col>
-		<col key="yes" def="s72">Name</col>
-		<col def="S0">Value</col>
 	</table>
 
 	<table name="ISProductConfiguration">
@@ -3828,6 +3865,12 @@
 		<col def="s255">Value</col>
 	</table>
 
+	<table name="ISWSEWrap">
+		<col key="yes" def="s72">Action_</col>
+		<col key="yes" def="s72">Name</col>
+		<col def="S0">Value</col>
+	</table>
+
 	<table name="ISXmlElement">
 		<col key="yes" def="s72">ISXmlElement</col>
 		<col def="s72">ISXmlFile_</col>
@@ -3868,7 +3911,7 @@
 		<col def="V0">Data</col>
 		<col def="S255">ISBuildSourcePath</col>
 		<col def="I2">ISIconIndex</col>
-		<row><td>ARPPRODUCTICON.exe</td><td/><td>C:\Projects\Rock\RockJobSchedulerService\windows-service.ico</td><td>0</td></row>
+		<row><td>ARPPRODUCTICON.exe</td><td/><td>c:\Development\RockRMS\RockJobSchedulerService\windows-service.ico</td><td>0</td></row>
 	</table>
 
 	<table name="IniFile">
@@ -4015,7 +4058,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>SaveAsSchema</td><td/></row>
 		<row><td>SccEnabled</td><td>0</td></row>
 		<row><td>SccPath</td><td/></row>
-		<row><td>SchemaVersion</td><td>774</td></row>
+		<row><td>SchemaVersion</td><td>776</td></row>
 		<row><td>Type</td><td>MSIE</td></row>
 	</table>
 
@@ -5146,9 +5189,6 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>ISPathVariable</td><td>TestValue</td><td>Y</td><td/><td/><td/><td/><td>Text</td><td/><td>The test value of the path variable.</td></row>
 		<row><td>ISPathVariable</td><td>Type</td><td>N</td><td/><td/><td/><td/><td/><td>1;2;4;8</td><td>The type of the path variable.</td></row>
 		<row><td>ISPathVariable</td><td>Value</td><td>Y</td><td/><td/><td/><td/><td>Text</td><td/><td>The value of the path variable.</td></row>
-		<row><td>ISPowerShellWrap</td><td>Action_</td><td>N</td><td/><td/><td>CustomAction</td><td>1</td><td>Identifier</td><td/><td>Foreign key into CustomAction table</td></row>
-		<row><td>ISPowerShellWrap</td><td>Name</td><td>N</td><td/><td/><td/><td/><td>Text</td><td/><td>Property associated with this Action</td></row>
-		<row><td>ISPowerShellWrap</td><td>Value</td><td>Y</td><td/><td/><td/><td/><td>Text</td><td/><td>Value associated with this Property</td></row>
 		<row><td>ISProductConfiguration</td><td>GeneratePackageCode</td><td>Y</td><td/><td/><td/><td/><td>Number</td><td>0;1</td><td>Indicates whether or not to generate a package code.</td></row>
 		<row><td>ISProductConfiguration</td><td>ISProductConfiguration</td><td>N</td><td/><td/><td/><td/><td>Text</td><td/><td>The name of the product configuration.</td></row>
 		<row><td>ISProductConfiguration</td><td>ProductConfigurationFlags</td><td>Y</td><td/><td/><td/><td/><td>Text</td><td/><td>Product configuration (release) flags.</td></row>
@@ -5386,6 +5426,9 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>ISVirtualShortcut</td><td>Name</td><td>N</td><td/><td/><td/><td/><td>Identifier</td><td/><td>Property name</td></row>
 		<row><td>ISVirtualShortcut</td><td>Shortcut_</td><td>N</td><td/><td/><td>Shortcut</td><td>1</td><td>Identifier</td><td/><td>Foreign key into Shortcut table.</td></row>
 		<row><td>ISVirtualShortcut</td><td>Value</td><td>N</td><td/><td/><td/><td/><td/><td/><td>Property value</td></row>
+		<row><td>ISWSEWrap</td><td>Action_</td><td>N</td><td/><td/><td>CustomAction</td><td>1</td><td>Identifier</td><td/><td>Foreign key into CustomAction table</td></row>
+		<row><td>ISWSEWrap</td><td>Name</td><td>N</td><td/><td/><td/><td/><td>Text</td><td/><td>Property associated with this Action</td></row>
+		<row><td>ISWSEWrap</td><td>Value</td><td>Y</td><td/><td/><td/><td/><td>Text</td><td/><td>Value associated with this Property</td></row>
 		<row><td>ISXmlElement</td><td>Content</td><td>Y</td><td/><td/><td/><td/><td>Text</td><td/><td>Element contents</td></row>
 		<row><td>ISXmlElement</td><td>ISAttributes</td><td>Y</td><td/><td/><td/><td/><td>Number</td><td/><td>Internal XML element attributes</td></row>
 		<row><td>ISXmlElement</td><td>ISXmlElement</td><td>N</td><td/><td/><td/><td/><td>Identifier</td><td/><td>Primary key, non-localized, internal token for Xml element</td></row>

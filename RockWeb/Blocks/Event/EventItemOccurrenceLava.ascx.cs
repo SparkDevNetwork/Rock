@@ -163,7 +163,7 @@ namespace RockWeb.Blocks.Event
 
                 if ( GetAttributeValue( "SetPageTitle" ).AsBoolean() )
                 {
-                    string pageTitle = "Event";
+                    string pageTitle = eventItemOccurrence != null ? eventItemOccurrence.EventItem.Name : "Event";
                     RockPage.PageTitle = pageTitle;
                     RockPage.BrowserTitle = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
                     RockPage.Header.Title = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );

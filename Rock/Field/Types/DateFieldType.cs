@@ -550,6 +550,17 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
+        /// Attributes the constant expression.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public override ConstantExpression AttributeConstantExpression( string value )
+        {
+            var dateTime = value.AsDateTime() ?? DateTime.MinValue;
+            return Expression.Constant( dateTime, typeof( DateTime ) );
+        }
+
+        /// <summary>
         /// Gets the type of the attribute value field.
         /// </summary>
         /// <value>

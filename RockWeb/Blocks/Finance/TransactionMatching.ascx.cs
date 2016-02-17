@@ -71,6 +71,10 @@ namespace RockWeb.Blocks.Finance
         $(this).attr('src', primarySrc);
     });
 ";
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlContent );
+
             ScriptManager.RegisterStartupScript( imgPrimary, imgPrimary.GetType(), "imgPrimarySwap", script, true );
         }
 
@@ -109,6 +113,12 @@ namespace RockWeb.Blocks.Finance
             base.OnPreRender( e );
         }
 
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            LoadDropDowns();
+            ShowDetail( PageParameter( "BatchId" ).AsInteger() );
+        }
+
         #endregion
 
         #region Methods
@@ -125,9 +135,11 @@ namespace RockWeb.Blocks.Finance
             string keyPrefix = string.Format( "transaction-matching-{0}-", this.BlockId );
             var personalAccountGuidList = ( this.GetUserPreference( keyPrefix + "account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
 
-            var accountQry = new FinancialAccountService( rockContext ).Queryable();
+            var accountQry = new FinancialAccountService( rockContext )
+                .Queryable()
+                .Where( a => a.IsActive );
 
-            // no accounts specified means "all"
+            // no accounts specified means "all Active"
             if ( accountGuidList.Any() )
             {
                 accountQry = accountQry.Where( a => accountGuidList.Contains( a.Guid ) );
@@ -512,7 +524,10 @@ namespace RockWeb.Blocks.Finance
         {
             string keyPrefix = string.Format( "transaction-matching-{0}-", this.BlockId );
             var personalAccountGuidList = ( this.GetUserPreference( keyPrefix + "account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
-            var personalAccountList = new FinancialAccountService( new RockContext() ).GetByGuids( personalAccountGuidList ).ToList();
+            var personalAccountList = new FinancialAccountService( new RockContext() )
+                .GetByGuids( personalAccountGuidList )
+                .Where( a => a.IsActive )
+                .ToList();
 
             apPersonalAccounts.SetValues( personalAccountList );
 

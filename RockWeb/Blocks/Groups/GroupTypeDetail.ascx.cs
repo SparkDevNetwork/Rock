@@ -1168,12 +1168,18 @@ namespace RockWeb.Blocks.Groups
         {
             // Get the existing attributes for this entity type and qualifier value
             var attributeService = new AttributeService( rockContext );
+            var regFieldService = new RegistrationTemplateFormFieldService( rockContext );
             var attributes = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
 
             // Delete any of those attributes that were removed in the UI
             var selectedAttributeGuids = viewStateAttributes.Select( a => a.Guid );
             foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
             {
+                foreach( var field in regFieldService.Queryable().Where( f => f.AttributeId.HasValue && f.AttributeId.Value == attr.Id ).ToList() )
+                {
+                    regFieldService.Delete( field );
+                }
+
                 attributeService.Delete( attr );
                 rockContext.SaveChanges();
                 Rock.Web.Cache.AttributeCache.Flush( attr.Id );

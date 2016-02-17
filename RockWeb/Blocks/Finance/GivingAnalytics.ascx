@@ -126,6 +126,7 @@
                                             <Columns>
                                                 <Rock:DateField DataField="DateTime" HeaderText="Date" SortExpression="DateTimeStamp" />
                                                 <Rock:RockBoundField DataField="SeriesId" HeaderText="Series" SortExpression="SeriesId" />
+                                                <Rock:RockBoundField DataField="SeriesAddlInfo" HeaderText="Series Addl Info" SortExpression="SeriesAddlInfo" />
                                                 <Rock:CurrencyField DataField="YValue" HeaderText="Amount" SortExpression="YValue" />
                                             </Columns>
                                         </Rock:Grid>

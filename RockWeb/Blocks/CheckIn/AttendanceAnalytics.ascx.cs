@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.CheckIn
     [Category( "Check-in" )]
     [Description( "Shows a graph of attendance statistics which can be configured for specific groups, date range, etc." )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK )]
-    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked" )]
+    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", false )]
     [BooleanField( "Show Group Ancestry", "By default the group ancestry path is shown.  Unselect this to show only the group name.", true )]
     [GroupTypeField( "Attendance Type", required: false, key: "GroupTypeTemplate" )]
     [LinkedPage( "Check-in Detail Page", "Page that shows the user details for the check-in data.", false )]
@@ -179,7 +179,11 @@ namespace RockWeb.Blocks.CheckIn
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
             BuildGroupTypesUI();
-            LoadChartAndGrids();
+
+            if ( pnlResults.Visible )
+            {
+                LoadChartAndGrids();
+            }
         }
 
         #endregion
@@ -411,14 +415,17 @@ function(item) {
             bcAttendance.TooltipFormatter = lcAttendance.TooltipFormatter;
             bcAttendance.DataSourceUrl = this.ResolveUrl( lineChartDataSourceUrl );
 
-            var chartData = this.GetAttendanceChartData();
-            var singleDateTime = chartData.GroupBy(a => a.DateTimeStamp).Count() == 1;
-            bcAttendance.Visible = singleDateTime;
-            lcAttendance.Visible = !singleDateTime;
-
-            if ( pnlChartAttendanceGrid.Visible )
+            if ( pnlShowByChart.Visible )
             {
-                BindChartAttendanceGrid( chartData );
+                var chartData = this.GetAttendanceChartData();
+                var singleDateTime = chartData.GroupBy( a => a.DateTimeStamp ).Count() == 1;
+                bcAttendance.Visible = singleDateTime;
+                lcAttendance.Visible = !singleDateTime;
+
+                if ( pnlChartAttendanceGrid.Visible )
+                {
+                    BindChartAttendanceGrid( chartData );
+                }
             }
 
             if ( pnlShowByAttendees.Visible )
@@ -681,6 +688,16 @@ function(item) {
         /// <param name="chartData">The chart data.</param>
         private void BindChartAttendanceGrid( IEnumerable<Rock.Chart.IChartData> chartData )
         {
+            var graphBy = hfGraphBy.Value.ConvertToEnumOrNull<AttendanceGraphBy>() ?? AttendanceGraphBy.Total;
+            gChartAttendance.Columns[1].Visible = graphBy != AttendanceGraphBy.Total;
+            switch ( graphBy )
+            {
+                case AttendanceGraphBy.Group: gChartAttendance.Columns[1].HeaderText = "Group"; break;
+                case AttendanceGraphBy.Campus: gChartAttendance.Columns[1].HeaderText = "Campus"; break;
+                case AttendanceGraphBy.Location: gChartAttendance.Columns[1].HeaderText = "Location"; break;
+                case AttendanceGraphBy.Schedule: gChartAttendance.Columns[1].HeaderText = "Schedule"; break;
+            }
+
             SortProperty sortProperty = gChartAttendance.SortProperty;
 
             if ( sortProperty != null )
@@ -734,6 +751,10 @@ function(item) {
             }
 
             var rockContext = new RockContext();
+
+            // increase the timeout from 30sec to 5min. The Query can be slow if SQL hasn't calculated the Query Plan for the query yet.
+            // Sometimes, most of the time consumption is figuring out the Query Plan, but after it figures it out, it caches it so that the next time it'll be much faster
+            rockContext.Database.CommandTimeout = 300;
 
             // make a qryPersonAlias so that the generated SQL will be a "WHERE .. IN ()" instead of an OUTER JOIN (which is incredibly slow for this) 
             var qryPersonAlias = new PersonAliasService( rockContext ).Queryable();
@@ -944,7 +965,7 @@ function(item) {
             var dataViewId = dvpDataView.SelectedValueAsInt();
             if ( dataViewId.HasValue )
             {
-                var dataView = new DataViewService( _rockContext ).Get( dataViewId.Value );
+                var dataView = new DataViewService( rockContext ).Get( dataViewId.Value );
                 if ( dataView != null )
                 {
                     var errorMessages = new List<string>();
@@ -1154,9 +1175,6 @@ function(item) {
             {
                 nbAttendeesError.Visible = false;
 
-                // increase the timeout from 30 to 90. The Query can be slow if SQL hasn't calculated the Query Plan for the query yet.
-                // Sometimes, most of the time consumption is figuring out the Query Plan, but after it figures it out, it caches it so that the next time it'll be much faster
-                rockContext.Database.CommandTimeout = 90;
                 gAttendeesAttendance.SetLinqDataSource( qryResult.AsNoTracking() );
 
                 gAttendeesAttendance.DataBind();
@@ -1639,7 +1657,10 @@ function(item) {
         protected void btnShowByAttendees_Click( object sender, EventArgs e )
         {
             DisplayShowBy( ShowBy.Attendees );
-            BindAttendeesGrid();
+            if ( pnlResults.Visible )
+            {
+                BindAttendeesGrid();
+            }
         }
 
         /// <summary>
@@ -1650,7 +1671,10 @@ function(item) {
         protected void btnShowByChart_Click( object sender, EventArgs e )
         {
             DisplayShowBy( ShowBy.Chart );
-            BindChartAttendanceGrid();
+            if ( pnlResults.Visible )
+            {
+                BindChartAttendanceGrid();
+            }
         }
 
         /// <summary>
