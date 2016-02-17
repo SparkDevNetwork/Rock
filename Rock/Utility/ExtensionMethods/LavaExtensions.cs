@@ -77,6 +77,7 @@ namespace Rock
         /// <param name="myObject">an object.</param>
         /// <param name="levelsDeep">The levels deep.</param>
         /// <param name="rockContext">The rock context.</param>
+        /// <param name="entityHistory">The entity history.</param>
         /// <param name="parentElement">The parent element.</param>
         /// <returns></returns>
         private static object LiquidizeChildren( this object myObject, int levelsDeep = 0, RockContext rockContext = null, Dictionary<int, List<int>> entityHistory = null, string parentElement = "" )
