@@ -123,7 +123,10 @@ namespace Rock.Security
             }
 
             Role value = valueFactory();
-            cache.Set( key, value, new CacheItemPolicy() );
+            if ( value != null )
+            {
+                cache.Set( key, value, new CacheItemPolicy() );
+            }
             return value;
         }
 
@@ -136,11 +139,14 @@ namespace Rock.Security
         {
             using ( var rockContext = new RockContext() )
             {
+                var securityGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid(), rockContext );
+                int securityGroupTypeId = securityGroupType != null ? securityGroupType.Id : 0;
+
                 Rock.Model.GroupService groupService = new Rock.Model.GroupService( rockContext );
                 Rock.Model.GroupMemberService groupMemberService = new Rock.Model.GroupMemberService( rockContext );
                 Rock.Model.Group groupModel = groupService.Get( id );
 
-                if ( groupModel != null && groupModel.IsSecurityRole == true )
+                if ( groupModel != null && ( groupModel.IsSecurityRole == true || groupModel.GroupTypeId == securityGroupTypeId ) )
                 {
                     var role = new Role();
                     role.Id = groupModel.Id;
@@ -161,8 +167,7 @@ namespace Rock.Security
                         role.People.TryAdd( personGuid, true );
                     }
 
-                    var groupTypeCache = GroupTypeCache.Read( groupModel.GroupTypeId, rockContext );
-                    role.IsSecurityTypeGroup = groupTypeCache != null && groupTypeCache.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid();
+                    role.IsSecurityTypeGroup = groupModel.GroupTypeId == securityGroupTypeId;
                         
                     return role;
                 }
@@ -179,12 +184,13 @@ namespace Rock.Security
         {
             List<Role> roles = new List<Role>();
 
-            Guid securityRoleGuid = Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid();
+            var securityGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
+            int securityGroupTypeId = securityGroupType != null ? securityGroupType.Id : 0;
 
             Rock.Model.GroupService groupService = new Rock.Model.GroupService( new RockContext() );
             foreach ( int id in groupService.Queryable()
                 .Where( g => 
-                    g.GroupType.Guid.Equals(securityRoleGuid) ||
+                    g.GroupTypeId == securityGroupTypeId ||
                     g.IsSecurityRole == true )
                 .OrderBy( g => g.Name )
                 .Select( g => g.Id )
