@@ -35,6 +35,14 @@ $(function() {
     preloader: false,
     fixedContentPos: false
   })
+  $('.lightbox').magnificPopup({
+    type: 'image',
+    closeOnContentClick: true,
+    mainClass: 'mfp-img-mobile',
+    image: {
+      verticalFit: true
+    }
+  })
 })
 
 // Setup fitvids
