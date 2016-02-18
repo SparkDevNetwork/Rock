@@ -980,6 +980,7 @@ function(item) {
                         person.LastName = row["LastName"].ToString();
                         person.Email = row["Email"].ToString();
                         person.Age = Person.GetAge( row["BirthDate"] as DateTime? );
+                        person.ConnectionStatusValueId = row["ConnectionStatusValueId"] as int?;
                         result.Person = person;
 
                         if ( includeParents )
@@ -1129,6 +1130,7 @@ function(item) {
                             person.LastName = row["LastName"].ToString();
                             person.Email = row["Email"].ToString();
                             person.Age = Person.GetAge( row["BirthDate"] as DateTime? );
+                            person.ConnectionStatusValueId = row["ConnectionStatusValueId"] as int?;
                             result.Person = person;
 
                             if ( includeParents )
@@ -1989,6 +1991,8 @@ function(item) {
             public string LastName { get; set; }
             public string Email { get; set; }
             public int? Age { get; set; }
+            public int? ConnectionStatusValueId { get; set; }
+
             public override string ToString()
             {
                 return NickName + " " + LastName;
