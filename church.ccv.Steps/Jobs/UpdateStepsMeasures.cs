@@ -29,6 +29,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 
 using church.ccv.Steps.Model;
+using church.ccv.Datamart.Model;
 
 namespace church.ccv.Steps
 {
@@ -39,7 +40,7 @@ namespace church.ccv.Steps
     [IntegerField("Weekend Attendance Metric Id", "The metric id of the metric that will provide the weekend attendance counts.")]
     [SystemEmailField( "Warning Email Template", "The system email to use when metrics don't exist.", false )]
     [GroupTypeField("Neighborhood Area Group Type")]
-    
+
     [IntegerField("Baptism Measure Id", "The Measure Id for baptisms.", category:"Measures", order: 1)]
     [IntegerField( "Membership Measure Id", "The Measure Id for membership.", category: "Measures", order: 2 )]
     [IntegerField( "Attending Measure Id", "The Measure Id for attending.", category: "Measures", order: 3 )]
@@ -61,6 +62,7 @@ namespace church.ccv.Steps
         const string ATTRIBUTE_GLOBAL_COACHING_GROUPTYPE_IDS = "CoachingGroupTypeIds";
         const string ATTRIBUTE_GLOBAL_CONNECTION_GROUPTYPE_IDS = "ConnectionGroupTypeIds";
         const string ATTRIBUTE_GLOBAL_SERVING_GROUPTYPE_IDS = "ServingGroupTypeIds";
+        const string ATTRIBUTE_GLOBAL_MEMBERSHIP_VALUE_ID = "MembershipValueId";
 
         List<int> _campusIds = new List<int>();
         int _attendanceMetricId = -1;
@@ -152,6 +154,8 @@ namespace church.ccv.Steps
                 lastProcessedSunday = RockDateTime.Now.SundayDate().AddDays( -14 );
             }
 
+            bool sundayProcessed = false;
+
             // process all missing sundays
             if ( lastProcessedSunday != RockDateTime.Now.SundayDate().AddDays( -7 ) )
             {
@@ -160,6 +164,9 @@ namespace church.ccv.Steps
                 while ( lastProcessedSunday <= RockDateTime.Now )
                 {
                     string processingMessages = string.Empty;
+
+                    sundayProcessed = true;
+
                     var wasSuccessful = ProcessWeek( lastProcessedSunday.Value, out processingMessages );
 
                     if ( !wasSuccessful )
@@ -183,6 +190,11 @@ namespace church.ccv.Steps
                 {
                     context.Result = "No Sundays required processing";
                 }
+            }
+
+            if (sundayProcessed == false )
+            {
+                context.Result = "No Sundays required processing. We are up to date.";
             }
         }
 
@@ -221,12 +233,32 @@ namespace church.ccv.Steps
                     return false;
                 }
 
+                DatamartNeighborhoodService datamartNeighborhoodService = new DatamartNeighborhoodService(rockContext);
+                var neighborhoodAreas = datamartNeighborhoodService.Queryable()
+                                            .Where( n => n.NeighborhoodPastorId != null )
+                                            .Select( n => new NeighborhoodArea
+                                            {
+                                                AreaId = n.NeighborhoodId.Value,
+                                                //AdultCount = n.AdultCount.Value, -- adult count in the neighborhood datamart isn't currently accurate 2/17/2016
+                                                PastorPersonId = n.NeighborhoodPastorId,
+                                            } )
+                                            .ToList();
+                
+                // fill in missing pieces from the datamart
+                foreach(var area in neighborhoodAreas )
+                {
+                    area.PastorPersonAliasId = new PersonAliasService( rockContext ).Queryable().Where( a => a.PersonId == area.PastorPersonId ).Select( a => a.Id ).FirstOrDefault();
+                    area.CampusId = new GroupService( rockContext ).Queryable().Where( g => g.Id == area.AreaId ).Select( g => g.CampusId ).FirstOrDefault();
+                    area.AdultCount = new DatamartPersonService( rockContext ).Queryable().Where( p => p.NeighborhoodId == area.AreaId && p.FamilyRole == "Adult" ).Count();
+                }
+
                 // load counts for campuses
                 var campusAdultCounts = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
                                             .Where( m =>
                                                     m.Group.GroupTypeId == _familyGroupTypeId
                                                     && m.Person.RecordStatusValueId == _activeRecordStatusId
-                                                    && m.GroupRoleId == _adultFamilyRoleId )
+                                                    && m.GroupRoleId == _adultFamilyRoleId 
+                                                    && m.Group.CampusId != null)
                                             .GroupBy( m => m.Group.CampusId )
                                             .Select( a => new CampusAdultCount
                                             {
@@ -235,126 +267,402 @@ namespace church.ccv.Steps
                                                 } )
                                             .ToList();
 
-                // load neighborhood group areas
-                var neighborhoodAreas = new GroupService( rockContext ).Queryable().AsNoTracking()
-                                            .Where( g =>
-                                                 g.GroupTypeId == _neighborhoodAreaGroupTypeId
-                                                 && g.IsActive == true )
-                                             .Select( g => new NeighborhoodArea
-                                             {
-                                                 AreaId = g.Id,
-                                                 PastorPersonAliasId = g.Members.Where( m => m.GroupRole.IsLeader ).Select( m => m.Person.Aliases.FirstOrDefault().Id ).FirstOrDefault(),
-                                                 CampusId = g.CampusId
-                                             } )
-                                             .ToList();
-                    
-                // get details for each area
-                foreach(var area in neighborhoodAreas )
-                {
-                    area.FamilyIds = new GroupService( rockContext ).GetGeofencedFamilies( area.AreaId )
-                                        .Where( f =>
-                                             f.CampusId == area.CampusId
-                                             && f.IsActive )
-                                        .Select( f => f.Id )
-                                        .ToList();
-
-                    area.AdultCount = new GroupMemberService( rockContext ).Queryable()
-                                            .Where( m =>
-                                                     m.GroupMemberStatus == GroupMemberStatus.Active
-                                                     && m.GroupRoleId == _adultFamilyRoleId
-                                                     && area.FamilyIds.Contains( m.GroupId ) )
-                                             .Count();
-                }
-
-                var pastorSummary = neighborhoodAreas
-                                        .GroupBy( n => n.PastorPersonAliasId )
-                                        .Select( grp => new PastorSummary
-                                        {
-                                            PastorPersonAliasId = grp.Key,
-                                            FamilyIds = grp.SelectMany( ff => ff.FamilyIds ).Distinct().ToList(),
-                                            AdultCount = grp.Sum( ff => ff.AdultCount )
-                                        } )
-                                        .ToList();
-
-                // clear out object to reduce memory
-                neighborhoodAreas = null;
-
                 // process measures
-                ProcessBaptisms(sundayDate, metricValues, campusAdultCounts, pastorSummary );
-                ProcessMembership( sundayDate, metricValues, campusAdultCounts, pastorSummary );
-                ProcessAttending( sundayDate, metricValues, campusAdultCounts, pastorSummary );
-                ProcessGiving( sundayDate, metricValues, campusAdultCounts, pastorSummary );
+                ProcessBaptisms(sundayDate, metricValues, campusAdultCounts, neighborhoodAreas );
+                ProcessMembership( sundayDate, metricValues, campusAdultCounts, neighborhoodAreas );
+                ProcessAttending( sundayDate, metricValues, campusAdultCounts, neighborhoodAreas );
+                ProcessGiving( sundayDate, metricValues, campusAdultCounts, neighborhoodAreas );
 
-                ProcessCoaching( sundayDate, metricValues, campusAdultCounts, pastorSummary );
-                ProcessConnection( sundayDate, metricValues, campusAdultCounts, pastorSummary );
-                ProcessServing( sundayDate, metricValues, campusAdultCounts, pastorSummary );
-                ProcessSharing( sundayDate, metricValues, campusAdultCounts, pastorSummary );
+                ProcessCoaching( sundayDate, metricValues, campusAdultCounts, neighborhoodAreas );
+                ProcessConnection( sundayDate, metricValues, campusAdultCounts, neighborhoodAreas );
+                ProcessServing( sundayDate, metricValues, campusAdultCounts, neighborhoodAreas );
+                ProcessSharing( sundayDate, metricValues, campusAdultCounts, neighborhoodAreas );
             }
 
             return wasSuccessful;
         }
 
         // attribute based measures
-        private void ProcessBaptisms( DateTime sundayDate, List<MetricValue> metricValues, List<CampusAdultCount> campusAdultCounts, List<PastorSummary>pastorSummary )
+        private void ProcessBaptisms( DateTime sundayDate, List<MetricValue> metricValues, List<CampusAdultCount> campusAdultCounts, List<NeighborhoodArea> neighborhoodAreas )
+        {
+            using ( RockContext rockContext = new RockContext() )
+            {
+                DatamartPersonService datamartPersonService = new DatamartPersonService( rockContext );
+
+                var measureCountsByCampusAll = datamartPersonService.Queryable()
+                                                .Where( p => p.IsBaptized == true )
+                                                .GroupBy( p => p.CampusId)
+                                                .Select( r => new CampusMeasure
+                                                {
+                                                    CampusId = r.Key.Value,
+                                                    MeasureValue = r.Count()
+                                                } )
+                                                .ToList();
+
+                var measureCountsByCampusAdults = datamartPersonService.Queryable()
+                                                .Where( p => p.IsBaptized == true && p.FamilyRole == "Adult")
+                                                .GroupBy( p => p.CampusId )
+                                                .Select( r => new CampusMeasure
+                                                {
+                                                    CampusId = r.Key.Value,
+                                                    MeasureValue = r.Count()
+                                                } )
+                                                .ToList();
+
+                List<AreaMeasure> areaMeasures = new List<AreaMeasure>();
+                foreach(var area in neighborhoodAreas ){
+                    // get baptisms
+                    var areaMeasureCount = datamartPersonService.Queryable()
+                                                .Where( p => p.IsBaptized == true && p.FamilyRole == "Adult" && p.NeighborhoodId == area.AreaId )
+                                                .Count();
+
+                    AreaMeasure neighborhoodMeasure = new AreaMeasure();
+                    neighborhoodMeasure.PastorPersonAliasId = area.PastorPersonAliasId;
+                    neighborhoodMeasure.AdultCount = area.AdultCount;
+                    neighborhoodMeasure.MeasureCount = areaMeasureCount;
+
+                    areaMeasures.Add( neighborhoodMeasure );
+                }
+
+                SaveMetrics( _baptismMeasureId, sundayDate, metricValues, campusAdultCounts, measureCountsByCampusAll, measureCountsByCampusAdults, areaMeasures );
+            }
+        }
+        private void ProcessMembership( DateTime sundayDate, List<MetricValue> metricValues, List<CampusAdultCount> campusAdultCounts, List<NeighborhoodArea> neighborhoodAreas )
+        {
+            using ( RockContext rockContext = new RockContext() )
+            {
+                DatamartPersonService datamartPersonService = new DatamartPersonService( rockContext );
+
+                int membershipConnectionId = DefinedValueCache.Read( GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_MEMBERSHIP_VALUE_ID ) ).Id; 
+
+                var measureCountsByCampusAll = datamartPersonService.Queryable().AsNoTracking()
+                                            .Where( m =>
+                                                    m.ConnectionStatusValueId == membershipConnectionId )
+                                            .GroupBy( m => m.CampusId )
+                                            .Select( r => new CampusMeasure
+                                            {
+                                                CampusId = r.Key.Value,
+                                                MeasureValue = r.Count()
+                                            } )
+                                            .ToList();
+
+                var measureCountsByCampusAdults = datamartPersonService.Queryable().AsNoTracking()
+                                            .Where( m =>
+                                                    m.ConnectionStatusValueId == membershipConnectionId && m.FamilyRole == "Adult" )
+                                            .GroupBy( m => m.CampusId )
+                                            .Select( r => new CampusMeasure
+                                            {
+                                                CampusId = r.Key.Value,
+                                                MeasureValue = r.Count()
+                                            } )
+                                            .ToList();
+
+
+
+                List<AreaMeasure> areaMeasures = new List<AreaMeasure>();
+                foreach ( var area in neighborhoodAreas )
+                {
+                    // get membership
+                    var areaMeasureCount = datamartPersonService.Queryable()
+                                                .Where( p => p.ConnectionStatusValueId == membershipConnectionId && p.FamilyRole == "Adult" && p.NeighborhoodId == area.AreaId )
+                                                .Count();
+
+                    AreaMeasure neighborhoodMeasure = new AreaMeasure();
+                    neighborhoodMeasure.PastorPersonAliasId = area.PastorPersonAliasId;
+                    neighborhoodMeasure.AdultCount = area.AdultCount;
+                    neighborhoodMeasure.MeasureCount = areaMeasureCount;
+
+                    areaMeasures.Add( neighborhoodMeasure );
+                }
+
+                SaveMetrics(_membershipMeasureId, sundayDate, metricValues, campusAdultCounts, measureCountsByCampusAll, measureCountsByCampusAdults, areaMeasures );
+            }
+        }
+        
+        private void ProcessAttending( DateTime sundayDate, List<MetricValue> metricValues, List<CampusAdultCount> campusAdultCounts, List<NeighborhoodArea> neighborhoodAreas )
+        {
+            using ( RockContext rockContext = new RockContext() )
+            {
+                DatamartPersonService datamartPersonService = new DatamartPersonService( rockContext );
+
+                var measureCountsByCampusAll = datamartPersonService.Queryable().AsNoTracking()
+                                            .Where( m =>
+                                                    m.IsEra == true )
+                                            .GroupBy( m => m.CampusId )
+                                            .Select( r => new CampusMeasure
+                                            {
+                                                CampusId = r.Key.Value,
+                                                MeasureValue = r.Count()
+                                            } )
+                                            .ToList();
+
+                var measureCountsByCampusAdults = datamartPersonService.Queryable().AsNoTracking()
+                                            .Where( m =>
+                                                    m.IsEra == true && m.FamilyRole == "Adult")
+                                            .GroupBy( m => m.CampusId )
+                                            .Select( r => new CampusMeasure
+                                            {
+                                                CampusId = r.Key.Value,
+                                                MeasureValue = r.Count()
+                                            } )
+                                            .ToList();
+
+                List<AreaMeasure> areaMeasures = new List<AreaMeasure>();
+                foreach ( var area in neighborhoodAreas )
+                {
+                    // get attending
+                    var areaMeasureCount = datamartPersonService.Queryable()
+                                                .Where( p => p.IsEra == true && p.FamilyRole == "Adult" && p.NeighborhoodId == area.AreaId )
+                                                .Count();
+
+                    AreaMeasure neighborhoodMeasure = new AreaMeasure();
+                    neighborhoodMeasure.PastorPersonAliasId = area.PastorPersonAliasId;
+                    neighborhoodMeasure.AdultCount = area.AdultCount;
+                    neighborhoodMeasure.MeasureCount = areaMeasureCount;
+
+                    areaMeasures.Add( neighborhoodMeasure );
+                }
+
+                SaveMetrics( _attendingMeasureId, sundayDate, metricValues, campusAdultCounts, measureCountsByCampusAll, measureCountsByCampusAdults, areaMeasures );
+            }
+        }
+        
+        private void ProcessGiving( DateTime sundayDate, List<MetricValue> metricValues, List<CampusAdultCount> campusAdultCounts, List<NeighborhoodArea> neighborhoodAreas )
+        {
+            using ( RockContext rockContext = new RockContext() )
+            {
+                DatamartPersonService datamartPersonService = new DatamartPersonService( rockContext );
+
+                decimal titheThreshold = GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_TITHE_THRESHOLD ).AsDecimal();
+
+                var measureCountsByCampusAll = datamartPersonService.Queryable().AsNoTracking()
+                                            .Where( m =>
+                                                    m.GivingLast12Months >= titheThreshold )
+                                            .GroupBy( m => m.CampusId )
+                                            .Select( r => new CampusMeasure
+                                            {
+                                                CampusId = r.Key.Value,
+                                                MeasureValue = r.Count()
+                                            } )
+                                            .ToList();
+
+                var measureCountsByCampusAdults = datamartPersonService.Queryable().AsNoTracking()
+                                            .Where( m =>
+                                                    m.GivingLast12Months >= titheThreshold && m.FamilyRole == "Adult" )
+                                            .GroupBy( m => m.CampusId )
+                                            .Select( r => new CampusMeasure
+                                            {
+                                                CampusId = r.Key.Value,
+                                                MeasureValue = r.Count()
+                                            } )
+                                            .ToList();
+
+
+
+                List<AreaMeasure> areaMeasures = new List<AreaMeasure>();
+                foreach ( var area in neighborhoodAreas )
+                {
+                    // get attending
+                    var areaMeasureCount = datamartPersonService.Queryable()
+                                                .Where( p => p.GivingLast12Months >= titheThreshold && p.FamilyRole == "Adult" && p.NeighborhoodId == area.AreaId )
+                                                .Count();
+
+                    AreaMeasure neighborhoodMeasure = new AreaMeasure();
+                    neighborhoodMeasure.PastorPersonAliasId = area.PastorPersonAliasId;
+                    neighborhoodMeasure.AdultCount = area.AdultCount;
+                    neighborhoodMeasure.MeasureCount = areaMeasureCount;
+
+                    areaMeasures.Add( neighborhoodMeasure );
+                }
+
+                SaveMetrics( _attendingMeasureId, sundayDate, metricValues, campusAdultCounts, measureCountsByCampusAll, measureCountsByCampusAdults, areaMeasures );
+            }
+        }
+
+        
+        // group based measures
+        private void ProcessCoaching( DateTime sundayDate, List<MetricValue> metricValues, List<CampusAdultCount> campusAdultCounts, List<NeighborhoodArea> neighborhoodAreas )
+        {
+            using ( RockContext rockContext = new RockContext() )
+            {
+                DatamartPersonService datamartPersonService = new DatamartPersonService( rockContext );
+
+                var measureCountsByCampusAll = datamartPersonService.Queryable().AsNoTracking()
+                                            .Where( m =>
+                                                    m.IsCoaching == true )
+                                            .GroupBy( m => m.CampusId )
+                                            .Select( r => new CampusMeasure
+                                            {
+                                                CampusId = r.Key.Value,
+                                                MeasureValue = r.Count()
+                                            } )
+                                            .ToList();
+
+                var measureCountsByCampusAdults = datamartPersonService.Queryable().AsNoTracking()
+                                            .Where( m =>
+                                                    m.IsCoaching == true && m.FamilyRole == "Adult" )
+                                            .GroupBy( m => m.CampusId )
+                                            .Select( r => new CampusMeasure
+                                            {
+                                                CampusId = r.Key.Value,
+                                                MeasureValue = r.Count()
+                                            } )
+                                            .ToList();
+
+                List<AreaMeasure> areaMeasures = new List<AreaMeasure>();
+                foreach ( var area in neighborhoodAreas )
+                {
+                    // get attending
+                    var areaMeasureCount = datamartPersonService.Queryable()
+                                                .Where( p => p.IsCoaching == true && p.FamilyRole == "Adult" && p.NeighborhoodId == area.AreaId )
+                                                .Count();
+
+                    AreaMeasure neighborhoodMeasure = new AreaMeasure();
+                    neighborhoodMeasure.PastorPersonAliasId = area.PastorPersonAliasId;
+                    neighborhoodMeasure.AdultCount = area.AdultCount;
+                    neighborhoodMeasure.MeasureCount = areaMeasureCount;
+
+                    areaMeasures.Add( neighborhoodMeasure );
+                }
+
+                SaveMetrics( _attendingMeasureId, sundayDate, metricValues, campusAdultCounts, measureCountsByCampusAll, measureCountsByCampusAdults, areaMeasures );
+
+            }
+        }
+
+        
+        private void ProcessConnection( DateTime sundayDate, List<MetricValue> metricValues, List<CampusAdultCount> campusAdultCounts, List<NeighborhoodArea> neighborhoodAreas )
+        {
+            using ( RockContext rockContext = new RockContext() )
+            {
+                DatamartPersonService datamartPersonService = new DatamartPersonService( rockContext );
+
+                var measureCountsByCampusAll = datamartPersonService.Queryable().AsNoTracking()
+                                            .Where( m =>
+                                                    m.InNeighborhoodGroup == true )
+                                            .GroupBy( m => m.CampusId )
+                                            .Select( r => new CampusMeasure
+                                            {
+                                                CampusId = r.Key.Value,
+                                                MeasureValue = r.Count()
+                                            } )
+                                            .ToList();
+
+                var measureCountsByCampusAdults = datamartPersonService.Queryable().AsNoTracking()
+                                            .Where( m =>
+                                                    m.InNeighborhoodGroup == true && m.FamilyRole == "Adult" )
+                                            .GroupBy( m => m.CampusId )
+                                            .Select( r => new CampusMeasure
+                                            {
+                                                CampusId = r.Key.Value,
+                                                MeasureValue = r.Count()
+                                            } )
+                                            .ToList();
+
+                List<AreaMeasure> areaMeasures = new List<AreaMeasure>();
+                foreach ( var area in neighborhoodAreas )
+                {
+                    // get attending
+                    var areaMeasureCount = datamartPersonService.Queryable()
+                                                .Where( p => p.InNeighborhoodGroup == true && p.FamilyRole == "Adult" && p.NeighborhoodId == area.AreaId )
+                                                .Count();
+
+                    AreaMeasure neighborhoodMeasure = new AreaMeasure();
+                    neighborhoodMeasure.PastorPersonAliasId = area.PastorPersonAliasId;
+                    neighborhoodMeasure.AdultCount = area.AdultCount;
+                    neighborhoodMeasure.MeasureCount = areaMeasureCount;
+
+                    areaMeasures.Add( neighborhoodMeasure );
+                }
+
+                SaveMetrics( _attendingMeasureId, sundayDate, metricValues, campusAdultCounts, measureCountsByCampusAll, measureCountsByCampusAdults, areaMeasures );
+            }
+        }
+
+        private void ProcessServing( DateTime sundayDate, List<MetricValue> metricValues, List<CampusAdultCount> campusAdultCounts, List<NeighborhoodArea> neighborhoodAreas )
+        {
+            using ( RockContext rockContext = new RockContext() )
+            {
+                DatamartPersonService datamartPersonService = new DatamartPersonService( rockContext );
+
+                var measureCountsByCampusAll = datamartPersonService.Queryable().AsNoTracking()
+                                            .Where( m =>
+                                                    m.IsServing == true )
+                                            .GroupBy( m => m.CampusId )
+                                            .Select( r => new CampusMeasure
+                                            {
+                                                CampusId = r.Key.Value,
+                                                MeasureValue = r.Count()
+                                            } )
+                                            .ToList();
+
+                var measureCountsByCampusAdults = datamartPersonService.Queryable().AsNoTracking()
+                                            .Where( m =>
+                                                    m.IsServing == true && m.FamilyRole == "Adult" )
+                                            .GroupBy( m => m.CampusId )
+                                            .Select( r => new CampusMeasure
+                                            {
+                                                CampusId = r.Key.Value,
+                                                MeasureValue = r.Count()
+                                            } )
+                                            .ToList();
+
+                List<AreaMeasure> areaMeasures = new List<AreaMeasure>();
+                foreach ( var area in neighborhoodAreas )
+                {
+                    // get attending
+                    var areaMeasureCount = datamartPersonService.Queryable()
+                                                .Where( p => p.IsServing == true && p.FamilyRole == "Adult" && p.NeighborhoodId == area.AreaId )
+                                                .Count();
+
+                    AreaMeasure neighborhoodMeasure = new AreaMeasure();
+                    neighborhoodMeasure.PastorPersonAliasId = area.PastorPersonAliasId;
+                    neighborhoodMeasure.AdultCount = area.AdultCount;
+                    neighborhoodMeasure.MeasureCount = areaMeasureCount;
+
+                    areaMeasures.Add( neighborhoodMeasure );
+                }
+
+                SaveMetrics( _attendingMeasureId, sundayDate, metricValues, campusAdultCounts, measureCountsByCampusAll, measureCountsByCampusAdults, areaMeasures );
+            }
+        }
+
+        private void ProcessSharing( DateTime sundayDate, List<MetricValue> metricValues, List<CampusAdultCount> campusAdultCounts, List<NeighborhoodArea> neighborhoodAreas )
+        {
+            using ( RockContext rockContext = new RockContext() )
+            {
+                // not implemented sending in values so graphs will work as tbd
+
+                var measureCountsByCampusAll = campusAdultCounts.Select( a => new CampusMeasure { CampusId = a.CampusId, MeasureValue = 0 } ).ToList();
+                var measureCountsByCampusAdults = campusAdultCounts.Select( a => new CampusMeasure { CampusId = a.CampusId, MeasureValue = 0 } ).ToList();
+
+                var areaMeasures = neighborhoodAreas.Select( a => new AreaMeasure { PastorPersonAliasId = a.PastorPersonAliasId, AdultCount = a.AdultCount, MeasureCount = 0 } ).ToList();
+
+                SaveMetrics( _attendingMeasureId, sundayDate, metricValues, campusAdultCounts, measureCountsByCampusAll, measureCountsByCampusAdults, areaMeasures );
+            }
+        }
+
+        #region Utilities
+
+        private void SaveMetrics( int measureId, DateTime sundayDate, List<MetricValue> metricValues, List<CampusAdultCount> campusAdultCounts, List<CampusMeasure> campusAdultMeasures, List<CampusMeasure> campusAllMeasures, List<AreaMeasure> areaMeasures )
         {
             using ( RockContext rockContext = new RockContext() )
             {
                 StepMeasureValueService stepMeasureValueService = new StepMeasureValueService( rockContext );
-
-                var baptismAttributeId = new AttributeService( rockContext ).Queryable()
-                                            .Where( a => 
-                                                        a.Key == ATTRIBUTE_PERSON_DATE_OF_BAPTISM
-                                                        && a.EntityType.Name == "Rock.Model.Person" )
-                                            .Select( a => a.Id )
-                                            .FirstOrDefault();
-
-                var baptismAttributes = new AttributeValueService( rockContext ).Queryable().AsNoTracking()
-                                            .Where( a => 
-                                                a.AttributeId == baptismAttributeId
-                                                && a.ValueAsDateTime != null 
-                                                && a.ValueAsDateTime <= sundayDate)
-                                            .Select( a => a.EntityId );
-
-                var baptismCountsByCampusAll = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    m.Group.GroupTypeId == _familyGroupTypeId
-                                                    && baptismAttributes.Contains( m.PersonId )
-                                                    && m.Person.RecordStatusValueId == _activeRecordStatusId )
-                                            .GroupBy( m => m.Group.CampusId )
-                                            .Select( r => new
-                                            {
-                                                CampusId = r.Key,
-                                                BaptismCount = r.Count()
-                                            })
-                                            .ToList();
-
-                var baptismCountsByCampusAdults = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    m.Group.GroupTypeId == _familyGroupTypeId
-                                                    && baptismAttributes.Contains( m.PersonId )
-                                                    && m.Person.RecordStatusValueId == _activeRecordStatusId
-                                                    && m.GroupRoleId == _adultFamilyRoleId)
-                                            .GroupBy( m => m.Group.CampusId )
-                                            .Select( r => new
-                                            {
-                                                CampusId = r.Key,
-                                                BaptismCount = r.Count()
-                                            })
-                                            .ToList();
 
                 foreach ( int campusId in _campusIds )
                 {
                     // get counts 
                     int weekendAttendance = metricValues.Where( m => m.EntityId == campusId ).Select( m => m.YValue ).FirstOrDefault() != null ? Decimal.ToInt16( metricValues.Where( m => m.EntityId == campusId ).Select( m => m.YValue ).FirstOrDefault().Value ) : 0;
                     int activeAdults = campusAdultCounts.Where( c => c.CampusId == campusId ).Select( c => c.AdultCount ).Count() != 0 ? campusAdultCounts.Where( c => c.CampusId == campusId ).Select( c => c.AdultCount ).FirstOrDefault() : 0;
-                    int baptismCountAll = baptismCountsByCampusAll.Where( b => b.CampusId == campusId ).Select( b => b.BaptismCount ).Count() != 0 ? baptismCountsByCampusAll.Where( b => b.CampusId == campusId ).Select( b => b.BaptismCount ).FirstOrDefault() : 0;
-                    int baptismCountAdults = baptismCountsByCampusAdults.Where( b => b.CampusId == campusId ).Select( b => b.BaptismCount ).Count() != 0 ? baptismCountsByCampusAdults.Where( b => b.CampusId == campusId ).Select( b => b.BaptismCount ).FirstOrDefault() : 0;
+                    int measureCountAll = campusAllMeasures.Where( b => b.CampusId == campusId ).Select( b => b.MeasureValue ).Count() != 0 ? campusAllMeasures.Where( b => b.CampusId == campusId ).Select( b => b.MeasureValue ).FirstOrDefault() : 0;
+                    int measureCountAdults = campusAdultMeasures.Where( b => b.CampusId == campusId ).Select( b => b.MeasureValue ).Count() != 0 ? campusAdultMeasures.Where( b => b.CampusId == campusId ).Select( b => b.MeasureValue ).FirstOrDefault() : 0;
 
                     // save baptism all count / weekend attendance
                     StepMeasureValue measureValueAll = new StepMeasureValue();
-                    measureValueAll.StepMeasureId = _baptismMeasureId;
+                    measureValueAll.StepMeasureId = measureId;
                     measureValueAll.SundayDate = sundayDate;
-                    measureValueAll.Value = baptismCountAll;
+                    measureValueAll.Value = measureCountAll;
                     measureValueAll.CampusId = campusId;
                     measureValueAll.WeekendAttendance = weekendAttendance;
 
@@ -362,9 +670,9 @@ namespace church.ccv.Steps
 
                     // save baptism adult count / campus adult count
                     StepMeasureValue measureValueAdults = new StepMeasureValue();
-                    measureValueAdults.StepMeasureId = _baptismMeasureId;
+                    measureValueAdults.StepMeasureId = measureId;
                     measureValueAdults.SundayDate = sundayDate;
-                    measureValueAdults.Value = baptismCountAdults;
+                    measureValueAdults.Value = measureCountAdults;
                     measureValueAdults.CampusId = campusId;
                     measureValueAdults.ActiveAdults = activeAdults;
 
@@ -373,675 +681,32 @@ namespace church.ccv.Steps
 
                 rockContext.SaveChanges();
 
-                foreach(var pastor in pastorSummary ){
-                    // get baptisms
-                    var baptismCount = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    pastor.FamilyIds.Contains(m.GroupId)
-                                                    && baptismAttributes.Contains( m.PersonId )
-                                                    && m.Person.RecordStatusValueId == _activeRecordStatusId
-                                                    && m.GroupRoleId == _adultFamilyRoleId )
-                                            .Count();
+                var pastorMeasures = areaMeasures.GroupBy( n => n.PastorPersonAliasId )
+                                        .Select( p => new
+                                        {
+                                            PastorPersonAliasId = p.Key,
+                                            AdultCount = p.Sum( k => k.AdultCount ),
+                                            MeasureValue = p.Sum( k => k.MeasureCount )
+                                        } )
+                                        .ToList();
 
+                foreach ( var pastor in pastorMeasures )
+                {
                     StepMeasureValue measureValueAdults = new StepMeasureValue();
-                    measureValueAdults.StepMeasureId = _baptismMeasureId;
+                    measureValueAdults.StepMeasureId = measureId;
                     measureValueAdults.SundayDate = sundayDate;
-                    measureValueAdults.Value = baptismCount;
+                    measureValueAdults.Value = pastor.MeasureValue.HasValue ? pastor.MeasureValue.Value : 0;
                     measureValueAdults.PastorPersonAliasId = pastor.PastorPersonAliasId;
                     measureValueAdults.ActiveAdults = pastor.AdultCount;
 
                     stepMeasureValueService.Add( measureValueAdults );
                 }
-
-                rockContext.SaveChanges();
-            }
-        }
-
-        private void ProcessMembership( DateTime sundayDate, List<MetricValue> metricValues, List<CampusAdultCount> campusAdultCounts, List<PastorSummary> pastorSummary )
-        {
-            using ( RockContext rockContext = new RockContext() )
-            {
-                StepMeasureValueService stepMeasureValueService = new StepMeasureValueService( rockContext );
-
-                var membershipAttributeId = new AttributeService( rockContext ).Queryable()
-                                            .Where( a =>
-                                                        a.Key == ATTRIBUTE_PERSON_DATE_OF_MEMBERSHIP
-                                                        && a.EntityType.Name == "Rock.Model.Person" )
-                                            .Select( a => a.Id )
-                                            .FirstOrDefault();
-
-                var membershipAttributes = new AttributeValueService( rockContext ).Queryable().AsNoTracking()
-                                            .Where( a =>
-                                                a.AttributeId == membershipAttributeId
-                                                && a.ValueAsDateTime != null
-                                                && a.ValueAsDateTime <= sundayDate )
-                                            .Select( a => a.EntityId );
-
-                var membershipCountsByCampusAll = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    m.Group.GroupTypeId == _familyGroupTypeId
-                                                    && membershipAttributes.Contains( m.PersonId )
-                                                    && m.Person.RecordStatusValueId == _activeRecordStatusId )
-                                            .GroupBy( m => m.Group.CampusId )
-                                            .Select( r => new
-                                            {
-                                                CampusId = r.Key,
-                                                MembershipCount = r.Count()
-                                            } )
-                                            .ToList();
-
-                var membershipCountsByCampusAdults = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    m.Group.GroupTypeId == _familyGroupTypeId
-                                                    && membershipAttributes.Contains( m.PersonId )
-                                                    && m.Person.RecordStatusValueId == _activeRecordStatusId
-                                                    && m.GroupRoleId == _adultFamilyRoleId )
-                                            .GroupBy( m => m.Group.CampusId )
-                                            .Select( r => new
-                                            {
-                                                CampusId = r.Key,
-                                                MembershipCount = r.Count()
-                                            } )
-                                            .ToList();
-
-                foreach ( int campusId in _campusIds )
-                {
-                    // get counts 
-                    int weekendAttendance = metricValues.Where( m => m.EntityId == campusId ).Select( m => m.YValue ).FirstOrDefault() != null ? Decimal.ToInt16( metricValues.Where( m => m.EntityId == campusId ).Select( m => m.YValue ).FirstOrDefault().Value ) : 0;
-                    int activeAdults = campusAdultCounts.Where( c => c.CampusId == campusId ).Select( c => c.AdultCount ).Count() != 0 ? campusAdultCounts.Where( c => c.CampusId == campusId ).Select( c => c.AdultCount ).FirstOrDefault() : 0;
-                    int membershipCountAll = membershipCountsByCampusAll.Where( b => b.CampusId == campusId ).Select( b => b.MembershipCount ).Count() != 0 ? membershipCountsByCampusAll.Where( b => b.CampusId == campusId ).Select( b => b.MembershipCount ).FirstOrDefault() : 0;
-                    int membershipCountAdults = membershipCountsByCampusAdults.Where( b => b.CampusId == campusId ).Select( b => b.MembershipCount ).Count() != 0 ? membershipCountsByCampusAdults.Where( b => b.CampusId == campusId ).Select( b => b.MembershipCount ).FirstOrDefault() : 0;
-
-                    // save membership all count / weekend attendance
-                    StepMeasureValue measureValueAll = new StepMeasureValue();
-                    measureValueAll.StepMeasureId = _membershipMeasureId;
-                    measureValueAll.SundayDate = sundayDate;
-                    measureValueAll.Value = membershipCountAll;
-                    measureValueAll.CampusId = campusId;
-                    measureValueAll.WeekendAttendance = weekendAttendance;
-
-                    stepMeasureValueService.Add( measureValueAll );
-
-                    // save membership adult count / campus adult count
-                    StepMeasureValue measureValueAdults = new StepMeasureValue();
-                    measureValueAdults.StepMeasureId = _membershipMeasureId;
-                    measureValueAdults.SundayDate = sundayDate;
-                    measureValueAdults.Value = membershipCountAdults;
-                    measureValueAdults.CampusId = campusId;
-                    measureValueAdults.ActiveAdults = activeAdults;
-
-                    stepMeasureValueService.Add( measureValueAdults );
-                }
-
-                rockContext.SaveChanges();
-
-                foreach ( var pastor in pastorSummary )
-                {
-                    // get memberships
-                    var membershipCount = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    pastor.FamilyIds.Contains( m.GroupId )
-                                                    && membershipAttributes.Contains( m.PersonId )
-                                                    && m.Person.RecordStatusValueId == _activeRecordStatusId
-                                                    && m.GroupRoleId == _adultFamilyRoleId )
-                                            .Count();
-
-                    StepMeasureValue measureValueAdults = new StepMeasureValue();
-                    measureValueAdults.StepMeasureId = _membershipMeasureId;
-                    measureValueAdults.SundayDate = sundayDate;
-                    measureValueAdults.Value = membershipCount;
-                    measureValueAdults.PastorPersonAliasId = pastor.PastorPersonAliasId;
-                    measureValueAdults.ActiveAdults = pastor.AdultCount;
-
-                    stepMeasureValueService.Add( measureValueAdults );
-                }
-
-                rockContext.SaveChanges();
-            }
-        }
-
-        private void ProcessAttending( DateTime sundayDate, List<MetricValue> metricValues, List<CampusAdultCount> campusAdultCounts, List<PastorSummary> pastorSummary )
-        {
-            using ( RockContext rockContext = new RockContext() )
-            {
-                StepMeasureValueService stepMeasureValueService = new StepMeasureValueService( rockContext );
-
-                var attendingAttributeId = new AttributeService( rockContext ).Queryable()
-                                            .Where( a =>
-                                                        a.Key == ATTRIBUTE_PERSON_ERA
-                                                        && a.EntityType.Name == "Rock.Model.Person" )
-                                            .Select( a => a.Id )
-                                            .FirstOrDefault();
-
-                var eraAttributes = new AttributeValueService( rockContext ).Queryable().AsNoTracking()
-                                            .Where( a =>
-                                                a.AttributeId == attendingAttributeId
-                                                && a.Value == "true" )
-                                            .Select( a => a.EntityId );
-
-                var attendingCountsByCampusAll = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    m.Group.GroupTypeId == _familyGroupTypeId
-                                                    && eraAttributes.Contains( m.PersonId )
-                                                    && m.Person.RecordStatusValueId == _activeRecordStatusId )
-                                            .GroupBy( m => m.Group.CampusId )
-                                            .Select( r => new
-                                            {
-                                                CampusId = r.Key,
-                                                AttendingCount = r.Count()
-                                            } )
-                                            .ToList();
-
-                var attendingCountsByCampusAdults = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    m.Group.GroupTypeId == _familyGroupTypeId
-                                                    && eraAttributes.Contains( m.PersonId )
-                                                    && m.Person.RecordStatusValueId == _activeRecordStatusId
-                                                    && m.GroupRoleId == _adultFamilyRoleId )
-                                            .GroupBy( m => m.Group.CampusId )
-                                            .Select( r => new
-                                            {
-                                                CampusId = r.Key,
-                                                AttendingCount = r.Count()
-                                            } )
-                                            .ToList();
-
-                foreach ( int campusId in _campusIds )
-                {
-                    // get counts 
-                    int weekendAttendance = metricValues.Where( m => m.EntityId == campusId ).Select( m => m.YValue ).FirstOrDefault() != null ? Decimal.ToInt16( metricValues.Where( m => m.EntityId == campusId ).Select( m => m.YValue ).FirstOrDefault().Value ) : 0;
-                    int activeAdults = campusAdultCounts.Where( c => c.CampusId == campusId ).Select( c => c.AdultCount ).Count() != 0 ? campusAdultCounts.Where( c => c.CampusId == campusId ).Select( c => c.AdultCount ).FirstOrDefault() : 0;
-                    int attendingCountAll = attendingCountsByCampusAll.Where( b => b.CampusId == campusId ).Select( b => b.AttendingCount ).Count() != 0 ? attendingCountsByCampusAll.Where( b => b.CampusId == campusId ).Select( b => b.AttendingCount ).FirstOrDefault() : 0;
-                    int attendingCountAdults = attendingCountsByCampusAdults.Where( b => b.CampusId == campusId ).Select( b => b.AttendingCount ).Count() != 0 ? attendingCountsByCampusAdults.Where( b => b.CampusId == campusId ).Select( b => b.AttendingCount ).FirstOrDefault() : 0;
-
-                    // save attending all count / weekend attendance
-                    StepMeasureValue measureValueAll = new StepMeasureValue();
-                    measureValueAll.StepMeasureId = _attendingMeasureId;
-                    measureValueAll.SundayDate = sundayDate;
-                    measureValueAll.Value = attendingCountAll;
-                    measureValueAll.CampusId = campusId;
-                    measureValueAll.WeekendAttendance = weekendAttendance;
-
-                    stepMeasureValueService.Add( measureValueAll );
-
-                    // save attending adult count / campus adult count
-                    StepMeasureValue measureValueAdults = new StepMeasureValue();
-                    measureValueAdults.StepMeasureId = _attendingMeasureId;
-                    measureValueAdults.SundayDate = sundayDate;
-                    measureValueAdults.Value = attendingCountAdults;
-                    measureValueAdults.CampusId = campusId;
-                    measureValueAdults.ActiveAdults = activeAdults;
-
-                    stepMeasureValueService.Add( measureValueAdults );
-                }
-
-                rockContext.SaveChanges();
-
-                foreach ( var pastor in pastorSummary )
-                {
-                    // get attending
-                    var attendingCount = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    pastor.FamilyIds.Contains( m.GroupId )
-                                                    && eraAttributes.Contains( m.PersonId )
-                                                    && m.Person.RecordStatusValueId == _activeRecordStatusId
-                                                    && m.GroupRoleId == _adultFamilyRoleId )
-                                            .Count();
-
-                    StepMeasureValue measureValueAdults = new StepMeasureValue();
-                    measureValueAdults.StepMeasureId = _attendingMeasureId;
-                    measureValueAdults.SundayDate = sundayDate;
-                    measureValueAdults.Value = attendingCount;
-                    measureValueAdults.PastorPersonAliasId = pastor.PastorPersonAliasId;
-                    measureValueAdults.ActiveAdults = pastor.AdultCount;
-
-                    stepMeasureValueService.Add( measureValueAdults );
-                }
-
-                rockContext.SaveChanges();
-            }
-        }
-
-        private void ProcessGiving( DateTime sundayDate, List<MetricValue> metricValues, List<CampusAdultCount> campusAdultCounts, List<PastorSummary> pastorSummary )
-        {
-            using ( RockContext rockContext = new RockContext() )
-            {
-                StepMeasureValueService stepMeasureValueService = new StepMeasureValueService( rockContext );
-
-                var givingAttributeId = new AttributeService( rockContext ).Queryable()
-                                            .Where( a =>
-                                                        a.Key == ATTRIBUTE_PERSON_GIVING_IN_LAST_12_MONTHS
-                                                        && a.EntityType.Name == "Rock.Model.Person" )
-                                            .Select( a => a.Id )
-                                            .FirstOrDefault();
-
-                decimal titheThreshold = GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_TITHE_THRESHOLD ).AsDecimal();
-
-                var givingAttributes = new AttributeValueService( rockContext ).Queryable().AsNoTracking()
-                                            .Where( a =>
-                                                a.AttributeId == givingAttributeId
-                                                && a.ValueAsNumeric >= titheThreshold )
-                                            .Select( a => a.EntityId );
-
-                var givingCountsByCampusAll = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    m.Group.GroupTypeId == _familyGroupTypeId
-                                                    && givingAttributes.Contains( m.PersonId )
-                                                    && m.Person.RecordStatusValueId == _activeRecordStatusId )
-                                            .GroupBy( m => m.Group.CampusId )
-                                            .Select( r => new
-                                            {
-                                                CampusId = r.Key,
-                                                GivingCount = r.Count()
-                                            } )
-                                            .ToList();
-
-                var givingCountsByCampusAdults = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    m.Group.GroupTypeId == _familyGroupTypeId
-                                                    && givingAttributes.Contains( m.PersonId )
-                                                    && m.Person.RecordStatusValueId == _activeRecordStatusId
-                                                    && m.GroupRoleId == _adultFamilyRoleId )
-                                            .GroupBy( m => m.Group.CampusId )
-                                            .Select( r => new
-                                            {
-                                                CampusId = r.Key,
-                                                GivingCount = r.Count()
-                                            } )
-                                            .ToList();
-
-                foreach ( int campusId in _campusIds )
-                {
-                    // get counts 
-                    int weekendAttendance = metricValues.Where( m => m.EntityId == campusId ).Select( m => m.YValue ).FirstOrDefault() != null ? Decimal.ToInt16( metricValues.Where( m => m.EntityId == campusId ).Select( m => m.YValue ).FirstOrDefault().Value ) : 0;
-                    int activeAdults = campusAdultCounts.Where( c => c.CampusId == campusId ).Select( c => c.AdultCount ).Count() != 0 ? campusAdultCounts.Where( c => c.CampusId == campusId ).Select( c => c.AdultCount ).FirstOrDefault() : 0;
-                    int givingCountAll = givingCountsByCampusAll.Where( b => b.CampusId == campusId ).Select( b => b.GivingCount ).Count() != 0 ? givingCountsByCampusAll.Where( b => b.CampusId == campusId ).Select( b => b.GivingCount ).FirstOrDefault() : 0;
-                    int givingCountAdults = givingCountsByCampusAdults.Where( b => b.CampusId == campusId ).Select( b => b.GivingCount ).Count() != 0 ? givingCountsByCampusAdults.Where( b => b.CampusId == campusId ).Select( b => b.GivingCount ).FirstOrDefault() : 0;
-
-                    // save giving all count / weekend attendance
-                    StepMeasureValue measureValueAll = new StepMeasureValue();
-                    measureValueAll.StepMeasureId = _givingMeasureId;
-                    measureValueAll.SundayDate = sundayDate;
-                    measureValueAll.Value = givingCountAll;
-                    measureValueAll.CampusId = campusId;
-                    measureValueAll.WeekendAttendance = weekendAttendance;
-
-                    stepMeasureValueService.Add( measureValueAll );
-
-                    // save giving adult count / campus adult count
-                    StepMeasureValue measureValueAdults = new StepMeasureValue();
-                    measureValueAdults.StepMeasureId = _givingMeasureId;
-                    measureValueAdults.SundayDate = sundayDate;
-                    measureValueAdults.Value = givingCountAdults;
-                    measureValueAdults.CampusId = campusId;
-                    measureValueAdults.ActiveAdults = activeAdults;
-
-                    stepMeasureValueService.Add( measureValueAdults );
-                }
-
-                rockContext.SaveChanges();
-
-                foreach ( var pastor in pastorSummary )
-                {
-                    // get giving
-                    var givingCount = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    pastor.FamilyIds.Contains( m.GroupId )
-                                                    && givingAttributes.Contains( m.PersonId )
-                                                    && m.Person.RecordStatusValueId == _activeRecordStatusId
-                                                    && m.GroupRoleId == _adultFamilyRoleId )
-                                            .Count();
-
-                    StepMeasureValue measureValueAdults = new StepMeasureValue();
-                    measureValueAdults.StepMeasureId = _givingMeasureId;
-                    measureValueAdults.SundayDate = sundayDate;
-                    measureValueAdults.Value = givingCount;
-                    measureValueAdults.PastorPersonAliasId = pastor.PastorPersonAliasId;
-                    measureValueAdults.ActiveAdults = pastor.AdultCount;
-
-                    stepMeasureValueService.Add( measureValueAdults );
-                }
-
                 rockContext.SaveChanges();
             }
         }
 
 
-        // group based measures
-        private void ProcessCoaching( DateTime sundayDate, List<MetricValue> metricValues, List<CampusAdultCount> campusAdultCounts, List<PastorSummary> pastorSummary )
-        {
-            using ( RockContext rockContext = new RockContext() )
-            {
-                StepMeasureValueService stepMeasureValueService = new StepMeasureValueService( rockContext );
 
-                var coaches = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
-                                    .Where( m =>
-                                             _coachingGroupTypeIds.Contains( m.Group.GroupTypeId )
-                                             && m.GroupRole.IsLeader
-                                             && m.Group.IsActive
-                                             && m.GroupMemberStatus == GroupMemberStatus.Active )
-                                    .Select( m => m.PersonId );
-
-                // all coaches should be adults
-                var coachCountsByCampusAll = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    m.Group.GroupTypeId == _familyGroupTypeId
-                                                    && coaches.Contains( m.PersonId )
-                                                    && m.Person.RecordStatusValueId == _activeRecordStatusId )
-                                            .GroupBy( m => m.Group.CampusId )
-                                            .Select( r => new
-                                            {
-                                                CampusId = r.Key,
-                                                CoachCount = r.Count()
-                                            } )
-                                            .ToList();
-
-                foreach ( int campusId in _campusIds )
-                {
-                    // get counts 
-                    int weekendAttendance = metricValues.Where( m => m.EntityId == campusId ).Select( m => m.YValue ).FirstOrDefault() != null ? Decimal.ToInt16( metricValues.Where( m => m.EntityId == campusId ).Select( m => m.YValue ).FirstOrDefault().Value ) : 0;
-                    int activeAdults = campusAdultCounts.Where( c => c.CampusId == campusId ).Select( c => c.AdultCount ).Count() != 0 ? campusAdultCounts.Where( c => c.CampusId == campusId ).Select( c => c.AdultCount ).FirstOrDefault() : 0;
-                    int coachCountAll = coachCountsByCampusAll.Where( b => b.CampusId == campusId ).Select( b => b.CoachCount ).Count() != 0 ? coachCountsByCampusAll.Where( b => b.CampusId == campusId ).Select( b => b.CoachCount ).FirstOrDefault() : 0;
-                    
-                    // save coach all count / weekend attendance
-                    StepMeasureValue measureValueAll = new StepMeasureValue();
-                    measureValueAll.StepMeasureId = _coachingMeasureId;
-                    measureValueAll.SundayDate = sundayDate;
-                    measureValueAll.Value = coachCountAll;
-                    measureValueAll.CampusId = campusId;
-                    measureValueAll.WeekendAttendance = weekendAttendance;
-
-                    stepMeasureValueService.Add( measureValueAll );
-
-                    // save coach adult count / campus adult count
-                    StepMeasureValue measureValueAdults = new StepMeasureValue();
-                    measureValueAdults.StepMeasureId = _coachingMeasureId;
-                    measureValueAdults.SundayDate = sundayDate;
-                    measureValueAdults.Value = coachCountAll;
-                    measureValueAdults.CampusId = campusId;
-                    measureValueAdults.ActiveAdults = activeAdults;
-
-                    stepMeasureValueService.Add( measureValueAdults );
-                }
-
-                rockContext.SaveChanges();
-
-                foreach ( var pastor in pastorSummary )
-                {
-                    // get connections
-                    var coachCount = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    pastor.FamilyIds.Contains( m.GroupId )
-                                                    && coaches.Contains( m.PersonId )
-                                                    && m.Person.RecordStatusValueId == _activeRecordStatusId )
-                                            .Count();
-
-                    StepMeasureValue measureValueAdults = new StepMeasureValue();
-                    measureValueAdults.StepMeasureId = _coachingMeasureId;
-                    measureValueAdults.SundayDate = sundayDate;
-                    measureValueAdults.Value = coachCount;
-                    measureValueAdults.PastorPersonAliasId = pastor.PastorPersonAliasId;
-                    measureValueAdults.ActiveAdults = pastor.AdultCount;
-
-                    stepMeasureValueService.Add( measureValueAdults );
-                }
-
-                rockContext.SaveChanges();
-            }
-        }
-
-        private void ProcessConnection( DateTime sundayDate, List<MetricValue> metricValues, List<CampusAdultCount> campusAdultCounts, List<PastorSummary> pastorSummary )
-        {
-            using ( RockContext rockContext = new RockContext() )
-            {
-                StepMeasureValueService stepMeasureValueService = new StepMeasureValueService( rockContext );
-
-                var connectionMembers = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
-                                    .Where( m =>
-                                             _connectionGroupTypeIds.Contains( m.Group.GroupTypeId )
-                                             && m.Group.IsActive
-                                             && m.GroupMemberStatus == GroupMemberStatus.Active )
-                                    .Select( m => m.PersonId );
-
-                // all connection group members
-                var connectionCountsByCampusAll = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    m.Group.GroupTypeId == _familyGroupTypeId
-                                                    && connectionMembers.Contains( m.PersonId )
-                                                    && m.Person.RecordStatusValueId == _activeRecordStatusId )
-                                            .GroupBy( m => m.Group.CampusId )
-                                            .Select( r => new
-                                            {
-                                                CampusId = r.Key,
-                                                ConnectionCount = r.Count()
-                                            } )
-                                            .ToList();
-
-                // adult connection group members
-                var connectionCountsByCampusAdults = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    m.Group.GroupTypeId == _familyGroupTypeId
-                                                    && connectionMembers.Contains( m.PersonId )
-                                                    && m.Person.RecordStatusValueId == _activeRecordStatusId
-                                                    && m.GroupRoleId == _adultFamilyRoleId )
-                                            .GroupBy( m => m.Group.CampusId )
-                                            .Select( r => new
-                                            {
-                                                CampusId = r.Key,
-                                                ConnectionCount = r.Count()
-                                            } )
-                                            .ToList();
-                                            
-
-                foreach ( int campusId in _campusIds )
-                {
-                    // get counts 
-                    int weekendAttendance = metricValues.Where( m => m.EntityId == campusId ).Select( m => m.YValue ).FirstOrDefault() != null ? Decimal.ToInt16( metricValues.Where( m => m.EntityId == campusId ).Select( m => m.YValue ).FirstOrDefault().Value ) : 0;
-                    int activeAdults = campusAdultCounts.Where( c => c.CampusId == campusId ).Select( c => c.AdultCount ).Count() != 0 ? campusAdultCounts.Where( c => c.CampusId == campusId ).Select( c => c.AdultCount ).FirstOrDefault() : 0;
-                    int connectionCountAll = connectionCountsByCampusAll.Where( b => b.CampusId == campusId ).Select( b => b.ConnectionCount ).Count() != 0 ? connectionCountsByCampusAll.Where( b => b.CampusId == campusId ).Select( b => b.ConnectionCount ).FirstOrDefault() : 0;
-                    int connectionCountAdults = connectionCountsByCampusAdults.Where( b => b.CampusId == campusId ).Select( b => b.ConnectionCount ).Count() != 0 ? connectionCountsByCampusAdults.Where( b => b.CampusId == campusId ).Select( b => b.ConnectionCount ).FirstOrDefault() : 0;
-
-                    // save connection all count / weekend attendance
-                    StepMeasureValue measureValueAll = new StepMeasureValue();
-                    measureValueAll.StepMeasureId = _connectionMeasureId;
-                    measureValueAll.SundayDate = sundayDate;
-                    measureValueAll.Value = connectionCountAll;
-                    measureValueAll.CampusId = campusId;
-                    measureValueAll.WeekendAttendance = weekendAttendance;
-
-                    stepMeasureValueService.Add( measureValueAll );
-
-                    // save coach adult count / campus adult count
-                    StepMeasureValue measureValueAdults = new StepMeasureValue();
-                    measureValueAdults.StepMeasureId = _connectionMeasureId;
-                    measureValueAdults.SundayDate = sundayDate;
-                    measureValueAdults.Value = connectionCountAdults;
-                    measureValueAdults.CampusId = campusId;
-                    measureValueAdults.ActiveAdults = activeAdults;
-
-                    stepMeasureValueService.Add( measureValueAdults );
-                }
-
-                rockContext.SaveChanges();
-
-                foreach ( var pastor in pastorSummary )
-                {
-                    // get connections
-                    var connectionCount = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    pastor.FamilyIds.Contains( m.GroupId )
-                                                    && connectionMembers.Contains( m.PersonId )
-                                                    && m.Person.RecordStatusValueId == _activeRecordStatusId )
-                                            .Count();
-
-                    StepMeasureValue measureValueAdults = new StepMeasureValue();
-                    measureValueAdults.StepMeasureId = _connectionMeasureId;
-                    measureValueAdults.SundayDate = sundayDate;
-                    measureValueAdults.Value = connectionCount;
-                    measureValueAdults.PastorPersonAliasId = pastor.PastorPersonAliasId;
-                    measureValueAdults.ActiveAdults = pastor.AdultCount;
-
-                    stepMeasureValueService.Add( measureValueAdults );
-                }
-
-                rockContext.SaveChanges();
-            }
-        }
-
-        private void ProcessServing( DateTime sundayDate, List<MetricValue> metricValues, List<CampusAdultCount> campusAdultCounts, List<PastorSummary> pastorSummary )
-        {
-            using ( RockContext rockContext = new RockContext() )
-            {
-                StepMeasureValueService stepMeasureValueService = new StepMeasureValueService( rockContext );
-
-                var servingMembers = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
-                                    .Where( m =>
-                                             _servingGroupTypeIds.Contains( m.Group.GroupTypeId )
-                                             && m.Group.IsActive
-                                             && m.GroupMemberStatus == GroupMemberStatus.Active )
-                                    .Select( m => m.PersonId );
-
-                // all serving group members
-                var servingCountsByCampusAll = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    m.Group.GroupTypeId == _familyGroupTypeId
-                                                    && servingMembers.Contains( m.PersonId )
-                                                    && m.Person.RecordStatusValueId == _activeRecordStatusId )
-                                            .GroupBy( m => m.Group.CampusId )
-                                            .Select( r => new
-                                            {
-                                                CampusId = r.Key,
-                                                ServingCount = r.Count()
-                                            } )
-                                            .ToList();
-
-                // adult serving group members
-                var servingCountsByCampusAdults = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    m.Group.GroupTypeId == _familyGroupTypeId
-                                                    && servingMembers.Contains( m.PersonId )
-                                                    && m.Person.RecordStatusValueId == _activeRecordStatusId
-                                                    && m.GroupRoleId == _adultFamilyRoleId )
-                                            .GroupBy( m => m.Group.CampusId )
-                                            .Select( r => new
-                                            {
-                                                CampusId = r.Key,
-                                                ServingCount = r.Count()
-                                            } )
-                                            .ToList();
-
-
-                foreach ( int campusId in _campusIds )
-                {
-                    // get counts 
-                    int weekendAttendance = metricValues.Where( m => m.EntityId == campusId ).Select( m => m.YValue ).FirstOrDefault() != null ? Decimal.ToInt16( metricValues.Where( m => m.EntityId == campusId ).Select( m => m.YValue ).FirstOrDefault().Value ) : 0;
-                    int activeAdults = campusAdultCounts.Where( c => c.CampusId == campusId ).Select( c => c.AdultCount ).Count() != 0 ? campusAdultCounts.Where( c => c.CampusId == campusId ).Select( c => c.AdultCount ).FirstOrDefault() : 0;
-                    int servingCountAll = servingCountsByCampusAll.Where( b => b.CampusId == campusId ).Select( b => b.ServingCount ).Count() != 0 ? servingCountsByCampusAll.Where( b => b.CampusId == campusId ).Select( b => b.ServingCount ).FirstOrDefault() : 0;
-                    int servingCountAdults = servingCountsByCampusAdults.Where( b => b.CampusId == campusId ).Select( b => b.ServingCount ).Count() != 0 ? servingCountsByCampusAdults.Where( b => b.CampusId == campusId ).Select( b => b.ServingCount ).FirstOrDefault() : 0;
-
-                    // save serving all count / weekend attendance
-                    StepMeasureValue measureValueAll = new StepMeasureValue();
-                    measureValueAll.StepMeasureId = _servingMeasureId;
-                    measureValueAll.SundayDate = sundayDate;
-                    measureValueAll.Value = servingCountAll;
-                    measureValueAll.CampusId = campusId;
-                    measureValueAll.WeekendAttendance = weekendAttendance;
-
-                    stepMeasureValueService.Add( measureValueAll );
-
-                    // save serving adult count / campus adult count
-                    StepMeasureValue measureValueAdults = new StepMeasureValue();
-                    measureValueAdults.StepMeasureId = _servingMeasureId;
-                    measureValueAdults.SundayDate = sundayDate;
-                    measureValueAdults.Value = servingCountAdults;
-                    measureValueAdults.CampusId = campusId;
-                    measureValueAdults.ActiveAdults = activeAdults;
-
-                    stepMeasureValueService.Add( measureValueAdults );
-                }
-
-                rockContext.SaveChanges();
-
-                foreach ( var pastor in pastorSummary )
-                {
-                    // get serving team memebers
-                    var servingCount = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    pastor.FamilyIds.Contains( m.GroupId )
-                                                    && servingMembers.Contains( m.PersonId )
-                                                    && m.Person.RecordStatusValueId == _activeRecordStatusId )
-                                            .Count();
-
-                    StepMeasureValue measureValueAdults = new StepMeasureValue();
-                    measureValueAdults.StepMeasureId = _servingMeasureId;
-                    measureValueAdults.SundayDate = sundayDate;
-                    measureValueAdults.Value = servingCount;
-                    measureValueAdults.PastorPersonAliasId = pastor.PastorPersonAliasId;
-                    measureValueAdults.ActiveAdults = pastor.AdultCount;
-
-                    stepMeasureValueService.Add( measureValueAdults );
-                }
-
-                rockContext.SaveChanges();
-            }
-        }
-
-        private void ProcessSharing( DateTime sundayDate, List<MetricValue> metricValues, List<CampusAdultCount> campusAdultCounts, List<PastorSummary> pastorSummary )
-        {
-            using ( RockContext rockContext = new RockContext() )
-            {
-                StepMeasureValueService stepMeasureValueService = new StepMeasureValueService( rockContext );
-
-                // not implemented but since it's active with IsTba we need values
-
-                foreach ( int campusId in _campusIds )
-                {
-                    // get counts 
-                    int weekendAttendance = metricValues.Where( m => m.EntityId == campusId ).Select( m => m.YValue ).FirstOrDefault() != null ? Decimal.ToInt16( metricValues.Where( m => m.EntityId == campusId ).Select( m => m.YValue ).FirstOrDefault().Value ) : 0;
-                    int activeAdults = campusAdultCounts.Where( c => c.CampusId == campusId ).Select( c => c.AdultCount ).Count() != 0 ? campusAdultCounts.Where( c => c.CampusId == campusId ).Select( c => c.AdultCount ).FirstOrDefault() : 0;
-                    int sharingCountAll =  0;
-                    int sharingCountAdults = 0;
-
-                    // save serving all count / weekend attendance
-                    StepMeasureValue measureValueAll = new StepMeasureValue();
-                    measureValueAll.StepMeasureId = _sharingMeasureId;
-                    measureValueAll.SundayDate = sundayDate;
-                    measureValueAll.Value = sharingCountAll;
-                    measureValueAll.CampusId = campusId;
-                    measureValueAll.WeekendAttendance = weekendAttendance;
-
-                    stepMeasureValueService.Add( measureValueAll );
-
-                    // save serving adult count / campus adult count
-                    StepMeasureValue measureValueAdults = new StepMeasureValue();
-                    measureValueAdults.StepMeasureId = _sharingMeasureId;
-                    measureValueAdults.SundayDate = sundayDate;
-                    measureValueAdults.Value = sharingCountAdults;
-                    measureValueAdults.CampusId = campusId;
-                    measureValueAdults.ActiveAdults = activeAdults;
-
-                    stepMeasureValueService.Add( measureValueAdults );
-                }
-
-                rockContext.SaveChanges();
-
-                foreach ( var pastor in pastorSummary )
-                {
-                    StepMeasureValue measureValueAdults = new StepMeasureValue();
-                    measureValueAdults.StepMeasureId = _sharingMeasureId;
-                    measureValueAdults.SundayDate = sundayDate;
-                    measureValueAdults.Value = 0;
-                    measureValueAdults.PastorPersonAliasId = pastor.PastorPersonAliasId;
-                    measureValueAdults.ActiveAdults = pastor.AdultCount;
-
-                    stepMeasureValueService.Add( measureValueAdults );
-                }
-
-                rockContext.SaveChanges();
-            }
-        }
-
-        #region Utilities
         #region Uitlity Methods
         private bool ContainsAllItems( List<int> a, List<int> b )
         {
@@ -1057,9 +722,30 @@ namespace church.ccv.Steps
         #region Utility Classes
 
         /// <summary>
-        /// Pastor Summary
+        /// Campus Measure
         /// </summary>
-        public class PastorSummary
+        public class CampusMeasure
+        {
+            /// <summary>
+            /// Gets or sets the campus identifier.
+            /// </summary>
+            /// <value>
+            /// The campus identifier.
+            /// </value>
+            public int CampusId { get; set; }
+            /// <summary>
+            /// Gets or sets the measure value.
+            /// </summary>
+            /// <value>
+            /// The measure value.
+            /// </value>
+            public int MeasureValue { get; set; }
+        }
+        
+        /// <summary>
+        /// Area Measuer
+        /// </summary>
+        public class AreaMeasure
         {
             /// <summary>
             /// Gets or sets the pastor person alias identifier.
@@ -1068,13 +754,7 @@ namespace church.ccv.Steps
             /// The pastor person alias identifier.
             /// </value>
             public int? PastorPersonAliasId { get; set; }
-            /// <summary>
-            /// Gets or sets the family ids.
-            /// </summary>
-            /// <value>
-            /// The family ids.
-            /// </value>
-            public List<int> FamilyIds { get; set; }
+
             /// <summary>
             /// Gets or sets the adult count.
             /// </summary>
@@ -1082,6 +762,14 @@ namespace church.ccv.Steps
             /// The adult count.
             /// </value>
             public int? AdultCount { get; set; }
+
+            /// <summary>
+            /// Gets or sets the measure count.
+            /// </summary>
+            /// <value>
+            /// The measure count.
+            /// </value>
+            public int? MeasureCount { get; set; }
         }
 
         /// <summary>
@@ -1097,19 +785,19 @@ namespace church.ccv.Steps
             /// </value>
             public int AreaId { get; set; }
             /// <summary>
-            /// Gets or sets the family ids.
-            /// </summary>
-            /// <value>
-            /// The family ids.
-            /// </value>
-            public List<int> FamilyIds { get; set; }
-            /// <summary>
             /// Gets or sets the pastor person alias identifier.
             /// </summary>
             /// <value>
             /// The pastor person alias identifier.
             /// </value>
             public int? PastorPersonAliasId { get; set; }
+            /// <summary>
+            /// Gets or sets the pastor person alias identifier.
+            /// </summary>
+            /// <value>
+            /// The pastor person alias identifier.
+            /// </value>
+            public int? PastorPersonId { get; set; }
             /// <summary>
             /// Gets or sets the campus identifier.
             /// </summary>
@@ -1123,7 +811,7 @@ namespace church.ccv.Steps
             /// <value>
             /// The adult count.
             /// </value>
-            public int? AdultCount { get; set; }
+            public int AdultCount { get; set; }
         }
 
         /// <summary>

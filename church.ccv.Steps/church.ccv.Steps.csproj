@@ -93,6 +93,10 @@
     <Compile Include="Rest\Controllers\CodeGenerated\StepMeasureValuesController.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\church.ccv.Datamart\church.ccv.Datamart.csproj">
+      <Project>{8280012c-bb74-46ab-baa7-8a4004570829}</Project>
+      <Name>church.ccv.Datamart</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
       <Project>{cb9372cd-9c1d-47ab-92d8-702d4d68324f}</Project>
       <Name>DotLiquid</Name>
