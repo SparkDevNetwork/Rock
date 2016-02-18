@@ -31,6 +31,7 @@ DECLARE @ScheduleEntityTypeId int
 DECLARE @MetricCategoryEntityTypeId int
 DECLARE @MetricSourceSQLId int
 DECLARE @MetricSourceManualId int
+DECLARE @CreatedDateTime AS DATETIME = GETDATE();
 
 SELECT @CampusEntityTypeId = [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Campus'
 SELECT @ScheduleEntityTypeId = [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Schedule'
@@ -166,179 +167,169 @@ create table #metricGroups (
 INSERT #metricGroups
 VALUES 
 -- certain attendee groups
-('Creativity & Tech Attendee', 'Choir'),
-('Guest Services Attendee', 'Auditorium Reset Team'),
-('Guest Services Attendee', 'Awake Team'),
-('Guest Services Attendee', 'Facility Cleaning Crew'),
-('Guest Services Attendee', 'Greeting Team'),
-('Guest Services Attendee', 'Load In/Load Out'),
-('Guest Services Attendee', 'Office Team'),
-('Guest Services Attendee', 'Parking Team'),
-('Guest Services Attendee', 'VHQ Team'),
+('Creativity & Tech Attendee', 'Choir'), 
+('Creativity & Tech Attendee', 'Special Event Attendee'), 
+('Guest Services Attendee', 'VIP Room Attendee'), 
+('Guest Services Attendee', 'Special Event Attendee'), 
+('Guest Services Attendee', 'Auditorium Reset Team'), 
+('Guest Services Attendee', 'Awake Team'), 
+('Guest Services Attendee', 'Facility Cleaning Crew'), 
+('Guest Services Attendee', 'Greeting Team'), 
+('Guest Services Attendee', 'Load In'), 
+('Guest Services Attendee', 'Load Out'), 
+('Guest Services Attendee', 'Office Team'), 
+('Guest Services Attendee', 'Parking Team'), 
+('Guest Services Attendee', 'VHQ Team'), 
 
 -- all volunteer groups
-('Creativity & Tech Volunteer', 'Band'),
-('Creativity & Tech Volunteer', 'Band Green Room'),
-('Creativity & Tech Volunteer', 'Design Team'),
-('Creativity & Tech Volunteer', 'IT Team'),
-('Creativity & Tech Volunteer', 'Load In/Load Out'),
-('Creativity & Tech Volunteer', 'New Serve Team'),
-('Creativity & Tech Volunteer', 'NewSpring Store Team'),
-('Creativity & Tech Volunteer', 'Office Team'),
-('Creativity & Tech Volunteer', 'Production Team'),
-('Creativity & Tech Volunteer', 'Social Media/PR Team'),
-('Creativity & Tech Volunteer', 'Special Event Volunteer'),
-('Creativity & Tech Volunteer', 'Video Production Team'),
-('Creativity & Tech Volunteer', 'Web Dev Team'),
-('Elementary Volunteer', 'Base Camp Team Leader'),
-('Elementary Volunteer', 'Base Camp Volunteer'),
-('Elementary Volunteer', 'Elementary Area Leader'),
-('Elementary Volunteer', 'Elementary Early Bird'),
-('Elementary Volunteer', 'Elementary Team Leader'),
-('Elementary Volunteer', 'ImagiNation Team Leader'),
-('Elementary Volunteer', 'ImagiNation Volunteer'),
-('Elementary Volunteer', 'Jump Street Team Leader'),
-('Elementary Volunteer', 'Jump Street Volunteer'),
-('Elementary Volunteer', 'Shockwave Team Leader'),
-('Elementary Volunteer', 'Shockwave Volunteer'),
-('Fuse Volunteer', 'Atrium'),
-('Fuse Volunteer', 'Campus Safety'),
-('Fuse Volunteer', 'Care'),
-('Fuse Volunteer', 'Check-In'),
-('Fuse Volunteer', 'Fuse Group Leader'),
-('Fuse Volunteer', 'Fuse Guest'),
-('Fuse Volunteer', 'Fuse Office Team'),
-('Fuse Volunteer', 'Game Room'),
-('Fuse Volunteer', 'Greeter'),
-('Fuse Volunteer', 'Leadership Team'),
-('Fuse Volunteer', 'Load In/Load Out'),
-('Fuse Volunteer', 'Lounge'),
-('Fuse Volunteer', 'New Serve'),
-('Fuse Volunteer', 'Next Steps'),
-('Fuse Volunteer', 'Office Team'),
-('Fuse Volunteer', 'Parking'),
-('Fuse Volunteer', 'Pick-Up'),
-('Fuse Volunteer', 'Production'),
-('Fuse Volunteer', 'Snack Bar'),
-('Fuse Volunteer', 'Special Event Attendee'),
-('Fuse Volunteer', 'Special Event Volunteer'),
-('Fuse Volunteer', 'Sports'),
-('Fuse Volunteer', 'Spring Zone'),
-('Fuse Volunteer', 'Student Leader'),
-('Fuse Volunteer', 'Sunday Fuse Team'),
-('Fuse Volunteer', 'Usher'),
-('Fuse Volunteer', 'VHQ'),
-('Fuse Volunteer', 'VIP Team'),
-('Fuse Volunteer', 'Worship'),
-('Guest Services Volunteer', 'Area Leader'),
-('Guest Services Volunteer', 'Campus Safety'),
-('Guest Services Volunteer', 'Events Team'),
-('Guest Services Volunteer', 'Facilities Volunteer'),
-('Guest Services Volunteer', 'Finance Office Team'),
-('Guest Services Volunteer', 'Finance Team'),
-('Guest Services Volunteer', 'GS Office Team'),
-('Guest Services Volunteer', 'Guest Services Team'),
-('Guest Services Volunteer', 'Hispanic Team'),
-('Guest Services Volunteer', 'HR Team'),
-('Guest Services Volunteer', 'New Serve Team'),
-('Guest Services Volunteer', 'Receptionist'),
-('Guest Services Volunteer', 'Service Leader'),
-('Guest Services Volunteer', 'Sign Language Team'),
-('Guest Services Volunteer', 'Special Event Attendee'),
-('Guest Services Volunteer', 'Special Event Volunteer'),
-('Guest Services Volunteer', 'Usher Team'),
-('Guest Services Volunteer', 'VIP Room Volunteer'),
-('Next Steps Volunteer', 'Baptism Volunteer'),
-('Next Steps Volunteer', 'Budget Class Volunteer'),
-('Next Steps Volunteer', 'Care Office Team'),
-('Next Steps Volunteer', 'Care Visitation Team'),
-('Next Steps Volunteer', 'District Leader'),
-('Next Steps Volunteer', 'Events Office Team'),
-('Next Steps Volunteer', 'Financial Coaching Volunteer'),
-('Next Steps Volunteer', 'Financial Planning Office Team'),
-('Next Steps Volunteer', 'Group Leader'),
-('Next Steps Volunteer', 'Group Training'),
-('Next Steps Volunteer', 'Groups Connector'),
-('Next Steps Volunteer', 'Groups Office Team'),
-('Next Steps Volunteer', 'Load In/Load Out'),
-('Next Steps Volunteer', 'New Serve Team'),
-('Next Steps Volunteer', 'Next Steps Area'),
-('Next Steps Volunteer', 'NS Office Team'),
-('Next Steps Volunteer', 'Ownership Class Volunteer'),
-('Next Steps Volunteer', 'Prayer Team'),
-('Next Steps Volunteer', 'Resource Center'),
-('Next Steps Volunteer', 'Special Event Volunteer'),
-('Next Steps Volunteer', 'Sunday Care Team'),
-('Next Steps Volunteer', 'Writing Team'),
-('Nursery Volunteer', 'Nursery Early Bird'),
-('Nursery Volunteer', 'Wonder Way 1 Team Leader'),
-('Nursery Volunteer', 'Wonder Way 1 Volunteer'),
-('Nursery Volunteer', 'Wonder Way 2 Team Leader'),
-('Nursery Volunteer', 'Wonder Way 2 Volunteer'),
-('Nursery Volunteer', 'Wonder Way 3 Team Leader'),
-('Nursery Volunteer', 'Wonder Way 3 Volunteer'),
-('Nursery Volunteer', 'Wonder Way 4 Team Leader'),
-('Nursery Volunteer', 'Wonder Way 4 Volunteer'),
-('Nursery Volunteer', 'Wonder Way 5 Team Leader'),
-('Nursery Volunteer', 'Wonder Way 5 Volunteer'),
-('Nursery Volunteer', 'Wonder Way 6 Team Leader'),
-('Nursery Volunteer', 'Wonder Way 6 Volunteer'),
-('Nursery Volunteer', 'Wonder Way 7 Team Leader'),
-('Nursery Volunteer', 'Wonder Way 7 Volunteer'),
-('Nursery Volunteer', 'Wonder Way 8 Team Leader'),
-('Nursery Volunteer', 'Wonder Way 8 Volunteer'),
-('Nursery Volunteer', 'Wonder Way Area Leader'),
-('Nursery Volunteer', 'Wonder Way Team Leader'),
-('Preschool Volunteer', 'Base Camp Jr. Volunteer'),
-('Preschool Volunteer', 'Fire Station Team Leader'),
-('Preschool Volunteer', 'Fire Station Volunteer'),
-('Preschool Volunteer', 'Lil'' Spring Team Leader'),
-('Preschool Volunteer', 'Lil'' Spring Volunteer'),
-('Preschool Volunteer', 'Police Team Leader'),
-('Preschool Volunteer', 'Police Volunteer'),
-('Preschool Volunteer', 'Pop''s Garage Team Leader'),
-('Preschool Volunteer', 'Pop''s Garage Volunteer'),
-('Preschool Volunteer', 'Preschool Area Leader'),
-('Preschool Volunteer', 'Preschool Early Bird'),
-('Preschool Volunteer', 'Preschool Team Leader'),
-('Preschool Volunteer', 'Spring Fresh Team Leader'),
-('Preschool Volunteer', 'Spring Fresh Volunteer'),
-('Preschool Volunteer', 'Toys Team Leader'),
-('Preschool Volunteer', 'Toys Volunteer'),
-('Preschool Volunteer', 'Treehouse Team Leader'),
-('Preschool Volunteer', 'Treehouse Volunteer'),
-('Production Volunteer', 'Elementary Actor'),
-('Production Volunteer', 'Elementary Media'),
-('Production Volunteer', 'Elementary Production Area Leader'),
-('Production Volunteer', 'Elementary Production Team Leader'),
-('Production Volunteer', 'Elementary Worship Leader'),
-('Production Volunteer', 'Preschool Actor'),
-('Production Volunteer', 'Preschool Media'),
-('Production Volunteer', 'Preschool Production Area Leader'),
-('Production Volunteer', 'Preschool Production Team Leader'),
-('Production Volunteer', 'Production Area Leader'),
-('Production Volunteer', 'Production Team Leader'),
-('Special Needs Volunteer', 'Spring Zone Area Leader'),
-('Special Needs Volunteer', 'Spring Zone Jr. Volunteer'),
-('Special Needs Volunteer', 'Spring Zone Team Leader'),
-('Special Needs Volunteer', 'Spring Zone Volunteer'),
-('Support Volunteer', 'Advocate'),
-('Support Volunteer', 'Advocate Team Leader'),
-('Support Volunteer', 'Check-In Team Leader'),
-('Support Volunteer', 'Check-In Volunteer'),
-('Support Volunteer', 'First Time Team Leader'),
-('Support Volunteer', 'First Time Team Volunteer'),
-('Support Volunteer', 'Greeter'),
-('Support Volunteer', 'Greeter Team Leader'),
-('Support Volunteer', 'Guest Services Area Leader'),
-('Support Volunteer', 'Guest Services Team Leader'),
-('Support Volunteer', 'KidSpring Area Leader'),
-('Support Volunteer', 'Load In/Load Out'),
-('Support Volunteer', 'New Serve Area Leader'),
-('Support Volunteer', 'New Serve Team Leader'),
-('Support Volunteer', 'New Serve Volunteer'),
-('Support Volunteer', 'Office Team'),
-('Support Volunteer', 'Trainer')
+('Creativity & Tech Volunteer',  'Band'),
+('Creativity & Tech Volunteer',  'Band Green Room'),
+('Creativity & Tech Volunteer',  'Editorial Team'),
+('Creativity & Tech Volunteer',  'IT Team'),
+('Creativity & Tech Volunteer',  'Load In'),
+('Creativity & Tech Volunteer',  'Load Out'),
+('Creativity & Tech Volunteer',  'New Serve Team'),
+('Creativity & Tech Volunteer',  'Office Team'),
+('Creativity & Tech Volunteer',  'Production Team'),
+('Creativity & Tech Volunteer',  'Social Media/PR Team'),
+('Creativity & Tech Volunteer',  'Special Event Volunteer'),
+('Elementary Volunteer',  'Base Camp Volunteer'),
+('Elementary Volunteer',  'Elementary Early Bird Volunteer'),
+('Elementary Volunteer',  'Elementary Service Leader'),
+('Elementary Volunteer',  'Elementary Area Leader'),
+('Elementary Volunteer',  'ImagiNation Volunteer'),
+('Elementary Volunteer',  'Jump Street Volunteer'),
+('Elementary Volunteer',  'Shockwave Volunteer'),
+('Fuse Volunteer',  'Atrium'),
+('Fuse Volunteer',  'Campus Safety'),
+('Fuse Volunteer',  'Care'),
+('Fuse Volunteer',  'Check-In'),
+('Fuse Volunteer',  'Fuse Group Leader'),
+('Fuse Volunteer',  'Fuse Guest'),
+('Fuse Volunteer',  'Game Room'),
+('Fuse Volunteer',  'Greeter'),
+('Fuse Volunteer',  'VIP Team'),
+('Fuse Volunteer',  'Leadership Team'),
+('Fuse Volunteer',  'Load In'),
+('Fuse Volunteer',  'Load Out'),
+('Fuse Volunteer',  'Lounge'),
+('Fuse Volunteer',  'New Serve'),
+('Fuse Volunteer',  'Next Steps'),
+('Fuse Volunteer',  'Office Team'),
+('Fuse Volunteer',  'Parking'),
+('Fuse Volunteer',  'Pick-Up'),
+('Fuse Volunteer',  'Production'),
+('Fuse Volunteer',  'Snack Bar'),
+('Fuse Volunteer',  'Special Event Volunteer'),
+('Fuse Volunteer',  'Sports'),
+('Fuse Volunteer',  'Spring Zone'),
+('Fuse Volunteer',  'Student Leader'),
+('Fuse Volunteer',  'Sunday Fuse Team'),
+('Fuse Volunteer',  'Usher'),
+('Fuse Volunteer',  'VHQ'),
+('Fuse Volunteer',  'Worship'),
+('Guest Services Volunteer',  'Area Leader'),
+('Guest Services Volunteer',  'Campus Safety'),
+('Guest Services Volunteer',  'Facilities Volunteer'),
+('Guest Services Volunteer',  'Finance Team'),
+('Guest Services Volunteer',  'Hispanic Team'),
+('Guest Services Volunteer',  'Network Fuse Team'),
+('Guest Services Volunteer',  'Network Office Team'),
+('Guest Services Volunteer',  'Network Sunday Team'),
+('Guest Services Volunteer',  'VIP Room Volunteer'),
+('Guest Services Volunteer',  'Guest Services Team'),
+('Guest Services Volunteer',  'New Serve Team'),
+('Guest Services Volunteer',  'Receptionist'),
+('Guest Services Volunteer',  'Service Leader'),
+('Guest Services Volunteer',  'Sign Language Team'),
+('Guest Services Volunteer',  'Special Event Volunteer'),
+('Guest Services Volunteer',  'Usher Team'),
+('Production Volunteer',  'Elementary Production'),
+('Production Volunteer',  'Elementary Production Service Leader'),
+('Production Volunteer',  'Preschool Production'),
+('Production Volunteer',  'Preschool Production Service Leader'),
+('Production Volunteer',  'Production Area Leader'),
+('Production Volunteer',  'Production Service Leader'),
+('Production Volunteer',  'KidSpring Production'),
+('Support Volunteer',  'Advocate'),
+('Support Volunteer',  'Check-In Volunteer'),
+('Support Volunteer',  'First Time Team Volunteer'),
+('Support Volunteer',  'KidSpring Greeter'),
+('Support Volunteer',  'Guest Services Service Leader'),
+('Support Volunteer',  'Guest Services Area Leader'),
+('Support Volunteer',  'KidSpring Office Team'),
+('Support Volunteer',  'Load In'),
+('Support Volunteer',  'Load Out'),
+('Support Volunteer',  'New Serve Area Leader'),
+('Support Volunteer',  'New Serve Team'),
+('Support Volunteer',  'Sunday Support Volunteer'),
+('Next Steps Volunteer',  'Baptism Volunteer'),
+('Next Steps Volunteer',  'Budget Class Volunteer'),
+('Next Steps Volunteer',  'Care Office Team'),
+('Next Steps Volunteer',  'Care Visitation Team'),
+('Next Steps Volunteer',  'Church Online Volunteer'),
+('Next Steps Volunteer',  'Events Office Team'),
+('Next Steps Volunteer',  'Financial Coaching Volunteer'),
+('Next Steps Volunteer',  'Financial Coaching Office Team'),
+('Next Steps Volunteer',  'Group Leader'),
+('Next Steps Volunteer',  'Groups Office Team'),
+('Next Steps Volunteer',  'Load In'),
+('Next Steps Volunteer',  'Load Out'),
+('Next Steps Volunteer',  'New Serve Team'),
+('Next Steps Volunteer',  'Next Steps Area'),
+('Next Steps Volunteer',  'Ownership Class Volunteer'),
+('Next Steps Volunteer',  'Prayer Team'),
+('Next Steps Volunteer',  'Resource Center'),
+('Next Steps Volunteer',  'Special Event Volunteer'),
+('Next Steps Volunteer',  'Sunday Care Team'),
+('Next Steps Volunteer',  'Writing Team'),
+('Nursery Volunteer',  'Nursery Early Bird Volunteer'),
+('Nursery Volunteer',  'Wonder Way Service Leader'),
+('Nursery Volunteer',  'Wonder Way Area Leader'),
+('Nursery Volunteer',  'Wonder Way 1 Volunteer'),
+('Nursery Volunteer',  'Wonder Way 2 Volunteer'),
+('Nursery Volunteer',  'Wonder Way 3 Volunteer'),
+('Nursery Volunteer',  'Wonder Way 4 Volunteer'),
+('Nursery Volunteer',  'Wonder Way 5 Volunteer'),
+('Nursery Volunteer',  'Wonder Way 6 Volunteer'),
+('Nursery Volunteer',  'Wonder Way 7 Volunteer'),
+('Nursery Volunteer',  'Wonder Way 8 Volunteer'),
+('Preschool Volunteer',  'Base Camp Jr. Volunteer'),
+('Preschool Volunteer',  'Fire Station Volunteer'),
+('Preschool Volunteer',  'Lil'' Spring Volunteer'),
+('Preschool Volunteer',  'Toys Volunteer'),
+('Preschool Volunteer',  'Pop''s Garage Volunteer'),
+('Preschool Volunteer',  'Preschool Early Bird Volunteer'),
+('Preschool Volunteer',  'Preschool Service Leader'),
+('Preschool Volunteer',  'Preschool Area Leader'),
+('Preschool Volunteer',  'Spring Fresh Volunteer'),
+('Preschool Volunteer',  'Toys Volunteer'),
+('Preschool Volunteer',  'Treehouse Volunteer'),
+('Special Needs Volunteer',  'Spring Zone Jr. Volunteer'),
+('Special Needs Volunteer',  'Spring Zone Service Leader'),
+('Special Needs Volunteer',  'Spring Zone Area Leader'),
+('Special Needs Volunteer',  'Spring Zone Volunteer'),
+('Creativity & Tech Volunteer',  'Design Team'),
+('Creativity & Tech Volunteer',  'IT Team'),
+('Creativity & Tech Volunteer',  'NewSpring Store Team'),
+('Creativity & Tech Volunteer',  'Social Media/PR Team'),
+('Creativity & Tech Volunteer',  'Video Production Team'),
+('Creativity & Tech Volunteer',  'Web Dev Team'),
+('Event Attendee',  'Event Attendee'),
+('Event Volunteer',  'Event Volunteer'),
+('Fuse Volunteer',  'Fuse Office Team'),
+('Fuse Volunteer',  'Special Event Attendee'),
+('Fuse Volunteer',  'Special Event Volunteer'),
+('Guest Services Volunteer',  'Events Team'),
+('Guest Services Volunteer',  'Finance Office Team'),
+('Guest Services Volunteer',  'GS Office Team'),
+('Guest Services Volunteer',  'Receptionist'),
+('Guest Services Volunteer',  'Special Event Attendee'),
+('Guest Services Volunteer',  'Special Event Volunteer'),
+('Support Volunteer',  'Office Team'),
+('Next Steps Volunteer',  'Groups Office Team'),
+('Next Steps Volunteer',  'NS Office Team'),
+('Next Steps Volunteer',  'Writing Team')
 
 
 /* ====================================================== */
@@ -643,18 +634,18 @@ BEGIN
 			
 			SELECT @MetricServiceId = NULL, @MetricTotalId = NULL
 
-			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, EntityTypeId, [Guid])
+			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, EntityTypeId, [Guid], IconCssClass, CreatedDateTime)
 			VALUES ( 0, 'Service Numbers', 'Metric to track ' + @ChildCategoryName + ' by service', @False, 
-				@MetricSourceManualId, '', '', '', @CampusEntityTypeId, NEWID() )
+				@MetricSourceManualId, '', '', '', @CampusEntityTypeId, NEWID(), '', @CreatedDateTime )
 
 			SELECT @MetricServiceId = SCOPE_IDENTITY()
 
 			INSERT [MetricCategory] (MetricId, CategoryId, [Order], [Guid])
 			VALUES ( @MetricServiceId, @ChildCategoryId, @Order, NEWID() )
 
-			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, EntityTypeId, [Guid])
+			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, EntityTypeId, [Guid], IconCssClass, CreatedDateTime)
 			VALUES ( 0, 'Total Numbers', 'Metric to track ' + @ChildCategoryName + ' roles by campus and service', @False, 
-				@MetricSourceManualId, '', '', '', @CampusEntityTypeId, NEWID() )
+				@MetricSourceManualId, '', '', '', @CampusEntityTypeId, NEWID(), '', @CreatedDateTime )
 
 			SELECT @MetricTotalId = SCOPE_IDENTITY()
 
@@ -756,9 +747,9 @@ BEGIN
 		-- create if it doesn't exist
 		IF @MetricServiceRolesId IS NULL
 		BEGIN
-			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, ScheduleId, EntityTypeId, [Guid], ForeignId)
+			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, ScheduleId, EntityTypeId, [Guid], ForeignId, IconCssClass, CreatedDateTime)
 			VALUES ( 0, @GroupName + ' ' + @ServiceRolesTitle, 'Metric to track ' + @GroupName + ' roles by campus and service', @False, 
-				@MetricSourceSQLId, @MetricServiceRolesSQL, '', '', @SundayScheduleId, @CampusEntityTypeId, NEWID(), @GroupId )
+				@MetricSourceSQLId, @MetricServiceRolesSQL, '', '', @SundayScheduleId, @CampusEntityTypeId, NEWID(), @GroupId, '', @CreatedDateTime )
 
 			SELECT @MetricServiceRolesId = SCOPE_IDENTITY()
 
@@ -781,9 +772,9 @@ BEGIN
 		-- create if it doesn't exist
 		IF @MetricServiceRosterId IS NULL
 		BEGIN
-			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, ScheduleId, EntityTypeId, [Guid], ForeignId)
+			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, ScheduleId, EntityTypeId, [Guid], ForeignId, IconCssClass, CreatedDateTime)
 			VALUES ( 0, @GroupName + ' ' + @ServiceRosterTitle, 'Metric to track ' + @GroupName + ' roster by campus and service', @False, 
-				@MetricSourceSQLId, @MetricServiceRosterSQL, '', '', @SundayScheduleId, @CampusEntityTypeId, NEWID(), @GroupId )
+				@MetricSourceSQLId, @MetricServiceRosterSQL, '', '', @SundayScheduleId, @CampusEntityTypeId, NEWID(), @GroupId, '', @CreatedDateTime )
 
 			SELECT @MetricServiceRosterId = SCOPE_IDENTITY()
 
@@ -806,9 +797,9 @@ BEGIN
 		-- create if it doesn't exist
 		IF @MetricTotalRolesId IS NULL
 		BEGIN
-			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, ScheduleId, EntityTypeId, [Guid], ForeignId)
+			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, ScheduleId, EntityTypeId, [Guid], ForeignId, IconCssClass, CreatedDateTime)
 			VALUES ( 0, @GroupName + ' ' + @TotalRolesTitle, 'Metric to track ' + @GroupName + ' total roles filled by campus', @False, 
-				@MetricSourceSQLId, @MetricTotalRolesSQL, '', '', @SundayScheduleId, @CampusEntityTypeId, NEWID(), @GroupId )
+				@MetricSourceSQLId, @MetricTotalRolesSQL, '', '', @SundayScheduleId, @CampusEntityTypeId, NEWID(), @GroupId, '', @CreatedDateTime )
 
 			SELECT @MetricTotalRolesId = SCOPE_IDENTITY()
 
@@ -831,9 +822,9 @@ BEGIN
 		-- create if it doesn't exist
 		IF @MetricTotalRosterId IS NULL
 		BEGIN
-			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, ScheduleId, EntityTypeId, [Guid], ForeignId)
+			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, ScheduleId, EntityTypeId, [Guid], ForeignId, IconCssClass, CreatedDateTime)
 			VALUES ( 0, @GroupName + ' ' + @TotalRosterTitle, 'Metric to track ' + @GroupName + ' total roster by campus', @False, 
-				@MetricSourceSQLId, @MetricTotalRosterSQL, '', '', @SundayScheduleId, @CampusEntityTypeId, NEWID(), @GroupId )
+				@MetricSourceSQLId, @MetricTotalRosterSQL, '', '', @SundayScheduleId, @CampusEntityTypeId, NEWID(), @GroupId, '', @CreatedDateTime )
 
 			SELECT @MetricTotalRosterId = SCOPE_IDENTITY()
 
@@ -856,9 +847,9 @@ BEGIN
 		-- create if it doesn't exist
 		IF @MetricUniqueServingId IS NULL
 		BEGIN
-			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, ScheduleId, EntityTypeId, [Guid], ForeignId)
+			INSERT [Metric] (IsSystem, Title, [Description], IsCumulative, SourceValueTypeId, SourceSql, XAxisLabel, YAxisLabel, ScheduleId, EntityTypeId, [Guid], ForeignId, IconCssClass, CreatedDateTime)
 			VALUES ( 0, @GroupName + ' ' + @UniqueServingTitle, 'Metric to track ' + @GroupName + ' total unique volunteers by campus', @False, 
-				@MetricSourceSQLId, @MetricUniqueServingSQL, '', '', @SundayScheduleId, @CampusEntityTypeId, NEWID(), @GroupId )
+				@MetricSourceSQLId, @MetricUniqueServingSQL, '', '', @SundayScheduleId, @CampusEntityTypeId, NEWID(), @GroupId, '', @CreatedDateTime )
 
 			SELECT @MetricUniqueServingId = SCOPE_IDENTITY()
 
@@ -909,7 +900,9 @@ INSERT [Metric] (
 	YAxisLabel, 
 	ScheduleId, 
 	EntityTypeId, 
-	[Guid])
+	[Guid],
+	IconCssClass,
+	CreatedDateTime)
 VALUES ( 
 	@IsSystem, 
 	'Fuse HS Attendance', 
@@ -921,7 +914,9 @@ VALUES (
 	'', 
 	@FuseScheduleId, 
 	@CampusEntityTypeId, 
-	NEWID());
+	NEWID(),
+	'',
+	@CreatedDateTime);
 
 SELECT @newId = SCOPE_IDENTITY();
 
@@ -940,7 +935,9 @@ INSERT [Metric] (
 	YAxisLabel, 
 	ScheduleId, 
 	EntityTypeId, 
-	[Guid])
+	[Guid],
+	IconCssClass,
+	CreatedDateTime)
 VALUES ( 
 	@IsSystem, 
 	'Fuse MS Attendance', 
@@ -952,7 +949,9 @@ VALUES (
 	'', 
 	@FuseScheduleId, 
 	@CampusEntityTypeId, 
-	NEWID());
+	NEWID(),
+	'',
+	@CreatedDateTime);
 
 SELECT @newId = SCOPE_IDENTITY();
 
