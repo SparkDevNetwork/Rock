@@ -11,8 +11,8 @@
 /* ====================================================== */
 
 -- For testing in sql server management studio, uncomment here:
---DECLARE @StartDate AS NVARCHAR(MAX) = '2015-01-01';
---DECLARE @EndDate AS NVARCHAR(MAX) = '2015-12-31';
+DECLARE @StartDate AS NVARCHAR(MAX) = '2015-01-01';
+DECLARE @EndDate AS NVARCHAR(MAX) = '2015-12-31';
 
 DECLARE @today AS DATE = GETDATE();
 DECLARE @reportEndDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(WEEKDAY, @today), @today));
@@ -44,8 +44,8 @@ DECLARE @fundNames AS NVARCHAR(MAX) = (
 		staffGM.GroupId = @staffGroupId
 		AND staffGM.IsSystem = 0
 		AND staff.IsSystem = 0
-		AND ft.TransactionDateTime >= @reportStartDate
-		AND ft.TransactionDateTime <= @reportEndDate
+		AND CONVERT(DATE, ft.TransactionDateTime) >= @reportStartDate
+		AND CONVERT(DATE, ft.TransactionDateTime) <= @reportEndDate
 	GROUP BY
 		pfa.Id,
 		pfa.PublicName
@@ -60,11 +60,14 @@ DECLARE @sql AS NVARCHAR(MAX) = CONCAT(N'
 		*
 	FROM (
 		SELECT
-			MAX(staff.Id) AS PersonId,
+			pfa.PublicName AS Account,
+			SUM(ftd.Amount) AS TotalGiven,
+			l.LastName,
+			l.Id AS PersonId,
 			CONCAT( 
 				STUFF((
 					SELECT 
-						'' and '' + FirstName
+						'' and '' + ISNULL(NickName, FirstName)
 					FROM 
 						Person personB 
 						JOIN GroupMember familyMember ON familyMember.PersonId = personB.Id
@@ -72,33 +75,36 @@ DECLARE @sql AS NVARCHAR(MAX) = CONCAT(N'
 					WHERE 
 						family.GroupTypeId = ', @familyType, N'
 						AND familyMember.GroupRoleId = ', @adultRole, N'
-						AND personB.GivingGroupId = givers.GivingGroupId 
+						AND personB.GivingGroupId = gg.Id 
 					ORDER BY
 						personB.Gender
 					FOR XML PATH('''')), 1, 5, ''''), 
 				'' '', 
-				givers.LastName) AS StaffFamily,
-			givers.LastName,
-			pfa.PublicName AS Account,
-			SUM(ftd.Amount) AS TotalGiven
+				l.LastName) AS StaffFamily
 		FROM
-			GroupMember staffGM
-			JOIN Person staff ON staff.Id = staffGM.PersonId
-			JOIN Person givers ON givers.GivingGroupId = staff.GivingGroupId
-			JOIN PersonAlias giverAliases ON giverAliases.PersonId = givers.Id
-			LEFT JOIN FinancialTransaction ft ON ft.AuthorizedPersonAliasId = giverAliases.Id
-			LEFT JOIN FinancialTransactionDetail ftd ON ftd.TransactionId = ft.Id
-			LEFT JOIN FinancialAccount fa ON fa.Id = ftd.AccountId
-			LEFT JOIN FinancialAccount pfa ON fa.ParentAccountId = pfa.Id
+			FinancialTransactionDetail ftd
+			JOIN FinancialAccount fa ON fa.Id = ftd.AccountId
+			JOIN FinancialAccount pfa ON pfa.Id = fa.ParentAccountId
+			JOIN FinancialTransaction ft ON ftd.TransactionId = ft.Id
+			JOIN PersonAlias pa ON pa.Id = ft.AuthorizedPersonAliasId
+			JOIN Person p ON pa.PersonId = p.Id
+			JOIN (
+				SELECT
+					DISTINCT p.GivingGroupId AS Id
+				FROM
+					Person p
+					JOIN GroupMember gm ON gm.PersonId = p.Id
+				WHERE
+					gm.GroupId = ', @staffGroupId, N'
+			) gg ON gg.Id = p.GivingGroupId
+			JOIN Person l ON l.GivingGroupId = gg.Id AND l.GivingLeaderId = l.Id
 		WHERE
-			staffGM.GroupId = ', @staffGroupId, N'
-			AND staffGM.IsSystem = 0
-			AND staff.IsSystem = 0
-			AND ft.TransactionDateTime >= CONVERT(DATE, ''', @reportStartDate, N''')
-			AND ft.TransactionDateTime <= CONVERT(DATE, ''', @reportEndDate, N''')
+			CONVERT(DATE, ft.TransactionDateTime) >= CONVERT(DATE, ''', @reportStartDate, N''')
+			AND CONVERT(DATE, ft.TransactionDateTime) <= CONVERT(DATE, ''', @reportEndDate, N''')
 		GROUP BY
-			givers.GivingGroupId,
-			givers.LastName,
+			gg.Id,
+			l.Id,
+			l.LastName,
 			pfa.Id,
 			pfa.PublicName
 	) AS DataTable
