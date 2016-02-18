@@ -220,8 +220,10 @@ namespace RockWeb.Plugins.church_ccv.Steps
 
                     lMeasureSumValue.Text = latestMeasures.Sum( m => m.MeasureValue ).ToString();
                     lMeasureBackgroundColor.Text = latestMeasures.FirstOrDefault().MeasureColorBackground;
-                    lMeasureBarPercent.Text = latestMeasures.Average( m => m.Percentage ).ToString();
-                    lMeasureBarTextPercent.Text = latestMeasures.Average( m => m.Percentage ).ToString();
+
+                    int measurePercent = Convert.ToInt16( Math.Round( latestMeasures.Average( m => m.Percentage ) ) );
+                    lMeasureBarPercent.Text = measurePercent.ToString();
+                    lMeasureBarTextPercent.Text = measurePercent.ToString();
                     lMeasureColor.Text = latestMeasures.FirstOrDefault().MeasureColor;
 
                     rptMeasuresByPastor.DataSource = latestMeasures;

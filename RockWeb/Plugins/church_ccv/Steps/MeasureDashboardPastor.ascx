@@ -87,7 +87,7 @@
                                                 </div>
                                             </div>
                                             <%# (bool)Eval("IsTbd") ? "<div class='measure-tbd'>TBD</div>" : ""%>
-                                            <div class="progress measure-bar" style="background-color: <%# Eval("MeasureColorBackground") %>; ">
+                                            <div class="progress measure-bar <%# (int)Eval("Percentage") > 100 ? "percent-over-100": "" %>" style="background-color: <%# Eval("MeasureColorBackground") %>; ">
                                                   <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: <%# Eval("Percentage") %>%; background-color: <%# Eval("MeasureColor") %>;">
                                                     <%# Eval("Percentage") %>%
                                                   </div>
@@ -116,7 +116,7 @@
                                         <asp:Literal ID="lMeasureSumValue" runat="server" />
                                     </div>
                                 </div>
-                                <div class="progress measure-bar" style='background-color: <asp:Literal id="lMeasureBackgroundColor" runat="server" />'>
+                                <div class="progress measure-bar <%# (int)Eval("Percentage") > 100 ? "percent-over-100": "" %>" style='background-color: <asp:Literal id="lMeasureBackgroundColor" runat="server" />'>
                                     <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style='width: <asp:Literal id="lMeasureBarPercent" runat="server" />%; background-color: <asp:Literal id="lMeasureColor" runat="server" />;'>
                                         <asp:Literal id="lMeasureBarTextPercent" runat="server" />%
                                     </div>
@@ -138,7 +138,7 @@
                                                     <%# Eval("MeasureValue","{0:#,0}") %>
                                                 </div>
                                             </div>
-                                            <div class="progress measure-bar" style="background-color: <%# Eval("MeasureColorBackground") %>; ">
+                                            <div class="progress measure-bar <%# (int)Eval("Percentage") > 100 ? "percent-over-100": "" %>" style="background-color: <%# Eval("MeasureColorBackground") %>; ">
                                                   <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: <%# Eval("Percentage") %>%; background-color: <%# Eval("MeasureColor") %>;">
                                                     <%# Eval("Percentage") %>%
                                                   </div>

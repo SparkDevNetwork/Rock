@@ -98,6 +98,11 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     pnlMeasure.Visible = true;
                     LoadMeasureItems();
                 }
+
+                if ( !string.IsNullOrWhiteSpace( Request["CompareTo"] ) )
+                {
+                    tglCompareTo.Checked = Request["CompareTo"].ToString().AsBoolean();
+                }
             }
         }
 
@@ -136,7 +141,16 @@ namespace RockWeb.Plugins.church_ccv.Steps
 
         protected void btnBackToCampus_Click( object sender, EventArgs e )
         {
-            Response.Redirect( Request.Url.LocalPath );
+
+            if ( !string.IsNullOrWhiteSpace( Request["CompareTo"] ) )
+            {
+                Response.Redirect( Request.Url.LocalPath + "?CompareTo=" + Request["CompareTo"].ToString() );
+            }
+            else
+            {
+                Response.Redirect( Request.Url.LocalPath );
+            }
+            
         }
 
         #endregion
@@ -314,7 +328,8 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     lMeasureCampusSumValue.Text = latestMeasures.Sum( m => m.MeasureValue ).ToString();
                     lMeasureBackgroundColor.Text = latestMeasures.FirstOrDefault().MeasureColorBackground;
                     lMeasureBarPercent.Text = latestMeasures.Average( m => m.Percentage ).ToString();
-                    lMeasureBarTextPercent.Text = latestMeasures.Average( m => m.Percentage ).ToString();
+                    int measurePercent = Convert.ToInt16(Math.Round( latestMeasures.Average( m => m.Percentage ) ));
+                    lMeasureBarTextPercent.Text = measurePercent.ToString();
                     lMeasureColor.Text = latestMeasures.FirstOrDefault().MeasureColor;
 
                     rptMeasuresByCampus.DataSource = latestMeasures;
@@ -399,6 +414,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
             /// The campus.
             /// </value>
             public string Campus { get; set; }
+
             /// <summary>
             /// Gets the percentage.
             /// </summary>
