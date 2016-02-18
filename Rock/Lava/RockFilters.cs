@@ -549,6 +549,23 @@ namespace Rock.Lava
             }
         }
 
+        /// <summary>
+        /// Converts a string to its escaped representation using Uri.EscapeDataString
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string EscapeDataString( string input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+            else
+            {
+                return Uri.EscapeDataString( input );
+            }
+        }
+
         #endregion
 
         #region DateTime Filters
