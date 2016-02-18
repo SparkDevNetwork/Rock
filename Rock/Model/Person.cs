@@ -2023,7 +2023,7 @@ namespace Rock.Model
                 return GetPersonPhotoImageTag( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValue != null ? (Guid?)person.RecordTypeValue.Guid : null, maxWidth, maxHeight, altText, className );
             } else
             {
-                return GetPersonPhotoImageTag( -1, -1, null, Gender.Unknown, null, maxWidth, maxHeight, altText, className );
+                return GetPersonPhotoImageTag( null, null, null, Gender.Unknown, null, maxWidth, maxHeight, altText, className );
             }
             
         }
