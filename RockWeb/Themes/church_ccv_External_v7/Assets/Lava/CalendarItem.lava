@@ -39,10 +39,15 @@
         </p>
       {% endif %}
 
-      <p>
-        <strong>Date / Time</strong><br />
-        {{ EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal | First | Date:'dddd, MMMM d, yyyy @ h:mm tt' }}
-      </p>
+      {% assign scheduledDates = EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal:'all' %}
+      <strong>Date / Time</strong>
+      <ul class="list-unstyled">
+        {% for scheduledDate in scheduledDates %}
+        <li>
+            {{  scheduledDate | Date:'dddd, MMMM d, yyyy @ h:mm tt' }}
+        </li>
+        {% endfor %}
+      </ul>
 
       {% if EventItemOccurrence.Note != '' %}
         <strong>Note</strong><br />

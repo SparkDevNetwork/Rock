@@ -31,8 +31,13 @@
           {% else %}
             <strong style="margin-right: 5px;">{{ eventOccurrenceSummary.Name }}</strong>
           {% endif %}
-          <small style="display: inline-block;">{{ eventOccurrenceSummary.DateTime | Date: 'ddd, MMM d / h:mmtt' }}</small>
-
+            <small style="display: inline-block;">
+              {% if eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveStartDate != eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveEndDate %}
+                {{ eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveStartDate  | Date: 'MMM d' }} -  {{ eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveEndDate  | Date: 'MMM d'}}
+              {% else %}
+                {{ eventOccurrenceSummary.DateTime | Date: 'ddd, MMM d / h:mmtt' }}
+              {% endif %}
+            </small>
           {% assign currentMonth = thisMonth %}
         </td>
       </tr>

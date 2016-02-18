@@ -30,7 +30,12 @@
           <b>Date</b>
         </div>
         <div class="row">
-          {{ eventItemOccurrence.Date }}
+          {% if eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate != eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveEndDate %}
+            
+            {{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate  | Date: 'MMM d' }} -  {{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveEndDate  | Date: 'MMM d'}}
+          {% else %}
+            {{ eventItemOccurrence.Date | Date: 'MMM d'}}
+          {% endif %}
         </div>
       </div>
       <div class="col-md-2">

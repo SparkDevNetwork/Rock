@@ -83,7 +83,12 @@
               {% if DetailsPage != empty %}
                 <a class="btn btn-default btn-sm pull-right" href="{{ detailUrl }}">More <i class="fa fa-caret-right"></i></a>
               {% endif %}
-              {{ eventOccurrenceSummary.DateTime | Date: 'ddd, MMM d / h:mmtt' }}
+              {% if eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveStartDate != eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveEndDate %}
+                {{ eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveStartDate  | Date: 'MMM d' }} -  {{ eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveEndDate  | Date: 'MMM d'}}
+              {% else %}
+                {{ eventOccurrenceSummary.DateTime | Date: 'ddd, MMM d / h:mmtt' }}
+              {% endif %}
+
             </div>
           </div>
         </div>
