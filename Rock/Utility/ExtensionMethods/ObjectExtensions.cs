@@ -15,8 +15,10 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Newtonsoft.Json.Linq;
 
 namespace Rock
 {
@@ -188,5 +190,29 @@ namespace Rock
         }
 
         #endregion Stream extension methods
+
+        #region JObject extension methods
+
+        public static IDictionary<string, object> ToDictionary( this JObject jobject )
+        {
+            var result = jobject.ToObject<Dictionary<string, object>>();
+
+            var valueKeys = result
+                .Where( r => r.Value != null && r.Value.GetType() == typeof( JObject ) )
+                .Select( r => r.Key )
+                .ToList();
+
+            var arrayKeys = result
+                .Where( r => r.Value != null && r.Value.GetType() == typeof( JArray ) )
+                .Select( r => r.Key )
+                .ToList();
+
+            arrayKeys.ForEach( k => result[k] = ( (JArray)result[k] ).Values().Select( v => ( (JValue)v ).Value ).ToArray() );
+            valueKeys.ForEach( k => result[k] = ToDictionary( result[k] as JObject ) );
+
+            return result;
+        }
+
+        #endregion
     }
 }

@@ -2127,9 +2127,9 @@ namespace Rock.Web.UI.Controls
             return columns;
         }
 
-        private Dictionary<int, Dictionary<string, string>> GetPersonData()
+        private Dictionary<int, Dictionary<string, object>> GetPersonData()
         {
-            var personData = new Dictionary<int, Dictionary<string, string>>();
+            var personData = new Dictionary<int, Dictionary<string, object>>();
 
             if ( this.PersonIdField != null )
             {
@@ -2143,10 +2143,11 @@ namespace Rock.Web.UI.Controls
 
                     foreach ( DataRow row in data.Rows )
                     {
-                        if ( !keysSelected.Any() || keysSelected.Contains( row[dataKeyColumn] ) )
+                        object dataKey = row[dataKeyColumn];
+                        if ( !keysSelected.Any() || keysSelected.Contains( dataKey ) )
                         {
                             int? personId = null;
-                            var mergeValues = new Dictionary<string, string>();
+                            var mergeValues = new Dictionary<string, object>();
                             for ( int i = 0; i < data.Columns.Count; i++ )
                             {
                                 if ( data.Columns[i].ColumnName == this.PersonIdField )
@@ -2156,13 +2157,30 @@ namespace Rock.Web.UI.Controls
 
                                 if ( CommunicateMergeFields.Contains( data.Columns[i].ColumnName ) )
                                 {
-                                    mergeValues.Add( data.Columns[i].ColumnName, row[i].ToString() );
+                                    mergeValues.Add( data.Columns[i].ColumnName, row[i] );
                                 }
                             }
 
                             // Add the personId if none are selected or if it's one of the selected items.
                             if ( personId.HasValue )
                             {
+                                // Allow calling block to add additional merge fields
+                                var eventArg = new GetRecipientMergeFieldsEventArgs( dataKey, personId, row );
+                                OnGetRecipientMergeFields( eventArg );
+                                {
+                                    if ( eventArg.MergeValues != null )
+                                    {
+                                        foreach( var mergeValue in eventArg.MergeValues )
+                                        {
+                                            if ( !CommunicateMergeFields.Contains( mergeValue.Key ) )
+                                            {
+                                                CommunicateMergeFields.Add( mergeValue.Key );
+                                            }
+                                            mergeValues.Add( mergeValue.Key, mergeValue.Value );
+                                        }
+                                    }
+                                }
+
                                 personData.AddOrIgnore( personId.Value, mergeValues );
                             }
                         }
@@ -2202,13 +2220,30 @@ namespace Rock.Web.UI.Controls
                                     // Add the personId if none are selected or if it's one of the selected items.
                                     if ( !keysSelected.Any() || keysSelected.Contains( id ) )
                                     {
-                                        var mergeValues = new Dictionary<string, string>();
+                                        var mergeValues = new Dictionary<string, object>();
                                         foreach ( string mergeField in CommunicateMergeFields )
                                         {
                                             object obj = item.GetPropertyValue( mergeField );
                                             if ( obj != null )
                                             {
-                                                mergeValues.Add( mergeField.Replace( '.', '_' ), obj.ToString() );
+                                                mergeValues.Add( mergeField.Replace( '.', '_' ), obj );
+                                            }
+                                        }
+
+                                        // Allow calling block to add additional merge fields
+                                        var eventArg = new GetRecipientMergeFieldsEventArgs( id, personId, item );
+                                        OnGetRecipientMergeFields( eventArg );
+                                        {
+                                            if ( eventArg.MergeValues != null )
+                                            {
+                                                foreach ( var mergeValue in eventArg.MergeValues )
+                                                {
+                                                    if ( !CommunicateMergeFields.Contains( mergeValue.Key ) )
+                                                    {
+                                                        CommunicateMergeFields.Add( mergeValue.Key );
+                                                    }
+                                                    mergeValues.Add( mergeValue.Key, mergeValue.Value );
+                                                }
                                             }
                                         }
 
@@ -2704,6 +2739,23 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Occurs when grid gets recipient merge fields.
+        /// </summary>
+        public event EventHandler<GetRecipientMergeFieldsEventArgs> GetRecipientMergeFields;
+
+        /// <summary>
+        /// Raises the <see cref="E:GetRecipientMergeFields" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="GetRecipientMergeFieldsEventArgs"/> instance containing the event data.</param>
+        protected virtual void OnGetRecipientMergeFields( GetRecipientMergeFieldsEventArgs e )
+        {
+            if ( GetRecipientMergeFields != null )
+            {
+                GetRecipientMergeFields( this, e );
+            }
+        }
+
         #endregion
 
         #region Static Methods
@@ -2890,6 +2942,54 @@ namespace Rock.Web.UI.Controls
             DataKey = dataKey;
             OldIndex = oldIndex;
             NewIndex = newIndex;
+        }
+    }
+
+    /// <summary>
+    /// Event handler used when getting recipient merge fields for new communication
+    /// </summary>
+    public class GetRecipientMergeFieldsEventArgs : EventArgs
+    {
+        /// <summary>
+        /// Gets the data key.
+        /// </summary>
+        public object DataKey { get; private set; }
+
+        /// <summary>
+        /// Gets the person identifier.
+        /// </summary>
+        /// <value>
+        /// The person identifier.
+        /// </value>
+        public int? PersonId { get; private set; }
+
+        /// <summary>
+        /// Gets the data item.
+        /// </summary>
+        /// <value>
+        /// The data item.
+        /// </value>
+        public object DataItem { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the merge values.
+        /// </summary>
+        /// <value>
+        /// The merge values.
+        /// </value>
+        public Dictionary<string, object> MergeValues { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GetRecipientMergeFieldsEventArgs"/> class.
+        /// </summary>
+        /// <param name="dataKey">The data key.</param>
+        /// <param name="personId">The person identifier.</param>
+        public GetRecipientMergeFieldsEventArgs( object dataKey, int? personId, object dataItem )
+        {
+            DataKey = dataKey;
+            PersonId = personId;
+            DataItem = dataItem;
+            MergeValues = new Dictionary<string, object>();
         }
     }
 
