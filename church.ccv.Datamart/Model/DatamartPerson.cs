@@ -338,6 +338,15 @@ namespace church.ccv.Datamart.Model
         public bool? IsEra { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is coaching.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is coaching; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsCoaching { get; set; }
+
+        /// <summary>
         /// Gets or sets the serving areas.
         /// </summary>
         /// <value>
@@ -588,6 +597,16 @@ namespace church.ccv.Datamart.Model
         /// </value>
         [DataMember]
         public decimal? Giving2007 { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets the giving last12 months.
+        /// </summary>
+        /// <value>
+        /// The giving last12 months.
+        /// </value>
+        [DataMember]
+        public decimal? GivingLast12Months { get; set; }
 
         /// <summary>
         /// Gets or sets the geo point.
