@@ -153,7 +153,7 @@ namespace RockJobSchedulerService
         {
             if ( sched != null )
             {
-                sched.Shutdown();
+                sched.Shutdown( false );
             }
         }
     }
