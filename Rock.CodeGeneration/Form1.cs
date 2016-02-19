@@ -62,6 +62,8 @@ namespace Rock.CodeGeneration
             tbServiceFolder.Text = Path.Combine( RootFolder().FullName, projectName );
             tbRestFolder.Text = Path.Combine( RootFolder().FullName, projectName + ".Rest" );
             tbClientFolder.Text = Path.Combine( RootFolder().FullName, projectName + ".Client" );
+            tbDatabaseFolder.Text = Path.Combine( RootFolder().FullName, "Database" );
+            
             if ( projectName != "Rock" )
             {
                 tbRestFolder.Text = Path.Combine( RootFolder().FullName, projectName + "\\Rest" );
@@ -160,6 +162,11 @@ namespace Rock.CodeGeneration
                         WriteRockClientSystemGuidFiles( rockClientFolder );
                         WriteRockClientEnumsFile( rockClientFolder );
                     }
+
+                    if ( cbDatabaseProcs.Checked )
+                    {
+                        WriteDatabaseProcsScripts( tbDatabaseFolder.Text );
+                    }
                 }
             }
 
@@ -167,6 +174,69 @@ namespace Rock.CodeGeneration
             Cursor = Cursors.Default;
 
             MessageBox.Show( "Files have been generated" );
+        }
+
+        /// <summary>
+        /// Writes the database procs scripts.
+        /// </summary>
+        /// <param name="databaseRootFolder">The database root folder.</param>
+        public void WriteDatabaseProcsScripts( string databaseRootFolder )
+        {
+            SqlConnection sqlconn = GetSqlConnection( new DirectoryInfo( databaseRootFolder ).Parent.FullName );
+            sqlconn.Open();
+            var qryProcs = sqlconn.CreateCommand();
+            qryProcs.CommandType = System.Data.CommandType.Text;
+            qryProcs.CommandText = "select ROUTINE_SCHEMA, ROUTINE_NAME, ROUTINE_TYPE FROM INFORMATION_SCHEMA.ROUTINES";
+            var readerProcs = qryProcs.ExecuteReader();
+            while ( readerProcs.Read() )
+            {
+                string routineSchema = readerProcs["ROUTINE_SCHEMA"] as string;
+                string routineName = readerProcs["ROUTINE_NAME"] as string;
+                string routineType = readerProcs["ROUTINE_TYPE"] as string;
+                var helpTextCommand = sqlconn.CreateCommand();
+                helpTextCommand.CommandText = string.Format( "EXEC sp_helptext '{0}.{1}';", routineSchema, routineName );
+                var helpTextReader = helpTextCommand.ExecuteReader();
+                var script = string.Empty;
+                while ( helpTextReader.Read() )
+                {
+                    script += helpTextReader[0];
+                }
+
+                string folder;
+                if ( routineType == "PROCEDURE" )
+                {
+                    folder = "Procedures";
+                }
+                else
+                {
+                    folder = "Functions";
+                }
+                
+                string filePath = Path.Combine( databaseRootFolder, folder, routineName + ".sql" );
+                Directory.CreateDirectory( Path.GetDirectoryName( filePath ) );
+
+                script = script
+                    .Replace( "CREATE FUNCTION ", "ALTER FUNCTION " )
+                    .Replace( "CREATE PROCEDURE ", "ALTER PROCEDURE " );
+
+                File.WriteAllText( filePath, script.Trim() );
+            }
+
+            var qryViews = sqlconn.CreateCommand();
+            qryViews.CommandText = "SELECT TABLE_NAME, VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS";
+            var readerViews = qryViews.ExecuteReader();
+            while ( readerViews.Read() )
+            {
+                string viewName = readerViews["TABLE_NAME"] as string;
+                string script = readerViews["VIEW_DEFINITION"] as string;
+
+                string filePath = Path.Combine( databaseRootFolder, "Views", viewName + ".sql" );
+                Directory.CreateDirectory( Path.GetDirectoryName( filePath ) );
+                script = script
+                    .Replace( "CREATE VIEW ", "ALTER VIEW " );
+                
+                File.WriteAllText( filePath, script.Trim() );
+            }
         }
 
         /// <summary>
