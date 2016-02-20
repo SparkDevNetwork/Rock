@@ -26,6 +26,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -94,6 +95,30 @@ namespace RockWeb.Blocks.Cms
             btnDelete.Visible = true;
             btnEdit.Visible = true;
             pnlDeleteConfirm.Visible = false;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCompileTheme control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnCompileTheme_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            SiteService siteService = new SiteService( rockContext );
+            Site site = siteService.Get( hfSiteId.Value.AsInteger() );
+
+            string messages = string.Empty;
+            bool success = RockLess.CompileTheme( site.Theme, out messages );
+
+            if ( success )
+            {
+                mdThemeCompile.Show( "Theme was successfully compiled.", ModalAlertType.Information );
+            }
+            else
+            {
+                mdThemeCompile.Show( string.Format("An error occurred compiling the theme {0}. Message: {1}.", site.Theme, messages), ModalAlertType.Warning );
+            }
         }
 
         /// <summary>
@@ -407,6 +432,13 @@ namespace RockWeb.Blocks.Cms
                 site.Theme = RockPage.Layout.Site.Theme;
             }
 
+            // set theme compile button
+            if ( !RockLess.ThemeAllowsCompiling( site.Theme ) )
+            {
+                btnCompileTheme.Enabled = false;
+                btnCompileTheme.Text = "Theme Doesn't Support Compiling";
+            }
+
             pnlDetails.Visible = true;
             hfSiteId.Value = site.Id.ToString();
 
@@ -583,5 +615,7 @@ namespace RockWeb.Blocks.Cms
         }
 
         #endregion
+
+        
     }
 }

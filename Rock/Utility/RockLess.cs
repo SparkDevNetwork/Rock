@@ -54,5 +54,30 @@ namespace Rock.Utility
 
             return result;
         }
+
+        public static bool ThemeAllowsCompiling(string themeName )
+        {
+            bool allowsCompiling = true;
+
+            try
+            {
+                string fullThemePath = HttpRuntime.AppDomainAppPath + @"Themes\" + themeName;
+
+                DirectoryInfo themeDirectory = new DirectoryInfo( fullThemePath + @"\Styles" );
+                if ( themeDirectory.Exists )
+                {
+                    FileInfo[] files = themeDirectory.GetFiles();
+
+                    if ( files.Where( f => f.Name == ".nocompile" ).Count() > 0 )
+                    {
+                        allowsCompiling = false;
+                    }
+                }
+
+            }
+            catch { }
+
+            return allowsCompiling;
+        }
     }
 }
