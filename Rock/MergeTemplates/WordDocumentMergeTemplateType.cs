@@ -419,7 +419,7 @@ namespace Rock.MergeTemplates
         /// Merges global merge fields into the Header and Footer parts of the document
         /// </summary>
         /// <param name="outputDoc">The output document.</param>
-        /// <param name="globalMergeFields">The global merge fields.</param>
+        /// <param name="globalMergeHash">The global merge hash.</param>
         private void HeaderFooterGlobalMerge( WordprocessingDocument outputDoc, DotLiquid.Hash globalMergeHash )
         {
             // make sure that all proof codes get removed so that the lava can be found
