@@ -400,7 +400,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
                 if ( responseSets[i].PersonId == groupMember.PersonId )
                 {
                     // Skip any responses from previous start periods.
-                    if ( responseSets[i].SubmitForDate <= _reportStartDate )
+                    if ( responseSets[i].SubmitForDate < _reportStartDate )
                     {
                         continue;
                     }
