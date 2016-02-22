@@ -34,10 +34,8 @@ namespace Rock.Rest.Controllers
     /// <summary>
     ///
     /// </summary>
-    public class ImagesController : ApiControllerBase
+    public partial class BinaryFilesController
     {
-        #region Post
-
         /// <summary>
         /// Adds a new person and puts them into a new family
         /// </summary>
@@ -45,21 +43,11 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpPost]
-        [System.Web.Http.Route("api/Images")]
-        public HttpResponseMessage PostImage([FromUri] Guid binaryFileTypeGuid)
+        [System.Web.Http.Route("api/BinaryFiles/SetProfileImage/{personId}")]
+        public HttpResponseMessage PostProfileImage( int personId )
         {
             var file = HttpContext.Current.Request.Files.Count > 0 ? HttpContext.Current.Request.Files[0] : null;
             throw new NotImplementedException();
         }
-
-        [Authenticate, Secured]
-        [HttpPut]
-        [System.Web.Http.Route("api/Images/{binaryFileId}")]
-        public void PutImage(int binaryFileId)
-        {
-            throw new NotImplementedException();
-        }
-
-        #endregion
     }
 }
