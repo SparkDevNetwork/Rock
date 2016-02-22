@@ -19,7 +19,18 @@
 
                 <Rock:NotificationBox ID="nbMessages" runat="server" />
 
-                <asp:PlaceHolder ID="phThemeControls" runat="server" EnableViewState="true" />
+                <div class="row">
+                    <div class="col-md-6">
+                        <asp:PlaceHolder ID="phThemeControls" runat="server" EnableViewState="true" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <Rock:CodeEditor ID="ceOverrides" runat="server" Label="CSS Overrides" EditorHeight="600" />
+                    </div>
+                </div>
+                
+
+                
 
             </div>
         
@@ -27,3 +38,26 @@
 
     </ContentTemplate>
 </asp:UpdatePanel>
+
+<script type="text/javascript">
+    // change approval status to pending if any values are changed
+    Sys.Application.add_load( function () {
+        $(".js-color-override").on("click", function () {
+            var controlKey = $(this).attr("data-control");
+            var originalValue = $(this).attr("data-original-value");
+
+            $("input[id$='" + controlKey + "']").parent().colorpicker('setValue', originalValue);
+            
+            $(this).hide();
+        });
+
+        $(".js-text-override").on("click", function () {
+            var controlKey = $(this).attr("data-control");
+            var originalValue = $(this).attr("data-original-value");
+
+            $("input[id$='" + controlKey + "']").val(originalValue);
+
+            $(this).hide();
+        });
+    });
+</script>

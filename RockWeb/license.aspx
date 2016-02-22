@@ -119,6 +119,7 @@
                             <li><a href="#moment">Moment.js</a> (MIT) - <a href="http://momentjs.com/">Project Site</a> </li>
                             <li><a href="#zeroclipboard">ZeroClipboard</a> (MIT) - <a href="https://github.com/zeroclipboard">Project Site</a> </li>
                             <li><a href="#rangeSlider">RangeSlider</a> (MIT) - <a href="https://github.com/IonDen/ion.rangeSlider/">Project Site</a> </li>
+                            <li><a href="#colorPicker">ColorPicker</a> (Apache) - <a href="https://github.com/mjolnic/bootstrap-colorpicker">Project Site</a> </li>
                         </ul>
 
 
@@ -2889,6 +2890,24 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
 FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+</pre>
+
+                        <a name="colorPicker"></a>
+<h3>Color Picker</h3>
+<pre>
+Copyright 2012 Stefan Petre
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 </pre>
 
                     </div>

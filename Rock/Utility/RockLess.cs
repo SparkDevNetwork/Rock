@@ -27,7 +27,7 @@ namespace Rock.Utility
 
                     DotlessConfiguration dotLessConfiguration = new DotlessConfiguration();
                     dotLessConfiguration.MinifyOutput = true;
-                    dotLessConfiguration.RootPath = themeDirectory.FullName;
+                    //dotLessConfiguration.RootPath = themeDirectory.FullName;
 
                     Directory.SetCurrentDirectory( themeDirectory.FullName );
 
@@ -73,7 +73,6 @@ namespace Rock.Utility
                         allowsCompiling = false;
                     }
                 }
-
             }
             catch { }
 
