@@ -1,5 +1,5 @@
 /* ====================================================== */
--- Calculate Grades for KidSpring Elementary Attendees
+-- Calculate Grades for KidSpring Elementary and Fuse Attendees
 
 -- Assumes grade transition date has been set in the global attributes.  If today is after 
 -- grade transition date, grad year is next year since school years are split (start senior 
@@ -14,6 +14,7 @@
 DECLARE @today AS DATE = GETDATE();
 DECLARE @currentYear AS INT = YEAR(@today);
 DECLARE @elementaryGroupId AS INT = (SELECT Id FROM [Group] WHERE Name = 'Elementary Attendee');
+DECLARE @fuseGroupId AS INT = (SELECT Id FROM [Group] WHERE Name = 'Fuse Attendee');
 DECLARE @groupEntityTypeId AS INT = (SELECT Id FROM EntityType WHERE Name = 'Rock.Model.Group');
 DECLARE @gradeRangeAttributeId AS INT = (SELECT Id FROM Attribute WHERE Name = 'Grade Range' AND EntityTypeId = @groupEntityTypeId);
 
@@ -43,7 +44,7 @@ WITH LastCheckin AS (
 		JOIN [Group] g ON a.GroupId = g.Id
 	WHERE
 		a.StartDateTime > @gradeTransitionDate
-		AND g.ParentGroupId = @elementaryGroupId
+		AND (g.ParentGroupId = @elementaryGroupId OR g.ParentGroupId = @fuseGroupId)
 	GROUP BY
 		a.PersonAliasId
 )
@@ -60,5 +61,5 @@ FROM
 	JOIN AttributeValue av ON av.EntityId = g.Id
 	JOIN DefinedValue dv ON dv.[Guid] LIKE SUBSTRING(av.Value, 0, PATINDEX('%,%', av.Value))
 WHERE 
-	ParentGroupId = @elementaryGroupId
+	(g.ParentGroupId = @elementaryGroupId OR g.ParentGroupId = @fuseGroupId)
 	AND av.AttributeId = @gradeRangeAttributeId;
