@@ -423,7 +423,8 @@ namespace RockWeb.Blocks.Communication
                         {
                             PersonAliasId = r.PersonAliasId,
                             Status = CommunicationRecipientStatus.Pending,
-                            StatusNote = string.Empty
+                            StatusNote = string.Empty,
+                            AdditionalMergeValuesJson = r.AdditionalMergeValuesJson
                         } ) );
 
                     service.Add( newCommunication );

@@ -24,6 +24,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Rock.Data;
 
 namespace Rock.Model
@@ -142,7 +143,13 @@ namespace Rock.Model
 
             set
             {
-                AdditionalMergeValues = value.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+                AdditionalMergeValues = value.FromJsonOrNull<Dictionary<string, object>>() ?? new Dictionary<string, object>();
+
+                // Convert any objects to a dictionary so that they can be used by Lava
+                var objectKeys = AdditionalMergeValues
+                    .Where( m => m.Value != null && m.Value.GetType() == typeof( JObject ) )
+                    .Select( m => m.Key ).ToList();
+                objectKeys.ForEach( k => AdditionalMergeValues[k] = ( (JObject)AdditionalMergeValues[k] ).ToDictionary() );
             }
         }
 
@@ -188,12 +195,12 @@ namespace Rock.Model
         ///  A <see cref="System.Collections.Generic.Dictionary{String,String}"/> of <see cref="System.String"/> objects containing additional merge values for the <see cref="Rock.Model.Communication"/>
         /// </value>
         [DataMember]
-        public virtual Dictionary<string, string> AdditionalMergeValues
+        public virtual Dictionary<string, object> AdditionalMergeValues
         {
             get { return _additionalMergeValues; }
             set { _additionalMergeValues = value; }
         }
-        private Dictionary<string, string> _additionalMergeValues = new Dictionary<string, string>();
+        private Dictionary<string, object> _additionalMergeValues = new Dictionary<string, object>();
 
         /// <summary>
         /// Gets a list of activities.

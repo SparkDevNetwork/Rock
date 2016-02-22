@@ -26,7 +26,7 @@ using Rock.Web.Cache;
 namespace Rock.Web.Utilities
 {
     /// <summary>
-    /// 
+    /// Helper class for collecting enviromental information about Rock install that is saved during update
     /// </summary>
     public static class RockUpdateHelper
     {

@@ -1,5 +1,12 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="AttendanceAnalytics.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.AttendanceAnalytics" %>
 
+<style>
+    .group-checkboxes .rock-check-box-list label,
+    .campuses-picker label {
+        cursor: pointer;
+    }
+</style>
+
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
@@ -42,7 +49,8 @@
                         </div>
 
                         <Rock:NotificationBox ID="nbDateRangeWarning" runat="server" NotificationBoxType="Warning" Text="Date Range is required" Visible="false" Dismissable="true" />
-                        <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Date Range" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" />
+                        <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Sunday Date Range" 
+                            EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" EnabledSlidingDateRangeUnits="Week, Month, Year" />
 
                         <Rock:RockControlWrapper ID="rcwGroupBy" runat="server" Label="Group By">
                             <div class="controls">
@@ -57,12 +65,13 @@
                             </div>
                         </Rock:RockControlWrapper>
 
-                        <Rock:RockCheckBoxList ID="clbCampuses" runat="server" CssClass="campuses-picker-vertical" Label="Campuses" 
+                        <Rock:RockCheckBoxList ID="clbCampuses" runat="server" FormGroupCssClass="campuses-picker js-campuses-picker" CssClass="campuses-picker-vertical" Label="Campuses" 
                             Help="The campuses to display attendance for. Leave blank to not filter by campus." />
                         
                         <Rock:NotificationBox ID="nbGroupsWarning" runat="server" NotificationBoxType="Warning" Text="Please select at least one group." Visible="false"/>
-                        <h4>Group</h4>
-                        <ul class="rocktree">
+                        <h4 class="js-checkbox-selector cursor-pointer">Groups</h4>
+                        <hr class="margin-t-none" />
+                        <ul class="list-unstyled js-group-checkboxes group-checkboxes">
 
                             <asp:Repeater ID="rptGroupTypes" runat="server" OnItemDataBound="rptGroupTypes_ItemDataBound">
                                 <ItemTemplate>
@@ -228,6 +237,7 @@
                                         <Rock:RockBoundField DataField="Person" HeaderText="Person" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockBoundField DataField="Person.Email" HeaderText="Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockBoundField DataField="Person.Age" HeaderText="Age" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                        <Rock:DefinedValueField DataField="Person.ConnectionStatusValueId" HeaderText="Connection Status" SortExpression="Person.ConnectionStatusValueId" />
                                         <Rock:RockLiteralField HeaderText="First Visit" ID="lFirstVisitDate" SortExpression="FirstVisit.StartDateTime"/>
                                         <Rock:RockLiteralField HeaderText="Second Visit" ID="lSecondVisitDate" />
                                         <Rock:DateField DataField="LastVisit.StartDateTime" HeaderText="Last Visit" SortExpression="LastVisit.StartDateTime" />
@@ -309,6 +319,46 @@
                 });
 
                 showFilterByOptions();
+
+                // toggle all group checkboxes
+                $('.js-checkbox-selector, .js-group-checkboxes .rock-check-box-list label').on('click', function (e) {
+                    
+                    var container = $(this).siblings('.js-group-checkboxes, .controls');
+                    var isChecked = container.hasClass('all-checked');
+
+                    container.find('input:checkbox').each(function () {
+                        $(this).prop('checked', !isChecked);
+                    });
+
+                    if (isChecked) {
+                        container.removeClass('all-checked');
+                        container.find('.controls').removeClass('all-checked');
+                    }
+                    else {
+                        container.addClass('all-checked');
+                        container.find('.controls').addClass('all-checked');
+                    }
+
+                });
+
+                // toggle campus checkboxes
+                $('.js-campuses-picker label').on('click', function (e) {
+
+                    var container = $(this).siblings('.controls');
+                    var isChecked = container.hasClass('all-checked');
+
+                    container.find('input:checkbox').each(function () {
+                        $(this).prop('checked', !isChecked);
+                    });
+
+                    if (isChecked) {
+                        container.removeClass('all-checked');
+                    }
+                    else {
+                        container.addClass('all-checked');
+                    }
+
+                });
             });
         </script>
     </ContentTemplate>

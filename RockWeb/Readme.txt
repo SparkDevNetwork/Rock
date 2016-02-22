@@ -1,3 +1,24 @@
+Rock McKinley 4.3
+
++ Fixed issue with check-in "randomly" not allowing check-ins
++ Fixed issue with registration saving a blank person/registrant if user navigated away from registration and then used browser navigation to return before submitting the registration.
++ Fixed Registration Entry so that it does not create person notes until registration and payment was successful.
++ Fixed Tag Report so that after sorting it deletes the correct item (Fixes #1398).
++ Fixed location details not saving attribute values.
++ Fixed issue with security when changing if a group is a security role or not (Fixes #1399).
++ Fix issue with Group Requirements when the Expire In Days setting has not been set (Fixes #1389).
++ Fixed error in the People REST endpoint (Fixes #1388).
++ Updated Check-in to correctly cache device configuration data so that it is not specific to a particular point in time.
++ Updated Lava debug display to only display each object type/id once, and limit iterations to first two items (Fixes #1365).
++ Changed z-index of the admin toolbar to keep it from being hidden when editing page zones. (Fixes #1397)
++ Changed the ConnectionRequestDetail block to allow a request to be Connected even if there is no placement group. In the future this can be controlled via a new 'RequiresPlacementGroupToConnect' flag on the opportunity type.
++ Fixed Communication Entry block so that the Subject is cleared if a selected template does not specify a subject (Fixes #1393).
++ Fixed IE double-tap zoom issue in check-in themes
++ Fixed issue where creating a new communication from a dataview caused the block to timeout before the configured database timeout occurred. (Fixes #909).
++ Fixed issue when trying to add group attendance and the location filter is set to a parent location (i.e. campus/building) vs. an actual room location.
++ Updated the Group Attendance Detail block so that if adding attendance for a particular schedule, the attendance record gets created with the correct start time.
++ Connection Search block now has access to the complete opportunity model including the opportunity attributes. Note, there is a small change in the Lava for this update. If you use a custom theme you'll want to grab a new copy of 'OpportunitySearch.lava' as you should use the property of 'PublicName' instead of 'Name'.
+
 Rock McKinley 4.2
 
 + Updated Registration Entry so that discount code is still applied correctly when user returns to make a payment on existing registration.

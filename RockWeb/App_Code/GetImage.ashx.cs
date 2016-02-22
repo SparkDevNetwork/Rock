@@ -185,7 +185,6 @@ namespace RockWeb
 
             
             Stream fileContent = null;
-            string debugStep = "1";
             try
             {
                 // Is it cached
@@ -204,10 +203,8 @@ namespace RockWeb
                     }
                 }
 
-                debugStep = "2";
                 if ( fileContent == null )
                 {
-                    debugStep = "3";
                     // If we didn't get it from the cache, get it from the binaryFileService
                     BinaryFile binaryFile = GetFromBinaryFileService( context, fileId, fileGuid );
 
@@ -216,11 +213,9 @@ namespace RockWeb
                         fileContent = binaryFile.ContentStream;
                     }
 
-                    debugStep = "4";
                     // If we got the image from the binaryFileService, it might need to be resized and cached
                     if ( fileContent != null )
                     {
-                        debugStep = "5";
                         // If more than 1 query string param is passed in, or the mime type is TIFF, assume resize is needed
                         // Note: we force "image/tiff" to get resized so that it gets converted into a jpg (browsers don't like tiffs)
                         if ( context.Request.QueryString.Count > 1 || binaryFile.MimeType == "image/tiff" )
@@ -232,7 +227,6 @@ namespace RockWeb
                             }
                         }
 
-                        debugStep = "6";
                         if ( binaryFileMetaData.BinaryFileType_AllowCaching )
                         {
                             Cache( fileContent, physCachedFilePath );
@@ -243,12 +237,9 @@ namespace RockWeb
                 if ( fileContent == null )
                 {
                     // if we couldn't get the file from the binaryFileServie or the cache, respond with NotFound
-                    debugStep = "7";
                     SendNotFound( context );
                     return;
                 }
-
-                debugStep = "8";
 
                 // respond with File
                 if ( binaryFileMetaData.BinaryFileType_AllowCaching )
@@ -260,25 +251,16 @@ namespace RockWeb
 
                 context.Response.ContentType = binaryFileMetaData.MimeType != "image/tiff" ? binaryFileMetaData.MimeType : "image/jpg";
 
-                debugStep = "9";
-
                 using ( var responseStream = fileContent )
                 {
-                    debugStep = "10";
                     context.Response.AddHeader( "content-disposition", "inline;filename=" + binaryFileMetaData.FileName.MakeValidFileName() );
                     if ( responseStream.CanSeek )
                     {
                         responseStream.Seek( 0, SeekOrigin.Begin );
                     }
                     responseStream.CopyTo( context.Response.OutputStream );
-                    debugStep = "11";
                     context.Response.Flush();
-                    debugStep = "12";
                 }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception( "Exception in ProcessBinaryFileRequest: DebugStep " + debugStep, ex );
             }
             finally
             {
