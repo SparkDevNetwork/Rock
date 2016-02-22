@@ -84,6 +84,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the CategoryId of the <see cref="Rock.Model.Category"/> that the PrayerRequest belongs to.
         /// </value>
         [DataMember]
+        [IncludeForReporting]
         public int? CategoryId { get; set; }
 
         /// <summary>
