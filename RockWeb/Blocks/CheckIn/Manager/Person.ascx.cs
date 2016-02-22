@@ -166,7 +166,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 {
                     lName.Text = person.FullName;
 
-                    string photoTag = Rock.Model.Person.GetPhotoImageTag( person, 120, 120 );
+                    string photoTag = Rock.Model.Person.GetPersonPhotoImageTag( person, 120, 120 );
                     if ( person.PhotoId.HasValue )
                     {
                         lPhoto.Text = string.Format( "<div class='photoframe'><a href='{0}'>{1}</a></div>", person.PhotoUrl, photoTag );

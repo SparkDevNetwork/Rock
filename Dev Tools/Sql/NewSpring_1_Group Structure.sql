@@ -682,20 +682,32 @@ create table #collegeGroups (
 -- GroupType, Group, Location
 INSERT #collegeGroups
 VALUES
-('NewSpring College', 'Acts', 'Acts'), 
-('NewSpring College', 'All-Staff', 'All-Staff'), 
+('NewSpring College', 'All-Staff I', 'All-Staff I'), 
+('NewSpring College', 'All-Staff II', 'All-Staff II'), 
+('NewSpring College', 'All-Staff III', 'All-Staff III'),
+('NewSpring College', 'All-Staff IV', 'All-Staff IV'),
 ('NewSpring College', 'Audio I', 'Audio I'), 
-('NewSpring College', 'Bible', 'Bible'), 
-('NewSpring College', 'Builders & Shepherds', 'Builders & Shepherds'), 
-('NewSpring College', 'Character Forum', 'Character Forum'), 
-('NewSpring College', 'Christian Beliefs I', 'Christian Beliefs I'), 
-('NewSpring College', 'Christian Beliefs II', 'Christian Beliefs II'), 
-('NewSpring College', 'Communication', 'Communication'), 
-('NewSpring College', 'Ephesians', 'Ephesians'), 
-('NewSpring College', 'Leadership Forum', 'Leadership Forum'), 
+('NewSpring College', 'Audio II', 'Audio II'), 
+('NewSpring College', 'Audio Lab I', 'Audio Lab I'), 
+('NewSpring College', 'Audio Lab II', 'Audio Lab II'), 
+('NewSpring College', 'Basic Christian Issues', 'Basic Christian Issues'), 
+('NewSpring College', 'Children''s Ministry I', 'Children''s Ministry I'), 
+('NewSpring College', 'Children''s Ministry II', 'Children''s Ministry II'), 
+('NewSpring College', 'Forum I', 'Forum I'), 
+('NewSpring College', 'Forum II', 'Forum II'), 
+('NewSpring College', 'Health in Ministry I', 'Health in Ministry I'), 
+('NewSpring College', 'Health in Ministry II', 'Health in Ministry II'), 
 ('NewSpring College', 'Leadership I', 'Leadership I'), 
-('NewSpring College', 'Small Group', 'Small Group'), 
-('NewSpring College', 'Working Group', 'Working Group')
+('NewSpring College', 'Leadership II', 'Leadership II'), 
+('NewSpring College', 'Ministry Leadership Lab', 'Ministry Leadership Lab'), 
+('NewSpring College', 'Set Up Group', 'Set Up Group'), 
+('NewSpring College', 'Student Ministry Foundations I', 'Student Ministry Foundations I'), 
+('NewSpring College', 'Student Ministry Foundations II', 'Student Ministry Foundations II'), 
+('NewSpring College', 'Student Ministry Lead Lab I', 'Student Ministry Lead Lab I'), 
+('NewSpring College', 'Student Ministry Lead Lab II', 'Student Ministry Lead Lab II'), 
+('NewSpring College', 'Survey of the Bible I', 'Survey of the Bible I'),
+('NewSpring College', 'Survey of the Bible II', 'Survey of the Bible II'),
+('NewSpring College', 'Theology of Worship', 'Theology of Worship')
 
 /* ====================================================== */
 -- DELETE existing areas

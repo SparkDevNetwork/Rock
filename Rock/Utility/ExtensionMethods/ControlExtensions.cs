@@ -429,7 +429,15 @@ namespace Rock
             }
             else
             {
-                return int.Parse( listControl.SelectedValue );
+                int value;
+                if ( int.TryParse( listControl.SelectedValue, out value ) )
+                {
+                    return value;
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
 

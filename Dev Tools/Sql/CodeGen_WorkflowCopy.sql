@@ -1,3 +1,10 @@
+/* ====================================================== */
+-- CodeGen to script workflows
+
+-- Scripts workflows, categories, attributes, etc into sql inserts so they can be added to NewSpring 13
+
+/* ====================================================== */
+
 DECLARE @etid_workflowType AS INT = (SELECT Id FROM EntityType WHERE Name = 'Rock.Model.WorkflowType');
 DECLARE @etid_workflow AS INT = (SELECT Id FROM EntityType WHERE Name = 'Rock.Model.Workflow');
 DECLARE @etid_workflowActivity AS INT = (SELECT Id FROM EntityType WHERE Name = 'Rock.Model.WorkflowActivity');
