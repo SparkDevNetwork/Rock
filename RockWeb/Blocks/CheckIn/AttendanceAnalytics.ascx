@@ -42,7 +42,8 @@
                         </div>
 
                         <Rock:NotificationBox ID="nbDateRangeWarning" runat="server" NotificationBoxType="Warning" Text="Date Range is required" Visible="false" Dismissable="true" />
-                        <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Date Range" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" />
+                        <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Sunday Date Range" 
+                            EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" EnabledSlidingDateRangeUnits="Week, Month, Year" />
 
                         <Rock:RockControlWrapper ID="rcwGroupBy" runat="server" Label="Group By">
                             <div class="controls">
@@ -228,6 +229,7 @@
                                         <Rock:RockBoundField DataField="Person" HeaderText="Person" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockBoundField DataField="Person.Email" HeaderText="Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockBoundField DataField="Person.Age" HeaderText="Age" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                        <Rock:DefinedValueField DataField="Person.ConnectionStatusValueId" HeaderText="Connection Status" SortExpression="Person.ConnectionStatusValueId" />
                                         <Rock:RockLiteralField HeaderText="First Visit" ID="lFirstVisitDate" SortExpression="FirstVisit.StartDateTime"/>
                                         <Rock:RockLiteralField HeaderText="Second Visit" ID="lSecondVisitDate" />
                                         <Rock:DateField DataField="LastVisit.StartDateTime" HeaderText="Last Visit" SortExpression="LastVisit.StartDateTime" />

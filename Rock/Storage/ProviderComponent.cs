@@ -81,11 +81,16 @@ namespace Rock.Storage
         {
             if ( !string.IsNullOrWhiteSpace( file.Path ) )
             {
-                string url = file.Path.StartsWith( "~" ) ? System.Web.VirtualPathUtility.ToAbsolute( file.Path ) : file.Path;
-                if ( url.StartsWith( "http", StringComparison.OrdinalIgnoreCase ) )
+                string url = string.Empty;
+                try
                 {
-                    return url;
+                    url = file.Path.StartsWith( "~" ) ? System.Web.VirtualPathUtility.ToAbsolute( file.Path ) : file.Path;
+                    if ( url.StartsWith( "http", StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        return url;
+                    }
                 }
+                catch { }
 
                 Uri uri = null;
                 try

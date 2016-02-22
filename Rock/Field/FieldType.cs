@@ -128,7 +128,7 @@ namespace Rock.Field
         }
 
         /// <summary>
-        /// Values the type of as field.
+        /// Returns the value using the most appropriate datatype
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
         /// <param name="value">The value.</param>
@@ -136,7 +136,8 @@ namespace Rock.Field
         /// <returns></returns>
         public virtual object ValueAsFieldType(  Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            return value;
+            // by default, get the string value that would be displayed to the user
+            return FormatValue( parentControl, value, configurationValues, false );
         }
 
         #endregion

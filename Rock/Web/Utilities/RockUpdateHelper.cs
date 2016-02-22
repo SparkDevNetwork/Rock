@@ -25,6 +25,9 @@ using Rock.Web.Cache;
 
 namespace Rock.Web.Utilities
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public static class RockUpdateHelper
     {
         /// <summary>
