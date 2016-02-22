@@ -216,7 +216,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id">The campus id.</param>
         /// <returns></returns>
-        public static string CacheKey( int id )
+        private static string CacheKey( int id )
         {
             return string.Format( "Rock:Campus:{0}", id );
         }
