@@ -146,7 +146,10 @@ namespace church.ccv.Badges.Rest.Controllers
                         {
                             GROUPTYPES_BAPTISM_IDS = GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_BAPTISM_GROUPTYPE_IDS ).Split( ',' ).Select( int.Parse ).ToList();
                         }
-                        catch ( Exception ex ) { }
+                        catch
+                        { 
+                            // intentionally blank
+                        }
 
                         var baptismGroups = new GroupMemberService( rockContext ).Queryable()
                                                         .Where( m => GROUPTYPES_BAPTISM_IDS.Contains(m.Group.GroupTypeId)
@@ -201,7 +204,11 @@ namespace church.ccv.Badges.Rest.Controllers
                     {
                         GROUPTYPES_CONNECTION_IDS = GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_CONNECTION_GROUPTYPE_IDS ).Split( ',' ).Select( int.Parse ).ToList();
                     }
-                    catch ( Exception ex ) { }
+                    catch
+                    {
+                        // intentionally blank
+                    }
+
                     var neighborhoodGroups = new GroupMemberService( rockContext ).Queryable()
                                                 .Where( m => GROUPTYPES_CONNECTION_IDS.Contains(m.Group.GroupTypeId)
                                                      && m.GroupMemberStatus != GroupMemberStatus.Inactive
@@ -265,7 +272,10 @@ namespace church.ccv.Badges.Rest.Controllers
                     {
                         GROUPTYPES_SERVING_IDS = GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_SERVING_GROUPTYPE_IDS ).Split( ',' ).Select( int.Parse ).ToList();
                     }
-                    catch ( Exception ex ) { }
+                    catch
+                    {
+                        // intentionally blank
+                    }
 
                     stepsBarResult.ServingResult = new ServingResult();
                     stepsBarResult.ServingResult.Groups = new List<GroupMemberSummary>();
@@ -310,9 +320,14 @@ namespace church.ccv.Badges.Rest.Controllers
 
                     // coaching
                     List<int> GROUPTYPES_COACHING_IDS = new List<int>();
-                    try {
+                    try
+                    {
                         GROUPTYPES_COACHING_IDS = GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_COACHING_GROUPTYPE_IDS ).Split( ',' ).Select( int.Parse ).ToList();
-                    } catch(Exception ex ){}
+                    }
+                    catch
+                    {
+                        // intentionally blank
+                    }
 
                     stepsBarResult.CoachingResult = new CoachingResult();
                     stepsBarResult.CoachingResult.Groups = new List<GroupMemberSummary>();
