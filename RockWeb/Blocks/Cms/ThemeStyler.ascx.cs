@@ -31,6 +31,8 @@ using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Text;
 using dotless.Core;
+using Rock.Utility;
+using System.Web.UI.HtmlControls;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -91,11 +93,8 @@ $('.js-panel-toggle').on('click', function (e) {
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            BuildControls();
-
-            base.OnLoad( e );
-
             
+            base.OnLoad( e );
 
             if ( !Page.IsPostBack )
             {
@@ -109,7 +108,17 @@ $('.js-panel-toggle').on('click', function (e) {
                 ddlTheme.DataBind();
 
                 ddlTheme.Items.Insert( 0, "" );
+
+                if ( !string.IsNullOrWhiteSpace( Request["EditTheme"] )){
+                    ddlTheme.SelectedValue = Request["EditTheme"];
+                    btnSave.Visible = true;
+
+                    // load the CSS overrides                
+                    LoadCssOverrides();
+                }
             }
+
+            BuildControls();
         }
 
         #endregion
@@ -136,7 +145,9 @@ $('.js-panel-toggle').on('click', function (e) {
 
                 btnSave.Visible = true;
 
-                //BuildControls();
+                // load the CSS overrides                
+                LoadCssOverrides();
+
             } else
             {
                 btnSave.Visible = false;
@@ -147,6 +158,13 @@ $('.js-panel-toggle').on('click', function (e) {
         {
             string variableFile = string.Format( @"{0}Themes/{1}/Styles/_variables.less", Request.PhysicalApplicationPath, ddlTheme.SelectedValue );
             string variableOverrideFile = string.Format( @"{0}Themes/{1}/Styles/_variable-overrides.less", Request.PhysicalApplicationPath, ddlTheme.SelectedValue );
+            string cssOverrideFile = string.Format( @"{0}Themes/{1}/Styles/_css-overrides.less", Request.PhysicalApplicationPath, ddlTheme.SelectedValue );
+
+
+            if ( File.Exists( cssOverrideFile ) )
+            {
+                File.WriteAllText( cssOverrideFile, ceOverrides.Text );
+            }
 
             // get list of original values
             Dictionary<string, string> originalValues = GetVariables( variableFile );
@@ -174,16 +192,22 @@ $('.js-panel-toggle').on('click', function (e) {
 
                         if ( originalValue != textBoxControl.Text && secondaryValue != textBoxControl.Text )
                         {
-                            overrideFile.Append( string.Format( "{0}: {1};", variableName, textBoxControl.Text ) );
+                            overrideFile.Append( string.Format( "@{0}: {1};{2}", variableName, textBoxControl.Text, Environment.NewLine ) );
                         }
                     }
                 }
             }
 
-            overrideFile.Append( "/* Custom CSS */");
+            System.IO.StreamWriter file = new System.IO.StreamWriter( variableOverrideFile );
+            file.WriteLine( overrideFile );
+            file.Dispose();
 
-            //System.IO.StreamWriter file = new System.IO.StreamWriter( variableOverrideFile );
-            //file.WriteLine( overrideFile );
+            // compile theme
+            string messages = string.Empty;
+            RockLess.CompileTheme( ddlTheme.SelectedValue, out messages );
+
+            // redirect to the page to reload the pages styles
+            Response.Redirect( Request.Url.LocalPath + "?EditTheme=" + ddlTheme.SelectedValue );
         }
         #endregion
 
@@ -203,8 +227,6 @@ $('.js-panel-toggle').on('click', function (e) {
                     return;
                 }
 
-
-
                 // get list of current overrides
                 Dictionary<string, string> overrides = GetVariables( variableOverrideFile );
 
@@ -216,13 +238,28 @@ $('.js-panel-toggle').on('click', function (e) {
                     {
                         Literal spacing = new Literal();
                         spacing.Text = "<br/><br/>";
-                        phThemeControls.Controls.Add( spacing );
+                        AddControl( spacing, inPanel );
                     }
                     else if ( line.Left( 4 ) == @"////" )
                     {
                         Literal header = new Literal();
-                        header.Text = string.Format( "<h4>{0}</h4>", line.Replace( @"/", "" ) );
-                        phThemeControls.Controls.Add( header );
+                        string[] lineParts = line.Split( new char[] { '{', '}' }, StringSplitOptions.RemoveEmptyEntries );
+
+                        string headerText = string.Empty;
+                        string summaryText = string.Empty;
+
+                        if (lineParts.Length > 0 )
+                        {
+                            headerText = lineParts[0].Replace(@"/", "");
+                        }
+
+                        if (lineParts.Length > 1 )
+                        {
+                            summaryText = lineParts[1];
+                        }
+                        
+                        header.Text = string.Format( "<h4>{0}</h4><p>{1}</p>", headerText, summaryText );
+                        AddControl( header, inPanel );
                     }
                     else if ( line.Left( 2 ) == @"//" )
                     {
@@ -236,40 +273,37 @@ $('.js-panel-toggle').on('click', function (e) {
                             content.Append( "</div></div>" );
                         }
 
-                        bool isOpen = false;
-                        if ( title.Contains( "*open*" ) )
+                        bool showInEditor = false;
+                        if ( title.Contains( "*show in editor*" ) )
                         {
-                            isOpen = true;
-                            title = title.Replace( "*open*", "" );
+                            showInEditor = true;
+                            title = title.Replace( "*show in editor*", "" );
                         }
 
-
-                        content.Append( "<div class='panel panel-widget'>" );
-                        content.Append( "<div class='panel-heading'>" );
-
-                        if ( isOpen )
+                        if ( showInEditor )
                         {
+                            inPanel = true;
+
+                            content.Append( "<div class='panel panel-widget'>" );
+                            content.Append( "<div class='panel-heading'>" );
                             content.Append( string.Format( "<h1 class='panel-title'>{0} <div class='pull-right'><a class='btn btn-link btn-xs js-panel-toggle'><i class='fa fa-chevron-up'></i></a></div></h1>", title ) );
                             content.Append( "</div>" );
                             content.Append( "<div class='panel-body'>" );
+
+                            Literal header = new Literal();
+                            header.Text = content.ToString();
+                            AddControl( header, inPanel );
                         }
                         else
                         {
-                            content.Append( string.Format( "<h1 class='panel-title'>{0} <div class='pull-right'><a class='btn btn-link btn-xs js-panel-toggle'><i class='fa fa-chevron-down'></i></a></div></h1>", title ) );
-                            content.Append( "</div>" );
-                            content.Append( "<div class='panel-body' style='display: none;'>" );
+                            inPanel = false;
                         }
-
-                        Literal header = new Literal();
-                        header.Text = content.ToString();
-                        phThemeControls.Controls.Add( header );
-                        inPanel = true;
                     }
                     else if ( line.Left( 1 ) == "@" )
                     {
                         // variable
                         char[] delimiters = new char[] { ':', ';' };
-                        string[] variableParts = line.Split( delimiters );
+                        string[] variableParts = Array.ConvertAll( line.Split( delimiters ), p => p.Trim() );
 
                         string helpText = string.Empty;
 
@@ -277,7 +311,12 @@ $('.js-panel-toggle').on('click', function (e) {
                         VariableType variableType = VariableType.Text;
                         if ( variableParts.Length >= 3 )
                         {
-                            if ( variableParts[2].Contains( "#color" )  ) // todo check for less color functions
+                            // determine if we should use a color control. only do this if:
+                            //     - if the comments tell us it's a color (#color)
+                            //     - it's not a less variable (starts with a @)
+                            //     - it's not a less color function
+                            List<string> lessColorFunctions = new List<string>(){ "lighten", "darken", "saturate", "desaturate", "fadein", "fadeout", "fade", "spin", "mix" };
+                            if ( variableParts[2].Contains( "#color" ) && !variableParts[1].StartsWith("@") && !lessColorFunctions.Any(x => variableParts[1].StartsWith(x)) ) // todo check for less color functions
                             {
                                 variableType = VariableType.Color;
                             }
@@ -288,6 +327,7 @@ $('.js-panel-toggle').on('click', function (e) {
 
                         // get variable name
                         string variableName = variableParts[0].Replace( "@", "" ).Replace( "-", " " ).Titleize();
+                        string variableKey = variableParts[0].Replace( "@", "" );
 
                         // get variable value
                         string variableValue = string.Empty;
@@ -296,6 +336,8 @@ $('.js-panel-toggle').on('click', function (e) {
                             variableValue = variableParts[1].Trim();
                         }
 
+                        Literal overrideControl = new Literal();
+
                         switch ( variableType )
                         {
                             case VariableType.Color:
@@ -303,14 +345,17 @@ $('.js-panel-toggle').on('click', function (e) {
                                     if ( phThemeControls.FindControl( variableName ) == null )
                                     {
                                         ColorPicker colorPicker = new ColorPicker();
-                                        colorPicker.ID = variableName;
+                                        colorPicker.ID = variableKey;
                                         colorPicker.Label = variableName;
                                         //colorPicker.CssClass = "input-width-lg";
 
                                         // check if override of the variable exists
-                                        if ( overrides.ContainsKey( variableName ) )
+                                        if ( overrides.ContainsKey( variableKey ) )
                                         {
-                                            colorPicker.Text = overrides[variableName];
+                                            colorPicker.Text = overrides[variableKey];
+
+                                            // add restore logic
+                                            overrideControl.Text = string.Format( "<i class='fa fa-times margin-l-sm js-color-override variable-override pull-left' style='margin-top: 34px; cursor: pointer;' data-control='{0}' data-original-value='{1}'></i>", variableKey, variableValue );
                                         }
                                         else
                                         {
@@ -322,9 +367,19 @@ $('.js-panel-toggle').on('click', function (e) {
                                             colorPicker.Help = helpText;
                                         }
 
-                                        colorPicker.OriginalValue = variableValue;
                                         colorPicker.RequiredFieldValidator = null;
-                                        phThemeControls.Controls.Add( colorPicker );
+                                        colorPicker.FormGroupCssClass = "pull-left";
+
+                                        Literal beginWrapper = new Literal();
+                                        beginWrapper.Text = "<div class='clearfix'>";
+
+                                        AddControl( beginWrapper, inPanel );
+                                        AddControl( colorPicker, inPanel );
+                                        AddControl( overrideControl, inPanel );
+
+                                        Literal endWrapper = new Literal();
+                                        endWrapper.Text = "</div>";
+                                        AddControl( endWrapper, inPanel );
                                     }
                                     break;
                                 }
@@ -334,21 +389,36 @@ $('.js-panel-toggle').on('click', function (e) {
                                     {
                                         RockTextBox textbox = new RockTextBox();
                                         textbox.Label = variableName;
+                                        textbox.ID = variableKey;
                                         textbox.CssClass = "input-width-xxl";
 
                                         // check if override of the variable exists
-                                        if ( overrides.ContainsKey( variableName ) )
+                                        if ( overrides.ContainsKey( variableKey ) )
                                         {
-                                            textbox.Text = overrides[variableName];
+                                            textbox.Text = overrides[variableKey];
+
+                                            // add restore logic
+                                            overrideControl.Text = string.Format( "<i class='fa fa-times margin-l-sm js-text-override variable-override pull-left' style='margin-top: 34px; cursor: pointer;' data-control='{0}' data-original-value='{1}'></i>", variableKey, variableValue );
                                         }
                                         else
                                         {
                                             textbox.Text = variableValue;
                                         }
 
+
+                                        textbox.FormGroupCssClass = "pull-left";
                                         textbox.RequiredFieldValidator = null;
-                                        textbox.ID = variableName;
-                                        phThemeControls.Controls.Add( textbox );
+
+                                        Literal beginWrapper = new Literal();
+                                        beginWrapper.Text = "<div class='clearfix'>";
+
+                                        AddControl( beginWrapper, inPanel );
+                                        AddControl( textbox, inPanel );
+                                        AddControl( overrideControl, inPanel );
+
+                                        Literal endWrapper = new Literal();
+                                        endWrapper.Text = "</div>";
+                                        AddControl( endWrapper, inPanel );
                                     }
                                     break;
                                 }
@@ -356,12 +426,20 @@ $('.js-panel-toggle').on('click', function (e) {
                     }
                 }
 
-                if ( inPanel )
+                if ( phThemeControls.Controls.Count > 0)
                 {
                     Literal header = new Literal();
                     header.Text = "</div></div>";
-                    phThemeControls.Controls.Add( header );
+                    AddControl( header, true );
                 }
+            }
+        }
+
+        private void AddControl(Control control, bool inPanel)
+        {
+            if ( inPanel )
+            {
+                phThemeControls.Controls.Add( control );
             }
         }
 
@@ -389,6 +467,20 @@ $('.js-panel-toggle').on('click', function (e) {
             }
 
             return overrides;
+        }
+
+        private void LoadCssOverrides()
+        {
+            // load the CSS overrides                
+            string overrideFile = string.Format( @"{0}Themes/{1}/Styles/_css-overrides.less", Request.PhysicalApplicationPath, ddlTheme.SelectedValue );
+            if ( File.Exists( overrideFile ) )
+            {
+                ceOverrides.Text += File.ReadAllText( overrideFile );
+            }
+            else
+            {
+                ceOverrides.Visible = false;
+            }
         }
 
         #endregion
