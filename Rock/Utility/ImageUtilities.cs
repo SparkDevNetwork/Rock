@@ -16,7 +16,7 @@ namespace Rock.Utility
         /// <param name="context">The context.</param>
         /// <param name="uploadedFile">The uploaded file.</param>
         /// <returns></returns>
-        public static Stream GetFileContentStream( HttpPostedFile uploadedFile, bool enableResize )
+        public static Stream GetFileContentStream( HttpPostedFile uploadedFile, bool enableResize, bool errorIfNotImage = false )
         {
             if ( uploadedFile.ContentType == "image/svg+xml" || uploadedFile.ContentType == "image/tiff" )
             {
@@ -54,6 +54,11 @@ namespace Rock.Utility
                 }
                 catch
                 {
+                    if ( errorIfNotImage )
+                    {
+                        throw new InvalidDataException( "The file is not a valid image type" );
+                    }
+
                     // if it couldn't be converted to a bitmap or if the exif or resize thing failed, just return the original stream
                     return uploadedFile.InputStream;
                 }
