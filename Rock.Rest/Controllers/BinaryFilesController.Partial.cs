@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -33,14 +34,49 @@ namespace Rock.Rest.Controllers
     public partial class BinaryFilesController
     {
         /// <summary>
-        /// Sets a persons profile image
+        /// Uploads a file and stores it as a binary file
         /// </summary>
-        /// <param name="personId">The person's ID</param>
+        /// <param name="binaryFileTypeId"></param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpPost]
-        [System.Web.Http.Route( "api/BinaryFiles/SetProfileImage/{personId}" )]
-        public HttpResponseMessage SetProfileImage( int personId )
+        [System.Web.Http.Route( "api/BinaryFiles/Upload" )]
+        public HttpResponseMessage Upload( Guid binaryFileTypeGuid )
+        {
+            try
+            {
+                var rockContext = new RockContext();
+                var binaryFileType = new BinaryFileTypeService( rockContext ).Get( binaryFileTypeGuid );
+
+                if ( binaryFileType == null )
+                {
+                    GenerateResponse( HttpStatusCode.BadRequest, "Invalid binary file type guid" );
+                }
+
+                return Upload( binaryFileType.Id );
+            }
+            catch ( HttpResponseException exception )
+            {
+                return exception.Response;
+            }
+            catch
+            {
+                return new HttpResponseMessage( HttpStatusCode.InternalServerError )
+                {
+                    Content = new StringContent( "Unhandled exception" )
+                };
+            }
+        }
+
+        /// <summary>
+        /// Uploads a file and stores it as a binary file
+        /// </summary>
+        /// <param name="binaryFileTypeId"></param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "api/BinaryFiles/Upload" )]
+        public HttpResponseMessage Upload( int binaryFileTypeId )
         {
             try
             {
@@ -48,9 +84,12 @@ namespace Rock.Rest.Controllers
                 var context = HttpContext.Current;
                 var files = context.Request.Files;
                 var uploadedFile = files.AllKeys.Select( fk => files[fk] ).FirstOrDefault();
+                var binaryFileType = new BinaryFileTypeService( rockContext ).Get( binaryFileTypeId );
 
-                var fileTypeGuid = Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid();
-                var binaryFileType = new BinaryFileTypeService( rockContext ).Get( fileTypeGuid );
+                if ( uploadedFile == null )
+                {
+                    GenerateResponse( HttpStatusCode.BadRequest, "No file was sent" );
+                }
 
                 if ( binaryFileType == null )
                 {
@@ -67,18 +106,6 @@ namespace Rock.Rest.Controllers
 
                 var binaryFileService = new BinaryFileService( rockContext );
                 var binaryFile = new BinaryFile();
-                var person = new PersonService( rockContext ).Get( personId );
-
-                if ( person == null )
-                {
-                    GenerateResponse( HttpStatusCode.BadRequest, "Person does not exist" );
-                }
-
-                if ( person.Photo != null )
-                {
-                    binaryFileService.Delete( person.Photo );
-                    person.PhotoId = null;
-                }
 
                 if ( uploadedFile != null )
                 {
@@ -89,22 +116,13 @@ namespace Rock.Rest.Controllers
                     binaryFile.MimeType = uploadedFile.ContentType;
                     binaryFile.FileName = Path.GetFileName( uploadedFile.FileName );
                     binaryFile.ContentStream = ImageUtilities.GetFileContentStream( uploadedFile, true );
-
-                    person.PhotoId = binaryFile.Id;
                 }
 
                 rockContext.SaveChanges();
 
-                var response = new
-                {
-                    Id = binaryFile.Id,
-                    FileName = binaryFile.FileName,
-                    Url = person.PhotoUrl
-                };
-
                 return new HttpResponseMessage( HttpStatusCode.Created )
                 {
-                    Content = new StringContent( response.ToJson() )
+                    Content = new StringContent( binaryFile.Id.ToString() )
                 };
             }
             catch ( HttpResponseException exception )
