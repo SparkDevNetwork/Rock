@@ -1752,12 +1752,12 @@ function(item) {
 
                 if ( groupType.ChildGroupTypes.Any() )
                 {
-                    var ulGroupTypeList = new HtmlGenericContainer( "ul", "rocktree-children" );
+                    var ulGroupTypeList = new HtmlGenericContainer( "ul", "list-unstyled" );
 
                     liGroupTypeItem.Controls.Add( ulGroupTypeList );
                     foreach ( var childGroupType in groupType.ChildGroupTypes.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
                     {
-                        var liChildGroupTypeItem = new HtmlGenericContainer( "li", "rocktree-item rocktree-folder" );
+                        var liChildGroupTypeItem = new HtmlGenericContainer( "li" );
                         liChildGroupTypeItem.ID = "liGroupTypeItem" + childGroupType.Id;
                         ulGroupTypeList.Controls.Add( liChildGroupTypeItem );
                         AddGroupTypeControls( childGroupType, liChildGroupTypeItem );
