@@ -97,7 +97,8 @@ namespace Rock.Rest.Controllers
 
                     if ( countsType == TreeViewItem.GetCountsType.GroupMembers )
                     {
-                        treeViewItem.CountInfo = group.Members.Count();
+                        int groupMemberCount = new GroupMemberService( this.Service.Context as RockContext ).Queryable().Where( a => a.GroupId == group.Id && a.GroupMemberStatus == GroupMemberStatus.Active).Count();
+                        treeViewItem.CountInfo = groupMemberCount;
                     }
                     else if ( countsType == TreeViewItem.GetCountsType.ChildGroups )
                     {

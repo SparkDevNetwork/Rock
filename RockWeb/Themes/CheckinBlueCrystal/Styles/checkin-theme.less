@@ -137,6 +137,9 @@ html {
 body {
     background: url('../Assets/Images/logo.png') right bottom no-repeat;
     height: 100%;
+    -ms-touch-action: manipulation !important;
+    -ms-content-zooming: none; /* Disables zooming */
+    touch-action: manipulation   /* Disable any special actions on tap/touch */
 }
 
 @media all and (-webkit-min-device-pixel-ratio: 1.5) {
