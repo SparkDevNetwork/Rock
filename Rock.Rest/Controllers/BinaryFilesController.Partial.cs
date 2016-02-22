@@ -115,7 +115,7 @@ namespace Rock.Rest.Controllers
                     binaryFile.BinaryFileTypeId = binaryFileType.Id;
                     binaryFile.MimeType = uploadedFile.ContentType;
                     binaryFile.FileName = Path.GetFileName( uploadedFile.FileName );
-                    binaryFile.ContentStream = ImageUtilities.GetFileContentStream( uploadedFile, true );
+                    binaryFile.ContentStream = ImageUtilities.GetFileContentStream( uploadedFile, true, true );
                 }
 
                 rockContext.SaveChanges();
@@ -128,6 +128,13 @@ namespace Rock.Rest.Controllers
             catch ( HttpResponseException exception )
             {
                 return exception.Response;
+            }
+            catch ( InvalidDataException idException )
+            {
+                return new HttpResponseMessage( HttpStatusCode.BadRequest )
+                {
+                    Content = new StringContent( idException.Message )
+                };
             }
             catch
             {
