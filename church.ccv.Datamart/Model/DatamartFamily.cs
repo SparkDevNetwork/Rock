@@ -390,6 +390,15 @@ namespace church.ccv.Datamart.Model
         public string ChildNames { get; set; }
 
         /// <summary>
+        /// Gets or sets the giving2016.
+        /// </summary>
+        /// <value>
+        /// The giving2016.
+        /// </value>
+        [DataMember]
+        public decimal? Giving2016 { get; set; }
+
+        /// <summary>
         /// Gets or sets the giving2015.
         /// </summary>
         /// <value>
