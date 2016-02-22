@@ -35,6 +35,10 @@ namespace Rock.Field.Types
         /// Enabled SlidingDateRangeTypes
         /// </summary>
         protected const string ENABLED_SLIDING_DATE_RANGE_TYPES = "enabledSlidingDateRangeTypes";
+
+        /// <summary>
+        /// Enabled SlidingDateRangeUnits
+        /// </summary>
         protected const string ENABLED_SLIDING_DATE_RANGE_UNITS = "enabledSlidingDateRangeUnits";
 
         /// <summary>

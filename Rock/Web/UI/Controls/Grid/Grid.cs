@@ -2980,10 +2980,11 @@ namespace Rock.Web.UI.Controls
         public Dictionary<string, object> MergeValues { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GetRecipientMergeFieldsEventArgs"/> class.
+        /// Initializes a new instance of the <see cref="GetRecipientMergeFieldsEventArgs" /> class.
         /// </summary>
         /// <param name="dataKey">The data key.</param>
         /// <param name="personId">The person identifier.</param>
+        /// <param name="dataItem">The data item.</param>
         public GetRecipientMergeFieldsEventArgs( object dataKey, int? personId, object dataItem )
         {
             DataKey = dataKey;
