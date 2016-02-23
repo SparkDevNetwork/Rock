@@ -1,18 +1,13 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 using System.Windows.Forms;
+
 using Rock;
 
 namespace LoadTester
@@ -24,6 +19,11 @@ namespace LoadTester
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnStart control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void btnStart_Click( object sender, EventArgs e )
         {
             System.Net.ServicePointManager.DefaultConnectionLimit = 1000;
@@ -79,12 +79,13 @@ namespace LoadTester
                                             .ToList();
                                         Parallel.ForEach( nodesWithSrc, ( srcNode ) =>
                                         {
-                                            var srcRef = srcNode.Attributes["src"].Value;
-                                            var srcUri = new Uri( baseUri, srcRef );
-                                            var srcRequest = (HttpWebRequest)WebRequest.Create( srcUri );
-                                            var srcResponse = srcRequest.GetResponse();
                                             try
                                             {
+                                                var srcRef = srcNode.Attributes["src"].Value;
+                                                var srcUri = new Uri( baseUri, srcRef );
+                                                var srcRequest = (HttpWebRequest)WebRequest.Create( srcUri );
+                                                var srcResponse = srcRequest.GetResponse();
+                                                
                                                 using ( var resultStream = srcResponse.GetResponseStream() )
                                                 {
                                                     using ( var resultReader = new StreamReader( resultStream ) )
@@ -101,7 +102,7 @@ namespace LoadTester
                                     }
 
                                     Interlocked.Increment( ref requestCount );
-                                    if ( requestCount % 100 == 0 )
+                                    //if ( requestCount % 100 == 0 )
                                     {
                                         UpdateProgressBar( requestCount, threadCount );
                                     }
@@ -111,7 +112,7 @@ namespace LoadTester
                         }
 
                         stopwatch.Stop();
-                        results.Add( stopwatch.Elapsed.TotalMilliseconds );
+                        results.Add( Math.Round(stopwatch.Elapsed.TotalMilliseconds, 3 ) );
                         requestCounter++;
 
                     }
@@ -163,6 +164,11 @@ Exceptions: {6}
             progressBar1.Hide();
         }
 
+        /// <summary>
+        /// Updates the progress bar.
+        /// </summary>
+        /// <param name="requestCount">The request count.</param>
+        /// <param name="threadCount">The thread count.</param>
         private void UpdateProgressBar( long requestCount, long threadCount )
         {
             if ( InvokeRequired )
@@ -174,11 +180,6 @@ Exceptions: {6}
             progressBar1.Value = (int)Interlocked.Read( ref requestCount );
             lblThreadCount.Text = Interlocked.Read( ref threadCount ).ToString();
             lblThreadCount.Refresh();
-        }
-
-        private void tbClientCount_TextChanged( object sender, EventArgs e )
-        {
-
         }
     }
 }

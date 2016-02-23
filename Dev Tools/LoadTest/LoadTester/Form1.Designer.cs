@@ -57,7 +57,7 @@
             this.tbUrl.Name = "tbUrl";
             this.tbUrl.Size = new System.Drawing.Size(280, 21);
             this.tbUrl.TabIndex = 1;
-            this.tbUrl.Text = "https://ccvdev.ccvonline.com/KeepAlive.aspx";
+            this.tbUrl.Text = "http://localhost:50345/home";
             // 
             // lblURL
             // 
@@ -74,8 +74,7 @@
             this.tbClientCount.Name = "tbClientCount";
             this.tbClientCount.Size = new System.Drawing.Size(100, 21);
             this.tbClientCount.TabIndex = 3;
-            this.tbClientCount.Text = "1000";
-            this.tbClientCount.TextChanged += new System.EventHandler(this.tbClientCount_TextChanged);
+            this.tbClientCount.Text = "100";
             // 
             // lblClientCount
             // 
@@ -92,7 +91,7 @@
             this.tbRequestCount.Name = "tbRequestCount";
             this.tbRequestCount.Size = new System.Drawing.Size(202, 21);
             this.tbRequestCount.TabIndex = 5;
-            this.tbRequestCount.Text = "100";
+            this.tbRequestCount.Text = "10";
             // 
             // lblRequestCount
             // 
