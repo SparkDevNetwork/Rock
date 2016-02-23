@@ -2079,7 +2079,7 @@ namespace Rock.Lava
             else
             {
                 var rockContext = new RockContext();
-                context.Registers.Add( "rock_context", rockContext );
+                context.Registers["rock_context"] = rockContext;
                 return rockContext;
             }
         }
