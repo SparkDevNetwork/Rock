@@ -23,12 +23,14 @@
 //--
 @theme-8: #6a6a6a; // action buttons / type labels #color
 @theme-8-text: #fff; // #color
+//--
+@body-bg:           #edeae6; // The background color of the page. #color
+@panel-bg:          #fcfaf8; // The background color of the panel body.
 
 // Text *show in editor*
 @text-color:             #6a6a6a;                   // The default text color. #color
 @link-color:             #4f89bd;                   // The color for all links. #color
-@link-hover-color:       lighten(@link-color, 15%); // The rollover color for all links. #color
-@text-muted:             lighten(@text-color, 30%); // The muted color for text #color
+
 @text-selection-bg:      #afd074;                   // Text selection background color (used when people select text with the mouse). #color
 @text-selection-color:   #fff;                      // Text selection text color (used when people select text with the mouse). #color
 @font-family-sans-serif: 'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;    // The base font to use for text. Be sure when defining this font that the various weights are configured.
@@ -46,6 +48,7 @@
 @font-size-h5:            @font-size-base;
 @font-size-h6:            ceil(@font-size-base * 0.85);     // ~12px
 
+
 // Bootstrap Colors *show in editor*
 
 //// Bootstrap Colors {The primary colors defined by the Bootstrap framework. [More Information](http://getbootstrap.com/customize/#colors)}
@@ -61,8 +64,11 @@
 @gray-light:             lighten(#000, 46.7%); // #color
 @gray-lighter:           lighten(#000, 93.5%); // #color
 
-// Page Areas *show in editor*
-@body-bg:           #edeae6; // The background color of the page. #color
+// Calculated Colors 
+@link-hover-color:       lighten(@link-color, 15%); // The rollover color for all links. #color
+@text-muted:             lighten(@text-color, 30%); // The muted color for text #color
+
+// Page Areas 
 
 //// Header
 @header-bg:         @theme-3;       // The header background color. #color
@@ -90,7 +96,7 @@
 
 //// Breadcrumbs
 @breadcrumb-bg:               @theme-4;                     // Background color for the breadcrumbs. #color
-@breadcrumb-color:            lighten(@theme-4-text, 30%);  // Text color for the breadcrumbs. #color
+@breadcrumb-color:            lighten(@theme-4-text, 20%);  // Text color for the breadcrumbs. #color
 @breadcrumb-active-color:     @breadcrumb-color;            // The color of the active item in the breadcrumbs. #color
 @breadcrumb-separator:        "/";                          // Separator character in the breadcrumbs.
 
@@ -146,7 +152,6 @@
 
 
 // Panel
-@panel-bg:                    #fcfaf8;                      // The background color of the panel body.
 @panel-text:                  @text-color;                  // The text color of the panel.
 @panel-border:                darken(@theme-6, 10%);        // The panel's border color.
 @panel-top-border-color:      @theme-3;    // Color of the panel's top border often used as an accent color.

@@ -25,7 +25,7 @@
                     </div>
 
                     <div class="col-md-6">
-                        <Rock:CodeEditor ID="ceOverrides" runat="server" Label="CSS Overrides" EditorHeight="600" />
+                        <Rock:CodeEditor ID="ceOverrides" runat="server" Label="CSS Overrides" EditorHeight="600"  />
                     </div>
                 </div>
                 
