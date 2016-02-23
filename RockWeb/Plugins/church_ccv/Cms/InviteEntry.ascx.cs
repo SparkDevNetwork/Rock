@@ -177,6 +177,12 @@ I'm going to Fun Event on the {{ Context.Campus.Name }} campus. Would you like t
                 mergeFields.Add( "Context", contextObjects );
             }
 
+            Parser uaParser = Parser.GetDefault();
+
+            ClientInfo client = uaParser.Parse( this.Request.UserAgent );
+            mergeFields.Add( "DeviceFamily", client.Device.Family );
+            mergeFields.Add( "OSFamily", client.OS.Family.ToLower() );
+
             var cacheKey = this.GetAttributeValue( "CacheKey" ) ?? string.Empty;
             cacheKey = string.Format( "InviteEntry:{0},CacheKey:{1}", this.BlockCache.Guid, cacheKey.ResolveMergeFields( mergeFields ) );
 
@@ -202,11 +208,7 @@ I'm going to Fun Event on the {{ Context.Campus.Name }} campus. Would you like t
                 var contentObject = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>( contentObjectJSON );
                 mergeFields.Add( "ContentObject", contentObject );
 
-                Parser uaParser = Parser.GetDefault();
-
-                ClientInfo client = uaParser.Parse( this.Request.UserAgent );
-                mergeFields.Add( "DeviceFamily", client.Device.Family );
-                mergeFields.Add( "OSFamily", client.OS.Family.ToLower() );
+                
 
                 var template = this.GetAttributeValue( "Template" ) ?? string.Empty;
                 var textTemplate = this.GetAttributeValue( "TextTemplate" ) ?? string.Empty;
