@@ -28,6 +28,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Groups
 {
@@ -37,6 +38,7 @@ namespace RockWeb.Blocks.Groups
 
     [LinkedPage( "Detail Page", "", true, "", "", 0 )]
     [BooleanField( "Allow Add", "Should block support adding new attendance dates outside of the group's configured schedule and group type's exclusion dates?", true, "", 1 )]
+    [BooleanField( "Allow Campus Filter", "Should block add an option to allow filtering attendance counts and percentage by campus?", false, "", 2 )]
     public partial class GroupAttendanceList : RockBlock
     {
         #region Private Variables
@@ -44,6 +46,7 @@ namespace RockWeb.Blocks.Groups
         private RockContext _rockContext = null;
         private Group _group = null;
         private bool _canView = false;
+        private bool _allowCampusFilter = false;
 
         #endregion
 
@@ -80,6 +83,16 @@ namespace RockWeb.Blocks.Groups
                 gOccurrences.Actions.ShowAdd = canEditBlock && GetAttributeValue( "AllowAdd" ).AsBoolean();
                 gOccurrences.IsDeleteEnabled = canEditBlock;
             }
+
+            _allowCampusFilter = GetAttributeValue( "AllowCampusFilter" ).AsBoolean();
+            bddlCampus.Visible = _allowCampusFilter;
+            if (_allowCampusFilter )
+            {
+                bddlCampus.DataSource = CampusCache.All();
+                bddlCampus.DataBind();
+                bddlCampus.Items.Insert( 0, new ListItem( "All Campuses", "0" ) );
+            }
+
         }
 
         /// <summary>
@@ -94,6 +107,15 @@ namespace RockWeb.Blocks.Groups
 
             if ( !Page.IsPostBack && _canView )
             {
+                if ( _allowCampusFilter )
+                {
+                    var campus = CampusCache.Read( GetBlockUserPreference( "Campus" ).AsInteger() );
+                    if ( campus != null )
+                    {
+                        bddlCampus.Title = campus.Name;
+                        bddlCampus.SetValue( campus.Id );
+                    }
+                }
                 BindFilter();
                 BindGrid();
             }
@@ -102,6 +124,19 @@ namespace RockWeb.Blocks.Groups
         #endregion
 
         #region Events
+
+        /// <summary>
+        /// Handles the SelectionChanged event of the bddlCampus control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void bddlCampus_SelectionChanged( object sender, EventArgs e )
+        {
+            SetBlockUserPreference( "Campus", bddlCampus.SelectedValue );
+            var campus = CampusCache.Read( bddlCampus.SelectedValueAsInt() ?? 0 );
+            bddlCampus.Title = campus != null ? campus.Name : "All Campuses";
+            BindGrid();
+        }
 
         /// <summary>
         /// Handles the ApplyFilterClick event of the rFilter control.
@@ -441,7 +476,9 @@ namespace RockWeb.Blocks.Groups
                     scheduleIds.Add( ddlSchedule.SelectedValueAsInt() ?? 0 );
                 }
 
-                var qry = new ScheduleService( _rockContext ).GetGroupOccurrences( _group, fromDateTime, toDateTime, locationIds, scheduleIds, true ).AsQueryable();
+                var qry = new ScheduleService( _rockContext )
+                    .GetGroupOccurrences( _group, fromDateTime, toDateTime, locationIds, scheduleIds, true, bddlCampus.SelectedValueAsInt() )
+                    .AsQueryable();
 
                 SortProperty sortProperty = gOccurrences.SortProperty;
                 List<ScheduleOccurrence> occurrences = null;
