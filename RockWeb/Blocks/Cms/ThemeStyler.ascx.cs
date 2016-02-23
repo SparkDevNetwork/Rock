@@ -112,6 +112,7 @@ $('.js-panel-toggle').on('click', function (e) {
                 if ( !string.IsNullOrWhiteSpace( Request["EditTheme"] )){
                     ddlTheme.SelectedValue = Request["EditTheme"];
                     btnSave.Visible = true;
+                    ceOverrides.Visible = true;
 
                     // load the CSS overrides                
                     LoadCssOverrides();
@@ -144,6 +145,7 @@ $('.js-panel-toggle').on('click', function (e) {
             if ( !string.IsNullOrWhiteSpace( ddlTheme.SelectedValue )){
 
                 btnSave.Visible = true;
+                ceOverrides.Visible = true;
 
                 // load the CSS overrides                
                 LoadCssOverrides();
@@ -151,6 +153,7 @@ $('.js-panel-toggle').on('click', function (e) {
             } else
             {
                 btnSave.Visible = false;
+                ceOverrides.Visible = false;
             }
         }
 
@@ -215,6 +218,8 @@ $('.js-panel-toggle').on('click', function (e) {
 
         private void BuildControls()
         {
+            bool inPanel = false;
+
             if ( !string.IsNullOrWhiteSpace( ddlTheme.SelectedValue ) )
             {
                 string variableFile = string.Format( @"{0}Themes/{1}/Styles/_variables.less", Request.PhysicalApplicationPath, ddlTheme.SelectedValue );
@@ -229,8 +234,6 @@ $('.js-panel-toggle').on('click', function (e) {
 
                 // get list of current overrides
                 Dictionary<string, string> overrides = GetVariables( variableOverrideFile );
-
-                bool inPanel = false;
 
                 foreach ( string line in File.ReadLines( variableFile ) )
                 {
@@ -271,6 +274,7 @@ $('.js-panel-toggle').on('click', function (e) {
                         if ( inPanel )
                         {
                             content.Append( "</div></div>" );
+                            inPanel = false;
                         }
 
                         bool showInEditor = false;
@@ -293,10 +297,6 @@ $('.js-panel-toggle').on('click', function (e) {
                             Literal header = new Literal();
                             header.Text = content.ToString();
                             AddControl( header, inPanel );
-                        }
-                        else
-                        {
-                            inPanel = false;
                         }
                     }
                     else if ( line.Left( 1 ) == "@" )
@@ -426,7 +426,7 @@ $('.js-panel-toggle').on('click', function (e) {
                     }
                 }
 
-                if ( phThemeControls.Controls.Count > 0)
+                if ( inPanel || 0==0)
                 {
                     Literal header = new Literal();
                     header.Text = "</div></div>";
