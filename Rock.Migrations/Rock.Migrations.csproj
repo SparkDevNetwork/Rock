@@ -115,6 +115,10 @@
     <Compile Include="Migrations\201602161036322_AttendanceAnalyticsQuery.Designer.cs">
       <DependentUpon>201602161036322_AttendanceAnalyticsQuery.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201602231841538_RegistrationPaymentReminders.cs" />
+    <Compile Include="Migrations\201602231841538_RegistrationPaymentReminders.Designer.cs">
+      <DependentUpon>201602231841538_RegistrationPaymentReminders.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.cs" />
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.Designer.cs">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
@@ -2044,6 +2048,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201602161036322_AttendanceAnalyticsQuery.resx">
       <DependentUpon>201602161036322_AttendanceAnalyticsQuery.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201602231841538_RegistrationPaymentReminders.resx">
+      <DependentUpon>201602231841538_RegistrationPaymentReminders.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.resx">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>

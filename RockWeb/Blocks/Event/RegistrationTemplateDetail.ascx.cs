@@ -209,6 +209,39 @@ namespace RockWeb.Blocks.Event
     please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
 ", "", 2 )]
+
+    [CodeEditorField( "Default Payment Reminder Email", "The default Payment Reminder Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
+{% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
+{% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
+{% assign registrantCount = Registration.Registrants | Size %}
+
+<h1>{{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} Payment Reminder</h1>
+
+<p>
+    This {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase  }} for {{ RegistrationInstance.Name }} has a remaining balance 
+    of {{ currencySymbol }}{{ Registration.BalanceDue | Format:'#,##0.00' }}. The 
+    {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | Downcase | Pluralize  }} for this 
+    {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} are below.
+</p>
+
+<ul>
+{% for registrant in Registration.Registrants %}
+    <li>{{ registrant.PersonAlias.Person.FullName }}</li>
+{% endfor %}
+</ul>
+
+<p>
+    You can complete the payment for this {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase }}
+    using our <a href='{{ externalSite }}/Registration?RegistrationId={{ Registration.Id }}&rckipid={{ Registration.PersonAlias.Person.UrlEncodedKey }}'>
+    online registration page</a>.
+</p>
+
+<p>
+    If you have any questions please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
+</p>
+
+{{ 'Global' | Attribute:'EmailFooter' }}
+", "", 3 )]
     public partial class RegistrationTemplateDetail : RockBlock
     {
 
@@ -653,6 +686,12 @@ namespace RockWeb.Blocks.Event
             RegistrationTemplate.ReminderFromEmail = tbReminderFromEmail.Text;
             RegistrationTemplate.ReminderSubject = tbReminderSubject.Text;
             RegistrationTemplate.ReminderEmailTemplate = ceReminderEmailTemplate.Text;
+
+            RegistrationTemplate.PaymentReminderFromName = tbPaymentReminderFromName.Text;
+            RegistrationTemplate.PaymentReminderFromEmail = tbPaymentReminderFromEmail.Text;
+            RegistrationTemplate.PaymentReminderSubject = tbPaymentReminderSubject.Text;
+            RegistrationTemplate.PaymentReminderEmailTemplate = cePaymentReminderEmailTemplate.Text;
+            RegistrationTemplate.PaymentReminderTimeSpan = nbPaymentReminderTimeSpan.Text.AsInteger();
 
             RegistrationTemplate.RegistrationTerm = string.IsNullOrWhiteSpace( tbRegistrationTerm.Text ) ? "Registration" : tbRegistrationTerm.Text;
             RegistrationTemplate.RegistrantTerm = string.IsNullOrWhiteSpace( tbRegistrantTerm.Text ) ? "Registrant" : tbRegistrantTerm.Text;
@@ -1728,6 +1767,10 @@ namespace RockWeb.Blocks.Event
                 registrationTemplate.Notify = RegistrationNotify.None;
                 registrationTemplate.SuccessTitle = "Congratulations {{ Registration.FirstName }}";
                 registrationTemplate.SuccessText = GetAttributeValue( "DefaultSuccessText" );
+                registrationTemplate.PaymentReminderEmailTemplate = GetAttributeValue( "DefaultPaymentReminderEmail" );
+                registrationTemplate.PaymentReminderFromEmail = "{{ RegistrationInstance.ContactEmail }}";
+                registrationTemplate.PaymentReminderFromName = "{{ RegistrationInstance.ContactPersonAlias.Person.FullName }}";
+                registrationTemplate.PaymentReminderSubject = "{{ RegistrationInstance.Name }} Payment Reminder";
                 registrationTemplate.AllowMultipleRegistrants = true;
                 registrationTemplate.MaxRegistrants = 10;
                 registrationTemplate.GroupMemberStatus = GroupMemberStatus.Active;
@@ -1931,6 +1974,12 @@ namespace RockWeb.Blocks.Event
             tbReminderFromEmail.Text = RegistrationTemplate.ReminderFromEmail;
             tbReminderSubject.Text = RegistrationTemplate.ReminderSubject;
             ceReminderEmailTemplate.Text = RegistrationTemplate.ReminderEmailTemplate;
+
+            tbPaymentReminderFromName.Text = RegistrationTemplate.PaymentReminderFromName;
+            tbPaymentReminderFromEmail.Text = RegistrationTemplate.PaymentReminderFromEmail;
+            tbPaymentReminderSubject.Text = RegistrationTemplate.PaymentReminderSubject;
+            cePaymentReminderEmailTemplate.Text = RegistrationTemplate.PaymentReminderEmailTemplate;
+            nbPaymentReminderTimeSpan.Text = RegistrationTemplate.PaymentReminderTimeSpan.ToString();
 
             tbRegistrationTerm.Text = RegistrationTemplate.RegistrationTerm;
             tbRegistrantTerm.Text = RegistrationTemplate.RegistrantTerm;
