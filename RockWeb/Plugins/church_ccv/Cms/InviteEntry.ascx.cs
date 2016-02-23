@@ -239,10 +239,9 @@ I'm going to Fun Event at {{ item.Name }}. Would you like to join me & some frie
 
                 var contentObjectJSON = this.GetAttributeValue( "ContentObject" );
 
-
                 var converter = new ExpandoObjectConverter();
 
-                var contentObject = JsonConvert.DeserializeObject<List<ExpandoObject>>( contentObjectJSON, converter ); //JsonConvert.DeserializeObject<List<Dictionary<string, object>>>( contentObjectJSON );
+                var contentObject = JsonConvert.DeserializeObject<List<ExpandoObject>>( contentObjectJSON, converter );
                 mergeFields.Add( "ContentObject", contentObject );
 
                 var template = this.GetAttributeValue( "Template" ) ?? string.Empty;
