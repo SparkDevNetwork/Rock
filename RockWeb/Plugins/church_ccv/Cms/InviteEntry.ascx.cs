@@ -17,9 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Dynamic;
 using System.Linq;
 using Newtonsoft.Json;
-
+using Newtonsoft.Json.Converters;
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
@@ -33,39 +34,76 @@ namespace RockWeb.Plugins.church_ccv.Cms
     [Category( "CCV > Cms" )]
     [Description( "Block that helps a user send an invite message to somebody using email, text, etc" )]
 
-    [CodeEditorField( "ContentObject", "JSON Array Object that can be used by the Template as a MergeField.", Rock.Web.UI.Controls.CodeEditorMode.JavaScript, order: 0, defaultValue: @"[
-    { 
-        ""DateTime"": ""02/17/2016 7:00PM"",
-        ""Location"": ""The Grill"",
-        ""Campuses"": ""Peoria,Surprise,Anthem""
-    },
-    { 
-        ""DateTime"": ""02/19/2016 9:30AM"",
-        ""Location"": ""Conference Room A"",
-        ""Campuses"": null
-    },
-    { 
-        ""DateTime"": ""02/27/2016 11:30AM"",
-        ""Location"": ""Conference Room B"",
-        ""Campuses"": ""Surprise, Anthem""
-    }    
+    [CodeEditorField( "ContentObject", "JSON Dynamic Array that can be used by the Template as a MergeField.", Rock.Web.UI.Controls.CodeEditorMode.JavaScript, order: 0, defaultValue: @"[
+  {
+    ""Name"": ""Anthem""
+  },
+  {
+    ""Name"": ""Avondale""
+  },
+  {
+    ""Name"": ""East Valley""
+  },
+  {
+    ""Name"": ""Peoria"",
+    ""Services"": [
+      {
+        ""Date"": ""Friday 3/25"",
+        ""Times"": [
+          ""5:30 pm"",
+          ""7:00 pm""
+        ]
+      },
+      {
+        ""Date"": ""Saturday 3/26"",
+        ""Times"": [
+          ""4:30 pm"",
+          ""6:00 pm""
+        ]
+      },
+      {
+        ""Date"": ""Sunday 3/27"",
+        ""Times"": [
+          ""6:30 am sunrise"",
+          ""9:00 am"",
+          ""10:30 am"",
+          ""12:00 pm""
+        ]
+      }
+    ]
+  },
+  {
+    ""Name"": ""Surprise""
+  },
+  {
+    ""Name"": ""Scottsdale""
+  }
 ]
 " )]
 
     [CodeEditorField( "Template", "Lava template to render the content.  Use the special <pre>{{{{ EmailTemplate }}}}</pre>' and <pre>{{{{ TextTemplate }}}}</pre> to include the templates from the Email and Text templates", Rock.Web.UI.Controls.CodeEditorMode.Lava, order: 1, defaultValue: @"
 {% for item in ContentObject %}
     <ul>
-        <li>Date is {{ item.DateTime | Date:'M/d/yyyy' }} </li>
-        <li>Time is {{ item.DateTime | Date:'h:mm tt' }} </li>
-        <li>Location is {{ item.Location }} </li>
-        {% assign campusList = item.Campuses | Split:',' %}
-        {% for campus in campusList %}
-            Campus: {{ campus }}<br/>            
-        {% endfor %}
-        
+        <li>Name is {{ item.Name }}</li>
+        <li>Services are 
+            <ul>
+                {% for service in item.Services %}
+                    <li>Date: {{ service.Date | Date:'M/d/yyyy' }} 
+                        <ul>
+                    {% for time in service.Times %}
+                        <li>Time: {{ time }} </li>
+                    {% endfor %}
+                        </ul>
+                    </li>
+                {% endfor %}        
+            </ul>
+        </li>
+
         {{{{ TextTemplate }}}} <br/>
         {{{{ EmailTemplate }}}}
     </ul>
+    
+    <hr>
 {% endfor %}
 
 <pre>
@@ -76,15 +114,20 @@ OSFamily: {{ OSFamily  }}
 
     [CodeEditorField( "Email Template", "Lava template which will be used for the <pre>{{{{ EmailTemplate }}}}</pre> which can be used to create a mailto link.", Rock.Web.UI.Controls.CodeEditorMode.Lava, order: 2, defaultValue: @"
 {% capture subject %}
-Fun Event at {{ item.Location }}
+Fun Event at {{ item.Name }}
 {% endcapture %}
 
 {% capture body %}
-You are invited to go to Fun Event with me on the {{ Context.Campus.Name }} campus at {{ item.Location }}  @ {{ item.DateTime }}
+You are invited to go to Fun Event with me at the {{ Context.Campus.Name }} campus.
 Wanna Go? There will be lots of fun stuff to do!
 
-Your friend,
+Which date works best for you?
+{% for service in item.Services %}
+    Date: {{ service.Date | Date:'M/d/yyyy' }} 
+    {% for time in service.Times %}Time: {{ time }}{% endfor %}
+{% endfor %}        
 
+Your friend,
 {{ CurrentPerson.NickName }}
 {% endcapture %}
 
@@ -93,19 +136,10 @@ Your friend,
 
     [CodeEditorField( "Text Template", "Lava template which will be used for the <pre>{{{{ TextTemplate }}}}</pre> which can be used to create an SMS link.", Rock.Web.UI.Controls.CodeEditorMode.Lava, order: 3, defaultValue: @"
 {% capture smsAll %}
-I'm going to Fun Event on the {{ Context.Campus.Name }} campus. Would you like to join me & some friends? Check out the service times at http://mychurch.com/FunEvent and let's plan to go together!
+I'm going to Fun Event at {{ item.Name }}. Would you like to join me & some friends? Check out the service times at http://mychurch.com/FunEvent and let's plan to go together!
 {% endcapture %}
 
-{% case OSFamily %}
-  {% when 'android' %}
-    {% assign sep = '?' %}
-  {% when 'ios' %}
-    {% assign sep = '&' %}
-  {% else %}
-    {% assign sep = '&' %}
-{% endcase %}
-
-<a class='btn btn-default' href=""sms:{{ sep }}body={{ smsAll | Trim | EscapeDataString }}"">Text</a>
+<a class='btn btn-default' href=""sms:?body={{ smsAll | Trim | EscapeDataString }}"">Text</a>
 " )]
 
     [BooleanField( "Show Debug", "Show Lava Objects and Help", order: 4 )]
@@ -205,10 +239,11 @@ I'm going to Fun Event on the {{ Context.Campus.Name }} campus. Would you like t
 
                 var contentObjectJSON = this.GetAttributeValue( "ContentObject" );
 
-                var contentObject = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>( contentObjectJSON );
-                mergeFields.Add( "ContentObject", contentObject );
 
-                
+                var converter = new ExpandoObjectConverter();
+
+                var contentObject = JsonConvert.DeserializeObject<List<ExpandoObject>>( contentObjectJSON, converter ); //JsonConvert.DeserializeObject<List<Dictionary<string, object>>>( contentObjectJSON );
+                mergeFields.Add( "ContentObject", contentObject );
 
                 var template = this.GetAttributeValue( "Template" ) ?? string.Empty;
                 var textTemplate = this.GetAttributeValue( "TextTemplate" ) ?? string.Empty;
@@ -227,7 +262,7 @@ I'm going to Fun Event on the {{ Context.Campus.Name }} campus. Would you like t
                     var cacheDuration = this.GetAttributeValue( "CacheDuration" ).AsInteger();
                     if ( cacheDuration > 0 )
                     {
-                        this.AddCacheItem( cacheKey, lContent.Text );
+                        this.AddCacheItem( cacheKey, lContent.Text, cacheDuration );
                     }
                 }
             }
