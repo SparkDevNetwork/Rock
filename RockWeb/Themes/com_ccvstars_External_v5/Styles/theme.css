@@ -4842,6 +4842,9 @@ ul.list-group-panel .list-group-item:first-child,
 .is-inactive {
   opacity: .6;
 }
+.cursor-pointer {
+  cursor: pointer;
+}
 .padding-all-none {
   padding: 0 !important;
 }
