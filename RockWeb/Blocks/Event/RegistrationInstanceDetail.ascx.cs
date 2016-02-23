@@ -50,6 +50,7 @@ namespace RockWeb.Blocks.Event
     [LinkedPage( "Group Detail Page", "The page for viewing details about a group", true, "", "", 4)]
     [LinkedPage( "Content Item Page", "The page for viewing details about a content channel item", true, "", "", 5 )]
     [LinkedPage( "Transaction Detail Page", "The page for viewing details about a payment", true, "", "", 6 )]
+    [LinkedPage("Payment Reminder Page", "The page for manually sending payment reminders.", false, "", "", 7)]
     public partial class RegistrationInstanceDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         #region Fields
@@ -352,6 +353,18 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
+        /// Handles the Click event of the btnSendPaymentReminder control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSendPaymentReminder_Click( object sender, EventArgs e )
+        {
+            Dictionary<string, string> queryParms = new Dictionary<string, string>();
+            queryParms.Add( "RegistrationInstanceId", PageParameter( "RegistrationInstanceId" ) );
+            NavigateToLinkedPage( "PaymentReminderPage", queryParms );
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -393,6 +406,16 @@ namespace RockWeb.Blocks.Event
             {
                 instance = new RegistrationInstanceService( rockContext ).Get( instance.Id );
                 ShowReadonlyDetails( instance );
+            }
+
+            // show send payment reminder link
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentReminderPage" ) ) && ((instance.RegistrationTemplate.SetCostOnInstance.HasValue && instance.RegistrationTemplate.SetCostOnInstance == true && instance.Cost.HasValue && instance.Cost.Value > 0) || instance.RegistrationTemplate.Cost > 0) )
+            {
+                btnSendPaymentReminder.Visible = true;
+            }
+            else
+            {
+                btnSendPaymentReminder.Visible = false;
             }
         }
 
@@ -1532,6 +1555,16 @@ namespace RockWeb.Blocks.Event
                     {
                         ShowEditDetails( registrationInstance, rockContext );
                     }
+                }
+
+                // show send payment reminder link
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentReminderPage" ) ) && ((registrationInstance.RegistrationTemplate.SetCostOnInstance.HasValue && registrationInstance.RegistrationTemplate.SetCostOnInstance == true && registrationInstance.Cost.HasValue && registrationInstance.Cost.Value > 0) || registrationInstance.RegistrationTemplate.Cost > 0 ))
+                {
+                    btnSendPaymentReminder.Visible = true;
+                }
+                else
+                {
+                    btnSendPaymentReminder.Visible = false;
                 }
 
                 LoadRegistrantFormFields( registrationInstance );
