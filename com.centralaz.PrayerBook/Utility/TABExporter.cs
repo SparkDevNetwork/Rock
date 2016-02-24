@@ -86,17 +86,18 @@ namespace com.centralaz.Prayerbook.Utility
 
         private static void addTab( string value, StringBuilder stringBuilder )
         {
-            stringBuilder.Append( '"' );
-            stringBuilder.Append( value );
-            stringBuilder.Append( '"' );
-            stringBuilder.Append( "\t" );
+            addTab( value, stringBuilder, false );
         }
 
         private static void addTab( string value, StringBuilder stringBuilder, bool lastItem )
         {
             stringBuilder.Append( '"' );
-            stringBuilder.Append( value );
+            stringBuilder.Append( value.Replace( "\"", "\"\"" ) );
             stringBuilder.Append( '"' );
+            if ( ! lastItem )
+            {
+                stringBuilder.Append( "\t" );
+            }
         }
 
         private static void writeColumnNames()
