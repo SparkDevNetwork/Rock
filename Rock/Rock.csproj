@@ -59,7 +59,7 @@
     </Reference>
     <Reference Include="EXIFextractor, Version=1.0.2076.31431, Culture=neutral">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\EXIFextractor.dll</HintPath>
+      <HintPath>..\libs\Goheer EXIFExtractor\EXIFextractor.dll</HintPath>
     </Reference>
     <Reference Include="HtmlAgilityPack, Version=1.4.9.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
