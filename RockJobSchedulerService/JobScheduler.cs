@@ -66,7 +66,7 @@ namespace RockJobSchedulerService
         {
             StartJobScheduler();
 
-            _timer = new Timer( 1 * 1000 ); // every minute
+            _timer = new Timer( 1000 * 60 ); // every minute
             _timer.Elapsed += new System.Timers.ElapsedEventHandler( timer_Elapsed );
             _timer.Start();
         }
