@@ -114,7 +114,7 @@ namespace church.ccv.Steps
 
             var rockContext = new RockContext();
 
-            _filteredConnectionStatuses = new List<int>( new int[] { 146, 65 } ); // Member = 65, Attendee = 146, Visitor = 66
+            _filteredConnectionStatuses = new List<int>( new int[] { 146, 65 } ); // Member = 65, Attendee = 146
 
             // load list of active campuses
             _campusIds = new CampusService( rockContext ).Queryable().Where( c => c.IsActive == true ).Select( c => c.Id ).ToList();

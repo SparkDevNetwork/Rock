@@ -325,7 +325,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     lMeasureDescription.Text = latestMeasures.FirstOrDefault().Description;
                     lMeasureIcon.Text = string.Format( "<i class='{0}' style='color: {1};'></i>", latestMeasures.FirstOrDefault().IconCssClass, latestMeasures.FirstOrDefault().MeasureColor );
 
-                    lMeasureCampusSumValue.Text = latestMeasures.Sum( m => m.MeasureValue ).ToString();
+                    lMeasureCampusSumValue.Text = string.Format( "<div class='value-tip' data-toggle='tooltip' data-placement='top' title='{0:#,0} individuals have taken this step'>{0:#,0}</div>", latestMeasures.Sum( m => m.MeasureValue ));
                     lMeasureBackgroundColor.Text = latestMeasures.FirstOrDefault().MeasureColorBackground;
                     lMeasureBarPercent.Text = latestMeasures.Average( m => m.Percentage ).ToString();
                     int measurePercent = Convert.ToInt16(Math.Round( latestMeasures.Average( m => m.Percentage ) ));
