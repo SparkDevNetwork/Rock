@@ -1,0 +1,19 @@
+/*
+    The accent colors are deprecated and should not be used in new theme development. They will be
+    removed in Rock v 6.0.
+*/
+.easter-header {
+  min-height: 50vh;
+  display: flex;
+  align-items: center;
+}
+.address {
+  display: flex;
+  justify-content: center;
+}
+.address > .fa {
+  padding: .125em .25em;
+}
+footer {
+  min-height: 50vh;
+}
