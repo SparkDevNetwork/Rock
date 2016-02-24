@@ -21,6 +21,7 @@ using System.Data.Entity.Core.Objects;
 using System.Linq;
 using System.Text;
 using System.Web;
+using Humanizer;
 using Quartz;
 using Rock.Attribute;
 using Rock.Communication;
@@ -70,6 +71,9 @@ namespace Rock.Jobs
 
             using ( RockContext rockContext = new RockContext())
             {
+                int sendCount = 0;
+                int registrationInstanceCount = 0;
+
                 var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "ExternalApplicationRoot" );
 
                 RegistrationService registrationService = new RegistrationService( rockContext );
@@ -87,6 +91,8 @@ namespace Rock.Jobs
                                                          && (r.RegistrationInstance.RegistrationTemplate.Cost != 0 || (r.RegistrationInstance.Cost != null && r.RegistrationInstance.Cost != 0))
                                                          && (r.RegistrationInstance.EndDateTime == null || r.RegistrationInstance.EndDateTime <= cutoffDate) )
                                                  .ToList();
+
+                registrationInstanceCount = registrations.Select( r => r.RegistrationInstance.Id ).Distinct().Count();
 
                 foreach(var registration in registrations )
                 {
@@ -113,11 +119,14 @@ namespace Rock.Jobs
 
                             registration.LastPaymentReminderDateTime = RockDateTime.Now;
                             rockContext.SaveChanges();
+
+                            sendCount++;
                         }
                     }
                 }
 
-                                                    
+                context.Result =  string.Format("Sent {0} from {1}", "reminder".ToQuantity( sendCount ), "registration instances".ToQuantity(registrationInstanceCount) );
+
             }
         }
 

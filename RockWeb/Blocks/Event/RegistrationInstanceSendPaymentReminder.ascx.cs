@@ -124,6 +124,8 @@ namespace RockWeb.Blocks.Event
         {
             var registrationsSelected = new List<int>();
 
+            int sendCount = 0;
+
             gRegistrations.SelectedKeys.ToList().ForEach( r => registrationsSelected.Add( r.ToString().AsInteger() ) );
             if ( registrationsSelected.Any() )
             {
@@ -145,7 +147,7 @@ namespace RockWeb.Blocks.Event
                             var registrationService = new RegistrationService( rockContext );
 
                             var registration = registrationService.Get( registrationId );
-                            if (registration != null )
+                            if (registration != null && !string.IsNullOrWhiteSpace(registration.ConfirmationEmail) )
                             {
                                 var recipients = new List<string>();
 
@@ -161,11 +163,17 @@ namespace RockWeb.Blocks.Event
 
                                 registration.LastPaymentReminderDateTime = RockDateTime.Now;
                                 rockContext.SaveChanges();
+
+                                sendCount++;
                             }
                         }
                     }
                 }
             }
+
+            pnlSend.Visible = false;
+            pnlComplete.Visible = true;
+            nbResult.Text = string.Format("Payment reminders have been sent to {0}.", "individuals".ToQuantity( sendCount ));
         }
 
         /// <summary>
@@ -390,8 +398,12 @@ namespace RockWeb.Blocks.Event
         {
             if ( lastReminderDate.HasValue )
             {
-                var days = (int)Math.Ceiling(((DateTime)RockDateTime.Now - lastReminderDate.Value ).TotalDays);
-                return "days".ToQuantity( days );
+                var days = ((DateTime)RockDateTime.Now - lastReminderDate.Value ).TotalDays;
+                if (days < 1 )
+                {
+                    return "Today";
+                }
+                return  "days".ToQuantity( (int)Math.Ceiling( days) );
             }
             else
             {
