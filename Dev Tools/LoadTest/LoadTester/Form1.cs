@@ -19,6 +19,35 @@ namespace LoadTester
             InitializeComponent();
         }
 
+        public readonly string[] UserAgentStrings = new string[] {
+            "Mozilla/5.0 (Linux; Android 5.0; SM-G900V Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.83 Mobile Safari/537.36",
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 9_0_2 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Mobile/13A452",
+            "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.2; Trident/4.0)",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_2) AppleWebKit/601.3.9 (KHTML, like Gecko)",
+            "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.109 Safari/537.36",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_2) AppleWebKit/601.3.9 (KHTML, like Gecko) Version/9.0.2 Safari/601.3.9",
+            "Safari/11601.4.4 CFNetwork/760.2.6 Darwin/15.3.0 (x86_64)",
+            "Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko",
+            "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.1) Gecko/2008070208 Firefox/3.0.1",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/601.4.4 (KHTML, like Gecko)",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/601.2.7 (KHTML, like Gecko) Version/9.0.1 Safari/601.2.7",
+            "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36",
+            "Safari/11601.1.56 CFNetwork/760.0.5 Darwin/15.0.0 (x86_64)",
+            "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.97 Safari/537.36",
+            "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)",
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 9_0_2 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Mobile/13A452",
+            "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; WOW64; Trident/6.0)",
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) CriOS/46.0.2490.73 Mobile/13B143 Safari/600.1.4",
+            "Safari/10601.4.4 CFNetwork/720.5.7 Darwin/14.5.0 (x86_64)",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240",
+            "Mozilla/5.0 (Linux; Android 5.0; SM-G900V Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.83 Mobile Safari/537.36",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/601.1.56 (KHTML, like Gecko)",
+            "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.71 Safari/537.36",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/600.8.9 (KHTML, like Gecko) Version/8.0.8 Safari/600.8.9",
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 9_2_1 like Mac OS X) AppleWebKit/601.1 (KHTML, like Gecko) CriOS/48.0.2564.104 Mobile/13D15 Safari/601.1.46",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/601.3.9 (KHTML, like Gecko) Version/9.0.2 Safari/601.3.9"
+        };
+
         /// <summary>
         /// Handles the Click event of the btnStart control.
         /// </summary>
@@ -57,7 +86,7 @@ namespace LoadTester
                         var stopwatch = Stopwatch.StartNew();
                         var clientRequest = (HttpWebRequest)WebRequest.Create( url );
                         clientRequest.CookieContainer = cookieContainer;
-                        clientRequest.UserAgent = "LoadTester";
+                        clientRequest.UserAgent = UserAgentStrings[new Random().Next( 0, UserAgentStrings.Length )];
                         clientRequest.Timeout = 10000;
 
                         using ( var response = clientRequest.GetResponse() )
@@ -85,7 +114,7 @@ namespace LoadTester
                                                 var srcUri = new Uri( baseUri, srcRef );
                                                 var srcRequest = (HttpWebRequest)WebRequest.Create( srcUri );
                                                 var srcResponse = srcRequest.GetResponse();
-                                                
+
                                                 using ( var resultStream = srcResponse.GetResponseStream() )
                                                 {
                                                     using ( var resultReader = new StreamReader( resultStream ) )
@@ -112,7 +141,7 @@ namespace LoadTester
                         }
 
                         stopwatch.Stop();
-                        results.Add( Math.Round(stopwatch.Elapsed.TotalMilliseconds, 3 ) );
+                        results.Add( Math.Round( stopwatch.Elapsed.TotalMilliseconds, 3 ) );
                         requestCounter++;
 
                     }
@@ -134,12 +163,12 @@ namespace LoadTester
             try
             {
                 tbStats.Text = string.Format( @"
-Median: {0}ms responseTime 
-Mode: {1}ms responseTime 
-Average: {2}ms responseTime 
+Median: {0:0.000}ms responseTime 
+Mode: {1:0.000}ms responseTime 
+Average: {2:0.000}ms responseTime 
 TotalRequests: {3},
-TotalTime: {4}ms
-Requests/sec: {5}
+TotalTime: {4:0.000}ms
+Requests/sec: {5:0.000}
 Exceptions: {6}
 ", results.Median(),
        results.Mode(),
@@ -173,7 +202,7 @@ Exceptions: {6}
         {
             if ( InvokeRequired )
             {
-                BeginInvoke( new Action<long,long>( UpdateProgressBar ), new object[] { requestCount, threadCount } );
+                BeginInvoke( new Action<long, long>( UpdateProgressBar ), new object[] { requestCount, threadCount } );
                 return;
             }
 
