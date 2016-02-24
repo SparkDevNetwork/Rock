@@ -48,130 +48,110 @@ namespace Rock.Address
         /// Standardizes and Geocodes an address using Bing service
         /// </summary>
         /// <param name="location">The location.</param>
-        /// <param name="reVerify">Should location be reverified even if it has already been successfully verified</param>
-        /// <param name="result">The result code unique to the service.</param>
+        /// <param name="resultMsg">The result MSG.</param>
         /// <returns>
         /// True/False value of whether the verification was successfull or not
         /// </returns>
-        public override bool VerifyLocation( Rock.Model.Location location, bool reVerify, out string result )
+        public override VerificationResult Verify( Rock.Model.Location location, out string resultMsg )
         {
-            bool verified = false;
-            result = string.Empty;
+            VerificationResult result = VerificationResult.None;
+            resultMsg = string.Empty;
 
-            // Only verify if location is valid, has not been locked, and 
-            // has either never been attempted or last attempt was in last 30 secs (prev active service failed) or reverifying
-            if ( location != null &&
-                !( location.IsGeoPointLocked ?? false ) &&
-                (
-                    !location.GeocodeAttemptedDateTime.HasValue ||
-                    location.GeocodeAttemptedDateTime.Value.CompareTo( RockDateTime.Now.AddSeconds( -30 ) ) > 0 ||
-                    reVerify
-                ) )
+            // Verify that bing transaction count hasn't been exceeded for the day
+            DateTime? txnDate = Rock.Web.SystemSettings.GetValue( TXN_DATE ).AsDateTime();
+            int? dailyTxnCount = 0;
+
+            if ( txnDate.Equals( RockDateTime.Today ) )
             {
-                // Verify that bing transaction count hasn't been exceeded for the day
-                DateTime? txnDate = Rock.Web.SystemSettings.GetValue( TXN_DATE ).AsDateTime();
-                int? dailyTxnCount = 0;
+                dailyTxnCount = Rock.Web.SystemSettings.GetValue( DAILY_TXN_COUNT ).AsIntegerOrNull();
+            }
+            else
+            {
+                Rock.Web.SystemSettings.SetValue( TXN_DATE, RockDateTime.Today.ToShortDateString() );
+            }
 
-                if ( txnDate.Equals( RockDateTime.Today ) )
+            int? maxTxnCount = GetAttributeValue( "DailyTransactionLimit" ).AsIntegerOrNull();
+
+            if ( !maxTxnCount.HasValue || maxTxnCount.Value == 0 || dailyTxnCount < maxTxnCount.Value )
+            {
+                dailyTxnCount++;
+                Rock.Web.SystemSettings.SetValue( DAILY_TXN_COUNT, dailyTxnCount.ToString() );
+
+                string key = GetAttributeValue( "BingMapsKey" );
+
+                var queryValues = new Dictionary<string, string>();
+                queryValues.Add( "adminDistrict", location.State );
+                queryValues.Add( "locality", location.City );
+                queryValues.Add( "postalCode", location.PostalCode );
+                queryValues.Add( "addressLine", location.Street1 + " " + location.Street2 );
+                queryValues.Add( "countryRegion", location.Country );
+
+                var queryParams = new List<string>();
+                foreach ( var queryKeyValue in queryValues )
                 {
-                    dailyTxnCount = Rock.Web.SystemSettings.GetValue( DAILY_TXN_COUNT ).AsIntegerOrNull();
-                }
-                else
-                {
-                    Rock.Web.SystemSettings.SetValue( TXN_DATE, RockDateTime.Today.ToShortDateString() );
-                }
-
-                int? maxTxnCount = GetAttributeValue( "DailyTransactionLimit" ).AsIntegerOrNull();
-
-                if ( !maxTxnCount.HasValue || maxTxnCount.Value == 0 || dailyTxnCount < maxTxnCount.Value )
-                {
-                    dailyTxnCount++;
-                    Rock.Web.SystemSettings.SetValue( DAILY_TXN_COUNT, dailyTxnCount.ToString() );
-
-                    string key = GetAttributeValue( "BingMapsKey" );
-
-                    var queryValues = new Dictionary<string, string>();
-                    queryValues.Add( "adminDistrict", location.State );
-                    queryValues.Add( "locality", location.City );
-                    queryValues.Add( "postalCode", location.PostalCode );
-                    queryValues.Add( "addressLine", location.Street1 + " " + location.Street2 );
-                    queryValues.Add( "countryRegion", location.Country );
-
-                    var queryParams = new List<string>();
-                    foreach ( var queryKeyValue in queryValues )
+                    if ( !string.IsNullOrWhiteSpace( queryKeyValue.Value ) )
                     {
-                        if ( !string.IsNullOrWhiteSpace( queryKeyValue.Value ) )
-                        {
-                            queryParams.Add( string.Format( "{0}={1}", queryKeyValue.Key, HttpUtility.UrlEncode( queryKeyValue.Value.Trim() ) ) );
-                        }
+                        queryParams.Add( string.Format( "{0}={1}", queryKeyValue.Key, HttpUtility.UrlEncode( queryKeyValue.Value.Trim() ) ) );
                     }
-                    Uri geocodeRequest = new Uri( string.Format( "http://dev.virtualearth.net/REST/v1/Locations?{0}&key={1}", queryParams.AsDelimited( "&" ), key ) );
+                }
+                Uri geocodeRequest = new Uri( string.Format( "http://dev.virtualearth.net/REST/v1/Locations?{0}&key={1}", queryParams.AsDelimited( "&" ), key ) );
 
-                    WebClient wc = new WebClient();
-                    var stream = wc.OpenRead( geocodeRequest );
+                WebClient wc = new WebClient();
+                var stream = wc.OpenRead( geocodeRequest );
 
-                    DataContractJsonSerializer ser = new DataContractJsonSerializer( typeof( Response ) );
-                    var x = ser.ReadObject( stream ) as Response;
-                    if ( x != null )
+                DataContractJsonSerializer ser = new DataContractJsonSerializer( typeof( Response ) );
+                var x = ser.ReadObject( stream ) as Response;
+                if ( x != null )
+                {
+                    if ( x.ResourceSets.Length > 0 &&
+                        x.ResourceSets[0].Resources.Length == 1 )
                     {
-                        if ( x.ResourceSets.Length > 0 &&
-                            x.ResourceSets[0].Resources.Length == 1 )
+                        var bingLocation = (Location)x.ResourceSets[0].Resources[0];
+                        var matchCodes = bingLocation.MatchCodes.ToList();
+
+                        resultMsg = string.Format( "Confidence: {0}; MatchCodes: {1}",
+                            bingLocation.Confidence, matchCodes.AsDelimited( "," ) );
+
+                        if ( bingLocation.Confidence == "High" && matchCodes.Contains( "Good" ) )
                         {
-                            var bingLocation = (Location)x.ResourceSets[0].Resources[0];
-                            var matchCodes = bingLocation.MatchCodes.ToList();
+                            location.SetLocationPointFromLatLong( bingLocation.Point.Coordinates[0], bingLocation.Point.Coordinates[1] );
+                            result = VerificationResult.Geocoded;
 
-                            result = string.Format( "Confidence: {0}; MatchCodes: {1}",
-                                bingLocation.Confidence, matchCodes.AsDelimited( "," ) );
-
-                            if ( bingLocation.Confidence == "High" && matchCodes.Contains( "Good" ) )
+                            var address = bingLocation.Address;
+                            if ( address != null )
                             {
-                                location.SetLocationPointFromLatLong( bingLocation.Point.Coordinates[0], bingLocation.Point.Coordinates[1] );
-                                location.GeocodedDateTime = RockDateTime.Now;
-                                verified = true;
-
-                                if ( !location.StandardizedDateTime.HasValue || reVerify )
+                                location.Street1 = address.AddressLine;
+                                location.County = address.AdminDistrict2;
+                                location.City = address.Locality;
+                                location.State = address.AdminDistrict;
+                                if ( !String.IsNullOrWhiteSpace( address.PostalCode ) &&
+                                    !( ( location.PostalCode ?? string.Empty ).StartsWith( address.PostalCode ) ) )
                                 {
-                                    var address = bingLocation.Address;
-                                    if ( address != null )
-                                    {
-                                        location.Street1 = address.AddressLine;
-                                        location.County = address.AdminDistrict2;
-                                        location.City = address.Locality;
-                                        location.State = address.AdminDistrict;
-                                        if ( !String.IsNullOrWhiteSpace( address.PostalCode ) &&
-                                            !( ( location.PostalCode ?? string.Empty ).StartsWith( address.PostalCode ) ) )
-                                        {
-                                            location.PostalCode = address.PostalCode;
-                                        }
-                                        location.StandardizeAttemptedServiceType = "Bing";
-                                        location.StandardizeAttemptedResult = "High";
-                                        location.StandardizedDateTime = RockDateTime.Now;
-                                    }
+                                    location.PostalCode = address.PostalCode;
                                 }
 
+                                result = result | VerificationResult.Standardized;
                             }
-                        }
-                        else
-                        {
-                            result = "Zero or More than 1 result";
                         }
                     }
                     else
                     {
-                        result = "Invalid response";
+                        resultMsg = "Zero or More than 1 result";
                     }
                 }
                 else
                 {
-                    result = "Daily transaction limit exceeded";
+                    result = VerificationResult.ConnectionError;
+                    resultMsg = "Invalid response";
                 }
-
-                location.GeocodeAttemptedServiceType = "Bing";
-                location.GeocodeAttemptedDateTime = RockDateTime.Now;
-                location.GeocodeAttemptedResult = result;
+            }
+            else
+            {
+                result = VerificationResult.ConnectionError;
+                resultMsg = "Daily transaction limit exceeded";
             }
 
-            return verified;
+            return result;
         }
 
         private void GetResponse( Uri uri, Action<Response> callback )
