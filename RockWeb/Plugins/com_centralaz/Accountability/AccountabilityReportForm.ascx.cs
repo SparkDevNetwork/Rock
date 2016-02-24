@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Net.Mail;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -9,7 +10,9 @@ using System.Web.UI.WebControls;
 using com.centralaz.Accountability.Data;
 using com.centralaz.Accountability.Model;
 using Rock;
+using Rock.Attribute;
 using Rock.Communication;
+using Rock.Communication.Transport;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -24,6 +27,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
     [DisplayName( "Accountability Report Form" )]
     [Category( "com_centralaz > Accountability" )]
     [Description( "Block for accountability group members to fill out and submit reports" )]
+    [EmailField( "Safe Sender From", "The email address to use in the From field if the sender is not allowed (not a safe sender).", false, "" )]
     public partial class AccountabilityReportForm : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -230,8 +234,8 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
             if ( !Page.IsValid )
             {
                 return;
-
             }
+
             AccountabilityContext dataContext = new AccountabilityContext();
             ResponseSetService responseSetService = new ResponseSetService( dataContext );
             ResponseSet myResponseSet = new ResponseSet();
@@ -294,8 +298,6 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
                 qryString["GroupId"] = PageParameter( "GroupId" );
                 NavigateToParentPage( qryString );
             }
-
-
         }
 
         /// <summary>
@@ -355,6 +357,10 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
             var recipients = new List<string>();
             recipients.Add( recipient );
 
+            string replaceWithEmail = GetAttributeValue( "SafeSenderFrom" );
+            var metaData = new Dictionary<string, string>();
+            from = CheckSafeSender( from, replaceWithEmail, metaData );
+
             var mediumData = new Dictionary<string, string>();
             mediumData.Add( "From", from );
             mediumData.Add( "Subject", subject );
@@ -370,12 +376,40 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
                     if ( transport != null && transport.IsActive )
                     {
                         var appRoot = GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" );
-                        transport.Send( mediumData, recipients, appRoot, string.Empty );
+                        ( (Rock.Communication.Transport.SMTPComponent)transport ).Send( mediumData, recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ), true, metaData );
                     }
                 }
             }
         }
 
+        /// <summary>
+        /// Checks the safe sender.
+        /// </summary>
+        /// <param name="from">A from address to check.</param>
+        /// <param name="substitutionEmail">The substitution email to use if the from is not a safe sender.</param>
+        /// <param name="metaData">The meta data.</param>
+        /// <returns>The safe email to use when sending email.</returns>
+        private string CheckSafeSender( string from, string substitutionEmail, Dictionary<string, string> metaData )
+        {
+            var safeDomains = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.COMMUNICATION_SAFE_SENDER_DOMAINS.AsGuid() ).DefinedValues.Select( v => v.Value ).ToList();
+            var emailParts = from.Split( new char[] { '@' }, StringSplitOptions.RemoveEmptyEntries );
+            if ( emailParts.Length != 2 || !safeDomains.Contains( emailParts[1], StringComparer.OrdinalIgnoreCase ) )
+            {
+                if ( !string.IsNullOrWhiteSpace( substitutionEmail ) && !substitutionEmail.Equals( from, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    // Put the original From in the the Reply To: and then replace the From address.
+                    if ( ! metaData.ContainsKey( "Reply-To" ) )
+                    {
+                        metaData.Add( "Reply-To", from );
+                    }
+
+                    from = substitutionEmail;
+                }
+            }
+
+            return from;
+        }
+        
         /// <summary>
         /// Creates the email message body.
         /// </summary>
@@ -392,7 +426,6 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
             //Get the  group type's questions
             List<Question> questions = new QuestionService( new AccountabilityContext() ).GetQuestionsFromGroupTypeID( _groupMember.Group.GroupTypeId );
             body.Append( string.Format( "<tr bgcolor='#eeeeee'><th valign='top' align='left' nowrap='nowrap' colspan='5' style='font-size: 14px;'>{0} - {1} {2}<br /></th></tr>", group.Name, CurrentPerson.FirstName, CurrentPerson.LastName ) );
-
 
             //Report week
             body.Append( string.Format( "<tr><td><b>Report for date:</b></td><td>{0}</td></tr>", ddlSubmitForDate.SelectedValue ) );
