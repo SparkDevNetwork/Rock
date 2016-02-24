@@ -245,6 +245,20 @@ namespace Rock.Model
                 ", parentLocationId ) );
         }
 
+        public IEnumerable<int> GetAllDescendentIds( int parentLocationId )
+        {
+            return this.Context.Database.SqlQuery<int>( string.Format(
+                @"
+                WITH CTE AS (
+                    SELECT [Id], [ParentLocationId] FROM [Location] WHERE [ParentLocationId]={0}
+                    UNION ALL
+                    SELECT [a].[Id], [a].[ParentLocationId] FROM [Location] [a]
+                    INNER JOIN  CTE pcte ON pcte.[Id] = [a].[ParentLocationId]
+                )
+                SELECT [Id] FROM CTE
+                ", parentLocationId ) );
+        }
+
         /// <summary>
         /// Gets all ancestors.
         /// </summary>
@@ -261,6 +275,28 @@ namespace Rock.Model
                     INNER JOIN CTE ON CTE.[ParentLocationId] = [a].[Id]
                 )
                 SELECT * FROM CTE
+                WHERE [Name] IS NOT NULL 
+                AND [Name] <> ''
+                ", locationId ) );
+        }
+
+        /// <summary>
+        /// Gets all ancestor ids.
+        /// </summary>
+        /// <param name="locationId">The location identifier.</param>
+        /// <returns></returns>
+        public IEnumerable<int> GetAllAncestorIds( int locationId )
+        {
+            return this.Context.Database.SqlQuery<int>( string.Format(
+                @"
+                WITH CTE AS (
+                    SELECT [Id], [ParentLocationId] FROM [Location] WHERE [Id]={0}
+                    UNION ALL
+                    SELECT [a].[Id], [a].[ParentLocatoinId] FROM [Location] [a]
+                    INNER JOIN CTE ON CTE.[ParentLocationId] = [a].[Id]
+                )
+                SELECT [Id]
+                FROM CTE
                 WHERE [Name] IS NOT NULL 
                 AND [Name] <> ''
                 ", locationId ) );
@@ -294,8 +330,7 @@ namespace Rock.Model
                     .ToList()
                     .ForEach( c => campusLocations.Add( c.CampusId, c.LocationId ) );
 
-                foreach ( var parentLocationId in this.GetAllAncestors( locationId.Value )
-                    .Select( l => l.Id ) )
+                foreach ( var parentLocationId in this.GetAllAncestorIds( locationId.Value ) )
                 {
                     campusId = campusLocations
                         .Where( c => c.Value == parentLocationId )
