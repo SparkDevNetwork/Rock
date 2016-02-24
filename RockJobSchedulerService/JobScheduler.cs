@@ -31,6 +31,8 @@ using Quartz.Impl.Matchers;
 using Rock.Jobs;
 using Rock.Model;
 using Rock.Data;
+using System.Timers;
+using Rock.Transactions;
 
 namespace RockJobSchedulerService
 {
@@ -41,6 +43,9 @@ namespace RockJobSchedulerService
     {
         // global Quartz scheduler for jobs
         IScheduler sched = null;
+        private Timer _timer;
+
+        private bool _queueInUse = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JobScheduler"/> class.
@@ -60,6 +65,10 @@ namespace RockJobSchedulerService
         protected override void OnStart( string[] args )
         {
             StartJobScheduler();
+
+            _timer = new Timer( 1 * 1000 ); // every minute
+            _timer.Elapsed += new System.Timers.ElapsedEventHandler( timer_Elapsed );
+            _timer.Start();
         }
 
         /// <summary>
@@ -151,9 +160,54 @@ namespace RockJobSchedulerService
         /// </summary>
         protected override void OnStop()
         {
+            _timer.Stop();
+            DrainTransactionQueue();
+
             if ( sched != null )
             {
                 sched.Shutdown( false );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Elapsed event of the timer control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        void timer_Elapsed( object sender, EventArgs e )
+        {
+            _timer.Stop();
+
+            DrainTransactionQueue();
+
+            _timer.Start();
+        }
+
+        private void DrainTransactionQueue()
+        {
+            if ( !_queueInUse )
+            {
+                _queueInUse = true;
+
+                while ( RockQueue.TransactionQueue.Count != 0 )
+                {
+                    ITransaction transaction;
+                    if ( RockQueue.TransactionQueue.TryDequeue( out transaction ) )
+                    {
+                        if ( transaction != null )
+                        {
+                            try
+                            {
+                                transaction.Execute();
+                            }
+                            catch ( Exception ex )
+                            {
+                                ExceptionLogService.LogException( new Exception( string.Format( "Exception in Global.DrainTransactionQueue(): {0}", transaction.GetType().Name ), ex ), null, null, null, null );
+                            }
+                        }
+                    }
+                }
+                _queueInUse = false;
             }
         }
     }
