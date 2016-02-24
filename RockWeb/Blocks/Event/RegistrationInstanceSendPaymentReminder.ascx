@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
+        <asp:Panel ID="pnlSend" runat="server" CssClass="panel panel-block">
         
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-bell-o"></i> Send Payment Reminder</h1>
@@ -13,9 +13,9 @@
                     <h4></h4>
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockTextBox ID="txtFromName" runat="server" Label="From Name" />
-                            <Rock:RockTextBox ID="txtFromEmail" runat="server" Label="From Email" />
-                            <Rock:RockTextBox ID="txtFromSubject" runat="server" Label="Subject" />
+                            <Rock:RockTextBox ID="txtFromName" runat="server" Label="From Name" Required="true" />
+                            <Rock:RockTextBox ID="txtFromEmail" runat="server" Label="From Email" Required="true" />
+                            <Rock:RockTextBox ID="txtFromSubject" runat="server" Label="Subject" Required="true" />
                         </div>
                         <div class="col-md-12">
                             <label>Message</label>
@@ -28,7 +28,7 @@
                     <hr />
                     <h4>Outstanding Balances</h4>
                     <asp:Literal ID="lBalanceInstructions" runat="server" />
-                    <Rock:Grid ID="gRegistrations" runat="server" AllowPaging="false" AllowSorting="true">
+                    <Rock:Grid ID="gRegistrations" runat="server" AllowPaging="false" AllowSorting="true" DataKeyNames="Id">
                         <Columns>
                             <Rock:SelectField />
                             <Rock:RockTemplateField HeaderText="Name" SortExpression="Name">
@@ -61,6 +61,19 @@
             </div>
         
         </asp:Panel>
+
+        <asp:Panel ID="pnlComplete" runat="server" Visible="false">
+            <Rock:NotificationBox ID="nbResult" NotificationBoxType="Success" runat="server" />
+        </asp:Panel>
+
+
+        <script type="text/javascript">
+          Sys.WebForms.PageRequestManager.getInstance().add_endRequest(pageLoaded);
+
+          function pageLoaded(sender, args) {
+             window.scrollTo(0,0);
+          }
+        </script>
 
     </ContentTemplate>
 </asp:UpdatePanel>
