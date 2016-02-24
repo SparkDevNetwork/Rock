@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Data.Entity.Validation;
 using System.Linq;
 using Rock.Data;
 using Rock.Model;
@@ -41,17 +42,35 @@ namespace Rock.Transactions
         {
             if ( Audits != null && Audits.Count > 0 )
             {
-                var auditsToAdd = Audits.Where( a => a.Details.Any() );
-                if ( auditsToAdd.Any() )
-                {
-                    using ( var rockContext = new RockContext() )
+                try {
+                    var auditsToAdd = Audits.Where( a => a.Details.Any() );
+                    if ( auditsToAdd.Any() )
                     {
-                        var auditService = new AuditService( rockContext );
+                        using ( var rockContext = new RockContext() )
+                        {
+                            var auditService = new AuditService( rockContext );
 
-                        auditService.AddRange( auditsToAdd );
+                            auditService.AddRange( auditsToAdd );
 
-                        rockContext.SaveChanges( true );
+                            rockContext.SaveChanges( true );
+                        }
                     }
+                }
+                catch ( DbEntityValidationException devx )
+                {
+                    string errorMessage = string.Empty;
+
+                    foreach (var eve in devx.EntityValidationErrors )
+                    {
+                        errorMessage += string.Format("Entity of type \"{0}\" in state \"{1}\" has the following validation errors: {", eve.Entry.Entity.GetType().Name, eve.Entry.State );
+                        foreach ( var ve in eve.ValidationErrors )
+                        {
+                            errorMessage += string.Format( "Property: \"{0}\", Error: \"{1}\"",ve.PropertyName, ve.ErrorMessage );
+                        }
+                        errorMessage += "}";
+                    }
+
+                    throw new System.Exception( errorMessage, devx );
                 }
             }
         }
