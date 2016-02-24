@@ -93,13 +93,10 @@ namespace Rock.Rest.Controllers
 
                 if ( binaryFileType == null )
                 {
-                    GenerateResponse( HttpStatusCode.InternalServerError, "There is no person image file type" );
+                    GenerateResponse( HttpStatusCode.InternalServerError, "Invalid binary file type" );
                 }
 
-                var currentUser = UserLoginService.GetCurrentUser();
-                var currentPerson = currentUser != null ? currentUser.Person : null;
-
-                if ( !binaryFileType.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson ) )
+                if ( !binaryFileType.IsAuthorized( Rock.Security.Authorization.EDIT, GetPerson() ) )
                 {
                     GenerateResponse( HttpStatusCode.Unauthorized, "Not authorized to upload this type of file" );
                 }
