@@ -407,7 +407,7 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
             // spaces
             inputString = Regex.Replace( inputString, "[\u02DC|\u00A0]", " " );
             // other non-ascii chars
-            inputString = Regex.Replace( inputString, @"[^\u0020-\u007E]", string.Empty );
+            inputString = Regex.Replace( inputString, @"[^\u0020-\u007E]", " " );
 
             return inputString;
         }
