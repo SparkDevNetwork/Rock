@@ -1,4 +1,5 @@
-﻿// <copyright>
+﻿using System;
+// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,8 +25,29 @@ namespace Rock.Address
     public abstract class VerificationComponent : Component
     {
         /// <summary>
-        /// Abstract method for verifying a location.  Derived classes should implement
-        /// this method to perform an verification action on an address (i.e. standardize, geocode, etc.).
+        /// Gets a value indicating whether verification component supports standardization.
+        /// </summary>
+        /// <value>
+        /// 	<c>true</c> if [supports standardization]; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool SupportsStandardization
+        {
+            get { return true; }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether verification component supports geocoding].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [supports geocoding]; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool SupportsGeocoding
+        {
+            get { return true; }
+        }
+
+        /// <summary>
+        /// Obsolete method for verifying a location. Derived classes should override Verify method instead
         /// </summary>
         /// <param name="location">The location.</param>
         /// <param name="reVerify">Should location be reverified even if it has already been successfully verified</param>
@@ -33,7 +55,54 @@ namespace Rock.Address
         /// <returns>
         /// True/False value of whether the verification was successfull or not
         /// </returns>
-        public abstract bool VerifyLocation( Rock.Model.Location location, bool reVerify, out string result );
+        [Obsolete("Use Verify method instead")]
+        public virtual bool VerifyLocation( Rock.Model.Location location, bool reVerify, out string result )
+        {
+            return Verify( location, out result ) != VerificationResult.None;
+        }
+
+        /// <summary>
+        /// Verifies the specified location.
+        /// </summary>
+        /// <param name="location">The location.</param>
+        /// <param name="resultMsg">The result MSG.</param>
+        /// <returns></returns>
+        public virtual VerificationResult Verify( Rock.Model.Location location, out string resultMsg )
+        {
+            throw new NotImplementedException();
+        }
+
     }
+
+    #region Enumerations
+
+    /// <summary>
+    /// The verification result
+    /// </summary>
+    [Flags]
+    public enum VerificationResult
+    {
+        /// <summary>
+        /// Location was not standardized or geocoded
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// Location was standardized
+        /// </summary>
+        Standardized = 1,
+
+        /// <summary>
+        /// Location was geocoded
+        /// </summary>
+        Geocoded = 2,
+
+        /// <summary>
+        /// An error occurred when trying to connect to verification service
+        /// </summary>
+        ConnectionError = 4,
+    }
+
+    #endregion
 
 }
