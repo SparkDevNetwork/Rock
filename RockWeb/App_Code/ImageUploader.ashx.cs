@@ -14,9 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Utility;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Web;
+using Rock.Utility;
+using Rock.Web.Cache;
 
 namespace RockWeb
 {
@@ -34,7 +38,30 @@ namespace RockWeb
         public override Stream GetFileContentStream( HttpContext context, HttpPostedFile uploadedFile )
         {
             var enableResize = context.Request.QueryString["enableResize"] != null;
-            return ImageUtilities.GetFileContentStream(uploadedFile, enableResize);
+            return ImageUtilities.GetFileContentStream( uploadedFile, enableResize );
+        }
+
+        /// <summary>
+        /// Validates the type of the file.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="uploadedFile">The uploaded file.</param>
+        /// <exception cref="WebFaultException{System.String}">Filetype now allowed</exception>
+        public override void ValidateFileType( HttpContext context, HttpPostedFile uploadedFile )
+        {
+            base.ValidateFileType( context, uploadedFile );
+
+            var globalAttributesCache = GlobalAttributesCache.Read();
+            IEnumerable<string> contentImageFileTypeWhiteList = ( globalAttributesCache.GetValue( "ContentImageFiletypeWhitelist" ) ?? string.Empty ).Split( new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries );
+
+            // clean up list
+            contentImageFileTypeWhiteList = contentImageFileTypeWhiteList.Select( a => a.ToLower().TrimStart( new char[] { '.', ' ' } ) );
+
+            string fileExtension = Path.GetExtension( uploadedFile.FileName ).ToLower().TrimStart( new char[] { '.' } );
+            if ( !contentImageFileTypeWhiteList.Contains( fileExtension ) )
+            {
+                throw new Rock.Web.FileUploadException( "Image filetype not allowed", System.Net.HttpStatusCode.NotAcceptable );
+            }
         }
     }
 }
