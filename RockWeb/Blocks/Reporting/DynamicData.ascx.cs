@@ -68,6 +68,7 @@ namespace RockWeb.Blocks.Reporting
         CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, "", "CustomSetting" )]
 
     [BooleanField( "Paneled Grid", "Add the 'grid-panel' class to the grid to allow it to fit nicely in a block.", false, "Advanced" )]
+    [BooleanField( "Use Dynamic Filter Controls", "Show filtering controls that are dynamically generated to match the columns of the dynamic data." )]
     public partial class DynamicData : RockBlockCustomSettings
     {
         #region Fields
@@ -129,6 +130,8 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void ApplyFilterClick(object sender, EventArgs e)
         {
+            GridFilter.DeleteUserPreferences();
+
             foreach ( Control control in GridFilter.Controls )
             {
                 var key = control.ID;
@@ -139,10 +142,10 @@ namespace RockWeb.Blocks.Reporting
                     var dateRangePicker = control as DateRangePicker;
                     value = dateRangePicker.DelimitedValues;
                 }
-                else if ( control is RockCheckBox )
+                else if ( control is RockDropDownList )
                 {
-                    var checkBox = control as RockCheckBox;
-                    value = checkBox.Checked.ToString();
+                    var dropDownList = control as RockDropDownList;
+                    value = dropDownList.SelectedValue;
                 }
                 else if (control is RockTextBox)
                 {
@@ -393,6 +396,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="setData">if set to <c>true</c> [set data].</param>
         private void BuildControls( bool setData )
         {
+            var useDynamicFilterControls = GetAttributeValue( "UseDynamicFilterControls" ).AsBoolean();
             string errorMessage = string.Empty;
             var dataSet = GetData( out errorMessage );
 
@@ -467,7 +471,7 @@ namespace RockWeb.Blocks.Reporting
 
                             phContent.Controls.Add( div );
 
-                            if( true )
+                            if( useDynamicFilterControls )
                             {
                                 GridFilter = new GridFilter()
                                 {
@@ -477,7 +481,6 @@ namespace RockWeb.Blocks.Reporting
                                 div.Controls.Add( GridFilter );
 
                                 GridFilter.ApplyFilterClick += ApplyFilterClick;
-                                //GridFilter.DisplayFilterValue += DisplayFilterValue;
                             }                            
 
                             var grid = new Grid();
@@ -646,11 +649,14 @@ namespace RockWeb.Blocks.Reporting
 
                     if( GridFilter != null )
                     {
-                        var filterControl = new RockCheckBox()
+                        var filterControl = new RockDropDownList()
                         {
                             Label = splitCaseName,
-                            ID = "cb" + dataTableColumn.ColumnName
+                            ID = "ddl" + dataTableColumn.ColumnName
                         };
+                        filterControl.Items.Add(string.Empty);
+                        filterControl.Items.Add( true.ToYesNo() );
+                        filterControl.Items.Add( false.ToYesNo() );
 
                         GridFilter.Controls.Add( filterControl );
                     }
@@ -757,12 +763,18 @@ namespace RockWeb.Blocks.Reporting
                         query.Add(string.Format("{0} <= #{1}#", colName, maxValue.Value));
                     }
                 }
-                else if (control is RockCheckBox)
+                else if (control is RockDropDownList)
                 {
-                    var checkBox = control as RockCheckBox;
-                    var value = checkBox.Checked.ToString();
-                    var colName = string.Format("[{0}]", checkBox.ID.Remove(0, 2));
-                    query.Add(string.Format("{0} = {1}", colName, value));
+                    var dropDownList = control as RockDropDownList;
+                    var doFilter = !string.IsNullOrWhiteSpace(dropDownList.SelectedValue);
+
+                    if(doFilter)
+                    {
+                        var value = dropDownList.SelectedValue == true.ToYesNo() ? "1" : "0";
+                        var colName = string.Format( "[{0}]", dropDownList.ID.Remove( 0, 3 ) );
+                        query.Add( string.Format( "{0} = {1}", colName, value ) );
+                    }
+                    
                 }
                 else if (control is RockTextBox)
                 {
