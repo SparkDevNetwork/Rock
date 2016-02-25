@@ -41,6 +41,7 @@ namespace Rock.Follow.Suggestion
     [SecurityRoleField("Security Role (optional)", "A specific group to evaluate (Make sure to select group with same group type as above).", false, order:2, key:"SecurityRole")]
     [GroupRoleField( null, "Follower Group Type (optional)", "If specified, only people with this role will be be notified (Make sure to select same group type as above).", false, order:3, key:"FollowerGroupType" )]
     [GroupRoleField( null, "Followed Group Type (optional)", "If specified, only people with this role will be suggested to the follower (Make sure to select same group type as above).", false, order:4, key:"FollowedGroupType" )]
+    [BooleanField("Auto-Follow", "Determines if new people added to the group should be auto-followed.", false, IsRequired = true, Key = "AutoFollow")]
     public class InGroupTogether : SuggestionComponent
     {
         #region Suggestion Component Implementation
@@ -166,8 +167,35 @@ namespace Rock.Follow.Suggestion
                             // If the person has a valid personalias id
                             if ( personAliasIds.ContainsKey( followedPersonId ) )
                             {
-                                // add them to the list of suggestions
-                                suggestions.Add( new PersonEntitySuggestion( followedGroup.PersonId, personAliasIds[followedPersonId] ) );
+                                if ( !GetAttributeValue( followingSuggestionType, "AutoFollow" ).AsBoolean() )
+                                {
+                                    // add them to the list of suggestions
+                                    suggestions.Add( new PersonEntitySuggestion( followedGroup.PersonId, personAliasIds[followedPersonId] ) );
+                                }
+                                else
+                                {
+                                    // auto-add the follow
+                                    var personAliasEntityType = EntityTypeCache.Read( typeof( Rock.Model.PersonAlias ) );
+                                    var followingService = new FollowingService( rockContext );
+
+                                    int followerPersonAliasId = personAliasIds[followedGroup.PersonId];
+                                    int followeePersonAliasId = personAliasIds[followedPersonId];
+
+                                    // if person is not already following the person
+                                    bool isFollowing = followingService.Queryable().Where( f =>
+                                                            f.EntityTypeId == personAliasEntityType.Id
+                                                            && f.EntityId == followeePersonAliasId
+                                                            && f.PersonAliasId == followerPersonAliasId ).Any();
+                                    if ( !isFollowing )
+                                    {
+                                        var following = new Following();
+                                        following.EntityTypeId = personAliasEntityType.Id;
+                                        following.EntityId = personAliasIds[followedPersonId];
+                                        following.PersonAliasId = personAliasIds[followedGroup.PersonId];
+                                        followingService.Add( following );
+                                        rockContext.SaveChanges();
+                                    }
+                                }
                             }
                         }
 
