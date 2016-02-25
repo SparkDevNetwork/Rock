@@ -1,0 +1,217 @@
+{% comment %}
+
+{% include '~~/Assets/Lava/2016/Easter.lava' %}
+
+HEADER CONTENT
+<link rel="stylesheet" href="/Themes/church_ccv_External_v7/Styles/pages/2016/easter.css" media="screen" title="no title" charset="utf-8">
+
+CACHE KEYS
+Campus={{ Context.Campus.Guid }}|OSFamily={{ OSFamily }}|CampusRoute={{ PageParameter.Campus | Upcase | EscapeDataString }}
+
+{% endcomment %}
+
+<header class="easter-header">
+  <img src="//s3.amazonaws.com/media.ccvonline.com/2016/easter/header.jpg" alt="CCV Easter" />
+</header>
+
+<section class="bigblock easter-description">
+  <div class="container container-md">
+    <p class="tagline">Join us this year for Easter at CCV!</p>
+    <p>
+      The Easter Season allows us to reflect and celebrate the cross and the empty tomb up close and personal. Separate kids services will be available during all services, except Sunrise Service.
+    </p>
+    <p class="text-muted">Select a campus below to find service times near you.</p>
+  </div>
+</section>
+
+<article class="container">
+  <div class="multicampus">
+
+    <!-- <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
+      <div class="well">
+        <h3>Peoria Campus</h3>
+      </div>
+    </div> -->
+
+    {% for item in ContentObject %}
+    {% capture address %}{{ item.Address1 }} {{ item.Address2 }}{% endcapture %}
+    {% capture directionsUrl %}//maps.apple.com/maps?daddr={{ address | Remove: ',' | EscapeDataString }}{% endcapture %}
+    {% assign hasSunrise = false %} {% assign hasSpecial = false %} {% assign hasHearing = false %}
+    <div data-campus="{{ item.ShortCode }}" class="multicampus-item">
+      <div class="multicampus-iteminner">
+        <h3 class="multicampus-title">{{ item.Name }} Campus <i class="text-muted pull-right fa fa-caret-down"></i></h3>
+        <div class="multicampus-collapse collapse">
+          <div class="row">
+            <div class="col-sm-5 col-sm-push-7 margin-b-md">
+              <div class="map-wrapper">
+                <a href="{{ directionsUrl }}">
+                  <img src="//s3.amazonaws.com/media.ccvonline.com/2016/easter/{{ item.ShortCode | Downcase }}.png" alt="" />
+                </a>
+                <div class="address margin-t-sm">
+                  <i class="fa fa-map-marker"></i>
+                  <a href="{{ directionsUrl }}" class="small">
+                    {{ item.Address1 }}<br>
+                    {{ item.Address2 }}
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-7 col-sm-pull-5">
+              <table class="table">
+                {% for day in item.Services %}
+                  <tr>
+                    <th rowspan="{{ day.Times | Size | Plus: 1 }}">
+                      {{ day.Date }}
+                    </th>
+                  </tr>
+                  {% for time in day.Times %}
+                    <tr>
+                      <td>
+                        {% assign _time = time %}
+                        {% if time contains 'sunrise' %}
+                          {% assign _time = _time | Replace: 'sunrise','<small class="text-muted">(Sunrise Service)</small>' %}
+                          {% assign hasSunrise = true %}
+                        {% endif %}
+                        {% if time contains 'special' %}
+                          {% assign _time = _time | Replace: 'special','<small class="text-muted">*</small>' %}
+                          {% assign hasSpecial = true %}
+                        {% endif %}
+                        {% if time contains 'hearing' %}
+                          {% assign _time = _time | Replace: ' hearing','<small class="text-muted">*</small>' %}
+                          {% assign hasHearing = true %}
+                        {% endif %}
+
+                        {{ _time }}
+
+                      </td>
+                    </tr>
+                  {% endfor %}
+                {% endfor %}
+              </table>
+              {% if hasSpecial and hasHearing %}
+                <p class="small text-muted">
+                  * Special needs services available<br>
+                  ** Sign language translation &amp; special needs services available
+                </p>
+              {% elsif hasSpecial %}
+                <p class="small text-muted">
+                  * Special needs services available
+                </p>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="margin-b-md">
+            <h4>Invite a friend</h4>
+            <p class="padding-b-sm">
+              <button type="button" class="btn btn-default" data-toggle="modal" data-target="#{{ item.ShortCode }}InviteEmail">
+                Email
+              </button>
+
+              <button type="button" class="btn btn-default js-sms hide" data-toggle="modal" data-target="#{{ item.ShortCode }}InviteSMS">
+                Text Message
+              </button>
+
+              <a class="btn btn-default js-fb hide" href="https://www.facebook.com/dialog/send?app_id=476409745797650&display=popup&link=http://ccv.church/easter16?utm_source=facebook&redirect_uri=http://ccv.church/easter16?utm_source=facebook">Facebook</a>
+            </p>
+          </div>
+
+          <div class="modal fade" id="{{ item.ShortCode }}InviteEmail" tabindex="-1" role="dialog" aria-labelledby="{{ item.ShortCode }}InviteEmailLabel">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                  <h4 class="modal-title" id="{{ item.ShortCode }}InviteEmailLabel">Email Invite <small>{{ item.Name }} Campus</small></h4>
+                </div>
+                <div class="modal-body">
+                  <p class="lead">Select a time below</p>
+                  {% for day in item.Services %}
+                    <h5>{{ day.Date }}</h5>
+                    <p>
+                      {% for time in day.Times %}
+                        {% assign rawTime = time | Remove: 'sunrise' | Remove: ' special' | Remove: ' hearing' %}
+                        {% include '~~/Assets/Lava/2016/Easter-email.lava' %}
+                      {% endfor %}
+                    </p>
+                  {% endfor %}
+                  {% include '~~/Assets/Lava/2016/Easter-email-all.lava' %}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal fade" id="{{ item.ShortCode }}InviteSMS" tabindex="-1" role="dialog" aria-labelledby="{{ item.ShortCode }}InviteSMSLabel">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                  <h4 class="modal-title" id="{{ item.ShortCode }}InviteSMSLabel">Text Message Invite <small>{{ item.Name }} Campus</small></h4>
+                </div>
+                <div class="modal-body">
+                  <p class="lead">Select a time below</p>
+                  {% for day in item.Services %}
+                    <h5>{{ day.Date }}</h5>
+                    <p>
+                      {% for time in day.Times %}
+                        {% assign rawTime = time | Remove: 'sunrise' | Remove: ' special' | Remove: ' hearing' %}
+                        {% include '~~/Assets/Lava/2016/Easter-sms.lava' %}
+                      {% endfor %}
+                    </p>
+                  {% endfor %}
+                  {% include '~~/Assets/Lava/2016/Easter-sms-all.lava' %}
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+
+  </div>
+</article>
+
+<footer class="brandfooter">
+  <div class="container">
+    <div class="brandfooter-inner">
+      <a href="//ccv.church" class="logo">
+        <img src="/Themes/church_ccv_External_v7/assets/logo.svg" alt="Christ's Church of the Valley">
+      </a>
+      <a class="btn btn-default" href="//ccv.church/newhere">Learn more about CCV</a>
+    </div>
+  </div>
+</footer>
+
+<script type="text/javascript">
+  $('body').on('click', '.multicampus .multicampus-title', function(){
+    var $this = $(this)
+    $this.siblings('.multicampus-collapse').collapse('toggle')
+    $this.parents('.multicampus-item').toggleClass('is-open')
+  })
+
+  function setActiveCampus(campus) {
+    $('[data-campus='+campus+']').addClass('is-active is-open').insertBefore('.multicampus-item:first').find('.collapse').addClass('in')
+  }
+
+  {% if PageParameter.Campus %}
+    setActiveCampus('{{ PageParameter.Campus | Upcase | EscapeDataString }}')
+    // alert('{{ PageParameter.Campus | Upcase }}')
+  {% elsif Context.Campus %}
+    setActiveCampus('{{ Context.Campus.ShortCode }}')
+    // alert('context')
+  {% endif %}
+
+</script>
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/mobile-detect/1.3.1/mobile-detect.min.js"></script>
+
+<script type="text/javascript">
+  var md = new MobileDetect(window.navigator.userAgent);
+
+  if (md.phone()) {
+    $('.js-sms').removeClass('hide')
+  } else {
+    $('.js-fb').removeClass('hide')
+  }
+</script>

@@ -2,10 +2,23 @@
     The accent colors are deprecated and should not be used in new theme development. They will be
     removed in Rock v 6.0.
 */
-.easter-header {
-  min-height: 50vh;
-  display: flex;
-  align-items: center;
+.easter-header img {
+  max-height: 100vh;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+.easter-description {
+  font-size: 1.125em;
+}
+.easter-description p {
+  margin-bottom: 1em;
+}
+.easter-description .tagline {
+  font-size: 1.75em;
+}
+.map-wrapper {
+  max-width: 350px;
 }
 .address {
   display: flex;
@@ -14,6 +27,21 @@
 .address > .fa {
   padding: .125em .25em;
 }
-footer {
-  min-height: 50vh;
+.brandfooter {
+  background-color: #1d1d1d;
+  margin-top: 5%;
+}
+.brandfooter-inner {
+  padding: 30px 0 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.brandfooter .logo {
+  display: block;
+  width: 244px;
+}
+.brandfooter a {
+  display: block;
+  margin-bottom: 20px;
 }

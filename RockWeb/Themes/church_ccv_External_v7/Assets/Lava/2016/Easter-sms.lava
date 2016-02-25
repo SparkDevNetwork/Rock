@@ -1,0 +1,20 @@
+{% comment %}
+
+{% include '~~/Assets/Lava/2016/Easter-sms.lava' %}
+
+{% endcomment %}
+
+{% capture smsAll %}
+Come to Easter at CCV with me! I'll be going to the {{ rawTime }} service on {{ day.Date }} at the {{ item.Name }} campus. You should join me! http://ccveaster.com
+{% endcapture %}
+
+{% case OSFamily %}
+  {% when 'android' %}
+    {% assign sep = '?' %}
+  {% when 'ios' %}
+    {% assign sep = '&' %}
+  {% else %}
+    {% assign sep = '&' %}
+{% endcase %}
+
+<a class='btn btn-default' href="sms:{{ sep }}body={{ smsAll | Trim | EscapeDataString }}">{{ rawTime }}</a>
