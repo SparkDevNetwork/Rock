@@ -1519,6 +1519,8 @@ namespace RockWeb.Blocks.Event
                 hfRegistrationInstanceId.Value = registrationInstance.Id.ToString();
                 SetHasPayments( registrationInstance.Id, rockContext );
 
+                FollowingsHelper.SetFollowing( registrationInstance, pnlFollowing, this.CurrentPerson );
+
                 // render UI based on Authorized 
                 bool readOnly = false;
 
