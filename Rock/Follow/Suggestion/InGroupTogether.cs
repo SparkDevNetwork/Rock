@@ -66,6 +66,9 @@ namespace Rock.Follow.Suggestion
         public override List<PersonEntitySuggestion> GetSuggestions( FollowingSuggestionType followingSuggestionType, List<int> followerPersonIds )
         {
             var suggestions = new List<PersonEntitySuggestion>();
+            var personAliasEntityType = EntityTypeCache.Read( typeof( Rock.Model.PersonAlias ) );
+
+            bool isAutoFollow = GetAttributeValue( followingSuggestionType, "AutoFollow" ).AsBoolean();
 
             // Get the grouptype guid
             Guid? groupTypeGuid = GetAttributeValue( followingSuggestionType, "GroupType" ).AsGuidOrNull();
@@ -167,7 +170,7 @@ namespace Rock.Follow.Suggestion
                             // If the person has a valid personalias id
                             if ( personAliasIds.ContainsKey( followedPersonId ) )
                             {
-                                if ( !GetAttributeValue( followingSuggestionType, "AutoFollow" ).AsBoolean() )
+                                if ( !isAutoFollow )
                                 {
                                     // add them to the list of suggestions
                                     suggestions.Add( new PersonEntitySuggestion( followedGroup.PersonId, personAliasIds[followedPersonId] ) );
@@ -175,7 +178,7 @@ namespace Rock.Follow.Suggestion
                                 else
                                 {
                                     // auto-add the follow
-                                    var personAliasEntityType = EntityTypeCache.Read( typeof( Rock.Model.PersonAlias ) );
+                                    
                                     var followingService = new FollowingService( rockContext );
 
                                     int followerPersonAliasId = personAliasIds[followedGroup.PersonId];
