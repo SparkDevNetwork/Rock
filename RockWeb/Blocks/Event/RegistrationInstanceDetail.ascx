@@ -1,5 +1,11 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="RegistrationInstanceDetail.ascx.cs" Inherits="RockWeb.Blocks.Event.RegistrationInstanceDetail" %>
 
+<script type="text/javascript">
+    Sys.Application.add_load( function () {
+        $('.js-follow-status').tooltip();
+    });
+</script>
+
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
@@ -52,13 +58,14 @@
 
             <div class="panel panel-block">
 
-                <div class="panel-heading">
+                <div class="panel-heading panel-follow clearfix">
                     <h1 class="panel-title"><i class="fa fa-file-o"></i>
                         <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
                     <div class="panel-labels">
                         <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" />
                         <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
                     </div>
+                    <asp:Panel runat="server" ID="pnlFollowing" CssClass="panel-follow-status js-follow-status" data-toggle="tooltip" data-placement="top" title="Click to Follow"></asp:Panel>
                 </div>
                 <div class="panel-body">
 
