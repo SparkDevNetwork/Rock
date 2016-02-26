@@ -177,15 +177,14 @@ namespace Rock.Web.UI.Controls
         #region Controls
 
         /// <summary>
-        /// The lower value 
+        /// The lower value
         /// </summary>
         private DatePicker _tbLowerValue;
 
         /// <summary>
-        /// The upper value 
+        /// The upper value
         /// </summary>
         private DatePicker _tbUpperValue;
-
 
         /// <summary>
         /// Gets or sets the class that should be applied to the div that wraps the two date pickers
@@ -222,7 +221,6 @@ namespace Rock.Web.UI.Controls
             // a little javascript to make the daterange picker behave similar to the bootstrap-datepicker demo site's date range picker
             var scriptFormat = @"
 $('#{0}').datepicker({{ format: '{2}', todayHighlight: true }}).on('changeDate', function (ev) {{
-        
     if (ev.date.valueOf() > $('#{1}').data('datepicker').dates[0]) {{
         var newDate = new Date(ev.date)
         newDate.setDate(newDate.getDate() + 1);
@@ -231,7 +229,7 @@ $('#{0}').datepicker({{ format: '{2}', todayHighlight: true }}).on('changeDate',
         // disable date selection in the EndDatePicker that are earlier than the startDate
         $('#{1}').datepicker('setStartDate', ev.date);
     }}
-    
+
     if (event && event.type == 'click') {{
         // close the start date picker and set focus to the end date
         $('#{0}').data('datepicker').hide();
@@ -307,7 +305,7 @@ $('#{3}').find('.input-group-upper .input-group-addon').on('click', function () 
             writer.AddAttribute( "id", this.ClientID );
             foreach ( var styleKey in this.Style.Keys )
             {
-                string styleName = (string)styleKey;
+                string styleName = ( string ) styleKey;
                 writer.AddStyleAttribute( styleName, this.Style[styleName] );
             }
 
@@ -461,6 +459,12 @@ $('#{3}').find('.input-group-upper .input-group-addon').on('click', function () 
             }
         }
 
+        /// <summary>
+        /// Tries to parse the upper and lower DateTime from the delimited string
+        /// </summary>
+        /// <param name="delimited">The delimited value</param>
+        /// <param name="lower">The lower value</param>
+        /// <param name="upper">The upper value</param>
         public static bool TryParse( string delimited, out DateTime lower, out DateTime upper )
         {
             if ( !string.IsNullOrWhiteSpace( delimited ) && delimited.Contains( "," ) )
@@ -514,8 +518,8 @@ $('#{3}').find('.input-group-upper .input-group-addon').on('click', function () 
                     return new DateRange( dates[0].AsDateTime(), dates[1].AsDateTime() );
                 }
             }
-            
-            return new DateRange(null, null);
+
+            return new DateRange( null, null );
         }
     }
 }
