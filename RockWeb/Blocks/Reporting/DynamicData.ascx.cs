@@ -27,7 +27,6 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -54,19 +53,15 @@ namespace RockWeb.Blocks.Reporting
     [CodeEditorField( "Formatted Output", "Optional formatting to apply to the returned results.  If left blank, a grid will be displayed. Example: {% for row in rows %} {{ row.FirstName }}<br/> {% endfor %}",
         CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, "", "CustomSetting" )]
     [BooleanField( "Person Report", "Is this report a list of people?", false, "CustomSetting" )]
-
     [BooleanField( "Show Communicate", "Show Communicate button in grid footer?", true, "CustomSetting" )]
     [BooleanField( "Show Merge Person", "Show Merge Person button in grid footer?", true, "CustomSetting" )]
     [BooleanField( "Show Bulk Update", "Show Bulk Update button in grid footer?", true, "CustomSetting" )]
     [BooleanField( "Show Excel Export", "Show Export to Excel button in grid footer?", true, "CustomSetting" )]
     [BooleanField( "Show Merge Template", "Show Export to Merge Template button in grid footer?", true, "CustomSetting" )]
-
-    [IntegerField("Timeout", "The amount of time in xxx to allow the query to run before timing out.", false, 30, Category = "CustomSetting")]
-
+    [IntegerField( "Timeout", "The amount of time in xxx to allow the query to run before timing out.", false, 30, Category = "CustomSetting" )]
     [TextField( "Merge Fields", "Any fields to make available as merge fields for any new communications", false, "", "CustomSetting" )]
     [CodeEditorField( "Page Title Lava", "Optional Lava for setting the page title. If nothing is provided then the page's title will be used.",
         CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, "", "CustomSetting" )]
-
     [BooleanField( "Paneled Grid", "Add the 'grid-panel' class to the grid to allow it to fit nicely in a block.", false, "Advanced" )]
     [BooleanField( "Use Dynamic Filter Controls", "Show filtering controls that are dynamically generated to match the columns of the dynamic data." )]
     public partial class DynamicData : RockBlockCustomSettings
@@ -124,11 +119,33 @@ namespace RockWeb.Blocks.Reporting
         #region Events
 
         /// <summary>
+        /// Displays the text of the current filters
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        protected void DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        {
+            var dateStrings = e.Value.Split( ',' ).ToList();
+            if ( dateStrings.Count() == 2 )
+            {
+                DateTime startDateTimeValue;
+                DateTime endDateTimeValue;
+                if ( DateTime.TryParse( dateStrings[0], out startDateTimeValue ) )
+                {
+                    if ( DateTime.TryParse( dateStrings[1], out endDateTimeValue ) )
+                    {
+                        e.Value = startDateTimeValue.ToShortDateString() + " to " + endDateTimeValue.ToShortDateString();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Handles the ApplyFilterClick event of the fDevice control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void ApplyFilterClick(object sender, EventArgs e)
+        protected void ApplyFilterClick( object sender, EventArgs e )
         {
             GridFilter.DeleteUserPreferences();
 
@@ -136,27 +153,31 @@ namespace RockWeb.Blocks.Reporting
             {
                 var key = control.ID;
                 string value = null;
+                string name = null;
 
                 if ( control is DateRangePicker )
                 {
                     var dateRangePicker = control as DateRangePicker;
                     value = dateRangePicker.DelimitedValues;
+                    name = key.Remove( 0, 3 ).SplitCase();
                 }
                 else if ( control is RockDropDownList )
                 {
                     var dropDownList = control as RockDropDownList;
                     value = dropDownList.SelectedValue;
+                    name = key.Remove( 0, 3 ).SplitCase();
                 }
-                else if (control is RockTextBox)
+                else if ( control is RockTextBox )
                 {
                     var textBox = control as RockTextBox;
                     value = textBox.Text;
+                    name = key.Remove( 0, 2 ).SplitCase();
                 }
 
-                GridFilter.SaveUserPreference(key, value);
+                GridFilter.SaveUserPreference( key, name, value );
             }
 
-            gReport_GridRebind(sender, e);
+            gReport_GridRebind( sender, e );
         }
 
         protected void DynamicData_BlockUpdated( object sender, EventArgs e )
@@ -257,7 +278,7 @@ namespace RockWeb.Blocks.Reporting
                     {
                         if ( ds.Tables.Count > i )
                         {
-                            FilterTable(grid, ds.Tables[i]);
+                            FilterTable( grid, ds.Tables[i] );
                             SortTable( grid, ds.Tables[i] );
                             grid.DataSource = ds.Tables[i];
                             grid.DataBind();
@@ -299,7 +320,6 @@ namespace RockWeb.Blocks.Reporting
 
                     var parameters = GetParameters();
                     int timeout = GetAttributeValue( "Timeout" ).AsInteger();
-                    
 
                     return DbService.GetDataSet( query, GetAttributeValue( "StoredProcedure" ).AsBoolean( false ) ? CommandType.StoredProcedure : CommandType.Text, parameters, timeout );
                 }
@@ -370,7 +390,7 @@ namespace RockWeb.Blocks.Reporting
             var contextObjects = new Dictionary<string, object>();
             foreach ( var contextEntityType in RockPage.GetContextEntityTypes() )
             {
-                var contextEntity = RockPage.GetCurrentContext(contextEntityType);
+                var contextEntity = RockPage.GetCurrentContext( contextEntityType );
                 if ( contextEntity != null && contextEntity is DotLiquid.ILiquidizable )
                 {
                     var type = Type.GetType( contextEntityType.AssemblyName ?? contextEntityType.Name );
@@ -379,12 +399,11 @@ namespace RockWeb.Blocks.Reporting
                         contextObjects.Add( type.Name, contextEntity );
                     }
                 }
-
             }
 
-            if (contextObjects.Any())
+            if ( contextObjects.Any() )
             {
-                mergeFields.Add("Context", contextObjects);
+                mergeFields.Add( "Context", contextObjects );
             }
 
             return mergeFields;
@@ -420,7 +439,6 @@ namespace RockWeb.Blocks.Reporting
                     // load merge objects if needed by either for formatted output OR page title
                     if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PageTitleLava" ) ) || !string.IsNullOrWhiteSpace( formattedOutput ) )
                     {
-
                         int i = 1;
                         foreach ( DataTable dataTable in dataSet.Tables )
                         {
@@ -471,7 +489,7 @@ namespace RockWeb.Blocks.Reporting
 
                             phContent.Controls.Add( div );
 
-                            if( useDynamicFilterControls )
+                            if ( useDynamicFilterControls )
                             {
                                 GridFilter = new GridFilter()
                                 {
@@ -481,7 +499,8 @@ namespace RockWeb.Blocks.Reporting
                                 div.Controls.Add( GridFilter );
 
                                 GridFilter.ApplyFilterClick += ApplyFilterClick;
-                            }                            
+                                GridFilter.DisplayFilterValue += DisplayFilterValue;
+                            }
 
                             var grid = new Grid();
                             div.Controls.Add( grid );
@@ -647,14 +666,14 @@ namespace RockWeb.Blocks.Reporting
                 {
                     bf = new BoolField();
 
-                    if( GridFilter != null )
+                    if ( GridFilter != null )
                     {
                         var filterControl = new RockDropDownList()
                         {
                             Label = splitCaseName,
                             ID = "ddl" + dataTableColumn.ColumnName
                         };
-                        filterControl.Items.Add(string.Empty);
+                        filterControl.Items.Add( string.Empty );
                         filterControl.Items.Add( true.ToYesNo() );
                         filterControl.Items.Add( false.ToYesNo() );
 
@@ -670,7 +689,7 @@ namespace RockWeb.Blocks.Reporting
                         object dateObj = dataTable.Rows[i][dataTableColumn];
                         if ( dateObj is DateTime )
                         {
-                            DateTime dateTime = (DateTime)dateObj;
+                            DateTime dateTime = ( DateTime ) dateObj;
                             if ( dateTime.TimeOfDay.Seconds != 0 )
                             {
                                 bf = new DateTimeField();
@@ -679,7 +698,7 @@ namespace RockWeb.Blocks.Reporting
                         }
                     }
 
-                    if (GridFilter != null)
+                    if ( GridFilter != null )
                     {
                         var filterControl = new DateRangePicker()
                         {
@@ -687,14 +706,14 @@ namespace RockWeb.Blocks.Reporting
                             ID = "drp" + dataTableColumn.ColumnName
                         };
 
-                        GridFilter.Controls.Add(filterControl);
+                        GridFilter.Controls.Add( filterControl );
                     }
                 }
                 else
                 {
                     bf.HtmlEncode = false;
 
-                    if (GridFilter != null)
+                    if ( GridFilter != null )
                     {
                         var filterControl = new RockTextBox()
                         {
@@ -702,7 +721,7 @@ namespace RockWeb.Blocks.Reporting
                             ID = "tb" + dataTableColumn.ColumnName
                         };
 
-                        GridFilter.Controls.Add(filterControl);
+                        GridFilter.Controls.Add( filterControl );
                     }
                 }
 
@@ -734,9 +753,9 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         /// <param name="dataTable">The data table.</param>
         /// <returns></returns>
-        private void FilterTable(Grid grid, DataTable dataTable)
+        private void FilterTable( Grid grid, DataTable dataTable )
         {
-            if( GridFilter == null )
+            if ( GridFilter == null )
             {
                 return;
             }
@@ -744,62 +763,61 @@ namespace RockWeb.Blocks.Reporting
             System.Data.DataView dataView = dataTable.DefaultView;
             var query = new List<string>();
 
-            foreach(var control in GridFilter.Controls)
+            foreach ( var control in GridFilter.Controls )
             {
-                if (control is DateRangePicker)
+                if ( control is DateRangePicker )
                 {
                     var dateRangePicker = control as DateRangePicker;
                     var minValue = dateRangePicker.LowerValue;
                     var maxValue = dateRangePicker.UpperValue;
-                    var colName = string.Format("[{0}]", dateRangePicker.ID.Remove(0, 3));
+                    var colName = string.Format( "[{0}]", dateRangePicker.ID.Remove( 0, 3 ) );
 
-                    if (minValue.HasValue)
+                    if ( minValue.HasValue )
                     {
-                        query.Add(string.Format("{0} >= #{1}#", colName, minValue.Value));
+                        query.Add( string.Format( "{0} >= #{1}#", colName, minValue.Value ) );
                     }
 
-                    if (maxValue.HasValue)
+                    if ( maxValue.HasValue )
                     {
-                        query.Add(string.Format("{0} <= #{1}#", colName, maxValue.Value));
+                        query.Add( string.Format( "{0} <= #{1}#", colName, maxValue.Value ) );
                     }
                 }
-                else if (control is RockDropDownList)
+                else if ( control is RockDropDownList )
                 {
                     var dropDownList = control as RockDropDownList;
-                    var doFilter = !string.IsNullOrWhiteSpace(dropDownList.SelectedValue);
+                    var doFilter = !string.IsNullOrWhiteSpace( dropDownList.SelectedValue );
 
-                    if(doFilter)
+                    if ( doFilter )
                     {
                         var value = dropDownList.SelectedValue == true.ToYesNo() ? "1" : "0";
                         var colName = string.Format( "[{0}]", dropDownList.ID.Remove( 0, 3 ) );
                         query.Add( string.Format( "{0} = {1}", colName, value ) );
                     }
-                    
                 }
-                else if (control is RockTextBox)
+                else if ( control is RockTextBox )
                 {
                     var textBox = control as RockTextBox;
                     var value = textBox.Text;
-                    var colName = textBox.ID.Remove(0, 2);
-                    var colIndex = dataView.Table.Columns.IndexOf(colName);
+                    var colName = textBox.ID.Remove( 0, 2 );
+                    var colIndex = dataView.Table.Columns.IndexOf( colName );
 
-                    if (colIndex != -1 && !string.IsNullOrWhiteSpace(value))
+                    if ( colIndex != -1 && !string.IsNullOrWhiteSpace( value ) )
                     {
                         var col = dataView.Table.Columns[colIndex];
 
-                        if(col.DataType.Name == "String")
+                        if ( col.DataType.Name == "String" )
                         {
-                            query.Add(string.Format("[{0}] LIKE '{1}*'", colName, value));
+                            query.Add( string.Format( "[{0}] LIKE '{1}*'", colName, value ) );
                         }
-                        else if (col.DataType.Name.StartsWith("Int"))
+                        else if ( col.DataType.Name.StartsWith( "Int" ) )
                         {
-                            query.Add(string.Format("[{0}] = {1}", colName, value));
+                            query.Add( string.Format( "[{0}] = {1}", colName, value ) );
                         }
                     }
                 }
             }
 
-            dataView.RowFilter = string.Join(" AND ", query);
+            dataView.RowFilter = string.Join( " AND ", query );
         }
 
         #endregion
