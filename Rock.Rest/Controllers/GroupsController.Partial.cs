@@ -658,10 +658,12 @@ namespace Rock.Rest.Controllers
         /// Gets the child map information.
         /// </summary>
         /// <param name="groupId">The group identifier.</param>
+        /// <param name="groupTypeIds">The group type ids (comma delimited).</param>
+        /// <param name="includeDescendants">if set to <c>true</c> [include descendants].</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Groups/GetMapInfo/{groupId}/Children" )]
-        public IQueryable<MapItem> GetChildMapInfo( int groupId )
+        public IQueryable<MapItem> GetChildMapInfo( int groupId, string groupTypeIds = null, bool includeDescendants = false )
         {
             var person = GetPerson();
 
@@ -670,14 +672,43 @@ namespace Rock.Rest.Controllers
             // Enable proxy creation since security is being checked and need to navigate parent authorities
             SetProxyCreation( true );
 
-            foreach ( var group in ( (GroupService)Service ).Queryable( "GroupLocations.Location" )
-                .Where( g => g.ParentGroupId == groupId ) )
+            var groupService = (GroupService)Service;
+            var groupLocationService = new GroupLocationService( groupService.Context as RockContext );
+            IEnumerable<Group> childGroups;
+
+            if ( !includeDescendants )
+            {
+                childGroups = groupService.Queryable().Where( g => g.ParentGroupId == groupId );
+            }
+            else
+            {
+                childGroups = groupService.GetAllDescendents( groupId );
+            }
+
+            if ( !string.IsNullOrWhiteSpace( groupTypeIds ) ) 
+            {
+                var groupTypeIdList = groupTypeIds.Split( ',' ).AsIntegerList();
+                if ( groupTypeIdList.Any() )
+                {
+                    childGroups = childGroups.Where( a => groupTypeIdList.Contains( a.GroupTypeId ) );
+                }
+            }
+
+            var childGroupIds = childGroups.Select( a => a.Id ).ToList();
+
+            // fetch all the groupLocations for all the groups we are going to show (to reduce SQL traffic)
+            var groupsLocationList = groupLocationService.Queryable().Where( a => childGroupIds.Contains( a.GroupId ) && a.Location.GeoPoint != null || a.Location.GeoFence != null ).Select( a => new
+            {
+                a.GroupId,
+                a.Location
+            } ).ToList();
+
+            foreach ( var group in childGroups )
             {
                 if ( group != null && group.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
                 {
-                    foreach ( var location in group.GroupLocations
-                        .Where( l => l.Location.GeoPoint != null || l.Location.GeoFence != null )
-                        .Select( l => l.Location ) )
+                    var groupLocations = groupsLocationList.Where( a => a.GroupId == group.Id ).Select( a => a.Location );
+                    foreach ( var location in groupLocations )
                     {
                         var mapItem = new MapItem( location );
                         mapItem.EntityTypeId = EntityTypeCache.Read( "Rock.Model.Group" ).Id;
