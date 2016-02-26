@@ -541,7 +541,7 @@ begin
 			begin
 				insert Attribute ( [IsSystem], [FieldTypeId], [EntityTypeId], [EntityTypeQualifierColumn], [EntityTypeQualifierValue], 
 					[Key], [Name], [Description], [DefaultValue], [Order], [IsGridColumn], [IsMultiValue], [IsRequired], [Guid] )
-				select @IsSystem, @VideoFieldTypeId, @PersonEntityTypeId, '', '', REPLACE(@AttributeName, ' ', 'Date'), @AttributeName + ' Date', 
+				select @IsSystem, @DateFieldTypeId, @PersonEntityTypeId, '', '', REPLACE(@AttributeName, ' ', '') + 'Date', @AttributeName + ' Date', 
 					@AttributeDescription, '', @Order, @False, @False, @False, NEWID()
 
 				select @DateAttributeId = SCOPE_IDENTITY()
@@ -588,7 +588,7 @@ begin
 			begin
 				insert Attribute ( [IsSystem], [FieldTypeId], [EntityTypeId], [EntityTypeQualifierColumn], [EntityTypeQualifierValue], 
 					[Key], [Name], [Description], [DefaultValue], [Order], [IsGridColumn], [IsMultiValue], [IsRequired], [Guid] )
-				select @IsSystem, @VideoFieldTypeId, @PersonEntityTypeId, '', '', REPLACE(@AttributeName, ' ', ''), @AttributeName, 
+				select @IsSystem, @DocumentFieldTypeId, @PersonEntityTypeId, '', '', REPLACE(@AttributeName, ' ', ''), @AttributeName, 
 					@AttributeDescription, '', @Order, @False, @False, @False, NEWID()
 
 				select @DocumentAttributeId = SCOPE_IDENTITY()
@@ -609,7 +609,7 @@ begin
 			begin
 				insert Attribute ( [IsSystem], [FieldTypeId], [EntityTypeId], [EntityTypeQualifierColumn], [EntityTypeQualifierValue], 
 					[Key], [Name], [Description], [DefaultValue], [Order], [IsGridColumn], [IsMultiValue], [IsRequired], [Guid] )
-				select @IsSystem, @VideoFieldTypeId, @PersonEntityTypeId, '', '', REPLACE(@AttributeName, ' ', 'Date'), @AttributeName + ' Date', 
+				select @IsSystem, @DateFieldTypeId, @PersonEntityTypeId, '', '', REPLACE(@AttributeName, ' ', '') + 'Date', @AttributeName + ' Date', 
 					@AttributeDescription, '', @Order, @False, @False, @False, NEWID()
 
 				select @DateAttributeId = SCOPE_IDENTITY()

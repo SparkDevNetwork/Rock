@@ -7,9 +7,33 @@
 --  Cybersource Gateway is installed on the destination
 
    ====================================================== */
--- Make sure you're using the right Rock database:
 
-USE Rock
+-- !!! Make sure you're using the right Rock database !!!
+
+/*
+
+How to import the XLS file:
+
+1.) Create Imports DB.  If it already exists, drop it, then create a new one.
+2.) Right click on the Imports DB and choose Tasks > Import Data
+3.) Move through the wizard to Choose a Data Source and select Microsoft Excel
+4.) Select the xls file with the browse button
+5.) Click next
+6.) Choose the destination, SQL Server Native Client 11.0
+7.) Set the connection variables and credentials
+8.) Select the Imports DB from the drop down list
+9.) Click next
+10.) Select the first option to copy all the data and click next
+11.) Make sure the right source and destination are checked and click next
+12.) Ensure Run immediately is checked and click finish
+13.) Confirm that you are so really very sure and get out of the wizard
+14.) Expand the Imports DB, right click tables and choose refresh
+15.) You should see the new table in the expanded tables list
+16.) Right click and rename the table to F1Schedules
+17.) You can now run NS script 3
+18.) Praise be
+
+*/
 
 /* ====================================================== */
 
@@ -68,7 +92,7 @@ DECLARE @FinancialGatewayId int;
 SELECT 
   @FinancialGatewayId = [Id]
 FROM 
-  [beta].[dbo].[FinancialGateway]
+  [FinancialGateway]
 WHERE
   [Name] = 'Cyber Source';
 
@@ -101,7 +125,8 @@ create table #temp (
 	FinancialGatewayId int,
 	Amount decimal(18, 2),
 	[ScheduleGuid] uniqueidentifier,
-	[DetailGuid] uniqueidentifier
+	[DetailGuid] uniqueidentifier,
+	PaymentDetailGuid uniqueidentifier
 );
 
 -- Map the payments
@@ -173,11 +198,22 @@ SELECT
   , [f1s].[Amount]
   , NEWID() AS [ScheduleGuid]
   , NEWID() AS [DetailGuid]
+  , NEWID() AS [PaymentDetailGuid]
 FROM 
-  [RecurringGiving].[dbo].[F1Schedules] [f1s]
+  [Imports].[dbo].[F1Schedules] [f1s]
   LEFT JOIN [PersonAlias] [pa] ON [f1s].[Individual ID] = [pa].[ForeignId]
 WHERE
   [pa].[Id] IS NOT NULL;
+
+INSERT INTO [FinancialPaymentDetail] (
+	CurrencyTypeValueId,
+	CreditCardTypeValueId,
+	[Guid])
+SELECT
+	CurrencyTypeValueId,
+	CreditCardTypeValueId,
+	PaymentDetailGuid
+FROM #temp;
 
 INSERT INTO [FinancialScheduledTransaction] (
   TransactionFrequencyValueId,
@@ -191,10 +227,9 @@ INSERT INTO [FinancialScheduledTransaction] (
   CreatedDateTime,
   ModifiedDateTime,
   CreatedByPersonAliasId,
-  CurrencyTypeValueId,
-  CreditCardTypeValueId,
   AuthorizedPersonAliasId,
-  FinancialGatewayId) 
+  FinancialGatewayId,
+  FinancialPaymentDetailId) 
 SELECT
   TransactionFrequencyValueId,
   StartDate,
@@ -207,10 +242,9 @@ SELECT
   CreatedDateTime,
   ModifiedDateTime,
   CreatedByPersonAliasId,
-  CurrencyTypeValueId,
-  CreditCardTypeValueId,
   AuthorizedPersonAliasId,
-  FinancialGatewayId
+  FinancialGatewayId,
+  (SELECT Id FROM FinancialPaymentDetail WHERE [Guid] = PaymentDetailGuid)
 FROM #temp;
 
 INSERT INTO [FinancialScheduledTransactionDetail] (
@@ -233,9 +267,3 @@ SELECT
   ModifiedDateTime,
   CreatedByPersonAliasId
 FROM #temp t;
-
-SELECT * 
-FROM [FinancialScheduledTransactionDetail] d 
-JOIN [FinancialScheduledTransaction] t ON t.Id = d.ScheduledTransactionId;
-
-USE [master];
