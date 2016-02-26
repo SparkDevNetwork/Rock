@@ -141,6 +141,22 @@ namespace RockWeb.Blocks.Groups
 
             if ( !Page.IsPostBack )
             {
+                // only list GroupTypes that could have a location (and have ShowInNavigation and ShowInGrouplist)
+                gtpGroupType.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().Where( 
+                    a => a.ShowInNavigation 
+                        && a.ShowInGroupList 
+                        && a.LocationSelectionMode != GroupLocationPickerMode.None).OrderBy( a => a.Name ).ToList();
+
+                var selectedGroupTypeIds = this.GetBlockUserPreference( "GroupTypeIds" );
+                if ( !string.IsNullOrWhiteSpace( selectedGroupTypeIds ) )
+                {
+                    var selectedGroupTypeIdList = selectedGroupTypeIds.Split( ',' ).AsIntegerList();
+                    gtpGroupType.SelectedGroupTypeIds = selectedGroupTypeIdList;
+                }
+
+                var showChildGroups = this.GetBlockUserPreference( "ShowChildGroups" ).AsBoolean();
+                cbShowAllGroups.Checked = showChildGroups;
+                
                 var statuses = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).DefinedValues
                     .OrderBy( v => v.Order )
                     .ThenBy( v => v.Value )
@@ -296,6 +312,14 @@ namespace RockWeb.Blocks.Groups
             map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
             map.setTilt(45);
 
+            var getChildMapInfoUrl =  Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/{0}/Children';
+            if ('{10}' != '') {{
+                getChildMapInfoUrl += '?includeDescendants={10}';
+                if ('{11}' != '') {{
+                    getChildMapInfoUrl += '&groupTypeIds={11}';
+                }}  
+            }}
+
             // Query for group, child group, and group member locations asyncronously
             $.when (
 
@@ -316,7 +340,7 @@ namespace RockWeb.Blocks.Groups
                 }}),
 
                 // Get Child Groups
-                $.get( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/{0}/Children', function( mapItems ) {{
+                $.get(getChildMapInfoUrl, function( mapItems ) {{
                     $.each(mapItems, function (i, mapItem) {{
                         var items = addMapItem(i, mapItem, '{4}');
                         for (var i = 0; i < items.length; i++) {{
@@ -563,13 +587,35 @@ namespace RockWeb.Blocks.Groups
 </script>";
 
             string mapScript = string.Format( mapScriptFormat,
-                groupId.Value, styleCode, polygonColors, _groupColor, _childGroupColor, _memberColor, infoWindowJson,
-                latitude, longitude, zoom);
+                    groupId.Value, // {0}
+                    styleCode, // {1}
+                    polygonColors, // {2}
+                    _groupColor, // {3}
+                    _childGroupColor, // {4}
+                    _memberColor, // {5}
+                    infoWindowJson, // {6}
+                    latitude, // {7}
+                    longitude, // {8}
+                    zoom, // {9}
+                    cbShowAllGroups.Checked.ToTrueFalse(), // {10}
+                    gtpGroupType.SelectedGroupTypeIds.AsDelimited(",") // {11}
+                );
 
             ScriptManager.RegisterStartupScript( pnlMap, pnlMap.GetType(), "group-map-script", mapScript, false );
-
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnApplyOptions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnApplyOptions_Click( object sender, EventArgs e )
+        {
+            this.SetBlockUserPreference( "GroupTypeIds", gtpGroupType.SelectedGroupTypeIds.AsDelimited( "," ) );
+            this.SetBlockUserPreference( "ShowChildGroups", cbShowAllGroups.Checked.ToTrueFalse() );
+
+            Map();
+        }
 
         #endregion
     }
