@@ -14,8 +14,13 @@
 .easter-description p {
   margin-bottom: 1em;
 }
-.easter-description .tagline {
-  font-size: 1.75em;
+.easter-description .lead {
+  font-size: 1.3em;
+}
+@media (min-width: 768px) {
+  .easter-description .lead {
+    font-size: 1.75em;
+  }
 }
 .map-wrapper {
   max-width: 350px;

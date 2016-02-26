@@ -16,11 +16,13 @@ Campus={{ Context.Campus.Guid }}|OSFamily={{ OSFamily }}|CampusRoute={{ PagePara
 
 <section class="bigblock easter-description">
   <div class="container container-md">
-    <p class="tagline">Join us this year for Easter at CCV!</p>
+    <p class="lead">Join Us For Easter At CCV</p>
     <p>
-      The Easter Season allows us to reflect and celebrate the cross and the empty tomb up close and personal. Separate kids services will be available during all services, except Sunrise Service.
+      We invite you to bring your friends and neighbors this Easter season as we celebrate the life, death and resurrection of our Savior together. CCV is one church, with multiple locations throughout the valley. Choose a service time below and join us at the campus closest to you.
     </p>
-    <p class="text-muted">Select a campus below to find service times near you.</p>
+    <p class="text-muted">
+      Separate children’s services will be available during all services, except Sunrise Service. Special needs and hearing impaired services are also available.
+    </p>
   </div>
 </section>
 
