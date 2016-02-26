@@ -70,6 +70,8 @@ namespace RockWeb.Blocks.Crm
         {
             base.OnInit( e );
 
+            var personEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
+
             ddlTitle.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ), true );
             ddlStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ) );
             ddlMaritalStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS ) ) );
@@ -78,10 +80,34 @@ namespace RockWeb.Blocks.Crm
             ddlInactiveReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ) );
             ddlReviewReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_REVIEW_REASON ) ), true );
 
+            ddlTagList.Items.Clear();
+            ddlTagList.DataTextField = "Name";
+            ddlTagList.DataValueField = "Id";
+            var currentPersonAliasIds = CurrentPerson.Aliases.Select( a => a.Id ).ToList();
+
+            var tagList = new TagService( new RockContext() ).Queryable()
+                                            .Where( t =>
+                                                        t.EntityTypeId == personEntityTypeId
+                                                        && (t.OwnerPersonAliasId == null || currentPersonAliasIds.Contains( t.OwnerPersonAliasId.Value )) )
+                                            .Select( t => new   {
+                                                                    Id = t.Id,
+                                                                    Type = t.OwnerPersonAliasId == null ? "Personal Tags" : "Organization Tags",
+                                                                    Name = t.Name
+                                                                } )
+                                            .OrderByDescending(t => t.Type)
+                                            .ThenBy( t => t.Name)
+                                            .ToList();
+            foreach (var tag in tagList )
+            {
+                ListItem item = new ListItem( tag.Name, tag.Id.ToString() );
+                item.Attributes["OptionGroup"] = tag.Type;
+                ddlTagList.Items.Add( item );
+            }
+            ddlTagList.Items.Insert( 0, "" );
+
             ScriptManager.RegisterStartupScript( ddlGradePicker, ddlGradePicker.GetType(), "grade-selection-" + BlockId.ToString(), ddlGradePicker.GetJavascriptForYearPicker( ypGraduation ), true );
 
             ddlNoteType.Items.Clear();
-            var personEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
             var noteTypes = NoteTypeCache.GetByEntity( personEntityTypeId, string.Empty, string.Empty, true );
             foreach ( var noteType in noteTypes )
             {
@@ -349,7 +375,8 @@ namespace RockWeb.Blocks.Crm
         protected void cvSelection_ServerValidate( object source, ServerValidateEventArgs args )
         {
             int? groupId = gpGroup.SelectedValue.AsIntegerOrNull();
-            args.IsValid = SelectedFields.Any() || !string.IsNullOrWhiteSpace( tbNote.Text ) || ( groupId.HasValue && groupId > 0 ); 
+            int? tagId = ddlTagList.SelectedValue.AsIntegerOrNull();
+            args.IsValid = SelectedFields.Any() || !string.IsNullOrWhiteSpace( tbNote.Text ) || ( groupId.HasValue && groupId > 0 ) || tagId.HasValue; 
         }
 
         /// <summary>
@@ -627,6 +654,16 @@ namespace RockWeb.Blocks.Crm
 
                 #endregion
 
+                #region Tag
+                if ( !string.IsNullOrWhiteSpace( ddlTagList.SelectedValue ) )
+                {
+                    changes.Add( string.Format( "{0} {1} <span class='field-name'>{2}</span> tag.", 
+                        ddlTagAction.SelectedValue,
+                        ddlTagAction.SelectedValue == "Add" ? "to" : "from",
+                        ddlTagList.SelectedItem.Text ) );
+                }
+                #endregion
+
                 StringBuilder sb = new StringBuilder();
                 sb.AppendFormat( "<p>You are about to make the following updates to {0} individuals:</p>", Individuals.Count().ToString( "N0" ) );
                 sb.AppendLine();
@@ -641,6 +678,9 @@ namespace RockWeb.Blocks.Crm
 
                 pnlEntry.Visible = false;
                 pnlConfirm.Visible = true;
+
+                ScriptManager.RegisterStartupScript( Page, this.GetType(), "ScrollPage", "ResetScrollPosition();", true );
+
 
             }
         }
@@ -1196,7 +1236,52 @@ namespace RockWeb.Blocks.Crm
 
                 #endregion
 
-                pnlEntry.Visible = false;
+                #region Tag
+                var personEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
+
+                if ( !string.IsNullOrWhiteSpace( ddlTagList.SelectedValue ) )
+                {
+                    int tagId = ddlTagList.SelectedValue.AsInteger();
+                    var taggedItemService = new TaggedItemService( rockContext );
+
+                    // get guids of selected individuals
+                    var personGuids = new PersonService( rockContext ).Queryable()
+                                        .Where( p =>
+                                            ids.Contains( p.Id ) )
+                                        .Select( p => p.Guid )
+                                        .ToList();
+                        
+                    if ( ddlTagAction.SelectedValue == "Add" )
+                    {
+                        foreach ( var personGuid in personGuids )
+                        {
+                            if ( !taggedItemService.Queryable().Where( t => t.TagId == tagId && t.EntityGuid == personGuid ).Any() )
+                            {
+                                TaggedItem taggedItem = new TaggedItem();
+                                taggedItem.TagId = tagId;
+                                taggedItem.EntityGuid = personGuid;
+
+                                taggedItemService.Add( taggedItem );
+                                rockContext.SaveChanges();
+                            }
+                        }
+                    }
+                    else // remove
+                    {
+                        foreach(var personGuid in personGuids )
+                        {
+                            var taggedPerson = taggedItemService.Queryable().Where( t => t.TagId == tagId && t.EntityGuid == personGuid ).FirstOrDefault();
+                            if (taggedPerson != null )
+                            {
+                                taggedItemService.Delete( taggedPerson );
+                            }
+                        }
+                        rockContext.SaveChanges();
+                    }
+                }
+                #endregion
+
+                    pnlEntry.Visible = false;
                 pnlConfirm.Visible = false;
 
                 nbResult.Text = string.Format( "{0} {1} successfully updated.",
