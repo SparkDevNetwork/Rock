@@ -211,7 +211,7 @@ Campus={{ Context.Campus.Guid }}|OSFamily={{ OSFamily }}|CampusRoute={{ PagePara
 <script type="text/javascript">
   var md = new MobileDetect(window.navigator.userAgent);
 
-  if (md.phone()) {
+  if (md.mobile()) {
     $('.js-sms').removeClass('hide')
   } else {
     $('.js-fb').removeClass('hide')
