@@ -1,12 +1,31 @@
 ﻿<%@ Control AutoEventWireup="true" CodeFile="GroupMap.ascx.cs" Inherits="RockWeb.Blocks.Groups.GroupMap" Language="C#" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
+    <Triggers>
+        <asp:PostBackTrigger ControlID="btnApplyOptions" />
+    </Triggers>
     <ContentTemplate>
         
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-map-marker"></i> Group Map</h1>
+                 <a class="btn btn-xs btn-default pull-right margin-l-sm" onclick="javascript: toggleOptions()"><i title="Options" class="fa fa-gear"></i></a>
             </div>
+
+            <asp:Panel ID="pnlOptions" runat="server" Title="Options" CssClass="panel-body js-options" Style="display: none">
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:RockCheckBox ID="cbShowAllGroups" runat="server" Text="Show Child Groups" Help="Show all the child groups that are within the selected geofence(s)" />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:GroupTypesPicker ID="gtpGroupType" runat="server" RepeatDirection="Horizontal" Label="Child Group Types" Help="Select Group Types to limit what type of child groups are shown" />
+                    </div>
+                </div>
+                <div class="actions">
+                    <asp:LinkButton ID="btnApplyOptions" runat="server" Text="Apply" CssClass="btn btn-primary" OnClick="btnApplyOptions_Click" />
+                </div>
+            </asp:Panel>
+
             <div class="panel-body">
 
                 <asp:Literal ID="lMapStyling" runat="server" />
@@ -68,7 +87,11 @@
             </div>
         </div>
 
-        
+        <script>
+            function toggleOptions() {
+                $('.js-options').slideToggle();
+            }
+        </script>
 
     </ContentTemplate>
 </asp:UpdatePanel>
