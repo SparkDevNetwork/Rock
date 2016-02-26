@@ -461,6 +461,25 @@ $('#{3}').find('.input-group-upper .input-group-addon').on('click', function () 
             }
         }
 
+        public static bool TryParse( string delimited, out DateTime lower, out DateTime upper )
+        {
+            if ( !string.IsNullOrWhiteSpace( delimited ) && delimited.Contains( "," ) )
+            {
+                var dates = delimited.Split( ',' );
+
+                if ( dates.Length == 2 )
+                {
+                    var success1 = DateTime.TryParse( dates[0], out lower );
+                    var success2 = DateTime.TryParse( dates[1], out upper );
+                    return success1 && success2;
+                }
+            }
+
+            lower = new DateTime();
+            upper = new DateTime();
+            return false;
+        }
+
         /// <summary>
         /// Formats the delimited values for display purposes
         /// </summary>
