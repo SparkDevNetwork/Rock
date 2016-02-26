@@ -125,18 +125,12 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The e.</param>
         protected void DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
-            var dateStrings = e.Value.Split( ',' ).ToList();
-            if ( dateStrings.Count() == 2 )
+            DateTime startDateTimeValue;
+            DateTime endDateTimeValue;
+
+            if ( DateRangePicker.TryParse( e.Value, out startDateTimeValue, out endDateTimeValue ) )
             {
-                DateTime startDateTimeValue;
-                DateTime endDateTimeValue;
-                if ( DateTime.TryParse( dateStrings[0], out startDateTimeValue ) )
-                {
-                    if ( DateTime.TryParse( dateStrings[1], out endDateTimeValue ) )
-                    {
-                        e.Value = startDateTimeValue.ToShortDateString() + " to " + endDateTimeValue.ToShortDateString();
-                    }
-                }
+                e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
             }
         }
 
@@ -158,8 +152,12 @@ namespace RockWeb.Blocks.Reporting
                 if ( control is DateRangePicker )
                 {
                     var dateRangePicker = control as DateRangePicker;
-                    value = dateRangePicker.DelimitedValues;
-                    name = key.Remove( 0, 3 ).SplitCase();
+
+                    if ( dateRangePicker.UpperValue.HasValue && dateRangePicker.LowerValue.HasValue )
+                    {
+                        value = dateRangePicker.DelimitedValues;
+                        name = key.Remove( 0, 3 ).SplitCase();
+                    }
                 }
                 else if ( control is RockDropDownList )
                 {
@@ -287,6 +285,7 @@ namespace RockWeb.Blocks.Reporting
                     }
                 }
             }
+
             upnlContent.Update();
         }
 
@@ -495,9 +494,8 @@ namespace RockWeb.Blocks.Reporting
                                 {
                                     ID = "gfFilter"
                                 };
-                                var textBox = new RockTextBox();
-                                div.Controls.Add( GridFilter );
 
+                                div.Controls.Add( GridFilter );
                                 GridFilter.ApplyFilterClick += ApplyFilterClick;
                                 GridFilter.DisplayFilterValue += DisplayFilterValue;
                             }
@@ -668,16 +666,25 @@ namespace RockWeb.Blocks.Reporting
 
                     if ( GridFilter != null )
                     {
+                        var id = "ddl" + dataTableColumn.ColumnName;
+
                         var filterControl = new RockDropDownList()
                         {
                             Label = splitCaseName,
-                            ID = "ddl" + dataTableColumn.ColumnName
+                            ID = id
                         };
-                        filterControl.Items.Add( string.Empty );
-                        filterControl.Items.Add( true.ToYesNo() );
-                        filterControl.Items.Add( false.ToYesNo() );
 
+                        filterControl.Items.Add( BoolToString( null ) );
+                        filterControl.Items.Add( BoolToString( true ) );
+                        filterControl.Items.Add( BoolToString( false ) );
                         GridFilter.Controls.Add( filterControl );
+
+                        var value = GridFilter.GetUserPreference( id );
+
+                        if ( value != null )
+                        {
+                            filterControl.SetValue( value );
+                        }
                     }
                 }
                 else if ( dataTableColumn.DataType == typeof( DateTime ) )
@@ -700,13 +707,29 @@ namespace RockWeb.Blocks.Reporting
 
                     if ( GridFilter != null )
                     {
+                        var id = "drp" + dataTableColumn.ColumnName;
+
                         var filterControl = new DateRangePicker()
                         {
                             Label = splitCaseName,
-                            ID = "drp" + dataTableColumn.ColumnName
+                            ID = id
                         };
 
                         GridFilter.Controls.Add( filterControl );
+
+                        var value = GridFilter.GetUserPreference( id );
+
+                        if ( value != null )
+                        {
+                            DateTime upper;
+                            DateTime lower;
+
+                            if ( DateRangePicker.TryParse( value, out lower, out upper ) )
+                            {
+                                filterControl.LowerValue = lower;
+                                filterControl.UpperValue = upper;
+                            }
+                        }
                     }
                 }
                 else
@@ -715,13 +738,21 @@ namespace RockWeb.Blocks.Reporting
 
                     if ( GridFilter != null )
                     {
+                        var id = "tb" + dataTableColumn.ColumnName;
                         var filterControl = new RockTextBox()
                         {
                             Label = splitCaseName,
-                            ID = "tb" + dataTableColumn.ColumnName
+                            ID = id
                         };
 
                         GridFilter.Controls.Add( filterControl );
+                        var key = filterControl.ID;
+                        var value = GridFilter.GetUserPreference( key );
+
+                        if ( value != null )
+                        {
+                            filterControl.Text = value;
+                        }
                     }
                 }
 
@@ -774,12 +805,12 @@ namespace RockWeb.Blocks.Reporting
 
                     if ( minValue.HasValue )
                     {
-                        query.Add( string.Format( "{0} >= #{1}#", colName, minValue.Value ) );
+                        query.Add( string.Format( "{0} > #{1}#", colName, minValue.Value ) );
                     }
 
                     if ( maxValue.HasValue )
                     {
-                        query.Add( string.Format( "{0} <= #{1}#", colName, maxValue.Value ) );
+                        query.Add( string.Format( "{0} < #{1}#", colName, maxValue.Value.AddDays( 1 ).AddSeconds( -1 ) ) );
                     }
                 }
                 else if ( control is RockDropDownList )
@@ -818,6 +849,31 @@ namespace RockWeb.Blocks.Reporting
             }
 
             dataView.RowFilter = string.Join( " AND ", query );
+        }
+
+        private string BoolToString( bool? b )
+        {
+            if ( b.HasValue )
+            {
+                return b.Value.ToYesNo();
+            }
+
+            return string.Empty;
+        }
+
+        private bool? StringToBool( string s )
+        {
+            if ( s == BoolToString( true ) )
+            {
+                return true;
+            }
+
+            if ( s == BoolToString( false ) )
+            {
+                return false;
+            }
+
+            return null;
         }
 
         #endregion
