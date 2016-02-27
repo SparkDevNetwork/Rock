@@ -54,6 +54,25 @@ namespace Rock.Field.Types
             return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
 
+        /// <summary>
+        /// Returns the value that should be used for sorting, using the most appropriate datatype
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public virtual object SortValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            int? intValue = value.AsIntegerOrNull();
+            if ( intValue.HasValue )
+            {
+                System.DayOfWeek dayOfWeek = (System.DayOfWeek)intValue.Value;
+                return dayOfWeek;
+            }
+
+            return (System.DayOfWeek)0;
+        }
+
         #endregion
 
         #region Edit Control
