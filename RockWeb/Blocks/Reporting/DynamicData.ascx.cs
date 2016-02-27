@@ -488,17 +488,15 @@ namespace RockWeb.Blocks.Reporting
 
                             phContent.Controls.Add( div );
 
-                            if ( useDynamicFilterControls )
+                            GridFilter = new GridFilter()
                             {
-                                GridFilter = new GridFilter()
-                                {
-                                    ID = "gfFilter"
-                                };
+                                ID = "gfFilter"
+                            };
 
-                                div.Controls.Add( GridFilter );
-                                GridFilter.ApplyFilterClick += ApplyFilterClick;
-                                GridFilter.DisplayFilterValue += DisplayFilterValue;
-                            }
+                            div.Controls.Add( GridFilter );
+                            GridFilter.ApplyFilterClick += ApplyFilterClick;
+                            GridFilter.DisplayFilterValue += DisplayFilterValue;
+                            GridFilter.Visible = useDynamicFilterControls;
 
                             var grid = new Grid();
                             div.Controls.Add( grid );
@@ -786,12 +784,15 @@ namespace RockWeb.Blocks.Reporting
         /// <returns></returns>
         private void FilterTable( Grid grid, DataTable dataTable )
         {
-            if ( GridFilter == null )
+            var useDynamicFilterControls = GetAttributeValue( "UseDynamicFilterControls" ).AsBoolean();
+            System.Data.DataView dataView = dataTable.DefaultView;
+
+            if ( !useDynamicFilterControls )
             {
+                dataView.RowFilter = null;
                 return;
             }
 
-            System.Data.DataView dataView = dataTable.DefaultView;
             var query = new List<string>();
 
             foreach ( var control in GridFilter.Controls )
