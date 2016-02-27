@@ -353,6 +353,14 @@ namespace Rock.Web.Cache
         public string ExternalUrl { get; set; }
 
         /// <summary>
+        /// Gets or sets the allowed frame domains.
+        /// </summary>
+        /// <value>
+        /// The allowed frame domains.
+        /// </value>
+        public string AllowedFrameDomains { get; set; }
+        
+        /// <summary>
         /// Gets or sets a value indicating whether [redirect tablets].
         /// </summary>
         /// <value>
@@ -442,6 +450,7 @@ namespace Rock.Web.Cache
                 this.EnableMobileRedirect = site.EnableMobileRedirect;
                 this.MobilePageId = site.MobilePageId;
                 this.ExternalUrl = site.ExternalUrl;
+                this.AllowedFrameDomains = site.AllowedFrameDomains;
                 this.RedirectTablets = site.RedirectTablets;
                 this.EnablePageViews = site.EnablePageViews;
                 this.PageViewRetentionPeriodDays = site.PageViewRetentionPeriodDays;

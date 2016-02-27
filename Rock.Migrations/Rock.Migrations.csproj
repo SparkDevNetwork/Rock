@@ -123,6 +123,10 @@
     <Compile Include="Migrations\201602242247579_PaymentReminderPageAndJob.Designer.cs">
       <DependentUpon>201602242247579_PaymentReminderPageAndJob.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201602271652548_AddAllowedDomainsToSite.cs" />
+    <Compile Include="Migrations\201602271652548_AddAllowedDomainsToSite.Designer.cs">
+      <DependentUpon>201602271652548_AddAllowedDomainsToSite.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.cs" />
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.Designer.cs">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
@@ -2058,6 +2062,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201602242247579_PaymentReminderPageAndJob.resx">
       <DependentUpon>201602242247579_PaymentReminderPageAndJob.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201602271652548_AddAllowedDomainsToSite.resx">
+      <DependentUpon>201602271652548_AddAllowedDomainsToSite.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.resx">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
