@@ -805,12 +805,12 @@ namespace RockWeb.Blocks.Reporting
 
                     if ( minValue.HasValue )
                     {
-                        query.Add( string.Format( "{0} > #{1}#", colName, minValue.Value ) );
+                        query.Add( string.Format( "{0} >= #{1}#", colName, minValue.Value ) );
                     }
 
                     if ( maxValue.HasValue )
                     {
-                        query.Add( string.Format( "{0} < #{1}#", colName, maxValue.Value.AddDays( 1 ).AddSeconds( -1 ) ) );
+                        query.Add( string.Format( "{0} < #{1}#", colName, maxValue.Value.AddDays( 1 ) ) );
                     }
                 }
                 else if ( control is RockDropDownList )
