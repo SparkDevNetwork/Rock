@@ -532,7 +532,7 @@
     <Compile Include="Transactions\SendPaymentReciepts.cs" />
     <Compile Include="Transactions\UpdatePaymentStatusTransaction.cs" />
     <Compile Include="Utility\DebugHelper.cs" />
-    <Compile Include="Utility\ImageUtilities.cs" />
+    <Compile Include="Utility\FileUtilities.cs" />
     <Compile Include="Utility\NotNullJsonConverter.cs" />
     <Compile Include="Utility\ExtensionMethods\CurrencyExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\ExceptionExtensions.cs" />
