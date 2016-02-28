@@ -193,6 +193,11 @@ namespace Rock
 
         #region JObject extension methods
 
+        /// <summary>
+        /// Converts a jObject to a dictionary
+        /// </summary>
+        /// <param name="jobject">The jobject.</param>
+        /// <returns></returns>
         public static IDictionary<string, object> ToDictionary( this JObject jobject )
         {
             var result = jobject.ToObject<Dictionary<string, object>>();

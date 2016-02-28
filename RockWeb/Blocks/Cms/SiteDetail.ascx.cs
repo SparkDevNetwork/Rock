@@ -222,6 +222,7 @@ namespace RockWeb.Blocks.Cms
                 site.EnableMobileRedirect = cbEnableMobileRedirect.Checked;
                 site.MobilePageId = ppMobilePage.PageId;
                 site.ExternalUrl = tbExternalURL.Text;
+                site.AllowedFrameDomains = tbAllowedFrameDomains.Text;
                 site.RedirectTablets = cbRedirectTablets.Checked;
                 site.EnablePageViews = cbEnablePageViews.Checked;
                 site.PageViewRetentionPeriodDays = nbPageViewRetentionPeriodDays.Text.AsIntegerOrNull();
@@ -531,6 +532,7 @@ namespace RockWeb.Blocks.Cms
             cbEnableMobileRedirect.Checked = site.EnableMobileRedirect;
             ppMobilePage.SetValue( site.MobilePage );
             tbExternalURL.Text = site.ExternalUrl;
+            tbAllowedFrameDomains.Text = site.AllowedFrameDomains;
             cbRedirectTablets.Checked = site.RedirectTablets;
             cbEnablePageViews.Checked = site.EnablePageViews;
             nbPageViewRetentionPeriodDays.Text = site.PageViewRetentionPeriodDays.ToString();

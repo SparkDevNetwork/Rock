@@ -178,7 +178,7 @@ namespace Rock.Web.Cache
         public string DefaultValue { get; set; }
 
         /// <summary>
-        /// Gets the default type of the value as.
+        /// Gets the default value as the most appropriate datatype
         /// </summary>
         /// <value>
         /// The default type of the value as.
@@ -188,6 +188,20 @@ namespace Rock.Web.Cache
             get
             {
                 return FieldType.Field.ValueAsFieldType( null, DefaultValue, QualifierValues );
+            }
+        }
+
+        /// <summary>
+        /// Gets the default value to use for sorting as the most appropriate datatype
+        /// </summary>
+        /// <value>
+        /// The default type of the value as.
+        /// </value>
+        public object DefaultSortValue
+        {
+            get
+            {
+                return FieldType.Field.SortValue( null, DefaultValue, QualifierValues );
             }
         }
 

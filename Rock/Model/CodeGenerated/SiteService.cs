@@ -88,6 +88,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Site target, Site source )
         {
             target.Id = source.Id;
+            target.AllowedFrameDomains = source.AllowedFrameDomains;
             target.AllowIndexing = source.AllowIndexing;
             target.CommunicationPageId = source.CommunicationPageId;
             target.CommunicationPageRouteId = source.CommunicationPageRouteId;
