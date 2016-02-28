@@ -324,6 +324,11 @@ namespace Rock.Model
                 ", parentLocationId ) );
         }
 
+        /// <summary>
+        /// Gets all descendent ids.
+        /// </summary>
+        /// <param name="parentLocationId">The parent location identifier.</param>
+        /// <returns></returns>
         public IEnumerable<int> GetAllDescendentIds( int parentLocationId )
         {
             return this.Context.Database.SqlQuery<int>( string.Format(

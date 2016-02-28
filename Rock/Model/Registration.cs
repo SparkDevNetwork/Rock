@@ -136,6 +136,7 @@ namespace Rock.Model
         /// </value>
         public bool IsTemporary { get; set; }
 
+        /// <summary>
         /// Gets or sets the last payment reminder date time.
         /// </summary>
         /// <value>
