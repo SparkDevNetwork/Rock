@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -33,6 +34,8 @@ using DotLiquid;
 using DotLiquid.Util;
 using Humanizer;
 using Humanizer.Localisation;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -2079,7 +2082,7 @@ namespace Rock.Lava
             else
             {
                 var rockContext = new RockContext();
-                context.Registers.Add( "rock_context", rockContext );
+                context.Registers["rock_context"] = rockContext;
                 return rockContext;
             }
         }
@@ -2162,6 +2165,31 @@ namespace Rock.Lava
         public static string ToJSON( object input )
         {
             return input.ToJson();
+        }
+
+        /// <summary>
+        /// Returns a dynamic object from a JSON string
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static object FromJSON( object input )
+        {
+            var converter = new ExpandoObjectConverter();
+            object contentObject = null;
+            var value = input as string;
+
+            try
+            {
+                // first try to deserialize as straight ExpandoObject
+                contentObject = JsonConvert.DeserializeObject<ExpandoObject>( value, converter );
+            }
+            catch
+            {
+                // if it didn't deserialize as straight ExpandoObject, try it as a List of ExpandoObjects
+                contentObject = JsonConvert.DeserializeObject<List<ExpandoObject>>( value, converter );
+            }
+
+            return contentObject;
         }
 
         /// <summary>

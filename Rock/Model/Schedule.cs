@@ -44,6 +44,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [IncludeForReporting]
         public string Name { get; set; }
 
         /// <summary>
@@ -143,6 +144,7 @@ namespace Rock.Model
         /// if the Schedule does not belong to a Category.
         /// </value>
         [DataMember]
+        [IncludeForReporting]
         public int? CategoryId { get; set; }
 
         #endregion

@@ -59,6 +59,19 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
+        /// Returns the value that should be used for sorting, using the most appropriate datatype
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override object SortValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            // return ValueAsFieldType which returns the value as a Decimal
+            return this.ValueAsFieldType( parentControl, value, configurationValues );
+        }
+
+        /// <summary>
         /// Gets the align value that should be used when displaying value
         /// </summary>
         public override System.Web.UI.WebControls.HorizontalAlign AlignValue

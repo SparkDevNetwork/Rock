@@ -149,6 +149,19 @@ namespace Rock.Field.Types
             return value.AsInteger();
         }
 
+        /// <summary>
+        /// Returns the value that should be used for sorting, using the most appropriate datatype
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override object SortValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            // return ValueAsFieldType which returns the value as an integer
+            return this.ValueAsFieldType( parentControl, value, configurationValues );
+        }
+
         #endregion
 
         #region Edit Control

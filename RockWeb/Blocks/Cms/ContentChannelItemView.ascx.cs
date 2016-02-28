@@ -73,8 +73,11 @@ namespace RockWeb.Blocks.Cms
             if ( SelectedChannelId.HasValue )
             {
                 var channel = new ContentChannelService( new RockContext() ).Get( SelectedChannelId.Value );
-                BindAttributes( channel );
-                AddDynamicControls( channel );
+                if ( channel != null )
+                {
+                    BindAttributes( channel );
+                    AddDynamicControls( channel );
+                }
             }
         }
 

@@ -42,6 +42,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [IncludeForReporting]
         public string Name { get; set; }
 
         /// <summary>
@@ -78,6 +79,7 @@ namespace Rock.Model
         /// The category id.
         /// </value>
         [DataMember]
+        [IncludeForReporting]
         public int CategoryId { get; set; }
 
         /// <summary>
