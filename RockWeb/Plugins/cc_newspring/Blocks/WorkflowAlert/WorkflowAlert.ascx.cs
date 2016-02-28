@@ -17,20 +17,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
-using System.IO;
 using System.Linq;
-using System.Web;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.cc_newspring.Blocks.WorkflowAlert
 {
@@ -43,7 +37,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.WorkflowAlert
     [LinkedPage( "Listing Page", "Page used to view all workflows assigned to the current user.", false, "F3FA9EBE-A540-4106-90E5-2DFB2D72BBF0" )]
     public partial class WorkflowAlert : Rock.Web.UI.RockBlock
     {
-
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
@@ -58,25 +51,8 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.WorkflowAlert
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    // Search the DB for what groups the current person belongs to
-                    var memberGroups = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
-                        .Where( a => a.PersonId == CurrentPersonId )
-                        .Select( a => a.GroupId )
-                        .ToList();
-
                     // Return the count of active workflows assigned to the current user (or user's group)
-                    var activeIncompleteWorkflows = new WorkflowActivityService( rockContext ).Queryable().AsNoTracking()
-                        .Where( a =>
-                            a.ActivatedDateTime.HasValue &&
-                            !a.CompletedDateTime.HasValue &&
-                            ( a.AssignedPersonAliasId == CurrentPersonAliasId || (
-                                    a.AssignedGroupId.HasValue
-                                    && memberGroups.Contains( (int)a.AssignedGroupId )
-                                    && !a.AssignedPersonAliasId.HasValue
-                                )
-                            )
-                        )
-                        .Count();
+                    var activeIncompleteWorkflows = GetActions( rockContext ).Count();
 
                     // set the default display
                     var spanLiteral = "<i internal class='fa fa-bell-o'></i>";
@@ -101,6 +77,81 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.WorkflowAlert
             queryParams.Add( "StatusFilter", "true" );
 
             NavigateToLinkedPage( "ListingPage", queryParams );
+        }
+
+        /// <summary>
+        /// Returns a list of the actions assigned to the current person
+        /// </summary>
+        /// <param name="rockContext"></param>
+        /// <returns></returns>
+        private List<WorkflowAction> GetActions( RockContext rockContext )
+        {
+            var formActions = new List<WorkflowAction>();
+
+            if ( CurrentPerson != null )
+            {
+                // Get all of the active form actions that user is assigned to and authorized to view
+                formActions = GetActiveForms( rockContext );
+
+                // If a category filter was specified, filter list by selected categories
+                var categoryIds = GetCategories( rockContext );
+                if ( categoryIds.Any() )
+                {
+                    formActions = formActions
+                        .Where( a =>
+                            a.ActionType.ActivityType.WorkflowType.CategoryId.HasValue &&
+                            categoryIds.Contains( a.ActionType.ActivityType.WorkflowType.CategoryId.Value ) )
+                        .ToList();
+                }
+            }
+
+            return formActions;
+        }
+
+        /// <summary>
+        /// Gets a list of all the active workflow actions for the current person
+        /// </summary>
+        /// <param name="rockContext"></param>
+        /// <returns></returns>
+        private List<WorkflowAction> GetActiveForms( RockContext rockContext )
+        {
+            var formActions = RockPage.GetSharedItem( "ActiveForms" ) as List<WorkflowAction>;
+
+            if ( formActions == null )
+            {
+                formActions = new WorkflowActionService( rockContext ).GetActiveForms( CurrentPerson );
+                RockPage.SaveSharedItem( "ActiveForms", formActions );
+            }
+
+            return formActions;
+        }
+
+        /// <summary>
+        /// Returns a list of all workflowtype category ids
+        /// </summary>
+        /// <param name="rockContext"></param>
+        /// <returns></returns>
+        private List<int> GetCategories( RockContext rockContext )
+        {
+            int entityTypeId = EntityTypeCache.Read( typeof( WorkflowType ) ).Id;
+            return GetCategoryIds( new List<int>(), new CategoryService( rockContext ).GetNavigationItems( entityTypeId, new List<Guid>(), true, CurrentPerson ) );
+        }
+
+        /// <summary>
+        /// Recursively gets all category ids in the tree of categories passed
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <param name="categories"></param>
+        /// <returns></returns>
+        private List<int> GetCategoryIds( List<int> ids, List<CategoryNavigationItem> categories )
+        {
+            foreach ( var categoryNavItem in categories )
+            {
+                ids.Add( categoryNavItem.Category.Id );
+                GetCategoryIds( ids, categoryNavItem.ChildCategories );
+            }
+
+            return ids;
         }
     }
 }
