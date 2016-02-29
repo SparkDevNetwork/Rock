@@ -27,7 +27,7 @@ namespace Rock.Utility
     /// <summary>
     /// 
     /// </summary>
-    public static class ImageUtilities
+    public static class FileUtilities
     {
         /// <summary>
         /// Gets the file bytes.
@@ -36,53 +36,44 @@ namespace Rock.Utility
         /// <param name="enableResize">if set to <c>true</c> [enable resize].</param>
         /// <param name="errorIfNotImage">if set to <c>true</c> [error if not image].</param>
         /// <returns></returns>
-        /// <exception cref="System.IO.InvalidDataException">The file is not a valid image type</exception>
-        public static Stream GetFileContentStream( HttpPostedFile uploadedFile, bool enableResize, bool errorIfNotImage = false )
+        public static Stream GetFileContentStream( HttpPostedFile uploadedFile, bool resizeIfImage = true )
         {
-            if ( uploadedFile.ContentType == "image/svg+xml" || uploadedFile.ContentType == "image/tiff" )
+            if ( uploadedFile.ContentType == "image/svg+xml" || uploadedFile.ContentType == "image/tiff" || !uploadedFile.ContentType.StartsWith( "image/" ) )
             {
                 return uploadedFile.InputStream;
             }
-            else
+
+            try
             {
-                try
+                var bmp = new Bitmap( uploadedFile.InputStream );
+
+                // Check to see if we should flip the image.
+                var exif = new EXIFextractor( ref bmp, "\n" );
+                if ( exif["Orientation"] != null )
                 {
-                    Bitmap bmp = new Bitmap( uploadedFile.InputStream );
+                    var flip = OrientationToFlipType( exif["Orientation"].ToString() );
 
-                    // Check to see if we should flip the image.
-                    var exif = new EXIFextractor( ref bmp, "\n" );
-                    if ( exif["Orientation"] != null )
+                    // don't flip if orientation is correct
+                    if ( flip != RotateFlipType.RotateNoneFlipNone )
                     {
-                        RotateFlipType flip = OrientationToFlipType( exif["Orientation"].ToString() );
-
-                        // don't flip if orientation is correct
-                        if ( flip != RotateFlipType.RotateNoneFlipNone )
-                        {
-                            bmp.RotateFlip( flip );
-                            exif.setTag( 0x112, "1" ); // reset orientation tag
-                        }
+                        bmp.RotateFlip( flip );
+                        exif.setTag( 0x112, "1" ); // reset orientation tag
                     }
-
-                    if ( enableResize )
-                    {
-                        Bitmap resizedBmp = RoughResize( bmp, 1024, 768 );
-                        bmp = resizedBmp;
-                    }
-
-                    var stream = new MemoryStream();
-                    bmp.Save( stream, ContentTypeToImageFormat( uploadedFile.ContentType ) );
-                    return stream;
                 }
-                catch
+
+                if ( resizeIfImage )
                 {
-                    if ( errorIfNotImage )
-                    {
-                        throw new InvalidDataException( "The file is not a valid image type" );
-                    }
-
-                    // if it couldn't be converted to a bitmap or if the exif or resize thing failed, just return the original stream
-                    return uploadedFile.InputStream;
+                    bmp = RoughResize( bmp, 1024, 768 );
                 }
+
+                var stream = new MemoryStream();
+                bmp.Save( stream, ContentTypeToImageFormat( uploadedFile.ContentType ) );
+                return stream;
+            }
+            catch
+            {
+                // if it couldn't be converted to a bitmap or if the exif or resize thing failed, just return the original stream
+                return uploadedFile.InputStream;
             }
         }
 
