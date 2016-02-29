@@ -61,7 +61,7 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
-        public virtual object SortValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override object SortValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
         {
             int? intValue = value.AsIntegerOrNull();
             if ( intValue.HasValue )

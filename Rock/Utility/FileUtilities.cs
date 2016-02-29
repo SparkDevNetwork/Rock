@@ -33,8 +33,7 @@ namespace Rock.Utility
         /// Gets the file bytes.
         /// </summary>
         /// <param name="uploadedFile">The uploaded file.</param>
-        /// <param name="enableResize">if set to <c>true</c> [enable resize].</param>
-        /// <param name="errorIfNotImage">if set to <c>true</c> [error if not image].</param>
+        /// <param name="resizeIfImage">if set to <c>true</c> [resize if image].</param>
         /// <returns></returns>
         public static Stream GetFileContentStream( HttpPostedFile uploadedFile, bool resizeIfImage = true )
         {
