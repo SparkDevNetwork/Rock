@@ -74,7 +74,7 @@ SELECT
 		'INSERT [DeviceLocation] ([LocationId], [DeviceId]) VALUES (',
 		CASE WHEN loc.Id IS NOT NULL THEN
 			CONCAT(
-				'( SELECT l.Id FROM DeviceLocation dl JOIN Location l ON l.Id = dl.LocationId LEFT JOIN Location pl ON pl.Id = l.ParentLocationId WHERE l.[Guid] = ''',
+				'( SELECT l.Id FROM Location l LEFT JOIN Location pl ON pl.Id = l.ParentLocationId WHERE l.[Guid] = ''',
 				loc.[Guid],
 				''' OR ( l.Name = ''',
 				loc.Name,
