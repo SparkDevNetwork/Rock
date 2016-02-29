@@ -38,7 +38,7 @@ namespace RockWeb
         public override Stream GetFileContentStream( HttpContext context, HttpPostedFile uploadedFile )
         {
             var enableResize = context.Request.QueryString["enableResize"] != null;
-            return ImageUtilities.GetFileContentStream( uploadedFile, enableResize );
+            return FileUtilities.GetFileContentStream( uploadedFile, enableResize );
         }
 
         /// <summary>
