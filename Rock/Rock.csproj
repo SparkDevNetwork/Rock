@@ -234,7 +234,6 @@
     <Compile Include="Chart\SummaryData.cs" />
     <Compile Include="Communication\RecipientData.cs" />
     <Compile Include="Communication\SMTPComponent.cs" />
-    <Compile Include="Communication\Transport\MandrillSmtp.cs" />
     <Compile Include="Communication\Transport\Twilio.cs" />
     <Compile Include="Constants\SystemSettingKeys.cs" />
     <Compile Include="Data\BoundFieldTypeAttribute.cs" />
