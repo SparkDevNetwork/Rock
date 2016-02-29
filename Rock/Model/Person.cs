@@ -2550,14 +2550,16 @@ namespace Rock.Model
         /// <returns></returns>
         public static IQueryable<Person> WhereGradeOffsetRange( this IQueryable<Person> personQry, int? minGradeOffset, int? maxGradeOffset, bool includePeopleWithNoGrade = true )
         {
-            var transitionDate = GlobalAttributesCache.Read().GetValue( "GradeTransitionDate" ).AsDateTime();
+            var transitionDate = GlobalAttributesCache.Read().GetValue( "GradeTransitionDate" ).AsDateTime() ?? RockDateTime.Now.AddDays( 1 );
+            var currentGradYear = RockDateTime.Now < transitionDate ? RockDateTime.Now.Year : RockDateTime.Now.Year + 1;
 
             var qryWithGradeOffset = personQry.Select(
                       p => new
                       {
                           Person = p,
-                          GradeOffset = p.GraduationYear != null ? ( ( RockDateTime.Now < transitionDate.Value ) ? p.GraduationYear.Value : ( p.GraduationYear.Value - 1 ) - RockDateTime.Now.Year ) : (int?)null
+                          GradeOffset = p.GraduationYear.HasValue ? p.GraduationYear.Value - currentGradYear : (int?)null
                       } );
+
             if ( includePeopleWithNoGrade )
             {
                 if ( minGradeOffset.HasValue )
