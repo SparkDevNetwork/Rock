@@ -415,9 +415,11 @@ namespace Rock.Web.UI.Controls
             RockBlock rockBlock = this.RockBlock();
             if ( rockBlock != null && _userPreferences != null )
             {
+                string keyPrefix = string.Format( "grid-filter-{0}-", rockBlock.BlockId );
+
                 foreach ( var userPreference in _userPreferences )
                 {
-                    rockBlock.DeleteUserPreference( userPreference.Key );
+                    rockBlock.DeleteUserPreference( string.Format( "{0}{1}|{2}", keyPrefix, userPreference.Key, userPreference.Name ) );
                 }
 
                 _userPreferences.Clear();
