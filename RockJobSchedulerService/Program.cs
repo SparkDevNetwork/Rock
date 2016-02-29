@@ -33,7 +33,6 @@ namespace RockJobSchedulerService
             string serviceFolder = Path.GetDirectoryName( System.Reflection.Assembly.GetExecutingAssembly().Location );
             SqlServerTypes.Utilities.LoadNativeAssemblies( serviceFolder );
 
-
             // set the current directory to the same as the current exe so that we can find the web.connectionstrings.config
             Directory.SetCurrentDirectory( serviceFolder );
             ServiceBase[] ServicesToRun;

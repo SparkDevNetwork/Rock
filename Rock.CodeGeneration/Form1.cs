@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml;
 using Rock;
@@ -46,11 +47,7 @@ namespace Rock.CodeGeneration
                 lblAssemblyDateTime.Text = fi.LastWriteTime.ToElapsedString();
                 toolTip1.SetToolTip( lblAssemblyDateTime, fi.LastWriteTime.ToString() );
 
-                SqlConnection sqlconn = GetSqlConnection( RootFolder().FullName );
-                if (sqlconn != null)
-                {
-                    lblDatabase.Text = sqlconn.Database;
-                }
+                
             }
 
             ofdAssembly.InitialDirectory = Path.GetDirectoryName( lblAssemblyPath.Text );
@@ -58,14 +55,7 @@ namespace Rock.CodeGeneration
             ofdAssembly.FileName = "Rock.dll";
             ofdAssembly.RestoreDirectory = true;
 
-            var projectName = Path.GetFileNameWithoutExtension( lblAssemblyPath.Text );
-            tbServiceFolder.Text = Path.Combine( RootFolder().FullName, projectName );
-            tbRestFolder.Text = Path.Combine( RootFolder().FullName, projectName + ".Rest" );
-            tbClientFolder.Text = Path.Combine( RootFolder().FullName, projectName + ".Client" );
-            if ( projectName != "Rock" )
-            {
-                tbRestFolder.Text = Path.Combine( RootFolder().FullName, projectName + "\\Rest" );
-            }
+            
 
             if ( ofdAssembly.ShowDialog() == DialogResult.OK )
             {
@@ -94,6 +84,25 @@ namespace Rock.CodeGeneration
                 cbSelectAll.Checked = true;
 
                 Cursor = Cursors.Default;
+            }
+
+            var projectName = Path.GetFileNameWithoutExtension( lblAssemblyPath.Text );
+
+            tbServiceFolder.Text = Path.Combine( RootFolder().FullName, projectName );
+            tbRestFolder.Text = Path.Combine( RootFolder().FullName, projectName + ".Rest" );
+            tbClientFolder.Text = Path.Combine( RootFolder().FullName, projectName + ".Client" );
+            tbDatabaseFolder.Text = Path.Combine( RootFolder().FullName, "Database" );
+
+            if ( projectName != "Rock" )
+            {
+                tbRestFolder.Text = Path.Combine( RootFolder().FullName, projectName + "\\Rest" );
+                tbDatabaseFolder.Text = Path.Combine( RootFolder().FullName, Path.GetFileNameWithoutExtension( projectName ) + ".Database" );
+            }
+
+            SqlConnection sqlconn = GetSqlConnection( RootFolder().FullName );
+            if ( sqlconn != null )
+            {
+                lblDatabase.Text = sqlconn.Database;
             }
         }
 
@@ -154,19 +163,103 @@ namespace Rock.CodeGeneration
                         }
                     }
 
+                    var projectName = Path.GetFileNameWithoutExtension( lblAssemblyPath.Text );
+
                     if (cbClient.Checked)
                     {
                         WriteRockClientIncludeClientFiles( rockClientFolder, cblModels.CheckedItems.OfType<Type>().ToList() );
                         WriteRockClientSystemGuidFiles( rockClientFolder );
                         WriteRockClientEnumsFile( rockClientFolder );
                     }
+
+                    if ( cbDatabaseProcs.Checked )
+                    {
+                        WriteDatabaseProcsScripts( tbDatabaseFolder.Text, projectName );
+                    }
                 }
             }
 
             progressBar1.Visible = false;
             Cursor = Cursors.Default;
-
             MessageBox.Show( "Files have been generated" );
+        }
+
+        /// <summary>
+        /// Writes the database procs scripts.
+        /// </summary>
+        /// <param name="databaseRootFolder">The database root folder.</param>
+        /// <param name="projectName">Name of the project.</param>
+        public void WriteDatabaseProcsScripts( string databaseRootFolder, string projectName )
+        {
+            SqlConnection sqlconn = GetSqlConnection( new DirectoryInfo( databaseRootFolder ).Parent.FullName );
+            sqlconn.Open();
+            var qryProcs = sqlconn.CreateCommand();
+            qryProcs.CommandType = System.Data.CommandType.Text;
+            qryProcs.CommandText = "select ROUTINE_SCHEMA, ROUTINE_NAME, ROUTINE_TYPE FROM INFORMATION_SCHEMA.ROUTINES";
+            var readerProcs = qryProcs.ExecuteReader();
+            string procPrefixFilter;
+            if (projectName == "Rock")
+            {
+                procPrefixFilter = string.Empty;
+            }
+            else
+            {
+                procPrefixFilter = "_" + Path.GetFileNameWithoutExtension( projectName ).Replace( ".", "_" );
+            }
+
+            while ( readerProcs.Read() )
+            {
+                string routineSchema = readerProcs["ROUTINE_SCHEMA"] as string;
+                string routineName = readerProcs["ROUTINE_NAME"] as string;
+                string routineType = readerProcs["ROUTINE_TYPE"] as string;
+                var helpTextCommand = sqlconn.CreateCommand();
+                helpTextCommand.CommandText = string.Format( "EXEC sp_helptext '{0}.{1}';", routineSchema, routineName );
+                var helpTextReader = helpTextCommand.ExecuteReader();
+                var script = string.Empty;
+                while ( helpTextReader.Read() )
+                {
+                    script += helpTextReader[0];
+                }
+
+                string folder;
+                if ( routineType == "PROCEDURE" )
+                {
+                    folder = "Procedures";
+                }
+                else
+                {
+                    folder = "Functions";
+                }
+                
+                string filePath = Path.Combine( databaseRootFolder, folder, routineName + ".sql" );
+                Directory.CreateDirectory( Path.GetDirectoryName( filePath ) );
+
+                script = Regex.Replace( script, "^CREATE\\s*PROCEDURE", "ALTER PROCEDURE", RegexOptions.IgnoreCase | RegexOptions.Multiline );
+                script = Regex.Replace( script, "^CREATE\\s*FUNCTION", "ALTER FUNCTION", RegexOptions.IgnoreCase | RegexOptions.Multiline );
+                
+                if (string.IsNullOrEmpty(procPrefixFilter) || routineName.StartsWith(procPrefixFilter, StringComparison.OrdinalIgnoreCase))
+                {
+                    File.WriteAllText( filePath, script.Trim() );
+                }
+            }
+
+            var qryViews = sqlconn.CreateCommand();
+            qryViews.CommandText = "SELECT TABLE_NAME, VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS";
+            var readerViews = qryViews.ExecuteReader();
+            while ( readerViews.Read() )
+            {
+                string viewName = readerViews["TABLE_NAME"] as string;
+                string script = readerViews["VIEW_DEFINITION"] as string;
+
+                string filePath = Path.Combine( databaseRootFolder, "Views", viewName + ".sql" );
+                Directory.CreateDirectory( Path.GetDirectoryName( filePath ) );
+                script = Regex.Replace( script, "^CREATE\\s*VIEW", "ALTER VIEW", RegexOptions.IgnoreCase | RegexOptions.Multiline );
+
+                if ( string.IsNullOrEmpty( procPrefixFilter ) || viewName.StartsWith( procPrefixFilter, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    File.WriteAllText( filePath, script.Trim() );
+                }
+            }
         }
 
         /// <summary>
