@@ -2,6 +2,38 @@
     The accent colors are deprecated and should not be used in new theme development. They will be
     removed in Rock v 6.0.
 */
+.fa-spin {
+  -webkit-animation: fa-spin 2s infinite linear;
+  animation: fa-spin 2s infinite linear;
+}
+.fa-pulse {
+  -webkit-animation: fa-spin 1s infinite steps(8);
+  animation: fa-spin 1s infinite steps(8);
+}
+@-webkit-keyframes fa-spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(359deg);
+    transform: rotate(359deg);
+  }
+}
+@keyframes fa-spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(359deg);
+    transform: rotate(359deg);
+  }
+}
+.fa-fw {
+  width: 1.28571429em;
+  text-align: center;
+}
 .easter-header img {
   max-height: 100vh;
   margin-left: auto;
@@ -21,6 +53,22 @@
   .easter-description .lead {
     font-size: 1.75em;
   }
+}
+.btn.find-nearest i.loading-icon:before {
+  display: inline-block;
+  font: normal normal normal 14px/1 FontAwesome;
+  font-size: inherit;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  width: 1.28571429em;
+  text-align: center;
+  content: "\f041";
+}
+.btn.find-nearest.is-loading i.loading-icon:before {
+  -webkit-animation: fa-spin 2s infinite linear;
+  animation: fa-spin 2s infinite linear;
+  content: "\f013";
 }
 .map-wrapper {
   max-width: 350px;

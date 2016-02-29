@@ -11,6 +11,7 @@ CCV.locations = [
   {
     id: '{{ campus.Id }}',
     name: '{{ campus.Name }}',
+    shortcode: '{{ campus.ShortCode }}',
     {% if campus.Location.Latitude and campus.Location.Longitude %}geo: {
       lat: {{ campus.Location.Latitude }},
       lng: {{ campus.Location.Longitude }},

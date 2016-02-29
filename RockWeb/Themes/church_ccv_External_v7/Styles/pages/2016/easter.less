@@ -11,6 +11,11 @@
 @import "../../../../../Styles/Bootstrap/mixins.less";
 @import "../../../../../Styles/_rock-variables.less";
 
+@import "../../../../../Styles/FontAwesome/variables.less";
+@import "../../../../../Styles/FontAwesome/mixins.less";
+@import "../../../../../Styles/FontAwesome/animated.less";
+@import "../../../../../Styles/FontAwesome/fixed-width.less";
+
 @import "../../_variables";
 @import "../../_mixins";
 
@@ -34,6 +39,20 @@
     font-size: 1.3em;
     @media @sm {
       font-size: 1.75em;
+    }
+  }
+}
+
+.btn.find-nearest {
+  i.loading-icon:before {
+    .fa-icon();
+    .fa-fw();
+    content: @fa-var-map-marker;
+  }
+  &.is-loading {
+    i.loading-icon:before {
+      .fa-spin;
+      content: @fa-var-gear;
     }
   }
 }

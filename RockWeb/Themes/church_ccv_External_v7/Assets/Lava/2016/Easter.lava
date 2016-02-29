@@ -23,6 +23,9 @@ Campus={{ Context.Campus.Guid }}|OSFamily={{ OSFamily }}|CampusRoute={{ PagePara
     <p class="text-muted">
       Separate children’s services will be available during all services, except Sunrise Service. Special needs and hearing impaired services are also available.
     </p>
+    <p>
+      <div class="js-find-nearest-container"></div>
+    </p>
   </div>
 </section>
 
@@ -185,35 +188,25 @@ Campus={{ Context.Campus.Guid }}|OSFamily={{ OSFamily }}|CampusRoute={{ PagePara
   </div>
 </footer>
 
+{% include '~~/Assets/Lava/ScriptCampusLocations.lava' %}
+
+<script src="//maps.googleapis.com/maps/api/js"></script>
+
+<script src="/Themes/church_ccv_External_v7/Scripts/min/multicampus.min.js"></script>
+
 <script type="text/javascript">
-  $('body').on('click', '.multicampus .multicampus-title', function(){
-    var $this = $(this)
-    $this.siblings('.multicampus-collapse').collapse('toggle')
-    $this.parents('.multicampus-item').toggleClass('is-open')
-  })
-
-  function setActiveCampus(campus) {
-    $('[data-campus='+campus+']').addClass('is-active is-open').insertBefore('.multicampus-item:first').find('.collapse').addClass('in')
-  }
-
   {% if PageParameter.Campus %}
     setActiveCampus('{{ PageParameter.Campus | Upcase | EscapeDataString }}')
-    // alert('{{ PageParameter.Campus | Upcase }}')
   {% elsif Context.Campus %}
     setActiveCampus('{{ Context.Campus.ShortCode }}')
-    // alert('context')
   {% endif %}
-
 </script>
 
-<script src="//cdnjs.cloudflare.com/ajax/libs/mobile-detect/1.3.1/mobile-detect.min.js"></script>
-
+<!-- FB Retargeting -->
 <script type="text/javascript">
-  var md = new MobileDetect(window.navigator.userAgent);
-
-  if (md.mobile()) {
-    $('.js-sms').removeClass('hide')
-  } else {
-    $('.js-fb').removeClass('hide')
-  }
+  (function() {
+  var pa =document.createElement('script'); pa.type = 'text/javascript'; pa.async = true;
+  pa.src = ('https:'== document.location.protocol ? 'https:' : 'http:') +"//tag.marinsm.com/serve/56563f4e30b2c1d16e000293.js";
+  var s =document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(pa, s);
+  })();
 </script>
