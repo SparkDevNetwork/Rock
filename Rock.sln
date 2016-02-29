@@ -20,7 +20,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb", "http://localhost
 	ProjectSection(WebsiteProperties) = preProject
 		UseIISExpress = "true"
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5.1"
-		ProjectReferences = "{8f8c2a79-24f4-4157-8b99-45f75fa85799}|Rock.dll;{957b1dbe-b921-4fae-8e5e-b7ad7f01b161}|Rock.Migrations.dll;{b89dfd33-ce93-44e1-8616-c31acdfe89cb}|Rock.Rest.dll;{381a2fc8-6f4f-4b66-a9b4-14932d43b76a}|Rock.Version.dll;{05f3587d-86dd-4cf3-a80a-d8cf598e1fd1}|Rock.PayFlowPro.dll;{cb9372cd-9c1d-47ab-92d8-702d4d68324f}|DotLiquid.dll;{eee3c919-71c8-4160-a3c6-49db39394a84}|Rock.Mandrill.dll;"
+		ProjectReferences = "{8f8c2a79-24f4-4157-8b99-45f75fa85799}|Rock.dll;{957b1dbe-b921-4fae-8e5e-b7ad7f01b161}|Rock.Migrations.dll;{b89dfd33-ce93-44e1-8616-c31acdfe89cb}|Rock.Rest.dll;{381a2fc8-6f4f-4b66-a9b4-14932d43b76a}|Rock.Version.dll;{05f3587d-86dd-4cf3-a80a-d8cf598e1fd1}|Rock.PayFlowPro.dll;{cb9372cd-9c1d-47ab-92d8-702d4d68324f}|DotLiquid.dll;{eee3c919-71c8-4160-a3c6-49db39394a84}|Rock.Mandrill.dll;{681d7ce2-d156-4414-abec-06cb5f47adec}|Rock.Mailgun.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/localhost_6229"
 		Debug.AspNetCompiler.PhysicalPath = "RockWeb\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_6229\"
@@ -43,6 +43,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotLiquid", "DotLiquid\DotLiquid.csproj", "{CB9372CD-9C1D-47AB-92D8-702D4D68324F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Mandrill", "Rock.Mandrill\Rock.Mandrill.csproj", "{EEE3C919-71C8-4160-A3C6-49DB39394A84}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Mailgun", "Rock.Mailgun\Rock.Mailgun.csproj", "{681D7CE2-D156-4414-ABEC-06CB5F47ADEC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -134,6 +136,16 @@ Global
 		{EEE3C919-71C8-4160-A3C6-49DB39394A84}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{EEE3C919-71C8-4160-A3C6-49DB39394A84}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{EEE3C919-71C8-4160-A3C6-49DB39394A84}.Release|x86.ActiveCfg = Release|Any CPU
+		{681D7CE2-D156-4414-ABEC-06CB5F47ADEC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{681D7CE2-D156-4414-ABEC-06CB5F47ADEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{681D7CE2-D156-4414-ABEC-06CB5F47ADEC}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{681D7CE2-D156-4414-ABEC-06CB5F47ADEC}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{681D7CE2-D156-4414-ABEC-06CB5F47ADEC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{681D7CE2-D156-4414-ABEC-06CB5F47ADEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{681D7CE2-D156-4414-ABEC-06CB5F47ADEC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{681D7CE2-D156-4414-ABEC-06CB5F47ADEC}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{681D7CE2-D156-4414-ABEC-06CB5F47ADEC}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{681D7CE2-D156-4414-ABEC-06CB5F47ADEC}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
