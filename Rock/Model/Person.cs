@@ -2018,7 +2018,14 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPersonPhotoImageTag( Person person, int? maxWidth = null, int? maxHeight = null, string altText = "", string className = "" )
         {
-            return GetPersonPhotoImageTag( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValue != null ? (Guid?)person.RecordTypeValue.Guid : null, maxWidth, maxHeight, altText, className );
+            if (person != null )
+            {
+                return GetPersonPhotoImageTag( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValue != null ? (Guid?)person.RecordTypeValue.Guid : null, maxWidth, maxHeight, altText, className );
+            } else
+            {
+                return GetPersonPhotoImageTag( null, null, null, Gender.Unknown, null, maxWidth, maxHeight, altText, className );
+            }
+            
         }
 
         /// <summary>
@@ -2032,6 +2039,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPersonPhotoImageTag( PersonAlias personAlias, int? maxWidth = null, int? maxHeight = null, string altText = "", string className = "" )
         {
+
             Person person = personAlias != null ? personAlias.Person : null;
             return GetPersonPhotoImageTag( person, maxWidth, maxHeight, altText, className );
         }
@@ -2544,14 +2552,16 @@ namespace Rock.Model
         /// <returns></returns>
         public static IQueryable<Person> WhereGradeOffsetRange( this IQueryable<Person> personQry, int? minGradeOffset, int? maxGradeOffset, bool includePeopleWithNoGrade = true )
         {
-            var transitionDate = GlobalAttributesCache.Read().GetValue( "GradeTransitionDate" ).AsDateTime();
+            var transitionDate = GlobalAttributesCache.Read().GetValue( "GradeTransitionDate" ).AsDateTime() ?? RockDateTime.Now.AddDays( 1 );
+            var currentGradYear = RockDateTime.Now < transitionDate ? RockDateTime.Now.Year : RockDateTime.Now.Year + 1;
 
             var qryWithGradeOffset = personQry.Select(
                       p => new
                       {
                           Person = p,
-                          GradeOffset = p.GraduationYear != null ? ( ( RockDateTime.Now < transitionDate.Value ) ? p.GraduationYear.Value : ( p.GraduationYear.Value - 1 ) - RockDateTime.Now.Year ) : (int?)null
+                          GradeOffset = p.GraduationYear.HasValue ? p.GraduationYear.Value - currentGradYear : (int?)null
                       } );
+
             if ( includePeopleWithNoGrade )
             {
                 if ( minGradeOffset.HasValue )
