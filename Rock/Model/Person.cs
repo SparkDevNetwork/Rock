@@ -2018,7 +2018,14 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPersonPhotoImageTag( Person person, int? maxWidth = null, int? maxHeight = null, string altText = "", string className = "" )
         {
-            return GetPersonPhotoImageTag( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValue != null ? (Guid?)person.RecordTypeValue.Guid : null, maxWidth, maxHeight, altText, className );
+            if (person != null )
+            {
+                return GetPersonPhotoImageTag( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValue != null ? (Guid?)person.RecordTypeValue.Guid : null, maxWidth, maxHeight, altText, className );
+            } else
+            {
+                return GetPersonPhotoImageTag( null, null, null, Gender.Unknown, null, maxWidth, maxHeight, altText, className );
+            }
+            
         }
 
         /// <summary>
@@ -2032,6 +2039,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPersonPhotoImageTag( PersonAlias personAlias, int? maxWidth = null, int? maxHeight = null, string altText = "", string className = "" )
         {
+
             Person person = personAlias != null ? personAlias.Person : null;
             return GetPersonPhotoImageTag( person, maxWidth, maxHeight, altText, className );
         }

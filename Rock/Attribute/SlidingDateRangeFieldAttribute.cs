@@ -31,6 +31,10 @@ namespace Rock.Attribute
         /// Enabled SlidingDateRangeTypes
         /// </summary>
         protected const string ENABLED_SLIDING_DATE_RANGE_TYPES = "enabledSlidingDateRangeTypes";
+
+        /// <summary>
+        /// Enabled SlidingDateRangeUnits
+        /// </summary>
         protected const string ENABLED_SLIDING_DATE_RANGE_UNITS = "enabledSlidingDateRangeUnits";
 
         /// <summary>
@@ -44,6 +48,7 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         /// <param name="enabledSlidingDateRangeTypes">The enabled sliding date range types. Choose from: 'Previous, Last, Current, Next, Upcoming, DateRange'</param>
+        /// <param name="enabledSlidingDateRangeUnits">The enabled sliding date range units.</param>
         public SlidingDateRangeFieldAttribute( string name, string description = "", bool required = true, string defaultValue = ",", string category = "", int order = 0, string key = null, 
             string enabledSlidingDateRangeTypes = null, string enabledSlidingDateRangeUnits = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.SlidingDateRangeFieldType ).FullName )
