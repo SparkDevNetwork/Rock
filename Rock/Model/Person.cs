@@ -1680,7 +1680,6 @@ namespace Rock.Model
             }
         }
 
-
         /// <summary>
         /// Gets the person photo URL.
         /// </summary>
@@ -1690,9 +1689,8 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPersonPhotoUrl( Person person, int? maxWidth = null, int? maxHeight = null )
         {
-            return GetPersonPhotoUrl( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordStatusReasonValue != null? (Guid?)person.RecordStatusReasonValue.Guid : null, maxWidth, maxHeight );
+            return GetPersonPhotoUrl( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValueId.HasValue ? DefinedValueCache.Read( person.RecordTypeValueId.Value ).Guid : (Guid?)null, maxWidth, maxHeight );
         }
-
 
         /// <summary>
         /// Gets the person photo URL from a person id (warning this will cause a database lookup).
