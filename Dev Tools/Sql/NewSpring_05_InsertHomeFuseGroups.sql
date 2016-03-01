@@ -30,7 +30,7 @@ DECLARE @DefinedTypeMaritalStatusId int = 7
 DECLARE @DefinedValueMeetingLocationId int = 209
 DECLARE @GenderAttributeName nvarchar(255) = 'Gender'
 DECLARE @MaritalAttributeName nvarchar(255) = 'Marital Status'
-DECLARE @ChildCareAttributeName nvarchar(255) = 'Has Childcare'
+DECLARE @ChildCareAttributeName nvarchar(255) = 'Childcare'
 
 /* ====================================================== */
 -- Start value lookups
