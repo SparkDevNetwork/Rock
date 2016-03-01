@@ -167,7 +167,7 @@ namespace RockWeb.Blocks.CheckIn
             using ( var rockContext = new RockContext() )
             {
                 bool enableReverseLookup = GetAttributeValue( "EnableReverseLookup" ).AsBoolean( false );
-                var device = new DeviceService( rockContext ).GetByIPAddress( Request.ServerVariables["REMOTE_ADDR"], checkInDeviceTypeId, !enableReverseLookup );
+                var device = new DeviceService( rockContext ).GetByIPAddress( Rock.Web.UI.RockPage.GetClientIpAddress(), checkInDeviceTypeId, !enableReverseLookup );
                 if ( device != null )
                 {
                     ClearMobileCookie();
