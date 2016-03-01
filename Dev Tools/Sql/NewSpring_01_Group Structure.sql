@@ -443,13 +443,13 @@ VALUES
 
 -- adult attendee/volunteer structure from COL
 ('Creativity & Tech Attendee', 'Choir', 'Choir'), 
+('Creativity & Tech Attendee', 'Load In', 'Load In'), 
+('Creativity & Tech Attendee', 'Load Out', 'Load Out'), 
 ('Creativity & Tech Attendee', 'Special Event Attendee', 'Special Event Attendee'), 
 ('Creativity & Tech Volunteer', 'Band', 'Band'), 
 ('Creativity & Tech Volunteer', 'Band Green Room', 'Band Green Room'),
 ('Creativity & Tech Volunteer', 'Editorial Team', 'Editorial Team'), 
 ('Creativity & Tech Volunteer', 'IT Team', 'IT Team'), 
-('Creativity & Tech Volunteer', 'Load In', 'Load In'), 
-('Creativity & Tech Volunteer', 'Load Out', 'Load Out'), 
 ('Creativity & Tech Volunteer', 'New Serve Team', 'New Serve Team'), 
 ('Creativity & Tech Volunteer', 'Office Team', 'Office Team'), 
 ('Creativity & Tech Volunteer', 'Production Team', 'Production Team'), 
