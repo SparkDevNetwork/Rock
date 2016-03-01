@@ -1,5 +1,7 @@
 {% comment %}
 
+{% assign GoogleCampaignName = 'Easter Page' %}
+{% assign trackEvents = true %}
 {% include '~~/Assets/Lava/2016/Easter.lava' %}
 
 HEADER CONTENT
@@ -9,6 +11,12 @@ CACHE KEYS
 Campus={{ Context.Campus.Guid }}|OSFamily={{ OSFamily }}|CampusRoute={{ PageParameter.Campus | Upcase | EscapeDataString }}
 
 {% endcomment %}
+
+{% assign GoogleCampaignName = GoogleCampaignName | Default: 'Easter Page' %}
+
+{% if trackEvents == null %}
+  {% assign trackEvents = true %}
+{% endif %}
 
 <header class="easter-header">
   <img src="//s3.amazonaws.com/media.ccvonline.com/2016/easter/header.jpg" alt="CCV Easter" />
@@ -117,7 +125,7 @@ Campus={{ Context.Campus.Guid }}|OSFamily={{ OSFamily }}|CampusRoute={{ PagePara
                 Text Message
               </button>
 
-              <a class="btn btn-default js-fb hide" href="https://www.facebook.com/dialog/send?app_id=476409745797650&display=popup&link=http://ccv.church/easter16?utm_source=facebook&redirect_uri=http://ccv.church/easter16?utm_source=facebook">Facebook</a>
+              <a class="btn btn-default js-fb js-track-fb hide" data-label="{{ item.Name }}" href="https://www.facebook.com/dialog/send?app_id=476409745797650&display=popup&link=http://ccv.church/easter16?utm_source=facebook&redirect_uri=http://ccv.church/easter16?utm_source=facebook">Facebook</a>
             </p>
           </div>
 
@@ -196,10 +204,36 @@ Campus={{ Context.Campus.Guid }}|OSFamily={{ OSFamily }}|CampusRoute={{ PagePara
 
 <script type="text/javascript">
   {% if PageParameter.Campus %}
+    console.log('Campus URL: {{ PageParameter.Campus | Upcase | EscapeDataString }}')
     setActiveCampus('{{ PageParameter.Campus | Upcase | EscapeDataString }}')
   {% elsif Context.Campus %}
     setActiveCampus('{{ Context.Campus.ShortCode }}')
   {% endif %}
+
+  function trackEvent(action, label) {
+    {% if trackEvents %}
+      if (label) {
+        ga('send', {
+          hitType: 'event',
+          eventCategory: '{{ GoogleCampaignName }}',
+          eventAction: action,
+          eventLabel: label
+        });
+      } else {
+        ga('send', {
+          hitType: 'event',
+          eventCategory: '{{ GoogleCampaignName }}',
+          eventAction: action
+        });
+      }
+    {% else %}
+      if (label) {
+        console.log('{{ GoogleCampaignName }}, '+action+', '+label)
+      } else {
+        console.log('{{ GoogleCampaignName }}, '+action)
+      }
+    {% endif %}
+  }
 </script>
 
 <!-- FB Retargeting -->
