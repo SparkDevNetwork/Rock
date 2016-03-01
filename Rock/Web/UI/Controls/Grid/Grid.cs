@@ -1807,6 +1807,24 @@ namespace Rock.Web.UI.Controls
             conditionalFormatting.Style.Fill.BackgroundColor.Color = Color.FromArgb( 240, 240, 240 );
             
             var table = worksheet.Tables.Add( range, "table1" );
+            
+            // ensure each column in the table has a unique name
+            var columnNames = worksheet.Cells[3, 1, 3, columnCounter].Select( a => new { OrigColumnName = a.Text, Cell = a } ).ToList();
+            columnNames.Reverse();
+            foreach ( var col in columnNames )
+            {
+                int duplicateSuffix = 0;
+                string uniqueName = col.OrigColumnName;
+                
+                // increment the suffix by 1 until there is only one column with that name
+                while ( columnNames.Where(a => a.Cell.Text == uniqueName ).Count() > 1 )
+                {
+                    duplicateSuffix++;
+                    uniqueName = col.OrigColumnName + duplicateSuffix.ToString();
+                    col.Cell.Value = uniqueName;
+                }
+            }
+
             table.ShowFilter = true;
             table.TableStyle = OfficeOpenXml.Table.TableStyles.None;
 
