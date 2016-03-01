@@ -188,42 +188,121 @@ namespace Rock.Model
         /// </summary>
         /// <param name="location">A <see cref="Rock.Model.Location" /> to verify.</param>
         /// <param name="reVerify">if set to <c>true</c> [re verify].</param>
-        public void Verify( Location location, bool reVerify )
+        public bool Verify( Location location, bool reVerify )
         {
+            bool success = false;
+
+            // Do not reverify any locked locations
+            if ( location == null || ( location.IsGeoPointLocked.HasValue && location.IsGeoPointLocked.Value ) )
+            {
+                return false;
+            }
+
             string inputLocation = location.ToString();
 
             // Create new context to save service log without affecting calling method's context
             var rockContext = new RockContext();
             Model.ServiceLogService logService = new Model.ServiceLogService( rockContext );
 
+            bool standardized = location.StandardizeAttemptedDateTime.HasValue && !reVerify;
+            bool geocoded = location.GeocodeAttemptedDateTime.HasValue && !reVerify;
+            bool anyActiveStandardizationService = false;
+            bool anyActiveGeocodingService = false;
+
             // Try each of the verification services that were found through MEF
             foreach ( var service in Rock.Address.VerificationContainer.Instance.Components )
             {
-                if ( service.Value.Value.IsActive )
+                var component = service.Value.Value;
+                if ( component != null &&
+                    component.IsActive && (
+                    ( !standardized && component.SupportsStandardization ) ||
+                    ( !geocoded && component.SupportsGeocoding ) ) )
                 {
-                    string result;
-                    bool success = service.Value.Value.VerifyLocation( location, reVerify, out result );
-                    if ( !string.IsNullOrWhiteSpace( result ) )
+                    string resultMsg = string.Empty;
+                    var result = component.Verify( location, out resultMsg );
+
+                    if ( component.SupportsStandardization )
                     {
-                        // Log the results of the service
+                        anyActiveStandardizationService = true;
+
+                        // Log the service and result
+                        location.StandardizeAttemptedServiceType = service.Value.Metadata.ComponentName;
+                        location.StandardizeAttemptedResult = resultMsg;
+
+                        // As long as there wasn't a connection error, update the attempted datetime
+                        if ( ( result & Address.VerificationResult.ConnectionError ) != Address.VerificationResult.ConnectionError )
+                        {
+                            location.StandardizeAttemptedDateTime = RockDateTime.Now;
+                        }
+
+                        // If location was successfully geocoded, update the timestamp
+                        if ( ( result & Address.VerificationResult.Standardized ) == Address.VerificationResult.Standardized )
+                        {
+                            location.StandardizedDateTime = RockDateTime.Now;
+                            standardized = true;
+                        }
+                    }
+
+                    if ( component.SupportsGeocoding )
+                    {
+                        anyActiveGeocodingService = true;
+
+                        // Log the service and result
+                        location.GeocodeAttemptedServiceType = service.Value.Metadata.ComponentName;
+                        location.GeocodeAttemptedResult = resultMsg;
+
+                        // As long as there wasn't a connection error, update the attempted datetime
+                        if ( ( result & Address.VerificationResult.ConnectionError ) != Address.VerificationResult.ConnectionError )
+                        {
+                            location.GeocodeAttemptedDateTime = RockDateTime.Now;
+                        }
+
+                        // If location was successfully geocoded, update the timestamp
+                        if ( ( result & Address.VerificationResult.Geocoded ) == Address.VerificationResult.Geocoded )
+                        {
+                            location.GeocodedDateTime = RockDateTime.Now;
+                            geocoded = true;
+                        }
+                    }
+
+                    // Log the results of the service
+                    if ( !string.IsNullOrWhiteSpace( resultMsg ) )
+                    {
                         Model.ServiceLog log = new Model.ServiceLog();
                         log.LogDateTime = RockDateTime.Now;
                         log.Type = "Location Verify";
                         log.Name = service.Value.Metadata.ComponentName;
                         log.Input = inputLocation;
-                        log.Result = result.Left( 200 );
+                        log.Result = resultMsg.Left( 200 );
                         log.Success = success;
                         logService.Add( log );
                     }
 
-                    if ( success )
+                    // If location has been succesfully standardized and geocoded, break to get out, otherwise next service will be attempted
+                    if ( standardized && geocoded )
                     {
                         break;
                     }
+
                 }
             }
 
+            // If there is only one type of active service (standardization/geocoding) the other type's attempted datetime 
+            // needs to be updated so that the verification job will continue to process additional locations vs just getting
+            // stuck on the first batch and doing them over and over again because the other service type's attempted date is
+            // never updated.
+            if ( anyActiveStandardizationService && !anyActiveGeocodingService )
+            {
+                location.GeocodeAttemptedDateTime = RockDateTime.Now;
+            }
+            if ( anyActiveGeocodingService && !anyActiveStandardizationService )
+            {
+                location.StandardizeAttemptedDateTime = RockDateTime.Now;
+            }
+
             rockContext.SaveChanges();
+
+            return standardized || geocoded;
         }
 
         /// <summary>
@@ -246,6 +325,25 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets all descendent ids.
+        /// </summary>
+        /// <param name="parentLocationId">The parent location identifier.</param>
+        /// <returns></returns>
+        public IEnumerable<int> GetAllDescendentIds( int parentLocationId )
+        {
+            return this.Context.Database.SqlQuery<int>( string.Format(
+                @"
+                WITH CTE AS (
+                    SELECT [Id], [ParentLocationId] FROM [Location] WHERE [ParentLocationId]={0}
+                    UNION ALL
+                    SELECT [a].[Id], [a].[ParentLocationId] FROM [Location] [a]
+                    INNER JOIN  CTE pcte ON pcte.[Id] = [a].[ParentLocationId]
+                )
+                SELECT [Id] FROM CTE
+                ", parentLocationId ) );
+        }
+
+        /// <summary>
         /// Gets all ancestors.
         /// </summary>
         /// <param name="locationId">The location identifier.</param>
@@ -261,6 +359,28 @@ namespace Rock.Model
                     INNER JOIN CTE ON CTE.[ParentLocationId] = [a].[Id]
                 )
                 SELECT * FROM CTE
+                WHERE [Name] IS NOT NULL 
+                AND [Name] <> ''
+                ", locationId ) );
+        }
+
+        /// <summary>
+        /// Gets all ancestor ids.
+        /// </summary>
+        /// <param name="locationId">The location identifier.</param>
+        /// <returns></returns>
+        public IEnumerable<int> GetAllAncestorIds( int locationId )
+        {
+            return this.Context.Database.SqlQuery<int>( string.Format(
+                @"
+                WITH CTE AS (
+                    SELECT [Id], [ParentLocationId] FROM [Location] WHERE [Id]={0}
+                    UNION ALL
+                    SELECT [a].[Id], [a].[ParentLocationId] FROM [Location] [a]
+                    INNER JOIN CTE ON CTE.[ParentLocationId] = [a].[Id]
+                )
+                SELECT [Id]
+                FROM CTE
                 WHERE [Name] IS NOT NULL 
                 AND [Name] <> ''
                 ", locationId ) );
@@ -294,8 +414,7 @@ namespace Rock.Model
                     .ToList()
                     .ForEach( c => campusLocations.Add( c.CampusId, c.LocationId ) );
 
-                foreach ( var parentLocationId in this.GetAllAncestors( locationId.Value )
-                    .Select( l => l.Id ) )
+                foreach ( var parentLocationId in this.GetAllAncestorIds( locationId.Value ) )
                 {
                     campusId = campusLocations
                         .Where( c => c.Value == parentLocationId )

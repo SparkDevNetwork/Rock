@@ -452,6 +452,21 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets the current graduation year based on grade transition date
+        /// </summary>
+        /// <value>
+        /// Returns current year if transition month/day has not passed, otherwise will return next year
+        /// </value>
+        public int CurrentGraduationYear
+        {
+            get
+            {
+                var transitionDate = GetValue( "GradeTransitionDate" ).AsDateTime() ?? new DateTime( RockDateTime.Today.Year, 6, 1 );
+                transitionDate = new DateTime( RockDateTime.Today.Year, transitionDate.Month, transitionDate.Day );
+                return RockDateTime.Now.Date < transitionDate ? transitionDate.Year : transitionDate.Year + 1;
+            }
+        }
+        /// <summary>
         /// Gets the organization location (OrganizationAddress)
         /// </summary>
         /// <value>

@@ -136,6 +136,26 @@ namespace Rock.Model
         /// </value>
         public bool IsTemporary { get; set; }
 
+        /// <summary>
+        /// Gets or sets the last payment reminder date time.
+        /// </summary>
+        /// <value>
+        /// The last payment reminder date time.
+        /// </value>
+        [DataMember]
+        public DateTime? LastPaymentReminderDateTime
+        {
+            get
+            {
+                return _lastPaymentReminderDateTime.HasValue ? _lastPaymentReminderDateTime : this.CreatedDateTime;
+            }
+            set
+            {
+                _lastPaymentReminderDateTime = value;
+            }
+        }
+        private DateTime? _lastPaymentReminderDateTime;
+
         #endregion
 
         #region Virtual Properties
