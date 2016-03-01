@@ -57,6 +57,7 @@ VALUES
 (@IsSystem, 'Florence', 'FLO', NEWID(), @True),
 (@IsSystem, 'Greenville', 'GVL', NEWID(), @True),
 (@IsSystem, 'Greenwood', 'GWD', NEWID(), @True),
+(@IsSystem, 'Greer', 'GRR', NEWID(), @False),
 (@IsSystem, 'Hilton Head', 'HHD', NEWID(), @True),
 (@IsSystem, 'Lexington', 'LEX', NEWID(), @True),
 (@IsSystem, 'Myrtle Beach', 'MYR', NEWID(), @True),
@@ -64,6 +65,7 @@ VALUES
 (@IsSystem, 'Powdersville', 'POW', NEWID(), @True),
 (@IsSystem, 'Rock Hill', 'RKH', NEWID(), @True),
 (@IsSystem, 'Spartanburg', 'SPA', NEWID(), @True),
+(@IsSystem, 'Simpsonville', 'SIM', NEWID(), @False),
 (@IsSystem, 'Sumter', 'SUM', NEWID(), @True),
 (@IsSystem, 'Web', 'WEB', NEWID(), @False)
 
