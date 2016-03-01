@@ -533,6 +533,7 @@
     <Compile Include="Utility\NotNullJsonConverter.cs" />
     <Compile Include="Utility\ExtensionMethods\CurrencyExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\ExceptionExtensions.cs" />
+    <Compile Include="Web\UI\RockTheme.cs" />
     <Compile Include="Utility\RockLess.cs" />
     <Compile Include="Utility\SettingsStringBase.cs" />
     <Compile Include="Web\Cache\AttributeValueCache.cs" />
