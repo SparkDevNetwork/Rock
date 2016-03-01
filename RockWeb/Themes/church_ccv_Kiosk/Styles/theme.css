@@ -4535,6 +4535,7 @@ ul.list-group-panel .list-group-item:first-child,
   color: #ffffff;
   transition: 1s;
   border-left: 1px solid #3a3a3a;
+  cursor: pointer;
 }
 .panel-follow-status:before {
   font-family: FontAwesome;
@@ -5257,6 +5258,9 @@ a.cke_dialog_ui_button_ok:active {
 .ck-files img.file-browser-image {
   width: 50px;
   height: 50px;
+}
+iframe {
+  border: 1px solid #cccccc;
 }
 .clickable {
   cursor: pointer;
