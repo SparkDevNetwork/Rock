@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="SearchResultList.ascx.cs" Inherits="RockWeb.Plugins.com_centralaz.Widgets.SearchResultList" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="SearchResultList.ascx.cs" Inherits="RockWeb.Plugins.com_centralaz.OpenSearchServer.SearchResultList" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>

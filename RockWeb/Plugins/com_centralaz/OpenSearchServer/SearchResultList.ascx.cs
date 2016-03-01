@@ -21,26 +21,28 @@ using System.Dynamic;
 using System.Linq;
 using System.Net;
 using System.Web.UI;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using RestSharp;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Plugins.com_centralaz.Widgets
+namespace RockWeb.Plugins.com_centralaz.OpenSearchServer
 {
     [DisplayName( "Search Result List" )]
-    [Category( "com_centralaz > Widgets" )]
+    [Category( "com_centralaz > OpenSearchServer" )]
     [Description( "A lava block for searching the external website using OpenSearchServer." )]
-    [TextField( "IP Address", "The IP address of the server running OpenSearchServer", true, "10.200.4.113:9090", order: 1 )]
-    [TextField( "Index Name", "The name of the index that is being searched", true, "RockIndex", order: 2 )]
-    [TextField( "Searcher Username", "The username of the OpenSearchServer user", true, "searcher", order: 3 )]
-    [TextField( "Api Key", "The API key of the OpenSearchServer user", true, "2b6b1d68b17b6090a1fffd1be4f9a20e", order: 4 )]
-    [CodeEditorField( "Search Query", "The search query to use to return search results.", CodeEditorMode.Text, CodeEditorTheme.Rock, 400, true, "{\r\n    \"query\": \"QUERY\",\r\n    \"start\": 0,\r\n    \"rows\": 10,\r\n    \"lang\": \"ENGLISH\",\r\n    \"operator\": \"AND\",\r\n    \"collapsing\": {\r\n        \"max\": 2,\r\n        \"mode\": \"OFF\",\r\n        \"type\": \"OPTIMIZED\"\r\n    },\r\n    \"returnedFields\": [\r\n        \"url\"\r\n    ],\r\n    \"snippets\": [\r\n        {\r\n            \"field\": \"title\",\r\n            \"tag\": \"em\",\r\n            \"separator\": \"...\",\r\n            \"maxSize\": 200,\r\n            \"maxNumber\": 1,\r\n            \"fragmenter\": \"NO\"\r\n        },\r\n        {\r\n            \"field\": \"content\",\r\n            \"tag\": \"em\",\r\n            \"separator\": \"...\",\r\n            \"maxSize\": 200,\r\n            \"maxNumber\": 1,\r\n           \"fragmenter\": \"SENTENCE\"\r\n        }\r\n    ],\r\n    \"enableLog\": false,\r\n    \"searchFields\": [\r\n        {\r\n            \"field\": \"title\",\r\n            \"mode\": \"TERM_AND_PHRASE\",\r\n            \"boost\": 10\r\n        },\r\n        {\r\n            \"field\": \"content\",\r\n            \"mode\": \"TERM_AND_PHRASE\",\r\n            \"boost\": 1\r\n        },\r\n        {\r\n            \"field\": \"titleExact\",\r\n            \"mode\": \"TERM_AND_PHRASE\",\r\n            \"boost\": 10\r\n        },\r\n        {\r\n            \"field\": \"contentExact\",\r\n            \"mode\": \"TERM_AND_PHRASE\",\r\n            \"boost\": 1\r\n        }\r\n    ]\r\n}", "", 5 )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display the search results.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~/Plugins/com_centralaz/Widgets/Lava/SearchResultList.lava' %}", "", 6 )]
+    [TextField( "IP Address", "This is the IP address and port number that the OSS server is located at. Example: xx.xxx.x.xxx:xxxx", true, "", order: 1 )]
+    [TextField( "Index Name", "This is the name of the index that the server will search.", true, "RockIndex", order: 2 )]
+    [TextField( "Searcher Username", "The username of the 'Searcher' user account OpenSearchServer uses to authorize an index query.", true, "searcher", order: 3 )]
+    [TextField( "Api Key", "The API key of the 'Searcher' user account OpenSearchServer uses to authorize an index query.", true, "", order: 4 )]
+    [CodeEditorField( "Search Query", "This is the json search query that is sent to the server.", CodeEditorMode.Text, CodeEditorTheme.Rock, 400, true, "{\r\n    \"query\": \"QUERY\",\r\n    \"start\": 0,\r\n    \"rows\": 10,\r\n    \"lang\": \"ENGLISH\",\r\n    \"operator\": \"AND\",\r\n    \"collapsing\": {\r\n        \"max\": 2,\r\n        \"mode\": \"OFF\",\r\n        \"type\": \"OPTIMIZED\"\r\n    },\r\n    \"returnedFields\": [\r\n        \"url\"\r\n    ],\r\n    \"snippets\": [\r\n        {\r\n            \"field\": \"title\",\r\n            \"tag\": \"em\",\r\n            \"separator\": \"...\",\r\n            \"maxSize\": 200,\r\n            \"maxNumber\": 1,\r\n            \"fragmenter\": \"NO\"\r\n        },\r\n        {\r\n            \"field\": \"content\",\r\n            \"tag\": \"em\",\r\n            \"separator\": \"...\",\r\n            \"maxSize\": 200,\r\n            \"maxNumber\": 1,\r\n           \"fragmenter\": \"SENTENCE\"\r\n        }\r\n    ],\r\n    \"enableLog\": false,\r\n    \"searchFields\": [\r\n        {\r\n            \"field\": \"title\",\r\n            \"mode\": \"TERM_AND_PHRASE\",\r\n            \"boost\": 10\r\n        },\r\n        {\r\n            \"field\": \"content\",\r\n            \"mode\": \"TERM_AND_PHRASE\",\r\n            \"boost\": 1\r\n        },\r\n        {\r\n            \"field\": \"titleExact\",\r\n            \"mode\": \"TERM_AND_PHRASE\",\r\n            \"boost\": 10\r\n        },\r\n        {\r\n            \"field\": \"contentExact\",\r\n            \"mode\": \"TERM_AND_PHRASE\",\r\n            \"boost\": 1\r\n        }\r\n    ]\r\n}", "", 5 )]
+    [CodeEditorField( "Lava Template", "Lava template to use to display the search results.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~/Plugins/com_centralaz/OpenSearchServer/Assets/Lava/SearchResultList.lava' %}", "", 6 )]
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 7 )]
     public partial class SearchResultList : RockBlock
     {
