@@ -8,7 +8,7 @@ HEADER CONTENT
 <link rel="stylesheet" href="/Themes/church_ccv_External_v7/Styles/pages/2016/easter.css" media="screen" title="no title" charset="utf-8">
 
 CACHE KEYS
-Campus={{ Context.Campus.Guid }}|OSFamily={{ OSFamily }}|CampusRoute={{ PageParameter.Campus | Upcase | EscapeDataString }}
+Campus={{ Context.Campus.Guid }}|OSFamily={{ OSFamily }}
 
 {% endcomment %}
 
@@ -203,10 +203,7 @@ Campus={{ Context.Campus.Guid }}|OSFamily={{ OSFamily }}|CampusRoute={{ PagePara
 <script src="/Themes/church_ccv_External_v7/Scripts/min/multicampus.min.js"></script>
 
 <script type="text/javascript">
-  {% if PageParameter.Campus %}
-    console.log('Campus URL: {{ PageParameter.Campus | Upcase | EscapeDataString }}')
-    setActiveCampus('{{ PageParameter.Campus | Upcase | EscapeDataString }}')
-  {% elsif Context.Campus %}
+  {% if Context.Campus %}
     setActiveCampus('{{ Context.Campus.ShortCode }}')
   {% endif %}
 
