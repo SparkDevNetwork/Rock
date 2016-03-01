@@ -504,13 +504,13 @@ BEGIN
 			BEGIN
 				INSERT [Schedule] (iCalendarContent, [Guid], CreatedDateTime, WeeklyTimeOfDay, WeeklyDayOfWeek)
 				SELECT '', NEWID(), @ScheduleStart, CONVERT(time, @ScheduleTime), CASE @ScheduleDay
-					WHEN 'Sunday'   THEN 1  
-					WHEN 'Monday'	THEN 2  
-					WHEN 'Tuesday'	THEN 3  
-					WHEN 'Wednesday'THEN 4  
-					WHEN 'Thursday'	THEN 5  
-					WHEN 'Friday'	THEN 6  
-					WHEN 'Saturday'	THEN 7  
+					WHEN 'Sunday'   THEN 0
+					WHEN 'Monday'	THEN 1  
+					WHEN 'Tuesday'	THEN 2  
+					WHEN 'Wednesday'THEN 3  
+					WHEN 'Thursday'	THEN 4  
+					WHEN 'Friday'	THEN 5  
+					WHEN 'Saturday'	THEN 6  
 				END
 
 				SELECT @GroupScheduleId = SCOPE_IDENTITY()
