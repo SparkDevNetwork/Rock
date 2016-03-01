@@ -111,75 +111,7 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                                     var printFromServer = groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Server );
                                     if ( printFromServer.Any() )
                                     {
-                                        Socket socket = null;
-                                        string currentIp = string.Empty;
-
-                                        foreach ( var label in printFromServer )
-                                        {
-                                            var labelCache = KioskLabel.Read( label.FileGuid );
-                                            if ( labelCache != null )
-                                            {
-                                                if ( !string.IsNullOrWhiteSpace( label.PrinterAddress ) )
-                                                {
-                                                    if ( label.PrinterAddress != currentIp )
-                                                    {
-                                                        if ( socket != null && socket.Connected )
-                                                        {
-                                                            socket.Shutdown( SocketShutdown.Both );
-                                                            socket.Close();
-                                                        }
-
-                                                        currentIp = label.PrinterAddress;
-                                                        var printerIp = new IPEndPoint( IPAddress.Parse( currentIp ), 9100 );
-
-                                                        socket = new Socket( AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
-                                                        IAsyncResult result = socket.BeginConnect( printerIp, null, null );
-                                                        bool success = result.AsyncWaitHandle.WaitOne( 5000, true );
-                                                    }
-
-                                                    string printContent = labelCache.FileContent;
-                                                    // TODO: Document this in our documentation!
-                                                    if ( printContent.StartsWith( "Assembly:" ) )
-                                                    {
-                                                        LoadPrintLabelAndPrint( printContent, label, CurrentCheckInState, person, groupType );
-                                                    }
-                                                    else
-                                                    {
-                                                        foreach ( var mergeField in label.MergeFields )
-                                                        {
-                                                            if ( !string.IsNullOrWhiteSpace( mergeField.Value ) )
-                                                            {
-                                                                printContent = Regex.Replace( printContent, string.Format( @"(?<=\^FD){0}(?=\^FS)", mergeField.Key ), ZebraFormatString( mergeField.Value ) );
-                                                            }
-                                                            else
-                                                            {
-                                                                // Remove the box preceding merge field
-                                                                printContent = Regex.Replace( printContent, string.Format( @"\^FO.*\^FS\s*(?=\^FT.*\^FD{0}\^FS)", mergeField.Key ), string.Empty );
-                                                                // Remove the merge field
-                                                                printContent = Regex.Replace( printContent, string.Format( @"\^FD{0}\^FS", mergeField.Key ), "^FD^FS" );
-                                                            }
-                                                        }
-
-                                                        if ( socket.Connected )
-                                                        {
-                                                            var ns = new NetworkStream( socket );
-                                                            byte[] toSend = System.Text.Encoding.ASCII.GetBytes( printContent );
-                                                            ns.Write( toSend, 0, toSend.Length );
-                                                        }
-                                                        else
-                                                        {
-                                                            phResults.Controls.Add( new LiteralControl( "<br/>NOTE: Could not connect to printer!" ) );
-                                                        }
-                                                    }
-                                                }
-                                            } // labelCache != null
-                                        }
-
-                                        if ( socket != null && socket.Connected )
-                                        {
-                                            socket.Shutdown( SocketShutdown.Both );
-                                            socket.Close();
-                                        }
+                                        PrintFromServerLabels( person, groupType, printFromServer );
                                     }
                                 }
                             }
@@ -191,6 +123,125 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Prints the labels that are the "from server" ones.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="groupType">Type of the group.</param>
+        /// <param name="printFromServer">The print from server.</param>
+        private void PrintFromServerLabels( CheckInPerson person, CheckInGroupType groupType, IEnumerable<CheckInLabel> printFromServer )
+        {
+            Socket socket = null;
+            bool hasCutter = true;
+            string currentIp = string.Empty;
+            int numOfLabels = printFromServer.Count();
+            int labelIndex = 0;
+            foreach ( var label in printFromServer )
+            {
+                labelIndex++;
+                var labelCache = KioskLabel.Read( label.FileGuid );
+                if ( labelCache != null )
+                {
+                    if ( !string.IsNullOrWhiteSpace( label.PrinterAddress ) )
+                    {
+                        if ( label.PrinterAddress != currentIp )
+                        {
+                            if ( socket != null && socket.Connected )
+                            {
+                                socket.Shutdown( SocketShutdown.Both );
+                                socket.Close();
+                            }
+
+                            currentIp = label.PrinterAddress;
+                            var printerIp = new IPEndPoint( IPAddress.Parse( currentIp ), 9100 );
+                            var deviceId = label.PrinterDeviceId;
+                            hasCutter = GetPrinterCutterOption( deviceId );
+ 
+                            socket = new Socket( AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
+                            IAsyncResult result = socket.BeginConnect( printerIp, null, null );
+                            bool success = result.AsyncWaitHandle.WaitOne( 5000, true );
+                        }
+
+                        string printContent = labelCache.FileContent;
+                        // TODO: Document this in our documentation!
+                        if ( printContent.StartsWith( "Assembly:" ) )
+                        {
+                            LoadPrintLabelAndPrint( printContent, label, CurrentCheckInState, person, groupType );
+                        }
+                        else
+                        {
+                            foreach ( var mergeField in label.MergeFields )
+                            {
+                                if ( !string.IsNullOrWhiteSpace( mergeField.Value ) )
+                                {
+                                    printContent = Regex.Replace( printContent, string.Format( @"(?<=\^FD){0}(?=\^FS)", mergeField.Key ), ZebraFormatString( mergeField.Value ) );
+                                }
+                                else
+                                {
+                                    // Remove the box preceding merge field
+                                    printContent = Regex.Replace( printContent, string.Format( @"\^FO.*\^FS\s*(?=\^FT.*\^FD{0}\^FS)", mergeField.Key ), string.Empty );
+                                    // Remove the merge field
+                                    printContent = Regex.Replace( printContent, string.Format( @"\^FD{0}\^FS", mergeField.Key ), "^FD^FS" );
+                                }
+                            }
+
+                            // Inject the cut command on the last label (if the printer is has a cutter)
+                            // otherwise supress the backfeed (^XB)
+                            if ( labelIndex == numOfLabels && hasCutter )
+                            {
+                                printContent = Regex.Replace( printContent.Trim(), @"\" + @"^PQ1,0,1,Y", string.Empty );
+                                printContent = Regex.Replace( printContent.Trim(), @"\" + @"^MMT", @"^MMC" );
+                            }
+                            else
+                            {
+                                printContent = Regex.Replace( printContent.Trim(), @"\" + @"^XZ$", @"^XB^XZ" );
+                            }
+
+                            if ( socket.Connected )
+                            {
+                                var ns = new NetworkStream( socket );
+                                byte[] toSend = System.Text.Encoding.ASCII.GetBytes( printContent );
+                                ns.Write( toSend, 0, toSend.Length );
+                            }
+                            else
+                            {
+                                phResults.Controls.Add( new LiteralControl( "<br/>NOTE: Could not connect to printer!" ) );
+                            }
+                        }
+                    }
+                } // labelCache != null
+            }
+
+            if ( socket != null && socket.Connected )
+            {
+                socket.Shutdown( SocketShutdown.Both );
+                socket.Close();
+            }
+        }
+
+        /// <summary>
+        /// Gets the printer cutter option.
+        /// </summary>
+        /// <param name="deviceId">The device identifier.</param>
+        /// <returns></returns>
+        protected bool GetPrinterCutterOption( int? deviceId )
+        {
+            bool hasCutter = false;
+
+            // Get the device from cache
+            var currentGroupTypeIds = ( Session["CheckInGroupTypeIds"] != null ) ? Session["CheckInGroupTypeIds"] as List<int> : new List<int>();
+            KioskDevice kioskDevice = KioskDevice.Read( deviceId.GetValueOrDefault(), currentGroupTypeIds );
+            hasCutter = kioskDevice.Device.GetAttributeValue( "HasCutter" ).AsBoolean();
+
+            // also check the Description for the w/Cutter keywords
+            if ( ! hasCutter )
+            {
+                hasCutter = Regex.IsMatch( kioskDevice.Device.Description, "w/Cutter", RegexOptions.IgnoreCase );
+            }
+
+            return hasCutter;
         }
 
         /// <summary>
