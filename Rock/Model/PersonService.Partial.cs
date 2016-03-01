@@ -395,8 +395,9 @@ namespace Rock.Model
                 var qry = GetByFirstLastName( firstNames[0], lastNames[0], includeDeceased, includeBusinesses );
                 for ( var i = 1; i < firstNames.Count; i++ )
                 {
-                    qry = qry.Concat( GetByFirstLastName( firstNames[i], lastNames[i], includeDeceased, includeBusinesses ) );
+                    qry = qry.Union( GetByFirstLastName( firstNames[i], lastNames[i], includeDeceased, includeBusinesses ) );
                 }
+
                 return qry;
             }
         }
