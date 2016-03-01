@@ -359,9 +359,9 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
 
             string replaceWithEmail = GetAttributeValue( "SafeSenderFrom" );
             var metaData = new Dictionary<string, string>();
-            from = CheckSafeSender( from, replaceWithEmail, metaData );
-
             var mediumData = new Dictionary<string, string>();
+
+            from = CheckSafeSender( from, replaceWithEmail, metaData, mediumData );
             mediumData.Add( "From", from );
             mediumData.Add( "Subject", subject );
             mediumData.Add( "Body", System.Text.RegularExpressions.Regex.Replace( body, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty ) );
@@ -389,7 +389,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
         /// <param name="substitutionEmail">The substitution email to use if the from is not a safe sender.</param>
         /// <param name="metaData">The meta data.</param>
         /// <returns>The safe email to use when sending email.</returns>
-        private string CheckSafeSender( string from, string substitutionEmail, Dictionary<string, string> metaData )
+        private string CheckSafeSender( string from, string substitutionEmail, Dictionary<string, string> metaData, Dictionary<string, string> mediumData )
         {
             var safeDomains = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.COMMUNICATION_SAFE_SENDER_DOMAINS.AsGuid() ).DefinedValues.Select( v => v.Value ).ToList();
             var emailParts = from.Split( new char[] { '@' }, StringSplitOptions.RemoveEmptyEntries );
@@ -401,6 +401,11 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
                     if ( ! metaData.ContainsKey( "Reply-To" ) )
                     {
                         metaData.Add( "Reply-To", from );
+                    }
+
+                    if ( ! mediumData.ContainsKey( "ReplyTo" ) )
+                    {
+                        mediumData.Add( "ReplyTo", from );
                     }
 
                     from = substitutionEmail;
