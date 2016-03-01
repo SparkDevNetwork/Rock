@@ -215,7 +215,7 @@
                 <h3>Challenges</h3>
                 <asp:Literal ID="lChallenges" runat="server"></asp:Literal>
 
-                <div class="actions margin-t-lg">
+                <div class="actions margin-t-lg margin-b-lg">
                     <asp:Button ID="btnRetakeTest" runat="server" Visible="false" Text="Retake Test" CssClass="btn btn-default" OnClick="btnRetakeTest_Click" />
                 </div>
 
