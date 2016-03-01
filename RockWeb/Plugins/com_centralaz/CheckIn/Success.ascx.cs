@@ -222,10 +222,11 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
         }
 
         /// <summary>
-        /// Gets the printer cutter option.
+        /// Gets the printer cutter option from either a "HasCutter" (boolean) attribute
+        /// on the printer device or the words "w/Cutter" in the printer's Description.
         /// </summary>
         /// <param name="deviceId">The device identifier.</param>
-        /// <returns></returns>
+        /// <returns>true if printer has a cutter; false otherwise</returns>
         protected bool GetPrinterCutterOption( int? deviceId )
         {
             bool hasCutter = false;
