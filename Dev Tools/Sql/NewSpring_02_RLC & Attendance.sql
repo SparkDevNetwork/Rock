@@ -173,7 +173,7 @@ select distinct Staffing_Schedule_Name, case
 		then null
 	else Staffing_Schedule_Name
 	end as 'schedule'
-from F1..Staffing_Assignment
+from OPENQUERY( [SERVER], 'SELECT * FROM F1.dbo.Staffing_Assignment')
 
 -- Remove any old schedules
 delete from DefinedValue where DefinedTypeId = @ScheduleDefinedTypeId
@@ -2518,7 +2518,7 @@ begin
 				WHEN s2.serviceId IS NOT NULL THEN s2.serviceId
 				ELSE s.serviceId
 			END as ScheduleId
-		from F1..Attendance a
+		from [CEN-SQLDEV001].F1.dbo.Attendance a
 		inner join PersonAlias p
 			on a.Individual_ID = p.ForeignId
 			and a.RLC_ID = @RLCID
@@ -2602,14 +2602,14 @@ begin
 		/* ====================================================== */
 		insert into #assignments
 		select JobID, Job_Title, p.PersonId, Staffing_Schedule_Name, 'TC ' + ltrim(rtrim(right(BreakoutGroupName, len(BreakoutGroupName) - charindex('TC', BreakoutGroupName) - 1))), @False
-		from F1..Staffing_Assignment sa
+		from [CEN-SQLDEV001].F1.dbo.Staffing_Assignment sa
 		inner join PersonAlias p
 		on sa.Individual_ID = p.ForeignId
 		and RLC_ID = @RLCID and Is_Active = @True
 
 		insert into #assignments
 		select NULL, '', p.PersonId, '', BreakoutGroupName, @True
-		from F1..ActivityAssignment aa
+		from [CEN-SQLDEV001].F1.dbo.ActivityAssignment aa
 		inner join PersonAlias p
 		on aa.Individual_ID = p.ForeignId
 		and RLC_ID = @RLCID
