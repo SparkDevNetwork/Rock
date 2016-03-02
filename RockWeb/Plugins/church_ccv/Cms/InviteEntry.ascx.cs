@@ -144,7 +144,7 @@ I'm going to Fun Event at {{ item.Name }}. Would you like to join me & some frie
 
     [BooleanField( "Show Debug", "Show Lava Objects and Help", order: 4 )]
     [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 3600, "", order: 5 )]
-    [TextField( "Cache Key", "Additional CacheKey to use when caching the content using Context Lava Merge Fields. For example: <pre>Campus={{ Context.Campus.Guid }}</pre>", order: 5 )]
+    [TextField( "Cache Key", "Additional CacheKey to use when caching the content using Context Lava Merge Fields. For example: <pre>Campus={{ Context.Campus.Guid }}</pre>", required: false, order: 5 )]
     public partial class InviteEntry : RockBlock
     {
         private bool _flushCache = false;
