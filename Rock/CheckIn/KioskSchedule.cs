@@ -15,8 +15,10 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
-
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.CheckIn
@@ -37,6 +39,15 @@ namespace Rock.CheckIn
         public Schedule Schedule { get; set; }
 
         /// <summary>
+        /// Gets or sets the check in times.
+        /// </summary>
+        /// <value>
+        /// The check in times.
+        /// </value>
+        [DataMember]
+        public List<CheckInTimes> CheckInTimes { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether check in is active
         /// </summary>
         /// <value>
@@ -46,7 +57,10 @@ namespace Rock.CheckIn
         {
             get
             {
-                return Schedule != null && Schedule.IsCheckInActive;
+                var now = RockDateTime.Now;
+                return CheckInTimes.Any( t =>
+                    t.CheckInStart <= now &&
+                    t.CheckInEnd > now );
             }
         }
 
@@ -56,8 +70,21 @@ namespace Rock.CheckIn
         /// <value>
         /// The start time.
         /// </value>
-        [DataMember]
-        public DateTime? StartTime { get; private set; }
+        [LavaInclude]
+        public DateTime? StartTime 
+        {
+            get
+            {
+                var now = RockDateTime.Now;
+                var times = CheckInTimes
+                    .Where( t => 
+                        t.CheckInStart <= now &&
+                        t.CheckInEnd > now )
+                    .OrderBy( t => t.Start )
+                    .FirstOrDefault();
+                return times != null ? times.Start : (DateTime?)null;
+            }
+        }
 
         /// <summary>
         /// Gets the next active date time.
@@ -69,20 +96,14 @@ namespace Rock.CheckIn
         {
             get
             {
-                if ( ( !_nextActiveDateTime.HasValue || _nextActiveDateTime.Value.CompareTo( RockDateTime.Now ) < 0 ) && Schedule != null )
-                {
-                    _nextActiveDateTime = Schedule.GetNextCheckInStartTime( RockDateTime.Now );
-                }
-                return _nextActiveDateTime;
-            }
-            set
-            {
-                _nextActiveDateTime = value;
+                var now = RockDateTime.Now;
+                var times = CheckInTimes
+                    .Where( t => t.CheckInStart > now )
+                    .OrderBy( t => t.CheckInStart )
+                    .FirstOrDefault();
+                return times != null ? times.CheckInStart : (DateTime?)null;
             }
         }
-
-        [DataMember]
-        private DateTime? _nextActiveDateTime = null;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KioskSchedule" /> class.
@@ -100,13 +121,6 @@ namespace Rock.CheckIn
             : base()
         {
             Schedule = schedule.Clone( false );
-
-            var calEvent = Schedule.GetCalenderEvent();
-            if ( calEvent != null && calEvent.DTStart != null )
-            {
-                StartTime = calEvent.DTStart.Value;
-            }
-
         }
 
         /// <summary>
