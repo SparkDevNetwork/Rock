@@ -10,10 +10,10 @@
             </div>
             <div class="panel-body">
 
-                <Rock:NotificationBox ID="nbMessages" runat="server" />
+                <Rock:NotificationBox ID="nbMessages" runat="server" CssClass="alert-grid" />
 
                 <div class="grid grid-panel">
-                    <Rock:Grid ID="gThemes" runat="server" AllowSorting="true" DataKeyNames="Name">
+                    <Rock:Grid ID="gThemes" runat="server" AllowSorting="true" DataKeyNames="Name" OnRowSelected="gThemes_RowSelected">
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:BoolField DataField="AllowsCompile" HeaderText="Allows Compile" HeaderStyle-HorizontalAlign="Center" />

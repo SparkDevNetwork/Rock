@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 using dotless.Core;
@@ -83,6 +84,95 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Compiles this instance.
+        /// </summary>
+        public bool Compile(out string messages)
+        {
+            messages = string.Empty;
+            bool result = true;
+
+            try
+            {
+                DirectoryInfo themeDirectory = new DirectoryInfo( this.AbsolutePath + @"\Styles" );
+                if ( themeDirectory.Exists )
+                {
+                    FileInfo[] files = themeDirectory.GetFiles();
+
+                    DotlessConfiguration dotLessConfiguration = new DotlessConfiguration();
+                    dotLessConfiguration.MinifyOutput = true;
+                    //dotLessConfiguration.RootPath = themeDirectory.FullName;
+
+                    Directory.SetCurrentDirectory( themeDirectory.FullName );
+
+                    if ( files != null )
+                    {
+                        if ( this.AllowsCompile )
+                        {
+                            // don't compile files that start with an underscore
+                            foreach ( var file in files.Where( f => f.Name.EndsWith( ".less" ) && !f.Name.StartsWith( "_" ) ) )
+                            {
+                                string cssSource = Less.Parse( File.ReadAllText( file.FullName ), dotLessConfiguration );
+                                File.WriteAllText( file.DirectoryName + @"\" + file.Name.Replace( ".less", ".css" ), cssSource );
+                            }
+                        }
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                result = false;
+                messages = ex.Message;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Compiles this instance.
+        /// </summary>
+        /// <returns></returns>
+        public bool Compile( )
+        {
+            string messages = string.Empty;
+            return Compile( out messages );
+        }
+
+        /// <summary>
+        /// Compiles all themes.
+        /// </summary>
+        /// <param name="messages">The messages.</param>
+        /// <returns></returns>
+        public static bool CompileAll(out string messages )
+        {
+            messages = string.Empty;
+            bool allCompiled = true;
+
+            foreach(var theme in GetThemes() )
+            {
+                string themeMessage = string.Empty;
+                bool themeSuccess = theme.Compile( out themeMessage );
+
+                if ( !themeSuccess )
+                {
+                    allCompiled = false;
+                    messages += string.Format( "Failed to compile the theme {0} ({1}).", theme.Name, themeMessage );
+                }
+            }
+
+            return allCompiled;
+        }
+
+        /// <summary>
+        /// Compiles all themes.
+        /// </summary>
+        /// <returns></returns>
+        public static bool CompileAll()
+        {
+            string messages = string.Empty;
+            return CompileAll( out messages );
+        }
+
+        /// <summary>
         /// Gets the themes.
         /// </summary>
         /// <returns></returns>
@@ -111,7 +201,7 @@ namespace Rock.Web.UI
             bool resultSucess = true;
 
             string sourceFullPath = _themeDirectory + @"\" + sourceTheme;
-            string targetFullPath = _themeDirectory + @"\" + targetTheme;
+            string targetFullPath = _themeDirectory + @"\" + CleanThemeName( targetTheme );
 
             if ( !Directory.Exists( targetFullPath ) )
             {
@@ -201,6 +291,15 @@ namespace Rock.Web.UI
             return DeleteTheme( themeName, out messages );
         }
 
+        /// <summary>
+        /// Cleans the name of the theme.
+        /// </summary>
+        /// <param name="themeName">Name of the theme.</param>
+        /// <returns></returns>
+        public static string CleanThemeName(string themeName )
+        {
+            return Path.GetInvalidFileNameChars().Aggregate( themeName, ( current, c ) => current.Replace( c.ToString(), string.Empty ) ).Replace(" ", "");
+        }
 
         /// <summary>
         /// Copies all.
