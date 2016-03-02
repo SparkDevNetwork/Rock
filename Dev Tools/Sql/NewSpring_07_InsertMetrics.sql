@@ -415,6 +415,7 @@ SELECT @MetricServiceRosterSQL = N'
 					AND SA.[Key] = ''Schedule''
 					AND SA.EntityTypeQualifierColumn = ''GroupTypeId''
 					AND SA.EntityTypeQualifierValue = {{GroupTypeId}}
+					AND AV.Value <> ''
 			) AS nodes 
 			-- Parse the xml as a table (for joining)
 			CROSS APPLY Schedules.nodes(''n'') AS parse(r)		
@@ -468,6 +469,7 @@ SELECT @MetricTotalRosterSQL = N'
 			AND CA.[Key] = ''Campus''
 			AND CA.EntityTypeQualifierColumn = ''GroupTypeId''
 			AND CA.EntityTypeQualifierValue = {{GroupTypeId}}
+			AND AV.Value <> ''
 		LEFT JOIN Campus C
 			ON CONVERT(UNIQUEIDENTIFIER, AV.Value) = C.[Guid]
 	) Campus
