@@ -88,13 +88,12 @@ namespace Rock.Reporting.DataFilter.Person
         {
             return @"
 function() {
-    var startDate = $('.date-range-picker', $content).find('input:first').val();
-    var endDate = $('.date-range-picker', $content).find('input:last').val();
     
+    var dateRangeText = $('.js-slidingdaterange-text-value', $content).val()
     var accountPicker = $('.js-account-picker', $content);
     var accountNames = accountPicker.find('.selected-names').text() 
 
-   return 'First contribution date to accounts ' + accountNames  + ' between ' + startDate + ' and ' + endDate;
+   return 'First contribution date to accounts ' + accountNames  + '. DateRange: ' + dateRangeText;
 }
 ";
         }
@@ -112,17 +111,33 @@ function() {
 
             if ( selectionValues.Length >= 3 )
             {
-                DateTime startDate = selectionValues[0].AsDateTime() ?? DateTime.MinValue;
-                DateTime endDate = selectionValues[1].AsDateTime() ?? DateTime.MaxValue;
+                SlidingDateRangePicker fakeSlidingDateRangePicker = new SlidingDateRangePicker();
+
+                if ( selectionValues.Length >= 4 )
+                {
+                    // convert comma delimited to pipe
+                    fakeSlidingDateRangePicker.DelimitedValues = selectionValues[3].Replace( ',', '|' );
+                }
+                else
+                {
+                    // if converting from a previous version of the selection
+                    var lowerValue = selectionValues[0].AsDateTime();
+                    var upperValue = selectionValues[1].AsDateTime();
+
+                    fakeSlidingDateRangePicker.SlidingDateRangeMode = SlidingDateRangePicker.SlidingDateRangeType.DateRange;
+                    fakeSlidingDateRangePicker.SetDateRangeModeValue( new DateRange( lowerValue, upperValue ) );
+                }
+
                 string accountNames = string.Empty;
                 var accountGuids = selectionValues[2].Split( ',' ).Select( a => a.AsGuid() ).ToList();
                 accountNames = new FinancialAccountService( new RockContext() ).GetByGuids( accountGuids ).Select( a => a.Name ).ToList().AsDelimited( "," );
 
                 result = string.Format(
-                    "First contribution date {0} between {1} and {2}",
+                    "First contribution date{0}. Date Range: {1}",
                     !string.IsNullOrWhiteSpace( accountNames ) ? " to accounts:" + accountNames : string.Empty,
-                    startDate.ToShortDateString(),
-                    endDate.ToShortDateString() );
+                    SlidingDateRangePicker.FormatDelimitedValues( fakeSlidingDateRangePicker.DelimitedValues )
+                    )
+                    ;
             }
 
             return result;
@@ -141,13 +156,15 @@ function() {
             accountPicker.Label = "Accounts";
             filterControl.Controls.Add( accountPicker );
 
-            DateRangePicker dateRangePicker = new DateRangePicker();
-            dateRangePicker.ID = filterControl.ID + "_2";
-            dateRangePicker.Label = "Date Range";
-            dateRangePicker.Required = true;
-            filterControl.Controls.Add( dateRangePicker );
+            SlidingDateRangePicker slidingDateRangePicker = new SlidingDateRangePicker();
+            slidingDateRangePicker.ID = filterControl.ID + "_slidingDateRangePicker";
+            slidingDateRangePicker.AddCssClass( "js-sliding-date-range" );
+            slidingDateRangePicker.Label = "Date Range";
+            slidingDateRangePicker.Help = "The date range of the transactions using the 'Sunday Date' of each transaction";
+            slidingDateRangePicker.Required = true;
+            filterControl.Controls.Add( slidingDateRangePicker );
 
-            var controls = new Control[2] { accountPicker, dateRangePicker };
+            var controls = new Control[2] { accountPicker, slidingDateRangePicker };
 
             return controls;
         }
@@ -180,8 +197,13 @@ function() {
                 accountGuids = accounts.Select( a => a.Guid ).ToList().AsDelimited( "," );
             }
 
-            DateRangePicker dateRangePicker = controls[1] as DateRangePicker;
-            return string.Format( "{0}|{1}|{2}", dateRangePicker.LowerValue, dateRangePicker.UpperValue, accountGuids );
+            SlidingDateRangePicker slidingDateRangePicker = controls[1] as SlidingDateRangePicker;
+
+            // convert pipe to comma delimited
+            var delimitedValues = slidingDateRangePicker.DelimitedValues.Replace( "|", "," );
+
+            // {1} and {2} used to store the DateRange before, but now we using the SlidingDateRangePicker
+            return string.Format( "{0}|{1}|{2}|{3}", string.Empty, string.Empty, accountGuids, delimitedValues );
         }
 
         /// <summary>
@@ -196,10 +218,22 @@ function() {
             if ( selectionValues.Length >= 3 )
             {
                 var accountPicker = controls[0] as AccountPicker;
-                var dateRangePicker = controls[1] as DateRangePicker;
+                var slidingDateRangePicker = controls[1] as SlidingDateRangePicker;
 
-                dateRangePicker.LowerValue = selectionValues[0].AsDateTime();
-                dateRangePicker.UpperValue = selectionValues[1].AsDateTime();
+                if ( selectionValues.Length >= 4 )
+                {
+                    // convert comma delimited to pipe
+                    slidingDateRangePicker.DelimitedValues = selectionValues[3].Replace( ',', '|' );
+                }
+                else
+                {
+                    // if converting from a previous version of the selection
+                    var lowerValue = selectionValues[0].AsDateTime();
+                    var upperValue = selectionValues[1].AsDateTime();
+
+                    slidingDateRangePicker.SlidingDateRangeMode = SlidingDateRangePicker.SlidingDateRangeType.DateRange;
+                    slidingDateRangePicker.SetDateRangeModeValue( new DateRange( lowerValue, upperValue ) );
+                }
 
                 var accountGuids = selectionValues[2].Split( ',' ).Select( a => a.AsGuid() ).ToList();
                 var accounts = new FinancialAccountService( new RockContext() ).GetByGuids( accountGuids );
@@ -228,8 +262,27 @@ function() {
                 return null;
             }
 
-            DateTime? startDate = selectionValues[0].AsDateTime();
-            DateTime? endDate = selectionValues[1].AsDateTime();
+            DateRange dateRange;
+
+            if ( selectionValues.Length >= 4 )
+            {
+                string slidingDelimitedValues = selectionValues[3].Replace( ',', '|' );
+                dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( slidingDelimitedValues );
+            }
+            else
+            {
+                // if converting from a previous version of the selection
+                DateTime? startDate = selectionValues[0].AsDateTime();
+                DateTime? endDate = selectionValues[1].AsDateTime();
+                dateRange = new DateRange( startDate, endDate );
+
+                if ( dateRange.End.HasValue )
+                {
+                    // the DateRange picker doesn't automatically add a full day to the end date
+                    dateRange.End.Value.AddDays( 1 );
+                }
+            }
+
             var accountGuids = selectionValues[2].Split( ',' ).Select( a => a.AsGuid() ).ToList();
             var accountIdList = new FinancialAccountService( (RockContext)serviceInstance.Context ).GetByGuids( accountGuids ).Select( a => a.Id ).ToList();
 
@@ -259,14 +312,14 @@ function() {
                     FirstTransactionSundayDate = ss.Min( a => a.SundayDate )
                 } );
 
-            if ( startDate.HasValue )
+            if ( dateRange.Start.HasValue )
             {
-                firstContributionDateQry = firstContributionDateQry.Where( xx => xx.FirstTransactionSundayDate >= startDate.Value );
+                firstContributionDateQry = firstContributionDateQry.Where( xx => xx.FirstTransactionSundayDate >= dateRange.Start.Value );
             }
 
-            if ( endDate.HasValue )
+            if ( dateRange.End.HasValue )
             {
-                firstContributionDateQry = firstContributionDateQry.Where( xx => xx.FirstTransactionSundayDate < endDate );
+                firstContributionDateQry = firstContributionDateQry.Where( xx => xx.FirstTransactionSundayDate < dateRange.End.Value );
             }
 
             var innerQry = firstContributionDateQry.Select( xx => xx.PersonId ).AsQueryable();
