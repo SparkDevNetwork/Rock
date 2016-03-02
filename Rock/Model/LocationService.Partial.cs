@@ -415,7 +415,7 @@ namespace Rock.Model
                 WITH CTE AS (
                     SELECT [Id], [ParentLocationId], [Name] FROM [Location] WHERE [Id]={0}
                     UNION ALL
-                    SELECT [a].[Id], [a].[ParentLocationId], [Name] FROM [Location] [a]
+                    SELECT [a].[Id], [a].[ParentLocationId], [a].[Name] FROM [Location] [a]
                     INNER JOIN CTE ON CTE.[ParentLocationId] = [a].[Id]
                 )
                 SELECT [Id]
