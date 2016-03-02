@@ -2428,7 +2428,7 @@ namespace Rock.Lava
                         var dictionaryObject = value as IDictionary<string, object>;
                         if ( dictionaryObject.ContainsKey( filterKey ) && dictionaryObject[filterKey].Equals( filterValue ) )
                         {
-                            result.Add( dictionaryObject );
+                            result.Add( value );
                         }
                     }
                 }
@@ -2471,7 +2471,7 @@ namespace Rock.Lava
                         var dictionaryObject = value as IDictionary<string, object>;
                         if ( dictionaryObject.ContainsKey( selectKey ) && dictionaryObject[selectKey].Equals( selectKey ) )
                         {
-                            result.Add( dictionaryObject );
+                            result.Add( value );
                         }
                     }
                 }
