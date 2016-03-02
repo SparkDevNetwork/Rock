@@ -18,6 +18,7 @@
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:BoolField DataField="AllowsCompile" HeaderText="Allows Compile" HeaderStyle-HorizontalAlign="Center" />
                             <Rock:BoolField DataField="IsSystem" HeaderText="System" HeaderStyle-HorizontalAlign="Center" />
+                            <Rock:LinkButtonField HeaderText="Compile" CssClass="btn btn-default btn-sm fa fa-refresh" OnClick="gCompileTheme_Click" HeaderStyle-HorizontalAlign="Center" />
                             <Rock:LinkButtonField HeaderText="Clone" CssClass="btn btn-default btn-sm fa fa-clone" OnClick="gCloneTheme_Click" HeaderStyle-HorizontalAlign="Center" />
                             <Rock:DeleteField OnClick="gThemes_Delete" />
                         </Columns>
@@ -26,6 +27,7 @@
                 <asp:HiddenField ID="hfClonedThemeName" runat="server" />
             </div>
         
+            <Rock:ModalAlert ID="mdThemeCompile" runat="server" />
 
             <Rock:ModalDialog ID="mdThemeClone" runat="server" Title="Clone Theme" ValidationGroup="vgClone" SaveButtonText="Clone" OnSaveClick="mdThemeClone_SaveClick" OnCancelScript="clearActiveDialog();">
                 <Content>
