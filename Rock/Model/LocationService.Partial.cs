@@ -209,6 +209,17 @@ namespace Rock.Model
             bool anyActiveStandardizationService = false;
             bool anyActiveGeocodingService = false;
 
+            // Save current values for situation when first service may successfully standardize or geocode, but not both 
+            // In this scenario the first service's values should be preserved
+            string street1 = location.Street1;
+            string street2 = location.Street2;
+            string city = location.City;
+            string county = location.County;
+            string state = location.State;
+            string country = location.Country;
+            string postalCode = location.PostalCode;
+            DbGeography geoPoint = location.GeoPoint;
+
             // Try each of the verification services that were found through MEF
             foreach ( var service in Rock.Address.VerificationContainer.Instance.Components )
             {
@@ -221,7 +232,7 @@ namespace Rock.Model
                     string resultMsg = string.Empty;
                     var result = component.Verify( location, out resultMsg );
 
-                    if ( component.SupportsStandardization )
+                    if ( !standardized && component.SupportsStandardization )
                     {
                         anyActiveStandardizationService = true;
 
@@ -240,10 +251,30 @@ namespace Rock.Model
                         {
                             location.StandardizedDateTime = RockDateTime.Now;
                             standardized = true;
+
+                            // Save standardized address in case another service is called for geocoding
+                            street1 = location.Street1;
+                            street2 = location.Street2;
+                            city = location.City;
+                            county = location.County;
+                            state = location.State;
+                            country = location.Country;
+                            postalCode = location.PostalCode;
                         }
                     }
+                    else
+                    {
+                        // Reset the address back to what it was originally or after previous service successfully standardized it
+                        location.Street1 = street1;
+                        location.Street2 = street2;
+                        location.City = city;
+                        location.County = county;
+                        location.State = state;
+                        location.Country = country;
+                        location.PostalCode = postalCode;
+                    }
 
-                    if ( component.SupportsGeocoding )
+                    if ( !geocoded && component.SupportsGeocoding )
                     {
                         anyActiveGeocodingService = true;
 
@@ -262,7 +293,15 @@ namespace Rock.Model
                         {
                             location.GeocodedDateTime = RockDateTime.Now;
                             geocoded = true;
+
+                            // Save the lat/long in case another service is called for standardization
+                            geoPoint = location.GeoPoint;
                         }
+                    }
+                    else
+                    {
+                        // Reset the lat/long back to what it was originally or after previous service successfully geocoded it
+                        location.GeoPoint = geoPoint;
                     }
 
                     // Log the results of the service
@@ -374,9 +413,9 @@ namespace Rock.Model
             return this.Context.Database.SqlQuery<int>( string.Format(
                 @"
                 WITH CTE AS (
-                    SELECT [Id], [ParentLocationId] FROM [Location] WHERE [Id]={0}
+                    SELECT [Id], [ParentLocationId], [Name] FROM [Location] WHERE [Id]={0}
                     UNION ALL
-                    SELECT [a].[Id], [a].[ParentLocationId] FROM [Location] [a]
+                    SELECT [a].[Id], [a].[ParentLocationId], [Name] FROM [Location] [a]
                     INNER JOIN CTE ON CTE.[ParentLocationId] = [a].[Id]
                 )
                 SELECT [Id]
