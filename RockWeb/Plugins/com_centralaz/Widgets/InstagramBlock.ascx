@@ -11,12 +11,12 @@
     var clientid = '<%= GetAttributeValue( "InstagramClientID" )%>';
     var gridsize = '<%= GetAttributeValue( "PictureGridSize" )%>';
     var imageres = '<%= GetAttributeValue( "ImageResolution" )%>';
+    var minimageheight = '<%= GetAttributeValue( "MinimumImageHeight" )%>' + "px";
  
     fetchMedia(clientid, userid, function (response) {
         var index = 0;
         var div = document.querySelector('.instawrapper')
-
-        switch(gridsize){
+        switch (gridsize) {
             case "medium":
                 for (var row = 0; row < 3; row++) {
                     // create the row div
@@ -29,35 +29,35 @@
                         //create a single div column that contains image and link
                         var coldiv = document.createElement('div'),
                             anchor = document.createElement('a'),
-                            img = document.createElement('img');
+                            bckgrndimg = document.createElement('bg-image');
 
                         //get item from the array
                         var item = response.data[index];
 
                         anchor.href = item.link;
                         anchor.target = '_blank';
-                        switch(imageres){
+                        switch (imageres) {
                             case "thumbnail":
-                                img.src = item.images.thumbnail.url;
+                                bckgrndimg.src = item.images.thumbnail.url;
                                 break;
                             case "low_resolution":
-                                img.src = item.images.low_resolution.url;
+                                bckgrndimg.src = item.images.low_resolution.url;
                                 break;
                             case "standard_resolution":
-                                img.src = item.images.standard_resolution.url;
+                                bckgrndimg.src = item.images.standard_resolution.url;
                                 break;
-                        }  
-
-                        img.className = "img-responsive";
+                        }
 
                         coldiv.className = "col-xs-4";
                         coldiv.style.paddingLeft = 0;
                         coldiv.style.paddingRight = 0;
+                        coldiv.style.backgroundImage = "url(" + bckgrndimg.src + ")";
+                        coldiv.style.backgroundPosition = "50% 50%";
+                        coldiv.style.minHeight = minimageheight;
 
-                        anchor.appendChild(img);
-                        coldiv.appendChild(anchor);
-                        rowdiv.appendChild(coldiv);
-
+                        anchor.appendChild(coldiv);
+                        rowdiv.appendChild(anchor);
+                       
                         index++;
                     }
                     // end the row div
@@ -65,52 +65,52 @@
                 }
                 break;
 
-             case"small":
+            case "small":
                 for (var row = 0; row < 2; row++) {
                     // create the row div
                     var rowdiv = document.createElement('div');
                     rowdiv.className = "row";
 
-                    // loop over two to build two columns
+                    // loop over three to build three columns
                     for (var col = 0; col < 2; col++) {
 
                         //create a single div column that contains image and link
                         var coldiv = document.createElement('div'),
                             anchor = document.createElement('a'),
-                            img = document.createElement('img');
+                            bckgrndimg = document.createElement('bg-image');
 
                         //get item from the array
                         var item = response.data[index];
 
                         anchor.href = item.link;
                         anchor.target = '_blank';
-
                         switch (imageres) {
                             case "thumbnail":
-                                img.src = item.images.thumbnail.url;
+                                bckgrndimg.src = item.images.thumbnail.url;
                                 break;
                             case "low_resolution":
-                                img.src = item.images.low_resolution.url;
+                                bckgrndimg.src = item.images.low_resolution.url;
                                 break;
                             case "standard_resolution":
-                                img.src = item.images.standard_resolution.url;
+                                bckgrndimg.src = item.images.standard_resolution.url;
                                 break;
                         }
-                        img.className = "img-responsive";
 
                         coldiv.className = "col-xs-6";
                         coldiv.style.paddingLeft = 0;
                         coldiv.style.paddingRight = 0;
+                        coldiv.style.backgroundImage = "url(" + bckgrndimg.src + ")";
+                        coldiv.style.backgroundPosition = "50% 50%";
+                        coldiv.style.minHeight = minimageheight;
 
-                        anchor.appendChild(img);
-                        coldiv.appendChild(anchor);
-                        rowdiv.appendChild(coldiv);
+                        anchor.appendChild(coldiv);
+                        rowdiv.appendChild(anchor);
 
                         index++;
                     }
                     // end the row div
                     div.appendChild(rowdiv);
-                }
+                }               
                 break;
 
             case "single":
@@ -125,40 +125,40 @@
                         //create a single div column that contains image and link
                         var coldiv = document.createElement('div'),
                             anchor = document.createElement('a'),
-                            img = document.createElement('img');
+                            bckgrndimg = document.createElement('bg-image');
 
                         //get item from the array
                         var item = response.data[index];
 
                         anchor.href = item.link;
                         anchor.target = '_blank';
-
                         switch (imageres) {
                             case "thumbnail":
-                                img.src = item.images.thumbnail.url;
+                                bckgrndimg.src = item.images.thumbnail.url;
                                 break;
                             case "low_resolution":
-                                img.src = item.images.low_resolution.url;
+                                bckgrndimg.src = item.images.low_resolution.url;
                                 break;
                             case "standard_resolution":
-                                img.src = item.images.standard_resolution.url;
+                                bckgrndimg.src = item.images.standard_resolution.url;
                                 break;
                         }
-                        img.className = "img-responsive";
 
                         coldiv.className = "col-xs-12";
                         coldiv.style.paddingLeft = 0;
                         coldiv.style.paddingRight = 0;
+                        coldiv.style.backgroundImage = "url(" + bckgrndimg.src + ")";
+                        coldiv.style.backgroundPosition = "50% 50%";
+                        coldiv.style.minHeight = minimageheight;
 
-                        anchor.appendChild(img);
-                        coldiv.appendChild(anchor);
-                        rowdiv.appendChild(coldiv);
+                        anchor.appendChild(coldiv);
+                        rowdiv.appendChild(anchor);
 
                         index++;
                     }
                     // end the row div
                     div.appendChild(rowdiv);
-                }
+                }              
                 break;
         }
 

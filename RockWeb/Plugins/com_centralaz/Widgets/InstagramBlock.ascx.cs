@@ -25,6 +25,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
     [CustomDropdownListField( "Image Resolution", "Resolution of each image in the grid.", "thumbnail^Low, low_resolution^Medium, standard_resolution^High", true, "thumbnail", Order = 3 )]
     //[CustomDropdownListField( "Picture Grid Size", "Arrangement of pictures from feed.", "wide^Wide 6x3, medium^Medium 3x3, small^Small 2x2, single^Single 1x1", true, "medium", Order = 4 )]
     [CustomDropdownListField("Picture Grid Size", "Arrangement of pictures from feed.", "medium^Medium 3x3, small^Small 2x2, single^Single 1x1", true, "medium", Order = 4)]
+    [TextField("Minimum Image Height","Minimum tile image height in number of pixels.", true, "300", Order = 5)]
     public partial class InstagramBlock : RockBlock
     {
 
@@ -33,6 +34,10 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         protected override void OnInit(EventArgs e)
         {
             base.OnInit(e);
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger(upnlContent);
         }
 
 
@@ -57,7 +62,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
 
         public void LoadContent()
         {
-           
+            this.NavigateToPage( RockPage.Guid, new Dictionary<string, string>() );
         }
 
         #endregion
