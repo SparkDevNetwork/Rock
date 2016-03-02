@@ -2308,29 +2308,33 @@ namespace Rock.Web.UI
             if ( string.IsNullOrWhiteSpace( ipAddress ) )
             {
                 string stringHostName = System.Net.Dns.GetHostName();
-                var ipHostEntries = System.Net.Dns.GetHostEntry( stringHostName );
-                System.Net.IPAddress[] arrIpAddress = ipHostEntries.AddressList;
-
-                try
+                if ( !string.IsNullOrWhiteSpace( stringHostName ) )
                 {
-                    ipAddress = arrIpAddress[arrIpAddress.Length - 2].ToString();
-                }
-                catch
-                {
-                    try
-                    {
-                        ipAddress = arrIpAddress[0].ToString();
-                    }
-                    catch
+                    var ipHostEntries = System.Net.Dns.GetHostEntry( stringHostName );
+                    if ( ipHostEntries != null )
                     {
                         try
                         {
-                            arrIpAddress = System.Net.Dns.GetHostAddresses( stringHostName );
-                            ipAddress = arrIpAddress[0].ToString();
+                            var arrIpAddress = ipHostEntries.AddressList.FirstOrDefault( i => !i.IsIPv6LinkLocal );
+                            if ( arrIpAddress != null )
+                            {
+                                ipAddress = arrIpAddress.ToString();
+                            }
                         }
                         catch
                         {
-                            ipAddress = "127.0.0.1";
+                            try
+                            {
+                                var arrIpAddress = System.Net.Dns.GetHostAddresses( stringHostName ).FirstOrDefault( i => !i.IsIPv6LinkLocal );
+                                if ( arrIpAddress != null )
+                                {
+                                    ipAddress = arrIpAddress.ToString();
+                                }
+                            }
+                            catch
+                            {
+                                ipAddress = "127.0.0.1";
+                            }
                         }
                     }
                 }
