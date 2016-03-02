@@ -39,6 +39,8 @@ namespace RockWeb.Blocks.Cms
     [DisplayName( "Theme List" )]
     [Category( "CMS" )]
     [Description( "Lists themes in the Theme folder." )]
+
+    [LinkedPage("Theme Styler Page", "Page to use for the theme styler page.")]
     public partial class ThemeList : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -64,7 +66,7 @@ namespace RockWeb.Blocks.Cms
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            gList.GridRebind += gList_GridRebind;
+            gThemes.GridRebind += gList_GridRebind;
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -111,6 +113,8 @@ namespace RockWeb.Blocks.Cms
             mdThemeClone.Hide();
 
             string resultMessages = string.Empty;
+
+
             var cloneWasSuccessful = RockTheme.CloneTheme( hfClonedThemeName.Value, tbNewThemeName.Text, out resultMessages );
 
             if ( cloneWasSuccessful )
@@ -143,7 +147,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gCloneTheme_Click( object sender, RowEventArgs e )
         {
-            //RockTheme source = new RockTheme( e.RowKeyValue.ToString() );
+            tbNewThemeName.Text = string.Empty;
             hfClonedThemeName.Value = e.RowKeyValue.ToString();
             mdThemeClone.Show();
         }
@@ -185,10 +189,38 @@ namespace RockWeb.Blocks.Cms
 
             var themes = RockTheme.GetThemes();
 
+            var sortProperty = gThemes.SortProperty;
+
+            if ( sortProperty != null )
+            {
+                switch ( sortProperty.Property )
+                {
+                    case "Name":
+                        {
+                            if ( sortProperty.Direction == SortDirection.Ascending )
+                            {
+                                themes = themes.OrderBy( t => t.Name ).ToList();
+                            }
+                            else
+                            {
+                                themes = themes.OrderByDescending( t => t.Name ).ToList();
+                            }
+                            break;
+                        }
+                }
+            }
+
             gThemes.DataSource = themes.ToList();
             gThemes.DataBind();
         }
 
         #endregion
+
+        protected void gThemes_RowSelected( object sender, RowEventArgs e )
+        {
+            Dictionary<string, string> qryParams = new Dictionary<string, string>();
+            qryParams.Add( "EditTheme", e.RowKeyValue.ToString() );
+            NavigateToLinkedPage( "ThemeStylerPage", qryParams );
+        }
     }
 }

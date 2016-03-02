@@ -33,6 +33,7 @@ using System.Text;
 using dotless.Core;
 using Rock.Utility;
 using System.Web.UI.HtmlControls;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -47,8 +48,8 @@ namespace RockWeb.Blocks.Cms
     {
         #region Fields
 
-        // used for private variables
-
+        private string _themeName = string.Empty;
+ 
         #endregion
 
         #region Properties
@@ -84,7 +85,7 @@ $('.js-panel-toggle').on('click', function (e) {
 ";
             ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "DefinedValueChecklistScript", script, true );
 
-            
+            _themeName = PageParameter( "EditTheme" );
         }
 
         /// <summary>
@@ -98,25 +99,7 @@ $('.js-panel-toggle').on('click', function (e) {
 
             if ( !Page.IsPostBack )
             {
-                // load themes
-                DirectoryInfo dInfo = new DirectoryInfo( Request.PhysicalApplicationPath + "Themes" );
-                DirectoryInfo[] subdirs = dInfo.GetDirectories();
-
-                ddlTheme.DataSource = subdirs;
-                ddlTheme.DataTextField = "Name";
-                ddlTheme.DataValueField = "Name";
-                ddlTheme.DataBind();
-
-                ddlTheme.Items.Insert( 0, "" );
-
-                if ( !string.IsNullOrWhiteSpace( Request["EditTheme"] )){
-                    ddlTheme.SelectedValue = Request["EditTheme"];
-                    btnSave.Visible = true;
-                    ceOverrides.Visible = true;
-
-                    // load the CSS overrides                
-                    LoadCssOverrides();
-                }
+                LoadCssOverrides();
             }
 
             BuildControls();
@@ -138,30 +121,21 @@ $('.js-panel-toggle').on('click', function (e) {
 
         }
 
-
-        protected void ddlTheme_SelectedIndexChanged( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the Click event of the btnBack control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnBack_Click( object sender, EventArgs e )
         {
-            // load the theme
-            if ( !string.IsNullOrWhiteSpace( ddlTheme.SelectedValue )){
-
-                btnSave.Visible = true;
-                ceOverrides.Visible = true;
-
-                // load the CSS overrides                
-                LoadCssOverrides();
-
-            } else
-            {
-                btnSave.Visible = false;
-                ceOverrides.Visible = false;
-            }
+            NavigateToParentPage();
         }
 
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            string variableFile = string.Format( @"{0}Themes/{1}/Styles/_variables.less", Request.PhysicalApplicationPath, ddlTheme.SelectedValue );
-            string variableOverrideFile = string.Format( @"{0}Themes/{1}/Styles/_variable-overrides.less", Request.PhysicalApplicationPath, ddlTheme.SelectedValue );
-            string cssOverrideFile = string.Format( @"{0}Themes/{1}/Styles/_css-overrides.less", Request.PhysicalApplicationPath, ddlTheme.SelectedValue );
+            string variableFile = string.Format( @"{0}Themes/{1}/Styles/_variables.less", Request.PhysicalApplicationPath, _themeName );
+            string variableOverrideFile = string.Format( @"{0}Themes/{1}/Styles/_variable-overrides.less", Request.PhysicalApplicationPath, _themeName );
+            string cssOverrideFile = string.Format( @"{0}Themes/{1}/Styles/_css-overrides.less", Request.PhysicalApplicationPath, _themeName );
 
 
             if ( File.Exists( cssOverrideFile ) )
@@ -207,10 +181,11 @@ $('.js-panel-toggle').on('click', function (e) {
 
             // compile theme
             string messages = string.Empty;
-            RockLess.CompileTheme( ddlTheme.SelectedValue, out messages );
-
+            var theme = new RockTheme( _themeName );
+            theme.Compile();
+            
             // redirect to the page to reload the pages styles
-            Response.Redirect( Request.Url.LocalPath + "?EditTheme=" + ddlTheme.SelectedValue );
+            Response.Redirect( Request.Url.LocalPath + "?EditTheme=" + _themeName );
         }
         #endregion
 
@@ -220,15 +195,16 @@ $('.js-panel-toggle').on('click', function (e) {
         {
             bool inPanel = false;
 
-            if ( !string.IsNullOrWhiteSpace( ddlTheme.SelectedValue ) )
+            if ( !string.IsNullOrWhiteSpace( _themeName ) )
             {
-                string variableFile = string.Format( @"{0}Themes/{1}/Styles/_variables.less", Request.PhysicalApplicationPath, ddlTheme.SelectedValue );
-                string variableOverrideFile = string.Format( @"{0}Themes/{1}/Styles/_variable-overrides.less", Request.PhysicalApplicationPath, ddlTheme.SelectedValue );
+                string variableFile = string.Format( @"{0}Themes/{1}/Styles/_variables.less", Request.PhysicalApplicationPath, _themeName );
+                string variableOverrideFile = string.Format( @"{0}Themes/{1}/Styles/_variable-overrides.less", Request.PhysicalApplicationPath, _themeName );
 
                 if ( !File.Exists( variableFile ) || !File.Exists( variableOverrideFile ) )
                 {
                     nbMessages.NotificationBoxType = NotificationBoxType.Warning;
                     nbMessages.Text = "This theme does not have a variables file(s) to allow overriding.";
+                    btnSave.Visible = false;
                     return;
                 }
 
@@ -273,7 +249,10 @@ $('.js-panel-toggle').on('click', function (e) {
                         // panel
                         if ( inPanel )
                         {
-                            content.Append( "</div></div>" );
+                            Literal panelClose = new Literal();
+                            panelClose.Text = "</div></div>";
+                            AddControl( panelClose, true );
+
                             inPanel = false;
                         }
 
@@ -426,11 +405,17 @@ $('.js-panel-toggle').on('click', function (e) {
                     }
                 }
 
-                if ( inPanel || 0==0)
+                if ( inPanel )
                 {
-                    Literal header = new Literal();
-                    header.Text = "</div></div>";
-                    AddControl( header, true );
+                    Literal panelClose = new Literal();
+                    panelClose.Text = "</div></div>";
+                    AddControl( panelClose, true );
+                }
+
+                if (phThemeControls.Controls.Count == 0 )
+                {
+                    btnSave.Visible = false;
+                    nbMessages.Text = "This theme does not define any variables for editing.";
                 }
             }
         }
@@ -472,7 +457,7 @@ $('.js-panel-toggle').on('click', function (e) {
         private void LoadCssOverrides()
         {
             // load the CSS overrides                
-            string overrideFile = string.Format( @"{0}Themes/{1}/Styles/_css-overrides.less", Request.PhysicalApplicationPath, ddlTheme.SelectedValue );
+            string overrideFile = string.Format( @"{0}Themes/{1}/Styles/_css-overrides.less", Request.PhysicalApplicationPath, _themeName );
             if ( File.Exists( overrideFile ) )
             {
                 ceOverrides.Text += File.ReadAllText( overrideFile );

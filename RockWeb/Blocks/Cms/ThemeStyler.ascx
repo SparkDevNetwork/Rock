@@ -6,16 +6,9 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
         
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-pencil"></i> Theme Editor</h1>
+                <h1 class="panel-title"><i class="fa fa-paint-brush"></i> Theme Editor</h1>
             </div>
             <div class="panel-body">
-
-                <div class="well clearfix">
-                    <Rock:RockDropDownList ID="ddlTheme" runat="server" Label="Theme" OnSelectedIndexChanged="ddlTheme_SelectedIndexChanged" AutoPostBack="true" />
-                    <div class="pull-right">
-                        <asp:LinkButton ID="btnSave" runat="server" CssClass="btn btn-primary" Text="Save" Visible="false" OnClick="btnSave_Click" />
-                    </div>
-                </div>
 
                 <Rock:NotificationBox ID="nbMessages" runat="server" />
 
@@ -25,12 +18,15 @@
                     </div>
 
                     <div class="col-md-6">
+                        <div class="clearfix">
+                            <div class="pull-right">
+                                <asp:LinkButton ID="btnSave" runat="server" CssClass="btn btn-primary" OnClick="btnSave_Click"><i class="fa fa fa-refresh"></i> Save</asp:LinkButton>
+                                <asp:LinkButton ID="btnBack" runat="server" CssClass="btn btn-default" Text="Back" OnClick="btnBack_Click"  />
+                            </div>
+                        </div>
                         <Rock:CodeEditor ID="ceOverrides" runat="server" Label="CSS Overrides" EditorHeight="600"  />
                     </div>
                 </div>
-                
-
-                
 
             </div>
         

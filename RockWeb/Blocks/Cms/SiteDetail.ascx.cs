@@ -109,7 +109,8 @@ namespace RockWeb.Blocks.Cms
             Site site = siteService.Get( hfSiteId.Value.AsInteger() );
 
             string messages = string.Empty;
-            bool success = RockLess.CompileTheme( site.Theme, out messages );
+            var theme = new RockTheme( site.Theme );
+            bool success = theme.Compile( out messages );
 
             if ( success )
             {
@@ -433,7 +434,7 @@ namespace RockWeb.Blocks.Cms
             }
 
             // set theme compile button
-            if ( !RockLess.ThemeAllowsCompiling( site.Theme ) )
+            if ( ! new RockTheme(site.Theme ).AllowsCompile) 
             {
                 btnCompileTheme.Enabled = false;
                 btnCompileTheme.Text = "Theme Doesn't Support Compiling";

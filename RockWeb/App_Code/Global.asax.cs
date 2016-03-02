@@ -46,6 +46,7 @@ using Rock.Plugin;
 using Rock.Transactions;
 using Rock.Utility;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace RockWeb
 {
@@ -253,22 +254,8 @@ namespace RockWeb
             new Thread( () =>
             {
                 Thread.CurrentThread.IsBackground = true;
-
-                try
-                {
-                    //var themes = Directory.GetDirectories( HttpRuntime.AppDomainAppPath + "Themes" );
-                    DirectoryInfo themeDirectory = new DirectoryInfo( HttpRuntime.AppDomainAppPath + "Themes" );
-
-                    var themes = themeDirectory.GetDirectories();
-
-                    foreach ( var theme in themes )
-                    {
-                        string messages = string.Empty;
-                        RockLess.CompileTheme( theme.Name, out messages );
-                    }
-                }
-                catch(Exception ex) { }
-
+                RockTheme.CompileAll();
+                
             } ).Start();
             
         }
