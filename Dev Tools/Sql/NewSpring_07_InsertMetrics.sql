@@ -388,7 +388,7 @@ SELECT @MetricServiceRosterSQL = N'
 	INNER JOIN [Group] G
 		ON GM.GroupId = G.Id
 	-- Filter by Campus
-	LEFT JOIN (
+	INNER JOIN (
 		SELECT AV.EntityId AS MemberId, C.Id
 		FROM [Attribute] CA
 		INNER JOIN AttributeValue AV
@@ -396,7 +396,7 @@ SELECT @MetricServiceRosterSQL = N'
 			AND CA.[Key] = ''Campus''
 			AND CA.EntityTypeQualifierColumn = ''GroupTypeId''
 			AND CA.EntityTypeQualifierValue = {{GroupTypeId}}
-		LEFT JOIN Campus C
+		INNER JOIN Campus C
 			ON AV.Value = C.[Guid]
 	) Campus
 		ON GM.Id = Campus.MemberId
@@ -461,7 +461,7 @@ SELECT @MetricTotalRosterSQL = N'
 	INNER JOIN [Group] G
 		ON GM.GroupId = G.Id
 	-- Filter by Campus
-	LEFT JOIN (
+	INNER JOIN (
 		SELECT AV.EntityId AS MemberId, C.Id
 		FROM [Attribute] CA
 		INNER JOIN AttributeValue AV
@@ -470,7 +470,7 @@ SELECT @MetricTotalRosterSQL = N'
 			AND CA.EntityTypeQualifierColumn = ''GroupTypeId''
 			AND CA.EntityTypeQualifierValue = {{GroupTypeId}}
 			AND AV.Value <> ''
-		LEFT JOIN Campus C
+		INNER JOIN Campus C
 			ON CONVERT(UNIQUEIDENTIFIER, AV.Value) = C.[Guid]
 	) Campus
 		ON GM.Id = Campus.MemberId	
