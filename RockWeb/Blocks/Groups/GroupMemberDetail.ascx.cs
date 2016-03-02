@@ -38,9 +38,35 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Displays the details of the given group member for editing role, status, etc." )]
     [LinkedPage( "Registration Page", "Page used for viewing the registration(s) associated with a particular group member", false, "", "", 0 )]
+
+    [BooleanField( "Show 'Move to another group' button", "Set to false to hide the 'Move to another group' button", true, "", 1, "ShowMoveToOtherGroup" )]
     public partial class GroupMemberDetail : RockBlock, IDetailBlock
     {
         #region Control Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += GroupMemberDetail_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upDetail );
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the GroupMemberDetail control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <exception cref="NotImplementedException"></exception>
+        protected void GroupMemberDetail_BlockUpdated( object sender, EventArgs e )
+        {
+            SetBlockOptions();
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -54,6 +80,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( !Page.IsPostBack )
             {
+                SetBlockOptions();
                 ShowDetail( PageParameter( "GroupMemberId" ).AsInteger(), PageParameter( "GroupId" ).AsIntegerOrNull() );
             }
             else
@@ -66,6 +93,15 @@ namespace RockWeb.Blocks.Groups
                     Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, false, BlockValidationGroup );
                 }
             }
+        }
+
+        /// <summary>
+        /// Sets the block options.
+        /// </summary>
+        public void SetBlockOptions()
+        {
+            bool showMoveToOtherGroup = this.GetAttributeValue( "ShowMoveToOtherGroup" ).AsBooleanOrNull() ?? true;
+            btnShowMoveDialog.Visible = showMoveToOtherGroup;
         }
 
         /// <summary>
@@ -433,6 +469,12 @@ namespace RockWeb.Blocks.Groups
 
             btnSave.Visible = !readOnly;
 
+            if ( readOnly || groupMember.Id == 0) 
+            {
+                // hide the ShowMoveDialog if this is readOnly or if this is a new group member (can't move a group member that doesn't exist yet)
+                btnShowMoveDialog.Visible = false;
+            }
+            
             LoadDropDowns();
 
             ppGroupMemberPerson.SetValue( groupMember.Person );
@@ -731,12 +773,15 @@ namespace RockWeb.Blocks.Groups
         {
             var rockContext = new RockContext();
             var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
-            lCurrentGroup.Text = groupMember.Group.Name;
-            gpMoveGroupMember.SetValue( null );
-            grpMoveGroupMember.Visible = false;
-            nbMoveGroupMemberWarning.Visible = false;
-            mdMoveGroupMember.Visible = true;
-            mdMoveGroupMember.Show();
+            if ( groupMember != null )
+            {
+                lCurrentGroup.Text = groupMember.Group.Name;
+                gpMoveGroupMember.SetValue( null );
+                grpMoveGroupMember.Visible = false;
+                nbMoveGroupMemberWarning.Visible = false;
+                mdMoveGroupMember.Visible = true;
+                mdMoveGroupMember.Show();
+            }
         }
 
         /// <summary>
