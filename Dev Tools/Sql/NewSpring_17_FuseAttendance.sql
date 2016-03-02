@@ -5,7 +5,7 @@
 
 /* ====================================================== */
 
-INSERT INTO Attendance (GroupId, StartDateTime, DidAttend, [Guid], CreatedDateTime, ForeignKey, PersonAliasId, CampusId)
+INSERT INTO Attendance (GroupId, StartDateTime, DidAttend, [Guid], CreatedDateTime, ForeignKey, PersonAliasId, CampusId, ScheduleId)
 SELECT
 	g.Id,
 	ga.StartDateTime,
@@ -14,7 +14,8 @@ SELECT
 	GETDATE(),
 	'F1.GroupsAttendance',
 	pa.Id,
-	g.CampusId
+	g.CampusId,
+	g.ScheduleId
 FROM 
 	[CEN-SQLDEV001].[F1].dbo.[GroupsAttendance] ga
 	JOIN PersonAlias pa ON pa.ForeignId = ga.IndividualID
