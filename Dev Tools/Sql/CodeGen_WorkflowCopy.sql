@@ -11,9 +11,11 @@ DECLARE @etid_workflowActivity AS INT = (SELECT Id FROM EntityType WHERE Name = 
 DECLARE @etid_systemEmail AS INT = (SELECT Id FROM EntityType WHERE Name = 'Rock.Model.SystemEmail');
 DECLARE @etid_workflowActionType AS INT = (SELECT Id FROM EntityType WHERE Name = 'Rock.Model.WorkflowActionType');
 
+IF OBJECT_ID('tempdb..#TempCode') IS NOT NULL DROP TABLE #TempCode;
+
 -- STEP 1: Generate code to insert categories
 SELECT 
-	CONCAT(
+	CAST(CONCAT(
 		'INSERT [Category] ([IsSystem], [ParentCategoryId], [EntityTypeId], [Name], [IconCssClass], [Guid], [Order]) VALUES (',
 		c.IsSystem,
 		', ',
@@ -36,7 +38,10 @@ SELECT
 		''', ',
 		c.[Order],
 		');'
-	) AS Step1
+	) AS NVARCHAR(MAX)) AS Code,
+	1 AS Step,
+	ROW_NUMBER() OVER(ORDER BY c.Id) AS SubStep
+INTO #TempCode
 FROM 
 	Category c
 	LEFT JOIN Category pc ON c.ParentCategoryId = pc.Id
@@ -44,6 +49,7 @@ WHERE
 	c.EntityTypeId = @etid_workflowType;
 
 -- STEP 2: Generate code to copy Workflow Types
+INSERT INTO #TempCode
 SELECT 
 	CONCAT(
 		'INSERT [WorkflowType] ([IsSystem], [IsActive], [Name], [Description], [CategoryId], [Workterm], [ProcessingIntervalSeconds], [IsPersisted], [LoggingLevel], [IconCssClass], [Guid], [Order]) VALUES (',
@@ -79,12 +85,15 @@ SELECT
 		''', ',
 		wt.[Order],
 		');'
-	) AS Step2
+	) AS Step2,
+	2,
+	ROW_NUMBER() OVER(ORDER BY wt.Id)
 FROM 
 	WorkflowType wt
 	LEFT JOIN Category c ON c.Id = wt.CategoryId;
 
 -- STEP 3: WorkflowType Attributes
+INSERT INTO #TempCode
 SELECT
 	CONCAT(
 		'INSERT [Attribute] ([IsSystem], [FieldTypeId], [EntityTypeId], [EntityTypeQualifierColumn], [EntityTypeQualifierValue], [Key], [Name], [Description], [Order], [IsGridColumn], [DefaultValue], [IsMultiValue], [IsRequired], [Guid], [IconCssClass], [AllowSearch]) VALUES (',
@@ -128,12 +137,15 @@ SELECT
 		''', ',
 		a.AllowSearch,
 		');'
-	) AS Step3
+	) AS Step3,
+	3,
+	ROW_NUMBER() OVER(ORDER BY a.Id)
 FROM
 	Attribute a
 	JOIN WorkflowType wt ON wt.Id = a.EntityTypeQualifierValue AND a.EntityTypeQualifierColumn = 'WorkflowTypeId';
 
 -- STEP 4: Workflow Activity Types
+INSERT INTO #TempCode
 SELECT 
 	CONCAT(
 		'INSERT [WorkflowActivityType] ([IsActive], [Name], [Description], [WorkflowTypeId], [IsActivatedWithWorkflow], [Order], [Guid]) VALUES (',
@@ -158,12 +170,15 @@ SELECT
 		', ''',
 		wat.[Guid],
 		''');'
-	) AS Step4
+	) AS Step4,
+	4,
+	ROW_NUMBER() OVER(ORDER BY wat.Id)
 FROM 
 	WorkflowActivityType wat
 	LEFT JOIN WorkflowType wt ON wat.WorkflowTypeId = wt.Id;
 
 -- Step 5: Workflow Activity Type Attributes
+INSERT INTO #TempCode
 SELECT
 	CONCAT(
 		'INSERT [Attribute] ([IsSystem], [FieldTypeId], [EntityTypeId], [EntityTypeQualifierColumn], [EntityTypeQualifierValue], [Key], [Name], [Description], [Order], [IsGridColumn], [DefaultValue], [IsMultiValue], [IsRequired], [Guid], [IconCssClass], [AllowSearch]) VALUES (',
@@ -207,12 +222,15 @@ SELECT
 		''', ',
 		a.AllowSearch,
 		');'
-	) AS Step5
+	) AS Step5,
+	5,
+	ROW_NUMBER() OVER(ORDER BY a.Id)
 FROM
 	Attribute a
 	JOIN WorkflowActivityType wat ON wat.Id = a.EntityTypeQualifierValue AND a.EntityTypeQualifierColumn = 'ActivityTypeId';
 
 -- STEP 6: System Email Categories
+INSERT INTO #TempCode
 SELECT 
 	CONCAT(
 		'INSERT [Category] ([IsSystem], [ParentCategoryId], [EntityTypeId], [Name], [IconCssClass], [Guid], [Order]) VALUES (',
@@ -237,7 +255,9 @@ SELECT
 		''', ',
 		c.[Order],
 		');'
-	) AS Step6
+	) AS Step6,
+	6,
+	ROW_NUMBER() OVER(ORDER BY c.Id)
 FROM 
 	Category c
 	LEFT JOIN Category pc ON c.ParentCategoryId = pc.Id
@@ -245,6 +265,7 @@ WHERE
 	c.EntityTypeId = @etid_systemEmail;
 
 -- STEP 7: System Emails
+INSERT INTO #TempCode
 SELECT 
 	CONCAT(
 		'INSERT [SystemEmail] ([IsSystem], [CategoryId], [Title], [From], [To], [Cc], [Bcc], [Subject], [Body], [FromName], [Guid]) VALUES (',
@@ -278,12 +299,15 @@ SELECT
 		''', ''',
 		se.[Guid],
 		''');'
-	) AS Step7
+	) AS Step7,
+	7,
+	ROW_NUMBER() OVER(ORDER BY se.Id)
 FROM 
 	SystemEmail se
 	LEFT JOIN Category c ON c.Id = se.CategoryId;
 
 -- STEP 8: Workflow Action Forms
+INSERT INTO #TempCode
 SELECT
 	CONCAT(
 		'INSERT [WorkflowActionForm] ([Header], [Footer], [Actions], [Guid], [NotificationSystemEmailId], [IncludeActionsInNotification], [ActionAttributeGuid], [AllowNotes]) VALUES (',
@@ -342,12 +366,15 @@ SELECT
 		', ',
 		ISNULL(CONVERT(NVARCHAR, waf.AllowNotes), 'NULL'),
 		');'
-	) AS Step8
+	) AS Step8,
+	8,
+	ROW_NUMBER() OVER(ORDER BY waf.Id)
 FROM
 	WorkflowActionForm waf
 	LEFT JOIN SystemEmail sa ON sa.Id = waf.NotificationSystemEmailId;
 
 -- STEP 9: Workflow Action Form Attributes
+INSERT INTO #TempCode
 SELECT
 	CONCAT(
 		'INSERT [WorkflowActionFormAttribute] ([WorkflowActionFormId], [AttributeId], [Order], [IsVisible], [IsReadOnly], [IsRequired], [Guid], [HideLabel], [PreHtml], [PostHtml]) VALUES (',
@@ -401,13 +428,16 @@ SELECT
 			)
 		END,
 		');'
-	) AS Step9
+	) AS Step9,
+	9,
+	ROW_NUMBER() OVER(ORDER BY wafa.Id)
 FROM
 	WorkflowActionFormAttribute wafa
 	LEFT JOIN WorkflowActionForm waf ON waf.Id = wafa.WorkflowActionFormId
 	LEFT JOIN Attribute a ON a.Id = wafa.AttributeId;
 
 -- STEP 10: Workflow Action Type
+INSERT INTO #TempCode
 SELECT 
 	CONCAT(
 		'INSERT [WorkflowActionType] ([ActivityTypeId], [Name], [Order], [EntityTypeId], [IsActionCompletedOnSuccess], [IsActivityCompletedOnSuccess], [Guid], [WorkflowFormId], [CriteriaAttributeGuid], [CriteriaComparisonType], [CriteriaValue]) VALUES (',
@@ -471,7 +501,9 @@ SELECT
 			)
 		END,
 		');'
-	) AS Step10
+	) AS Step10,
+	10,
+	ROW_NUMBER() OVER(ORDER BY wat.Id)
 FROM 
 	WorkflowActionType wat
 	LEFT JOIN WorkflowActivityType wactt ON wat.ActivityTypeId = wactt.Id
@@ -479,6 +511,7 @@ FROM
 	LEFT JOIN EntityType et ON wat.EntityTypeId = et.Id;
 
 -- STEP 11 - Workflow Action Type Attribute Values
+INSERT INTO #TempCode
 SELECT
 	CONCAT(
 		'INSERT [AttributeValue] ([IsSystem], [AttributeId], [EntityId], [Value], [Guid]) VALUES (',
@@ -515,10 +548,14 @@ SELECT
 		av.[Guid],
 		'''', 
 		');'
-	) AS Step11
+	) AS Step11,
+	11,
+	ROW_NUMBER() OVER(ORDER BY av.Id)
 FROM
 	AttributeValue av
 	JOIN WorkflowActionType wat ON wat.Id = av.EntityId
 	JOIN Attribute a ON a.Id = av.AttributeId
 WHERE
 	a.EntityTypeId = @etid_workflowActionType;
+
+SELECT Code FROM #TempCode ORDER BY Step, SubStep;
