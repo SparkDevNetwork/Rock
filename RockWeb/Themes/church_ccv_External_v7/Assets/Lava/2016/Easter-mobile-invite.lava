@@ -1,0 +1,169 @@
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+  .wrapper {
+    position: relative;
+  }
+  article.page {
+    position: absolute;
+    width: 100%;
+    padding-bottom: 60px;
+  }
+  .fade {
+    z-index: -999;
+    visibility: hidden;
+  }
+  .fade.in {
+    z-index: 999;
+    visibility: visible;
+  }
+</style>
+
+{% assign GoogleCampaignName = 'Easter Page' %}
+{% assign inviteBtnClasses = 'btn btn-default btn-block' %}
+{% assign inviteAllBtnClasses = 'btn btn-default btn-block' %}
+
+{% if trackEvents == null %}
+  {% assign trackEvents = true %}
+{% endif %}
+
+{% assign item = ContentObject | Where: "ShortCode", Context.Campus.ShortCode | First %}
+
+{% comment %}
+<pre>
+  {{ item | ToJSON }}
+</pre>
+<pre>
+  {{ item.Services | ToJSON }}
+</pre>
+{% endcomment %}
+
+<div class="wrapper">
+
+  <article id="ChoosePage" class="page fade in">
+    <p>
+      &nbsp;
+    </p>
+    <p class="lead">How would you like to send your invite?</p>
+    <p><a href="#EmailPage" data-label="Email Invite {{ Context.Campus.Name }}" class="btn btn-default btn-block js-change-page">Email</a></p>
+    <p><a href="#SMSPage" data-label="SMS Invite {{ Context.Campus.Name }}" class="btn btn-default btn-block js-change-page">Text Message</a></p>
+  </article>
+
+  <article id="EmailPage" class="page fade">
+    <div class="row margin-t-lg">
+      <div class="col-xs-7">
+        <h4 class="margin-t-none">Email Invite</h4>
+      </div>
+      <div class="col-xs-5 text-right">
+        <a href="#ChoosePage" data-label="Back Button {{ Context.Campus.Name }}" class="js-change-page btn btn-default btn-xs"><i class="fa fa-angle-left"></i> Back</a>
+      </div>
+    </div>
+
+    <p class="lead">Which service are you attending?</p>
+
+    {% for day in item.Services %}
+      <h5>{{ day.Date }}</h5>
+      <div class="row">
+        {% for time in day.Times %}
+          {% if time contains 'sunrise' %}
+            {% assign hasSunrise = true %}
+          {% endif %}
+          {% if time contains 'special' %}
+            {% assign hasSpecial = true %}
+          {% endif %}
+          {% if time contains 'hearing' %}
+            {% assign hasHearing = true %}
+          {% endif %}
+          {% assign rawTime = time | Remove: 'sunrise' | Remove: ' special' | Remove: ' hearing' %}
+          <div class="col-xs-6 margin-b-lg">{% include '~~/Assets/Lava/2016/Easter-email.lava' %}</div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+    <p>
+      &nbsp;
+    </p>
+    {% include '~~/Assets/Lava/2016/Easter-email-all.lava' %}
+
+  </article>
+
+  <article id="SMSPage" class="page fade">
+    <div class="row margin-t-lg">
+      <div class="col-xs-7">
+        <h4 class="margin-t-none">Text Invite</h4>
+      </div>
+      <div class="col-xs-5 text-right">
+        <a href="#ChoosePage" data-label="Back Button {{ Context.Campus.Name }}" class="js-change-page btn btn-default btn-xs"><i class="fa fa-angle-left"></i> Back</a>
+      </div>
+    </div>
+
+    <p class="lead">Which service are you attending?</p>
+
+    {% for day in item.Services %}
+      <h5>{{ day.Date }}</h5>
+      <div class="row">
+        {% for time in day.Times %}
+          {% assign rawTime = time | Remove: 'sunrise' | Remove: ' special' | Remove: ' hearing' %}
+          <div class="col-xs-6 margin-b-lg">{% include '~~/Assets/Lava/2016/Easter-sms.lava' %}</div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+    <p>
+      &nbsp;
+    </p>
+    {% include '~~/Assets/Lava/2016/Easter-sms-all.lava' %}
+
+  </article>
+
+</div>
+
+
+<script type="text/javascript">
+  function trackEvent(action, label) {
+    {% if trackEvents %}
+      if (label) {
+        ga('send', {
+          hitType: 'event',
+          eventCategory: '{{ GoogleCampaignName }}',
+          eventAction: action,
+          eventLabel: label
+        });
+      } else {
+        ga('send', {
+          hitType: 'event',
+          eventCategory: '{{ GoogleCampaignName }}',
+          eventAction: action
+        });
+      }
+    {% else %}
+      if (label) {
+        console.log('{{ GoogleCampaignName }}, '+action+', '+label)
+      } else {
+        console.log('{{ GoogleCampaignName }}, '+action)
+      }
+    {% endif %}
+  }
+
+  $('body').on('click', '.js-track-sms', function(){
+    var label = $(this).data('label')
+    trackEvent('Text Invite', label)
+  })
+  $('body').on('click', '.js-track-email', function(){
+    var label = $(this).data('label')
+    trackEvent('Email Invite', label)
+  })
+  $('body').on('click', '.js-track-fb', function(){
+    var label = $(this).data('label')
+    trackEvent('Facebook Invite', label)
+  })
+
+  $('.js-change-page').click(function(e){
+    e.preventDefault()
+    var $this = $(this)
+    var nextPage = $this.attr('href')
+    $('.page.fade.in').removeClass('in')
+    $(nextPage).addClass('in')
+    trackEvent('Page View', $this.data('label'))
+  })
+</script>

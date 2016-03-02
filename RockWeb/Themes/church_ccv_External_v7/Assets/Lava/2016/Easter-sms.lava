@@ -4,6 +4,8 @@
 
 {% endcomment %}
 
+{% assign inviteBtnClasses = inviteBtnClasses | Default: 'btn btn-default' %}
+
 {% capture smsAll %}
 Come to Easter at CCV with me! I'll be going to the {{ rawTime }} service on {{ day.Date }} at the {{ item.Name }} campus. You should join me! http://ccveaster.com
 {% endcapture %}
@@ -17,4 +19,4 @@ Come to Easter at CCV with me! I'll be going to the {{ rawTime }} service on {{ 
     {% assign sep = '&' %}
 {% endcase %}
 
-<a class="btn btn-default js-track-sms" data-label="{{ item.Name }} {{ day.Date }} {{ rawTime }}" href="sms:{{ sep }}body={{ smsAll | Trim | EscapeDataString }}">{{ rawTime }}</a>
+<a class="{{ inviteBtnClasses }} js-track-sms" data-label="{{ item.Name }} {{ day.Date }} {{ rawTime }}" href="sms:{{ sep }}body={{ smsAll | Trim | EscapeDataString }}">{{ rawTime }}</a>

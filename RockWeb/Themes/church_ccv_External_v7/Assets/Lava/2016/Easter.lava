@@ -1,6 +1,5 @@
 {% comment %}
 
-{% assign GoogleCampaignName = 'Easter Page' %}
 {% assign trackEvents = true %}
 {% include '~~/Assets/Lava/2016/Easter.lava' %}
 
@@ -12,7 +11,7 @@ Campus={{ Context.Campus.Guid }}|OSFamily={{ OSFamily }}
 
 {% endcomment %}
 
-{% assign GoogleCampaignName = GoogleCampaignName | Default: 'Easter Page' %}
+{% assign GoogleCampaignName = 'Easter Page' %}
 
 {% if trackEvents == null %}
   {% assign trackEvents = true %}
