@@ -71,6 +71,22 @@ namespace RockWeb.Blocks.Cms
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            gThemes.RowDataBound += gThemes_RowDataBound;
+        }
+
+        private void gThemes_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            var dataItem = e.Row.DataItem;
+            if ( dataItem != null )
+            {
+                var allowsCompile = dataItem.GetPropertyValue( "AllowsCompile" ).ToString().AsBoolean();
+
+                if ( !allowsCompile )
+                {
+                    var cell = e.Row.Cells[3].Controls[0].Visible = false;
+                }
+            }
         }
 
         /// <summary>
@@ -150,6 +166,29 @@ namespace RockWeb.Blocks.Cms
             tbNewThemeName.Text = string.Empty;
             hfClonedThemeName.Value = e.RowKeyValue.ToString();
             mdThemeClone.Show();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the gCompileTheme control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gCompileTheme_Click( object sender, RowEventArgs e )
+        {
+            var theme = new RockTheme( e.RowKeyValue.ToString() );
+            string messages = string.Empty;
+
+            bool compileSuccess = theme.Compile( out messages );
+
+            if ( compileSuccess )
+            {
+                mdThemeCompile.Show( "Theme was successfully compiled.", ModalAlertType.Information );
+            }
+            else
+            {
+                nbMessages.NotificationBoxType = NotificationBoxType.Danger;
+                nbMessages.Text = string.Format( "An error occurred while compiling the {0} them. Message: {1}", theme.Name, messages );
+            }
         }
 
         /// <summary>
