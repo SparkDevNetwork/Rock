@@ -405,7 +405,7 @@ SELECT @MetricServiceRosterSQL = N'
 		SELECT AV.EntityId, DV.Value
 		FROM DefinedValue DV
 		LEFT JOIN (
-			SELECT EntityId, r.value(''.'', ''VARCHAR(255)'') AS Schedule
+			SELECT EntityId, r.value(''.'', ''UNIQUEIDENTIFIER'') AS Schedule
 			FROM (
 				-- Denormalize the comma-delimited GUID string
 				SELECT Value, EntityId, CAST(''<n>'' + REPLACE(Value, '','', ''</n><n>'') + ''</n>'' AS XML) AS Schedules
@@ -469,7 +469,7 @@ SELECT @MetricTotalRosterSQL = N'
 			AND CA.EntityTypeQualifierColumn = ''GroupTypeId''
 			AND CA.EntityTypeQualifierValue = {{GroupTypeId}}
 		LEFT JOIN Campus C
-			ON AV.Value = C.[Guid]
+			ON CONVERT(UNIQUEIDENTIFIER, AV.Value) = C.[Guid]
 	) Campus
 		ON GM.Id = Campus.MemberId	
 	WHERE GM.GroupId = {{GroupId}}
