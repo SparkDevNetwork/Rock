@@ -19,4 +19,4 @@ Join me for Easter at CCV
 ** Sign language translation & special needs services available{% elsif hasSpecial %}* Special needs services available{% endif %}
 {% endcapture %}
 
-<a class="{{ inviteAllBtnClasses }} js-track-email" data-label="{{ item.Name }} Don't know yet" href="mailto:?subject={{ subject | Trim | EscapeDataString }}&body={{ body | EscapeDataString }}">I don't know yet</a>
+<a class="{{ inviteAllBtnClasses }} js-track-email" data-label="{{ item.Name }} Don't know yet" href="{{ preUrl }}mailto:?subject={{ subject | Trim | EscapeDataString }}&body={{ body | EscapeDataString }}">I don't know yet</a>

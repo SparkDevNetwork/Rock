@@ -24,6 +24,7 @@
 {% assign GoogleCampaignName = 'Easter Page' %}
 {% assign inviteBtnClasses = 'btn btn-default btn-block' %}
 {% assign inviteAllBtnClasses = 'btn btn-default btn-block' %}
+{% assign preUrl = 'external:' %}
 
 {% if trackEvents == null %}
   {% assign trackEvents = true %}
