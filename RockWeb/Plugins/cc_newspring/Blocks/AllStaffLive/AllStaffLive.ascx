@@ -6,8 +6,8 @@
    { %>
 <div class="col-md-12">
 
-    <h1>
-        <asp:Literal ID="liveHeading" runat="server" /></h1>
+    <h2>
+        <asp:Literal ID="liveHeading" runat="server" /></h2>
 
     <asp:HiddenField ID="localIP" runat="server" />
     <script>var localIP = <%= localIP.Value %></script>

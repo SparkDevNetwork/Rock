@@ -3,6 +3,15 @@
   z-index: 10;
 }
 
+#zone-allstafflive {
+  margin-bottom: 20px;
+}
+
+#zone-allstafflive .block-content {
+  display: inline-block;
+  width: 100%;
+}
+
 .video_player {
   position: fixed;
   width: 100%;
