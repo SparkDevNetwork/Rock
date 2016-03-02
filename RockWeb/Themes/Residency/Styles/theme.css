@@ -2164,6 +2164,9 @@ table.attribute-grid tr th:nth-child(3) {
   -o-animation: bar-grow 1s ease-in-out;
   animation: bar-grow 1s ease-in-out;
 }
+.badge-disc {
+  position: relative;
+}
 .badge-disc ul.badge-disc-chart {
   display: table;
   table-layout: fixed;
@@ -2192,6 +2195,20 @@ table.attribute-grid tr th:nth-child(3) {
 }
 .badge-disc ul.badge-disc-chart li.badge-disc-primary span {
   background: #4f89bd;
+}
+.badge-disc ul.badge-disc-chart li.badge-disc-disabled span {
+  opacity: 0.2;
+  background-color: #939393;
+}
+.badge-disc .requested {
+  position: absolute;
+  top: 14px;
+  left: 12px;
+  font-size: 24px;
+  background-color: #e3ded7;
+  padding: 1px 5px;
+  border-radius: 99px;
+  opacity: .8;
 }
 .badge-disc.annimate ul.badge-disc-chart li span {
   -webkit-animation: bar-grow 1s ease-in-out;
