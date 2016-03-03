@@ -62,7 +62,7 @@ namespace LoadTester
             int requestCountPerClient = tbRequestCount.Text.AsInteger();
             string url = tbUrl.Text;
 
-            ConcurrentBag<double> results = new ConcurrentBag<double>();
+            ConcurrentBag<ChartData> chartResults = new ConcurrentBag<ChartData>();
             ConcurrentBag<Exception> exceptions = new ConcurrentBag<Exception>();
 
             var stopwatchTestDuration = Stopwatch.StartNew();
@@ -72,6 +72,8 @@ namespace LoadTester
             var requestUrl = new Uri( url );
             var baseUri = new Uri( requestUrl.Scheme + "://" + requestUrl.Host + ":" + requestUrl.Port.ToString() );
 
+            var random = new Random();
+            long lastProgressCount = 0;
 
             Parallel.For( 1, clientCount, ( loopState ) =>
             {
@@ -82,21 +84,23 @@ namespace LoadTester
                     var cookieContainer = new CookieContainer();
                     while ( requestCounter < requestCountPerClient )
                     {
+                        var clientRequest = (HttpWebRequest)WebRequest.Create( url );
+                        clientRequest.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+                        clientRequest.CookieContainer = cookieContainer;
+                        clientRequest.UserAgent = UserAgentStrings[0];
+                        clientRequest.Timeout = 10000;
 
                         var stopwatch = Stopwatch.StartNew();
-                        var clientRequest = (HttpWebRequest)WebRequest.Create( url );
-                        clientRequest.CookieContainer = cookieContainer;
-                        clientRequest.UserAgent = UserAgentStrings[new Random().Next( 0, UserAgentStrings.Length )];
-                        clientRequest.Timeout = 10000;
 
                         using ( var response = clientRequest.GetResponse() )
                         {
+                            stopwatch.Stop();
                             using ( var stream = response.GetResponseStream() )
                             {
                                 using ( var reader = new StreamReader( stream ) )
                                 {
+                                    
                                     var responseHtml = reader.ReadToEnd();
-                                    stopwatch.Stop();
 
                                     if ( requestCounter == 1 )
                                     {
@@ -111,15 +115,20 @@ namespace LoadTester
                                             try
                                             {
                                                 var srcRef = srcNode.Attributes["src"].Value;
-                                                var srcUri = new Uri( baseUri, srcRef );
-                                                var srcRequest = (HttpWebRequest)WebRequest.Create( srcUri );
-                                                var srcResponse = srcRequest.GetResponse();
-
-                                                using ( var resultStream = srcResponse.GetResponseStream() )
+                                                if ( !srcRef.StartsWith( "//" ) && srcRef.StartsWith( "/" ) )
                                                 {
-                                                    using ( var resultReader = new StreamReader( resultStream ) )
+                                                    var srcUri = new Uri( baseUri, srcRef );
+                                                    var srcRequest = (HttpWebRequest)WebRequest.Create( srcUri );
+                                                    srcRequest.Timeout = 1000;
+                                                    srcRequest.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+                                                    var srcResponse = srcRequest.GetResponse();
+
+                                                    using ( var resultStream = srcResponse.GetResponseStream() )
                                                     {
-                                                        var resultData = resultReader.ReadToEnd();
+                                                        using ( var resultReader = new StreamReader( resultStream ) )
+                                                        {
+                                                            var resultData = resultReader.ReadToEnd();
+                                                        }
                                                     }
                                                 }
                                             }
@@ -131,9 +140,10 @@ namespace LoadTester
                                     }
 
                                     Interlocked.Increment( ref requestCount );
-                                    //if ( requestCount % 100 == 0 )
+                                    if ( requestCount != lastProgressCount )
                                     {
                                         UpdateProgressBar( requestCount, threadCount );
+                                        lastProgressCount = requestCount;
                                     }
                                 }
                             }
@@ -141,7 +151,7 @@ namespace LoadTester
                         }
 
                         stopwatch.Stop();
-                        results.Add( Math.Round( stopwatch.Elapsed.TotalMilliseconds, 3 ) );
+                        chartResults.Add( new ChartData { XValue = DateTime.Now, YValue = Math.Round( stopwatch.Elapsed.TotalMilliseconds, 3 ) } );
                         requestCounter++;
 
                     }
@@ -155,9 +165,9 @@ namespace LoadTester
             } );
 
             UpdateProgressBar( requestCount, threadCount );
+            var results = chartResults.Select(a => a.YValue);
             var totalTime = results.Sum();
             var requestsPerMillisecond = requestCount / totalTime;
-
 
             var aveResponseTime = totalTime / requestCount;
             try
@@ -166,13 +176,17 @@ namespace LoadTester
 Median: {0:0.000}ms responseTime 
 Mode: {1:0.000}ms responseTime 
 Average: {2:0.000}ms responseTime 
-TotalRequests: {3},
-TotalTime: {4:0.000}ms
-Requests/sec: {5:0.000}
-Exceptions: {6}
+Max: {3:0.000}ms responseTime 
+Min: {4:0.000}ms responseTime 
+TotalRequests: {5},
+TotalTime: {6:0.000}ms
+Requests/sec: {7:0.000}
+Exceptions: {8}
 ", results.Median(),
        results.Mode(),
        results.Average(),
+       results.Max(),
+       results.Min(),
        results.Count(),
        stopwatchTestDuration.Elapsed.TotalMilliseconds,
        requestsPerMillisecond * 1000,
@@ -191,6 +205,27 @@ Exceptions: {6}
 
             progressBar1.Value = progressBar1.Maximum;
             progressBar1.Hide();
+
+            chart1.Series.Clear();
+            var series = new System.Windows.Forms.DataVisualization.Charting.Series
+            {
+                Name = "Series1",
+                ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line,
+                XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.Time
+            }; 
+
+            chart1.Series.Add( series );
+
+            foreach (var item in chartResults.OrderBy(a => a.XValue) )
+            {
+                var point = new System.Windows.Forms.DataVisualization.Charting.DataPoint();
+                point.SetValueXY(item.XValue, item.YValue);
+                point.ToolTip = string.Format( "{0}ms @ {1}", item.YValue, item.XValue.TimeOfDay.ToString() );
+                point.LabelToolTip = point.ToolTip;
+                series.Points.Add( point );
+            }
+
+            chart1.Invalidate();
         }
 
         /// <summary>
@@ -209,6 +244,17 @@ Exceptions: {6}
             progressBar1.Value = (int)Interlocked.Read( ref requestCount );
             lblThreadCount.Text = Interlocked.Read( ref threadCount ).ToString();
             lblThreadCount.Refresh();
+        }
+
+        private void tbUrl_TextChanged( object sender, EventArgs e )
+        {
+
+        }
+
+        private class ChartData
+        {
+            public DateTime XValue { get; set; }
+            public double YValue { get; set; }
         }
     }
 }
