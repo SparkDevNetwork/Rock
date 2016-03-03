@@ -181,10 +181,11 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
 
             if ( !String.IsNullOrWhiteSpace( ParameterState["Children"] ) )
             {
-                List<String> childrenList = ParameterState["Children"].Split( ';' ).ToList();
+                List<int> childrenIdList = ParameterState["Children"].Split( ';' ).AsIntegerList();
+                List<Guid> childrenGuidList = new DefinedValueService( rockContext ).GetByIds( childrenIdList ).Select( dv => dv.Guid ).ToList();
                 var attributeChildValues = attributeValueService.Queryable().Where( v =>
                     v.Attribute.Key == "HasChildren" &&
-                    childrenList.Any( c => ( ";" + v.Value + ";" ).Contains( ";" + c + ";" ) )
+                    childrenGuidList.Any( c => ( "," + v.Value + "," ).Contains( "," + c + "," ) )
                     );
                 qry = qry.Where( g => attributeChildValues.Any( v => v.EntityId == g.Id ) );
             }
