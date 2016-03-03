@@ -21,13 +21,13 @@
                         Please select primary campus
                     </div>
                     <div class="col-md-4">
-                        <Rock:RockDropDownList ID="ddlCampus" runat="server"/>
+                        <Rock:RockDropDownList ID="ddlCampus" runat="server" />
                     </div>
                     <div id="divMap" class="col-md-4" runat="server">
                         View a 
                             <asp:LinkButton ID="lbGroupMap" runat="server" Text="Map" OnClick="lbGroupMap_Click" CausesValidation="false" />
-                           of all groups from this campus.
-                        </div>
+                        of all groups from this campus.
+                    </div>
                 </div>
 
                 <div class="row">
@@ -82,7 +82,7 @@
                         <hr />
                         <div class="row">
                             <div class="col-md-6">
-                                If you would have children and want to find groups with children their age please select all that apply                           
+                                <asp:Literal ID="lChildrenDescription" runat="server" />
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockCheckBoxList ID="cblChildren" runat="server" RepeatColumns="2" RepeatDirection="Horizontal" />

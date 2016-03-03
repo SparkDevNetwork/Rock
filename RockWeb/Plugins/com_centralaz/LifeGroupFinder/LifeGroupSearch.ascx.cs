@@ -33,6 +33,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
     [DisplayName( "Life Group Search" )]
     [Category( "com_centralaz > Groups" )]
     [Description( "Central custom group search block." )]
+    [TextField( "Children Description", "The Description for the 'has children' search option", true, "If you would have children and want to find groups with children their age please select all that apply" )]
     [LinkedPage( "Life Group List Page", "The page to navigate to for the group list.", false, "", "", 0 )]
     [LinkedPage( "Life Group Map Page", "The page to navigate to for the group list.", false, "", "", 0 )]
     [LinkedPage( "Information Security Page", "The page describing why your information is safe with us.", false, "", "", 0 )]
@@ -135,6 +136,7 @@ $('.groupsearch-filter > .panel-body').on('validation-error', function() {
             base.OnLoad( e );
 
             divMap.Visible = GetAttributeValue( "ShowMapLink" ).AsBoolean();
+            lChildrenDescription.Text = GetAttributeValue( "ChildrenDescription" );
 
             if ( !Page.IsPostBack )
             {
