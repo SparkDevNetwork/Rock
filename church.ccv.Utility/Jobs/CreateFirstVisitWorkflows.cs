@@ -70,6 +70,8 @@ namespace church.ccv.Utility
             Guid geofenceGroupType = dataMap.GetString( "GeofenceGroupType" ).AsGuid();
             Guid workflowTypeGuid = dataMap.GetString("WorkflowType").AsGuid();
 
+            int firstTimeWorkflowsCreated = 0;
+
             if (workflowTypeGuid != null && workflowTypeGuid != Guid.Empty) {
             
                 // get lookup values
@@ -199,7 +201,9 @@ namespace church.ccv.Utility
                                 // get neighborhood info
                                 if ( geofenceGroupType != Guid.Empty )
                                 {
-                                    var neighborhoods = new GroupService( rockContext ).GetGeofencingGroups( headOfHouse.Id, geofenceGroupType ).AsNoTracking();
+                                    var neighborhoods = new GroupService( rockContext ).GetGeofencingGroups( headOfHouse.Id, geofenceGroupType )
+                                        .Where(a => a.CampusId == family.CampusId)
+                                        .AsNoTracking();
 
                                     if ( neighborhoods != null && neighborhoods.Count() > 0 )
                                     {
@@ -225,6 +229,7 @@ namespace church.ccv.Utility
 
                                 var workflowService = new Rock.Model.WorkflowService( rockContext );
                                 workflowService.Add( visitorWorkflow );
+                                firstTimeWorkflowsCreated++;
 
                                 rockContext.WrapTransaction( () =>
                                 {
@@ -237,7 +242,8 @@ namespace church.ccv.Utility
                     
                 }
             }
-            
+
+           context.Result = string.Format( "{0} first time visit {1} created", firstTimeWorkflowsCreated, "workflow".PluralizeIf(firstTimeWorkflowsCreated != 0) );
         }
 
         private string BuildPersonList( List<Person> people )
