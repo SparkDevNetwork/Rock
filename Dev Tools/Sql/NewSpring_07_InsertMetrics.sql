@@ -368,7 +368,7 @@ SELECT @MetricServiceRolesSQL = N'
 	ON PA.Id = Attendance.PersonAliasId	
 	INNER JOIN (
 		-- iCal DTStart: constant 22 characters, only interested in Service Time
-		SELECT Id, SUBSTRING(iCalendarContent, PATINDEX(''%DTSTART%'', iCalendarContent) +17, 4) AS Value
+		SELECT Id, STUFF(SUBSTRING(iCalendarContent, PATINDEX(''%DTSTART%'', iCalendarContent) +17, 4), 3, 0, '':'') AS Value
 		FROM Schedule
 		WHERE EffectiveStartDate < GETDATE()
 	) Schedule
@@ -388,7 +388,7 @@ SELECT @MetricServiceRosterSQL = N'
 	INNER JOIN [Group] G
 		ON GM.GroupId = G.Id
 	-- Filter by Campus
-	LEFT JOIN (
+	INNER JOIN (
 		SELECT AV.EntityId AS MemberId, C.Id
 		FROM [Attribute] CA
 		INNER JOIN AttributeValue AV
@@ -396,8 +396,9 @@ SELECT @MetricServiceRosterSQL = N'
 			AND CA.[Key] = ''Campus''
 			AND CA.EntityTypeQualifierColumn = ''GroupTypeId''
 			AND CA.EntityTypeQualifierValue = {{GroupTypeId}}
-		LEFT JOIN Campus C
-			ON AV.Value = C.[Guid]
+			AND AV.Value <> ''''
+		INNER JOIN Campus C
+			ON CONVERT(UNIQUEIDENTIFIER, AV.Value) = C.[Guid]
 	) Campus
 		ON GM.Id = Campus.MemberId
 	-- Filter by Schedule
@@ -405,7 +406,7 @@ SELECT @MetricServiceRosterSQL = N'
 		SELECT AV.EntityId, DV.Value
 		FROM DefinedValue DV
 		LEFT JOIN (
-			SELECT EntityId, r.value(''.'', ''VARCHAR(255)'') AS Schedule
+			SELECT EntityId, r.value(''.'', ''UNIQUEIDENTIFIER'') AS Schedule
 			FROM (
 				-- Denormalize the comma-delimited GUID string
 				SELECT Value, EntityId, CAST(''<n>'' + REPLACE(Value, '','', ''</n><n>'') + ''</n>'' AS XML) AS Schedules
@@ -415,6 +416,7 @@ SELECT @MetricServiceRosterSQL = N'
 					AND SA.[Key] = ''Schedule''
 					AND SA.EntityTypeQualifierColumn = ''GroupTypeId''
 					AND SA.EntityTypeQualifierValue = {{GroupTypeId}}
+					AND AV.Value <> ''''
 			) AS nodes 
 			-- Parse the xml as a table (for joining)
 			CROSS APPLY Schedules.nodes(''n'') AS parse(r)		
@@ -460,7 +462,7 @@ SELECT @MetricTotalRosterSQL = N'
 	INNER JOIN [Group] G
 		ON GM.GroupId = G.Id
 	-- Filter by Campus
-	LEFT JOIN (
+	INNER JOIN (
 		SELECT AV.EntityId AS MemberId, C.Id
 		FROM [Attribute] CA
 		INNER JOIN AttributeValue AV
@@ -468,8 +470,9 @@ SELECT @MetricTotalRosterSQL = N'
 			AND CA.[Key] = ''Campus''
 			AND CA.EntityTypeQualifierColumn = ''GroupTypeId''
 			AND CA.EntityTypeQualifierValue = {{GroupTypeId}}
-		LEFT JOIN Campus C
-			ON AV.Value = C.[Guid]
+			AND AV.Value <> ''
+		INNER JOIN Campus C
+			ON CONVERT(UNIQUEIDENTIFIER, AV.Value) = C.[Guid]
 	) Campus
 		ON GM.Id = Campus.MemberId	
 	WHERE GM.GroupId = {{GroupId}}

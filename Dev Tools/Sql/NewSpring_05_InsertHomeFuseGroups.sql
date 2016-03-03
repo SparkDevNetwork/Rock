@@ -3,8 +3,10 @@
 -- Imports home and fuse groups from F1.
   
 --  Assumptions:
+--  Campuses must be setup
 --  Groups must be marked as 'Fuse' or 'Home'
 --  Fuse groups begin with a Grade designation
+--  You may have to clear cache after running this is you are getting null reference exceptions (attributes are cached)
 
    ====================================================== */
 -- Make sure you're using the right Rock database:
@@ -30,7 +32,9 @@ DECLARE @DefinedTypeMaritalStatusId int = 7
 DECLARE @DefinedValueMeetingLocationId int = 209
 DECLARE @GenderAttributeName nvarchar(255) = 'Gender'
 DECLARE @MaritalAttributeName nvarchar(255) = 'Marital Status'
-DECLARE @ChildCareAttributeName nvarchar(255) = 'Has Childcare'
+DECLARE @ChildCareAttributeName nvarchar(255) = 'Childcare'
+DECLARE @SmallGroupTopicName nvarchar(255) = 'Small Group Topic'
+DECLARE @CategoryTypeAttributeKey nvarchar(255) = 'Topic'
 
 /* ====================================================== */
 -- Start value lookups
@@ -49,6 +53,24 @@ WHERE [Name] = 'Small Group'
 UPDATE [GroupType]
 SET IconCssClass = 'fa fa-home' 
 WHERE Id = @SmallGroupTypeId
+
+-- fix small group attributes
+DECLARE @coedGuid UNIQUEIDENTIFIER = '043CF720-FB99-49EA-890F-16486434D427';
+DECLARE @ladiesGuid UNIQUEIDENTIFIER = '74269154-0885-4BE7-B367-FAB6F5668D30';
+DECLARE @mensGuid UNIQUEIDENTIFIER = '6C31860D-2BF7-42E8-B09B-2A93F7E6E0B9';
+DECLARE @marriedGuid UNIQUEIDENTIFIER = '15ACA3BA-EE45-4C42-B065-6E6BD5A054DD';
+
+DECLARE @categoryTypeAttributeId int = (SELECT Id FROM Attribute WHERE [Key] = @CategoryTypeAttributeKey AND EntityTypeId = @GroupEntityTypeId AND EntityTypeQualifierValue = @SmallGroupTypeId)
+DELETE FROM AttributeValue WHERE AttributeId = @categoryTypeAttributeId
+
+DECLARE @smallGroupTopicId int = (SELECT Id FROM DefinedType WHERE Name = @SmallGroupTopicName)
+DELETE FROM DefinedValue WHERE DefinedTypeId = @smallGroupTopicId
+
+INSERT INTO DefinedValue (IsSystem, DefinedTypeId, [Order], [Value], [Description], [Guid], CreatedDateTime) VALUES 
+	( @IsSystem, @smallGroupTopicId, @Order, 'Coed', 'Married or single men and women', @coedGuid, GETDATE() ),
+	( @IsSystem, @smallGroupTopicId, @Order, 'Ladies', 'Married or single women', @ladiesGuid, GETDATE() ),
+	( @IsSystem, @smallGroupTopicId, @Order, 'Mens', 'Married or single men', @mensGuid, GETDATE() ),
+	( @IsSystem, @smallGroupTopicId, @Order, 'Married', 'Married couples', @marriedGuid, GETDATE() )
 
 -- create a Leader role for Small Group 
 SELECT @SmallGroupLeaderId = Id
@@ -190,7 +212,7 @@ SELECT @SmallGroupGenderId = Id
 FROM [Attribute]
 WHERE FieldTypeId = @SingleSelectFieldTypeId
 AND EntityTypeId = @GroupEntityTypeId
-AND EntityTypeQualifierValue = @SmallGroupId
+AND EntityTypeQualifierValue = @SmallGroupTypeId
 AND Name = @GenderAttributeName
 
 IF @SmallGroupGenderId IS NULL
@@ -198,7 +220,7 @@ BEGIN
 
 	INSERT [Attribute] (IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Description], DefaultValue,
 		[Order], [IsGridColumn], [IsMultiValue], [IsRequired], [AllowSearch], [Guid])
-	SELECT @IsSystem, @SingleSelectFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @SmallGroupId, REPLACE(@GenderAttributeName, ' ', ''), @GenderAttributeName, '', '',
+	SELECT @IsSystem, @SingleSelectFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @SmallGroupTypeId, REPLACE(@GenderAttributeName, ' ', ''), @GenderAttributeName, 'The gender of the group members', '',
 		@Order, @True, @False, @False, @False, NEWID()
 
 	SET @SmallGroupGenderId = SCOPE_IDENTITY()
@@ -215,7 +237,7 @@ SELECT @SmallGroupMaritalId = Id
 FROM [Attribute]
 WHERE FieldTypeId = @DefinedValueFieldTypeId
 AND EntityTypeId = @GroupEntityTypeId
-AND EntityTypeQualifierValue = @SmallGroupId
+AND EntityTypeQualifierValue = @SmallGroupTypeId
 AND Name = @MaritalAttributeName
 
 IF @SmallGroupMaritalId IS NULL
@@ -223,7 +245,7 @@ BEGIN
 
 	INSERT [Attribute] (IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Description], DefaultValue,
 		[Order], [IsGridColumn], [IsMultiValue], [IsRequired], [AllowSearch], [Guid])
-	SELECT @IsSystem, @DefinedValueFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @SmallGroupId, REPLACE(@MaritalAttributeName, ' ', ''), @MaritalAttributeName, '', '',
+	SELECT @IsSystem, @DefinedValueFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @SmallGroupTypeId, REPLACE(@MaritalAttributeName, ' ', ''), @MaritalAttributeName, 'The marital status of the group members', '',
 		@Order, @True, @False, @False, @False, NEWID()
 
 	SET @SmallGroupMaritalId = SCOPE_IDENTITY()
@@ -243,7 +265,7 @@ END
 SELECT @SmallGroupChildcareId = Id
 FROM [Attribute]
 WHERE EntityTypeId = @GroupEntityTypeId
-AND EntityTypeQualifierValue = @SmallGroupId
+AND EntityTypeQualifierValue = @SmallGroupTypeId
 AND Name = @ChildCareAttributeName
 
 IF @SmallGroupChildcareId IS NULL
@@ -251,7 +273,7 @@ BEGIN
 
 	INSERT [Attribute] (IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Description], DefaultValue,
 		[Order], [IsGridColumn], [IsMultiValue], [IsRequired], [AllowSearch], [Guid])
-	SELECT @IsSystem, @BooleanFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @SmallGroupId, REPLACE(@ChildCareAttributeName, ' ', ''), @ChildCareAttributeName, '', 'False',
+	SELECT @IsSystem, @BooleanFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @SmallGroupTypeId, REPLACE(@ChildCareAttributeName, ' ', ''), @ChildCareAttributeName, 'Does this group provide childcare?', 'False',
 		@Order, @True, @False, @False, @False, NEWID()
 
 	SET @SmallGroupChildcareId = SCOPE_IDENTITY()
@@ -269,7 +291,7 @@ SELECT @FuseGroupGenderId = Id
 FROM [Attribute]
 WHERE FieldTypeId = @SingleSelectFieldTypeId
 AND EntityTypeId = @GroupEntityTypeId
-AND EntityTypeQualifierValue = @FuseGroupId
+AND EntityTypeQualifierValue = @FuseGroupTypeId
 AND Name = @GenderAttributeName
 
 IF @FuseGroupGenderId IS NULL
@@ -277,7 +299,7 @@ BEGIN
 
 	INSERT [Attribute] (IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Description], DefaultValue,
 		[Order], [IsGridColumn], [IsMultiValue], [IsRequired], [AllowSearch], [Guid])
-	SELECT @IsSystem, @SingleSelectFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @FuseGroupId, REPLACE(@GenderAttributeName, ' ', ''), @GenderAttributeName, '', '',
+	SELECT @IsSystem, @SingleSelectFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @FuseGroupTypeId, REPLACE(@GenderAttributeName, ' ', ''), @GenderAttributeName, 'The gender of the group members', '',
 		@Order, @True, @False, @False, @False, NEWID()
 
 	SET @FuseGroupGenderId = SCOPE_IDENTITY()
@@ -287,6 +309,31 @@ BEGIN
 
 	INSERT [AttributeQualifier] (IsSystem, AttributeId, [Key], Value, [Guid]) 
 	SELECT @False, @FuseGroupGenderId, 'values', 'Male, Female', NEWID()
+END
+
+-- create a small Group gender attribute
+SELECT @SmallGroupGenderId = Id
+FROM [Attribute]
+WHERE FieldTypeId = @SingleSelectFieldTypeId
+AND EntityTypeId = @GroupEntityTypeId
+AND EntityTypeQualifierValue = @SmallGroupTypeId
+AND Name = @GenderAttributeName
+
+IF @SmallGroupGenderId IS NULL
+BEGIN
+
+	INSERT [Attribute] (IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Description], DefaultValue,
+		[Order], [IsGridColumn], [IsMultiValue], [IsRequired], [AllowSearch], [Guid])
+	SELECT @IsSystem, @SingleSelectFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @SmallGroupTypeId, REPLACE(@GenderAttributeName, ' ', ''), @GenderAttributeName, 'The gender of the group members', '',
+		@Order, @True, @False, @False, @False, NEWID()
+
+	SET @SmallGroupGenderId = SCOPE_IDENTITY()
+
+	INSERT [AttributeQualifier] (IsSystem, AttributeId, [Key], Value, [Guid]) 
+	SELECT @False, @SmallGroupGenderId, 'fieldtype', 'ddl', NEWID()
+
+	INSERT [AttributeQualifier] (IsSystem, AttributeId, [Key], Value, [Guid]) 
+	SELECT @False, @SmallGroupGenderId, 'values', 'Male, Female', NEWID()
 END
 
 /* ====================================================== */
@@ -490,27 +537,41 @@ BEGIN
 			-- Small Group attributes only
 			IF @GroupTypeId = @SmallGroupTypeId
 			BEGIN
+				-- set gender attribute
+				INSERT [AttributeValue] (IsSystem, AttributeId, EntityId, Value, [Guid])
+				SELECT @IsSystem, @SmallGroupGenderId, @ChildGroupId, @Gender, NEWID()
+
 				-- set marital status
 				INSERT [AttributeValue] (IsSystem, AttributeId, EntityId, Value, [Guid])
-				SELECT @IsSystem, @SmallGroupMaritalId, @ChildGroupId, @MaritalStatus, NEWID()
+				SELECT @IsSystem, @SmallGroupMaritalId, @ChildGroupId, (SELECT TOP 1 [Guid] FROM DefinedValue WHERE DefinedTypeId = @DefinedTypeMaritalStatusId AND Value = @MaritalStatus), NEWID()
 
 				-- childcare
 				INSERT [AttributeValue] (IsSystem, AttributeId, EntityId, Value, [Guid])
-				SELECT @IsSystem, @SmallGroupChildcareId, @ChildGroupId, @HasChildcare, NEWID()
+				SELECT @IsSystem, @SmallGroupChildcareId, @ChildGroupId, CASE WHEN @HasChildcare = 1 THEN 'True' ELSE 'False' END, NEWID()
+
+				-- category / type
+				INSERT [AttributeValue] (IsSystem, AttributeId, EntityId, Value, [Guid])
+				SELECT @IsSystem, @categoryTypeAttributeId, @ChildGroupId, CASE 
+					WHEN @Gender = 'Coed' AND @MaritalStatus = 'Married or Single' THEN CONVERT(NVARCHAR(MAX), @coedGuid)
+					WHEN @Gender = 'Female' THEN CONVERT(NVARCHAR(255), @ladiesGuid)
+					WHEN @Gender = 'Male' THEN CONVERT(NVARCHAR(255), @mensGuid)
+					WHEN @MaritalStatus = 'Married' THEN CONVERT(NVARCHAR(255), @marriedGuid)
+					ELSE CONVERT(NVARCHAR(255), '')
+				END, NEWID()
 			END
 
 			-- create group schedule
 			IF @ScheduleRecurrence IS NOT NULL
 			BEGIN
-				INSERT [Schedule] (iCalendarContent, [Guid], CreatedDateTime, WeeklyTimeOfDay, WeeklyDayOfWeek)
-				SELECT '', NEWID(), @ScheduleStart, CONVERT(time, @ScheduleTime), CASE @ScheduleDay
-					WHEN 'Sunday'   THEN 1  
-					WHEN 'Monday'	THEN 2  
-					WHEN 'Tuesday'	THEN 3  
-					WHEN 'Wednesday'THEN 4  
-					WHEN 'Thursday'	THEN 5  
-					WHEN 'Friday'	THEN 6  
-					WHEN 'Saturday'	THEN 7  
+				INSERT [Schedule] ([Name], [Description], iCalendarContent, [Guid], CreatedDateTime, WeeklyTimeOfDay, WeeklyDayOfWeek)
+				SELECT @GroupName + ' Schedule', @ScheduleDay + ' @ ' + @ScheduleTime, '', NEWID(), @ScheduleStart, CONVERT(time, @ScheduleTime), CASE @ScheduleDay
+					WHEN 'Sunday'   THEN 0
+					WHEN 'Monday'	THEN 1  
+					WHEN 'Tuesday'	THEN 2  
+					WHEN 'Wednesday'THEN 3  
+					WHEN 'Thursday'	THEN 4  
+					WHEN 'Friday'	THEN 5  
+					WHEN 'Saturday'	THEN 6  
 				END
 
 				SELECT @GroupScheduleId = SCOPE_IDENTITY()
@@ -585,6 +646,6 @@ END
 -- completed successfully
 RAISERROR ( N'Completed successfully.', 0, 0 ) WITH NOWAIT
 
-use master
+--use master
 
 

@@ -22,10 +22,10 @@ DECLARE @gradeRangeAttributeId AS INT = (SELECT Id FROM Attribute WHERE Name = '
 DECLARE @gradeTransition AS NVARCHAR(10) = (SELECT Value FROM Attribute a LEFT JOIN AttributeValue av ON av.AttributeId = a.Id WHERE a.EntityTypeId IS NULL AND a.[Key] = 'GradeTransitionDate');
 
 -- Returns 9
-DECLARE @gtMonth AS INT = SUBSTRING(@gradeTransition, 0, PATINDEX('%-%', @gradeTransition));
+DECLARE @gtMonth AS INT = SUBSTRING(@gradeTransition, 0, PATINDEX('%/%', @gradeTransition));
 
 -- Returns 1
-DECLARE @gtDay AS INT = SUBSTRING(@gradeTransition, PATINDEX('%-%', @gradeTransition) + 1, LEN(@gradeTransition));
+DECLARE @gtDay AS INT = SUBSTRING(@gradeTransition, PATINDEX('%/%', @gradeTransition) + 1, LEN(@gradeTransition));
 
 -- Returns date of 2016-09-01
 DECLARE @gradeTransitionDate AS DATE = CONCAT(@currentYear, '-', @gtMonth, '-', @gtDay);
@@ -35,6 +35,9 @@ DECLARE @currentGradYear AS INT = @currentYear + CASE WHEN @today > @gradeTransi
 
 -- If today is before grade transition date, then the most recent transition date was last year (2015-09-01)
 SELECT @gradeTransitionDate = CASE WHEN @today < @gradeTransitionDate THEN CONCAT(@currentYear - 1, '-', @gtMonth, '-', @gtDay) ELSE @gradeTransitionDate END;
+
+DECLARE @msg nvarchar(max) = 'Updating graduation dates for attendances past ' + @gradeTransitionDate
+RAISERROR ( @msg, 0, 0 ) WITH NOWAIT
 
 WITH LastCheckin AS (
 	SELECT
@@ -63,3 +66,6 @@ FROM
 WHERE 
 	(g.ParentGroupId = @elementaryGroupId OR g.ParentGroupId = @fuseGroupId)
 	AND av.AttributeId = @gradeRangeAttributeId;
+
+SELECT @msg = 'Completed successfully'
+RAISERROR ( @msg, 0, 0 ) WITH NOWAIT
