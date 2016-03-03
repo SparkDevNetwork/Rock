@@ -2525,7 +2525,7 @@ begin
 		left join #services s
 			on s.serviceName = DATENAME(DW, a.Start_Date_Time)
 		left join #services s2
-			on s2.serviceTime = CONVERT(TIME, a.Start_Date_time)
+			on s2.serviceTime = CONVERT(TIME, a.Start_Date_time) AND s2.serviceName LIKE CONCAT(DATENAME(DW, a.Start_Date_Time), '%')
 
 		select @JobTitle = null, @JobId = null, @PersonId = null, @ScheduleName = null, 
 			@GroupRoleId = null, @GroupMemberId = null, @ScheduleAttributeId = null,
