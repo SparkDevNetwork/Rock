@@ -563,8 +563,8 @@ BEGIN
 			-- create group schedule
 			IF @ScheduleRecurrence IS NOT NULL
 			BEGIN
-				INSERT [Schedule] (iCalendarContent, [Guid], CreatedDateTime, WeeklyTimeOfDay, WeeklyDayOfWeek)
-				SELECT '', NEWID(), @ScheduleStart, CONVERT(time, @ScheduleTime), CASE @ScheduleDay
+				INSERT [Schedule] ([Name], [Description], iCalendarContent, [Guid], CreatedDateTime, WeeklyTimeOfDay, WeeklyDayOfWeek)
+				SELECT @GroupName + ' Schedule', @ScheduleDay + ' @ ' + @ScheduleTime, '', NEWID(), @ScheduleStart, CONVERT(time, @ScheduleTime), CASE @ScheduleDay
 					WHEN 'Sunday'   THEN 0
 					WHEN 'Monday'	THEN 1  
 					WHEN 'Tuesday'	THEN 2  
