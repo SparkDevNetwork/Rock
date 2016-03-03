@@ -51,7 +51,7 @@ namespace Rock.Model
                 .Select( a => a.Id );
 
             // Now find the active PrayerRequests that have any of those category Ids.
-            var list = Queryable( "RequestedByPersonAlias.Person" ).Where( p => p.IsActive == true && categoryIds.Contains( p.CategoryId ?? -1 ) );
+            var list = Queryable( "RequestedByPersonAlias.Person" ).Where( p => p.IsActive == true && expandedCategoryIds.Contains( p.CategoryId ?? -1 ) );
 
             if ( onlyApproved )
             {
