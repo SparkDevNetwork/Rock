@@ -19,7 +19,7 @@ using Rock.Web.UI;
 namespace com.centralaz.Prayer.Jobs
 {
     [LinkedPage( "Request Update Page", "The page that the link directs the user to.", true )]
-    [SystemEmailField( "Request Expired Email", "The system email to send.", true)]
+    [SystemEmailField( "Request Expired Email", "The system email to send.", true )]
     [CategoryField( "Category", "The category of prayer request the email will be sent out to.", false, "Rock.Model.PrayerRequest", "", "", false, "4B2D88F5-6E45-4B4B-8776-11118C8E8269", "Category Selection", 2, "Category" )]
     [DisallowConcurrentExecution]
     public class SendRequestUpdateEmail : IJob
@@ -62,7 +62,7 @@ namespace com.centralaz.Prayer.Jobs
                         var categoryId = CategoryCache.Read( categoryGuid.Value, rockContext ).Id;
 
                         // Get all prayer requests that expire today
-                        var prayerRequestQry = prayerRequestService.GetByCategoryIds( categoryIds: new List<int> { categoryId } ).Where(
+                        var prayerRequestQry = prayerRequestService.GetByCategoryIds( categoryIds: new List<int> { categoryId }, onlyApproved: false, onlyUnexpired: false ).Where(
                             pr => pr.ExpirationDate != null &&
                                 pr.ExpirationDate.Value.Day == DateTime.Now.Day &&
                                 pr.ExpirationDate.Value.Month == DateTime.Now.Month &&
@@ -92,7 +92,7 @@ namespace com.centralaz.Prayer.Jobs
 
                         var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
                         Email.Send( systemEmail.Guid, recipients, appRoot );
-                    }                   
+                    }
                 }
             }
         }
