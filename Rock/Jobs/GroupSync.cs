@@ -60,6 +60,7 @@ namespace Rock.Jobs
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
             int groupsSynced = 0;
+            int groupsChanged = 0;
 
             try
             {
@@ -127,6 +128,13 @@ namespace Rock.Jobs
                             }
                         }
 
+                        if ( hasGroupChanged )
+                        {
+                            groupsChanged++;
+                        }
+
+                        groupsSynced++;
+
                         rockContext.SaveChanges();
 
                         if ( hasGroupChanged && ( syncGroup.IsSecurityRole || syncGroup.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) ) )
@@ -136,18 +144,23 @@ namespace Rock.Jobs
                     }
                 }
 
+                var resultMessage = string.Empty;
                 if ( groupsSynced == 0 )
                 {
-                    context.Result = "No groups to sync";
+                    resultMessage = "No groups to sync";
                 }
                 else if ( groupsSynced == 1 )
                 {
-                    context.Result = "1 group was sync'ed";
+                    resultMessage = "1 group was sync'ed";
                 }
                 else
                 {
-                    context.Result = string.Format( "{0} groups were sync'ed", groupsSynced );
+                    resultMessage = string.Format( "{0} groups were sync'ed", groupsSynced );
                 }
+
+                resultMessage += string.Format( " and {0} groups where changed", groupsChanged );
+
+                context.Result = resultMessage;
             }
             catch ( System.Exception ex )
             {
