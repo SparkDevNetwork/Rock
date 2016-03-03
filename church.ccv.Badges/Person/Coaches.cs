@@ -23,47 +23,60 @@ namespace church.ccv.Badges.Person
 
     [TextField( "Group Types", "List of group types to display." )]
     [TextField( "Label", "Label to display badge.", true, "Coach" )]
+    [TextField( "Badge Color", "The color of the badge (#ffffff).", true, "#ee7624" )]
     class Coaches : Rock.PersonProfile.BadgeComponent
     {
         public override void Render( PersonBadgeCache badge, HtmlTextWriter writer )
         {
-            var rockContext = new RockContext();
+            var groupTypeIds = GetAttributeValue( badge, "GroupTypes" );
+            string label = GetAttributeValue( badge, "Label" );
+            string badgeColor = GetAttributeValue( badge, "BadgeColor" );
 
-            var label = GetAttributeValue( badge, "Label" );
-            var groupTypes = GetAttributeValue( badge, "GroupTypes" );
-            var groupTypesIds = groupTypes.Split( ',' ).AsIntegerList();
-
-            var groups = new GroupMemberService( rockContext ).Queryable()
-                                                .Where( m => groupTypesIds.Contains( m.Group.GroupTypeId )
-                                                    && m.GroupMemberStatus != GroupMemberStatus.Inactive
-                                                    && m.Group.IsActive != false
-                                                    && m.PersonId == Person.Id
-                                                    && m.GroupRole.IsLeader != true )
-                                                .Select( m => m.Group.Id )
-                                                .ToList();
-
-            List<string> groupCoaches = new GroupMemberService( rockContext ).Queryable()
-                                                .Where( m => groups.Contains( m.Group.Id )
-                                                   && m.GroupMemberStatus != GroupMemberStatus.Inactive
-                                                   && m.Group.IsActive != false
-                                                   && m.GroupRole.IsLeader == true )
-                                                .Select( m => m.Person.NickName + " " + m.Person.LastName )
-                                                .ToList();
-            if ( groupCoaches.Any() )
+            if ( groupTypeIds != String.Empty && !string.IsNullOrEmpty( badgeColor ) && !string.IsNullOrEmpty( label ) )
             {
-                writer.Write(
-                    @"<script>
-                        $(document).ready(function(){ $('[data-toggle=tooltip]').tooltip() });
+                writer.Write( string.Format(
+                    "<span class='label badge-coaches badge-id-{0}' style='background-color:{1};display:none' ></span>",
+                    badge.Id,
+                    badgeColor.EscapeQuotes() ) );
+
+                writer.Write( string.Format(
+                    @"
+                    <script>
+                    Sys.Application.add_load(function () {{
+                                                
+                        $.ajax({{
+                                type: 'GET',
+                                url: Rock.settings.get('baseUrl') + 'api/CCV/Badges/Coaches/{0}/{1}' ,
+                                statusCode: {{
+                                    200: function (data, status, xhr) {{
+                                        var $badge = $('.badge-coaches.badge-id-{2}');
+                                        var badgeHtml = '';
+
+                                        $.each(data, function() {{
+                                            if ( badgeHtml != '' ) {{ 
+                                                badgeHtml += ' | ';
+                                            }}
+                                            badgeHtml += '<span title=""' + this.LeaderNames + '"" data-toggle=""tooltip"">{3}</span>';
+                                        }});
+
+                                        if (badgeHtml != '') {{
+                                            $badge.show('fast');
+                                        }} else {{
+                                            $badge.hide();
+                                        }}
+                                        $badge.html(badgeHtml);
+                                        $badge.find('span').tooltip();
+                                    }}
+                                }},
+                        }});
+                    }});
                     </script>
-
-                    <style>
-                        .label-coach {
-                            background-color: #ee7624;
-                        }
-                    </style>
-
-                    <span data-toggle='tooltip' title='" + string.Join( ",", groupCoaches ) +
-                    "' class='label label-coach'>" + label + "</span>" );
+                
+                    ",
+                     Person.Id.ToString(),
+                     groupTypeIds.ToString(),
+                     badge.Id,
+                     label ) );
             }
         }
     }

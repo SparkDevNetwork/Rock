@@ -30,6 +30,51 @@ namespace church.ccv.Badges.Rest.Controllers
         const string ATTRIBUTE_GLOBAL_MEMBERSHIP_VALUE_ID = "MembershipValueId";
 
         /// <summary>
+        /// Returns leaders of specified group types of a given person
+        /// </summary>
+        /// <param name="personId">The person id.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/CCV/Badges/Coaches/{personId}/{groupTypeIds}" )]
+        public List<LeaderInfo> GetCoaches( int personId, string groupTypeIds )
+        {
+            var rockContext = new RockContext();
+            var groupMemberService = new GroupMemberService( rockContext );
+
+            var groupTypeIdsList = groupTypeIds.Split( ',' ).AsIntegerList();
+
+            var groups = groupMemberService
+                .Queryable()
+                .Where( m => groupTypeIdsList.Contains( m.Group.GroupTypeId )
+                    && m.GroupMemberStatus != GroupMemberStatus.Inactive
+                    && m.Group.IsActive != false
+                    && m.PersonId == personId
+                    && m.GroupRole.IsLeader != true )
+                .Select( m => m.Group.Id )
+                .ToList();
+
+            var result = new List<LeaderInfo>();
+            var info = new LeaderInfo();
+            info.LeaderNames = groupMemberService
+                .Queryable()
+                .Where( m => groups.Contains( m.Group.Id )
+                    && m.GroupMemberStatus != GroupMemberStatus.Inactive
+                    && m.Group.IsActive != false
+                    && m.GroupRole.IsLeader == true )
+                .Select( m => m.Person.NickName + " " + m.Person.LastName )
+                .ToList()
+                .AsDelimited( ", " );
+
+            if( !string.IsNullOrEmpty( info.LeaderNames ) )
+            {
+                result.Add( info );
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Returns groups that are a specified type and geofence a given person for their home campus
         /// </summary>
         /// <param name="personId">The person id.</param>
@@ -392,6 +437,20 @@ namespace church.ccv.Badges.Rest.Controllers
             /// </value>
             public string GroupName { get; set; }
 
+            /// <summary>
+            /// Gets or sets the leader names.
+            /// </summary>
+            /// <value>
+            /// The leader names.
+            /// </value>
+            public string LeaderNames { get; set; }
+        }
+
+        /// <summary>
+        /// Leader name info
+        /// </summary>
+        public class LeaderInfo
+        {
             /// <summary>
             /// Gets or sets the leader names.
             /// </summary>
