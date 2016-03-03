@@ -80,6 +80,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Person\CampusWithLeader.cs" />
+    <Compile Include="Person\Coaches.cs" />
     <Compile Include="Person\StepsBar.cs" />
     <Compile Include="Person\GeofencedByCampusGroup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
