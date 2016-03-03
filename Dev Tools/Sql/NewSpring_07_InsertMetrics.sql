@@ -368,7 +368,7 @@ SELECT @MetricServiceRolesSQL = N'
 	ON PA.Id = Attendance.PersonAliasId	
 	INNER JOIN (
 		-- iCal DTStart: constant 22 characters, only interested in Service Time
-		SELECT Id, SUBSTRING(iCalendarContent, PATINDEX(''%DTSTART%'', iCalendarContent) +17, 4) AS Value
+		SELECT Id, STUFF(SUBSTRING(iCalendarContent, PATINDEX(''%DTSTART%'', iCalendarContent) +17, 4), 3, 0, '':'') AS Value
 		FROM Schedule
 		WHERE EffectiveStartDate < GETDATE()
 	) Schedule
