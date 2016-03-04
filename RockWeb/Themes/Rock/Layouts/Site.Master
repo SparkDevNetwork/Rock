@@ -152,7 +152,9 @@
     <script>
         Sys.Application.add_load( function () {
             $('.navbar-side > li').hover(function () {
-                $(this).doTimeout('hover', 250, 'addClass', 'open');
+                if (!$('body').hasClass('zone-highlight')) {
+                    $(this).doTimeout('hover', 250, 'addClass', 'open');
+                }
             }, function () {
                 $(this).doTimeout('hover', 250, 'removeClass', 'open');
             });
