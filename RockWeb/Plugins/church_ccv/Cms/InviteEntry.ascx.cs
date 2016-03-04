@@ -145,6 +145,8 @@ I'm going to Fun Event at {{ item.Name }}. Would you like to join me & some frie
     [BooleanField( "Show Debug", "Show Lava Objects and Help", order: 4 )]
     [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 3600, "", order: 5 )]
     [TextField( "Cache Key", "Additional CacheKey to use when caching the content using Context Lava Merge Fields. For example: <pre>Campus={{ Context.Campus.Guid }}</pre>", required: false, order: 5 )]
+
+    [BooleanField( "Load GlobalAttribute MergeFields", "Set to false to prevent loading the GlobalAttribute MergeFields which will save a few milliseconds", true, order: 5 )]
     public partial class InviteEntry : RockBlock
     {
         private bool _flushCache = false;
@@ -190,7 +192,15 @@ I'm going to Fun Event at {{ item.Name }}. Would you like to join me & some frie
         /// </summary>
         public void ShowContent()
         {
-            var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
+            Dictionary<string, object> mergeFields;
+            if ( this.GetAttributeValue( "LoadGlobalAttributeMergeFields" ).AsBooleanOrNull() ?? true )
+            {
+                mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
+            }
+            else
+            {
+                mergeFields = new Dictionary<string, object>();
+            }
 
             var contextObjects = new Dictionary<string, object>();
             foreach ( var contextEntityType in RockPage.GetContextEntityTypes() )
@@ -211,11 +221,15 @@ I'm going to Fun Event at {{ item.Name }}. Would you like to join me & some frie
                 mergeFields.Add( "Context", contextObjects );
             }
 
-            Parser uaParser = Parser.GetDefault();
+            mergeFields.Add( "PageParameter", PageParameters() );
 
-            ClientInfo client = uaParser.Parse( this.Request.UserAgent );
-            mergeFields.Add( "DeviceFamily", client.Device.Family );
-            mergeFields.Add( "OSFamily", client.OS.Family.ToLower() );
+            if ( !string.IsNullOrEmpty( this.Request.UserAgent ) )
+            {
+                Parser uaParser = Parser.GetDefault();
+                ClientInfo client = uaParser.Parse( this.Request.UserAgent );
+                mergeFields.Add( "DeviceFamily", client.Device.Family );
+                mergeFields.Add( "OSFamily", client.OS.Family.ToLower() );
+            }
 
             var cacheKey = this.GetAttributeValue( "CacheKey" ) ?? string.Empty;
             cacheKey = string.Format( "InviteEntry:{0},CacheKey:{1}", this.BlockCache.Guid, cacheKey.ResolveMergeFields( mergeFields ) );
@@ -235,7 +249,6 @@ I'm going to Fun Event at {{ item.Name }}. Would you like to join me & some frie
                 }
 
                 mergeFields.Add( "Campuses", CampusCache.All() );
-                mergeFields.Add( "PageParameter", PageParameters() );
 
                 var contentObjectJSON = this.GetAttributeValue( "ContentObject" );
 
