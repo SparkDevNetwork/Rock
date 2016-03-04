@@ -4,6 +4,10 @@
     function clearActiveDialog() {
         $('#<%=hfActiveDialog.ClientID %>').val('');
     }
+
+    Sys.Application.add_load( function () {
+        $('.js-follow-status').tooltip();
+    });
 </script>
 
 <asp:UpdatePanel ID="upnlEventItemList" runat="server">
@@ -16,7 +20,7 @@
 
             <asp:HiddenField ID="hfEventItemId" runat="server" />
 
-            <div class="panel-heading">
+            <div class="panel-heading panel-follow clearfix">
                 <h1 class="panel-title pull-left">
                     <i class="fa fa-calendar-check-o"></i>
                     <asp:Literal ID="lReadOnlyTitle" runat="server" />
@@ -26,6 +30,7 @@
                     <Rock:HighlightLabel ID="hlStatus" runat="server" />
                     <Rock:HighlightLabel ID="hlApproved" runat="server" />
                 </div>
+                <asp:Panel runat="server" ID="pnlFollowing" CssClass="panel-follow-status js-follow-status" data-toggle="tooltip" data-placement="top" title="Click to Follow"></asp:Panel>
             </div>
 
             <div class="panel-body">
