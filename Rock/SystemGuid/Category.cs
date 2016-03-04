@@ -94,6 +94,8 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PERSON_ATTRIBUTES_SOCIAL = "DD8F467D-B83C-444F-B04C-C681167046A1";
 
+
+        public const string PERSON_ATTRIBUTES_ERA = "266A1EA8-425C-7BB0-4191-C2E234D60086";
         #endregion
 
         #region System Email Categories
