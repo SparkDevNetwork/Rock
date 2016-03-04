@@ -57,6 +57,11 @@ namespace RockWeb.Blocks.Core
                 <li>{{ item.Name }}</li>
             {% endif %}
         {% endfor %}
+
+        {% if HasMore %}
+            <li><i class='fa icon-fw''></i> <small>(showing top {{ Quantity }})</small></li>
+        {% endif %}
+
         </ul>
         
     </div>
@@ -135,10 +140,16 @@ namespace RockWeb.Blocks.Core
                 var followingService = new FollowingService( rockContext );
                 IQueryable<IEntity> qryFollowedItems = followingService.GetFollowedItems( entityType.Id, personId );
 
-                mergeFields.Add( "FollowingItems", qryFollowedItems.ToList() );
+                int quantity = GetAttributeValue( "MaxResults" ).AsInteger();
+                var items = qryFollowedItems.Take(quantity + 1).ToList();
 
+                bool hasMore = (quantity < items.Count);
+
+                mergeFields.Add( "FollowingItems", items.Take( quantity ) );
+                mergeFields.Add( "HasMore", hasMore );
                 mergeFields.Add( "EntityType", entityType.FriendlyName );
                 mergeFields.Add( "LinkUrl", GetAttributeValue( "LinkUrl" ) );
+                mergeFields.Add( "Quantity", quantity );
 
                 string template = GetAttributeValue( "LavaTemplate" );
                 lContent.Text = template.ResolveMergeFields( mergeFields );
