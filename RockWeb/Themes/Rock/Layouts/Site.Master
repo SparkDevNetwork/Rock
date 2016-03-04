@@ -183,8 +183,6 @@
                     $('body').removeClass('navbar-side-close');
                 }
             });
-
-
         });
     </script>
 
