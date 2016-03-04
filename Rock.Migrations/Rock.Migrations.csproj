@@ -131,6 +131,10 @@
     <Compile Include="Migrations\201602292030218_DiscEnhancements.Designer.cs">
       <DependentUpon>201602292030218_DiscEnhancements.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201603021659169_PersonEra.cs" />
+    <Compile Include="Migrations\201603021659169_PersonEra.Designer.cs">
+      <DependentUpon>201603021659169_PersonEra.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.cs" />
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.Designer.cs">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
@@ -2072,6 +2076,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201602292030218_DiscEnhancements.resx">
       <DependentUpon>201602292030218_DiscEnhancements.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603021659169_PersonEra.resx">
+      <DependentUpon>201603021659169_PersonEra.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.resx">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
