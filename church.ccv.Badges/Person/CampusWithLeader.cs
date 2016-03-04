@@ -1,12 +1,13 @@
-﻿
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
+using System.Web.UI;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.UI.Controls;
+using Rock.Web.Cache;
 
 namespace Rock.PersonProfile.Badge
 {
@@ -16,7 +17,7 @@ namespace Rock.PersonProfile.Badge
     [Description( "Campus with Leader Badge" )]
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Campus with Leader" )]
-    public class CampusWithLeader : HighlightLabelBadge
+    public class CampusWithLeader : Rock.PersonProfile.BadgeComponent
     {
 
         /// <summary>
@@ -24,45 +25,48 @@ namespace Rock.PersonProfile.Badge
         /// </summary>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public override HighlightLabel GetLabel( Person person )
+        public override void Render( PersonBadgeCache badge, HtmlTextWriter writer )
         {
-            if ( ParentPersonBlock != null )
-            {
-                // Campus is associated with the family group(s) person belongs to.
-                var families = ParentPersonBlock.PersonGroups( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
-                if ( families != null )
-                {
-                    var rockContext = new RockContext();
+            writer.Write( string.Format(
+                "<span class='label label-campus badge-campuswithleaders badge-id-{0}' style='display:none' ></span>",
+                badge.Id ) );
 
-                    var label = new HighlightLabel();
-                    label.LabelType = LabelType.Campus;
+            writer.Write( string.Format(
+                @"
+                <script>
+                Sys.Application.add_load(function () {{
+                                                
+                    $.ajax({{
+                            type: 'GET',
+                            url: Rock.settings.get('baseUrl') + 'api/CCV/Badges/CampusesWithLeader/{0}' ,
+                            statusCode: {{
+                                200: function (data, status, xhr) {{
+                                    var $badge = $('.badge-campuswithleaders.badge-id-{1}');
+                                    var badgeHtml = '';
 
-                    var campusNames = new List<string>();
-                    var campusLeaders = new List<Person>();
+                                    $.each(data, function() {{
+                                        if ( badgeHtml != '' ) {{ 
+                                            badgeHtml += ' | ';
+                                        }}
+                                        badgeHtml += '<span title=""' + this.LeaderNames + '"" data-toggle=""tooltip"">' + this.CampusNames + '</span>';
+                                    }});
 
-                    foreach ( int campusId in families
-                        .Where( g => g.CampusId.HasValue )
-                        .Select( g => g.CampusId )
-                        .Distinct()
-                        .ToList() )
-                    {
-                        var campus = Rock.Web.Cache.CampusCache.Read( campusId );
-
-                        campusNames.Add( campus.Name );
-                        campusLeaders.Add( new PersonAliasService( rockContext ).GetPerson( (int)campus.LeaderPersonAliasId ) );
-                    }
-                        
-
-                    label.Text = campusNames.ToList().AsDelimited( ", " );
-                    label.ToolTip = campusLeaders.Select( p => p.NickName + " " + p.LastName ).ToList().AsDelimited( ", " );
-
-                    return label;
-                }
-            }
-
-            return null;
-
+                                    if (badgeHtml != '') {{
+                                        $badge.show('fast');
+                                    }} else {{
+                                        $badge.hide();
+                                    }}
+                                    $badge.html(badgeHtml);
+                                    $badge.find('span').tooltip();
+                                }}
+                            }},
+                    }});
+                }});
+                </script>
+                
+                ",
+                    Person.Id.ToString(),
+                    badge.Id ) );
         }
-
     }
 }

@@ -30,6 +30,50 @@ namespace church.ccv.Badges.Rest.Controllers
         const string ATTRIBUTE_GLOBAL_MEMBERSHIP_VALUE_ID = "MembershipValueId";
 
         /// <summary>
+        /// Returns campuses with leader of a given person
+        /// </summary>
+        /// <param name="personId">The person id.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/CCV/Badges/CampusesWithLeader/{personId}" )]
+        public List<CampusAndLeaderInfo> GetCampusesWithLeaders( int personId )
+        {
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+
+            var result = new List<CampusAndLeaderInfo>();
+            var info = new CampusAndLeaderInfo();
+
+            var families = personService.GetFamilies( personId );
+
+            if ( families != null )
+            {
+                var campusNames = new List<string>();
+                var campusLeaders = new List<string>();
+
+                foreach ( int campusId in families
+                    .Where( g => g.CampusId.HasValue )
+                    .Select( g => g.CampusId )
+                    .Distinct()
+                    .ToList() )
+                {
+                    var campus = Rock.Web.Cache.CampusCache.Read( campusId );
+
+                    campusNames.Add( campus.Name );
+                    campusLeaders.Add( new PersonAliasService( rockContext ).GetPerson( (int)campus.LeaderPersonAliasId ).FullName );
+                }
+
+                info.CampusNames = campusNames.ToList().AsDelimited( ", " );
+                info.LeaderNames = campusLeaders.ToList().AsDelimited( ", " );
+            }
+
+            result.Add( info );
+
+            return result;
+        }
+
+        /// <summary>
         /// Returns leaders of specified group types of a given person
         /// </summary>
         /// <param name="personId">The person id.</param>
@@ -422,6 +466,28 @@ namespace church.ccv.Badges.Rest.Controllers
             }
 
             return stepsBarResult;
+        }
+
+        /// <summary>
+        /// Campus and Leader info
+        /// </summary>
+        public class CampusAndLeaderInfo
+        {
+            /// <summary>
+            /// Gets or sets the name of the campus.
+            /// </summary>
+            /// <value>
+            /// The name of the campus.
+            /// </value>
+            public string CampusNames { get; set; }
+
+            /// <summary>
+            /// Gets or sets the leader names.
+            /// </summary>
+            /// <value>
+            /// The leader names.
+            /// </value>
+            public string LeaderNames { get; set; }
         }
 
         /// <summary>
