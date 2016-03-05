@@ -42,6 +42,7 @@ namespace RockWeb.Blocks.Core
     [TextField( "No Campus Text", "The text displayed when no campus context is selected.", true, "Select Campus", order: 3 )]
     [TextField( "Clear Selection Text", "The text displayed when a campus can be unselected. This will not display when the text is empty.", true, "", order: 4 )]
     [BooleanField( "Display Query Strings", "Select to always display query strings. Default behavior will only display the query string when it's passed to the page.", false, "", order: 5 )]
+    [BooleanField("Default To Current User's Campus", "Will use the campus of the current user if no context is provided.", key:"DefaultToCurrentUser")]
     public partial class CampusContextSetter : RockBlock
     {
         #region Base Control Methods
@@ -101,6 +102,11 @@ namespace RockWeb.Blocks.Core
                 {
                     currentCampus = SetCampusContext( campusId, false );
                 }
+            }
+
+            if ( currentCampus == null && GetAttributeValue( "DefaultToCurrentUser" ).AsBoolean() && CurrentPerson != null )
+            {
+                currentCampus = CurrentPerson.GetFamilies().First().Campus;
             }
 
             if ( currentCampus != null )
