@@ -1,5 +1,11 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GivingAnalytics.ascx.cs" Inherits="RockWeb.Blocks.Finance.GivingAnalytics" %>
 
+<style>
+    .filter-options .rock-check-box-list label {
+        cursor: pointer;
+    }
+</style>
+
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
@@ -37,8 +43,8 @@
                         <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Date Range" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange"/>
                         <Rock:NumberRangeEditor ID="nreAmount" runat="server" CssClass="input-width-sm" NumberType="Currency" Label="Total Amount" />
                         <Rock:DataViewPicker ID="dvpDataView" runat="server" Label="Limit by DataView" AutoPostBack="true" OnSelectedIndexChanged="dvpDataView_SelectedIndexChanged" />
-                        <Rock:RockCheckBoxList ID="cblCurrencyTypes" runat="server" Label="Currency Types" RepeatDirection="Vertical" />
-                        <Rock:RockCheckBoxList ID="cblTransactionSource" runat="server" Label="Transaction Source" RepeatDirection="Vertical" />
+                        <Rock:RockCheckBoxList ID="cblCurrencyTypes" runat="server" FormGroupCssClass="currency-list js-currency-list" Label="Currency Types" RepeatDirection="Vertical" />
+                        <Rock:RockCheckBoxList ID="cblTransactionSource" runat="server" FormGroupCssClass="source-list js-source-list" Label="Transaction Source" RepeatDirection="Vertical" />
                         <asp:PlaceHolder ID="phAccounts" runat="server" />
 
                     </div>
@@ -270,6 +276,7 @@
                 });
 
                 showFilterByOptions();
+
             });
         </script>
     </ContentTemplate>
