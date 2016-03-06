@@ -340,7 +340,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static BlockCache Read( Block blockModel )
         {
-            return GetOrAddExisting( CampusCache.CacheKey( blockModel.Id ),
+            return GetOrAddExisting( BlockCache.CacheKey( blockModel.Id ),
                 () => LoadByModel( blockModel ) );
         }
 

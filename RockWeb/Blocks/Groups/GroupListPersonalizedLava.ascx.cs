@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Lists all group that the person is a member of using a Lava template." )]
 
-    [LinkedPage( "Detail Page", "", true, "", "", 0 )]
+    [LinkedPage( "Detail Page", "", false, "", "", 0 )]
     [GroupTypesField( "Include Group Types", "The group types to display in the list.  If none are selected, all group types will be included.", false, "", "", 4 )]
     [GroupTypesField( "Exclude Group Types", "The group types to exclude from the list (only valid if including all groups).", false, "", "", 5 )]
     [CodeEditorField( "Lava Template", "The lava template to use to format the group list.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupListSidebar.lava' %}", "", 6 )]

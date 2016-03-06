@@ -76,15 +76,7 @@ namespace Rock.Web.UI.Controls
             {
                 string cc = countryCode as string ?? string.Empty;
                 string n = number as string ?? string.Empty;
-
-                if ( DisplayCountryCode )
-                {
-                    formattedNumber = PhoneNumber.FormattedNumber( cc, n, true );
-                }
-                else
-                {
-                    formattedNumber = PhoneNumber.FormattedNumber( cc, n );
-                }
+                formattedNumber = PhoneNumber.FormattedNumber( cc, n, DisplayCountryCode );
             }
 
             var phoneType = DefinedValueCache.Read( phoneNumberTypeId );

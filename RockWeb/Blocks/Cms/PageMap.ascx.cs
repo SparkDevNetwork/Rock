@@ -49,6 +49,23 @@ namespace RockWeb.Blocks.Cms
             RockContext rockContext = new RockContext();
             PageService pageService = new PageService( rockContext );
 
+            var allPages = pageService.Queryable( "PageContexts, PageRoutes" );
+
+            foreach ( var page in allPages )
+            {
+                PageCache.Read( page );
+            }
+
+            foreach ( var block in new BlockService(rockContext).Queryable() )
+            {
+                BlockCache.Read( block );
+            }
+
+            foreach ( var blockType in new BlockTypeService( rockContext ).Queryable() )
+            {
+                BlockTypeCache.Read( blockType );
+            }
+
             if ( Page.IsPostBack )
             {
                 foreach ( string expandedId in hfExpandedIds.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
@@ -86,7 +103,7 @@ namespace RockWeb.Blocks.Cms
             var sb = new StringBuilder();
 
             sb.AppendLine( "<ul id=\"treeview\">" );
-            var allPages = pageService.Queryable( "Pages, Blocks" );
+            
             string rootPage = GetAttributeValue("RootPage");
             if ( ! string.IsNullOrEmpty( rootPage ) )
             {

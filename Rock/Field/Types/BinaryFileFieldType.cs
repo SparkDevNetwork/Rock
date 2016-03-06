@@ -125,8 +125,8 @@ namespace Rock.Field.Types
         {
             string formattedValue = string.Empty;
 
-            Guid? guid = value.AsGuid();
-            if ( guid.HasValue )
+            Guid? guid = value.AsGuidOrNull();
+            if ( guid.HasValue && !guid.Value.IsEmpty() )
             {
                 var binaryFileInfo = new BinaryFileService( new RockContext() )
                     .Queryable()

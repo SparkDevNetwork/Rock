@@ -86,7 +86,7 @@ namespace Rock.Field
         string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false );
 
         /// <summary>
-        /// Values the type of as field.
+        /// Returns the value using the most appropriate datatype
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
         /// <param name="value">The value.</param>

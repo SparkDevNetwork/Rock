@@ -227,7 +227,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Values the type of as field.
+        /// Returns the value using the most appropriate datatype
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
         /// <param name="value">The value.</param>
@@ -547,6 +547,17 @@ namespace Rock.Field.Types
             {
                 return "ValueAsDateTime";
             }
+        }
+
+        /// <summary>
+        /// Attributes the constant expression.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public override ConstantExpression AttributeConstantExpression( string value )
+        {
+            var dateTime = value.AsDateTime() ?? DateTime.MinValue;
+            return Expression.Constant( dateTime, typeof( DateTime ) );
         }
 
         /// <summary>

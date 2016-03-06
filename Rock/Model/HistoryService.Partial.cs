@@ -138,6 +138,31 @@ namespace Rock.Model
                 }
             }
         }
+
+        /// <summary>
+        /// Deletes any saved history items.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="modelType">Type of the model.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        public static void DeleteChanges( RockContext rockContext, Type modelType, int entityId )
+        {
+            var entityType = EntityTypeCache.Read( modelType );
+            if ( entityType != null  )
+            {
+                var historyService = new HistoryService( rockContext );
+                foreach( var history in historyService.Queryable()
+                    .Where( h => 
+                        h.EntityTypeId == entityType.Id &&
+                        h.EntityId == entityId ) )
+                {
+                    historyService.Delete( history );
+                }
+
+                rockContext.SaveChanges();
+            }
+
+        }
     }
 }
 

@@ -359,7 +359,19 @@ namespace RockWeb.Blocks.Event
                 var eventItemOccurrence = occurrenceDates.EventItemOccurrence;
                 foreach ( var datetime in occurrenceDates.Dates )
                 {
-                    CalendarEventDates.Add( datetime.Date );
+                    if ( eventItemOccurrence.Schedule.EffectiveEndDate.HasValue && ( eventItemOccurrence.Schedule.EffectiveStartDate != eventItemOccurrence.Schedule.EffectiveEndDate ) )
+                    {
+                        var multiDate = eventItemOccurrence.Schedule.EffectiveStartDate;
+                        while ( multiDate.HasValue && ( multiDate.Value < eventItemOccurrence.Schedule.EffectiveEndDate.Value ))
+                        {
+                            CalendarEventDates.Add( multiDate.Value.Date );
+                            multiDate = multiDate.Value.AddDays( 1 );
+                        }
+                    }
+                    else
+                    {
+                        CalendarEventDates.Add( datetime.Date );
+                    }
 
                     if ( datetime >= beginDate && datetime < endDate )
                     {

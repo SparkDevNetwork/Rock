@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -57,6 +58,8 @@ namespace Rock.Workflow.Action.CheckIn
                 var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext );
                 var globalMergeValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
 
+                var groupMemberService = new GroupMemberService( rockContext );
+
                 foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ) )
                 {
                     foreach ( var person in family.People.Where( p => p.Selected ) )
@@ -70,6 +73,14 @@ namespace Rock.Workflow.Action.CheckIn
                             }
                             mergeObjects.Add( "Person", person );
                             mergeObjects.Add( "GroupType", groupType );
+
+                            var groupIds = groupType.Groups.Where( g => g.Selected && g.Group != null ).Select( g => g.Group.Id ).ToList();
+                            var groupMembers = groupMemberService.Queryable().AsNoTracking()
+                                .Where( m =>
+                                    m.PersonId == person.Person.Id &&
+                                    groupIds.Contains( m.GroupId ) )
+                                .ToList();
+                            mergeObjects.Add( "GroupMembers", groupMembers );
 
                             groupType.Labels = new List<CheckInLabel>();
 

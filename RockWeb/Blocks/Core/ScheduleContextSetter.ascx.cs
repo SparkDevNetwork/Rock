@@ -147,7 +147,7 @@ namespace RockWeb.Blocks.Core
                 schedules.Insert( 0, blankCampus );
             }
 
-            rptSchedules.DataSource = schedules.OrderBy(s => s.Name).ToList();
+            rptSchedules.DataSource = schedules.OrderBy( s => s.Name ).ToList();
             rptSchedules.DataBind();
         }
 

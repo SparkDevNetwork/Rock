@@ -1192,7 +1192,7 @@ namespace Rock.Web.UI
         {
             var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
             string keyParameter = string.IsNullOrWhiteSpace( googleAPIKey ) ? "" : string.Format( "key={0}&", googleAPIKey );
-            string scriptUrl = string.Format( "https://maps.googleapis.com/maps/api/js?{0}sensor=false&libraries=drawing,visualization,geometry", keyParameter );
+            string scriptUrl = string.Format( "https://maps.googleapis.com/maps/api/js?{0}libraries=drawing,visualization,geometry", keyParameter );
 
             // first, add it to the page to handle cases where the api is needed on first page load
             if ( this.Page != null && this.Page.Header != null )
@@ -1240,7 +1240,7 @@ namespace Rock.Web.UI
                         transaction.PersonAliasId = CurrentPersonAlias.Id;
                     }
 
-                    transaction.IPAddress = Request.UserHostAddress;
+                    transaction.IPAddress = GetClientIpAddress();
                     transaction.UserAgent = Request.UserAgent ?? "";
                     transaction.Url = Request.Url.ToString();
                     transaction.PageTitle = _pageCache.PageTitle;
@@ -2280,6 +2280,67 @@ namespace Rock.Web.UI
 
                 header.Controls.Add( l );
             }
+        }
+
+        /// <summary>
+        /// Gets the client's ip address.
+        /// </summary>
+        /// <returns></returns>
+        public static string GetClientIpAddress()
+        {
+            string ipAddress = HttpContext.Current.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
+
+            if ( String.IsNullOrWhiteSpace( ipAddress ) )
+            {
+                ipAddress = HttpContext.Current.Request.ServerVariables["REMOTE_ADDR"];
+            }
+
+            if ( string.IsNullOrWhiteSpace( ipAddress ) )
+            {
+                ipAddress = HttpContext.Current.Request.UserHostAddress;
+            }
+
+            if ( string.IsNullOrWhiteSpace( ipAddress ) || ipAddress.Trim() == "::1" )
+            {
+                ipAddress = string.Empty;
+            }
+
+            if ( string.IsNullOrWhiteSpace( ipAddress ) )
+            {
+                string stringHostName = System.Net.Dns.GetHostName();
+                if ( !string.IsNullOrWhiteSpace( stringHostName ) )
+                {
+                    var ipHostEntries = System.Net.Dns.GetHostEntry( stringHostName );
+                    if ( ipHostEntries != null )
+                    {
+                        try
+                        {
+                            var arrIpAddress = ipHostEntries.AddressList.FirstOrDefault( i => !i.IsIPv6LinkLocal );
+                            if ( arrIpAddress != null )
+                            {
+                                ipAddress = arrIpAddress.ToString();
+                            }
+                        }
+                        catch
+                        {
+                            try
+                            {
+                                var arrIpAddress = System.Net.Dns.GetHostAddresses( stringHostName ).FirstOrDefault( i => !i.IsIPv6LinkLocal );
+                                if ( arrIpAddress != null )
+                                {
+                                    ipAddress = arrIpAddress.ToString();
+                                }
+                            }
+                            catch
+                            {
+                                ipAddress = "127.0.0.1";
+                            }
+                        }
+                    }
+                }
+            }
+
+            return ipAddress;
         }
 
         #region User Preferences

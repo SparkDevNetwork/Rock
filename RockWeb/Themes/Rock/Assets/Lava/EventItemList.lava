@@ -7,8 +7,15 @@
       {% assign eventName = eventOccurrenceSummary.Name %}
     {% endif %}
 
-    <h4>{{ eventName }} <small>{{ eventOccurrenceSummary.EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal | First | Date: 'ddd, MMM d / h:mmtt' }}</small></h4>
-
+    <h4>{{ eventName }}
+      <small>
+      {% if eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveStartDate != eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveEndDate %}
+        {{ eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveStartDate  | Date: 'MMM d' }} -  {{ eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveEndDate  | Date: 'MMM d'}}
+      {% else %}
+        {{ eventOccurrenceSummary.DateTime | Date: 'ddd, MMM d / h:mmtt' }}
+      {% endif %}
+      </small>
+    </h4>
 
     <p>{{ eventOccurrenceSummary.Summary }}</p>
   </div>

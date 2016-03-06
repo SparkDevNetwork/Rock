@@ -188,7 +188,11 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                     .Select( a => a.Id ).ToList();
 
                 // set date range according to the context
-                var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( DateRangeContext );
+                DateRange dateRange = null;
+                if ( !string.IsNullOrEmpty( DateRangeContext ))
+                {
+                    dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( DateRangeContext );
+                }
 
                 // Show data if metric source is selected
                 if ( primaryMetricSource.Any() || !string.IsNullOrEmpty( PrimaryMetricKey ) )

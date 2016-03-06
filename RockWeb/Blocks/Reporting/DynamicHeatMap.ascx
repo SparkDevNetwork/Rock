@@ -3,7 +3,7 @@
 <script type="text/javascript" src="https://google-maps-utility-library-v3.googlecode.com/svn/trunk/maplabel/src/maplabel-compiled.js"></script>
 
 
-<asp:UpdatePanel ID="upnlContent" runat="server">
+<asp:UpdatePanel ID="upnlContent" runat="server" UpdateMode="Conditional">
     <ContentTemplate>
 
         <Rock:NotificationBox ID="nbConfigurationWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
@@ -36,6 +36,10 @@
                     <asp:Panel ID="pnlPieSlicer" runat="server" CssClass="btn btn-default btn-xs js-createpieshape">
                         <i class='fa fa-pie-chart' title="Create pie slices from selected circle"></i>
                     </asp:Panel>
+                    <asp:Panel ID="pnlSaveShape" runat="server" CssClass="btn btn-default btn-xs js-saveshape">
+                        <i class='fa fa-floppy-o' title="Save selected shape to a named location"></i>
+                    </asp:Panel>
+
                     <div class="btn btn-danger btn-xs js-deleteshape"><i class='fa fa-times' title="Delete selected shape"></i></div>
                 </div>
             </div>
@@ -75,6 +79,12 @@
             }
             
             Sys.Application.add_load(function () {
+                
+                // if this is an async postback, the map is already created, so just break out
+                if ($('#map_canvas').data("googleMap"))
+                {
+                    return;
+                }
 
                 // hook into rangeslider
                 var rangeSlider = $('#<%=rsDataPointRadius.ClientID%>');
@@ -151,25 +161,10 @@
                             });
 
                             geoFencePoly.Name = mapItem.Name;
+                            geoFencePoly.overlayType = 'polygon';
 
                             map.AddUpdateShape(geoFencePoly);
                         }
-                    }
-
-                    var groupId = <%=this.GroupId ?? 0 %>;
-                    if (groupId) {
-                        $.get( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/' + groupId, function( mapItems ) {
-                            $.each(mapItems, function (i, mapItem) {
-                                addGroupGeoFence(mapItem);
-                            });
-                        });
-
-                        // Get Child Groups
-                        $.get( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/' + groupId + '/Children', function( mapItems ) {
-                            $.each(mapItems, function (i, mapItem) {
-                                addGroupGeoFence(mapItem);
-                            });
-                        });
                     }
 
                     //
@@ -213,6 +208,22 @@
 
                     heatmap.setMap(map);
 
+                    var groupId = <%=this.GroupId ?? 0 %>;
+                    if (groupId) {
+                        $.get( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/' + groupId, function( mapItems ) {
+                            $.each(mapItems, function (i, mapItem) {
+                                addGroupGeoFence(mapItem);
+                            });
+                        });
+
+                        // Get Child Groups
+                        $.get( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/' + groupId + '/Children', function( mapItems ) {
+                            $.each(mapItems, function (i, mapItem) {
+                                addGroupGeoFence(mapItem);
+                            });
+                        });
+                    }
+
                     map.DeleteShape = function(shape) {
                         var allShapesIndex = map.AllShapes.indexOf(shape);
                                     
@@ -248,7 +259,18 @@
                         
                         if (!justUpdate) {
                             google.maps.event.addListener(shape, 'click', function () {
+
                                 map.SelectedShape = shape
+                                map.AllShapes.forEach(function (s) {
+                                    if (s.mapCountLabel && s.mapCountLabel.text.startsWith("*"))
+                                    {
+                                        s.mapCountLabel.text = s.mapCountLabel.text.slice(1);
+                                        s.mapCountLabel.changed('text');
+                                    }
+                                });
+                                
+                                map.SelectedShape.mapCountLabel.text = '*' + map.SelectedShape.mapCountLabel.text;
+                                map.SelectedShape.mapCountLabel.changed('text');
                             });
 
                             // set the color of the next shape
@@ -265,21 +287,50 @@
 
                             map.AllShapes.push(shape);
                         }
-
+                        
+                        // NOTE: bounds is the rectangle bounds of the shape (not the actual shape)
                         var selectedBounds = shape.getBounds();
 
                         var pointCount = 0;
-                        heatmap.data.forEach(function (latLng) {
-                            if (latLng.location) {
-                                if (selectedBounds.contains(latLng.location)) {
-                                    pointCount += latLng.weight;
-                                }
-                            } else {
-                                if (selectedBounds.contains(latLng)) {
-                                    pointCount++;
+
+                        var shapeCenter = null;
+                        if (shape.getCenter)
+                        {
+                            shapeCenter = shape.getCenter();
+                        }
+                        else
+                        {
+                            shapeCenter = selectedBounds.getCenter();
+                        }
+                        
+                        heatmapDataArray = heatmap.data.getArray();
+                        for (var i = 0, len = heatmap.data.length; i < len; i++) {
+                            var latLng = heatmapDataArray[i];
+                            var pointWeight = 1;
+                            var point = latLng;
+                            if (latLng.location)
+                            {
+                                // weighted location
+                                point = latLng.location;
+                                pointWeight = latLng.weight;
+                            }
+
+                            // first check if within bounds to narrow down (for performance)
+                            if (selectedBounds.contains(point)) {
+
+                                if ('polygon' == shape.overlayType) {
+                                    if (google.maps.geometry.poly.containsLocation(point, shape)) {
+                                        pointCount += pointWeight;
+                                    }
+                                } else if ('circle' == shape.overlayType) {
+                                    if (google.maps.geometry.spherical.computeDistanceBetween(shapeCenter, point) < shape.radius) {
+                                        pointCount += pointWeight;
+                                    }
+                                } else if ('rectangle' == shape.overlayType) {
+                                    pointCount += pointWeight;
                                 }
                             }
-                        });
+                        }
 
                         var totalCount = pointCount;
                         var mapLabel = totalCount.toString();
@@ -292,11 +343,11 @@
                                 map:map,
                                 fontSize: <%=this.LabelFontSize%>,
                                 text:'x',
-                                position: selectedBounds.getCenter()
+                                position: shapeCenter
                             });
                         }
 
-                        map.SelectedShape.mapCountLabel.position = selectedBounds.getCenter();
+                        map.SelectedShape.mapCountLabel.position = shapeCenter;
                         map.SelectedShape.mapCountLabel.changed('position');
                         map.SelectedShape.mapCountLabel.text = mapLabel;
                         map.SelectedShape.mapCountLabel.changed('text');
@@ -382,6 +433,46 @@
                     }
                 });
 
+                $('.js-saveshape').click(function () {
+                    if (map.SelectedShape) {
+                        
+                        var geoFencePath;
+                        if (typeof(map.SelectedShape.getPaths) != 'undefined') {
+                            
+                            var coordinates = new Array();
+                            var vertices = map.SelectedShape.getPaths().getAt(0);
+                            // Iterate over the vertices of the shape's path
+                            for (var i = 0; i < vertices.length; i++) {
+                                var xy = vertices.getAt(i);
+                                coordinates[i] = xy.toUrlValue();
+                            }
+
+                            // if the last coor is not already the first, then
+                            // add the first vertex to the end of the path.
+                            if (coordinates[coordinates.length - 1] != coordinates[0]) {
+                                coordinates.push(coordinates[0]);
+                            }
+
+                            geoFencePath = coordinates.join('|');
+                        } else if ('rectangle' == map.SelectedShape.overlayType)
+                        {
+                            var ne = map.SelectedShape.getBounds().getNorthEast();
+                            var sw = map.SelectedShape.getBounds().getSouthWest();
+
+                            geoFencePath = ne.toUrlValue() + '|' + sw.lat() + ',' + ne.lng() + '|' + sw.toUrlValue() + '|' + ne.lat() + ',' + sw.lng() + ' | ' + ne.toUrlValue();
+                        } else if ('circle' == map.SelectedShape.overlayType)
+                        {
+                            var center = map.SelectedShape.getCenter();
+                            var radius = map.SelectedShape.radius;
+                            geoFencePath = 'CIRCLE|' + center.lng() + ' ' + center.lat() + '|' + radius;
+                        }
+
+                        $('#<%=hfLocationSavePath.ClientID%>').val(geoFencePath);
+                        
+                        Rock.controls.modal.showModalDialog($('#<%=mdSaveLocation.ClientID%>').find('.rock-modal'), '#<%=upSaveLocation.ClientID%>');
+                    }
+                });
+
                 $('.js-createpieshape').click(function () {
 
                     // make sure drawing manager mode is the hand so that 'mousemove' will fire
@@ -390,7 +481,7 @@
                     if ((map.SelectedShape && (typeof(map.SelectedShape.overlayType) != 'undefined') && map.SelectedShape.overlayType == 'circle') || (pieSlicerState.SelectedCenterPt && pieSlicerState.SelectedRadius)) {
 
                         // if we are starting with a new shape (not a pieslice), start over with a new pieslicer
-                        if (map.SelectedShape && (typeof(map.SelectedShape.overlayType) != 'undefined') && map.SelectedShape.overlayType != 'pieslice') {
+                        if (map.SelectedShape && (typeof(map.SelectedShape.overlayType) != 'undefined') && map.SelectedShape.isPieSlice != true) {
                             if (map.SelectedShape.overlayType == 'circle') {
                                 pieSlicerState.SelectedCenterPt = map.SelectedShape.getCenter();
                                 pieSlicerState.SelectedRadius = map.SelectedShape.radius;
@@ -503,12 +594,11 @@
 
                                         pieSlicePoly.isPieDrawing = true;
                                         pieSlicePoly.startArc = pc;
-                                        pieSlicePoly.overlayType = 'pieslice';
+                                        pieSlicePoly.overlayType = 'polygon';
+                                        pieSlicePoly.isPieSlice = true;
                                         while (pieSlicePoly.startArc < 0){
                                             pieSlicePoly.startArc += 360;
                                         }
-
-                                        google.maps.event.trigger(drawingManager, 'polygoncomplete', pieSlicePoly);
 
                                         pieSlicerState.CurrentPieSlices.push(pieSlicePoly);
 
@@ -552,5 +642,35 @@
 
         </script>
 
+    </ContentTemplate>
+</asp:UpdatePanel>
+
+
+<asp:UpdatePanel ID="upSaveLocation" runat="server">
+    <ContentTemplate>
+        <Rock:HiddenFieldWithClass ID="hfLocationSavePath" runat="server" CssClass="js-savelocation-value" />
+        <Rock:HiddenFieldWithClass ID="hfLocationId" runat="server" CssClass="js-savelocationid" />
+
+        <script>
+            function saveLocationGeofence() {
+                var locationId = $('#<%=lpLocation.ClientID%> .js-item-id-value').val();
+                var locationName = $('#<%=lpLocation.ClientID%> .js-item-name-value').val();
+                $('#<%=hfLocationId.ClientID%>').val(locationId);
+                __doPostBack('<%=upSaveLocation.ClientID%>');
+
+                var map = $('#map_canvas').data().googleMap;
+
+                map.SelectedShape.Name = locationName;
+                map.AddUpdateShape(map.SelectedShape, true);
+            }
+        </script>
+
+        <%-- Save Shape to Location --%>
+        <Rock:ModalDialog ID="mdSaveLocation" runat="server" CssClass="js-savelocation-modal" ValidationGroup="vgSaveLocation" OnOkScript="saveLocationGeofence();">
+            <Content>
+                <Rock:LocationItemPicker ID="lpLocation" runat="server" AllowMultiSelect="false" />
+            </Content>
+        </Rock:ModalDialog>
+        
     </ContentTemplate>
 </asp:UpdatePanel>

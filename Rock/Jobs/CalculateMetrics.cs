@@ -155,6 +155,7 @@ namespace Rock.Jobs
                                     var metricValue = new MetricValue();
                                     metricValue.MetricId = metric.Id;
                                     metricValue.MetricValueType = MetricValueType.Measure;
+                                    // this doesn't like a DBNull value?
                                     metricValue.EntityId = resultValue.Item1 > 0 ? resultValue.Item1 : (int?)null;
                                     metricValue.YValue = resultValue.Item2;
                                     metricValue.MetricValueDateTime = resultValue.Item3 ?? scheduleDateTime;

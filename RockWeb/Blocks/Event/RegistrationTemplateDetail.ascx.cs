@@ -1867,8 +1867,9 @@ namespace RockWeb.Blocks.Event
             hfHasRegistrations.Value = new RegistrationInstanceService( rockContext )
                 .Queryable().AsNoTracking()
                 .Any( i =>
+
                     i.RegistrationTemplateId == registrationTemplateId &&
-                    i.Registrations.Any() ).ToString();
+                    i.Registrations.Any( r => !r.IsTemporary ) ).ToString();
         }
 
         /// <summary>

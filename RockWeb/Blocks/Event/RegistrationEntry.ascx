@@ -60,7 +60,7 @@
    
         <div class="well">
             
-            <h4>Your Information</h4>
+            <h4>This <asp:Literal id="lRegistrationTerm2" runat="server" /> Was Completed By</h4>
             <div class="row">
                 <div class="col-md-6">
                     <Rock:RockTextBox ID="tbYourFirstName" runat="server" Label="First Name" Required="true" />

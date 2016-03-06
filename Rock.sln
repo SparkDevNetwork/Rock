@@ -52,8 +52,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cc.newspring.CyberSource", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.centralaz.SpiritualGifts", "..\rock-spiritual-gifts\com.centralaz.SpiritualGifts.csproj", "{6879E00D-7EBC-406B-A479-84EF816B10B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cc.newspring.Workflows", "..\rock-workflows\cc.newspring.Workflows.csproj", "{48DBF7CC-422B-49B6-9CDF-EAB090B69F03}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -184,16 +182,6 @@ Global
 		{6879E00D-7EBC-406B-A479-84EF816B10B4}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{6879E00D-7EBC-406B-A479-84EF816B10B4}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{6879E00D-7EBC-406B-A479-84EF816B10B4}.Release|x86.ActiveCfg = Release|Any CPU
-		{48DBF7CC-422B-49B6-9CDF-EAB090B69F03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{48DBF7CC-422B-49B6-9CDF-EAB090B69F03}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{48DBF7CC-422B-49B6-9CDF-EAB090B69F03}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{48DBF7CC-422B-49B6-9CDF-EAB090B69F03}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{48DBF7CC-422B-49B6-9CDF-EAB090B69F03}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{48DBF7CC-422B-49B6-9CDF-EAB090B69F03}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{48DBF7CC-422B-49B6-9CDF-EAB090B69F03}.Release|Any CPU.Build.0 = Release|Any CPU
-		{48DBF7CC-422B-49B6-9CDF-EAB090B69F03}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{48DBF7CC-422B-49B6-9CDF-EAB090B69F03}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{48DBF7CC-422B-49B6-9CDF-EAB090B69F03}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

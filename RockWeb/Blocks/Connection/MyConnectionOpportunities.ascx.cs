@@ -42,6 +42,7 @@ namespace RockWeb.Blocks.Connection
     [LinkedPage( "Configuration Page", "Page used to modify and create connection opportunities.", true, "", "", 0 )]
     [LinkedPage( "Detail Page", "Page used to view details of an requests.", true, "", "", 1 )]
     [ConnectionTypesField("Connection Types", "Optional list of connection types to limit the display to (All will be displayed by default).", false, order:2 )]
+    [BooleanField( "Show Last Activity Note", "If enabled, the block will show the last activity note for each request in the list.", false, order:3 )]
     public partial class MyConnectionOpportunities : Rock.Web.UI.RockBlock
     {
 
@@ -92,6 +93,7 @@ namespace RockWeb.Blocks.Connection
             gRequests.GridRebind += gRequests_GridRebind;
             gRequests.ShowConfirmDeleteDialog = false;
             gRequests.PersonIdField = "PersonId";
+            gRequests.Columns[6].Visible = GetAttributeValue( "ShowLastActivityNote" ).AsBoolean();
 
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -246,6 +248,7 @@ namespace RockWeb.Blocks.Connection
             rFilter.SaveUserPreference( "Campus", "Campus", cblCampus.SelectedValues.AsDelimited( ";" ) );
             rFilter.SaveUserPreference( "State", "State", cblState.SelectedValues.AsDelimited( ";" ) );
             rFilter.SaveUserPreference( MakeKeyUniqueToOpportunity( "Status" ), "Status", cblStatus.SelectedValues.AsDelimited( ";" ) );
+            rFilter.SaveUserPreference( MakeKeyUniqueToOpportunity( "LastActivity" ), "Last Activity", cblLastActivity.SelectedValues.AsDelimited( ";" ) );
 
             BindGrid();
         }
@@ -298,6 +301,10 @@ namespace RockWeb.Blocks.Connection
                 else if ( e.Key == MakeKeyUniqueToOpportunity( "Status" ) )
                 {
                     e.Value = ResolveValues( e.Value, cblStatus );
+                }
+                else if ( e.Key == MakeKeyUniqueToOpportunity( "LastActivity" ) )
+                {
+                    e.Value = ResolveValues( e.Value, cblLastActivity );
                 }
                 else
                 {
@@ -589,6 +596,14 @@ namespace RockWeb.Blocks.Connection
                     cblStatus.DataBind();
                     cblStatus.SetValues( rFilter.GetUserPreference( MakeKeyUniqueToOpportunity( "Status" ) ).SplitDelimitedValues().AsIntegerList() );
                 }
+
+                cblLastActivity.Items.Clear();
+                if ( SelectedOpportunityId.HasValue )
+                {
+                    cblLastActivity.DataSource = new ConnectionOpportunityService( rockContext ).Get( SelectedOpportunityId.Value ).ConnectionType.ConnectionActivityTypes.ToList();
+                    cblLastActivity.DataBind();
+                    cblLastActivity.SetValues( rFilter.GetUserPreference( MakeKeyUniqueToOpportunity( "LastActivity" ) ).SplitDelimitedValues().AsIntegerList() );
+                }
             }
         }
 
@@ -693,6 +708,15 @@ namespace RockWeb.Blocks.Connection
                                 campusIds.Contains( r.CampusId.Value ) );
                     }
 
+                    // Filter by Last Activity Note
+                    List<int> lastActivityIds = cblLastActivity.SelectedValuesAsInt;
+                    if ( lastActivityIds.Any() )
+                    {
+                        requests = requests
+                            .Where( r => lastActivityIds.Contains(
+                                r.ConnectionRequestActivities.OrderByDescending( a => a.CreatedDateTime ).Select( a => a.ConnectionActivityTypeId ).FirstOrDefault() ) );
+                    }
+
 
                     SortProperty sortProperty = gRequests.SortProperty;
                     if ( sortProperty != null )
@@ -717,6 +741,8 @@ namespace RockWeb.Blocks.Connection
                         Group = r.AssignedGroup != null ? r.AssignedGroup.Name : "",
                         Connector = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.FullName : "",
                         LastActivity = FormatActivity( r.ConnectionRequestActivities.OrderByDescending( a => a.CreatedDateTime ).FirstOrDefault() ),
+                        LastActivityNote = gRequests.Columns[6].Visible ? r.ConnectionRequestActivities.OrderByDescending(
+                            a => a.CreatedDateTime ).Select( a => a.Note ).FirstOrDefault() : "",
                         Status = r.ConnectionStatus.Name,
                         StatusLabel = r.ConnectionStatus.IsCritical ? "warning" : "info",
                         ConnectionState = r.ConnectionState,

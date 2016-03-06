@@ -77,6 +77,40 @@ CREATE INDEX [IX_ConfidenceScore] on [PersonDuplicate] (ConfidenceScore)" );
             // Attrib Value for Block:Family Members, Attribute:Location Detail Page , Layout: PersonDetail, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "4CC50BE8-72ED-43E0-8D11-7E2A590453CC", "A1C5EAB7-B507-4DB7-916D-64A58EEF8691", @"4ce2a5da-15f3-454c-8172-d146d938e203" );
 
+            // Update content channel query filter param to enable filtering for detail channel blocks
+            Sql( @"
+    DECLARE @TemplateAttributeId int = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = '8026FEA1-35C1-41CF-9D09-E8B1DB6CBDA8' )
+    DECLARE @QueryParamAttributeId int = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = 'AA9CD867-FA21-43C2-822B-CAC06E1F18B8' )
+
+    IF ( @TemplateAttributeId IS NOT NULL AND @QueryParamAttributeId IS NOT NULL )
+    BEGIN
+
+	    UPDATE Q SET [Value] = 'True'
+	    FROM [AttributeValue] T
+	    INNER JOIN [AttributeValue] Q
+		    ON Q.[AttributeId] = @QueryParamAttributeId
+		    AND Q.[entityid] = T.[EntityId]
+	    WHERE T.[AttributeId] = @TemplateAttributeId
+	    AND ( T.[Value] = '{% include ''~~/Assets/Lava/AdDetails.lava'' %}' OR	T.[Value] = '{% include ''~~/Assets/Lava/BlogItemDetail.lava'' %}' )
+
+	    INSERT INTO [AttributeValue] ( [IsSystem],[AttributeId],[EntityId],[VAlue],[Guid] )
+	    SELECT 
+		    1,
+		    @QueryParamAttributeId,
+		    T.[EntityId],
+		    'True',
+		    NEWID()
+	    FROM [AttributeValue] T
+	    LEFT OUTER JOIN [AttributeValue] Q
+		    ON Q.[AttributeId] = @QueryParamAttributeId
+		    AND Q.[entityid] = T.[EntityId]
+	    WHERE T.[AttributeId] = @TemplateAttributeId
+	    AND ( T.[Value] = '{% include ''~~/Assets/Lava/AdDetails.lava'' %}' OR	T.[Value] = '{% include ''~~/Assets/Lava/BlogItemDetail.lava'' %}' )
+	    AND Q.[Id] IS NULL
+
+    END
+" );
+
         }
         
         /// <summary>

@@ -185,6 +185,32 @@ namespace Rock.Financial
         public abstract FinancialTransaction Charge( FinancialGateway financialGateway, PaymentInfo paymentInfo, out string errorMessage );
 
         /// <summary>
+        /// Performs the first step of a three-step charge
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public virtual string ChargeStep1( FinancialGateway financialGateway, PaymentInfo paymentInfo, out string errorMessage )
+        {
+            errorMessage = "Gateway does not support three-step charge";
+            return null;
+        }
+
+        /// <summary>
+        /// Performs the final step of a three-step charge.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public virtual FinancialTransaction ChargeStep3( FinancialGateway financialGateway, PaymentInfo paymentInfo, out string errorMessage )
+        {
+            errorMessage = "Gateway does not support three-step charge";
+            return null;
+        }
+
+        /// <summary>
         /// Credits (Refunds) the specified transaction.
         /// </summary>
         /// <param name="origTransaction">The original transaction.</param>
@@ -203,6 +229,33 @@ namespace Rock.Financial
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
         public abstract FinancialScheduledTransaction AddScheduledPayment( FinancialGateway financialGateway, PaymentSchedule schedule, PaymentInfo paymentInfo, out string errorMessage );
+
+        /// <summary>
+        /// Performs the first step of adding a new payment schedule
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="schedule">The schedule.</param>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public virtual string AddScheduledPaymentStep1( FinancialGateway financialGateway, PaymentSchedule schedule, PaymentInfo paymentInfo, out string errorMessage )
+        {
+            errorMessage = "Gateway does not support three-step adding of payment schedule";
+            return null;
+        }
+
+        /// <summary>
+        /// Performs the third step of adding a new payment schedule
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public virtual FinancialScheduledTransaction AddScheduledPaymentStep3( FinancialGateway financialGateway, PaymentInfo paymentInfo, out string errorMessage )
+        {
+            errorMessage = "Gateway does not support three-step adding of payment schedule";
+            return null;
+        }
 
         /// <summary>
         /// Updates the scheduled payment.

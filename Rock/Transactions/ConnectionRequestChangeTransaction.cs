@@ -161,7 +161,7 @@ namespace Rock.Transactions
                                             }
                                         case ConnectionWorkflowTriggerType.RequestConnected:
                                             {
-                                                if ( State == EntityState.Modified && ConnectionState == global::ConnectionState.Inactive )
+                                                if ( State == EntityState.Modified && ConnectionState == global::ConnectionState.Connected )
                                                 {
                                                     LaunchWorkflow( rockContext, connectionWorkflow, "Request Completed" );
                                                 }

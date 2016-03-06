@@ -175,6 +175,18 @@ namespace Rock.Field.Types
             return string.Empty;
         }
 
+        /// <summary>
+        /// Returns the value using the most appropriate datatype
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override object ValueAsFieldType( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return value.AsBoolean();
+        }
+
         #endregion
 
         #region Edit Control

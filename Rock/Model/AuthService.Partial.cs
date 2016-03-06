@@ -54,11 +54,8 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.Auth"/> entities (Authorizations) for the specified entity and action.</returns>
         public IQueryable<Auth> GetAuths( int entityTypeId, int? entityId, string action )
         {
-            return Queryable( "PersonAlias" ).
-                    Where( A => A.EntityTypeId == entityTypeId &&
-                        A.EntityId == entityId &&
-                        A.Action == action ).
-                    OrderBy( A => A.Order );
+            return Get( entityTypeId, entityId )
+                .Where( t => t.Action == action );
         }
     }
 }

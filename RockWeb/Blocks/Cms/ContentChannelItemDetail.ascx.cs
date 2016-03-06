@@ -493,7 +493,7 @@ namespace RockWeb.Blocks.Cms
                     var hlOccurrence = new HighlightLabel();
                     hlOccurrence.LabelType = LabelType.Info;
                     hlOccurrence.ID = string.Format( "hlOccurrence_{0}", occurrence.Id );
-                    hlOccurrence.Text = string.Format( "<a href='{0}'>{1}</a>", url, occurrence.ToString() );
+                    hlOccurrence.Text = string.Format( "<a href='{0}'><i class='fa fa-calendar-o'></i> {1}</a>", url, occurrence.ToString() );
                     phOccurrences.Controls.Add( hlOccurrence );
                 }
             }

@@ -1,3 +1,48 @@
+Rock McKinley 4.3
+
++ Fixed issue with check-in "randomly" not allowing check-ins
++ Fixed issue with registration saving a blank person/registrant if user navigated away from registration and then used browser navigation to return before submitting the registration.
++ Fixed Registration Entry so that it does not create person notes until registration and payment was successful.
++ Fixed Tag Report so that after sorting it deletes the correct item (Fixes #1398).
++ Fixed location details not saving attribute values.
++ Fixed issue with security when changing if a group is a security role or not (Fixes #1399).
++ Fix issue with Group Requirements when the Expire In Days setting has not been set (Fixes #1389).
++ Fixed error in the People REST endpoint (Fixes #1388).
++ Updated Check-in to correctly cache device configuration data so that it is not specific to a particular point in time.
++ Updated Lava debug display to only display each object type/id once, and limit iterations to first two items (Fixes #1365).
++ Changed z-index of the admin toolbar to keep it from being hidden when editing page zones. (Fixes #1397)
++ Changed the ConnectionRequestDetail block to allow a request to be Connected even if there is no placement group. In the future this can be controlled via a new 'RequiresPlacementGroupToConnect' flag on the opportunity type.
++ Fixed Communication Entry block so that the Subject is cleared if a selected template does not specify a subject (Fixes #1393).
++ Fixed IE double-tap zoom issue in check-in themes
++ Fixed issue where creating a new communication from a dataview caused the block to timeout before the configured database timeout occurred. (Fixes #909).
++ Fixed issue when trying to add group attendance and the location filter is set to a parent location (i.e. campus/building) vs. an actual room location.
++ Updated the Group Attendance Detail block so that if adding attendance for a particular schedule, the attendance record gets created with the correct start time.
++ Connection Search block now has access to the complete opportunity model including the opportunity attributes. Note, there is a small change in the Lava for this update. If you use a custom theme you'll want to grab a new copy of 'OpportunitySearch.lava' as you should use the property of 'PublicName' instead of 'Name'.
+
+Rock McKinley 4.2
+
++ Updated Registration Entry so that discount code is still applied correctly when user returns to make a payment on existing registration.
++ Updated Registration Entry to correctly delete a registration if it was just created but an error occurred during save of registrants or attributes.
++ Fixed exception that would occur when copying a registration template that included an additional form(s) (in addition to the default form) and that form contained a person or group attribute (Fixes #1356).
++ Fixed registration issue that would result in registered person getting added to target group even if registration failed due to payment issue.
++ Fixed issue with group attendance not recording attendance correctly and continuing to send reminders.
++ Fixed issue where a person's tags would not always survive a merge.
++ Fixed performance issue with the Giving Amount dataview filter due to how it generated its query.
++ Fixed so that Connection Opportunities in the Connection Request transfer window are now ordered.
++ Added real person photos to the group member list block. This is not only an enhancement but also fixes what appears to be a UI bug when no photo exists.
++ Updated the Workflow Type Detail block so that it does not time out when trying to remove an activity type or action from an existing workflow type that has a significant number of workflows already created.
++ Updated the Rock Shop configuration to work with usernames and/or passwords that may have special characters.
++ Updated the Send Email and the Send System Email workflow actions to allow Email attribute field types for the from and to addresses (in addition to text or person field types)
++ Removed unnecesary clearing of authorization cache whenever a group member was added/edited/removed from a security group.
++ Updated the Group Type Detail so that if a group member attribute is removed, it is also removed from any registration template that was configured to use that attribute.
++ Updated the Twilio webhook so that if it gets an IOException when writing to log file that it will wait and try again a few times before causing an error.
++ Fixed issues with numeric attribute field comparisons on data views (Fixes #1377).
++ Fixed issue with Group and Role picker not saving the selected role (Fixes #1380).
++ Updated the Transaction Entry and Registration Entry blocks to validate new passwords against configured pattern when user is creating a new login in order to save their payment account information (Fixes #1371).
++ Fixed bug where event name not showing in page title (Fixes #1373)
++ Fixed issue with attendance block not saving the location or schedule for a new attendance being entered.
++ Fixed issue in Statement Generator where some transactions might not show up if it is split into multiple accounts and at least one of those accounts wasn't included in the filter.
+
 Rock McKinley 4.1
 
 + Updated communication entry block so that binary file attachments are not stored as temporary files (and possibly deleted up before an email is sent in the future).

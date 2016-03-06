@@ -18,6 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -25,6 +27,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Groups
 {
@@ -40,8 +43,10 @@ namespace RockWeb.Blocks.Groups
     [GroupTypesField( "Group Types Exclude", "Select group types to exclude from this block. Note that this setting is only effective if 'Group Types Include' has no specific group types selected.", false, key: "GroupTypesExclude", order: 3 )]
     [GroupField( "Root Group", "Select the root group to use as a starting point for the tree view.", false, order: 4 )]
     [BooleanField( "Limit to Security Role Groups", order: 5 )]
-    [BooleanField( "Show Filter Option to include Inactive Groups", defaultValue: true, key: "ShowFilterOption", order: 6 )]
-    [LinkedPage( "Detail Page", order: 7 )]
+    [BooleanField( "Show Settings Panel", defaultValue: true, key: "ShowFilterOption", order: 6 )]
+    [CustomDropdownListField( "Initial Count Setting", "Select the counts that should be initially shown in the treeview.", "0^None,1^Child Groups,2^Group Members", false, "0", "", 7 )]
+    [CustomDropdownListField( "Initial Active Setting", "Select whether to initially show all or just active groups in the treeview", "0^All,1^Active", false, "1", "", 8 )]
+    [LinkedPage( "Detail Page", order: 9 )]
     public partial class GroupTreeView : RockBlock
     {
         #region Fields
@@ -63,7 +68,7 @@ namespace RockWeb.Blocks.Groups
             _groupId = PageParameter( "GroupId" );
 
             var detailPageReference = new Rock.Web.PageReference( GetAttributeValue( "DetailPage" ) );
-            
+
             // NOTE: if the detail page is the current page, use the current route instead of route specified in the DetailPage (to preserve old behavoir)
             if ( detailPageReference == null || detailPageReference.PageId == this.RockPage.PageId )
             {
@@ -101,15 +106,43 @@ namespace RockWeb.Blocks.Groups
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upGroupType );
 
-            tglHideInactiveGroups.Visible = this.GetAttributeValue( "ShowFilterOption" ).AsBooleanOrNull() ?? true;
-            if ( tglHideInactiveGroups.Visible )
+            pnlConfigPanel.Visible = this.GetAttributeValue( "ShowFilterOption" ).AsBooleanOrNull() ?? false;
+            pnlRolloverConfig.Visible = this.GetAttributeValue( "ShowFilterOption" ).AsBooleanOrNull() ?? false;
+
+            if ( pnlConfigPanel.Visible )
             {
-                tglHideInactiveGroups.Checked = this.GetUserPreference( "HideInactiveGroups" ).AsBooleanOrNull() ?? true;
+                var hideInactiveGroups = this.GetUserPreference( "HideInactiveGroups" ).AsBooleanOrNull();
+                if ( !hideInactiveGroups.HasValue )
+                {
+                    hideInactiveGroups = this.GetAttributeValue( "InitialActiveSetting" ) == "1";
+                }
+
+                tglHideInactiveGroups.Checked = hideInactiveGroups ?? true;
             }
             else
             {
                 // if the filter is hidden, don't show inactive groups
                 tglHideInactiveGroups.Checked = true;
+            }
+
+            ddlCountsType.Items.Clear();
+            ddlCountsType.Items.Add( new ListItem( string.Empty, TreeViewItem.GetCountsType.None.ConvertToInt().ToString() ) );
+            ddlCountsType.Items.Add( new ListItem( TreeViewItem.GetCountsType.ChildGroups.ConvertToString(), TreeViewItem.GetCountsType.ChildGroups.ConvertToInt().ToString() ) );
+            ddlCountsType.Items.Add( new ListItem( TreeViewItem.GetCountsType.GroupMembers.ConvertToString(), TreeViewItem.GetCountsType.GroupMembers.ConvertToInt().ToString() ) );
+
+            var countsType = this.GetUserPreference( "CountsType" );
+            if ( string.IsNullOrEmpty( countsType ) )
+            {
+                countsType = this.GetAttributeValue( "InitialCountSetting" );
+            }
+
+            if ( pnlConfigPanel.Visible )
+            {
+                ddlCountsType.SetValue( countsType );
+            }
+            else
+            {
+                ddlCountsType.SetValue( "" );
             }
         }
 
@@ -211,7 +244,9 @@ namespace RockWeb.Blocks.Groups
                     if ( group != null )
                     {
                         if ( !parentIdList.Contains( group.Id.ToString() ) )
+                        {
                             parentIdList.Insert( 0, group.Id.ToString() );
+                        }
                         else
                         {
                             // The parent list already contains this node, so we have encountered a recursive loop.
@@ -242,7 +277,7 @@ namespace RockWeb.Blocks.Groups
 
                     // show the Add button if the selected Group's GroupType can have children and one or more of those child group types is allowed
                     if ( selectedGroup.GroupType.ChildGroupTypes.Count > 0 &&
-                        ( selectedGroup.GroupType.ChildGroupTypes.Any( c => IsGroupTypeIncluded( c.Id ) ) ) )
+                        selectedGroup.GroupType.ChildGroupTypes.Any( c => IsGroupTypeIncluded( c.Id ) ) )
                     {
                         canAddChildGroup = canEditBlock;
 
@@ -287,6 +322,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             hfIncludeInactiveGroups.Value = ( !tglHideInactiveGroups.Checked ).ToTrueFalse();
+            hfCountsType.Value = ddlCountsType.SelectedValue;
         }
 
         /// <summary>
@@ -301,7 +337,7 @@ namespace RockWeb.Blocks.Groups
             if ( includeGroupTypes.Any() )
             {
                 //// if includedGroupTypes has values, only include groupTypes from the includedGroupTypes list
-                return ( includeGroupTypes.Contains( groupTypeId ) );
+                return includeGroupTypes.Contains( groupTypeId );
             }
             else if ( excludeGroupTypes.Any() )
             {
@@ -360,7 +396,6 @@ namespace RockWeb.Blocks.Groups
         private void SetAllowedGroupTypes()
         {
             // limit GroupType selection to what Block Attributes allow
-
             hfGroupTypesInclude.Value = string.Empty;
             List<Guid> groupTypeIncludeGuids = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().AsGuidList();
 
@@ -405,6 +440,19 @@ namespace RockWeb.Blocks.Groups
         protected void tglHideInactiveGroups_CheckedChanged( object sender, EventArgs e )
         {
             this.SetUserPreference( "HideInactiveGroups", tglHideInactiveGroups.Checked.ToTrueFalse() );
+
+            // reload the whole page
+            NavigateToPage( this.RockPage.Guid, new Dictionary<string, string>() );
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlCountType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlCountsType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            this.SetUserPreference( "CountsType", ddlCountsType.SelectedValue );
 
             // reload the whole page
             NavigateToPage( this.RockPage.Guid, new Dictionary<string, string>() );

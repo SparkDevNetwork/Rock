@@ -951,6 +951,15 @@ namespace Rock.Web.UI
             }
         }
 
+        /// <summary>
+        /// Gets the ip address.
+        /// </summary>
+        /// <returns></returns>
+        public string GetClientIpAddress()
+        {
+            return RockPage.GetClientIpAddress();
+        }
+
         #region User Preferences
 
         /// <summary>

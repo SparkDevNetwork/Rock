@@ -363,11 +363,11 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
-            // Get the pending item counts for each channel
+            // Get the pending approval item counts for each channel (if the channel requires approval)
             itemService.Queryable()
                 .Where( i => 
                     channelCounts.Keys.Contains( i.ContentChannelId ) &&
-                    i.Status == ContentChannelItemStatus.PendingApproval )
+                    i.Status == ContentChannelItemStatus.PendingApproval && i.ContentChannel.RequiresApproval )
                 .GroupBy( i => i.ContentChannelId )
                 .Select( i => new {
                     Id = i.Key,

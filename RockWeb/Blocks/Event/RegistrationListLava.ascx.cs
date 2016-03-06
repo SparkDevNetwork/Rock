@@ -102,7 +102,10 @@ namespace RockWeb.Blocks.Event
             var qryRegistrations = registrationService.Queryable();
 
             // only show Active registrations
-            qryRegistrations = qryRegistrations.Where( a => a.RegistrationInstance.IsActive == true );
+            qryRegistrations = qryRegistrations
+                .Where( a => 
+                    a.RegistrationInstance.IsActive == true &&
+                    !a.IsTemporary );
 
             // limit to the current person
             int currentPersonId = this.CurrentPersonId ?? 0;

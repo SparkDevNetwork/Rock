@@ -162,12 +162,10 @@ namespace Rock.Jobs
                 foreach ( var occurrence in attendanceService
                     .Queryable().AsNoTracking()
                     .Where( a =>
-                        a.Group != null &&
-                        a.ScheduleId.HasValue &&
-                        a.Group.GroupTypeId == groupType.Id &&
-                        a.Group.IsActive &&
-                        a.StartDateTime > startDate &&
-                        a.StartDateTime < endDate )
+                        a.StartDateTime >= startDate &&
+                        a.StartDateTime < endDate &&
+                        occurrences.Keys.Contains( a.GroupId.Value ) &&
+                        a.ScheduleId.HasValue )
                     .Select( a => new
                     {
                         GroupId = a.GroupId.Value,
@@ -176,10 +174,7 @@ namespace Rock.Jobs
                     .Distinct()
                     .ToList() )
                 {
-                    if ( occurrences.ContainsKey( occurrence.GroupId ) )
-                    {
-                        occurrences[occurrence.GroupId].RemoveAll( d => d == occurrence.StartDateTime );
-                    }
+                    occurrences[occurrence.GroupId].RemoveAll( d => d.Date == occurrence.StartDateTime.Date );
                 }
 
                 // Get the groups that have occurrences
