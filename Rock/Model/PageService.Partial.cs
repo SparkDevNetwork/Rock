@@ -49,7 +49,7 @@ namespace Rock.Model
         /// </returns>
         public IOrderedQueryable<Page> GetByLayoutId( int? layoutId )
         {
-            return Queryable().Where( t => ( t.LayoutId == layoutId || ( layoutId == null && t.LayoutId == null ) ) ).OrderBy( t => t.Order );
+            return Queryable().Where( t => t.LayoutId == layoutId ).OrderBy( t => t.Order );
         }
 
         /// <summary>
