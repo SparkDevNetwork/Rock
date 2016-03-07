@@ -3002,7 +3002,7 @@ namespace RockWeb.Blocks.Event
                         cpHomeCampus.Label = "Campus";
                         cpHomeCampus.Required = field.IsRequired;
                         cpHomeCampus.ValidationGroup = BlockValidationGroup;
-                        cpHomeCampus.Campuses = CampusCache.All();
+                        cpHomeCampus.Campuses = CampusCache.All( false );
 
                         phRegistrantControls.Controls.Add( cpHomeCampus );
 
