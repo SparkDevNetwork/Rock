@@ -157,9 +157,7 @@ namespace Rock.Security
 
                     // Add the members
                     foreach ( var personGuid in groupMembersQry
-                        .Where( m => 
-                            m.PersonId != null &&
-                            m.GroupMemberStatus == Model.GroupMemberStatus.Active )
+                        .Where( m => m.GroupMemberStatus == Model.GroupMemberStatus.Active )
                         .Select( m => m.Person.Guid )
                         .ToList()
                         .Distinct() )
