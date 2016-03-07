@@ -71,23 +71,14 @@ namespace Rock.Communication.Transport
         /// Adds any additional headers.
         /// </summary>
         /// <param name="message">The message.</param>
-        /// <param name="headers">The headers.</param>
-        public override void AddAdditionalHeaders( MailMessage message, Dictionary<string, string> headers )
+        /// <param name="recipient">The recipient.</param>
+        public override void AddAdditionalHeaders( MailMessage message, CommunicationRecipient recipient )
         {
             // add headers
             message.Headers.Add( "X-Mailgun-Track", "yes" );
             message.Headers.Add( "X-Mailgun-Track-Clicks", "yes" );
             message.Headers.Add( "X-Mailgun-Track-Opens", "yes" );
-
-            if ( headers != null )
-            {
-                var variables = new List<string>();
-                foreach ( var param in headers )
-                {
-                    variables.Add( String.Format( "\"{0}\":\"{1}\"", param.Key, param.Value ) );
-                }
-                message.Headers.Add( "X-Mailgun-Variables", String.Format( @"{{{0}}}", variables.AsDelimited( "," ) ) );
-            }
+            message.Headers.Add( "X-Mailgun-Variables", String.Format( @"{{ ""communication_recipient_guid"":""{0}"" }}", recipient.Guid.ToString() ) );
         }
     }
 }
