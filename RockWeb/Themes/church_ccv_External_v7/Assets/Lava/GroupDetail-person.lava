@@ -29,10 +29,10 @@
     </div>
   </a>
   <div class="pull-left">
-    
+
     <a href="{{ nhMemberDetailPage }}?GroupMemberId={{ member.Id }}&AdminPersonId={{ CurrentPerson.Id }}">
-		<strong>{{ member.Person.FullName }}</strong>
-	</a>
+    <strong>{{ member.Person.FullName }}</strong>
+  </a>
 
 
     <br />
