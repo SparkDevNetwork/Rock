@@ -76,27 +76,6 @@ public class Mailgun : IHttpHandler
 
             string eventType = request.Form["event"];
             
-            if ( !string.IsNullOrWhiteSpace( request.Form["workflow_action_guid"]))
-            {
-                Guid? actionGuid = request.Form["workflow_action_guid"].AsGuidOrNull();
-                string status = string.Empty;
-                switch ( eventType )
-                {
-                    case "complained":
-                    case "unsubscribed":
-                    case "delivered": status = SendEmailWithEvents.SENT_STATUS; break;
-                    case "clicked": status = SendEmailWithEvents.CLICKED_STATUS; break;
-                    case "opened": status = SendEmailWithEvents.OPENED_STATUS; break;
-                    case "dropped": 
-                    case "bounced": 
-                        status = SendEmailWithEvents.FAILED_STATUS; break;
-                }                
-                if ( actionGuid != null && !string.IsNullOrWhiteSpace( status ) )
-                {
-                    SendEmailWithEvents.UpdateEmailStatus( actionGuid.Value, status, eventType, rockContext, true );
-                }
-            }
-
             if ( !string.IsNullOrWhiteSpace( request.Form["communication_recipient_guid"] ) )
             {
                 Guid? communicationRecipientGuid = request.Form["communication_recipient_guid"].AsGuidOrNull();
