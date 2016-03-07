@@ -3013,7 +3013,7 @@ namespace RockWeb.Blocks.Event
                         cpHomeCampus.Label = "Campus";
                         cpHomeCampus.Required = field.IsRequired;
                         cpHomeCampus.ValidationGroup = BlockValidationGroup;
-                        cpHomeCampus.Campuses = CampusCache.All();
+                        cpHomeCampus.Campuses = CampusCache.All( false );
 
                         phRegistrantControls.Controls.Add( cpHomeCampus );
 
@@ -3912,7 +3912,7 @@ namespace RockWeb.Blocks.Event
                     pnlRegistrantsReview.Visible = true;
 
                     lRegistrantsReview.Text = string.Format( "<p>The following {0} will be registered for {1}:",
-                        RegistrationTemplate.RegistrantTerm.PluralizeIf( RegistrationState.Registrants.Count > 0 ).ToLower(), RegistrationTemplate.Name );
+                        RegistrationTemplate.RegistrantTerm.PluralizeIf( RegistrationState.Registrants.Count > 0 ).ToLower(), RegistrationInstanceState.Name );
 
                     rptrRegistrantReview.DataSource = RegistrationState.Registrants
                         .Select( r => new
