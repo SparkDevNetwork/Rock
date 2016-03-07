@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Connection
     [LinkedPage( "Detail Page", "Page used to view details of an requests.", true, "", "", 1 )]
     [ConnectionTypesField("Connection Types", "Optional list of connection types to limit the display to (All will be displayed by default).", false, order:2 )]
     [BooleanField( "Show Last Activity Note", "If enabled, the block will show the last activity note for each request in the list.", false, order:3 )]
-    [IntegerField( "Number Days To Stale", "The number of days with no activity after which a request is considered stale.", false, 14, order: 4 )]
+    [IntegerField( "Number Days To Idle", "The number of days with no activity after which a request is considered idle.", false, 14, order: 4 )]
     public partial class MyConnectionOpportunities : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Connection
 
         protected int? SelectedOpportunityId { get; set; }
         protected List<ConnectionTypeSummary> SummaryState { get; set; }
-        protected DateTime StaleDate { get; set; }
+        protected DateTime IdleDate { get; set; }
         #endregion
 
         #region Base Control Methods
@@ -94,7 +94,7 @@ namespace RockWeb.Blocks.Connection
             gRequests.ShowConfirmDeleteDialog = false;
             gRequests.PersonIdField = "PersonId";
             gRequests.Columns[6].Visible = GetAttributeValue( "ShowLastActivityNote" ).AsBoolean();
-            StaleDate = RockDateTime.Now.AddDays( -GetAttributeValue( "NumberDaysToStale" ).AsInteger() );
+            IdleDate = RockDateTime.Now.AddDays( -GetAttributeValue( "NumberDaysToIdle" ).AsInteger() );
 
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -450,12 +450,15 @@ namespace RockWeb.Blocks.Connection
                         SummaryState.Add( connectionTypeSummary );
                     }
 
-                    // Count number of stale requests (no activity in past X days)
-                    int staleCount = opportunity.ConnectionRequests.SelectMany( cr => cr.ConnectionRequestActivities
-                        .OrderByDescending( ra => ra.CreatedDateTime ).Where( a => a.CreatedDateTime < StaleDate ) ).Count();
+                    // Count number of idle requests (no activity in past X days)
+                    int idleCount = opportunity.ConnectionRequests
+                                        .Where( cr => 
+                                            cr.ConnectionState == ConnectionState.Active 
+                                            && cr.ConnectionRequestActivities.OrderByDescending(ra => ra.CreatedDateTime).Select(ra => ra.CreatedDateTime).FirstOrDefault() < IdleDate)
+                                        .Count();
 
                     // Count the number requests that have a status that is considered critical.
-                    int criticalCount = opportunity.ConnectionRequests.Where( r => r.ConnectionStatus.IsCritical ).Count();
+                    int criticalCount = opportunity.ConnectionRequests.Where( r => r.ConnectionStatus.IsCritical && r.ConnectionState == ConnectionState.Active ).Count();
 
                     // Add the opportunity
                     var opportunitySummary = new OpportunitySummary
@@ -463,7 +466,7 @@ namespace RockWeb.Blocks.Connection
                         Id = opportunity.Id,
                         Name = opportunity.Name,
                         IconCssClass = opportunity.IconCssClass,
-                        StaleCount = staleCount,
+                        IdleCount = idleCount,
                         CriticalCount = criticalCount
                     };
 
@@ -858,7 +861,7 @@ namespace RockWeb.Blocks.Connection
             public int AssignedToYou { get; set; }
             public int UnassignedCount { get; set; }
             public int CriticalCount { get; set; }
-            public int StaleCount { get; set; }
+            public int IdleCount { get; set; }
             public bool HasActiveRequestsForConnector { get; set; }
         }
 
