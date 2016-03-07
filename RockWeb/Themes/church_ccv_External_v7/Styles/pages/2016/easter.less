@@ -77,10 +77,14 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
   }
     .brandfooter .logo {
       display: block;
-      width: 244px;
+      // margin-right: @grid-gutter-width;
+      > img {
+        width: 244px;
+      }
     }
     .brandfooter a {
       display: block;
