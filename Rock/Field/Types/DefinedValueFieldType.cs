@@ -200,6 +200,41 @@ namespace Rock.Field.Types
             return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
 
+        /// <summary>
+        /// Returns the value that should be used for sorting, using the most appropriate datatype
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override object SortValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            string formattedValue = string.Empty;
+
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                bool useDescription = false;
+                if ( configurationValues != null &&
+                     configurationValues.ContainsKey( DISPLAY_DESCRIPTION ) &&
+                     configurationValues[DISPLAY_DESCRIPTION].Value.AsBoolean() )
+                {
+                    useDescription = true;
+                }
+
+                // if there are multiple defined values, just pick the first one as the sort value
+                Guid guid = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList().FirstOrDefault();
+                var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
+                if ( definedValue != null )
+                {
+                    // sort by Order then Description/Value (using a padded string)
+                    var sortValue = definedValue.Order.ToString().PadLeft( 10 ) + "," + ( useDescription ? definedValue.Description : definedValue.Value );
+                    return sortValue;
+                }
+            }
+
+            return base.SortValue( parentControl, value, configurationValues );
+        }
+
         #endregion
 
         #region Edit Control
