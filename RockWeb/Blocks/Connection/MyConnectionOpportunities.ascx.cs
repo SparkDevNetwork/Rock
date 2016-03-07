@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Connection
 
         private const string TOGGLE_SETTING = "MyConnectionOpportunities_Toggle";
         private const string SELECTED_OPPORTUNITY_SETTING = "MyConnectionOpportunities_SelectedOpportunity";
-
+        DateTime _midnightToday = RockDateTime.Today.AddDays( 1 );
         #endregion
 
         #region Properties
@@ -453,12 +453,26 @@ namespace RockWeb.Blocks.Connection
                     // Count number of idle requests (no activity in past X days)
                     int idleCount = opportunity.ConnectionRequests
                                         .Where( cr => 
-                                            cr.ConnectionState == ConnectionState.Active 
-                                            && cr.ConnectionRequestActivities.OrderByDescending(ra => ra.CreatedDateTime).Select(ra => ra.CreatedDateTime).FirstOrDefault() < IdleDate)
+                                            (
+                                                cr.ConnectionState == ConnectionState.Active 
+                                                || (cr.ConnectionState == ConnectionState.FutureFollowUp && cr.FollowupDate.HasValue && cr.FollowupDate.Value < _midnightToday)
+                                            )
+                                            && (
+                                                (cr.ConnectionRequestActivities.Count() > 0 && cr.ConnectionRequestActivities.OrderByDescending(ra => ra.CreatedDateTime).Select(ra => ra.CreatedDateTime).FirstOrDefault() < IdleDate))
+                                                || (cr.ConnectionRequestActivities.Count() == 0 && cr.CreatedDateTime < IdleDate)
+                                               )
                                         .Count();
 
                     // Count the number requests that have a status that is considered critical.
-                    int criticalCount = opportunity.ConnectionRequests.Where( r => r.ConnectionStatus.IsCritical && r.ConnectionState == ConnectionState.Active ).Count();
+                    int criticalCount = opportunity.ConnectionRequests
+                                            .Where( r => 
+                                                r.ConnectionStatus.IsCritical 
+                                                && (
+                                                    r.ConnectionState == ConnectionState.Active 
+                                                    || (r.ConnectionState == ConnectionState.FutureFollowUp && r.FollowupDate.HasValue && r.FollowupDate.Value < _midnightToday)
+                                                    )
+                                                    )
+                                            .Count();
 
                     // Add the opportunity
                     var opportunitySummary = new OpportunitySummary
@@ -674,12 +688,12 @@ namespace RockWeb.Blocks.Connection
                     }
 
                     // Filter by State
-                    var midnightToday = RockDateTime.Today.AddDays(1);
+                    
                     if ( tglMyOpportunities.Checked )
                     {
                         requests = requests
                             .Where( r => r.ConnectionState == ConnectionState.Active || 
-                                    ( r.ConnectionState == ConnectionState.FutureFollowUp && r.FollowupDate.HasValue && r.FollowupDate.Value < midnightToday ) );
+                                    ( r.ConnectionState == ConnectionState.FutureFollowUp && r.FollowupDate.HasValue && r.FollowupDate.Value < _midnightToday ) );
                     }
                     else
                     {
@@ -699,7 +713,7 @@ namespace RockWeb.Blocks.Connection
                             requests = requests
                                 .Where( r =>
                                     ( futureFollowup && r.ConnectionState == ConnectionState.FutureFollowUp &&
-                                        r.FollowupDate.HasValue && r.FollowupDate.Value < midnightToday ) ||
+                                        r.FollowupDate.HasValue && r.FollowupDate.Value < _midnightToday ) ||
                                     states.Contains( r.ConnectionState ) );
                         }
                     }
