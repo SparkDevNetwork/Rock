@@ -52,12 +52,12 @@ namespace church.ccv.Badges.Person
                 <a class='badge badge-connect badge-icon step-nottaken' data-toggle='tooltip' data-original-title='{1} is not connected to a neighborhood group' data-container='body' href='/page/{5}?PersonGuid={2}'>
                     <i class='icon ccv-connect'></i>
                 </a>
-                <div class='badge badge-tithe badge-icon step-nottaken' data-toggle='tooltip' data-original-title='{1} is not giving' data-container='body'>
-                    <i class='icon ccv-tithe'></i>
-                </div>
                 <a class='badge badge-serve badge-icon step-nottaken' data-toggle='tooltip' data-original-title='{1} is not serving (Click for more options)' data-container='body' href='/page/{6}?PersonGuid={2}'>
                     <i class='icon ccv-serve'></i>
                 </a>
+                <div class='badge badge-tithe badge-icon step-nottaken' data-toggle='tooltip' data-original-title='{1} is not giving' data-container='body'>
+                    <i class='icon ccv-tithe'></i>
+                </div>
                 <div class='badge badge-share badge-icon step-nottaken' data-toggle='tooltip' data-original-title='Coming Soon...' data-container='body'>
                     <i class='icon ccv-share'></i>
                 </div>
