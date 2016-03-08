@@ -67,12 +67,12 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The eRA first attended attribute
         /// </summary>
-        public const string PERSON_ERA_FIRST_ATTENDED = "AB12B3B0-55B8-D6A5-4C1F-DB9CCB2C4342";
+        public const string PERSON_ERA_FIRST_CHECKIN = "AB12B3B0-55B8-D6A5-4C1F-DB9CCB2C4342";
 
         /// <summary>
         /// The eRA last attended attribute
         /// </summary>
-        public const string PERSON_ERA_LAST_ATTENDED = "5F4C6462-018E-D19C-4AB0-9843CB21C57E";
+        public const string PERSON_ERA_LAST_CHECKIN = "5F4C6462-018E-D19C-4AB0-9843CB21C57E";
 
         /// <summary>
         /// The eRA last gave attribute
@@ -87,7 +87,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The eRA times attended in the last 16 weeks attribute
         /// </summary>
-        public const string PERSON_ERA_TIMES_ATTENDED_16 = "45A1E978-DC5B-CFA1-4AF4-EA098A24C914";
+        public const string PERSON_ERA_TIMES_CHECKEDIN_16 = "45A1E978-DC5B-CFA1-4AF4-EA098A24C914";
 
         /// <summary>
         /// The eRA times given in last 52 weeks attribute
