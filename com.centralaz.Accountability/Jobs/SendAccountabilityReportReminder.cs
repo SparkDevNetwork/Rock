@@ -145,10 +145,10 @@ namespace com.centralaz.Accountability.Jobs
         }
 
 
-        private Dictionary<string, string> CombineMergeFields( GroupMember groupMember, int pageId )
+        private Dictionary<string, object> CombineMergeFields( GroupMember groupMember, int pageId )
         {
             //var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( groupMember.Person );
-            var mergeFields = new Dictionary<string, string>();
+            var mergeFields = new Dictionary<string, object>();
 
             mergeFields.Add( "GroupName", groupMember.Group.Name );
             //string url = ( String.Format( "{0}page/{1}?GroupId={2}", System.Web.VirtualPathUtility.ToAbsolute("~"), pageId, groupMember.GroupId ) );
