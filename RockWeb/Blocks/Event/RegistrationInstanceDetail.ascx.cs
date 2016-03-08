@@ -50,6 +50,7 @@ namespace RockWeb.Blocks.Event
     [LinkedPage( "Group Detail Page", "The page for viewing details about a group", true, "", "", 4)]
     [LinkedPage( "Content Item Page", "The page for viewing details about a content channel item", true, "", "", 5 )]
     [LinkedPage( "Transaction Detail Page", "The page for viewing details about a payment", true, "", "", 6 )]
+    [LinkedPage("Payment Reminder Page", "The page for manually sending payment reminders.", false, "", "", 7)]
     public partial class RegistrationInstanceDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         #region Fields
@@ -352,6 +353,18 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
+        /// Handles the Click event of the btnSendPaymentReminder control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSendPaymentReminder_Click( object sender, EventArgs e )
+        {
+            Dictionary<string, string> queryParms = new Dictionary<string, string>();
+            queryParms.Add( "RegistrationInstanceId", PageParameter( "RegistrationInstanceId" ) );
+            NavigateToLinkedPage( "PaymentReminderPage", queryParms );
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -393,6 +406,16 @@ namespace RockWeb.Blocks.Event
             {
                 instance = new RegistrationInstanceService( rockContext ).Get( instance.Id );
                 ShowReadonlyDetails( instance );
+            }
+
+            // show send payment reminder link
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentReminderPage" ) ) && ((instance.RegistrationTemplate.SetCostOnInstance.HasValue && instance.RegistrationTemplate.SetCostOnInstance == true && instance.Cost.HasValue && instance.Cost.Value > 0) || instance.RegistrationTemplate.Cost > 0) )
+            {
+                btnSendPaymentReminder.Visible = true;
+            }
+            else
+            {
+                btnSendPaymentReminder.Visible = false;
             }
         }
 
@@ -954,28 +977,7 @@ namespace RockWeb.Blocks.Event
                         }
                     }
                 }
-
-                // Set the phones
-                var lPhone = e.Row.FindControl( "lPhone" ) as Literal;
-                if ( lPhone != null )
-                {
-                    if ( registrant.PersonAlias != null &&
-                        registrant.PersonAlias.Person != null &&
-                        registrant.PersonAlias.Person.PhoneNumbers != null )
-                    {
-                        var phones = new List<string>();
-                        foreach ( var phoneNumber in registrant.PersonAlias.Person.PhoneNumbers
-                            .Where( n => !n.IsUnlisted ) )
-                        {
-                            phones.Add( string.Format( "{0} <small>({1})</small>",
-                                phoneNumber.NumberFormatted,
-                                phoneNumber.NumberTypeValue != null ? phoneNumber.NumberTypeValue.Value : "" ) );
-
-                        }
-                        lPhone.Text = phones.AsDelimited( "<br/>" );
-                    }
-                }
-
+                
                 // Set the Fees
                 var lFees = e.Row.FindControl( "lFees" ) as Literal;
                 if ( lFees != null )
@@ -1517,6 +1519,8 @@ namespace RockWeb.Blocks.Event
                 hfRegistrationInstanceId.Value = registrationInstance.Id.ToString();
                 SetHasPayments( registrationInstance.Id, rockContext );
 
+                FollowingsHelper.SetFollowing( registrationInstance, pnlFollowing, this.CurrentPerson );
+
                 // render UI based on Authorized 
                 bool readOnly = false;
 
@@ -1553,6 +1557,16 @@ namespace RockWeb.Blocks.Event
                     {
                         ShowEditDetails( registrationInstance, rockContext );
                     }
+                }
+
+                // show send payment reminder link
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentReminderPage" ) ) && ((registrationInstance.RegistrationTemplate.SetCostOnInstance.HasValue && registrationInstance.RegistrationTemplate.SetCostOnInstance == true && registrationInstance.Cost.HasValue && registrationInstance.Cost.Value > 0) || registrationInstance.RegistrationTemplate.Cost > 0 ))
+                {
+                    btnSendPaymentReminder.Visible = true;
+                }
+                else
+                {
+                    btnSendPaymentReminder.Visible = false;
                 }
 
                 LoadRegistrantFormFields( registrationInstance );
@@ -1720,7 +1734,9 @@ namespace RockWeb.Blocks.Event
         {
             var registrationIdQry = new RegistrationService( rockContext )
                 .Queryable().AsNoTracking()
-                .Where( r => r.RegistrationInstanceId == registrationInstanceId )
+                .Where( r => 
+                    r.RegistrationInstanceId == registrationInstanceId &&
+                    !r.IsTemporary )
                 .Select( r => r.Id );
 
             var registrationEntityType = EntityTypeCache.Read( typeof( Rock.Model.Registration ) );
@@ -1774,7 +1790,9 @@ namespace RockWeb.Blocks.Event
                     var qry = new RegistrationService( rockContext )
                         .Queryable( "PersonAlias.Person,Registrants.PersonAlias.Person,Registrants.Fees.RegistrationTemplateFee" )
                         .AsNoTracking()
-                        .Where( r => r.RegistrationInstanceId == instanceId.Value );
+                        .Where( r => 
+                            r.RegistrationInstanceId == instanceId.Value &&
+                            !r.IsTemporary );
 
                     if ( drpRegistrationDateRange.LowerValue.HasValue )
                     {
@@ -2636,15 +2654,15 @@ namespace RockWeb.Blocks.Event
                                     tbPhoneFilter.Text = fRegistrants.GetUserPreference( "Phone" );
                                     phRegistrantFormFieldFilters.Controls.Add( tbPhoneFilter );
 
-                                    var literalField = new RockLiteralField( );
-                                    literalField.ID = "lPhone";
-                                    literalField.HeaderText = "Phone(s)";
-                                    gRegistrants.Columns.Add( literalField );
+                                    var phoneNumbersField = new PhoneNumbersField();
+                                    phoneNumbersField.DataField = "PersonAlias.Person.PhoneNumbers";
+                                    phoneNumbersField.HeaderText = "Phone(s)";
+                                    gRegistrants.Columns.Add( phoneNumbersField );
 
-                                    var literalField2 = new RockLiteralField();
-                                    literalField2.ID = "lPhone";
-                                    literalField2.HeaderText = "Phone(s)";
-                                    gGroupPlacements.Columns.Add( literalField2 );
+                                    var phoneNumbersField2 = new PhoneNumbersField();
+                                    phoneNumbersField2.DataField = "PersonAlias.Person.PhoneNumbers";
+                                    phoneNumbersField2.HeaderText = "Phone(s)";
+                                    gGroupPlacements.Columns.Add( phoneNumbersField2 );
 
                                     break;
                                 }
@@ -2761,7 +2779,9 @@ namespace RockWeb.Blocks.Event
                     // Get all the registrations for this instance
                     PaymentRegistrations = new RegistrationService( rockContext )
                         .Queryable( "PersonAlias.Person,Registrants.PersonAlias.Person" ).AsNoTracking()
-                        .Where( r => r.RegistrationInstanceId == instanceId.Value )
+                        .Where( r => 
+                            r.RegistrationInstanceId == instanceId.Value &&
+                            !r.IsTemporary )
                         .ToList();
 
                     // Get the Registration Ids

@@ -47,101 +47,73 @@ namespace Rock.Address
     public class SmartyStreets : VerificationComponent
     {
         /// <summary>
-        /// Standardizes and Geocodes an address using Bing service
+        /// Standardizes and Geocodes an address using Smarty Streets service
         /// </summary>
         /// <param name="location">The location.</param>
-        /// <param name="reVerify">Should location be reverified even if it has already been successfully verified</param>
-        /// <param name="result">The result code unique to the service.</param>
+        /// <param name="resultMsg">The result MSG.</param>
         /// <returns>
         /// True/False value of whether the verification was successfull or not
         /// </returns>
-        public override bool VerifyLocation( Rock.Model.Location location, bool reVerify, out string result )
+        public override VerificationResult Verify( Rock.Model.Location location, out string resultMsg )
         {
-            bool verified = false;
-            result = string.Empty;
+            VerificationResult result = VerificationResult.None;
+            resultMsg = string.Empty;
 
-            // Only verify if location is valid, has not been locked, and 
-            // has either never been attempted or last attempt was in last 30 secs (prev active service failed) or reverifying
-            if ( location != null && 
-                !(location.IsGeoPointLocked ?? false) &&  
-                (
-                    !location.GeocodeAttemptedDateTime.HasValue || 
-                    location.GeocodeAttemptedDateTime.Value.CompareTo( RockDateTime.Now.AddSeconds(-30) ) > 0 ||
-                    reVerify
-                ) )
+            string authId = GetAttributeValue( "AuthID" );
+            string authToken = GetAttributeValue( "AuthToken" );
+            var dpvCodes = GetAttributeValue("AcceptableDPVCodes").SplitDelimitedValues();
+            var precisions = GetAttributeValue("AcceptablePrecisions").SplitDelimitedValues();
+
+            var payload = new[] { new { addressee = location.Name, street = location.Street1, street2 = location.Street2, city = location.City, state = location.State, zipcode = location.PostalCode, candidates = 1 } };
+
+            var client = new RestClient( string.Format( "https://api.smartystreets.com/street-address?auth-id={0}&auth-token={1}", authId, authToken ) );
+            var request = new RestRequest( Method.POST );
+            request.RequestFormat = DataFormat.Json;
+            request.AddHeader( "Accept", "application/json" );
+            request.AddBody( payload );
+            var response = client.Execute( request );
+
+            if (response.StatusCode == HttpStatusCode.OK)
             {
-
-                string authId = GetAttributeValue( "AuthID" );
-                string authToken = GetAttributeValue( "AuthToken" );
-                var dpvCodes = GetAttributeValue("AcceptableDPVCodes").SplitDelimitedValues();
-                var precisions = GetAttributeValue("AcceptablePrecisions").SplitDelimitedValues();
-
-                var payload = new[] { new { addressee = location.Name, street = location.Street1, street2 = location.Street2, city = location.City, state = location.State, zipcode = location.PostalCode, candidates = 1 } };
-
-                var client = new RestClient( string.Format( "https://api.smartystreets.com/street-address?auth-id={0}&auth-token={1}", authId, authToken ) );
-                var request = new RestRequest( Method.POST );
-                request.RequestFormat = DataFormat.Json;
-                request.AddHeader( "Accept", "application/json" );
-                request.AddBody( payload );
-                var response = client.Execute( request );
-
-                if (response.StatusCode == HttpStatusCode.OK)
+                var candidates = JsonConvert.DeserializeObject( response.Content, typeof( List<CandidateAddress> ) ) as List<CandidateAddress>;
+                if (candidates.Any())
                 {
-                    var candidates = JsonConvert.DeserializeObject( response.Content, typeof( List<CandidateAddress> ) ) as List<CandidateAddress>;
-                    if (candidates.Any())
+                    var candidate = candidates.FirstOrDefault();
+                    resultMsg = string.Format( "record_type: {0}; dpv_match_code: {1}; precision {2}",
+                        candidate.metadata.record_type, candidate.analysis.dpv_match_code, candidate.metadata.precision );
+
+                    location.StandardizeAttemptedResult = candidate.analysis.dpv_match_code;
+                    if ( dpvCodes.Contains( candidate.analysis.dpv_match_code ) )
                     {
-                        var candidate = candidates.FirstOrDefault();
-                        verified = true;
-                        result = string.Format( "record_type: {0}; dpv_match_code: {1}; precision {2}",
-                            candidate.metadata.record_type, candidate.analysis.dpv_match_code, candidate.metadata.precision );
-
-                        location.StandardizeAttemptedResult = candidate.analysis.dpv_match_code;
-                        if ( dpvCodes.Contains( candidate.analysis.dpv_match_code ) )
-                        {
-                            location.Street1 = candidate.delivery_line_1;
-                            location.Street2 = candidate.delivery_line_2;
-                            location.City = candidate.components.city_name;
-                            location.County = candidate.metadata.county_name;
-                            location.State = candidate.components.state_abbreviation;
-                            location.PostalCode = candidate.components.zipcode + "-" + candidate.components.plus4_code;
-                            location.StandardizedDateTime = RockDateTime.Now;
-                        }
-                        else
-                        {
-                            verified = false;
-                        }
-
-                        location.GeocodeAttemptedResult = candidate.metadata.precision;
-                        if ( precisions.Contains( candidate.metadata.precision ) )
-                        {
-                            location.SetLocationPointFromLatLong( candidate.metadata.latitude, candidate.metadata.longitude );
-                            location.GeocodedDateTime = RockDateTime.Now;
-                        }
-                        else
-                        {
-                            verified = false;
-                        }
-
+                        location.Street1 = candidate.delivery_line_1;
+                        location.Street2 = candidate.delivery_line_2;
+                        location.City = candidate.components.city_name;
+                        location.County = candidate.metadata.county_name;
+                        location.State = candidate.components.state_abbreviation;
+                        location.PostalCode = candidate.components.zipcode + "-" + candidate.components.plus4_code;
+                        result = result | VerificationResult.Standardized;
                     }
-                    else
+
+                    location.GeocodeAttemptedResult = candidate.metadata.precision;
+                    if ( precisions.Contains( candidate.metadata.precision ) )
                     {
-                        result = "No Match";
+                        location.SetLocationPointFromLatLong( candidate.metadata.latitude, candidate.metadata.longitude );
+                        result = result | VerificationResult.Geocoded;
                     }
+
                 }
                 else
                 {
-                    result = response.StatusDescription;
+                    resultMsg = "No Match";
                 }
-
-                location.StandardizeAttemptedServiceType = "SmartyStreets";
-                location.StandardizeAttemptedDateTime = RockDateTime.Now;
-
-                location.GeocodeAttemptedServiceType = "SmartyStreets";
-                location.GeocodeAttemptedDateTime = RockDateTime.Now;
-
+            }
+            else
+            {
+                result = VerificationResult.ConnectionError;
+                resultMsg = response.StatusDescription;
             }
 
-            return verified;
+            return result;
         }
 
 #pragma warning disable

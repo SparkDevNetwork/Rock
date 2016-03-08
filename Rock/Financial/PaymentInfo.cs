@@ -28,6 +28,14 @@ namespace Rock.Financial
     public class PaymentInfo
     {
         /// <summary>
+        /// Gets or sets the additional parameters.
+        /// </summary>
+        /// <value>
+        /// The additional parameters.
+        /// </value>
+        public Dictionary<string, string> AdditionalParameters { get; set; }
+
+        /// <summary>
         /// Gets or sets the amount.
         /// </summary>
         public decimal Amount { get; set; }
@@ -95,6 +103,14 @@ namespace Rock.Financial
         /// The billing country
         /// </summary>
         public string Country { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ip address.
+        /// </summary>
+        /// <value>
+        /// The ip address.
+        /// </value>
+        public string IPAddress { get; set; }
 
         /// <summary>
         /// Gets the account number.
@@ -168,5 +184,14 @@ namespace Rock.Financial
                 return result;
             }
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PaymentInfo"/> class.
+        /// </summary>
+        public PaymentInfo()
+        {
+            AdditionalParameters = new Dictionary<string, string>();
+        }
+
     }
 }

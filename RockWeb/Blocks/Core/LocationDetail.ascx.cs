@@ -112,8 +112,17 @@ namespace RockWeb.Blocks.Core
                 // Rebuild the attribute controls on postback based on group type
                 if ( pnlDetails.Visible )
                 {
-                    var location = new Location { LocationTypeValueId = LocationTypeValueId ?? 0 };
-                    BuildAttributeEdits( location, false );
+                    int? locationId = PageParameter( "LocationId" ).AsIntegerOrNull();
+                    if ( locationId.HasValue && locationId.Value > 0 )
+                    {
+                        var location = new LocationService(new RockContext()).Get( locationId.Value );
+                        if ( location != null )
+                        {
+                            location.LoadAttributes();
+                            BuildAttributeEdits( location, true );
+                        }
+                    }
+                   
                 }
             }
         }
@@ -236,7 +245,7 @@ namespace RockWeb.Blocks.Core
             location.GeoFence = geopFence.SelectedValue;
 
             location.IsGeoPointLocked = cbGeoPointLocked.Checked;
-
+            
             location.LoadAttributes( rockContext );
             Rock.Attribute.Helper.GetEditValues( phAttributeEdits, location );
 
@@ -379,6 +388,7 @@ namespace RockWeb.Blocks.Core
             }
             location.LocationTypeValueId = ddlLocationType.SelectedValueAsId();
 
+            phAttributeEdits.Controls.Clear();
             location.LoadAttributes();
             BuildAttributeEdits( location, true );
         }
@@ -526,7 +536,6 @@ namespace RockWeb.Blocks.Core
             }
 
             location.LoadAttributes( rockContext );
-            BuildAttributeEdits( location, true );
         }
 
         private void BuildAttributeEdits( Location location, bool setValues )
@@ -663,7 +672,7 @@ namespace RockWeb.Blocks.Core
                 CampusCache.Flush( campus.Id );
             }
         }
-
+            
         #endregion
     }
 }

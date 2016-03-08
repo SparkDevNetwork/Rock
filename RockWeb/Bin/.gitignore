@@ -15,3 +15,5 @@
 *.PayFlowPro.dll
 /DotLiquid.dll
 /com.centralaz.*.*
+/Rock.Mandrill.dll
+/Rock.Mailgun.dll

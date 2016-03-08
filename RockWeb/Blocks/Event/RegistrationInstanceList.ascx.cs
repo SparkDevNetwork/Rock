@@ -328,7 +328,7 @@ namespace RockWeb.Blocks.Event
                     i.EndDateTime,
                     i.IsActive,
                     Details = string.Empty,
-                    Registrants = i.Registrations.SelectMany( r => r.Registrants ).Count()
+                    Registrants = i.Registrations.Where( r => !r.IsTemporary ).SelectMany( r => r.Registrants ).Count()
                 });
 
                 gInstances.SetLinqDataSource( instanceQry );

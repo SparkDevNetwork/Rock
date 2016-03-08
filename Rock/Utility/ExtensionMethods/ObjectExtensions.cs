@@ -15,13 +15,14 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
 namespace Rock
 {
     /// <summary>
-    /// Object and Stream Extensions
+    /// Object and Stream Extensions that don't require any nuget packages
     /// </summary>
     public static partial class ExtensionMethods
     {

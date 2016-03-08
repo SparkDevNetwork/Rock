@@ -345,6 +345,7 @@
 		<row><td>ISX_DEFAULTCOMPONENT1</td><td>{B2DF315C-2E95-433D-9128-A12E7DCDEEE1}</td><td>SQLSERVERTYPES</td><td>2</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>ISX_DEFAULTCOMPONENT2</td><td>{F6865500-E6DA-41F8-BBB1-6099DEC7814A}</td><td>X64</td><td>2</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>ISX_DEFAULTCOMPONENT3</td><td>{7A90B8A0-115D-4FF2-A55D-EB29BD453A25}</td><td>X86</td><td>2</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>Microsoft.SqlServer.Types.dll</td><td>{0CF84727-51D0-4FFD-AD2C-EFA10DB2491A}</td><td>INSTALLDIR</td><td>2</td><td/><td>microsoft.sqlserver.types.dl</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>Quartz.dll</td><td>{5CF786D9-DD90-4D0F-B2F9-8D541C0CF971}</td><td>INSTALLDIR</td><td>2</td><td/><td>quartz.dll</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>RockJobSchedulerService.Primary_output</td><td>{7E5CEDC0-E85B-42F6-A922-3BCF2D03FD52}</td><td>INSTALLDIR</td><td>2</td><td/><td>rockjobschedulerservice.prim</td><td>81</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>SqlServerSpatial110.dll</td><td>{8FAA61E7-E1D0-4B52-B5C9-6089081F09D5}</td><td>X86</td><td>2</td><td/><td>sqlserverspatial110.dll</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
@@ -1066,6 +1067,7 @@
 		<row><td>INSTALLDIR</td><td>ISX_DEFAULTCOMPONENT1</td></row>
 		<row><td>INSTALLDIR</td><td>ISX_DEFAULTCOMPONENT2</td></row>
 		<row><td>INSTALLDIR</td><td>ISX_DEFAULTCOMPONENT3</td></row>
+		<row><td>INSTALLDIR</td><td>Microsoft.SqlServer.Types.dll</td></row>
 		<row><td>INSTALLDIR</td><td>SqlServerSpatial110.dll</td></row>
 		<row><td>INSTALLDIR</td><td>SqlServerSpatial110.dll1</td></row>
 		<row><td>INSTALLDIR</td><td>msvcr100.dll</td></row>
@@ -1896,6 +1898,7 @@
 		<row><td>AlwaysInstall</td><td>ISX_DEFAULTCOMPONENT1</td></row>
 		<row><td>AlwaysInstall</td><td>ISX_DEFAULTCOMPONENT2</td></row>
 		<row><td>AlwaysInstall</td><td>ISX_DEFAULTCOMPONENT3</td></row>
+		<row><td>AlwaysInstall</td><td>Microsoft.SqlServer.Types.dll</td></row>
 		<row><td>AlwaysInstall</td><td>Quartz.dll</td></row>
 		<row><td>AlwaysInstall</td><td>RockJobSchedulerService.Primary_output</td></row>
 		<row><td>AlwaysInstall</td><td>SqlServerSpatial110.dll</td></row>
@@ -1917,6 +1920,7 @@
 		<col def="I4">ISAttributes</col>
 		<col def="S72">ISComponentSubFolder_</col>
 		<row><td>app.config</td><td>ISX_DEFAULTCOMPONENT</td><td>APP~1.CON|app.config</td><td>0</td><td/><td/><td/><td>1</td><td>c:\Development\RockRMS\RockJobSchedulerService\app.config</td><td>1</td><td/></row>
+		<row><td>microsoft.sqlserver.types.dl</td><td>Microsoft.SqlServer.Types.dll</td><td>MICROS~1.DLL|Microsoft.SqlServer.Types.dll</td><td>0</td><td/><td/><td/><td>1</td><td>C:\Development\RockRMS\RockJobSchedulerService\bin\Release\Microsoft.SqlServer.Types.dll</td><td>1</td><td/></row>
 		<row><td>msvcr100.dll</td><td>msvcr100.dll</td><td>msvcr100.dll</td><td>0</td><td/><td/><td/><td>1</td><td>C:\Development\RockRMS\RockJobSchedulerService\bin\Release\SqlServerTypes\x86\msvcr100.dll</td><td>1</td><td/></row>
 		<row><td>msvcr100.dll1</td><td>msvcr100.dll1</td><td>msvcr100.dll</td><td>0</td><td/><td/><td/><td>1</td><td>C:\Development\RockRMS\RockJobSchedulerService\bin\Release\SqlServerTypes\x64\msvcr100.dll</td><td>1</td><td/></row>
 		<row><td>quartz.dll</td><td>Quartz.dll</td><td>Quartz.dll</td><td>0</td><td/><td/><td/><td>1</td><td>c:\Development\RockRMS\RockJobSchedulerService\bin\Release\Quartz.dll</td><td>1</td><td/></row>
@@ -2070,6 +2074,7 @@
 		<row><td>ISX_DEFAULTCOMPONENT1</td><td/><td/><td>_F1AF3E81_650D_4E58_B277_9FF9B36C16F0_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>ISX_DEFAULTCOMPONENT2</td><td/><td/><td>_B4FB0529_54AF_498C_8D9E_435C48A99A82_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>ISX_DEFAULTCOMPONENT3</td><td/><td/><td>_2C15BD4A_7A4A_48FC_B2FC_92F374C1867D_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>Microsoft.SqlServer.Types.dll</td><td/><td/><td>_7B5C6EA7_AB82_4CFF_8B9B_B3F16459EA3C_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>Quartz.dll</td><td/><td/><td>_75DDAC26_9A3D_4378_BB96_9DDD5056B713_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>RockJobSchedulerService.Primary_output</td><td/><td/><td>_67AB93B5_7A52_4E46_87C4_762BC02820FE_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>SqlServerSpatial110.dll</td><td/><td/><td>_C8C7767B_3F76_425F_82A3_B3DF3EFF51CE_FILTER</td><td/><td/><td/><td/></row>
@@ -2695,7 +2700,7 @@
 		<col def="I2">Encoded</col>
 		<col def="S0">Comment</col>
 		<col def="I4">TimeStamp</col>
-		<row><td>COMPANY_NAME</td><td>1033</td><td>Spark Development Network</td><td>0</td><td/><td>-786293489</td></row>
+		<row><td>COMPANY_NAME</td><td>1033</td><td>Spark Development Network</td><td>0</td><td/><td>1227150156</td></row>
 		<row><td>DN_AlwaysInstall</td><td>1033</td><td>Always Install</td><td>0</td><td/><td>1445034537</td></row>
 		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_COLOR</td><td>1033</td><td>The color settings of your system are not adequate for running [ProductName].</td><td>0</td><td/><td>1445034537</td></row>
 		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_DOTNETVERSION45FULL</td><td>1033</td><td>Microsoft .NET Framework 4.5 Full package or greater needs to be installed for this installation to continue.</td><td>0</td><td/><td>1445045193</td></row>
@@ -3796,8 +3801,8 @@
 		<row><td>IDS__TargetReq_DESC_PROCESSOR</td><td>1033</td><td>The processor is not adequate for running [ProductName].</td><td>0</td><td/><td>1445034537</td></row>
 		<row><td>IDS__TargetReq_DESC_RAM</td><td>1033</td><td>The amount of RAM is not adequate for running [ProductName].</td><td>0</td><td/><td>1445034537</td></row>
 		<row><td>IDS__TargetReq_DESC_RESOLUTION</td><td>1033</td><td>The screen resolution is not adequate for running [ProductName].</td><td>0</td><td/><td>1445034537</td></row>
-		<row><td>ID_STRING1</td><td>1033</td><td>http://www.SparkDevelopmentNetwork.com</td><td>0</td><td/><td>-786293489</td></row>
-		<row><td>ID_STRING2</td><td>1033</td><td>Spark Development Network</td><td>0</td><td/><td>-786293489</td></row>
+		<row><td>ID_STRING1</td><td>1033</td><td>http://www.SparkDevelopmentNetwork.com</td><td>0</td><td/><td>1227150156</td></row>
+		<row><td>ID_STRING2</td><td>1033</td><td>Spark Development Network</td><td>0</td><td/><td>1227150156</td></row>
 		<row><td>IIDS_UITEXT_FeatureUninstalled</td><td>1033</td><td>This feature will remain uninstalled.</td><td>0</td><td/><td>1445034537</td></row>
 	</table>
 

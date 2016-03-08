@@ -1074,7 +1074,7 @@ namespace RockWeb.Blocks.Crm
 
             AddProperty( "Photo", "Photo", person.Id,
                 person.PhotoId.HasValue ? person.PhotoId.ToString() : string.Empty,
-                Person.GetPhotoImageTag( person, 65, 65, "merge-photo" ) );
+                Person.GetPersonPhotoImageTag( person, 65, 65, "merge-photo" ) );
             AddProperty( "Title", person.Id, person.TitleValue );
             AddProperty( "FirstName", person.Id, person.FirstName );
             AddProperty( "NickName", person.Id, person.NickName );

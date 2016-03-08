@@ -247,4 +247,25 @@
   <data name="_201602041745307_TuneDuplicateFinder" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201602041745307_tuneduplicatefinder.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
   </data>
+  <data name="_201602161036322_AttendanceAnalyticsQuery_AttendeeDates" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201602161036322_attendanceanalyticsquery_attendeedates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
+  <data name="_201602161036322_AttendanceAnalyticsQuery_AttendeeFirstDates" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201602161036322_attendanceanalyticsquery_attendeefirstdates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
+  <data name="_201602161036322_AttendanceAnalyticsQuery_AttendeeLastAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201602161036322_attendanceanalyticsquery_attendeelastattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
+  <data name="_201602161036322_AttendanceAnalyticsQuery_Attendees" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201602161036322_attendanceanalyticsquery_attendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
+  <data name="_201602161036322_AttendanceAnalyticsQuery_GroupTypeAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201602161036322_attendanceanalyticsquery_grouptypeattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
+  <data name="_201602161036322_AttendanceAnalyticsQuery_Indexes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201602161036322_attendanceanalyticsquery_indexes.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
+  <data name="_201602161036322_AttendanceAnalyticsQuery_NonAttendees" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201602161036322_attendanceanalyticsquery_nonattendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
 </root>

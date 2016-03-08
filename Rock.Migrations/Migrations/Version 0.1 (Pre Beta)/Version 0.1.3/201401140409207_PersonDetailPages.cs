@@ -120,8 +120,8 @@ Please confirm the information below. Once you have confirmed that the informati
 ","42F035FE-A1E8-4856-86A6-BA009BC6F33B");
             // Attrib for BlockType: Giving Profile Detail:Credit Card Gateway
             AddBlockTypeAttribute("5171C4E5-7698-453E-9CC8-088D362296DE","A7486B0E-4CA2-4E00-A987-5544C7DABA76","Credit Card Gateway","CCGateway","","The payment gateway to use for Credit Card transactions",0,@"","8177CE07-AA1B-43F4-ABCE-23E63DA8EBC8");
-            // Attrib for BlockType: Giving Profile Detail:ACH Card Gateway
-            AddBlockTypeAttribute("5171C4E5-7698-453E-9CC8-088D362296DE","A7486B0E-4CA2-4E00-A987-5544C7DABA76","ACH Card Gateway","ACHGateway","","The payment gateway to use for ACH (bank account) transactions",1,@"","FC9DF232-D7B1-4CA9-B348-D139276783BB");
+            // Attrib for BlockType: Giving Profile Detail:ACH Gateway
+            AddBlockTypeAttribute("5171C4E5-7698-453E-9CC8-088D362296DE","A7486B0E-4CA2-4E00-A987-5544C7DABA76","ACH Gateway","ACHGateway","","The payment gateway to use for ACH (bank account) transactions",1,@"","FC9DF232-D7B1-4CA9-B348-D139276783BB");
             // Attrib for BlockType: Giving Profile Detail:Accounts
             AddBlockTypeAttribute("5171C4E5-7698-453E-9CC8-088D362296DE","17033CDD-EF97-4413-A483-7B85A787A87F","Accounts","Accounts","","The accounts to display.  By default all active accounts with a Public Name will be displayed",6,@"","32B27FF4-0EDC-4709-B714-41084F8FE99C");
             // Attrib for BlockType: Giving Profile Detail:Additional Accounts
@@ -149,7 +149,7 @@ Please confirm the information below. Once you have confirmed that the informati
             AddBlockAttributeValue("B33DF8C4-29B2-4DC5-B182-61FC255B01C0","78622434-4B4E-42E4-B044-21AEDD315186",@"d360b64f-1267-4518-95cd-99cd5ab87d88");
             // Attrib Value for Block:Finance - Add Transaction, Attribute:Credit Card Gateway Page: Add Scheduled Transaction, Site: Rock Internal
             AddBlockAttributeValue("8ADB1C1F-299B-461A-8469-0FF4E2C98216","3D478949-1F85-4E81-A403-22BBA96B8F69",@"d4a40c4a-336f-49a6-9f44-88f149726126");
-            // Attrib Value for Block:Finance - Add Transaction, Attribute:ACH Card Gateway Page: Add Scheduled Transaction, Site: Rock Internal
+            // Attrib Value for Block:Finance - Add Transaction, Attribute:ACH Gateway Page: Add Scheduled Transaction, Site: Rock Internal
             AddBlockAttributeValue("8ADB1C1F-299B-461A-8469-0FF4E2C98216","D6429E78-E8F0-4EF2-9D18-DFDDE4ECC6A7",@"d4a40c4a-336f-49a6-9f44-88f149726126");
             // Attrib Value for Block:Finance - Add Transaction, Attribute:Batch Name Prefix Page: Add Scheduled Transaction, Site: Rock Internal
             AddBlockAttributeValue("8ADB1C1F-299B-461A-8469-0FF4E2C98216","245BDD4E-E8FF-4039-8C0B-C7AC1C185D1D",@"Online Giving");
@@ -196,7 +196,7 @@ Thank you.  The transaction has been submitted successfully.
             AddBlockAttributeValue("8ADB1C1F-299B-461A-8469-0FF4E2C98216","95F2EFCF-6A68-4857-90AB-CC3A467EDF9A",@"17aaceef-15ca-4c30-9a3a-11e6cf7e6411");
             // Attrib Value for Block:Giving Profile Detail, Attribute:Credit Card Gateway Page: Edit Scheduled Transaction, Site: Rock Internal
             AddBlockAttributeValue("CC4AC47D-1EA8-406F-94D5-50D19DC6B87A","8177CE07-AA1B-43F4-ABCE-23E63DA8EBC8",@"d4a40c4a-336f-49a6-9f44-88f149726126");
-            // Attrib Value for Block:Giving Profile Detail, Attribute:ACH Card Gateway Page: Edit Scheduled Transaction, Site: Rock Internal
+            // Attrib Value for Block:Giving Profile Detail, Attribute:ACH Gateway Page: Edit Scheduled Transaction, Site: Rock Internal
             AddBlockAttributeValue("CC4AC47D-1EA8-406F-94D5-50D19DC6B87A","FC9DF232-D7B1-4CA9-B348-D139276783BB",@"d4a40c4a-336f-49a6-9f44-88f149726126");
             // Attrib Value for Block:Giving Profile Detail, Attribute:Accounts Page: Edit Scheduled Transaction, Site: Rock Internal
             AddBlockAttributeValue("CC4AC47D-1EA8-406F-94D5-50D19DC6B87A","32B27FF4-0EDC-4709-B714-41084F8FE99C",@"4410306f-3fb5-4a57-9a80-09a3f9d40d0c,67c6181c-1d8c-44d7-b262-b81e746f06d8");
@@ -271,7 +271,7 @@ The transaction has been updated.
             DeleteAttribute( "DA811408-9985-4D1B-B92C-8C8FCA026B3D" );
             // Attrib for BlockType: Giving Profile Detail:Accounts
             DeleteAttribute( "32B27FF4-0EDC-4709-B714-41084F8FE99C" );
-            // Attrib for BlockType: Giving Profile Detail:ACH Card Gateway
+            // Attrib for BlockType: Giving Profile Detail:ACH Gateway
             DeleteAttribute( "FC9DF232-D7B1-4CA9-B348-D139276783BB" );
             // Attrib for BlockType: Giving Profile Detail:Credit Card Gateway
             DeleteAttribute( "8177CE07-AA1B-43F4-ABCE-23E63DA8EBC8" );

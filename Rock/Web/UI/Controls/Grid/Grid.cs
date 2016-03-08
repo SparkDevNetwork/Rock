@@ -1192,17 +1192,17 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.NumericalEventArgs"/> instance containing the event data.</param>
         public void pagerTemplate_NavigateClick( object sender, NumericalEventArgs e )
         {
-            if ( e.Number <= 0 && this.PageIndex > 0 )
+            if ( e.Number < 0  )
             {
-                this.PageIndex--;
+                this.PageIndex = 0;
             }
-            else if ( e.Number >= 11 && this.PageIndex < ( this.PageCount - 1 ) )
+            else if ( e.Number > this.PageCount - 1 )
             {
-                this.PageIndex++;
+                this.PageIndex = this.PageCount - 1;
             }
-            else if ( e.Number > 0 && e.Number <= this.PageCount )
+            else 
             {
-                this.PageIndex = ( e.Number - 1 );
+                this.PageIndex = e.Number;
             }
 
             RebindGrid( e, false );
@@ -1787,6 +1787,24 @@ namespace Rock.Web.UI.Controls
             conditionalFormatting.Style.Fill.BackgroundColor.Color = Color.FromArgb( 240, 240, 240 );
             
             var table = worksheet.Tables.Add( range, "table1" );
+            
+            // ensure each column in the table has a unique name
+            var columnNames = worksheet.Cells[3, 1, 3, columnCounter].Select( a => new { OrigColumnName = a.Text, Cell = a } ).ToList();
+            columnNames.Reverse();
+            foreach ( var col in columnNames )
+            {
+                int duplicateSuffix = 0;
+                string uniqueName = col.OrigColumnName;
+                
+                // increment the suffix by 1 until there is only one column with that name
+                while ( columnNames.Where(a => a.Cell.Text == uniqueName ).Count() > 1 )
+                {
+                    duplicateSuffix++;
+                    uniqueName = col.OrigColumnName + duplicateSuffix.ToString();
+                    col.Cell.Value = uniqueName;
+                }
+            }
+
             table.ShowFilter = true;
             table.TableStyle = OfficeOpenXml.Table.TableStyles.None;
 
@@ -2115,22 +2133,21 @@ namespace Rock.Web.UI.Controls
             idCol.DataField = "Id";
             idCol.Visible = false;
             columns.Add( idCol );
-
+            idCol.HeaderText = "Id";
             columns.AddRange( displayColumns.Count > 0 ? displayColumns : allColumns );
 
             if ( columns.Count == 1 )
             {
                 // if the only column is the Id column, show it
-                idCol.HeaderText = "Id";
                 idCol.Visible = true;
             }
 
             return columns;
         }
 
-        private Dictionary<int, Dictionary<string, string>> GetPersonData()
+        private Dictionary<int, Dictionary<string, object>> GetPersonData()
         {
-            var personData = new Dictionary<int, Dictionary<string, string>>();
+            var personData = new Dictionary<int, Dictionary<string, object>>();
 
             if ( this.PersonIdField != null )
             {
@@ -2144,10 +2161,11 @@ namespace Rock.Web.UI.Controls
 
                     foreach ( DataRow row in data.Rows )
                     {
-                        if ( !keysSelected.Any() || keysSelected.Contains( row[dataKeyColumn] ) )
+                        object dataKey = row[dataKeyColumn];
+                        if ( !keysSelected.Any() || keysSelected.Contains( dataKey ) )
                         {
                             int? personId = null;
-                            var mergeValues = new Dictionary<string, string>();
+                            var mergeValues = new Dictionary<string, object>();
                             for ( int i = 0; i < data.Columns.Count; i++ )
                             {
                                 if ( data.Columns[i].ColumnName == this.PersonIdField )
@@ -2157,13 +2175,30 @@ namespace Rock.Web.UI.Controls
 
                                 if ( CommunicateMergeFields.Contains( data.Columns[i].ColumnName ) )
                                 {
-                                    mergeValues.Add( data.Columns[i].ColumnName, row[i].ToString() );
+                                    mergeValues.Add( data.Columns[i].ColumnName, row[i] );
                                 }
                             }
 
                             // Add the personId if none are selected or if it's one of the selected items.
                             if ( personId.HasValue )
                             {
+                                // Allow calling block to add additional merge fields
+                                var eventArg = new GetRecipientMergeFieldsEventArgs( dataKey, personId, row );
+                                OnGetRecipientMergeFields( eventArg );
+                                {
+                                    if ( eventArg.MergeValues != null )
+                                    {
+                                        foreach( var mergeValue in eventArg.MergeValues )
+                                        {
+                                            if ( !CommunicateMergeFields.Contains( mergeValue.Key ) )
+                                            {
+                                                CommunicateMergeFields.Add( mergeValue.Key );
+                                            }
+                                            mergeValues.Add( mergeValue.Key, mergeValue.Value );
+                                        }
+                                    }
+                                }
+
                                 personData.AddOrIgnore( personId.Value, mergeValues );
                             }
                         }
@@ -2203,13 +2238,30 @@ namespace Rock.Web.UI.Controls
                                     // Add the personId if none are selected or if it's one of the selected items.
                                     if ( !keysSelected.Any() || keysSelected.Contains( id ) )
                                     {
-                                        var mergeValues = new Dictionary<string, string>();
+                                        var mergeValues = new Dictionary<string, object>();
                                         foreach ( string mergeField in CommunicateMergeFields )
                                         {
                                             object obj = item.GetPropertyValue( mergeField );
                                             if ( obj != null )
                                             {
-                                                mergeValues.Add( mergeField.Replace( '.', '_' ), obj.ToString() );
+                                                mergeValues.Add( mergeField.Replace( '.', '_' ), obj );
+                                            }
+                                        }
+
+                                        // Allow calling block to add additional merge fields
+                                        var eventArg = new GetRecipientMergeFieldsEventArgs( id, personId, item );
+                                        OnGetRecipientMergeFields( eventArg );
+                                        {
+                                            if ( eventArg.MergeValues != null )
+                                            {
+                                                foreach ( var mergeValue in eventArg.MergeValues )
+                                                {
+                                                    if ( !CommunicateMergeFields.Contains( mergeValue.Key ) )
+                                                    {
+                                                        CommunicateMergeFields.Add( mergeValue.Key );
+                                                    }
+                                                    mergeValues.Add( mergeValue.Key, mergeValue.Value );
+                                                }
                                             }
                                         }
 
@@ -2705,6 +2757,23 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Occurs when grid gets recipient merge fields.
+        /// </summary>
+        public event EventHandler<GetRecipientMergeFieldsEventArgs> GetRecipientMergeFields;
+
+        /// <summary>
+        /// Raises the <see cref="E:GetRecipientMergeFields" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="GetRecipientMergeFieldsEventArgs"/> instance containing the event data.</param>
+        protected virtual void OnGetRecipientMergeFields( GetRecipientMergeFieldsEventArgs e )
+        {
+            if ( GetRecipientMergeFields != null )
+            {
+                GetRecipientMergeFields( this, e );
+            }
+        }
+
         #endregion
 
         #region Static Methods
@@ -2891,6 +2960,55 @@ namespace Rock.Web.UI.Controls
             DataKey = dataKey;
             OldIndex = oldIndex;
             NewIndex = newIndex;
+        }
+    }
+
+    /// <summary>
+    /// Event handler used when getting recipient merge fields for new communication
+    /// </summary>
+    public class GetRecipientMergeFieldsEventArgs : EventArgs
+    {
+        /// <summary>
+        /// Gets the data key.
+        /// </summary>
+        public object DataKey { get; private set; }
+
+        /// <summary>
+        /// Gets the person identifier.
+        /// </summary>
+        /// <value>
+        /// The person identifier.
+        /// </value>
+        public int? PersonId { get; private set; }
+
+        /// <summary>
+        /// Gets the data item.
+        /// </summary>
+        /// <value>
+        /// The data item.
+        /// </value>
+        public object DataItem { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the merge values.
+        /// </summary>
+        /// <value>
+        /// The merge values.
+        /// </value>
+        public Dictionary<string, object> MergeValues { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GetRecipientMergeFieldsEventArgs" /> class.
+        /// </summary>
+        /// <param name="dataKey">The data key.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="dataItem">The data item.</param>
+        public GetRecipientMergeFieldsEventArgs( object dataKey, int? personId, object dataItem )
+        {
+            DataKey = dataKey;
+            PersonId = personId;
+            DataItem = dataItem;
+            MergeValues = new Dictionary<string, object>();
         }
     }
 
@@ -3184,7 +3302,7 @@ namespace Rock.Web.UI.Controls
                 PageLink[i] = new LinkButton();
                 PageLinkListItem[i].Controls.Add( PageLink[i] );
                 PageLink[i].ID = string.Format( "pageLink{0}", i );
-                PageLink[i].Click += new EventHandler( lbPage_Click );
+                PageLink[i].Command += lbPage_Command;
             }
 
             PageLink[0].Text = "&laquo;";
@@ -3206,50 +3324,52 @@ namespace Rock.Web.UI.Controls
             {
                 if ( pageCount > 1 )
                 {
-                    int totalGroups = (int)( ( pageCount - 1 ) / 10 );
-                    int currentGroup = (int)( pageIndex / 10 );
+                    int totalGroups = (int)( ( pageCount - 1 ) / 10 ) + 1;
+                    int currentGroupIndex = (int)( pageIndex / 10 );
 
-                    int prevPageIndex = 0;
-                    if ( pageIndex <= 0 )
+                    int prevPageIndex = ( ( currentGroupIndex - 1 ) * 10 ) + 9;
+                    if ( prevPageIndex < 0 )
                     {
+                        prevPageIndex = 0;
                         PageLinkListItem[0].Attributes["class"] = "prev disabled";
                         PageLink[0].Enabled = false;
                     }
                     else
                     {
-                        prevPageIndex = pageIndex - ( currentGroup > 0 ? 10 : 1 );
                         PageLinkListItem[0].Attributes["class"] = "prev";
                         PageLink[0].Enabled = true;
                     }
+                    PageLink[0].CommandName = prevPageIndex.ToString();
 
-                    int nextPageIndex = pageIndex;
-                    if ( pageIndex >= pageCount - 1 )
+                    int nextPageIndex = ( currentGroupIndex + 1 ) * 10;
+                    if ( nextPageIndex >= pageCount - 1 )
                     {
+                        nextPageIndex = pageCount - 1;
                         PageLinkListItem[PageLinkListItem.Length - 1].Attributes["class"] = "next disabled";
                         PageLink[PageLinkListItem.Length - 1].Enabled = false;
                     }
                     else
                     {
-                        nextPageIndex = pageIndex + ( currentGroup < totalGroups ? 10 : 1 );
                         PageLinkListItem[PageLinkListItem.Length - 1].Attributes["class"] = "next";
                         PageLink[PageLinkListItem.Length - 1].Enabled = true;
                     }
+                    PageLink[PageLinkListItem.Length - 1].CommandName = nextPageIndex.ToString();
 
                     NavigationPanel.Visible = true;
                     for ( int i = 1; i < PageLink.Length - 1; i++ )
                     {
-                        int currentPage = currentGroup + ( i - 1 );
+                        int buttonPageIndex = ( currentGroupIndex * 10 ) + ( i - 1 );
 
                         HtmlGenericControl li = PageLinkListItem[i];
                         LinkButton lb = PageLink[i];
 
-                        if ( currentPage < pageCount )
+                        if ( buttonPageIndex < pageCount )
                         {
-                            li.Attributes["class"] = currentPage == pageIndex ? "active" : string.Empty;
+                            li.Attributes["class"] = buttonPageIndex == pageIndex ? "active" : string.Empty;
                             li.Visible = true;
-
-                            lb.Text = ( currentPage + 1 ).ToString( "N0" );
+                            lb.Text = ( buttonPageIndex + 1 ).ToString( "N0" );
                             lb.Visible = true;
+                            lb.CommandName = buttonPageIndex.ToString();
                         }
                         else
                         {
@@ -3282,18 +3402,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Handles the Click event of the lbPage control.
+        /// Handles the Command event of the lbPage control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void lbPage_Click( object sender, EventArgs e )
+        /// <param name="e">The <see cref="CommandEventArgs"/> instance containing the event data.</param>
+        void lbPage_Command( object sender, CommandEventArgs e )
         {
             if ( NavigateClick != null )
             {
                 LinkButton lbPage = sender as LinkButton;
                 if ( lbPage != null )
                 {
-                    int? pageIndex = lbPage.ID.Substring(8).AsIntegerOrNull();
+                    int? pageIndex = lbPage.CommandName.AsIntegerOrNull();
                     if ( pageIndex.HasValue )
                     {
                         NumericalEventArgs eventArgs = new NumericalEventArgs( pageIndex.Value );

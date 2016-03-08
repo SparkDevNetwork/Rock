@@ -162,9 +162,9 @@ namespace RockWeb.Blocks.Groups
 
                     rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
                     gGroupMembers.DataKeyNames = new string[] { "Id" };
-                    gGroupMembers.CommunicateMergeFields = new List<string> { "GroupRole" };
                     gGroupMembers.PersonIdField = "PersonId";
                     gGroupMembers.RowDataBound += gGroupMembers_RowDataBound;
+                    gGroupMembers.GetRecipientMergeFields += gGroupMembers_GetRecipientMergeFields;
                     gGroupMembers.Actions.AddClick += gGroupMembers_AddClick;
                     gGroupMembers.GridRebind += gGroupMembers_GridRebind;
                     gGroupMembers.RowItemText = _group.GroupType.GroupTerm + " " + _group.GroupType.GroupMemberTerm;
@@ -305,6 +305,21 @@ namespace RockWeb.Blocks.Groups
                         e.Row.AddCssClass( "is-inactive" );
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Handles the GetRecipientMergeFields event of the gGroupMembers control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GetRecipientMergeFieldsEventArgs"/> instance containing the event data.</param>
+        void gGroupMembers_GetRecipientMergeFields( object sender, GetRecipientMergeFieldsEventArgs e )
+        {
+            dynamic groupMember = e.DataItem;
+            if ( groupMember != null )
+            {
+                e.MergeValues.Add( "GroupRole", groupMember.GroupRole );
+                e.MergeValues.Add( "GroupMemberStatus", ( (GroupMemberStatus)groupMember.GroupMemberStatus ).ConvertToString() );
             }
         }
 

@@ -218,26 +218,10 @@ namespace RockWeb.Blocks.Connection
                 string sessionKey = string.Format( "ConnectionSearch_{0}", this.BlockId );
                 Session[sessionKey] = searchSelections;
 
-                var opportunitySummaries = new List<OpportunitySummary>();
-                foreach ( var opportunity in qrySearch )
-                {
-                    opportunitySummaries.Add( new OpportunitySummary
-                    {
-                        IconCssClass = opportunity.IconCssClass,
-                        Name = opportunity.PublicName,
-                        PhotoUrl = opportunity.PhotoUrl,
-                        Description = opportunity.Description,
-                        Summary = opportunity.Summary,
-                        Id = opportunity.Id
-                    } );
-                }
-
-                var opportunities = opportunitySummaries
-                    .OrderBy( e => e.Name )
-                    .ToList();
+                var opportunities = qrySearch.OrderBy( s => s.PublicName ).ToList();
 
                 var mergeFields = new Dictionary<string, object>();
-                mergeFields.Add( "Opportunities", opportunities );
+                mergeFields.Add( "Opportunities", opportunities);
                 mergeFields.Add( "CurrentPerson", CurrentPerson );
 
                 var pageReference = new PageReference( GetAttributeValue( "DetailPage" ), null );
@@ -402,20 +386,6 @@ namespace RockWeb.Blocks.Connection
                     phAttributeFilters.Visible = false;
                 }
             }
-        }
-
-        /// <summary>
-        /// A class for lava to access connection opportunity data
-        /// </summary>
-        [DotLiquid.LiquidType( "IconCssClass", "Name", "PhotoUrl", "Summary", "Description", "Id" )]
-        public class OpportunitySummary
-        {
-            public string IconCssClass { get; set; }
-            public string Name { get; set; }
-            public string PhotoUrl { get; set; }
-            public string Description { get; set; }
-            public string Summary { get; set; }
-            public int Id { get; set; }
         }
 
         #endregion

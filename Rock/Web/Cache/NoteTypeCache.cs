@@ -254,7 +254,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static NoteTypeCache Read( Rock.Model.NoteType NoteTypeModel )
         {
-            return GetOrAddExisting( CampusCache.CacheKey( NoteTypeModel.Id ),
+            return GetOrAddExisting( NoteTypeCache.CacheKey( NoteTypeModel.Id ),
                 () => LoadByModel( NoteTypeModel ) );
         }
 

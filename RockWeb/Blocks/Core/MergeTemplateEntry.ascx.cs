@@ -162,6 +162,28 @@ namespace RockWeb.Blocks.Core
 
             var globalMergeFields = GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
             globalMergeFields.Add( "CurrentPerson", this.CurrentPerson );
+            globalMergeFields.Add( "Campuses", CampusCache.All() );
+
+            var contextObjects = new Dictionary<string, object>();
+            foreach ( var contextEntityType in RockPage.GetContextEntityTypes() )
+            {
+                var contextEntity = RockPage.GetCurrentContext( contextEntityType );
+                if ( contextEntity != null && contextEntity is DotLiquid.ILiquidizable )
+                {
+                    var type = Type.GetType( contextEntityType.AssemblyName ?? contextEntityType.Name );
+                    if ( type != null )
+                    {
+                        contextObjects.Add( type.Name, contextEntity );
+                    }
+                }
+
+            }
+
+            if ( contextObjects.Any() )
+            {
+                globalMergeFields.Add( "Context", contextObjects );
+            }
+
             BinaryFile outputBinaryFileDoc = null;
 
             try

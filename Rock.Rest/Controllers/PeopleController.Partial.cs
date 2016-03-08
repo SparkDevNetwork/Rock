@@ -474,8 +474,11 @@ namespace Rock.Rest.Controllers
             if ( person != null )
             {
                 GetPersonSearchDetails( personSearchResult, person );
-                string searchDetailsFormat = @"{0}<div class='contents'>{1}</div>";
-                return string.Format( searchDetailsFormat, personSearchResult.PickerItemDetailsImageHtml, personSearchResult.PickerItemDetailsPersonInfoHtml );
+                // Generate the HTML for the ConnectionStatus; "label-success" matches the default config of the
+                // connection status badge on the Bio bar, but I think label-default works better here.
+                string connectionStatusHtml = string.IsNullOrWhiteSpace( personSearchResult.ConnectionStatus ) ? string.Empty : string.Format( "<span class='label label-default pull-right'>{0}</span>", personSearchResult.ConnectionStatus );
+                string searchDetailsFormat = @"{0}{1}<div class='contents'>{2}</div>";
+                return string.Format( searchDetailsFormat, personSearchResult.PickerItemDetailsImageHtml, connectionStatusHtml, personSearchResult.PickerItemDetailsPersonInfoHtml );
             }
             else
             {
@@ -556,7 +559,7 @@ namespace Rock.Rest.Controllers
                 recordTypeValueGuid = DefinedValueCache.Read( person.RecordTypeValueId.Value ).Guid;
             }
 
-            personSearchResult.ImageHtmlTag = Person.GetPhotoImageTag( person.PhotoId, person.Age, person.Gender, recordTypeValueGuid, 50, 50 );
+            personSearchResult.ImageHtmlTag = Person.GetPersonPhotoImageTag( person, 50, 50 );
             personSearchResult.Age = person.Age.HasValue ? person.Age.Value : -1;
             personSearchResult.ConnectionStatus = person.ConnectionStatusValueId.HasValue ? DefinedValueCache.Read( person.ConnectionStatusValueId.Value ).Value : string.Empty;
             personSearchResult.Gender = person.Gender.ConvertToString();
@@ -564,7 +567,7 @@ namespace Rock.Rest.Controllers
 
             string imageHtml = string.Format(
                 "<div class='person-image' style='background-image:url({0}&width=65);background-size:cover;background-position:50%'></div>",
-                Person.GetPhotoUrl( person.PhotoId, person.Age, person.Gender, recordTypeValueGuid ) );
+                Person.GetPersonPhotoUrl( person, 200, 200 ) );
 
             string personInfoHtml = string.Empty;
             Guid matchLocationGuid;
@@ -736,7 +739,7 @@ namespace Rock.Rest.Controllers
                 var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
                 html.AppendFormat(
                     "<header>{0} <h3>{1}<small>{2}</small></h3></header>",
-                    Person.GetPhotoImageTag( person.PhotoId, person.Age, person.Gender, recordTypeValueGuid, 65, 65 ),
+                    Person.GetPersonPhotoImageTag( person, 65, 65 ),
                     person.FullName,
                     person.ConnectionStatusValue != null ? person.ConnectionStatusValue.Value : string.Empty );
 
