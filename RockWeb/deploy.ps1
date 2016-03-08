@@ -40,6 +40,11 @@ If (Test-Path "$rootfolder\temp\profiles"){
 	Move-Item "$rootfolder\temp\profiles" "$webroot"
 }
 
+# move web.config file back from temp
+If (Test-Path "$rootfolder\temp\web.config"){
+	Write-Host "Moving web.config from temp dir"
+	Copy-Item "$rootfolder\temp\web.config" "$webroot" -force
+}
 
 # move connection string file back from temp
 If (Test-Path "$rootfolder\temp\web.connectionstrings.config"){
