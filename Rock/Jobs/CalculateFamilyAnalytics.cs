@@ -40,7 +40,7 @@ namespace Rock.Jobs
     [WorkflowTypeField( "eRA Entry Workflow", "The workflow type to launch when a family becomes an eRA.", key: "EraEntryWorkflow")]
     [WorkflowTypeField( "eRA Exit Workflow", "The workflow type to launch when a family exits from being an eRA.", key: "EraExitWorkflow" )]
     [DisallowConcurrentExecution]
-    public class CalculatePersonAnalytics : IJob
+    public class CalculateFamilyAnalytics : IJob
     {
         /// <summary> 
         /// Empty constructor for job initialization
@@ -49,7 +49,7 @@ namespace Rock.Jobs
         /// scheduler can instantiate the class whenever it needs.
         /// </para>
         /// </summary>
-        public CalculatePersonAnalytics()
+        public CalculateFamilyAnalytics()
         {
         }
 
@@ -85,8 +85,12 @@ namespace Rock.Jobs
 
             var attributeValueService = new AttributeValueService( rockContext );
             var eraAttribute = AttributeCache.Read( SystemGuid.Attribute.PERSON_ERA_CURRENTLY_AN_ERA.AsGuid() );
+            var eraStartAttribute = AttributeCache.Read( SystemGuid.Attribute.PERSON_ERA_START_DATE.AsGuid() );
+            var eraEndAttribute = AttributeCache.Read( SystemGuid.Attribute.PERSON_ERA_END_DATE.AsGuid() );
 
-            var results = rockContext.Database.SqlQuery<EraResult>( "spCrm_PersonAnalyticsEraDataset" ).ToList();
+            rockContext.Database.CommandTimeout = 1200;
+
+            var results = rockContext.Database.SqlQuery<EraResult>( "spCrm_FamilyAnalyticsEraDataset" ).ToList();
 
             foreach (var result in results )
             {
@@ -100,13 +104,25 @@ namespace Rock.Jobs
 
                         if ( family != null ) {
                             foreach ( var person in family.Members.Select( m => m.Person ) ) {
-                                var eraAttributeValue = attributeValueService.Queryable().Where( v => v.AttributeId == eraAttribute.Id && v.EntityId == person.Id ).FirstOrDefault();
 
+                                // remove the era flag
+                                var eraAttributeValue = attributeValueService.Queryable().Where( v => v.AttributeId == eraAttribute.Id && v.EntityId == person.Id ).FirstOrDefault();
                                 if ( eraAttributeValue != null )
                                 {
                                     attributeValueService.Delete( eraAttributeValue );
-                                    rockContext.SaveChanges();
                                 }
+
+                                // set end date
+                                var eraEndAttributeValue = attributeValueService.Queryable().Where( v => v.AttributeId == eraEndAttribute.Id && v.EntityId == person.Id ).FirstOrDefault();
+                                if ( eraEndAttributeValue == null )
+                                {
+                                    eraEndAttributeValue = new AttributeValue();
+                                    eraEndAttributeValue.EntityId = person.Id;
+                                    eraEndAttributeValue.AttributeId = eraAttribute.Id;
+                                    attributeValueService.Delete( eraEndAttributeValue );
+                                }
+
+                                rockContext.SaveChanges();
                             }
 
                             // launch exit workflow
@@ -127,8 +143,8 @@ namespace Rock.Jobs
                     {
                         foreach ( var person in family.Members.Select( m => m.Person ) )
                         {
+                            // set era attribute to true
                             var eraAttributeValue = attributeValueService.Queryable().Where( v => v.AttributeId == eraAttribute.Id && v.EntityId == person.Id ).FirstOrDefault();
-
                             if ( eraAttributeValue == null )
                             {
                                 eraAttributeValue = new AttributeValue();
@@ -137,6 +153,25 @@ namespace Rock.Jobs
                                 attributeValueService.Add( eraAttributeValue );
                             }
                             eraAttributeValue.Value = bool.TrueString;
+
+                            // add start date
+                            var eraStartAttributeValue = attributeValueService.Queryable().Where( v => v.AttributeId == eraStartAttribute.Id && v.EntityId == person.Id ).FirstOrDefault();
+                            if (eraStartAttributeValue == null )
+                            {
+                                eraStartAttributeValue = new AttributeValue();
+                                eraStartAttributeValue.EntityId = person.Id;
+                                eraStartAttributeValue.AttributeId = eraAttribute.Id;
+                                attributeValueService.Add( eraStartAttributeValue );
+                            }
+                            eraStartAttributeValue.Value = RockDateTime.Now.ToString();
+
+                            // delete end date if it exists
+                            var eraEndAttributeValue = attributeValueService.Queryable().Where( v => v.AttributeId == eraEndAttribute.Id && v.EntityId == person.Id ).FirstOrDefault();
+                            if ( eraEndAttributeValue != null )
+                            {
+                                attributeValueService.Delete( eraEndAttributeValue );
+                            }
+
                             rockContext.SaveChanges();
                         }
 
@@ -152,6 +187,11 @@ namespace Rock.Jobs
                 // update stats
             }
 
+            // load giving attributes
+            rockContext.Database.ExecuteSqlCommand( "spCrm_FamilyAnalyticsGiving" );
+
+            // load attendance attributes
+            rockContext.Database.ExecuteSqlCommand( "spCrm_FamilyAnalyticsAttendance" );
         }
 
         private void LaunchWorkflow(Guid workflowTypeGuid, Person headOfHouse )
