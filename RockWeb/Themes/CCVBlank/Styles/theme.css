@@ -11638,6 +11638,16 @@ ul.rocktree ul {
 .list-as-blocks ul li.active a i {
   color: #ffffff;
 }
+.list-as-blocks .block-status a {
+  height: 105px;
+  padding: 8px 15px;
+}
+.list-as-blocks .block-status a .status-list {
+  position: absolute;
+  bottom: 5px;
+  left: 0;
+  right: 0;
+}
 @media (min-width: 768px) and (max-width: 991px) {
   .list-as-blocks ul li {
     margin: 0 1% 15px;
@@ -13758,6 +13768,14 @@ th[align=center] {
 .badge-info {
   background-color: #5bc0de !important;
   color: #fff !important;
+}
+.badge-critical {
+  background-color: #ee7624 !important;
+  color: #fff !important;
+}
+.badge-legend .badge {
+  margin-right: 4px;
+  cursor: pointer;
 }
 .popover-content {
   overflow: hidden;
