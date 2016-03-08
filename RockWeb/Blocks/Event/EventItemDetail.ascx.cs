@@ -604,6 +604,8 @@ namespace RockWeb.Blocks.Event
 
             eventItem.LoadAttributes( rockContext );
 
+            FollowingsHelper.SetFollowing( eventItem, pnlFollowing, this.CurrentPerson );
+
             bool readOnly = false;
             nbEditModeMessage.Text = string.Empty;
 
