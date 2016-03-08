@@ -8278,8 +8278,8 @@ button.close {
 }
 @font-face {
   font-family: "ccv-icons";
-  src: url('../ccv-icons.eot');
-  src: url('../ccv-icons.eot?#iefix') format('embedded-opentype'), url('../ccv-icons.woff') format('woff'), url('../ccv-icons.ttf') format('truetype'), url('../ccv-icons.svg#ccv-icons') format('svg');
+  src: url('../../../Plugins/church_ccv/Badges/Assets/Fonts/ccv-icons.eot');
+  src: url('../../../Plugins/church_ccv/Badges/Assets/Fonts/ccv-icons.eot?#iefix') format('embedded-opentype'), url('../../../Plugins/church_ccv/Badges/Assets/Fonts/ccv-icons.woff') format('woff'), url('../../../Plugins/church_ccv/Badges/Assets/Fonts/ccv-icons.ttf') format('truetype'), url('../../../Plugins/church_ccv/Badges/Assets/Fonts/ccv-icons.svg#ccv-icons') format('svg');
   font-weight: normal;
   font-style: normal;
 }

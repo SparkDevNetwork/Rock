@@ -19,6 +19,117 @@ REQUIRED VARIABLES
 
   {{ Group.Name | SetPageTitle }}
 
+  <style media="screen">
+    .badge-group.badge-group-steps {
+      display: block;
+      opacity: .75;
+    }
+    .badge-group.badge-group-steps .badge {
+      font-size: 10px;
+      width: 15px;
+      height: 15px;
+    }
+    .badge-group.badge-group-steps .badge.step-nottaken {
+      background-color: inherit;
+      opacity: .4;
+      color: #939393;
+    }
+    /*.badge-group.badge-group-steps .badge.step-partial {
+      opacity: .3;
+    }*/
+  </style>
+
+  <script id="badge-template" type="text/x-handlebars-template">
+    {% raw %}
+    <div class="badge-group badge-group-steps js-badge-group-steps badge-id-27">
+
+      {{#status BaptismResult.BaptismStatus is=1}}
+      <div class="badge badge-baptism badge-icon" data-toggle="tooltip" title="Baptised on {{dateFormat BaptismResult.BaptismDate format='l'}}" data-container="body">
+        <i class="icon ccv-baptism"></i>
+      </div>
+      {{/status}}
+      {{#status BaptismResult.BaptismStatus is=2}}
+      <div class="badge badge-baptism badge-icon step-partial" data-toggle="tooltip" title="Registered for baptism on {{dateFormat BaptismResult.BaptismRegistrationDate format='l'}}" data-container="body">
+        <i class="icon ccv-baptism"></i>
+      </div>
+      {{/status}}
+      {{#status BaptismResult.BaptismStatus is=0}}
+      <div class="badge badge-baptism badge-icon step-nottaken" data-toggle="tooltip" title="Is not baptized" data-container="body">
+        <i class="icon ccv-baptism"></i>
+      </div>
+      {{/status}}
+
+      {{#if MembershipResult.IsMember}}
+      <div class="badge badge-membership badge-icon" data-toggle="tooltip" title="Became a member on {{dateFormat MembershipResult.MembershipDate format='l'}}" data-container="body">
+        <i class="icon ccv-membership"></i>
+      </div>
+      {{else}}
+      <div class="badge badge-membership badge-icon step-nottaken" data-toggle="tooltip" title="Not a member" data-container="body">
+        <i class="icon ccv-membership"></i>
+      </div>
+      {{/if}}
+
+      {{#if IsWorshipper}}
+      <div class="badge badge-worship badge-icon" data-toggle="tooltip" title="Is an eRA" data-container="body">
+        <i class="icon ccv-worship"></i>
+      </div>
+      {{else}}
+      <div class="badge badge-worship badge-icon step-nottaken" data-toggle="tooltip" title="Is not an eRA" data-container="body">
+        <i class="icon ccv-worship"></i>
+      </div>
+      {{/if}}
+
+      <!-- This one is inverted -->
+      {{#status ConnectionResult.ConnectionStatus is=0}}
+      <div class="badge badge-connect badge-icon" data-toggle="tooltip" title="Is in a connection group (eariest active group {{dateFormat ConnectionResult.ConnectedSince format='l'}})" data-container="body">
+        <i class="icon ccv-connect"></i>
+      </div>
+      {{/status}}
+      {{#status ConnectionResult.ConnectionStatus is=2}}
+      <div class="badge badge-connect badge-icon step-partial" data-toggle="tooltip" title="Is pending in a connection group (eariest active group {{dateFormat ConnectionResult.ConnectedSince format='l'}})" data-container="body">
+        <i class="icon ccv-connect"></i>
+      </div>
+      {{/status}}
+      {{#status ConnectionResult.ConnectionStatus is=1}}
+      <div class="badge badge-connect badge-icon step-nottaken" data-toggle="tooltip" title="Is not connected to a neighborhood group" data-container="body">
+        <i class="icon ccv-connect"></i>
+      </div>
+      {{/status}}
+
+      {{#if IsTithing}}
+      <div class="badge badge-tithe badge-icon" data-toggle="tooltip" data-original-title="Is giving" data-container="body">
+        <i class="icon ccv-tithe"></i>
+      </div>
+      {{else}}
+      <div class="badge badge-tithe badge-icon step-nottaken" data-toggle="tooltip" data-original-title="Is not giving" data-container="body">
+        <i class="icon ccv-tithe"></i>
+      </div>
+      {{/if}}
+
+      {{#if ServingResult.IsServing}}
+      <div class="badge badge-serve badge-icon" data-toggle="tooltip" title="Is serving (earliest active group {{dateFormat ServingResult.ServingSince format='l'}})" data-container="body">
+        <i class="icon ccv-serve"></i>
+      </div>
+      {{else}}
+      <div class="badge badge-serve badge-icon step-nottaken" data-toggle="tooltip" title="Is not serving" data-container="body">
+        <i class="icon ccv-serve"></i>
+      </div>
+      {{/if}}
+
+      {{#if CoachingResult.IsCoaching}}
+      <div class="badge badge-coach badge-icon" data-toggle="tooltip" title="Is in a coaching group (earliest active group {{dateFormat CoachingResult.CoachingSince format='l'}})" data-container="body">
+        <i class="icon ccv-coach"></i>
+      </div>
+      {{else}}
+      <div class="badge badge-coach badge-icon step-nottaken" data-toggle="tooltip" title="Is not coaching" data-container="body">
+        <i class="icon ccv-coach"></i>
+      </div>
+      {{/if}}
+
+    </div>
+    {% endraw %}
+  </script>
+
   {% for groupLocation in Group.GroupLocations %}
     {% if groupLocation.Location.GeoPoint != '' %}
 
@@ -229,9 +340,17 @@ REQUIRED VARIABLES
     </p>
   {% endif %}
 
-  {% comment %} The ~~ relative path doesn't seem to work with this block {% endcomment %}
-  <script src="/Themes/church_ccv_External_v7/Scripts/_map.js"></script>
+  <script type="text/javascript">
+    CURRENT_GROUP_GUID = '{{ Group.Guid }}'
+  </script>
 
+  {% comment %} TODO: use minified version {% endcomment %}
+  <script src="/Themes/church_ccv_External_v7/Scripts/Vendor/handlebars-v4.0.5.js"></script>
+  <script src="/Themes/church_ccv_External_v7/Scripts/Vendor/moment.js"></script>
+  <script src="/Themes/church_ccv_External_v7/Scripts/_map.js"></script>
+  <script src="/Themes/church_ccv_External_v7/Scripts/pages/toolbox.js"></script>
+
+  {% comment %} Group map {% endcomment %}
   <script>
     var groupMap;
     Sys.Application.add_load(function(){
@@ -246,15 +365,6 @@ REQUIRED VARIABLES
         groupMap.useScrollZoom = false
         groupMap.draw()
       }
-    })
-
-    $(function () {
-      $('[data-toggle="popover"]').popover({
-        content: function() {
-          return $(this).find('.js-popup-content').html()
-        },
-        html: true
-      })
     })
   </script>
 
