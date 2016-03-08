@@ -118,7 +118,7 @@ namespace Rock.Jobs
                                 {
                                     eraEndAttributeValue = new AttributeValue();
                                     eraEndAttributeValue.EntityId = person.Id;
-                                    eraEndAttributeValue.AttributeId = eraAttribute.Id;
+                                    eraEndAttributeValue.AttributeId = eraEndAttribute.Id;
                                     attributeValueService.Delete( eraEndAttributeValue );
                                 }
 
@@ -128,8 +128,7 @@ namespace Rock.Jobs
                             // launch exit workflow
                             if ( exitWorkflowType.HasValue )
                             {
-                                var headOfHouse = family.Members.OrderBy( m => m.GroupRole.Order ).ThenBy( m => m.Person.Gender ).FirstOrDefault().Person;
-                                LaunchWorkflow( exitWorkflowType.Value, headOfHouse );
+                                LaunchWorkflow( exitWorkflowType.Value, family );
                             }
                         }
                     }
@@ -160,7 +159,7 @@ namespace Rock.Jobs
                             {
                                 eraStartAttributeValue = new AttributeValue();
                                 eraStartAttributeValue.EntityId = person.Id;
-                                eraStartAttributeValue.AttributeId = eraAttribute.Id;
+                                eraStartAttributeValue.AttributeId = eraStartAttribute.Id;
                                 attributeValueService.Add( eraStartAttributeValue );
                             }
                             eraStartAttributeValue.Value = RockDateTime.Now.ToString();
@@ -178,8 +177,7 @@ namespace Rock.Jobs
                         // launch entry workflow
                         if ( entryWorkflowType.HasValue )
                         {
-                            var headOfHouse = family.Members.OrderBy( m => m.GroupRole.Order ).ThenBy( m => m.Person.Gender ).FirstOrDefault().Person;
-                            LaunchWorkflow( entryWorkflowType.Value, headOfHouse );
+                            LaunchWorkflow( entryWorkflowType.Value, family );
                         }
                     }
                 }
@@ -194,19 +192,42 @@ namespace Rock.Jobs
             rockContext.Database.ExecuteSqlCommand( "spCrm_FamilyAnalyticsAttendance" );
         }
 
-        private void LaunchWorkflow(Guid workflowTypeGuid, Person headOfHouse )
+        /// <summary>
+        /// Launches the workflow.
+        /// </summary>
+        /// <param name="workflowTypeGuid">The workflow type unique identifier.</param>
+        /// <param name="family">The family.</param>
+        private void LaunchWorkflow( Guid workflowTypeGuid, Group family )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var workflowTypeService = new WorkflowTypeService( rockContext );
-                var workflowType = workflowTypeService.Get( workflowTypeGuid );
-                if ( workflowType != null )
-                {
-                    var workflow = Rock.Model.Workflow.Activate( workflowType, "Workflow Name" );
-                    workflow.SetAttributeValue( "FromPhone", "" );
+            int adultRoleId = GroupTypeCache.Read( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Roles.Where(r => r.Guid == SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid()).FirstOrDefault().Id;
 
-                    //List<string> workflowErrors;
-                    //var processed = new Rock.Model.WorkflowService( rockContext ).Process( workflow, out workflowErrors );
+            var headOfHouse = family.Members.Where( m => m.GroupRoleId == adultRoleId ).OrderBy( m => m.Person.Gender ).FirstOrDefault();
+
+            // don't launch a workflow if no adult is present in the family
+            if ( headOfHouse != null && headOfHouse.Person != null && headOfHouse.Person.PrimaryAlias != null ) {
+                var spouse = family.Members.Where( m => m.GroupRoleId == adultRoleId && m.PersonId != headOfHouse.Person.Id ).FirstOrDefault();
+
+                using ( var rockContext = new RockContext() )
+                {
+                    var workflowTypeService = new WorkflowTypeService( rockContext );
+                    var workflowType = workflowTypeService.Get( workflowTypeGuid );
+                    if ( workflowType != null )
+                    {
+                        var workflowService = new WorkflowService( rockContext );
+                        var workflow = Rock.Model.Workflow.Activate( workflowType, headOfHouse.Person.FullName, rockContext );
+                        workflowService.Add( workflow );
+                        rockContext.SaveChanges();
+
+                        workflow.SetAttributeValue( "Family", family.Guid );
+                        workflow.SetAttributeValue( "HeadOfHouse", headOfHouse.Person.PrimaryAlias.Guid );
+
+                        if ( spouse != null && spouse.Person != null && spouse.Person.PrimaryAlias != null )
+                        {
+                            workflow.SetAttributeValue( "Spouse", spouse.Person.PrimaryAlias.Guid );
+                        }
+
+                        workflow.SaveAttributeValues();
+                    }
                 }
             }
         }
