@@ -121,6 +121,7 @@ namespace RockWeb.Blocks.Core
                 schedules.AddRange( new ScheduleService( new RockContext() ).Queryable()
                     .Where( a => selectedScheduleList.Contains( a.Guid ) )
                     .Select( a => new ScheduleItem { Name = a.Name, Id = a.Id } )
+                    .OrderBy( s => s.Name )
                     .ToList()
                 );
             }
@@ -147,7 +148,7 @@ namespace RockWeb.Blocks.Core
                 schedules.Insert( 0, blankCampus );
             }
 
-            rptSchedules.DataSource = schedules.OrderBy( s => s.Name ).ToList();
+            rptSchedules.DataSource = schedules;
             rptSchedules.DataBind();
         }
 
