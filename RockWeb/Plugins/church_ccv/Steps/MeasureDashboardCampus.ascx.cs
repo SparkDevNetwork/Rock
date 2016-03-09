@@ -41,12 +41,14 @@ namespace RockWeb.Plugins.church_ccv.Steps
     [DisplayName( "Measure Dashboard Campus" )]
     [Category( "CCV > Steps" )]
     [Description( "A block to show a dasboard of measure for the campus." )]
-
+    [IntegerField("Comparison Range", "The number of weeks back to use as a comparison.", order: 0)]
+    [TextField("Comparison Label", "The label text to describe the comparison range.", order: 1)]
+    [TextField("Comparison Line Color", "The color of the comparison line. (examples: red or '#ff0000')", false, order: 2)]
     public partial class MeasureDashboardCampus : Rock.Web.UI.RockBlock
     {
         #region Fields
 
-        // used for private variables
+        public string _compareColor = "red";
 
         #endregion
 
@@ -83,8 +85,12 @@ namespace RockWeb.Plugins.church_ccv.Steps
 
             if ( !Page.IsPostBack )
             {
-                // added for your convenience
                 cpCampus.Campuses = CampusCache.All();
+
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "ComparisonLineColor" ) ) )
+                {
+                    _compareColor = GetAttributeValue( "ComparisonLineColor" );
+                }
 
                 if ( string.IsNullOrWhiteSpace(Request["MeasureId"]) )
                 {
@@ -102,6 +108,11 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 if ( !string.IsNullOrWhiteSpace( Request["CompareTo"] ) )
                 {
                     tglCompareTo.Checked = Request["CompareTo"].ToString().AsBoolean();
+                }
+
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "ComparisonLabel" ) ) )
+                {
+                    lComparisonLegend.Text = string.Format("<div class='text-center margin-t-md'><span style='border-right: 1px solid {0}; height: 5px; margin-right: 8px;'></span> <small>{1}</small></div>", _compareColor, GetAttributeValue( "ComparisonLabel" ));
                 }
             }
         }
@@ -167,6 +178,9 @@ namespace RockWeb.Plugins.church_ccv.Steps
 
                 if (latestMeasureDate != null )
                 {
+                    int comparisonRangeInWeeks = GetAttributeValue( "ComparisonRange" ).AsInteger();
+                    var historicalMeasureDate = latestMeasureDate.Value.AddDays( comparisonRangeInWeeks * 7 * -1 );
+
                     if ( cpCampus.SelectedCampusId == null )
                     {
                         lCampusTitle.Text = "All Campuses ";
@@ -179,7 +193,8 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     hlDate.Text = latestMeasureDate.Value.ToShortDateString();
 
                     List<MeasureSummary> latestMeasures = null;
-                    
+                    List<MeasureSummary> historicalMeasures = null;
+
                     if ( tglCompareTo.Checked ) {
                         latestMeasures = stepMeasureValueService.Queryable( "StepMeasure" )
                             .Where( m =>
@@ -199,6 +214,22 @@ namespace RockWeb.Plugins.church_ccv.Steps
                                 MeasureCompareValue = m.ActiveAdults,
                                 CampusId = m.CampusId,
                                 MeasureColor = m.StepMeasure.Color
+                            } )
+                            .ToList();
+
+                        historicalMeasures = stepMeasureValueService.Queryable( "StepMeasure" )
+                            .Where( m =>
+                                    m.SundayDate == historicalMeasureDate
+                                    && m.StepMeasure.IsActive == true
+                                    && m.PastorPersonAliasId == null
+                                    && m.ActiveAdults != null )
+                            .OrderBy( m => m.StepMeasure.Order )
+                            .Select( m => new MeasureSummary
+                            {
+                                MeasureId = m.StepMeasureId,
+                                HistoricalValue = m.Value,
+                                HistoricalCompareValue = m.ActiveAdults,
+                                CampusId = m.CampusId
                             } )
                             .ToList();
                     } else
@@ -223,12 +254,48 @@ namespace RockWeb.Plugins.church_ccv.Steps
                                 MeasureColor = m.StepMeasure.Color
                             } )
                             .ToList();
+
+                        historicalMeasures = stepMeasureValueService.Queryable( "StepMeasure" )
+                            .Where( m =>
+                                    m.SundayDate == historicalMeasureDate
+                                    && m.StepMeasure.IsActive == true
+                                    && m.PastorPersonAliasId == null
+                                    && m.WeekendAttendance != null )
+                            .OrderBy( m => m.StepMeasure.Order )
+                            .Select( m => new MeasureSummary
+                            {
+                                MeasureId = m.StepMeasureId,
+                                HistoricalValue = m.Value,
+                                HistoricalCompareValue = m.WeekendAttendance,
+                                CampusId = m.CampusId
+                            } )
+                            .ToList();
                     }
+
+                    // merge latest values with historical values
+                    var combinedValues = latestMeasures.GroupJoin( historicalMeasures,
+                                    l => new { l.MeasureId, l.CampusId },
+                                    h => new { h.MeasureId, h.CampusId },
+                                    ( l, h ) => new MeasureSummary
+                                    {
+                                        MeasureId = l.MeasureId,
+                                        Title = l.Title,
+                                        Description = l.Description,
+                                        IconCssClass = l.IconCssClass,
+                                        IsTbd = l.IsTbd,
+                                        HistoricalValue = h.FirstOrDefault() != null ? h.FirstOrDefault().HistoricalValue : null,
+                                        HistoricalCompareValue = h.FirstOrDefault() != null ? h.FirstOrDefault().HistoricalCompareValue : null,
+                                        CampusId = l.CampusId,
+                                        MeasureColor = l.MeasureColor,
+                                        Campus = l.Campus,
+                                        MeasureCompareValue = l.MeasureCompareValue,
+                                        MeasureValue = l.MeasureValue
+                                    } ).ToList();
 
                     // rollup values if all campuses are selected
                     if (cpCampus.SelectedCampusId == null )
                     {
-                        latestMeasures = latestMeasures
+                        combinedValues = combinedValues
                                             .GroupBy( m => new { m.MeasureId, m.Title, m.Description, m.IconCssClass, m.IsTbd, m.MeasureColor } )
                                             .Select( m => new MeasureSummary
                                                 {
@@ -239,16 +306,18 @@ namespace RockWeb.Plugins.church_ccv.Steps
                                                     IsTbd = m.Key.IsTbd,
                                                     MeasureColor = m.Key.MeasureColor,
                                                     MeasureValue = m.Sum(s => s.MeasureValue),
-                                                    MeasureCompareValue = m.Sum(s => s.MeasureCompareValue)
+                                                    MeasureCompareValue = m.Sum(s => s.MeasureCompareValue),
+                                                    HistoricalValue = m.Sum( s => s.HistoricalValue),
+                                                    HistoricalCompareValue = m.Sum(s => s.HistoricalCompareValue)
                                                 } )
                                             .ToList();
                     } else
                     {
-                        latestMeasures = latestMeasures.Where( m => m.CampusId == cpCampus.SelectedCampusId ).ToList();
+                        combinedValues = combinedValues.Where( m => m.CampusId == cpCampus.SelectedCampusId ).ToList();
                     }
 
 
-                    rptCampusMeasures.DataSource = latestMeasures;
+                    rptCampusMeasures.DataSource = combinedValues;
                     rptCampusMeasures.DataBind();
                 }
             }
@@ -261,14 +330,18 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 StepMeasureValueService stepMeasureValueService = new StepMeasureValueService( rockContext );
 
                 var latestMeasureDate = stepMeasureValueService.Queryable().Max( m => m.SundayDate );
-
+                
                 if ( latestMeasureDate != null )
                 {
+                    int comparisonRangeInWeeks = GetAttributeValue( "ComparisonRange").AsInteger();
+                    var historicalMeasureDate = latestMeasureDate.Value.AddDays( comparisonRangeInWeeks * 7 * -1);
+
                     hlDate.Text = latestMeasureDate.Value.ToShortDateString();
 
                     int measureId = Request["MeasureId"].AsInteger();
 
                     List<MeasureSummary> latestMeasures = null;
+                    List<MeasureSummary> historicalMeasures = null;
 
                     if ( tglCompareTo.Checked )
                     {
@@ -292,6 +365,23 @@ namespace RockWeb.Plugins.church_ccv.Steps
                                 CampusId = m.CampusId,
                                 MeasureColor = m.StepMeasure.Color,
                                 Campus = m.Campus.Name
+                            } )
+                            .ToList();
+
+                        historicalMeasures = stepMeasureValueService.Queryable( "StepMeasure" )
+                            .Where( m =>
+                                    m.SundayDate == historicalMeasureDate
+                                    && m.StepMeasure.IsActive == true
+                                    && m.PastorPersonAliasId == null
+                                    && m.ActiveAdults != null
+                                    && m.StepMeasureId == measureId )
+                            .OrderBy( m => m.StepMeasure.Order )
+                            .Select( m => new MeasureSummary
+                            {
+                                MeasureId = m.StepMeasureId,
+                                HistoricalValue = m.Value,
+                                HistoricalCompareValue = m.ActiveAdults,
+                                CampusId = m.CampusId,
                             } )
                             .ToList();
                     }
@@ -319,20 +409,58 @@ namespace RockWeb.Plugins.church_ccv.Steps
                                 Campus = m.Campus.Name
                             } )
                             .ToList();
+
+                        historicalMeasures = stepMeasureValueService.Queryable( "StepMeasure" )
+                            .Where( m =>
+                                    m.SundayDate == historicalMeasureDate
+                                    && m.StepMeasure.IsActive == true
+                                    && m.PastorPersonAliasId == null
+                                    && m.WeekendAttendance != null
+                                    && m.StepMeasureId == measureId )
+                            .OrderBy( m => m.StepMeasure.Order )
+                            .Select( m => new MeasureSummary
+                            {
+                                MeasureId = m.StepMeasureId,
+                                HistoricalValue = m.Value,
+                                HistoricalCompareValue = m.WeekendAttendance,
+                                CampusId = m.CampusId,
+                            } )
+                            .ToList();
                     }
 
-                    lMeasureTitle.Text = latestMeasures.FirstOrDefault().Title;
-                    lMeasureDescription.Text = latestMeasures.FirstOrDefault().Description;
-                    lMeasureIcon.Text = string.Format( "<i class='{0}' style='color: {1};'></i>", latestMeasures.FirstOrDefault().IconCssClass, latestMeasures.FirstOrDefault().MeasureColor );
+                    // merge latest values with historical values
+                    var combinedValues = latestMeasures.GroupJoin( historicalMeasures,
+                                    l => new { l.MeasureId, l.CampusId },
+                                    h => new { h.MeasureId, h.CampusId },
+                                    ( l, h ) => new MeasureSummary {
+                                        MeasureId = l.MeasureId,
+                                        Title = l.Title,
+                                        Description = l.Description,
+                                        IconCssClass = l.IconCssClass,
+                                        IsTbd = l.IsTbd,
+                                        HistoricalValue = h.FirstOrDefault() != null ? h.FirstOrDefault().HistoricalValue : null,
+                                        HistoricalCompareValue = h.FirstOrDefault() != null ? h.FirstOrDefault().HistoricalCompareValue : null,
+                                        CampusId = l.CampusId,
+                                        MeasureColor = l.MeasureColor,
+                                        Campus = l.Campus,
+                                        MeasureCompareValue = l.MeasureCompareValue,
+                                        MeasureValue = l.MeasureValue
+                                    } ).ToList();
 
-                    lMeasureCampusSumValue.Text = string.Format( "<div class='value-tip' data-toggle='tooltip' data-placement='top' title='{0:#,0} individuals have taken this step'>{0:#,0}</div>", latestMeasures.Sum( m => m.MeasureValue ));
-                    lMeasureBackgroundColor.Text = latestMeasures.FirstOrDefault().MeasureColorBackground;
-                    lMeasureBarPercent.Text = latestMeasures.Average( m => m.Percentage ).ToString();
-                    int measurePercent = Convert.ToInt16(Math.Round( latestMeasures.Average( m => m.Percentage ) ));
+                    lMeasureTitle.Text = combinedValues.FirstOrDefault().Title;
+                    lMeasureDescription.Text = combinedValues.FirstOrDefault().Description;
+                    lMeasureIcon.Text = string.Format( "<i class='{0}' style='color: {1};'></i>", combinedValues.FirstOrDefault().IconCssClass, combinedValues.FirstOrDefault().MeasureColor );
+
+                    lMeasureCampusSumValue.Text = string.Format( "<div class='value-tip' data-toggle='tooltip' data-placement='top' title='{0:#,0} individuals have taken this step'>{0:#,0}</div>", combinedValues.Sum( m => m.MeasureValue ));
+                    lMeasureBackgroundColor.Text = combinedValues.FirstOrDefault().MeasureColorBackground;
+                    lMeasureBarPercent.Text = combinedValues.Average( m => m.Percentage ).ToString();
+                    int measurePercent = Convert.ToInt16(Math.Round( combinedValues.Average( m => m.Percentage ) ));
                     lMeasureBarTextPercent.Text = measurePercent.ToString();
-                    lMeasureColor.Text = latestMeasures.FirstOrDefault().MeasureColor;
+                    lMeasureColor.Text = combinedValues.FirstOrDefault().MeasureColor;
+                    int historicalPercent = Convert.ToInt16( Math.Round( combinedValues.Average( m => m.HistoricalPercentage ) ) );
+                    lMeasureBarHistoricalPercent.Text = historicalPercent.ToString();
 
-                    rptMeasuresByCampus.DataSource = latestMeasures;
+                    rptMeasuresByCampus.DataSource = combinedValues;
                     rptMeasuresByCampus.DataBind();
                 }
             }
@@ -401,6 +529,20 @@ namespace RockWeb.Plugins.church_ccv.Steps
             /// </value>
             public int? MeasureCompareValue { get; set; }
             /// <summary>
+            /// Gets or sets the historical value.
+            /// </summary>
+            /// <value>
+            /// The historical value.
+            /// </value>
+            public int? HistoricalValue { get; set; }
+            /// <summary>
+            /// Gets or sets the historical compare value.
+            /// </summary>
+            /// <value>
+            /// The historical compare value.
+            /// </value>
+            public int? HistoricalCompareValue { get; set; }
+            /// <summary>
             /// Gets or sets the campus identifier.
             /// </summary>
             /// <value>
@@ -428,6 +570,26 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     if ( this.MeasureCompareValue.HasValue )
                     {
                         return (this.MeasureValue * 100) / this.MeasureCompareValue.Value;
+                    }
+                    else
+                    {
+                        return 0;
+                    }
+                }
+            }
+            /// <summary>
+            /// Gets the historical percentage.
+            /// </summary>
+            /// <value>
+            /// The historical percentage.
+            /// </value>
+            public int HistoricalPercentage
+            {
+                get
+                {
+                    if ( this.HistoricalCompareValue.HasValue && this.HistoricalValue.HasValue )
+                    {
+                        return (this.HistoricalValue.Value * 100) / this.HistoricalCompareValue.Value;
                     }
                     else
                     {

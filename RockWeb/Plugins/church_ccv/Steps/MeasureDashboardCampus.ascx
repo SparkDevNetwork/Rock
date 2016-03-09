@@ -47,6 +47,12 @@
         font-size: 18px;
         padding-top: 9px;
     }
+
+    .progress-compare {
+        border-right: 1px solid <%=_compareColor %>;
+        height: 40px;
+        position: absolute;
+    }
 </style>
 
 <script>
@@ -100,6 +106,7 @@
                                             </div>
                                             <%# (bool)Eval("IsTbd") ? "<div class='measure-tbd'>TBD</div>" : ""%>
                                             <div class="progress measure-bar <%# (int)Eval("Percentage") > 100 ? "percent-over-100": "" %>" style="background-color: <%# Eval("MeasureColorBackground") %>; ">
+                                                  <div class="progress-compare" style="width: <%# Eval("HistoricalPercentage") %>%; <%# (int)Eval("HistoricalPercentage") == 0 ? "display: none;": "" %>" ></div>
                                                   <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: <%# Eval("Percentage") %>%; background-color: <%# Eval("MeasureColor") %>;">
                                                     <%# Eval("Percentage") %>%
                                                   </div>
@@ -129,6 +136,7 @@
                                     </div>
                                 </div>
                                 <div class="progress measure-bar <%# (int)Eval("Percentage") > 100 ? "percent-over-100": "" %>" style='background-color: <asp:Literal id="lMeasureBackgroundColor" runat="server" />'>
+                                    <div class="progress-compare" style="width: <asp:Literal id="lMeasureBarHistoricalPercent" runat="server" />%" ></div>
                                     <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style='width: <asp:Literal id="lMeasureBarPercent" runat="server" />%; background-color: <asp:Literal id="lMeasureColor" runat="server" />;'>
                                         <asp:Literal id="lMeasureBarTextPercent" runat="server" />%
                                     </div>
@@ -151,6 +159,7 @@
                                                 </div>
                                             </div>
                                             <div class="progress measure-bar <%# (int)Eval("Percentage") > 100 ? "percent-over-100": "" %>" style="background-color: <%# Eval("MeasureColorBackground") %>; ">
+                                                  <div class="progress-compare" style="width: <%# Eval("HistoricalPercentage") %>%; <%# Eval("HistoricalPercentage") %>%; <%# (int)Eval("HistoricalPercentage") == 0 ? "display: none;": "" %>" ></div>
                                                   <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: <%# Eval("Percentage") %>%; background-color: <%# Eval("MeasureColor") %>;">
                                                     <%# Eval("Percentage") %>%
                                                   </div>
@@ -163,6 +172,9 @@
 
                     <asp:LinkButton ID="btnBackToCampus" runat="server" CssClass="btn btn-default" OnClick="btnBackToCampus_Click"><i class="fa fa-chevron-left"></i> Campus View</asp:LinkButton>
                 </asp:Panel>
+
+                <asp:Literal ID="lComparisonLegend" runat="server" />
+
             </div>
         
         </asp:Panel>
