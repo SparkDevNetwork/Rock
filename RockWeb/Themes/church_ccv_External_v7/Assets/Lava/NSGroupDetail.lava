@@ -19,54 +19,72 @@ REQUIRED VARIABLES
 
   {{ Group.Name | SetPageTitle }}
 
+  <style>
+    .img-popover {
+      display: block;
+      cursor: pointer;
+    }
+    .badge-group.badge-group-steps {
+      display: block;
+      opacity: .75;
+    }
+    .badge-group.badge-group-steps .badge {
+      font-size: 10px;
+      width: 15px;
+      height: 15px;
+    }
+    .badge-group.badge-group-steps .badge.step-nottaken {
+      background-color: inherit;
+      opacity: .4;
+      color: #939393;
+    }
+  </style>
 
-    <div class="thumbnail">
-      <!-- <div id="groupMap" style="height: 200px;">
-      </div> -->
-      <div class="caption">
-        <div class="margin-t-md pull-right">
-          {% if LinkedPages.CommunicationPage != '' and AllowedActions.Edit == true %}
-            <a href="#" onclick="{{ '' | Postback:'SendCommunication' }}" class="btn btn-default btn-xs">
-              <i class="fa fa-envelope-o"></i> Email Roster
-            </a>
+  <div class="thumbnail">
+    <div class="caption">
+      <div class="margin-t-md pull-right">
+        {% if LinkedPages.CommunicationPage != '' and AllowedActions.Edit == true %}
+          <a href="#" onclick="{{ '' | Postback:'SendCommunication' }}" class="btn btn-default btn-xs">
+            <i class="fa fa-envelope-o"></i> Email Roster
+          </a>
+        {% endif %}
+        {% if AllowedActions.Edit == true %}
+          <a class="btn btn-default btn-xs" href="#" onclick="{{ Group.Id | Postback:'EditGroup' }}"><i class="fa fa-pencil"></i> Edit</a>
+        {% endif %}
+      </div>
+      <h1 class="margin-t-sm">{{ Group.Name }}</h1>
+      <div class="row">
+        <div class="col-md-5">
+          {% if Group.Schedule.FriendlyScheduleText %}
+            <h4 class="no-caps margin-t-none">Meets every {{Group.Schedule.FriendlyScheduleText}}</h4>
           {% endif %}
-          {% if AllowedActions.Edit == true %}
-            <a class="btn btn-default btn-xs" href="#" onclick="{{ Group.Id | Postback:'EditGroup' }}"><i class="fa fa-pencil"></i> Edit</a>
-          {% endif %}
+          <p>{{ Group.Description }}</p>
         </div>
-        <h1 class="margin-t-sm">{{ Group.Name }}</h1>
-        <div class="row">
-          <div class="col-md-5">
-            {% if Group.Schedule.FriendlyScheduleText %}
-              <h4 class="no-caps margin-t-none">Meets every {{Group.Schedule.FriendlyScheduleText}}</h4>
-            {% endif %}
-            <p>{{ Group.Description }}</p>
-          </div>
-          <div class="col-md-3">
-            <strong>Leaders:</strong>
-            <ul class="unstyled">
-              {% for member in Group.Members %}
+        <div class="col-md-3">
+          <strong>Leaders:</strong>
+          <ul class="unstyled">
+            {% for member in Group.Members %}
 
-              {% if member.GroupRole.IsLeader %}
-              <li>
-              {{ member.Person.FullName }} <small>({{ member.GroupRole.Name}})</small>
-              </li>
-              {% endif %}
-              {% endfor %}
-            </ul>
-          </div>
-          <div class="col-md-3">
-            <p>
-            {% for attribute in Group.AttributeValues %}
-              {% unless attribute.AttributeName == "Meeting Day" or attribute.AttributeName == "Meeting Time" or attribute.ValueFormatted == empty %}
-              <strong>{{ attribute.AttributeName }}:</strong> {{ attribute.ValueFormatted }} <br />
-              {% endunless %}
+            {% if member.GroupRole.IsLeader %}
+            <li>
+            {{ member.Person.FullName }} <small>({{ member.GroupRole.Name}})</small>
+            </li>
+            {% endif %}
             {% endfor %}
-            </p>
-          </div>
+          </ul>
+        </div>
+        <div class="col-md-3">
+          <p>
+          {% for attribute in Group.AttributeValues %}
+            {% unless attribute.AttributeName == "Meeting Day" or attribute.AttributeName == "Meeting Time" or attribute.ValueFormatted == empty %}
+            <strong>{{ attribute.AttributeName }}:</strong> {{ attribute.ValueFormatted }} <br />
+            {% endunless %}
+          {% endfor %}
+          </p>
         </div>
       </div>
     </div>
+  </div>
 
   {% if LinkedPages.RosterPage != '' and  (LinkedPages.AttendancePage != '' or Group.GroupType.TakesAttendance == 'False') %}
     <ul class="nav nav-tabs margin-v-lg">
@@ -215,32 +233,19 @@ REQUIRED VARIABLES
           <i class="fa fa-plus"></i> Add Member
         </a>
       {% endif %} -->
-		<a href="/page/996" class="btn btn-default btn-xs">
-			<i class="fa fa-plus"></i> Request More Clients
-		</a>
+      <a href="/page/996" class="btn btn-default btn-xs">
+        <i class="fa fa-plus"></i> Request More Clients
+      </a>
     </div>
     </p>
   {% endif %}
 
-  {% comment %} The ~~ relative path doesn't seem to work with this block {% endcomment %}
-  <script src="/Themes/church_ccv_External_v7/Scripts/_map.js"></script>
+  <script type="text/javascript">
+    CURRENT_GROUP_GUID = '{{ Group.Guid }}'
+  </script>
+  <script src="/Themes/church_ccv_External_v7/Scripts/pages/min/toolbox.min.js"></script>
 
   <script>
-    // var groupMap;
-    // Sys.Application.add_load(function(){
-    //   var mapHolder = document.getElementById('groupMap')
-    //   if (mapHolder) {
-    //     var mapPoint = [{
-    //       title: "{{ Group.Name }}",
-    //       lat: {{ groupgeo[0] }},
-    //       lng: {{ groupgeo[1] }}
-    //     }]
-    //     groupMap = new CCV.baseMap(mapHolder, mapPoint)
-    //     groupMap.useScrollZoom = false
-    //     groupMap.draw()
-    //   }
-    // })
-
     $(function () {
       $('[data-toggle="popover"]').popover({
         content: function() {
@@ -250,13 +255,6 @@ REQUIRED VARIABLES
       })
     })
   </script>
-
-  <style>
-    .img-popover {
-      display: block;
-      cursor: pointer;
-    }
-  </style>
 
 {% else %}
   {% if Group.Id %}
