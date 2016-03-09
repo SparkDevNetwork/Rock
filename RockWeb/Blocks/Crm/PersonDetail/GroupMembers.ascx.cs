@@ -330,7 +330,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         groups.Add( groupService.Get( group.Id ) );
                     }
                     
-
                     rptrGroups.DataSource = groups;
                     rptrGroups.DataBind();
                 }
@@ -349,13 +348,24 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         }
 
         /// <summary>
-        /// Formats the person link.
+        /// Formats the person link...keeping the subpage route on the person link.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
-        /// <returns></returns>
+        /// <returns>a link to the profile page of the given person</returns>
         protected string FormatPersonLink( string personId )
         {
-            return ResolveRockUrl( string.Format( "~/Person/{0}", personId ) );
+            // Look for a subpage route (anything after the "/Person/{id}" part of the URL)
+            var subpageRoute = Request.Url.AbsolutePath.Replace( ResolveRockUrl( string.Format("~/Person/{0}", Person.Id ) ), "" );
+
+            // If the path is different, then append it onto the link
+            if ( subpageRoute != Request.Url.AbsolutePath )
+            {
+                return ResolveRockUrl( string.Format( "~/Person/{0}{1}", personId, subpageRoute ) );
+            }
+            else
+            {
+                return ResolveRockUrl( string.Format( "~/Person/{0}", personId ) );
+            }
         }
 
         /// <summary>
