@@ -21,7 +21,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-
+using System.Web.Http.OData;
 using Rock;
 using Rock.Data;
 using Rock.Model;
@@ -31,7 +31,7 @@ using Rock.Security;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class FinancialTransactionsController
     {
@@ -68,7 +68,7 @@ namespace Rock.Rest.Controllers
         {
             if ( !value.FinancialPaymentDetailId.HasValue )
             {
-                //// manually enforce that FinancialPaymentDetailId has a value so that Pre-V4 check 
+                //// manually enforce that FinancialPaymentDetailId has a value so that Pre-V4 check
                 //// scanners (that don't know about the new FinancialPaymentDetailId) can't post
                 return ControllerContext.Request.CreateErrorResponse(
                     HttpStatusCode.BadRequest,
@@ -166,14 +166,14 @@ namespace Rock.Rest.Controllers
                             var groupId = row["GroupId"];
                             if ( personId != null && personId is int )
                             {
-                                if ( !personIds.Contains( (int)personId ) )
+                                if ( !personIds.Contains( ( int ) personId ) )
                                 {
                                     dataTable.Rows.Remove( row );
                                 }
                             }
                             else if ( groupId != null && groupId is int )
                             {
-                                if ( !groupsIds.Contains( (int)groupId ) )
+                                if ( !groupsIds.Contains( ( int ) groupId ) )
                                 {
                                     dataTable.Rows.Remove( row );
                                 }
@@ -235,7 +235,7 @@ namespace Rock.Rest.Controllers
             else
             {
                 // get transactions for all the persons in the specified group that have specified that group as their GivingGroup
-                GroupMemberService groupMemberService = new GroupMemberService( (RockContext)Service.Context );
+                GroupMemberService groupMemberService = new GroupMemberService( ( RockContext ) Service.Context );
                 var personIdList = groupMemberService.GetByGroupId( groupId ).Where( a => a.Person.GivingGroupId == groupId ).Select( s => s.PersonId ).ToList();
 
                 qry = qry.Where( a => personIdList.Contains( a.AuthorizedPersonAlias.PersonId ) );
@@ -317,7 +317,33 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// 
+        /// Gets the contribution transactions.
+        /// </summary>
+        /// <param name="groupId">The group unique identifier.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        [Authenticate, Secured]
+        [HttpGet]
+        [EnableQuery]
+        [System.Web.Http.Route( "api/FinancialTransactions/GetTransactionsForGivingGroup/{personId}" )]
+        public IQueryable<FinancialTransaction> GetTransactionsForGivingGroup( int personId )
+        {
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+            var person = personService.Get( personId );
+
+            if ( person == null )
+            {
+                var response = new HttpResponseMessage( HttpStatusCode.BadRequest );
+                response.Content = new StringContent( "Person was not found" );
+                throw new HttpResponseException( response );
+            }
+
+            return Get().Where( t => t.AuthorizedPersonAlias.Person.GivingId == person.GivingId );
+        }
+
+        /// <summary>
+        ///
         /// </summary>
         public class ContributionStatementOptions
         {
