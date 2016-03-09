@@ -39,17 +39,26 @@ SELECT @gradeTransitionDate = CASE WHEN @today < @gradeTransitionDate THEN CONCA
 DECLARE @msg nvarchar(max) = 'Updating graduation dates for attendances past ' + @gradeTransitionDate
 RAISERROR ( @msg, 0, 0 ) WITH NOWAIT
 
-WITH LastCheckin AS (
+WITH RecentCheckins AS (
 	SELECT
-		MAX(a.Id) AS AttendanceId
+		a.*
 	FROM
 		Attendance a
 		JOIN [Group] g ON a.GroupId = g.Id
 	WHERE
 		a.StartDateTime > @gradeTransitionDate
 		AND (g.ParentGroupId = @elementaryGroupId OR g.ParentGroupId = @fuseGroupId)
-	GROUP BY
-		a.PersonAliasId
+		AND g.Name <> 'Base Camp'
+), LastCheckin AS (
+	SELECT 
+		t1.* 
+	FROM 
+		RecentCheckins t1
+		JOIN (
+			SELECT PersonAliasId, MAX(StartDateTime) AS MaxDate
+			FROM RecentCheckins
+			GROUP BY PersonAliasId
+		) t2 ON t1.PersonAliasId = t2.PersonAliasId AND t1.StartDateTime = t2.MaxDate
 )
 UPDATE
 	p
@@ -57,7 +66,7 @@ SET
 	p.GraduationYear = @currentGradYear + CONVERT(INT, dv.Value)
 FROM 
 	LastCheckin lci
-	JOIN Attendance a ON a.Id = lci.AttendanceId
+	JOIN Attendance a ON a.Id = lci.Id
 	JOIN PersonAlias pa ON a.PersonAliasId = pa.Id
 	JOIN Person p ON pa.PersonId = p.Id
 	JOIN [Group] g ON a.GroupId = g.Id
