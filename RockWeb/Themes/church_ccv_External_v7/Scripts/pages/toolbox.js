@@ -10,6 +10,7 @@
 // @prepros-prepend "../Vendor/handlebars-v4.0.5.js"
 // @prepros-prepend "../Vendor/moment.js"
 // @prepros-prepend "../_map.js"
+// @prepros-prepend "../badge-bar-compiled.js"
 
   window.CCV = window.CCV || {}
 
@@ -57,8 +58,10 @@ Handlebars.registerHelper('status', function(conditional, options) {
 
 CCV.badge = CCV.badge || {}
 
-CCV.badge.source = $('#badge-template').html()
-CCV.badge.template = Handlebars.compile(CCV.badge.source)
+// CCV.badge.source = $('#badge-template').html()
+// CCV.badge.template = Handlebars.compile(CCV.badge.source)
+
+CCV.badge.template = Handlebars.templates['badge-bar']
 
 CCV.renderBadges = function(data) {
   for (var key in data) {
