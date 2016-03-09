@@ -192,95 +192,106 @@ I'm going to Fun Event at {{ item.Name }}. Would you like to join me & some frie
         /// </summary>
         public void ShowContent()
         {
-            Dictionary<string, object> mergeFields;
-            if ( this.GetAttributeValue( "LoadGlobalAttributeMergeFields" ).AsBooleanOrNull() ?? true )
+            try
             {
-                mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            }
-            else
-            {
-                mergeFields = new Dictionary<string, object>();
-            }
-
-            var contextObjects = new Dictionary<string, object>();
-            foreach ( var contextEntityType in RockPage.GetContextEntityTypes() )
-            {
-                var contextEntity = RockPage.GetCurrentContext( contextEntityType );
-                if ( contextEntity != null && contextEntity is DotLiquid.ILiquidizable )
+                Dictionary<string, object> mergeFields;
+                if ( this.GetAttributeValue( "LoadGlobalAttributeMergeFields" ).AsBooleanOrNull() ?? true )
                 {
-                    var type = Type.GetType( contextEntityType.AssemblyName ?? contextEntityType.Name );
-                    if ( type != null )
-                    {
-                        contextObjects.Add( type.Name, contextEntity );
-                    }
-                }
-            }
-
-            if ( contextObjects.Any() )
-            {
-                mergeFields.Add( "Context", contextObjects );
-            }
-
-            mergeFields.Add( "PageParameter", PageParameters() );
-
-            if ( !string.IsNullOrEmpty( this.Request.UserAgent ) )
-            {
-                Parser uaParser = Parser.GetDefault();
-                ClientInfo client = uaParser.Parse( this.Request.UserAgent );
-                mergeFields.Add( "DeviceFamily", client.Device.Family );
-                mergeFields.Add( "OSFamily", client.OS.Family.ToLower() );
-            }
-
-            var cacheKey = this.GetAttributeValue( "CacheKey" ) ?? string.Empty;
-            cacheKey = string.Format( "InviteEntry:{0},CacheKey:{1}", this.BlockCache.Guid, cacheKey.ResolveMergeFields( mergeFields ) );
-
-            if ( _flushCache )
-            {
-                this.FlushCacheItem( cacheKey );
-                _flushCache = false;
-            }
-
-            var cachedContent = this.GetCacheItem( cacheKey ) as string;
-            if ( string.IsNullOrEmpty( cachedContent ) )
-            {
-                if ( CurrentPerson != null )
-                {
-                    mergeFields.Add( "CurrentPerson", CurrentPerson );
-                }
-
-                mergeFields.Add( "Campuses", CampusCache.All() );
-
-                var contentObjectJSON = this.GetAttributeValue( "ContentObject" );
-
-                var converter = new ExpandoObjectConverter();
-
-                var contentObject = JsonConvert.DeserializeObject<List<ExpandoObject>>( contentObjectJSON, converter );
-                mergeFields.Add( "ContentObject", contentObject );
-
-                var template = this.GetAttributeValue( "Template" ) ?? string.Empty;
-                var textTemplate = this.GetAttributeValue( "TextTemplate" ) ?? string.Empty;
-                var emailTemplate = this.GetAttributeValue( "EmailTemplate" ) ?? string.Empty;
-                template = template
-                    .Replace( "{{{{ EmailTemplate }}}}", emailTemplate )
-                    .Replace( "{{{{ TextTemplate }}}}", textTemplate );
-
-                if ( this.GetAttributeValue( "ShowDebug" ).AsBoolean() && this.IsUserAuthorized( Rock.Security.Authorization.EDIT ) )
-                {
-                    lContent.Text = mergeFields.lavaDebugInfo();
+                    mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
                 }
                 else
                 {
-                    lContent.Text = template.ResolveMergeFields( mergeFields );
-                    var cacheDuration = this.GetAttributeValue( "CacheDuration" ).AsInteger();
-                    if ( cacheDuration > 0 )
+                    mergeFields = new Dictionary<string, object>();
+                }
+
+                var contextObjects = new Dictionary<string, object>();
+                foreach ( var contextEntityType in RockPage.GetContextEntityTypes() )
+                {
+                    var contextEntity = RockPage.GetCurrentContext( contextEntityType );
+                    if ( contextEntity != null && contextEntity is DotLiquid.ILiquidizable )
                     {
-                        this.AddCacheItem( cacheKey, lContent.Text, cacheDuration );
+                        var type = Type.GetType( contextEntityType.AssemblyName ?? contextEntityType.Name );
+                        if ( type != null )
+                        {
+                            contextObjects.Add( type.Name, contextEntity );
+                        }
                     }
                 }
+
+                if ( contextObjects.Any() )
+                {
+                    mergeFields.Add( "Context", contextObjects );
+                }
+
+                mergeFields.Add( "PageParameter", PageParameters() );
+
+                if ( !string.IsNullOrEmpty( this.Request.UserAgent ) )
+                {
+                    Parser uaParser = Parser.GetDefault();
+                    ClientInfo client = uaParser.Parse( this.Request.UserAgent );
+                    mergeFields.Add( "DeviceFamily", client.Device.Family );
+                    mergeFields.Add( "OSFamily", client.OS.Family.ToLower() );
+                }
+
+                var cacheKey = this.GetAttributeValue( "CacheKey" ) ?? string.Empty;
+                cacheKey = string.Format( "InviteEntry:{0},CacheKey:{1}", this.BlockCache.Guid, cacheKey.ResolveMergeFields( mergeFields ) );
+
+                if ( _flushCache )
+                {
+                    this.FlushCacheItem( cacheKey );
+                    _flushCache = false;
+                }
+
+                var cachedContent = this.GetCacheItem( cacheKey ) as string;
+                if ( string.IsNullOrEmpty( cachedContent ) )
+                {
+                    if ( CurrentPerson != null )
+                    {
+                        mergeFields.Add( "CurrentPerson", CurrentPerson );
+                    }
+
+                    mergeFields.Add( "Campuses", CampusCache.All() );
+
+                    var contentObjectJSON = this.GetAttributeValue( "ContentObject" );
+
+                    if ( !string.IsNullOrEmpty( contentObjectJSON ) )
+                    {
+                        var converter = new ExpandoObjectConverter();
+
+                        var contentObject = JsonConvert.DeserializeObject<List<ExpandoObject>>( contentObjectJSON, converter );
+                        mergeFields.Add( "ContentObject", contentObject );
+                    }
+
+                    var template = this.GetAttributeValue( "Template" ) ?? string.Empty;
+                    var textTemplate = this.GetAttributeValue( "TextTemplate" ) ?? string.Empty;
+                    var emailTemplate = this.GetAttributeValue( "EmailTemplate" ) ?? string.Empty;
+                    template = template
+                        .Replace( "{{{{ EmailTemplate }}}}", emailTemplate )
+                        .Replace( "{{{{ TextTemplate }}}}", textTemplate );
+
+                    if ( this.GetAttributeValue( "ShowDebug" ).AsBoolean() && this.IsUserAuthorized( Rock.Security.Authorization.EDIT ) )
+                    {
+                        lContent.Text = mergeFields.lavaDebugInfo();
+                    }
+                    else
+                    {
+                        lContent.Text = template.ResolveMergeFields( mergeFields );
+                        var cacheDuration = this.GetAttributeValue( "CacheDuration" ).AsInteger();
+                        if ( cacheDuration > 0 )
+                        {
+                            this.AddCacheItem( cacheKey, lContent.Text, cacheDuration );
+                        }
+                    }
+                }
+                else
+                {
+                    lContent.Text = cachedContent;
+                }
             }
-            else
+            catch ( Exception ex )
             {
-                lContent.Text = cachedContent;
+                LogException( ex );
+                lContent.Text = string.Format( "<div class='alert alert-danger'>{0}</div>", ex.Message );
             }
         }
     }
