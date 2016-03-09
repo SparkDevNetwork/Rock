@@ -33,6 +33,7 @@ CREATE PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_NonAttendees]
 	, @IncludeNullCampusIds bit = 0
     , @IncludeParentsWithChild bit = 0
     , @IncludeChildrenWithParents bit = 0
+	WITH RECOMPILE
 
 AS
 

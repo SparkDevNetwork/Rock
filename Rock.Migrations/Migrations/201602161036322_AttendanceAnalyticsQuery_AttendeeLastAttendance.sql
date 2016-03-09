@@ -32,6 +32,7 @@ CREATE PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendanc
 	, @EndDate datetime = NULL
 	, @CampusIds varchar(max) = NULL
 	, @IncludeNullCampusIds bit = 0
+	WITH RECOMPILE
 
 AS
 
