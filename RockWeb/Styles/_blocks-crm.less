@@ -276,6 +276,24 @@
     color: #23a5c5;
 }
 
+.badge-era {
+    position: relative;
+
+    &:before {
+        font-family: FontAwesome;
+        content: "\f111";
+        color: @brand-success;
+        font-size: 45px;
+    }
+
+    span {
+        font-size: 16px;
+        position: absolute;
+        left: 11px;
+        top: 17px
+    }
+}
+
 .badge-icon {
     font-size: 45px;
 

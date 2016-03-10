@@ -349,6 +349,7 @@ namespace RockWeb.Blocks.Connection
                     connectionType.IconCssClass = tbIconCssClass.Text;
                     connectionType.EnableFutureFollowup = cbFutureFollowUp.Checked;
                     connectionType.EnableFullActivityList = cbFullActivityList.Checked;
+                    connectionType.RequiresPlacementGroupToConnect = cbRequiresPlacementGroup.Checked;
 
                     foreach ( var connectionActivityTypeState in ActivityTypesState )
                     {
@@ -1369,6 +1370,7 @@ namespace RockWeb.Blocks.Connection
             tbName.Text = connectionType.Name;
             tbDescription.Text = connectionType.Description;
             tbIconCssClass.Text = connectionType.IconCssClass;
+            cbRequiresPlacementGroup.Checked = connectionType.RequiresPlacementGroupToConnect;
             cbFullActivityList.Checked = connectionType.EnableFullActivityList;
             cbFutureFollowUp.Checked = connectionType.EnableFutureFollowup;
 
