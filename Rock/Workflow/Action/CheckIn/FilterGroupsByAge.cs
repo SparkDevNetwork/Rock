@@ -32,9 +32,8 @@ namespace Rock.Workflow.Action.CheckIn
     [Description( "Removes (or excludes) the groups for each selected family member that are not specific to their age." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Groups By Age" )]
-
     [BooleanField( "Remove", "Select 'Yes' if groups should be be removed.  Select 'No' if they should just be marked as excluded.", true, "", 0 )]
-    [BooleanField( "Age Required", "Select 'Yes' if groups with an age filter should be removed/excluded when person does not have an age.", true, "", 1)]
+    [BooleanField( "Age Required", "Select 'Yes' if groups with an age filter should be removed/excluded when person does not have an age.", true, "", 1 )]
     public class FilterGroupsByAge : CheckInActionComponent
     {
         /// <summary>
@@ -100,7 +99,9 @@ namespace Rock.Workflow.Action.CheckIn
                                             groupMinAgePrecision = minAgeValue.Length - decimalIndex - 1;
                                         }
 
-                                        personAgePrecise = Math.Round( Convert.ToDecimal( age ), groupMinAgePrecision, MidpointRounding.ToEven );
+                                        // converts to decimal and removes a step at the desired precision to prevent rounding up
+                                        decimal precisionStep = .5M / ( groupMinAgePrecision > 0 ? groupMinAgePrecision : 1 );
+                                        personAgePrecise = Math.Round( Convert.ToDecimal( age ) - precisionStep, groupMinAgePrecision );
                                     }
 
                                     if ( !age.HasValue || personAgePrecise < minAge )
@@ -134,7 +135,9 @@ namespace Rock.Workflow.Action.CheckIn
                                             groupMaxAgePrecision = maxAgeValue.Length - decimalIndex - 1;
                                         }
 
-                                        personAgePrecise = Math.Round( Convert.ToDecimal( age ), groupMaxAgePrecision, MidpointRounding.ToEven );
+                                        // converts to decimal and removes a step at the desired precision to prevent rounding up
+                                        decimal precisionStep = .5M / ( groupMaxAgePrecision > 0 ? groupMaxAgePrecision : 1 );
+                                        personAgePrecise = Math.Round( Convert.ToDecimal( age ) - precisionStep, groupMaxAgePrecision );
                                     }
 
                                     if ( !age.HasValue || personAgePrecise > maxAge )
