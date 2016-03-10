@@ -305,29 +305,63 @@ namespace Rock.Security.BackgroundCheck
                 }
 
                 XDocument xdoc = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), rootElement );
+                var requestDateTime = RockDateTime.Now;
 
                 XDocument xResult = PostToWebService( xdoc, GetAttributeValue("RequestURL") );
+                var responseDateTime = RockDateTime.Now;
+
+                int? personAliasId = person.PrimaryAliasId;
+                if ( personAliasId.HasValue )
+                {
+                    // Create a background check file
+                    using ( var newRockContext = new RockContext() )
+                    {
+                        var backgroundCheckService = new BackgroundCheckService( newRockContext );
+                        var backgroundCheck = backgroundCheckService.Queryable()
+                            .Where( c =>
+                                c.WorkflowId.HasValue &&
+                                c.WorkflowId.Value == workflow.Id )
+                            .FirstOrDefault();
+
+                        if ( backgroundCheck == null )
+                        {
+                            backgroundCheck = new Rock.Model.BackgroundCheck();
+                            backgroundCheck.PersonAliasId = personAliasId.Value;
+                            backgroundCheck.WorkflowId = workflow.Id;
+                        }
+
+                        backgroundCheck.RequestDate = RockDateTime.Now;
+                        backgroundCheck.ResponseXml = string.Format( @"
+Request XML ({0}): 
+------------------------ 
+{1}
+
+Response XML ({2}): 
+------------------------ 
+{3}
+
+", requestDateTime, xdoc.ToString(), responseDateTime, xResult.ToString() );
+                        new BackgroundCheckService( newRockContext ).Add( backgroundCheck );
+                        newRockContext.SaveChanges();
+                    }
+                }
 
                 if ( _HTTPStatusCode == HttpStatusCode.OK )
                 {
-                    int? personAliasId = person.PrimaryAliasId;
-                    if ( personAliasId.HasValue )
+                    var xOrderXML = xResult.Elements( "OrderXML" ).FirstOrDefault();
+                    if ( xOrderXML != null )
                     {
-                        // Create a background check file
-                        using ( var newRockContext = new RockContext() )
+                        var xErrors = xOrderXML.Elements( "Errors" ).FirstOrDefault();
+                        if ( xErrors != null )
                         {
-                            var backgroundCheck = new Rock.Model.BackgroundCheck();
-                            backgroundCheck.PersonAliasId = personAliasId.Value;
-                            backgroundCheck.WorkflowId = workflow.Id;
-                            backgroundCheck.RequestDate = RockDateTime.Now;
-                            new BackgroundCheckService( newRockContext ).Add( backgroundCheck );
-                            newRockContext.SaveChanges();
+                            errorMessages.AddRange( xErrors.Elements( "Message" ).Select( x => x.Value ) );
                         }
+                        return false;
                     }
 
                     if ( xResult.Root.Descendants().Count() > 0 )
                     {
-                        SaveResults( xResult, workflow, rockContext );
+                        SaveResults( xResult, workflow, rockContext, false );
                     }
 
                     return true;
@@ -445,8 +479,27 @@ namespace Rock.Security.BackgroundCheck
         /// <param name="xResult">The x result.</param>
         /// <param name="workflow">The workflow.</param>
         /// <param name="rockContext">The rock context.</param>
-        public static void SaveResults( XDocument xResult, Rock.Model.Workflow workflow, RockContext rockContext )
+        /// <param name="saveResponse">if set to <c>true</c> [save response].</param>
+        public static void SaveResults( XDocument xResult, Rock.Model.Workflow workflow, RockContext rockContext, bool saveResponse = true )
         {
+            var newRockContext = new RockContext();
+            var service = new BackgroundCheckService( newRockContext );
+            var backgroundCheck = service.Queryable()
+                .Where( c =>
+                    c.WorkflowId.HasValue &&
+                    c.WorkflowId.Value == workflow.Id )
+                .FirstOrDefault();
+
+            if ( backgroundCheck != null && saveResponse )
+            {
+                backgroundCheck.ResponseXml = backgroundCheck.ResponseXml + string.Format( @"
+Response XML ({0}): 
+------------------------ 
+{1}
+
+", RockDateTime.Now.ToString(), xResult.ToString() );
+            }
+
             var xOrderXML = xResult.Elements( "OrderXML" ).FirstOrDefault();
             if ( xOrderXML != null )
             {
@@ -519,41 +572,32 @@ namespace Rock.Security.BackgroundCheck
                             new Dictionary<string, string> { { "fieldtype", "ddl" }, { "values", "Pass,Fail,Review" } } );
 
                         // Update the background check file
-                        using ( var newRockContext = new RockContext() )
+                        if ( backgroundCheck != null )
                         {
-                            var service = new BackgroundCheckService( newRockContext );
-                            var backgroundCheck = service.Queryable()
-                                .Where( c =>
-                                    c.WorkflowId.HasValue &&
-                                    c.WorkflowId.Value == workflow.Id )
-                                .FirstOrDefault();
-                            if ( backgroundCheck != null )
+                            // Clear any SSN nodes before saving XML to record
+                            foreach ( var xSSNElement in xResult.Descendants( "SSN" ) )
                             {
-                                // Clear any SSN nodes before saving XML to record
-                                foreach ( var xSSNElement in xResult.Descendants( "SSN" ) )
+                                xSSNElement.Value = "XXX-XX-XXXX";
+                            }
+
+                            backgroundCheck.ResponseDate = RockDateTime.Now;
+                            backgroundCheck.RecordFound = reportStatus == "Review";
+
+                            if ( binaryFileGuid.HasValue )
+                            {
+                                var binaryFile = new BinaryFileService( newRockContext ).Get( binaryFileGuid.Value );
+                                if ( binaryFile != null )
                                 {
-                                    xSSNElement.Value = "XXX-XX-XXXX";
+                                    backgroundCheck.ResponseDocumentId = binaryFile.Id;
                                 }
-                                backgroundCheck.ResponseXml = xResult.ToString();
-
-                                backgroundCheck.ResponseDate = RockDateTime.Now;
-                                backgroundCheck.RecordFound = reportStatus == "Review";
-
-                                if ( binaryFileGuid.HasValue )
-                                {
-                                    var binaryFile = new BinaryFileService( newRockContext ).Get( binaryFileGuid.Value );
-                                    if ( binaryFile != null )
-                                    {
-                                        backgroundCheck.ResponseDocumentId = binaryFile.Id;
-                                    }
-                                }
-
-                                newRockContext.SaveChanges();
                             }
                         }
                     }
                 }
             }
+
+            newRockContext.SaveChanges();
+
         }
 
         /// <summary>
