@@ -369,7 +369,7 @@ namespace RockWeb.Blocks.Groups
                     return;
                 }
 
-                bool isSecurityRoleGroup = group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
+                bool isSecurityRoleGroup = group.IsActive && ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) );
                 if ( isSecurityRoleGroup )
                 {
                     Rock.Security.Role.Flush( group.Id );
@@ -434,6 +434,9 @@ namespace RockWeb.Blocks.Groups
             AttributeQualifierService attributeQualifierService = new AttributeQualifierService( rockContext );
             CategoryService categoryService = new CategoryService( rockContext );
 
+            var roleGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
+            int roleGroupTypeId = roleGroupType != null ? roleGroupType.Id : int.MinValue;
+
             if ( CurrentGroupTypeId == 0 )
             {
                 ddlGroupType.ShowErrorMessage( Rock.Constants.WarningMessage.CannotBeBlank( GroupType.FriendlyTypeName ) );
@@ -451,7 +454,7 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 group = groupService.Queryable( "Schedule,GroupLocations.Schedules" ).Where( g => g.Id == groupId ).FirstOrDefault();
-                wasSecurityRole = group.IsSecurityRole;
+                wasSecurityRole = group.IsActive && ( group.IsSecurityRole || group.GroupTypeId == roleGroupTypeId );
 
                 // remove any locations that removed in the UI
                 var selectedLocations = GroupLocationsState.Select( l => l.Guid );
@@ -733,9 +736,11 @@ namespace RockWeb.Blocks.Groups
                 }
             } );
 
+            bool isNowSecurityRole = group.IsActive && ( group.IsSecurityRole || group.GroupTypeId == roleGroupTypeId );
+
             if ( group != null && wasSecurityRole )
             {
-                if ( !group.IsSecurityRole )
+                if ( !isNowSecurityRole )
                 {
                     // if this group was a SecurityRole, but no longer is, flush
                     Rock.Security.Role.Flush( group.Id );
@@ -744,7 +749,7 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                if ( group.IsSecurityRole )
+                if ( isNowSecurityRole )
                 {
                     // new security role, flush
                     Rock.Security.Authorization.Flush();
