@@ -37,8 +37,21 @@ How to import the XLS file:
 
 /* ====================================================== */
 
+-- Clean up data --
+
+DECLARE @start AS DATETIME = '3-6-2016 23:00:00';
+--DECLARE @end AS DATETIME = '3-8-2016 23:59:59';
+
+DELETE FROM [Imports].[dbo].[F1Schedules]
+WHERE
+	[Created Date] < @start
+	--OR [Created Date] > @end;
+
+/* ====================================================== */
+
 SET NOCOUNT ON;
 
+DECLARE @foreignKey AS NVARCHAR(MAX) = 'FromF1PostLaunch-Schedule';
 DECLARE @IsActive bit = 0;
 
 -- Check the credit card type
@@ -94,11 +107,11 @@ SELECT
 FROM 
   [FinancialGateway]
 WHERE
-  [Name] = 'Cyber Source';
+  [Name] = 'NMI Gateway';
 
 IF @FinancialGatewayId IS NULL
 BEGIN
-  RAISERROR('Could not find Cyber Source', 20, -1) WITH LOG;
+  RAISERROR('Could not find NMI Gateway', 20, -1) WITH LOG;
 END
 
 -- Create temp table
@@ -208,11 +221,13 @@ WHERE
 INSERT INTO [FinancialPaymentDetail] (
 	CurrencyTypeValueId,
 	CreditCardTypeValueId,
-	[Guid])
+	[Guid],
+	ForeignKey)
 SELECT
 	CurrencyTypeValueId,
 	CreditCardTypeValueId,
-	PaymentDetailGuid
+	PaymentDetailGuid,
+	@foreignKey
 FROM #temp;
 
 INSERT INTO [FinancialScheduledTransaction] (
@@ -229,7 +244,8 @@ INSERT INTO [FinancialScheduledTransaction] (
   CreatedByPersonAliasId,
   AuthorizedPersonAliasId,
   FinancialGatewayId,
-  FinancialPaymentDetailId) 
+  FinancialPaymentDetailId,
+  ForeignKey) 
 SELECT
   TransactionFrequencyValueId,
   StartDate,
@@ -244,7 +260,8 @@ SELECT
   CreatedByPersonAliasId,
   AuthorizedPersonAliasId,
   FinancialGatewayId,
-  (SELECT Id FROM FinancialPaymentDetail WHERE [Guid] = PaymentDetailGuid)
+  (SELECT Id FROM FinancialPaymentDetail WHERE [Guid] = PaymentDetailGuid),
+  @foreignKey
 FROM #temp;
 
 INSERT INTO [FinancialScheduledTransactionDetail] (
@@ -254,7 +271,8 @@ INSERT INTO [FinancialScheduledTransactionDetail] (
   Guid,
   CreatedDateTime,
   ModifiedDateTime,
-  CreatedByPersonAliasId) 
+  CreatedByPersonAliasId,
+  ForeignKey) 
 SELECT
   (SELECT Id FROM [FinancialScheduledTransaction] WHERE [Guid] = t.[ScheduleGuid]),
   CASE WHEN t.[CampusId] IS NULL 
@@ -265,5 +283,6 @@ SELECT
   DetailGuid,
   CreatedDateTime,
   ModifiedDateTime,
-  CreatedByPersonAliasId
+  CreatedByPersonAliasId,
+  @foreignKey
 FROM #temp t;
