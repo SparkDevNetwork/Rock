@@ -31,6 +31,7 @@
     
     .measure-bar {
         height: 40px;
+        position: relative;
     }
 
     .is-tbd .measure-bar,

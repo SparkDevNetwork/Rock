@@ -112,7 +112,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
 
                 if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "ComparisonLabel" ) ) )
                 {
-                    lComparisonLegend.Text = string.Format("<div class='text-center margin-t-md'><span style='border-right: 1px solid {0}; height: 5px; margin-right: 8px;'></span> <small>{1}</small></div>", _compareColor, GetAttributeValue( "ComparisonLabel" ));
+                    lComparisonLegend.Text = string.Format("<div class='well text-center margin-t-md'><span style='border-right: 1px solid {0}; height: 5px; margin-right: 8px;'></span> <small>{1}</small></div>", _compareColor, GetAttributeValue( "ComparisonLabel" ));
                 }
             }
         }
