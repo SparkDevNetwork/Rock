@@ -115,6 +115,20 @@ namespace church.ccv.Steps.Model
         }
         private ICollection<StepMeasureValue> _StepMeasureValues;
 
+        /// <summary>
+        /// Gets or sets the steps taken.
+        /// </summary>
+        /// <value>
+        /// The steps taken.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<StepTaken> StepsTaken
+        {
+            get { return _StepsTaken ?? (_StepsTaken = new Collection<StepTaken>()); }
+            set { _StepsTaken = value; }
+        }
+        private ICollection<StepTaken> _StepsTaken;
+
         #endregion
     }
 

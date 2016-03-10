@@ -83,9 +83,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Jobs\UpdateStepsMeasures.cs" />
+    <Compile Include="Migrations\002_StepsTaken.cs" />
     <Compile Include="Migrations\001_CreateDb.cs" />
     <Compile Include="Model\CodeGenerated\StepMeasureService.cs" />
     <Compile Include="Model\CodeGenerated\StepMeasureValueService.cs" />
+    <Compile Include="Model\CodeGenerated\StepTakenService.cs" />
+    <Compile Include="Model\StepTaken.cs" />
     <Compile Include="Model\StepMeasureValue.cs" />
     <Compile Include="Model\StepMeasure.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
