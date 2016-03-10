@@ -10452,6 +10452,21 @@ table.attribute-grid tr th:nth-child(3) {
 .badge-baptism {
   color: #23a5c5;
 }
+.badge-era {
+  position: relative;
+}
+.badge-era:before {
+  font-family: FontAwesome;
+  content: "\f111";
+  color: #5cb85c;
+  font-size: 45px;
+}
+.badge-era span {
+  font-size: 16px;
+  position: absolute;
+  left: 11px;
+  top: 17px;
+}
 .badge-icon {
   font-size: 45px;
 }
