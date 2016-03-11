@@ -7,7 +7,7 @@
 // Import
 // -------------------------
 
-// @prepros-prepend "../Vendor/handlebars-v4.0.5.js"
+// @prepros-prepend "../Vendor/handlebars.runtime-v4.0.5.js"
 // @prepros-prepend "../Vendor/moment.js"
 // @prepros-prepend "../_map.js"
 // @prepros-prepend "../badge-bar-compiled.js"
