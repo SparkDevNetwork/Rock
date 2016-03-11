@@ -329,25 +329,51 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the next Check-in start date for this Schedule.  
+        /// Gets the check in times.
         /// </summary>
-        /// <param name="beginDateTime">A <see cref="System.DateTime"/> representing the base date.</param>
-        /// <returns>A <see cref="System.DateTime"/> containing the next time that Check-in begins for this schedule.</returns>
-        public virtual DateTime? GetNextCheckInStartTime( DateTime beginDateTime )
+        /// <param name="beginDateTime">The begin date time.</param>
+        /// <returns></returns>
+        public virtual List<CheckInTimes> GetCheckInTimes( DateTime beginDateTime )
         {
-            DateTime? nextStartTime = null;
+            var result = new List<CheckInTimes>();
 
             if ( IsCheckInEnabled )
             {
                 var scheduledStartTimes = this.GetScheduledStartTimes( beginDateTime, beginDateTime.Date.AddDays( 1 ) );
-                if ( scheduledStartTimes.Count > 0 )
+
+                DDay.iCal.Event calEvent = GetCalenderEvent();
+                if ( calEvent != null && calEvent.DTStart != null )
                 {
-                    var nextScheduledStartTime = scheduledStartTimes[0];
-                    nextStartTime = nextScheduledStartTime.AddMinutes( 0 - CheckInStartOffsetMinutes.Value );
+                    var occurrences = ScheduleICalHelper.GetOccurrences( calEvent, beginDateTime, beginDateTime.Date.AddDays( 1 ) );
+                    foreach ( var occurrence in occurrences
+                        .Where( a =>
+                            a.Period != null &&
+                            a.Period.StartTime != null &&
+                            a.Period.EndTime != null )
+                        .Select( a => new {
+                            Start = a.Period.StartTime.Value,
+                            End = a.Period.EndTime.Value 
+                        }) )
+                    {
+                        var checkInTimes = new CheckInTimes();
+                        checkInTimes.Start = DateTime.SpecifyKind( occurrence.Start, DateTimeKind.Local );
+                        checkInTimes.End = DateTime.SpecifyKind( occurrence.End, DateTimeKind.Local );
+                        checkInTimes.CheckInStart = checkInTimes.Start.AddMinutes( 0 - CheckInStartOffsetMinutes.Value );
+                        if ( CheckInEndOffsetMinutes.HasValue )
+                        {
+                            checkInTimes.CheckInEnd = checkInTimes.Start.AddMinutes( CheckInEndOffsetMinutes.Value );
+                        }
+                        else
+                        {
+                            checkInTimes.CheckInEnd = checkInTimes.End;
+                        }
+
+                        result.Add( checkInTimes );
+                    }
                 }
             }
 
-            return nextStartTime;
+            return result;
         }
 
         /// <summary>
@@ -787,6 +813,44 @@ namespace Rock.Model
     #endregion
 
     #region Helper Classes
+
+    /// <summary>
+    /// Start/End Times for Check-in
+    /// </summary>
+    public class CheckInTimes
+    {
+        /// <summary>
+        /// Gets or sets the start.
+        /// </summary>
+        /// <value>
+        /// The start.
+        /// </value>
+        public DateTime Start { get; set; }
+
+        /// <summary>
+        /// Gets or sets the end.
+        /// </summary>
+        /// <value>
+        /// The end.
+        /// </value>
+        public DateTime End { get; set; }
+
+        /// <summary>
+        /// Gets or sets the check in start.
+        /// </summary>
+        /// <value>
+        /// The check in start.
+        /// </value>
+        public DateTime CheckInStart { get; set; }
+
+        /// <summary>
+        /// Gets or sets the check in end.
+        /// </summary>
+        /// <value>
+        /// The check in end.
+        /// </value>
+        public DateTime CheckInEnd { get; set; }
+    }
 
     /// <summary>
     /// Helper class for grouping attendance records associated into logical occurrences based on

@@ -315,6 +315,8 @@ namespace Rock.CheckIn
             var allLocations = new LocationService( rockContext ).GetAllDescendentIds( location.Id ).ToList();
             allLocations.Add( location.Id );
 
+            var activeSchedules = new Dictionary<int, KioskSchedule>();
+
             foreach ( var groupLocation in new GroupLocationService( rockContext ).GetActiveByLocations( allLocations ).AsNoTracking() )
             {
                 var kioskLocation = new KioskLocation( groupLocation.Location );
@@ -323,12 +325,19 @@ namespace Rock.CheckIn
                 // Populate each kioskLocation with its schedules (kioskSchedules)
                 foreach ( var schedule in groupLocation.Schedules.Where( s => s.CheckInStartOffsetMinutes.HasValue ) )
                 {
-                    var nextActiveDateTime = schedule.GetNextCheckInStartTime( RockDateTime.Now );
-                    if ( nextActiveDateTime.HasValue )
+                    if ( activeSchedules.Keys.Contains( schedule.Id ) )
+                    {
+                        kioskLocation.KioskSchedules.Add( activeSchedules[schedule.Id] );
+                    }
+                    else
                     {
                         var kioskSchedule = new KioskSchedule( schedule );
-                        kioskSchedule.NextActiveDateTime = nextActiveDateTime;
-                        kioskLocation.KioskSchedules.Add( kioskSchedule );
+                        kioskSchedule.CheckInTimes = schedule.GetCheckInTimes( RockDateTime.Now );
+                        if ( kioskSchedule.IsCheckInActive || kioskSchedule.NextActiveDateTime.HasValue )
+                        {
+                            kioskLocation.KioskSchedules.Add( kioskSchedule );
+                            activeSchedules.Add( schedule.Id, kioskSchedule );
+                        }
                     }
                 }
 

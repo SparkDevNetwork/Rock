@@ -20,12 +20,10 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-using Humanizer;
-
 namespace Rock
 {
     /// <summary>
-    /// Handy string extensions
+    /// Handy string extensions that don't require any nuget packages
     /// </summary>
     public static partial class ExtensionMethods
     {
@@ -564,25 +562,6 @@ namespace Rock
             s = Regex.Replace( s, "[\u02DC\u00A0]", " " );
 
             return s;
-        }
-
-        /// <summary>
-        /// If string is all lower or all upper case, will change to title case.
-        /// </summary>
-        /// <param name="text">The text.</param>
-        /// <returns></returns>
-        public static string FixCase( this string text )
-        {
-            if ( !string.IsNullOrWhiteSpace( text ) )
-            {
-                string trimmed = text.Trim();
-                if ( trimmed == trimmed.ToLower() || trimmed == trimmed.ToUpper() )
-                {
-                    return trimmed.Transform( To.TitleCase );
-                }
-            }
-
-            return text;
         }
 
         #endregion String Extensions

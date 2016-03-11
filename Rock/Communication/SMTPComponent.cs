@@ -554,6 +554,20 @@ namespace Rock.Communication.Transport
                     {
                         message.From = new MailAddress( from, fromName );
                     }
+
+                    // Reply To
+                    try
+                    {
+                        string replyTo = string.Empty;
+                        mediumData.TryGetValue( "ReplyTo", out replyTo );
+
+                        if ( !string.IsNullOrWhiteSpace( replyTo ) )
+                        {
+                            message.ReplyToList.Add( new MailAddress( replyTo ) );
+                        }
+                    }
+                    catch { }
+
                     CheckSafeSender( message, globalAttributes );
 
                     message.IsBodyHtml = true;
@@ -577,10 +591,8 @@ namespace Rock.Communication.Transport
                             recipients, fromName, from, subject, body );
                         RockQueue.TransactionQueue.Enqueue( transaction );
                     }
-
                 }
             }
-
             catch ( Exception ex )
             {
                 ExceptionLogService.LogException( ex, null );

@@ -93,6 +93,7 @@ namespace Rock.Field.Types
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( ENABLED_SLIDING_DATE_RANGE_TYPES, new ConfigurationValue( "Enabled SlidingDateRange Types", "The enabled SlidingDateRange types", string.Empty ) );
+            configurationValues.Add( ENABLED_SLIDING_DATE_RANGE_UNITS, new ConfigurationValue( "Enabled SlidingDateRange Units", "The enabled SlidingDateRange units", string.Empty ) );
 
             if ( controls != null && controls.Count >= 1 )
             {
@@ -187,8 +188,12 @@ namespace Rock.Field.Types
             if ( configurationValues != null && configurationValues.ContainsKey( ENABLED_SLIDING_DATE_RANGE_TYPES ) )
             {
                 var selectedDateRangeTypes = configurationValues[ENABLED_SLIDING_DATE_RANGE_TYPES].Value.SplitDelimitedValues().Select( a => a.ConvertToEnum<SlidingDateRangePicker.SlidingDateRangeType>() );
-                var selectedDateRangeUnits = configurationValues[ENABLED_SLIDING_DATE_RANGE_UNITS].Value.SplitDelimitedValues().Select( a => a.ConvertToEnum<SlidingDateRangePicker.TimeUnitType>() );
                 picker.EnabledSlidingDateRangeTypes = selectedDateRangeTypes.ToArray();
+            }
+
+            if ( configurationValues != null && configurationValues.ContainsKey( ENABLED_SLIDING_DATE_RANGE_UNITS ) )
+            {
+                var selectedDateRangeUnits = configurationValues[ENABLED_SLIDING_DATE_RANGE_UNITS].Value.SplitDelimitedValues().Select( a => a.ConvertToEnum<SlidingDateRangePicker.TimeUnitType>() );
                 picker.EnabledSlidingDateRangeUnits = selectedDateRangeUnits.ToArray();
             }
 

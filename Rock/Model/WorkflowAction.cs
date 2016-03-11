@@ -201,6 +201,14 @@ namespace Rock.Model
 
                 this.LastProcessedDateTime = RockDateTime.Now;
 
+                if ( errorMessages.Any() )
+                {
+                    foreach ( string errorMsg in errorMessages )
+                    {
+                        AddLogEntry( "Error Occurred: " + errorMsg, true );
+                    }
+                }
+
                 AddLogEntry( string.Format( "Processing Complete (Success:{0})", success.ToString() ) );
 
                 if ( success && this.ActionType != null )

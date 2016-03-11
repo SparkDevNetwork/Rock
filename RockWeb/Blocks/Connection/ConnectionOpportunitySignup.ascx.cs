@@ -224,7 +224,7 @@ namespace RockWeb.Blocks.Connection
                         connectionRequest.ConnectionState = ConnectionState.Active;
                         connectionRequest.ConnectionStatusId = defaultStatusId;
                         connectionRequest.CampusId = campusId;
-                        connectionRequest.ConnectorPersonAliasId = opportunity.GetDefaultConnectorPersonAliasId( campusId.Value );
+                        connectionRequest.ConnectorPersonAliasId = opportunity.GetDefaultConnectorPersonAliasId( campusId );
                         if ( campusId.HasValue &&
                             opportunity != null &&
                             opportunity.ConnectionOpportunityCampuses != null )
@@ -287,7 +287,12 @@ namespace RockWeb.Blocks.Connection
                 var campuses = CampusCache.All();
                 cpCampus.Campuses = campuses;
                 cpCampus.Visible = campuses.Count > 1;
-                
+
+                if ( campuses.Any() )
+                {
+                    cpCampus.SetValue( campuses.First().Id );
+                }
+
                 var opportunity = new ConnectionOpportunityService( rockContext ).Get( opportunityId );
                 if ( opportunity == null )
                 {

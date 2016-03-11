@@ -131,6 +131,14 @@
     <Compile Include="Migrations\201602292030218_DiscEnhancements.Designer.cs">
       <DependentUpon>201602292030218_DiscEnhancements.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201603071844003_FollowingEventsAndRegistrations.cs" />
+    <Compile Include="Migrations\201603071844003_FollowingEventsAndRegistrations.Designer.cs">
+      <DependentUpon>201603071844003_FollowingEventsAndRegistrations.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201603092127444_ConnectionTypePlacementGroupOptional.cs" />
+    <Compile Include="Migrations\201603092127444_ConnectionTypePlacementGroupOptional.Designer.cs">
+      <DependentUpon>201603092127444_ConnectionTypePlacementGroupOptional.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.cs" />
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.Designer.cs">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
@@ -2072,6 +2080,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201602292030218_DiscEnhancements.resx">
       <DependentUpon>201602292030218_DiscEnhancements.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603071844003_FollowingEventsAndRegistrations.resx">
+      <DependentUpon>201603071844003_FollowingEventsAndRegistrations.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603092127444_ConnectionTypePlacementGroupOptional.resx">
+      <DependentUpon>201603092127444_ConnectionTypePlacementGroupOptional.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.resx">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>

@@ -232,6 +232,10 @@ namespace RockWeb.Blocks.Event
 
                 ShowDetail();
             }
+            else
+            {
+                SetFollowingOnPostback();
+            }
         }
 
         /// <summary>
@@ -1574,6 +1578,25 @@ namespace RockWeb.Blocks.Event
                 BindRegistrantsFilter();
                 BindLinkagesFilter();
                 AddDynamicControls();
+            }
+        }
+
+        /// <summary>
+        /// Sets the following on postback.
+        /// </summary>
+        private void SetFollowingOnPostback()
+        {
+            int? RegistrationInstanceId = PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull();
+            if ( RegistrationInstanceId.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    RegistrationInstance registrationInstance = GetRegistrationInstance( RegistrationInstanceId.Value, rockContext );
+                    if ( registrationInstance != null )
+                    {
+                        FollowingsHelper.SetFollowing( registrationInstance, pnlFollowing, this.CurrentPerson );
+                    }
+                }
             }
         }
 
