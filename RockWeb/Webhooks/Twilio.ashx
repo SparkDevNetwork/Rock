@@ -147,11 +147,30 @@ public class Twilio : IHttpHandler
     private void WriteToLog( string message )
     {
         string logFile = HttpContext.Current.Server.MapPath( "~/App_Data/Logs/TwilioLog.txt" );
-        using ( System.IO.FileStream fs = new System.IO.FileStream( logFile, System.IO.FileMode.Append, System.IO.FileAccess.Write ) )
-        using ( System.IO.StreamWriter sw = new System.IO.StreamWriter( fs ) )
+
+        // Write to the log, but if an ioexception occurs wait a couple seconds and then try again (up to 3 times).
+        var maxRetry = 3;
+        for ( int retry = 0; retry < maxRetry; retry++ )
         {
-            sw.WriteLine( string.Format( "{0} - {1}", RockDateTime.Now.ToString(), message ) );
+            try
+            {
+                using ( System.IO.FileStream fs = new System.IO.FileStream( logFile, System.IO.FileMode.Append, System.IO.FileAccess.Write ) )
+                {
+                    using ( System.IO.StreamWriter sw = new System.IO.StreamWriter( fs ) )
+                    {
+                        sw.WriteLine( string.Format( "{0} - {1}", RockDateTime.Now.ToString(), message ) );
+                    }
+                }
+            }
+            catch ( System.IO.IOException )
+            {
+                if ( retry < maxRetry - 1 )
+                {
+                    System.Threading.Thread.Sleep( 2000 );
+                }
+            }
         }
+               
     }
     
     

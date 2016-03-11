@@ -194,6 +194,7 @@ namespace Rock.Model
         /// URL of the photo
         /// </value>
         [NotMapped]
+        [LavaInclude]
         public virtual string PhotoUrl
         {
             get

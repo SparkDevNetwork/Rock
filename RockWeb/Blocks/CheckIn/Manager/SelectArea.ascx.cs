@@ -34,7 +34,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.CheckIn.Manager
 {
     /// <summary>
-    /// Template block for developers to use to start a new block.
+    /// Block used to select a type of check-in area before managing locations
     /// </summary>
     [DisplayName( "Select Check-In Area" )]
     [Category( "Check-in > Manager" )]

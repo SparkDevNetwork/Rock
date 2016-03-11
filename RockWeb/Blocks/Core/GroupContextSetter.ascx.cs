@@ -156,8 +156,7 @@ namespace RockWeb.Blocks.Core
 
                 lCurrentSelection.Text = currentGroup != null ? currentGroup.ToString() : GetAttributeValue( "NoGroupText" );
 
-                var groupList = qryGroups.OrderBy( a => a.Order )
-                    .ThenBy( a => a.Name ).ToList()
+                var groupList = qryGroups.OrderBy( a => a.Name ).ToList()
                     .Select( a => new GroupItem() { Name = a.Name, Id = a.Id } )
                     .ToList();
 

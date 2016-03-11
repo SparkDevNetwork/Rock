@@ -114,13 +114,11 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets the confidence score, which is the Geometric Mean of the "weighted score of things that are matchable"% and "weighted score of things that match"%
-        /// Calculated Field: ALTER TABLE PersonDuplicate ADD ConfidenceScore AS sqrt ((Capacity / (TotalCapacity * .01)) * (Score / (Capacity * .01))) PERSISTED
         /// </summary>
         /// <value>
         /// The match score.
         /// </value>
         [DataMember]
-        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [Index]
         public double? ConfidenceScore { get; private set; }
 

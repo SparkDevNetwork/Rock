@@ -133,6 +133,7 @@ namespace RockWeb.Blocks.Groups
    // $('.js-person-popover').popover('show'); // uncomment for styling
 ";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "person-link-popover", script, true );
+            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.lazyload.min.js" ) );
 
             // if this block has a specific GroupId set, use that, otherwise, determine it from the PageParameters
             Guid groupGuid = GetAttributeValue( "Group" ).AsGuid();
@@ -161,9 +162,9 @@ namespace RockWeb.Blocks.Groups
 
                     rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
                     gGroupMembers.DataKeyNames = new string[] { "Id" };
-                    gGroupMembers.CommunicateMergeFields = new List<string> { "GroupRole" };
                     gGroupMembers.PersonIdField = "PersonId";
                     gGroupMembers.RowDataBound += gGroupMembers_RowDataBound;
+                    gGroupMembers.GetRecipientMergeFields += gGroupMembers_GetRecipientMergeFields;
                     gGroupMembers.Actions.AddClick += gGroupMembers_AddClick;
                     gGroupMembers.GridRebind += gGroupMembers_GridRebind;
                     gGroupMembers.RowItemText = _group.GroupType.GroupTerm + " " + _group.GroupType.GroupMemberTerm;
@@ -304,6 +305,21 @@ namespace RockWeb.Blocks.Groups
                         e.Row.AddCssClass( "is-inactive" );
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Handles the GetRecipientMergeFields event of the gGroupMembers control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GetRecipientMergeFieldsEventArgs"/> instance containing the event data.</param>
+        void gGroupMembers_GetRecipientMergeFields( object sender, GetRecipientMergeFieldsEventArgs e )
+        {
+            dynamic groupMember = e.DataItem;
+            if ( groupMember != null )
+            {
+                e.MergeValues.Add( "GroupRole", groupMember.GroupRole );
+                e.MergeValues.Add( "GroupMemberStatus", ( (GroupMemberStatus)groupMember.GroupMemberStatus ).ConvertToString() );
             }
         }
 
@@ -1014,6 +1030,8 @@ namespace RockWeb.Blocks.Groups
                         connectionStatusField.Visible = _group.GroupType.ShowConnectionStatus;
                     } 
 
+                    string photoFormat = "<div class=\"photo-icon photo-round photo-round-xs pull-left margin-r-sm js-person-popover\" personid=\"{0}\" data-original=\"{1}&w=50\" style=\"background-image: url( '{2}' ); background-size: cover; background-repeat: no-repeat;\"></div>";
+
                     gGroupMembers.DataSource = groupMembersList.Select( m => new
                     {
                         m.Id,
@@ -1022,7 +1040,7 @@ namespace RockWeb.Blocks.Groups
                         m.Person.NickName,
                         m.Person.LastName,
                         Name =
-                        ( selectAll ? m.Person.LastName + ", " + m.Person.NickName : ( m.Person.PhotoId.HasValue ? "<i class='fa fa-fw fa-user photo-icon has-photo js-person-popover' personid=" + m.PersonId.ToString() + "></i> " : "<i class='fa fa-fw photo-icon js-person-popover' personid=" + m.PersonId.ToString() + "></i> " ) +
+                        ( selectAll ? m.Person.LastName + ", " + m.Person.NickName : string.Format(photoFormat, m.PersonId, m.Person.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-male.svg" ) )  +
                         m.Person.NickName + " " + m.Person.LastName
                             + ( hasGroupRequirements && groupMemberIdsThatLackGroupRequirements.Contains( m.Id )
                                 ? " <i class='fa fa-exclamation-triangle text-warning'></i>"
@@ -1030,6 +1048,8 @@ namespace RockWeb.Blocks.Groups
                             + ( !string.IsNullOrEmpty( m.Note )
                             ? " <i class='fa fa-file-text-o text-info'></i>"
                             : string.Empty ) ),
+                        m.Person.BirthDate,
+                        m.Person.Age,
                         m.Person.ConnectionStatusValueId,
                         Email = m.Person.Email,
                         HomePhone = selectAll && homePhoneType != null ?

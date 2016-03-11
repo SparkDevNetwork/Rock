@@ -693,16 +693,20 @@ body#splash {
   }
 
   .navbar-side {
-    margin-top: 24px;
     display: inline-block;
     width: 100%;
 
     & > li {
       text-align: center;
       margin-top: 0;
+      border-top: 1px solid lighten(@nav-bg, 7%);
+
+      &:last-child {
+          border-bottom: 1px solid lighten(@nav-bg, 7%);
+      }
 
       > i {
-        padding: 11px 0;
+        padding: 16px 0;
         font-size: 24px;
         display: block;
 

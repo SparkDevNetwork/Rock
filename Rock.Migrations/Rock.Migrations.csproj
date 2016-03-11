@@ -56,6 +56,8 @@
   <ItemGroup>
     <Compile Include="HotFixMigrations\003_AddAttendanceIndex.cs" />
     <Compile Include="HotFixMigrations\002_FixAttendanceEmail.cs" />
+    <Compile Include="HotFixMigrations\005_ValueAsNumeric.cs" />
+    <Compile Include="HotFixMigrations\006_StatementProcs.cs" />
     <Compile Include="HotFixMigrations\004_FixBaptismBadge.cs" />
     <Compile Include="Migrations\201511231524340_GroupPlacement.cs" />
     <Compile Include="Migrations\201511231524340_GroupPlacement.Designer.cs">
@@ -96,6 +98,46 @@
     <Compile Include="Migrations\201601241806293_RegistrationInstanceCosts.cs" />
     <Compile Include="Migrations\201601241806293_RegistrationInstanceCosts.Designer.cs">
       <DependentUpon>201601241806293_RegistrationInstanceCosts.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201601271743440_MyWorkflowDetails.cs" />
+    <Compile Include="Migrations\201601271743440_MyWorkflowDetails.Designer.cs">
+      <DependentUpon>201601271743440_MyWorkflowDetails.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201602041745307_TuneDuplicateFinder.cs" />
+    <Compile Include="Migrations\201602041745307_TuneDuplicateFinder.Designer.cs">
+      <DependentUpon>201602041745307_TuneDuplicateFinder.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201602042011520_DashboardWorkflowPages.cs" />
+    <Compile Include="Migrations\201602042011520_DashboardWorkflowPages.Designer.cs">
+      <DependentUpon>201602042011520_DashboardWorkflowPages.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201602161036322_AttendanceAnalyticsQuery.cs" />
+    <Compile Include="Migrations\201602161036322_AttendanceAnalyticsQuery.Designer.cs">
+      <DependentUpon>201602161036322_AttendanceAnalyticsQuery.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201602231841538_RegistrationPaymentReminders.cs" />
+    <Compile Include="Migrations\201602231841538_RegistrationPaymentReminders.Designer.cs">
+      <DependentUpon>201602231841538_RegistrationPaymentReminders.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201602242247579_PaymentReminderPageAndJob.cs" />
+    <Compile Include="Migrations\201602242247579_PaymentReminderPageAndJob.Designer.cs">
+      <DependentUpon>201602242247579_PaymentReminderPageAndJob.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201602271652548_AddAllowedDomainsToSite.cs" />
+    <Compile Include="Migrations\201602271652548_AddAllowedDomainsToSite.Designer.cs">
+      <DependentUpon>201602271652548_AddAllowedDomainsToSite.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201602292030218_DiscEnhancements.cs" />
+    <Compile Include="Migrations\201602292030218_DiscEnhancements.Designer.cs">
+      <DependentUpon>201602292030218_DiscEnhancements.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201603071844003_FollowingEventsAndRegistrations.cs" />
+    <Compile Include="Migrations\201603071844003_FollowingEventsAndRegistrations.Designer.cs">
+      <DependentUpon>201603071844003_FollowingEventsAndRegistrations.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201603092127444_ConnectionTypePlacementGroupOptional.cs" />
+    <Compile Include="Migrations\201603092127444_ConnectionTypePlacementGroupOptional.Designer.cs">
+      <DependentUpon>201603092127444_ConnectionTypePlacementGroupOptional.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.cs" />
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.Designer.cs">
@@ -2015,6 +2057,36 @@
     <EmbeddedResource Include="Migrations\201601241806293_RegistrationInstanceCosts.resx">
       <DependentUpon>201601241806293_RegistrationInstanceCosts.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201601271743440_MyWorkflowDetails.resx">
+      <DependentUpon>201601271743440_MyWorkflowDetails.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201602041745307_TuneDuplicateFinder.resx">
+      <DependentUpon>201602041745307_TuneDuplicateFinder.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201602042011520_DashboardWorkflowPages.resx">
+      <DependentUpon>201602042011520_DashboardWorkflowPages.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201602161036322_AttendanceAnalyticsQuery.resx">
+      <DependentUpon>201602161036322_AttendanceAnalyticsQuery.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201602231841538_RegistrationPaymentReminders.resx">
+      <DependentUpon>201602231841538_RegistrationPaymentReminders.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201602242247579_PaymentReminderPageAndJob.resx">
+      <DependentUpon>201602242247579_PaymentReminderPageAndJob.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201602271652548_AddAllowedDomainsToSite.resx">
+      <DependentUpon>201602271652548_AddAllowedDomainsToSite.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201602292030218_DiscEnhancements.resx">
+      <DependentUpon>201602292030218_DiscEnhancements.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603071844003_FollowingEventsAndRegistrations.resx">
+      <DependentUpon>201603071844003_FollowingEventsAndRegistrations.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603092127444_ConnectionTypePlacementGroupOptional.resx">
+      <DependentUpon>201603092127444_ConnectionTypePlacementGroupOptional.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.resx">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
     </EmbeddedResource>
@@ -3419,6 +3491,14 @@
     <None Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase_PopulateData.sql" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Migrations\201602161036322_AttendanceAnalyticsQuery_AttendeeFirstDates.sql" />
+    <Content Include="Migrations\201602161036322_AttendanceAnalyticsQuery_AttendeeLastAttendance.sql" />
+    <Content Include="Migrations\201602161036322_AttendanceAnalyticsQuery_Attendees.sql" />
+    <Content Include="Migrations\201602161036322_AttendanceAnalyticsQuery_GroupTypeAttendance.sql" />
+    <Content Include="Migrations\201602161036322_AttendanceAnalyticsQuery_Indexes.sql" />
+    <Content Include="Migrations\201602161036322_AttendanceAnalyticsQuery_NonAttendees.sql" />
+    <Content Include="Migrations\201602161036322_AttendanceAnalyticsQuery_AttendeeDates.sql" />
+    <Content Include="Migrations\201602041745307_TuneDuplicateFinder.sql" />
     <Content Include="Migrations\Version 4.0\Version 1.4.0\201506051749054_AddSampleMergeDocs.sql" />
     <Content Include="Migrations\Version 4.0\Version 1.4.0\201506112030400_PersonDaysUntilBirthday.sql" />
     <Content Include="Migrations\Version 4.0\Version 1.4.0\201506281615197_GivingAnalyticsEmail_1.sql" />

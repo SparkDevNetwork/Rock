@@ -38,9 +38,10 @@ namespace Rock.Model
         /// <param name="locationIds">The location ids.</param>
         /// <param name="scheduleIds">The schedule ids.</param>
         /// <param name="loadSummaryData">if set to <c>true</c> [load summary data].</param>
+        /// <param name="campusId">The campus identifier.</param>
         /// <returns></returns>
         public List<ScheduleOccurrence> GetGroupOccurrences( Group group, DateTime? fromDateTime, DateTime? toDateTime, 
-            List<int> locationIds, List<int> scheduleIds, bool loadSummaryData )
+            List<int> locationIds, List<int> scheduleIds, bool loadSummaryData, int? campusId = null )
         {
             var occurrences = new List<ScheduleOccurrence>();
 
@@ -156,15 +157,44 @@ namespace Rock.Model
                 {
                     var minDate = occurrences.Min( o => o.Date );
                     var maxDate = occurrences.Max( o => o.Date ).AddDays( 1 );
-
-                    foreach( var summary in attendanceService
+                    var attendances = attendanceService
                         .Queryable().AsNoTracking()
                         .Where( a =>
+                            a.PersonAlias != null &&
                             a.PersonAliasId.HasValue &&
                             a.GroupId.HasValue &&
                             a.GroupId == group.Id &&
                             a.StartDateTime >= minDate &&
                             a.StartDateTime < maxDate )
+                        .Select( a => new
+                        {
+                            a.LocationId,
+                            a.ScheduleId,
+                            a.StartDateTime,
+                            a.DidAttend,
+                            a.DidNotOccur,
+                            a.PersonAliasId,
+                            PersonId = a.PersonAlias.PersonId
+                        } );
+
+                    if ( campusId.HasValue )
+                    {
+                        var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+                        var campusQry = new GroupMemberService( rockContext )
+                            .Queryable()
+                            .Where( g =>
+                                g.Group != null &&
+                                g.Group.GroupTypeId == familyGroupType.Id &&
+                                g.Group.CampusId.HasValue &&
+                                g.Group.CampusId.Value == campusId.Value
+                            )
+                            .Select( m => m.PersonId );
+
+                        attendances = attendances
+                            .Where( s => campusQry.Contains( s.PersonId ) );
+                    }
+
+                    foreach( var summary in attendances
                         .GroupBy( a => new
                         {
                             a.LocationId,

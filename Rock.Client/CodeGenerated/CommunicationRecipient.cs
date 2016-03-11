@@ -140,7 +140,7 @@ namespace Rock.Client
         public ICollection<CommunicationRecipientActivity> Activities { get; set; }
 
         /// <summary />
-        public Dictionary<string, string> AdditionalMergeValues { get; set; }
+        public Dictionary<string, Object> AdditionalMergeValues { get; set; }
 
         /// <summary />
         public PersonAlias PersonAlias { get; set; }

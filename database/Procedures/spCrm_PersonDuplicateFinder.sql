@@ -19,15 +19,10 @@
 ALTER PROCEDURE [dbo].[spCrm_PersonDuplicateFinder]
 AS
 BEGIN
-    SET NOCOUNT ON
+    
+	SET NOCOUNT ON
 
-    BEGIN TRANSACTION
-
-    -- prevent stored proc from running simultaneously since we are using #temp tables
-    EXEC sp_getapplock 'spCrm_PersonDuplicateFinder'
-        ,'Exclusive'
-        ,'Transaction'
-        ,0
+	-- DECLARE @ms DATETIME = GETDATE()
 
     -- Flags that enable the various compare functions
     DECLARE @compareByEmail BIT = 1
@@ -85,15 +80,17 @@ BEGIN
             WHERE [Guid] = @cLOCATION_TYPE_HOME_GUID
             )
 
+	--PRINT'Declare Variables: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+	--SET @ms = GETDATE()
+
     /*
     Populate Temporary Tables for each match criteria (Email, PartialName, PhoneNumber, Address)
     */
     -- Find Duplicates by looking at people with the exact same email address
     CREATE TABLE #PersonDuplicateByEmailTable (
-        Id INT NOT NULL IDENTITY(1, 1)
-        ,Email NVARCHAR(75) NOT NULL
+         Email NVARCHAR(75) NOT NULL
         ,PersonAliasId INT NOT NULL
-        ,CONSTRAINT [pk_PersonDuplicateByEmailTable] PRIMARY KEY CLUSTERED (Id)
+        ,CONSTRAINT [pk_PersonDuplicateByEmailTable] PRIMARY KEY CLUSTERED (Email, PersonAliasId)
         );
 
     INSERT INTO #PersonDuplicateByEmailTable (
@@ -118,18 +115,20 @@ BEGIN
     WHERE [pa].[AliasPersonId] = [pa].[PersonId] -- limit to only the primary alias
         AND @compareByEmail = 1
 
+	--PRINT'Create Email Dups: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+	--SET @ms = GETDATE()
+
     -- Find Duplicates by looking at people with the exact same lastname and same first 2 chars of First/Nick name
     CREATE TABLE #PersonDuplicateByNameTable (
-        Id INT NOT NULL IDENTITY(1, 1)
+         First2 NVARCHAR(50) NOT NULL -- intentionally 50 vs 2 for performance reasons (sql server spends time on the length constraint if it's shorter than the source column)
         ,LastName NVARCHAR(50) NOT NULL
-        ,First2 NVARCHAR(50) NOT NULL -- intentionally 50 vs 2 for performance reasons (sql server spends time on the length constraint if it's shorter than the source column)
         ,PersonAliasId INT NOT NULL
-        ,CONSTRAINT [pk_PersonDuplicateByNameTable] PRIMARY KEY CLUSTERED (Id)
+        ,CONSTRAINT [pk_PersonDuplicateByNameTable] PRIMARY KEY CLUSTERED (First2, LastName, PersonAliasId)
         );
 
     INSERT INTO #PersonDuplicateByNameTable (
-        LastName
-        ,First2
+         First2
+        ,LastName
         ,PersonAliasId
         )
     SELECT [e].[LastName]
@@ -157,16 +156,18 @@ BEGIN
     WHERE [pa].[AliasPersonId] = [pa].[PersonId] -- limit to only the primary alias
         AND @compareByPartialName = 1
 
+	--PRINT'Create Name Dups: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+	--SET @ms = GETDATE()
+
     -- Find Duplicates by looking at people with the exact same phone number
     CREATE TABLE #PersonDuplicateByPhoneTable (
-        Id INT NOT NULL IDENTITY(1, 1)
-        ,Number NVARCHAR(20) NOT NULL
+         Number NVARCHAR(20) NOT NULL
         ,Extension NVARCHAR(20) NOT NULL
         ,CountryCode NVARCHAR(3) NOT NULL
         ,NumberTypeValueId INT NOT NULL
-        ,Gender INT NOT NULL
+		,GroupId INT NOT NULL
         ,PersonAliasId INT NOT NULL
-        ,CONSTRAINT [pk_PersonDuplicateByPhoneTable] PRIMARY KEY CLUSTERED (Id)
+        ,CONSTRAINT [pk_PersonDuplicateByPhoneTable] PRIMARY KEY CLUSTERED (Number, Extension, CountryCode, NumberTypeValueId, GroupId, PersonAliasId)
         );
 
     INSERT INTO #PersonDuplicateByPhoneTable (
@@ -174,27 +175,25 @@ BEGIN
         ,Extension
         ,CountryCode
         ,NumberTypeValueId
-        ,Gender
+		,GroupId
         ,PersonAliasId
         )
     SELECT DISTINCT [m].[Number]
         ,isnull([m].[Extension], '')
         ,isnull([m].[CountryCode], '')
         ,[m].[NumberTypeValueId]
-        ,[p].[Gender]
+		,[g].[Id]
         ,[pa].[Id] [PersonAliasId]
     FROM (
         SELECT DISTINCT [Number]
             ,[Extension]
             ,[CountryCode]
             ,[NumberTypeValueId]
-            ,[Gender]
         FROM (
             SELECT [pn].[Number]
                 ,[pn].[Extension]
                 ,[pn].[CountryCode]
                 ,[pn].[NumberTypeValueId]
-                ,[p].[Gender]
                 ,COUNT(*) [MatchCount]
             FROM [PhoneNumber] [pn]
             JOIN [Person] [p] ON [p].[Id] = [pn].[PersonId]
@@ -216,25 +215,28 @@ BEGIN
         AND ISNULL([pn].[CountryCode], '') = ISNULL([m].[CountryCode], '')
         AND [pn].[NumberTypeValueId] = [m].[NumberTypeValueId]
     JOIN [PersonAlias] [pa] ON [pa].[PersonId] = [pn].[PersonId]
-    JOIN [Person] [p] ON [p].[Id] = [pa].[PersonId]
-    WHERE [m].[Gender] = [p].[Gender] -- only consider it a potential duplicate person if the gender and the phone number are the same (to reduce false matches)
-        AND [pa].[AliasPersonId] = [pa].[PersonId] -- limit to only the primary alias
+    JOIN [GroupMember] [gm] ON [gm].[PersonId] = [pa].[PersonId]
+    JOIN [Group] [g] ON [gm].[GroupId] = [g].[Id]
+    WHERE [pa].[AliasPersonId] = [pa].[PersonId] -- limit to only the primary alias
+		AND [g].[GroupTypeId] = @cGROUPTYPE_FAMILY_ID
         AND @compareByPhone = 1
+
+	--PRINT'Create Phone Dups: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+	--SET @ms = GETDATE()
 
     -- Find Duplicates by looking at people with the exact same address (Location)
     CREATE TABLE #PersonDuplicateByAddressTable (
-        Id INT NOT NULL IDENTITY(1, 1)
-        ,LocationId INT NOT NULL
-        ,Gender INT NOT NULL
+         LocationId INT NOT NULL
         ,GroupRoleId INT NOT NULL
+		,GroupId INT NOT NULL
         ,PersonAliasId INT NOT NULL
-        ,CONSTRAINT [pk_PersonDuplicateByAddressTable] PRIMARY KEY CLUSTERED (Id)
+        ,CONSTRAINT [pk_PersonDuplicateByAddressTable] PRIMARY KEY CLUSTERED (LocationId, GroupRoleId, GroupId, PersonAliasId)
         );
 
     INSERT INTO #PersonDuplicateByAddressTable (
         LocationId
-        ,Gender
         ,GroupRoleId
+		,GroupId
         ,PersonAliasId
         )
     -- from the locations that have multiple potential duplicate persons, select the person records (along with gender and family role) that are associated with that location
@@ -244,8 +246,8 @@ BEGIN
                 THEN a.MaxMappedLocationId
             ELSE a.MaxNotMappedLocationId
             END [LocationId]
-        ,[Gender]
         ,[GroupRoleId]
+        ,[GroupId]
         ,[PersonAliasId]
     FROM (
         SELECT max(CASE 
@@ -258,35 +260,31 @@ BEGIN
                         THEN [LocationId]
                     ELSE 0
                     END) [MaxNotMappedLocationId]
-            ,[Gender]
             ,[GroupRoleId]
+			,[GroupId]
             ,[PersonAliasId]
         FROM (
             SELECT [m].[LocationId]
                 ,[gl].[IsMappedLocation]
-                ,[m].[Gender]
                 ,[m].[GroupRoleId]
+				,[g].[id] [GroupId]
                 ,[pa].[Id] [PersonAliasId]
             FROM (
                 SELECT [LocationId]
-                    ,[Gender]
                     ,[GroupRoleId]
                     ,[MatchCount]
                 FROM (
                     -- consider it a potential duplicate person if multiple people have the same address (LocationId), Gender and GroupRole (adult, child)
                     SELECT [gl].[LocationId]
                         ,[gm].[GroupRoleId]
-                        ,[p].[Gender]
                         ,COUNT(*) [MatchCount]
-                    FROM [Person] [p]
-                    JOIN [GroupMember] [gm] ON [gm].[PersonId] = [p].[Id]
+                    FROM [GroupMember] [gm] 
                     JOIN [Group] [g] ON [gm].[GroupId] = [g].[Id]
                     JOIN [GroupLocation] [gl] ON [gl].[GroupId] = [g].[id]
                     JOIN [Location] [l] ON [l].[Id] = [gl].[LocationId]
-                        AND [g].[GroupTypeId] = @cGROUPTYPE_FAMILY_ID
-                    WHERE [gl].[GroupLocationTypeValueId] = @cLOCATION_TYPE_HOME_ID
+					WHERE [g].[GroupTypeId] = @cGROUPTYPE_FAMILY_ID
+                    AND [gl].[GroupLocationTypeValueId] = @cLOCATION_TYPE_HOME_ID
                     GROUP BY [gl].[LocationID]
-                        ,[p].[Gender]
                         ,[gm].[GroupRoleId]
                     ) [a]
                 WHERE [MatchCount] > 1
@@ -296,15 +294,17 @@ BEGIN
             JOIN [GroupMember] [gm] ON [gm].[GroupId] = [g].[Id]
             JOIN [PersonAlias] [pa] ON [gm].[PersonId] = [pa].[PersonId]
             JOIN [Person] [p] ON [p].[Id] = [pa].[PersonId]
-            WHERE [m].[Gender] = [p].[Gender]
-                AND [m].[GroupRoleId] = [gm].[GroupRoleId] -- only consider it a potential duplicate person if the gender,role and location are the same (to reduce false matches due to married couples)
+            WHERE [m].[GroupRoleId] = [gm].[GroupRoleId] -- only consider it a potential duplicate person if the gender,role and location are the same (to reduce false matches due to married couples)
                 AND [pa].[AliasPersonId] = [pa].[PersonId] -- limit to only the primary alias
                 AND @compareByAddress = 1
             ) [a]
         GROUP BY [PersonAliasId]
-            ,[Gender]
             ,[GroupRoleId]
+			,[GroupId]
         ) a
+
+	--PRINT'Create Address Dups: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+	--SET @ms = GETDATE()
 
     -- get the original ConfidenceScore of the IgnoreUntilScoreChanges records so that we can un-ignore the ones that have a changed score
     DECLARE @IgnoreUntilScoreChangesTable TABLE (
@@ -318,12 +318,18 @@ BEGIN
     FROM [PersonDuplicate]
     WHERE [IgnoreUntilScoreChanges] = 1;
 
+	--PRINT'Create Ignore Score Changes: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+	--SET @ms = GETDATE()
+
     /* 
     Reset Scores for everybody. (We want to preserve each record's [IsConfirmedAsNotDuplicate] value)
     */
     UPDATE [PersonDuplicate]
     SET [Score] = 0
         ,[ScoreDetail] = '';
+
+	--PRINT'Reset Scores: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+	--SET @ms = GETDATE()
 
     /*
     Merge Results of Matches into PersonDuplicate Table
@@ -336,7 +342,6 @@ BEGIN
             ,max([e1].[Email]) [Email]
         FROM #PersonDuplicateByEmailTable [e1]
         JOIN #PersonDuplicateByEmailTable [e2] ON [e1].[email] = [e2].[email]
-            AND [e1].[Id] != [e2].[Id]
             AND [e1].[PersonAliasId] > [e2].[PersonAliasId] -- we only need the matched pair in there once (don't need both PersonA == PersonB and PersonB == PersonA)
         GROUP BY e1.PersonAliasId
             ,e2.PersonAliasId
@@ -372,9 +377,15 @@ BEGIN
                 ,NEWID()
                 );
 
+	--PRINT'Merge Email Matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+	--SET @ms = GETDATE()
+
     -- Update PersonDuplicate table with results of partial name match
-    MERGE [PersonDuplicate] AS TARGET
-    USING (
+	UPDATE [PD] SET 
+		 [Score] = [Score] + @cScoreWeightPartialName
+        ,[ScoreDetail] += '|PartialName'
+        ,[ModifiedDateTime] = @processDateTime
+	FROM (
         SELECT [e1].[PersonAliasId] [PersonAliasId]
             ,[e2].[PersonAliasId] [DuplicatePersonAliasId]
             ,max([e1].[First2]) [First2]
@@ -382,41 +393,52 @@ BEGIN
         FROM #PersonDuplicateByNameTable [e1]
         JOIN #PersonDuplicateByNameTable [e2] ON [e1].[First2] = [e2].[First2]
             AND [e1].[LastName] = [e2].[LastName]
-            AND [e1].[Id] != [e2].[Id]
             AND [e1].[PersonAliasId] > [e2].[PersonAliasId] -- we only need the matched pair in there once (don't need both PersonA == PersonB and PersonB == PersonA)
         GROUP BY e1.PersonAliasId
             ,e2.PersonAliasId
-        ) AS source(PersonAliasId, DuplicatePersonAliasId, LastName, First2)
-        ON (target.PersonAliasId = source.PersonAliasId)
-            AND (target.DuplicatePersonAliasId = source.DuplicatePersonAliasId)
-    WHEN MATCHED
-        THEN
-            UPDATE
-            SET [Score] = [Score] + @cScoreWeightPartialName
-                ,[ScoreDetail] += '|PartialName'
-                ,[ModifiedDateTime] = @processDateTime
-    WHEN NOT MATCHED
-        THEN
-            INSERT (
-                PersonAliasId
-                ,DuplicatePersonAliasId
-                ,Score
-                ,ScoreDetail
-                ,IsConfirmedAsNotDuplicate
-                ,ModifiedDateTime
-                ,CreatedDateTime
-                ,[Guid]
-                )
-            VALUES (
-                source.PersonAliasId
-                ,source.DuplicatePersonAliasId
-                ,@cScoreWeightPartialName
-                ,'|PartialName'
-                ,0
-                ,@processDateTime
-                ,@processDateTime
-                ,NEWID()
-                );
+        ) [NameDup]
+	INNER JOIN [PersonDuplicate] [pd]
+	    ON ([pd].PersonAliasId = [NameDup].PersonAliasId)
+        AND ([pd].DuplicatePersonAliasId = [NameDup].DuplicatePersonAliasId)
+
+    INSERT INTO [PersonDuplicate] (
+        PersonAliasId
+        ,DuplicatePersonAliasId
+        ,Score
+        ,ScoreDetail
+        ,IsConfirmedAsNotDuplicate
+        ,ModifiedDateTime
+        ,CreatedDateTime
+        ,[Guid]
+        )
+    SELECT 
+        [NameDup].PersonAliasId
+        ,[NameDup].DuplicatePersonAliasId
+        ,@cScoreWeightPartialName
+        ,'|PartialName'
+        ,0
+        ,@processDateTime
+        ,@processDateTime
+        ,NEWID()
+	FROM (
+        SELECT [e1].[PersonAliasId] [PersonAliasId]
+            ,[e2].[PersonAliasId] [DuplicatePersonAliasId]
+            ,max([e1].[First2]) [First2]
+            ,max([e1].[LastName]) [LastName]
+        FROM #PersonDuplicateByNameTable [e1]
+        JOIN #PersonDuplicateByNameTable [e2] ON [e1].[First2] = [e2].[First2]
+            AND [e1].[LastName] = [e2].[LastName]
+            AND [e1].[PersonAliasId] > [e2].[PersonAliasId] -- we only need the matched pair in there once (don't need both PersonA == PersonB and PersonB == PersonA)
+        GROUP BY e1.PersonAliasId
+            ,e2.PersonAliasId
+        ) [NameDup]
+	LEFT OUTER JOIN [PersonDuplicate] [pd]
+	    ON ([pd].PersonAliasId = [NameDup].PersonAliasId)
+        AND ([pd].DuplicatePersonAliasId = [NameDup].DuplicatePersonAliasId)
+	WHERE [pd].[id] IS NULL
+
+	--PRINT'Merge Name Matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+	--SET @ms = GETDATE()
 
     --  Update PersonDuplicate table with results of phonenumber match for each number type. 
     --  For example, if both the Cell and Home phone match, that should be a higher score 
@@ -462,19 +484,17 @@ BEGIN
                 ,max([e1].[Extension])
                 ,max([e1].[CountryCode])
                 ,max([e1].[NumberTypeValueId])
-                ,max([e1].[Gender])
             FROM #PersonDuplicateByPhoneTable [e1]
             JOIN #PersonDuplicateByPhoneTable [e2] ON [e1].[Number] = [e2].[Number]
                 AND [e1].[Extension] = [e2].[Extension]
                 AND [e1].[CountryCode] = [e2].[CountryCode]
                 AND [e1].[NumberTypeValueId] = [e2].[NumberTypeValueId]
-                AND [e1].[Gender] = [e2].[Gender]
-                AND [e1].[Id] != [e2].[Id]
+				AND [e1].[GroupId] <> [e2].[GroupId] -- Ignore people with duplicate phone number in same family
                 AND [e1].[PersonAliasId] > [e2].[PersonAliasId] -- we only need the matched pair in there once (don't need both PersonA == PersonB and PersonB == PersonA)
             WHERE [e1].[NumberTypeValueId] = @PhoneNumberTypeValueId
             GROUP BY e1.PersonAliasId
                 ,e2.PersonAliasId
-            ) AS source(PersonAliasId, DuplicatePersonAliasId, Number, Extension, CountryCode, NumberTypeValueId, Gender)
+            ) AS source(PersonAliasId, DuplicatePersonAliasId, Number, Extension, CountryCode, NumberTypeValueId)
             ON (target.PersonAliasId = source.PersonAliasId)
                 AND (target.DuplicatePersonAliasId = source.DuplicatePersonAliasId)
         WHEN MATCHED
@@ -515,23 +535,24 @@ BEGIN
 
     DEALLOCATE phoneNumberTypeCursor
 
+	--PRINT'Merge Phone Matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+	--SET @ms = GETDATE()
+
     -- Update PersonDuplicate table with results of address (location) match
     MERGE [PersonDuplicate] AS TARGET
     USING (
         SELECT [e1].[PersonAliasId] [PersonAliasId]
             ,[e2].[PersonAliasId] [DuplicatePersonAliasId]
             ,max([e1].[LocationId])
-            ,max([e1].[Gender])
             ,max([e1].[GroupRoleId])
         FROM #PersonDuplicateByAddressTable [e1]
         JOIN #PersonDuplicateByAddressTable [e2] ON [e1].[LocationId] = [e2].[LocationId]
-            AND [e1].[Gender] = [e2].[Gender]
             AND [e1].[GroupRoleId] = [e2].[GroupRoleId]
-            AND [e1].[Id] != [e2].[Id]
+            AND [e1].[GroupId] <> [e2].[GroupId] -- Ignore people in same family
             AND [e1].[PersonAliasId] > [e2].[PersonAliasId] -- we only need the matched pair in there once (don't need both PersonA == PersonB and PersonB == PersonA)
         GROUP BY e1.PersonAliasId
             ,e2.PersonAliasId
-        ) AS source(PersonAliasId, DuplicatePersonAliasId, LocationId, Gender, GroupRoleId)
+        ) AS source(PersonAliasId, DuplicatePersonAliasId, LocationId, GroupRoleId)
         ON (target.PersonAliasId = source.PersonAliasId)
             AND (target.DuplicatePersonAliasId = source.DuplicatePersonAliasId)
     WHEN MATCHED
@@ -563,6 +584,9 @@ BEGIN
                 ,NEWID()
                 );
 
+	--PRINT'Merge Address Matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+	--SET @ms = GETDATE()
+
     /* Calculate Capacities before we do the additional scores
     */
     -- set base capacity to include MaritalStatus and Gender, since everybody has values for those
@@ -576,6 +600,9 @@ BEGIN
                 THEN @cScoreWeightMaritalStatus
             ELSE 0
             END;
+
+	--PRINT'Update Base Capacity: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+	--SET @ms = GETDATE()
 
     -- increment capacity values for Email, PartialName, Birthdate (do in one Update statement since these are all person fields)
     UPDATE [PersonDuplicate]
@@ -620,6 +647,9 @@ BEGIN
     JOIN PersonAlias pa ON pa.Id = pd.PersonAliasId
     JOIN Person p ON p.Id = pa.PersonId
 
+	--PRINT'Increment Capacity for Email, Name, Birthdate: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+	--SET @ms = GETDATE()
+
     ---- NOTE Phone Capacity is higher if BOTH Home and Cell Phone are available
     -- increment capacity values for Home Phone
     UPDATE [PersonDuplicate]
@@ -634,6 +664,9 @@ BEGIN
             )
         AND @compareByPhone = 1
 
+	--PRINT'Increment Capacity for Home Phone: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+	--SET @ms = GETDATE()
+
     -- increment capacity values for Cell Phone
     UPDATE [PersonDuplicate]
     SET [Capacity] += @cScoreWeightCellPhoneNumber
@@ -646,6 +679,9 @@ BEGIN
             WHERE NumberTypeValueId = @cCELL_PHONENUMBER_DEFINEDVALUE_ID
             )
         AND @compareByPhone = 1
+
+	--PRINT'Increment Capacity for Cell Phone: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+	--SET @ms = GETDATE()
 
     -- increment capacity values for Address
     UPDATE [PersonDuplicate]
@@ -664,6 +700,9 @@ BEGIN
             )
         AND @compareByAddress = 1
 
+	--PRINT'Increment Capacity for Address: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+	--SET @ms = GETDATE()
+
     -- increment capacity values for Campus
     UPDATE [PersonDuplicate]
     SET [Capacity] += @cScoreWeightCampus
@@ -679,15 +718,17 @@ BEGIN
             )
         AND @compareByCampus = 1
 
+	--PRINT'Increment Capacity for Campus: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+	--SET @ms = GETDATE()
+
     /*
     Add additional scores to people that are already potential matches 
     */
-    -- Increment the score on potential matches that have the same FirstName (or NickName)
-    -- put the updated ids into a temp list first to speed things up
-    DECLARE @updatedIdsFirstName TABLE (id INT);
 
-    INSERT INTO @updatedIdsFirstName
-    SELECT pd.Id
+    -- Increment the score on potential matches that have the same FirstName (or NickName)
+    UPDATE pd
+    SET [Score] = [Score] + @cScoreWeightFullFirstName
+        ,[ScoreDetail] += '|FirstName'
     FROM PersonDuplicate pd
     JOIN PersonAlias pa1 ON pa1.Id = pd.PersonAliasId
     JOIN PersonAlias pa2 ON pa2.Id = pd.DuplicatePersonAliasId
@@ -715,20 +756,13 @@ BEGIN
             )
         AND @compareByFullFirstName = 1
 
-    UPDATE [PersonDuplicate]
-    SET [Score] = [Score] + @cScoreWeightFullFirstName
-        ,[ScoreDetail] += '|FirstName'
-    WHERE Id IN (
-            SELECT Id
-            FROM @updatedIdsFirstName
-            )
+	--PRINT'Update score for first name matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+	--SET @ms = GETDATE()
 
     -- Increment the score on potential matches that have the same LastName
-    -- put the updated ids into a temp list first to speed things up
-    DECLARE @updatedIdsLastName TABLE (id INT);
-
-    INSERT INTO @updatedIdsLastName
-    SELECT pd.Id
+    UPDATE pd
+    SET [Score] = [Score] + @cScoreWeightFullFirstName
+        ,[ScoreDetail] += '|LastName'
     FROM PersonDuplicate pd
     JOIN PersonAlias pa1 ON pa1.Id = pd.PersonAliasId
     JOIN PersonAlias pa2 ON pa2.Id = pd.DuplicatePersonAliasId
@@ -738,42 +772,28 @@ BEGIN
         AND isnull(p1.LastName, '') != ''
         AND @compareByFullLastName = 1
 
-    UPDATE [PersonDuplicate]
-    SET [Score] = [Score] + @cScoreWeightFullFirstName
-        ,[ScoreDetail] += '|LastName'
-    WHERE Id IN (
-            SELECT Id
-            FROM @updatedIdsLastName
-            )
+	--PRINT'Update score for last name matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+	--SET @ms = GETDATE()
 
     -- Increment the score on potential matches that have the same birthday
-    -- put the updated ids into a temp list first to speed things up
-    DECLARE @updatedIdsBirthdate TABLE (id INT);
-
-    INSERT INTO @updatedIdsBirthdate
-    SELECT pd.Id
+    UPDATE pd
+    SET [Score] = [Score] + @cScoreWeightBirthdate
+        ,[ScoreDetail] += '|Birthdate'
     FROM PersonDuplicate pd
-    JOIN PersonAlias pa1 ON pa1.Id = pd.PersonAliasId
-    JOIN PersonAlias pa2 ON pa2.Id = pd.DuplicatePersonAliasId
-    JOIN Person p1 ON p1.Id = pa1.PersonId
-    JOIN Person p2 ON p2.Id = pa2.PersonId
+    INNER JOIN PersonAlias pa1 ON pa1.Id = pd.PersonAliasId
+    INNER JOIN PersonAlias pa2 ON pa2.Id = pd.DuplicatePersonAliasId
+    INNER JOIN Person p1 ON p1.Id = pa1.PersonId
+    INNER JOIN Person p2 ON p2.Id = pa2.PersonId
     WHERE p1.BirthDate = p2.BirthDate
         AND @compareByBirthDate = 1
 
-    UPDATE [PersonDuplicate]
-    SET [Score] = [Score] + @cScoreWeightBirthdate
-        ,[ScoreDetail] += '|Birthdate'
-    WHERE Id IN (
-            SELECT Id
-            FROM @updatedIdsBirthdate
-            )
+	--PRINT'Update score for birthday matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+	--SET @ms = GETDATE()
 
     -- Increment the score on potential matches that have the same gender
-    -- put the updated ids into a temp list first to speed things up
-    DECLARE @updatedIdsGender TABLE (id INT);
-
-    INSERT INTO @updatedIdsGender
-    SELECT pd.Id
+    UPDATE pd
+    SET [Score] = [Score] + @cScoreWeightGender
+        ,[ScoreDetail] += '|Gender'
     FROM PersonDuplicate pd
     JOIN PersonAlias pa1 ON pa1.Id = pd.PersonAliasId
     JOIN PersonAlias pa2 ON pa2.Id = pd.DuplicatePersonAliasId
@@ -782,20 +802,13 @@ BEGIN
     WHERE p1.Gender = p2.Gender
         AND @compareByGender = 1
 
-    UPDATE [PersonDuplicate]
-    SET [Score] = [Score] + @cScoreWeightGender
-        ,[ScoreDetail] += '|Gender'
-    WHERE Id IN (
-            SELECT Id
-            FROM @updatedIdsGender
-            )
+	--PRINT'Update score for gender matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+	--SET @ms = GETDATE()
 
     -- Increment the score on potential matches that have the same campus
-    -- put the updated ids into a temp list first to speed things up
-    DECLARE @updatedIdsCampus TABLE (id INT);
-
-    INSERT INTO @updatedIdsCampus
-    SELECT pd.Id
+    UPDATE pd
+    SET [Score] = [Score] + @cScoreWeightCampus
+        ,[ScoreDetail] += '|Campus'
     FROM PersonDuplicate pd
     JOIN PersonAlias pa1 ON pa1.Id = pd.PersonAliasId
     JOIN PersonAlias pa2 ON pa2.Id = pd.DuplicatePersonAliasId
@@ -812,20 +825,13 @@ BEGIN
         AND [g2].[GroupTypeId] = @cGROUPTYPE_FAMILY_ID
         AND @compareByCampus = 1
 
-    UPDATE PersonDuplicate
-    SET [Score] = [Score] + @cScoreWeightCampus
-        ,[ScoreDetail] += '|Campus'
-    WHERE Id IN (
-            SELECT Id
-            FROM @updatedIdsCampus
-            )
+	--PRINT'Update score for campus matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+	--SET @ms = GETDATE()
 
     -- Increment the score on potential matches that have the same marital status
-    -- put the updated ids into a temp list first to speed things up
-    DECLARE @updatedIdsMarital TABLE (id INT);
-
-    INSERT INTO @updatedIdsMarital
-    SELECT pd.Id
+    UPDATE pd
+    SET [Score] = [Score] + @cScoreWeightMaritalStatus
+        ,[ScoreDetail] += '|Marital'
     FROM PersonDuplicate pd
     JOIN PersonAlias pa1 ON pa1.Id = pd.PersonAliasId
     JOIN PersonAlias pa2 ON pa2.Id = pd.DuplicatePersonAliasId
@@ -834,13 +840,8 @@ BEGIN
     WHERE p1.MaritalStatusValueId = p2.MaritalStatusValueId
         AND @compareByMaritalStatus = 1
 
-    UPDATE PersonDuplicate
-    SET [Score] = [Score] + @cScoreWeightMaritalStatus
-        ,[ScoreDetail] += '|Marital'
-    WHERE Id IN (
-            SELECT Id
-            FROM @updatedIdsMarital
-            )
+	--PRINT'Update score for marital status matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+	--SET @ms = GETDATE()
 
     /* 
     Clean up records that no longer are duplicates 
@@ -858,16 +859,34 @@ BEGIN
         WHERE [ModifiedDateTime] < @processDateTime
     END
 
+	--PRINT'Remove stale matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+	--SET @ms = GETDATE()
+
     UPDATE [PersonDuplicate]
     SET [TotalCapacity] = @TotalCapacity
-    WHERE [TotalCapacity] != @TotalCapacity
-        OR [TotalCapacity] IS NULL
+
+	--PRINT'Set Total Capacity: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+	--SET @ms = GETDATE()
+
+	UPDATE [PersonDuplicate]
+	SET [ConfidenceScore] = sqrt (
+		( CASE WHEN [TotalCapacity] > 0 
+			THEN [Capacity] / ( [TotalCapacity] * 0.01 ) 
+			ELSE 0 END )
+		*
+		( CASE WHEN [Capacity] > 0 
+			THEN [Score] / ( [Capacity] * 0.01 ) 
+			ELSE 0 END )
+	)
 
     UPDATE [PersonDuplicate]
     SET IgnoreUntilScoreChanges = 0
     FROM [PersonDuplicate] [pd]
     JOIN @IgnoreUntilScoreChangesTable [g] ON pd.Id = g.id
     WHERE pd.ConfidenceScore != g.ConfidenceScore;
+
+	--PRINT'Set Ignore changes: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+	--SET @ms = GETDATE()
 
     /*
     Explicitly clean up temp tables before the proc exits (vs. have SQL Server do it for us after the proc is done)
@@ -880,8 +899,7 @@ BEGIN
 
     DROP TABLE #PersonDuplicateByAddressTable;
 
-    COMMIT
+	--PRINT'Drop temp tables: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
+	--SET @ms = GETDATE()
+
 END
-GO
-
-

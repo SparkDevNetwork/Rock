@@ -490,7 +490,7 @@ namespace RockWeb.Blocks.Event
         {
             var state = e.State["event"];
 
-            if ( state != null )
+            if ( CurrentPanel > 0 && state != null )
             {
                 string[] commands = state.Split( ',' );
 
@@ -787,6 +787,15 @@ namespace RockWeb.Blocks.Event
                         return;
                     }
 
+                    if ( !UserLoginService.IsPasswordValid( txtPassword.Text ) )
+                    {
+                        nbSaveAccount.Title = string.Empty;
+                        nbSaveAccount.Text = UserLoginService.FriendlyPasswordRules();
+                        nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
+                        nbSaveAccount.Visible = true;
+                        return;
+                    }   
+                    
                     if ( txtPasswordConfirm.Text != txtPassword.Text )
                     {
                         nbSaveAccount.Title = "Invalid Password";
@@ -1241,48 +1250,59 @@ namespace RockWeb.Blocks.Event
         /// <returns></returns>
         private int? SaveChanges()
         {
-            Registration registration = null;
-
             if ( !string.IsNullOrWhiteSpace( TransactionCode ) )
             {
                 ShowError( string.Empty, "You have already completed this " + RegistrationTerm.ToLower() );
+                return null;
             }
-            else
+
+            Registration registration = null;
+
+            if ( RegistrationState != null && RegistrationState.Registrants.Any() && RegistrationTemplate != null )
             {
                 var rockContext = new RockContext();
 
                 var registrationService = new RegistrationService( rockContext );
-                
-                bool registrationCreated = false;
+
+                bool isNewRegistration = true;
+                var previousRegistrants = new List<int>();
+                if ( RegistrationState.RegistrationId.HasValue )
+                {
+                    var previousRegistration = registrationService.Get( RegistrationState.RegistrationId.Value );
+                    if ( previousRegistration != null )
+                    {
+                        isNewRegistration = false;
+                        previousRegistrants = previousRegistration.Registrants
+                            .Where( r => r.PersonAlias != null )
+                            .Select( r => r.PersonAlias.PersonId )
+                            .ToList();
+                    }
+                }
 
                 try
                 {
-                    if ( RegistrationState != null && RegistrationState.Registrants.Any() && RegistrationTemplate != null )
-                    {
-                        bool hasPayment = ( RegistrationState.PaymentAmount ?? 0.0m ) > 0.0m;
+                    bool hasPayment = ( RegistrationState.PaymentAmount ?? 0.0m ) > 0.0m;
 
-                        // Save the registration
-                        registration = SaveRegistration( rockContext, hasPayment );
-                        if ( registration != null && !RegistrationState.RegistrationId.HasValue )
+                    // Save the registration
+                    registration = SaveRegistration( rockContext, hasPayment );
+                    if ( registration != null )
+                    {
+                        // If there is a payment being made, process the payment
+                        if ( hasPayment )
                         {
-                            registrationCreated = true;
+                            string errorMessage = string.Empty;
+                            if ( !ProcessPayment( rockContext, registration, out errorMessage ) )
+                            {
+                                throw new Exception( errorMessage );
+                            }
                         }
 
-                        if ( registration != null )
+                        try 
                         {
-                            // If there is a payment being made, process the payment
-                            if ( hasPayment )
-                            {
-                                string errorMessage = string.Empty;
-                                if ( !ProcessPayment( rockContext, registration, out errorMessage ) )
-                                {
-                                    throw new Exception( errorMessage );
-                                }
-                            }
-
                             // If there is a valid registration, and nothing went wrong processing the payment, add registrants to group and send the notifications
                             if ( registration != null )
                             {
+                                SavePersonNotes( rockContext, previousRegistrants, registration );
                                 AddRegistrantsToGroup( rockContext, registration );
 
                                 string appRoot = ResolveRockUrl( "~/" );
@@ -1312,24 +1332,44 @@ namespace RockWeb.Blocks.Event
                                 }
                             }
                         }
+                        catch ( Exception postSaveEx )
+                        {
+                            ShowWarning( "The following occurred after processing your " + RegistrationTerm, postSaveEx.Message );
+                            ExceptionLogService.LogException( postSaveEx, Context, RockPage.PageId, RockPage.Layout.SiteId, CurrentPersonAlias );
+                        }
                     }
+
                 }
                 catch ( Exception ex )
                 {
                     ExceptionLogService.LogException( ex, Context, this.RockPage.PageId, this.RockPage.Site.Id, CurrentPersonAlias );
+
+                    string message = ex.Message;
+                    while ( ex.InnerException != null )
+                    {
+                        ex = ex.InnerException;
+                        message = ex.Message;
+                    }
+
                     ShowError( "An Error Occurred Processing Your " + RegistrationTerm, ex.Message );
 
                     // Try to delete the registration if it was just created
                     try
                     {
-                        if ( registrationCreated && registration != null && registration.Id > 0 )
+                        if ( isNewRegistration && registration != null && registration.Id > 0 )
                         {
                             RegistrationState.RegistrationId = null;
-                            var newRegistration = registrationService.Get( registration.Id );
-                            if ( newRegistration != null )
+                            using ( var newRockContext = new RockContext() )
                             {
-                                registrationService.Delete( registration );
-                                rockContext.SaveChanges();
+                                HistoryService.DeleteChanges( newRockContext, typeof( Registration ), registration.Id );
+
+                                var newRegistrationService = new RegistrationService( newRockContext );
+                                var newRegistration = newRegistrationService.Get( registration.Id );
+                                if ( newRegistration != null )
+                                {
+                                    newRegistrationService.Delete( newRegistration );
+                                    newRockContext.SaveChanges();
+                                }
                             }
                         }
                     }
@@ -1337,7 +1377,6 @@ namespace RockWeb.Blocks.Event
 
                     return (int?)null;
                 }
-
             }
 
             return registration != null ? registration.Id : (int?)null;
@@ -1355,9 +1394,7 @@ namespace RockWeb.Blocks.Event
             var registrantService = new RegistrationRegistrantService( rockContext );
             var registrantFeeService = new RegistrationRegistrantFeeService( rockContext );
             var personService = new PersonService( rockContext );
-            var groupMemberService = new GroupMemberService( rockContext );
             var groupService = new GroupService( rockContext );
-            var noteService = new NoteService( rockContext );
 
             // variables to keep track of the family that new people should be added to
             int? singleFamilyId = null;
@@ -1520,467 +1557,427 @@ namespace RockWeb.Blocks.Event
             // Save the registration ( so we can get an id )
             rockContext.SaveChanges();
 
-            // Setup Note settings
-            NoteTypeCache noteType = null;
-            var registrantNames = new Dictionary<int, string>();
-            if ( RegistrationTemplate != null && RegistrationTemplate.AddPersonNote )
+            try
             {
-                noteType = NoteTypeCache.Read( Rock.SystemGuid.NoteType.PERSON_EVENT_REGISTRATION.AsGuid() );
-            }
 
-            Task.Run( () =>
-                HistoryService.SaveChanges(
-                    new RockContext(),
-                    typeof( Registration ),
-                    Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
-                    registration.Id,
-                    registrationChanges, true, CurrentPersonAliasId )
-            );
-
-
-            // Get each registrant
-            foreach ( var registrantInfo in RegistrationState.Registrants.ToList() )
-            {
-                var registrantChanges = new List<string>();
-                var personChanges = new List<string>();
-                var familyChanges = new List<string>();
-
-                RegistrationRegistrant registrant = null;
-                Person person = null;
-                bool newPerson = true;
-
-                string firstName = registrantInfo.GetFirstName( RegistrationTemplate );
-                string lastName = registrantInfo.GetLastName( RegistrationTemplate );
-                string email = registrantInfo.GetEmail( RegistrationTemplate );
-
-                if ( registrantInfo.Id > 0 )
-                {
-                    registrant = registration.Registrants.FirstOrDefault( r => r.Id == registrantInfo.Id );
-                    if ( registrant != null )
-                    {
-                        person = registrant.Person;
-                        if ( person != null && (
-                            ( registrant.Person.FirstName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) || registrant.Person.NickName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) ) &&
-                            registrant.Person.LastName.Equals( lastName, StringComparison.OrdinalIgnoreCase ) ) )
-                        {
-                            newPerson = false;
-                        }
-                        else
-                        {
-                            person = null;
-                            registrant.PersonAlias = null;
-                            registrant.PersonAliasId = null;
-                        }
-                    }
-                }
-
-                if ( person == null )
-                {
-                    // Try to find a matching person based on name and email address
-                    var personMatches = personService.GetByMatch( firstName, lastName, email );
-                    if ( personMatches.Count() == 1 )
-                    {
-                        person = personMatches.First();
-                    }
-
-                    // Try to find a matching person based on name within same family as registrar
-                    if ( person == null && registrar != null && registrantInfo.FamilyGuid == RegistrationState.FamilyGuid )
-                    {
-                        var familyMembers = registrar.GetFamilyMembers( true, rockContext )
-                            .Where( m =>
-                                ( m.Person.FirstName == firstName || m.Person.NickName == firstName ) &&
-                                m.Person.LastName == lastName )
-                            .Select( m => m.Person )
-                            .ToList();
-
-                        if ( familyMembers.Count() == 1 )
-                        {
-                            person = familyMembers.First();
-                            if ( !string.IsNullOrWhiteSpace( email ) )
-                            {
-                                person.Email = email;
-                            }
-                        }
-
-                        if ( familyMembers.Count() > 1 && !string.IsNullOrWhiteSpace( email ) )
-                        {
-                            familyMembers = familyMembers
-                                .Where( m =>
-                                    m.Email != null &&
-                                    m.Email.Equals( email, StringComparison.OrdinalIgnoreCase ) )
-                                .ToList();
-                            if ( familyMembers.Count() == 1 )
-                            {
-                                person = familyMembers.First();
-                            }
-                        }
-                    }
-                }
-
-                if ( person == null )
-                {
-                    // If a match was not found, create a new person
-                    person = new Person();
-                    person.FirstName = firstName;
-                    person.LastName = lastName;
-                    person.IsEmailActive = true;
-                    person.Email = email;
-                    person.EmailPreference = EmailPreference.EmailAllowed;
-                    person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-                    if ( dvcConnectionStatus != null )
-                    {
-                        person.ConnectionStatusValueId = dvcConnectionStatus.Id;
-                    }
-
-                    if ( dvcRecordStatus != null )
-                    {
-                        person.RecordStatusValueId = dvcRecordStatus.Id;
-                    }
-                }
-
-                int? campusId = CampusId;
-                Location location = null;
-
-                // Set any of the template's person fields
-                foreach ( var field in RegistrationTemplate.Forms
-                    .SelectMany( f => f.Fields
-                        .Where( t => t.FieldSource == RegistrationFieldSource.PersonField ) ) )
-                {
-                    // Find the registrant's value
-                    var fieldValue = registrantInfo.FieldValues
-                        .Where( f => f.Key == field.Id )
-                        .Select( f => f.Value.FieldValue )
-                        .FirstOrDefault();
-
-
-                    if ( fieldValue != null )
-                    {
-                        switch ( field.PersonFieldType )
-                        {
-                            case RegistrationPersonFieldType.Campus:
-                                {
-                                    if ( fieldValue != null )
-                                    {
-                                        campusId = fieldValue.ToString().AsIntegerOrNull();
-                                    }
-                                    break;
-                                }
-
-                            case RegistrationPersonFieldType.Address:
-                                {
-                                    location = fieldValue as Location;
-                                    break;
-                                }
-
-                            case RegistrationPersonFieldType.Birthdate:
-                                {
-                                    var birthMonth = person.BirthMonth;
-                                    var birthDay = person.BirthDay;
-                                    var birthYear = person.BirthYear;
-
-                                    person.SetBirthDate( fieldValue as DateTime? );
-
-                                    History.EvaluateChange( personChanges, "Birth Month", birthMonth, person.BirthMonth );
-                                    History.EvaluateChange( personChanges, "Birth Day", birthDay, person.BirthDay );
-                                    History.EvaluateChange( personChanges, "Birth Year", birthYear, person.BirthYear );
-
-                                    break;
-                                }
-
-                            case RegistrationPersonFieldType.Gender:
-                                {
-                                    var newGender = fieldValue.ToString().ConvertToEnumOrNull<Gender>() ?? Gender.Unknown;
-                                    History.EvaluateChange( personChanges, "Gender", person.Gender, newGender );
-                                    person.Gender = newGender;
-                                    break;
-                                }
-
-                            case RegistrationPersonFieldType.MaritalStatus:
-                                {
-                                    if ( fieldValue != null )
-                                    {
-                                        int? newMaritalStatusId = fieldValue.ToString().AsIntegerOrNull();
-                                        History.EvaluateChange( personChanges, "Marital Status", DefinedValueCache.GetName( person.MaritalStatusValueId ), DefinedValueCache.GetName( newMaritalStatusId ) );
-                                        person.MaritalStatusValueId = newMaritalStatusId;
-                                    }
-                                    break;
-                                }
-
-                            case RegistrationPersonFieldType.MobilePhone:
-                                {
-                                    SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), personChanges );
-                                    break;
-                                }
-
-                            case RegistrationPersonFieldType.HomePhone:
-                                {
-                                    SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid(), personChanges );
-                                    break;
-                                }
-
-                            case RegistrationPersonFieldType.WorkPhone:
-                                {
-                                    SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid(), personChanges );
-                                    break;
-                                }
-                        }
-                    }
-                }
-
-                // Save the person ( and family if needed )
-                SavePerson( rockContext, person, registrantInfo.FamilyGuid, campusId, location, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId );
-                if ( newPerson )
-                {
-                    registrantNames.Add( person.Id, person.FullName );
-                }
-
-                // Load the person's attributes
-                person.LoadAttributes();
-
-                // Set any of the template's person fields
-                foreach ( var field in RegistrationTemplate.Forms
-                    .SelectMany( f => f.Fields
-                        .Where( t =>
-                            t.FieldSource == RegistrationFieldSource.PersonAttribute &&
-                            t.AttributeId.HasValue ) ) )
-                {
-                    // Find the registrant's value
-                    var fieldValue = registrantInfo.FieldValues
-                        .Where( f => f.Key == field.Id )
-                        .Select( f => f.Value.FieldValue )
-                        .FirstOrDefault();
-
-                    if ( fieldValue != null )
-                    {
-                        var attribute = AttributeCache.Read( field.AttributeId.Value );
-                        if ( attribute != null )
-                        {
-                            string originalValue = person.GetAttributeValue( attribute.Key );
-                            string newValue = fieldValue.ToString();
-                            person.SetAttributeValue( attribute.Key, fieldValue.ToString() );
-
-                            if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
-                            {
-                                string formattedOriginalValue = string.Empty;
-                                if ( !string.IsNullOrWhiteSpace( originalValue ) )
-                                {
-                                    formattedOriginalValue = attribute.FieldType.Field.FormatValue( null, originalValue, attribute.QualifierValues, false );
-                                }
-
-                                string formattedNewValue = string.Empty;
-                                if ( !string.IsNullOrWhiteSpace( newValue ) )
-                                {
-                                    formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
-                                }
-
-                                Helper.SaveAttributeValue( person, attribute, newValue, rockContext );
-                                History.EvaluateChange( personChanges, attribute.Name, formattedOriginalValue, formattedNewValue );
-
-                            }
-                        }
-                    }
-                }
-
-                string registrantName = person.FullName + ": ";
-
-                personChanges.ForEach( c => registrantChanges.Add( c ) );
-
-                if ( registrant == null )
-                {
-                    registrant = new RegistrationRegistrant();
-                    registrant.Guid = registrantInfo.Guid;
-                    registrantService.Add( registrant );
-                    registrant.RegistrationId = registration.Id;
-                }
-
-                registrant.PersonAliasId = person.PrimaryAliasId;
-                registrant.Cost = registrantInfo.Cost;
-
-                // Remove fees
-                // Remove/delete any registrant fees that are no longer in UI with quantity 
-                foreach ( var dbFee in registrant.Fees.ToList() )
-                {
-                    if ( !registrantInfo.FeeValues.Keys.Contains( dbFee.RegistrationTemplateFeeId ) ||
-                        registrantInfo.FeeValues[dbFee.RegistrationTemplateFeeId] == null ||
-                        !registrantInfo.FeeValues[dbFee.RegistrationTemplateFeeId]
-                            .Any( f =>
-                                f.Option == dbFee.Option &&
-                                f.Quantity > 0 ) )
-                    {
-                        registrantChanges.Add( string.Format( "Removed '{0}' Fee (Quantity:{1:N0}, Cost:{2:C2}, Option:{3}",
-                            dbFee.RegistrationTemplateFee.Name, dbFee.Quantity, dbFee.Cost, dbFee.Option ) );
-
-                        registrant.Fees.Remove( dbFee );
-                        registrantFeeService.Delete( dbFee );
-                    }
-                }
-
-                // Add or Update fees
-                foreach ( var uiFee in registrantInfo.FeeValues.Where( f => f.Value != null ) )
-                {
-                    foreach ( var uiFeeOption in uiFee.Value )
-                    {
-                        var dbFee = registrant.Fees
-                            .Where( f =>
-                                f.RegistrationTemplateFeeId == uiFee.Key &&
-                                f.Option == uiFeeOption.Option )
-                            .FirstOrDefault();
-
-                        if ( dbFee == null )
-                        {
-                            dbFee = new RegistrationRegistrantFee();
-                            dbFee.RegistrationTemplateFeeId = uiFee.Key;
-                            dbFee.Option = uiFeeOption.Option;
-                            registrant.Fees.Add( dbFee );
-                        }
-
-                        var templateFee = dbFee.RegistrationTemplateFee;
-                        if ( templateFee == null )
-                        {
-                            templateFee = RegistrationTemplate.Fees.Where( f => f.Id == uiFee.Key ).FirstOrDefault();
-                        }
-
-                        string feeName = templateFee != null ? templateFee.Name : "Fee";
-                        if ( !string.IsNullOrWhiteSpace( uiFeeOption.Option ) )
-                        {
-                            feeName = string.Format( "{0} ({1})", feeName, uiFeeOption.Option );
-                        }
-
-                        if ( dbFee.Id <= 0 )
-                        {
-                            registrantChanges.Add( feeName + " Fee Added" );
-                        }
-
-                        History.EvaluateChange( registrantChanges, feeName + " Quantity", dbFee.Quantity, uiFeeOption.Quantity );
-                        dbFee.Quantity = uiFeeOption.Quantity;
-
-                        History.EvaluateChange( registrantChanges, feeName + " Cost", dbFee.Cost, uiFeeOption.Cost );
-                        dbFee.Cost = uiFeeOption.Cost;
-                    }
-                }
-
-                rockContext.SaveChanges();
-
-                // Set any of the templat's registrant attributes
-                registrant.LoadAttributes();
-                foreach ( var field in RegistrationTemplate.Forms
-                    .SelectMany( f => f.Fields
-                        .Where( t =>
-                            t.FieldSource == RegistrationFieldSource.RegistrationAttribute &&
-                            t.AttributeId.HasValue ) ) )
-                {
-                    // Find the registrant's value
-                    var fieldValue = registrantInfo.FieldValues
-                        .Where( f => f.Key == field.Id )
-                        .Select( f => f.Value.FieldValue )
-                        .FirstOrDefault();
-
-                    if ( fieldValue != null )
-                    {
-                        var attribute = AttributeCache.Read( field.AttributeId.Value );
-                        if ( attribute != null )
-                        {
-                            string originalValue = registrant.GetAttributeValue( attribute.Key );
-                            string newValue = fieldValue.ToString();
-                            registrant.SetAttributeValue( attribute.Key, fieldValue.ToString() );
-
-                            if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
-                            {
-                                string formattedOriginalValue = string.Empty;
-                                if ( !string.IsNullOrWhiteSpace( originalValue ) )
-                                {
-                                    formattedOriginalValue = attribute.FieldType.Field.FormatValue( null, originalValue, attribute.QualifierValues, false );
-                                }
-
-                                string formattedNewValue = string.Empty;
-                                if ( !string.IsNullOrWhiteSpace( newValue ) )
-                                {
-                                    formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
-                                }
-
-                                Helper.SaveAttributeValue( registrant, attribute, newValue, rockContext );
-                                History.EvaluateChange( registrantChanges, attribute.Name, formattedOriginalValue, formattedNewValue );
-                            }
-                        }
-                    }
-                }
-
-                // Add a note to the registrant's person notes (if they aren't the one doing the registering)
-                if ( newPerson && noteType != null )
-                {
-                    var noteText = new StringBuilder();
-                    if ( registrar == null || registrar.Id != person.Id )
-                    {
-                        noteText.AppendFormat( "Registered for {0}", RegistrationInstanceState.Name );
-                        if ( registrar != null )
-                        {
-                            noteText.AppendFormat( " by {0}", registrar.FullName );
-                        }
-
-                        var note = new Note();
-                        note.NoteTypeId = noteType.Id;
-                        note.IsSystem = false;
-                        note.IsAlert = false;
-                        note.IsPrivateNote = false;
-                        note.EntityId = person.Id;
-                        note.Caption = string.Empty;
-                        note.Text = noteText.ToString();
-                        noteService.Add( note );
-                    }
-                }
-
-                Task.Run( () => 
+                Task.Run( () =>
                     HistoryService.SaveChanges(
                         new RockContext(),
                         typeof( Registration ),
                         Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
                         registration.Id,
-                        registrantChanges,
-                        "Registrant: " + person.FullName,
-                        null, null, true, CurrentPersonAliasId )
+                        registrationChanges, true, CurrentPersonAliasId )
                 );
 
-                // Clear this registran't family guid so it's not updated again
-                registrantInfo.FamilyGuid = Guid.Empty;
 
-            }
-
-            // Add a note to the registrars notes
-            if ( noteType != null && registrar != null && registrantNames.Any() )
-            {
-                string namesText = string.Empty;
-                if ( registrantNames.Count > 1 || registrantNames.First().Key != registrar.Id )
+                // Get each registrant
+                foreach ( var registrantInfo in RegistrationState.Registrants.ToList() )
                 {
-                    if ( registrantNames.ContainsKey( registrar.Id ) )
+                    var registrantChanges = new List<string>();
+                    var personChanges = new List<string>();
+                    var familyChanges = new List<string>();
+
+                    RegistrationRegistrant registrant = null;
+                    Person person = null;
+
+                    string firstName = registrantInfo.GetFirstName( RegistrationTemplate );
+                    string lastName = registrantInfo.GetLastName( RegistrationTemplate );
+                    string email = registrantInfo.GetEmail( RegistrationTemplate );
+
+                    if ( registrantInfo.Id > 0 )
                     {
-                        registrantNames[registrar.Id] = registrar.Gender == Gender.Male ? "himself" : registrar.Gender == Gender.Female ? "herself" : "themselves";
+                        registrant = registration.Registrants.FirstOrDefault( r => r.Id == registrantInfo.Id );
+                        if ( registrant != null )
+                        {
+                            person = registrant.Person;
+                            if ( person != null && (
+                                ( registrant.Person.FirstName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) || registrant.Person.NickName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) ) &&
+                                registrant.Person.LastName.Equals( lastName, StringComparison.OrdinalIgnoreCase ) ) )
+                            {
+                                //
+                            }
+                            else
+                            {
+                                person = null;
+                                registrant.PersonAlias = null;
+                                registrant.PersonAliasId = null;
+                            }
+                        }
                     }
 
-                    if ( registrantNames.Count >= 2 )
+                    if ( person == null )
                     {
-                        int lessOne = registrantNames.Count - 1;
-                        namesText = registrantNames.Take( lessOne ).Select( n => n.Value ).ToList().AsDelimited( ", " ) +
-                            " and " +
-                            registrantNames.Skip( lessOne ).Take( 1 ).First().Value + " ";
+                        // Try to find a matching person based on name and email address
+                        var personMatches = personService.GetByMatch( firstName, lastName, email );
+                        if ( personMatches.Count() == 1 )
+                        {
+                            person = personMatches.First();
+                        }
+
+                        // Try to find a matching person based on name within same family as registrar
+                        if ( person == null && registrar != null && registrantInfo.FamilyGuid == RegistrationState.FamilyGuid )
+                        {
+                            var familyMembers = registrar.GetFamilyMembers( true, rockContext )
+                                .Where( m =>
+                                    ( m.Person.FirstName == firstName || m.Person.NickName == firstName ) &&
+                                    m.Person.LastName == lastName )
+                                .Select( m => m.Person )
+                                .ToList();
+
+                            if ( familyMembers.Count() == 1 )
+                            {
+                                person = familyMembers.First();
+                                if ( !string.IsNullOrWhiteSpace( email ) )
+                                {
+                                    person.Email = email;
+                                }
+                            }
+
+                            if ( familyMembers.Count() > 1 && !string.IsNullOrWhiteSpace( email ) )
+                            {
+                                familyMembers = familyMembers
+                                    .Where( m =>
+                                        m.Email != null &&
+                                        m.Email.Equals( email, StringComparison.OrdinalIgnoreCase ) )
+                                    .ToList();
+                                if ( familyMembers.Count() == 1 )
+                                {
+                                    person = familyMembers.First();
+                                }
+                            }
+                        }
                     }
-                    else
+
+                    if ( person == null )
                     {
-                        namesText = registrantNames.First().Value + " ";
+                        // If a match was not found, create a new person
+                        person = new Person();
+                        person.FirstName = firstName;
+                        person.LastName = lastName;
+                        person.IsEmailActive = true;
+                        person.Email = email;
+                        person.EmailPreference = EmailPreference.EmailAllowed;
+                        person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                        if ( dvcConnectionStatus != null )
+                        {
+                            person.ConnectionStatusValueId = dvcConnectionStatus.Id;
+                        }
+
+                        if ( dvcRecordStatus != null )
+                        {
+                            person.RecordStatusValueId = dvcRecordStatus.Id;
+                        }
                     }
+
+                    int? campusId = CampusId;
+                    Location location = null;
+
+                    // Set any of the template's person fields
+                    foreach ( var field in RegistrationTemplate.Forms
+                        .SelectMany( f => f.Fields
+                            .Where( t => t.FieldSource == RegistrationFieldSource.PersonField ) ) )
+                    {
+                        // Find the registrant's value
+                        var fieldValue = registrantInfo.FieldValues
+                            .Where( f => f.Key == field.Id )
+                            .Select( f => f.Value.FieldValue )
+                            .FirstOrDefault();
+
+
+                        if ( fieldValue != null )
+                        {
+                            switch ( field.PersonFieldType )
+                            {
+                                case RegistrationPersonFieldType.Campus:
+                                    {
+                                        if ( fieldValue != null )
+                                        {
+                                            campusId = fieldValue.ToString().AsIntegerOrNull();
+                                        }
+                                        break;
+                                    }
+
+                                case RegistrationPersonFieldType.Address:
+                                    {
+                                        location = fieldValue as Location;
+                                        break;
+                                    }
+
+                                case RegistrationPersonFieldType.Birthdate:
+                                    {
+                                        var birthMonth = person.BirthMonth;
+                                        var birthDay = person.BirthDay;
+                                        var birthYear = person.BirthYear;
+
+                                        person.SetBirthDate( fieldValue as DateTime? );
+
+                                        History.EvaluateChange( personChanges, "Birth Month", birthMonth, person.BirthMonth );
+                                        History.EvaluateChange( personChanges, "Birth Day", birthDay, person.BirthDay );
+                                        History.EvaluateChange( personChanges, "Birth Year", birthYear, person.BirthYear );
+
+                                        break;
+                                    }
+
+                                case RegistrationPersonFieldType.Gender:
+                                    {
+                                        var newGender = fieldValue.ToString().ConvertToEnumOrNull<Gender>() ?? Gender.Unknown;
+                                        History.EvaluateChange( personChanges, "Gender", person.Gender, newGender );
+                                        person.Gender = newGender;
+                                        break;
+                                    }
+
+                                case RegistrationPersonFieldType.MaritalStatus:
+                                    {
+                                        if ( fieldValue != null )
+                                        {
+                                            int? newMaritalStatusId = fieldValue.ToString().AsIntegerOrNull();
+                                            History.EvaluateChange( personChanges, "Marital Status", DefinedValueCache.GetName( person.MaritalStatusValueId ), DefinedValueCache.GetName( newMaritalStatusId ) );
+                                            person.MaritalStatusValueId = newMaritalStatusId;
+                                        }
+                                        break;
+                                    }
+
+                                case RegistrationPersonFieldType.MobilePhone:
+                                    {
+                                        SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), personChanges );
+                                        break;
+                                    }
+
+                                case RegistrationPersonFieldType.HomePhone:
+                                    {
+                                        SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid(), personChanges );
+                                        break;
+                                    }
+
+                                case RegistrationPersonFieldType.WorkPhone:
+                                    {
+                                        SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid(), personChanges );
+                                        break;
+                                    }
+                            }
+                        }
+                    }
+
+                    // Save the person ( and family if needed )
+                    SavePerson( rockContext, person, registrantInfo.FamilyGuid, campusId, location, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId );
+
+                    // Load the person's attributes
+                    person.LoadAttributes();
+
+                    // Set any of the template's person fields
+                    foreach ( var field in RegistrationTemplate.Forms
+                        .SelectMany( f => f.Fields
+                            .Where( t =>
+                                t.FieldSource == RegistrationFieldSource.PersonAttribute &&
+                                t.AttributeId.HasValue ) ) )
+                    {
+                        // Find the registrant's value
+                        var fieldValue = registrantInfo.FieldValues
+                            .Where( f => f.Key == field.Id )
+                            .Select( f => f.Value.FieldValue )
+                            .FirstOrDefault();
+
+                        if ( fieldValue != null )
+                        {
+                            var attribute = AttributeCache.Read( field.AttributeId.Value );
+                            if ( attribute != null )
+                            {
+                                string originalValue = person.GetAttributeValue( attribute.Key );
+                                string newValue = fieldValue.ToString();
+                                person.SetAttributeValue( attribute.Key, fieldValue.ToString() );
+
+                                if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
+                                {
+                                    string formattedOriginalValue = string.Empty;
+                                    if ( !string.IsNullOrWhiteSpace( originalValue ) )
+                                    {
+                                        formattedOriginalValue = attribute.FieldType.Field.FormatValue( null, originalValue, attribute.QualifierValues, false );
+                                    }
+
+                                    string formattedNewValue = string.Empty;
+                                    if ( !string.IsNullOrWhiteSpace( newValue ) )
+                                    {
+                                        formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
+                                    }
+
+                                    Helper.SaveAttributeValue( person, attribute, newValue, rockContext );
+                                    History.EvaluateChange( personChanges, attribute.Name, formattedOriginalValue, formattedNewValue );
+
+                                }
+                            }
+                        }
+                    }
+
+                    string registrantName = person.FullName + ": ";
+
+                    personChanges.ForEach( c => registrantChanges.Add( c ) );
+
+                    if ( registrant == null )
+                    {
+                        registrant = new RegistrationRegistrant();
+                        registrant.Guid = registrantInfo.Guid;
+                        registrantService.Add( registrant );
+                        registrant.RegistrationId = registration.Id;
+                    }
+
+                    registrant.PersonAliasId = person.PrimaryAliasId;
+                    registrant.Cost = registrantInfo.Cost;
+
+                    // Remove fees
+                    // Remove/delete any registrant fees that are no longer in UI with quantity 
+                    foreach ( var dbFee in registrant.Fees.ToList() )
+                    {
+                        if ( !registrantInfo.FeeValues.Keys.Contains( dbFee.RegistrationTemplateFeeId ) ||
+                            registrantInfo.FeeValues[dbFee.RegistrationTemplateFeeId] == null ||
+                            !registrantInfo.FeeValues[dbFee.RegistrationTemplateFeeId]
+                                .Any( f =>
+                                    f.Option == dbFee.Option &&
+                                    f.Quantity > 0 ) )
+                        {
+                            registrantChanges.Add( string.Format( "Removed '{0}' Fee (Quantity:{1:N0}, Cost:{2:C2}, Option:{3}",
+                                dbFee.RegistrationTemplateFee.Name, dbFee.Quantity, dbFee.Cost, dbFee.Option ) );
+
+                            registrant.Fees.Remove( dbFee );
+                            registrantFeeService.Delete( dbFee );
+                        }
+                    }
+
+                    // Add or Update fees
+                    foreach ( var uiFee in registrantInfo.FeeValues.Where( f => f.Value != null ) )
+                    {
+                        foreach ( var uiFeeOption in uiFee.Value )
+                        {
+                            var dbFee = registrant.Fees
+                                .Where( f =>
+                                    f.RegistrationTemplateFeeId == uiFee.Key &&
+                                    f.Option == uiFeeOption.Option )
+                                .FirstOrDefault();
+
+                            if ( dbFee == null )
+                            {
+                                dbFee = new RegistrationRegistrantFee();
+                                dbFee.RegistrationTemplateFeeId = uiFee.Key;
+                                dbFee.Option = uiFeeOption.Option;
+                                registrant.Fees.Add( dbFee );
+                            }
+
+                            var templateFee = dbFee.RegistrationTemplateFee;
+                            if ( templateFee == null )
+                            {
+                                templateFee = RegistrationTemplate.Fees.Where( f => f.Id == uiFee.Key ).FirstOrDefault();
+                            }
+
+                            string feeName = templateFee != null ? templateFee.Name : "Fee";
+                            if ( !string.IsNullOrWhiteSpace( uiFeeOption.Option ) )
+                            {
+                                feeName = string.Format( "{0} ({1})", feeName, uiFeeOption.Option );
+                            }
+
+                            if ( dbFee.Id <= 0 )
+                            {
+                                registrantChanges.Add( feeName + " Fee Added" );
+                            }
+
+                            History.EvaluateChange( registrantChanges, feeName + " Quantity", dbFee.Quantity, uiFeeOption.Quantity );
+                            dbFee.Quantity = uiFeeOption.Quantity;
+
+                            History.EvaluateChange( registrantChanges, feeName + " Cost", dbFee.Cost, uiFeeOption.Cost );
+                            dbFee.Cost = uiFeeOption.Cost;
+                        }
+                    }
+
+                    rockContext.SaveChanges();
+
+                    // Set any of the templat's registrant attributes
+                    registrant.LoadAttributes();
+                    foreach ( var field in RegistrationTemplate.Forms
+                        .SelectMany( f => f.Fields
+                            .Where( t =>
+                                t.FieldSource == RegistrationFieldSource.RegistrationAttribute &&
+                                t.AttributeId.HasValue ) ) )
+                    {
+                        // Find the registrant's value
+                        var fieldValue = registrantInfo.FieldValues
+                            .Where( f => f.Key == field.Id )
+                            .Select( f => f.Value.FieldValue )
+                            .FirstOrDefault();
+
+                        if ( fieldValue != null )
+                        {
+                            var attribute = AttributeCache.Read( field.AttributeId.Value );
+                            if ( attribute != null )
+                            {
+                                string originalValue = registrant.GetAttributeValue( attribute.Key );
+                                string newValue = fieldValue.ToString();
+                                registrant.SetAttributeValue( attribute.Key, fieldValue.ToString() );
+
+                                if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
+                                {
+                                    string formattedOriginalValue = string.Empty;
+                                    if ( !string.IsNullOrWhiteSpace( originalValue ) )
+                                    {
+                                        formattedOriginalValue = attribute.FieldType.Field.FormatValue( null, originalValue, attribute.QualifierValues, false );
+                                    }
+
+                                    string formattedNewValue = string.Empty;
+                                    if ( !string.IsNullOrWhiteSpace( newValue ) )
+                                    {
+                                        formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
+                                    }
+
+                                    Helper.SaveAttributeValue( registrant, attribute, newValue, rockContext );
+                                    History.EvaluateChange( registrantChanges, attribute.Name, formattedOriginalValue, formattedNewValue );
+                                }
+                            }
+                        }
+                    }
+
+                    Task.Run( () =>
+                        HistoryService.SaveChanges(
+                            new RockContext(),
+                            typeof( Registration ),
+                            Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
+                            registration.Id,
+                            registrantChanges,
+                            "Registrant: " + person.FullName,
+                            null, null, true, CurrentPersonAliasId )
+                    );
+
+                    // Clear this registran't family guid so it's not updated again
+                    registrantInfo.FamilyGuid = Guid.Empty;
+
                 }
 
-                var note = new Note();
-                note.NoteTypeId = noteType.Id;
-                note.IsSystem = false;
-                note.IsAlert = false;
-                note.IsPrivateNote = false;
-                note.EntityId = registrar.Id;
-                note.Caption = string.Empty;
-                note.Text = string.Format( "Registered {0} for {1}", namesText, RegistrationInstanceState.Name );
-                noteService.Add( note );
+                rockContext.SaveChanges();
             }
 
-            rockContext.SaveChanges();
+            catch ( Exception ex )
+            {
+                try
+                {
+                    using ( var newRockContext = new RockContext() )
+                    {
+                        if ( newRegistration )
+                        {
+                            var newRegistrationService = new RegistrationService( newRockContext );
+                            var savedRegistration = new RegistrationService( newRockContext ).Get( registration.Id );
+                            if ( savedRegistration != null )
+                            {
+                                HistoryService.DeleteChanges( newRockContext, typeof( Registration ), savedRegistration.Id );
+
+                                newRegistrationService.Delete( savedRegistration );
+                                newRockContext.SaveChanges();
+                            }
+                        }
+                    }
+                }
+                catch ( Exception ex1 )
+                {
+                    string test = ex1.Message;
+                }
+
+                throw ex;
+            }
 
             return registration;
 
@@ -2121,6 +2118,104 @@ namespace RockWeb.Blocks.Event
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Saves the person notes.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="previousRegistrants">The previous registrants.</param>
+        /// <param name="registration">The registration.</param>
+        private void SavePersonNotes( RockContext rockContext, List<int> previousRegistrants, Registration registration )
+        {
+            // Setup Note settings
+            NoteTypeCache noteType = null;
+            if ( RegistrationTemplate != null && RegistrationTemplate.AddPersonNote )
+            {
+                noteType = NoteTypeCache.Read( Rock.SystemGuid.NoteType.PERSON_EVENT_REGISTRATION.AsGuid() );
+                if ( noteType != null )
+                {
+                    var noteService = new NoteService( rockContext );
+                    var personAliasService = new PersonAliasService( rockContext );
+
+                    Person registrar = null;
+                    if ( registration.PersonAliasId.HasValue )
+                    {
+                        registrar = personAliasService.GetPerson( registration.PersonAliasId.Value );
+                    }
+
+                    var registrantNames = new List<string>();
+
+                    // Get each registrant
+                    foreach ( var registrantPersonAliasId in registration.Registrants
+                        .Where( r => r.PersonAliasId.HasValue )
+                        .Select( r => r.PersonAliasId.Value )
+                        .ToList() )
+                    {
+                        var registrant = personAliasService.GetPerson( registrantPersonAliasId );
+                        if ( registrant != null && !previousRegistrants.Contains( registrant.Id ) )
+                        {
+                            var noteText = new StringBuilder();
+                            noteText.AppendFormat( "Registered for {0}", RegistrationInstanceState.Name);
+
+                            if ( registrar != null && registrar.Id != registrant.Id )
+                            {
+                                noteText.AppendFormat( " by {0}", registrar.FullName );
+                                registrantNames.Add( registrant.FullName );
+                            }
+
+                            if ( registrar != null && ( RegistrationState.FirstName != registrar.NickName || RegistrationState.LastName != registrar.LastName ) )
+                            {
+                                noteText.AppendFormat( " by {0}", RegistrationState.FirstName + " " + RegistrationState.LastName );
+                            }
+
+                            if ( noteText.Length > 0 )
+                            {
+                                var note = new Note();
+                                note.NoteTypeId = noteType.Id;
+                                note.IsSystem = false;
+                                note.IsAlert = false;
+                                note.IsPrivateNote = false;
+                                note.EntityId = registrant.Id;
+                                note.Caption = string.Empty;
+                                note.Text = noteText.ToString();
+                                noteService.Add( note );
+                            }
+                        }
+
+                    }
+
+                    if ( registrar != null && registrantNames.Any() )
+                    {
+                        string namesText = string.Empty;
+                        if ( registrantNames.Count >= 2 )
+                        {
+                            int lessOne = registrantNames.Count - 1;
+                            namesText = registrantNames.Take( lessOne ).ToList().AsDelimited( ", " ) +
+                                " and " +
+                                registrantNames.Skip( lessOne ).Take( 1 ).First() + " ";
+                        }
+                        else
+                        {
+                            namesText = registrantNames.First() + " ";
+                        }
+
+                        var note = new Note();
+                        note.NoteTypeId = noteType.Id;
+                        note.IsSystem = false;
+                        note.IsAlert = false;
+                        note.IsPrivateNote = false;
+                        note.EntityId = registrar.Id;
+                        note.Caption = string.Empty;
+                        note.Text = string.Format( "Registered {0} for {1}", namesText, RegistrationInstanceState.Name );
+                        noteService.Add( note );
+
+                    }
+
+                    rockContext.SaveChanges();
+                }
+            }
+
         }
 
         /// <summary>
@@ -2507,6 +2602,7 @@ namespace RockWeb.Blocks.Event
         private void ShowSummary()
         {
             lRegistrationTerm.Text = RegistrationTemplate.RegistrationTerm;
+            lRegistrationTerm2.Text = RegistrationTemplate.RegistrationTerm;
             
             SetPanel( 2 );
         }
@@ -2917,7 +3013,7 @@ namespace RockWeb.Blocks.Event
                         cpHomeCampus.Label = "Campus";
                         cpHomeCampus.Required = field.IsRequired;
                         cpHomeCampus.ValidationGroup = BlockValidationGroup;
-                        cpHomeCampus.Campuses = CampusCache.All();
+                        cpHomeCampus.Campuses = CampusCache.All( false );
 
                         phRegistrantControls.Controls.Add( cpHomeCampus );
 
@@ -3541,8 +3637,30 @@ namespace RockWeb.Blocks.Event
         {
             lDiscountCodeLabel.Text = DiscountCodeTerm;
 
-            if ( setValues && RegistrationState != null && RegistrationInstanceState != null )
+            if ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask )
             {
+                var familyOptions = RegistrationState.GetFamilyOptions( RegistrationTemplate, RegistrationState.RegistrantCount );
+                if ( familyOptions.Any() )
+                {
+                    familyOptions.Add( familyOptions.ContainsKey( RegistrationState.FamilyGuid ) ?
+                        Guid.NewGuid() :
+                        RegistrationState.FamilyGuid.Equals( Guid.Empty ) ? Guid.NewGuid() : RegistrationState.FamilyGuid,
+                        "None" );
+                    rblRegistrarFamilyOptions.DataSource = familyOptions;
+                    rblRegistrarFamilyOptions.DataBind();
+                    pnlRegistrarFamilyOptions.Visible = true;
+                }
+                else
+                {
+                    pnlRegistrarFamilyOptions.Visible = false;
+                }
+            }
+            else
+            {
+                pnlRegistrarFamilyOptions.Visible = false;
+            }
+
+			if ( setValues && RegistrationState != null && RegistrationInstanceState != null )            {
                 // Check to see if this is an existing registration or information has already been entered
                 if ( RegistrationState.RegistrationId.HasValue ||
                     !string.IsNullOrWhiteSpace( RegistrationState.FirstName) ||
@@ -3556,13 +3674,11 @@ namespace RockWeb.Blocks.Event
                 }
                 else
                 {
-                    // If not, find the field information from first registrant
-                    if ( RegistrationState.Registrants.Any() )
+                    if ( CurrentPerson != null )
                     {
-                        var firstRegistrant = RegistrationState.Registrants.First();
-                        tbYourFirstName.Text = firstRegistrant.GetFirstName( RegistrationTemplate );
-                        tbYourLastName.Text = firstRegistrant.GetLastName( RegistrationTemplate );
-                        tbConfirmationEmail.Text = firstRegistrant.GetEmail( RegistrationTemplate );
+                        tbYourFirstName.Text = CurrentPerson.NickName;
+                        tbYourLastName.Text = CurrentPerson.LastName;
+                        tbConfirmationEmail.Text = CurrentPerson.Email;
                     }
                     else
                     {
@@ -3572,33 +3688,7 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
-                if ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask )
-                {
-                    var familyOptions = RegistrationState.GetFamilyOptions( RegistrationTemplate, RegistrationState.RegistrantCount );
-                    if ( familyOptions.Any() )
-                    {
-                        familyOptions.Add( familyOptions.ContainsKey( RegistrationState.FamilyGuid ) ?
-                            Guid.NewGuid() :
-                            RegistrationState.FamilyGuid.Equals( Guid.Empty ) ? Guid.NewGuid() : RegistrationState.FamilyGuid,
-                            "None" );
-                        rblRegistrarFamilyOptions.DataSource = familyOptions;
-                        rblRegistrarFamilyOptions.DataBind();
-                        pnlRegistrarFamilyOptions.Visible = true;
-                    }
-                    else
-                    {
-                        pnlRegistrarFamilyOptions.Visible = false;
-                    }
-                }
-                else
-                {
-                    pnlRegistrarFamilyOptions.Visible = false;
-                }
-
-                if ( setValues )
-                {
-                    rblRegistrarFamilyOptions.SetValue( RegistrationState.FamilyGuid.ToString() );
-                }
+                rblRegistrarFamilyOptions.SetValue( RegistrationState.FamilyGuid.ToString() );
 
                 // Build Discount info
                 nbDiscountCode.Visible = false;
@@ -3645,7 +3735,7 @@ namespace RockWeb.Blocks.Event
                             registrant.GetFirstName( RegistrationTemplate ),
                             registrant.GetLastName( RegistrationTemplate ) );
                         costSummary.Cost = registrant.Cost;
-                        if ( !RegistrationState.RegistrationId.HasValue && RegistrationState.DiscountPercentage > 0.0m )
+                        if ( RegistrationState.DiscountPercentage > 0.0m )
                         {
                             costSummary.DiscountedCost = costSummary.Cost - ( costSummary.Cost * RegistrationState.DiscountPercentage );
                         }
@@ -3679,7 +3769,7 @@ namespace RockWeb.Blocks.Event
                                 costSummary.Description = desc;
                                 costSummary.Cost = feeInfo.Quantity * cost;
 
-                                if ( !RegistrationState.RegistrationId.HasValue && RegistrationState.DiscountPercentage > 0.0m && templateFee != null && templateFee.DiscountApplies )
+                                if ( RegistrationState.DiscountPercentage > 0.0m && templateFee != null && templateFee.DiscountApplies )
                                 {
                                     costSummary.DiscountedCost = costSummary.Cost - ( costSummary.Cost * RegistrationState.DiscountPercentage );
                                 }
@@ -3822,7 +3912,7 @@ namespace RockWeb.Blocks.Event
                     pnlRegistrantsReview.Visible = true;
 
                     lRegistrantsReview.Text = string.Format( "<p>The following {0} will be registered for {1}:",
-                        RegistrationTemplate.RegistrantTerm.PluralizeIf( RegistrationState.Registrants.Count > 0 ).ToLower(), RegistrationTemplate.Name );
+                        RegistrationTemplate.RegistrantTerm.PluralizeIf( RegistrationState.Registrants.Count > 0 ).ToLower(), RegistrationInstanceState.Name );
 
                     rptrRegistrantReview.DataSource = RegistrationState.Registrants
                         .Select( r => new

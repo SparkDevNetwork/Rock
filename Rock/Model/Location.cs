@@ -690,6 +690,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Encodes the polygon for Google maps
+        /// from http://stackoverflow.com/a/3852420
         /// </summary>
         /// <returns></returns>
         public virtual string EncodeGooglePolygon()

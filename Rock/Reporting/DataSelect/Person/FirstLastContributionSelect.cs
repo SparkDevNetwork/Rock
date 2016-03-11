@@ -216,7 +216,9 @@ namespace Rock.Reporting.DataSelect.Person
             if ( !string.IsNullOrWhiteSpace( selection ) )
             {
                 // accountIds
-                var selectedAccountIdList = selection.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsIntegerList(); 
+                var selectedAccountGuidList = selection.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
+                var selectedAccountIdList = new FinancialAccountService( context ).GetByGuids( selectedAccountGuidList ).Select( a => a.Id ).ToList();
+
                 if ( selectedAccountIdList.Count() > 0 )
                 {
                     // t.AccountId

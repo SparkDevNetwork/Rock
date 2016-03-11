@@ -370,6 +370,18 @@ namespace RockWeb.Blocks.Cms
             ContentChannelItem contentItem = GetContentItem();
 
             if ( contentItem != null &&
+                contentItem.CreatedByPersonAlias != null &&
+                contentItem.CreatedByPersonAlias.Person != null )
+            {
+                lCreatedBy.Text = String.Format( "<a href={0}>{1}</a>", ResolveRockUrl( string.Format( "~/Person/{0}", contentItem.CreatedByPersonAlias.PersonId ) ), contentItem.CreatedByPersonName );
+
+                if ( contentItem.CreatedDateTime.HasValue )
+                {
+                    lCreatedBy.Text += String.Format( " <small class='js-date-rollover' data-toggle='tooltip' data-placement='top' title='{0}'>({1})</small>", contentItem.CreatedDateTime.Value.ToString(), contentItem.CreatedDateTime.Value.ToRelativeDateString() );
+                }
+            }
+
+            if ( contentItem != null &&
                 contentItem.ContentChannelType != null &&
                 contentItem.ContentChannel != null &&
                 ( canEdit || contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) ) 
@@ -493,7 +505,7 @@ namespace RockWeb.Blocks.Cms
                     var hlOccurrence = new HighlightLabel();
                     hlOccurrence.LabelType = LabelType.Info;
                     hlOccurrence.ID = string.Format( "hlOccurrence_{0}", occurrence.Id );
-                    hlOccurrence.Text = string.Format( "<a href='{0}'>{1}</a>", url, occurrence.ToString() );
+                    hlOccurrence.Text = string.Format( "<a href='{0}'><i class='fa fa-calendar-o'></i> {1}</a>", url, occurrence.ToString() );
                     phOccurrences.Controls.Add( hlOccurrence );
                 }
             }

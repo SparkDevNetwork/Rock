@@ -161,25 +161,10 @@
                             });
 
                             geoFencePoly.Name = mapItem.Name;
+                            geoFencePoly.overlayType = 'polygon';
 
                             map.AddUpdateShape(geoFencePoly);
                         }
-                    }
-
-                    var groupId = <%=this.GroupId ?? 0 %>;
-                    if (groupId) {
-                        $.get( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/' + groupId, function( mapItems ) {
-                            $.each(mapItems, function (i, mapItem) {
-                                addGroupGeoFence(mapItem);
-                            });
-                        });
-
-                        // Get Child Groups
-                        $.get( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/' + groupId + '/Children', function( mapItems ) {
-                            $.each(mapItems, function (i, mapItem) {
-                                addGroupGeoFence(mapItem);
-                            });
-                        });
                     }
 
                     //
@@ -222,6 +207,22 @@
                     });
 
                     heatmap.setMap(map);
+
+                    var groupId = <%=this.GroupId ?? 0 %>;
+                    if (groupId) {
+                        $.get( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/' + groupId, function( mapItems ) {
+                            $.each(mapItems, function (i, mapItem) {
+                                addGroupGeoFence(mapItem);
+                            });
+                        });
+
+                        // Get Child Groups
+                        $.get( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/' + groupId + '/Children', function( mapItems ) {
+                            $.each(mapItems, function (i, mapItem) {
+                                addGroupGeoFence(mapItem);
+                            });
+                        });
+                    }
 
                     map.DeleteShape = function(shape) {
                         var allShapesIndex = map.AllShapes.indexOf(shape);

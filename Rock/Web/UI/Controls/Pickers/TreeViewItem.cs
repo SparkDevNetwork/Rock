@@ -22,13 +22,34 @@ namespace Rock.Web.UI.Controls
     public class TreeViewItem
     {
         /// <summary>
+        /// 
+        /// </summary>
+        public enum GetCountsType
+        {
+            /// <summary>
+            /// none
+            /// </summary>
+            None = 0,
+
+            /// <summary>
+            /// child groups
+            /// </summary>
+            ChildGroups = 1,
+
+            /// <summary>
+            /// group members
+            /// </summary>
+            GroupMembers = 2
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="TreeViewItem"/> class.
         /// </summary>
         public TreeViewItem()
         {
             IsActive = true;
         }
-        
+
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
@@ -76,5 +97,13 @@ namespace Rock.Web.UI.Controls
         ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
         /// </value>
         public bool IsActive { get; set; }
+
+        /// <summary>
+        /// Gets or sets the count information depending on the setting for GetCountsType
+        /// </summary>
+        /// <value>
+        /// The count information.
+        /// </value>
+        public int? CountInfo { get; set; }
     }
 }

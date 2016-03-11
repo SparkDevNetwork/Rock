@@ -106,7 +106,7 @@ namespace Rock.PersonProfile.Badge
                     detailPageUrl = System.Web.VirtualPathUtility.ToAbsolute( String.Format( "~/page/{0}?Person={1}", pageId, Person.UrlEncodedKey ) );
                     writer.Write( "<a href='{0}'>", detailPageUrl  );
                 }
-                
+
                 //Badge HTML
                 writer.Write( String.Format( "<div class='badge badge-disc badge-id-{0}' data-toggle='tooltip' data-original-title='{1}'>", badge.Id, description ) );
                 writer.Write( "<ul class='badge-disc-chart list-unstyled'>" );
@@ -119,6 +119,24 @@ namespace Rock.PersonProfile.Badge
                 if ( !String.IsNullOrEmpty( detailPageUrl ) )
                 {
                     writer.Write( "</a>" );
+                }
+            } 
+            else
+            {
+                // check for recent DISC request
+                DateTime? lastRequestDate = Person.GetAttributeValue( "LastDiscRequestDate" ).AsDateTime();
+
+                bool recentRequest = lastRequestDate.HasValue && lastRequestDate.Value > (RockDateTime.Now.AddDays( -30 ));
+
+                if ( recentRequest )
+                {
+                    writer.Write( String.Format( "<div class='badge badge-disc badge-id-{0}' data-toggle='tooltip' data-original-title='A DISC request was made on {1}'>", badge.Id, lastRequestDate.Value.ToShortDateString() ) );
+                    writer.Write( "<ul class='badge-disc-chart list-unstyled'>" );
+                    writer.Write( string.Format( "<li class='badge-disc-d badge-disc-disabled' title='D'><span style='height:{0}%'></span></li>", 80 ));
+                    writer.Write( string.Format( "<li class='badge-disc-i badge-disc-disabled' title='I'><span style='height:{0}%'></span></li>", 20 ));
+                    writer.Write( string.Format( "<li class='badge-disc-s badge-disc-disabled' title='S'><span style='height:{0}%'></span></li>", 60 ));
+                    writer.Write( string.Format( "<li class='badge-disc-c badge-disc-disabled' title='C'><span style='height:{0}%'></span></li>", 10 ));
+                    writer.Write( "</ul><div class='requested'>R</div></div>" );
                 }
             }
         }

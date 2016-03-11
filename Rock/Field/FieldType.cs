@@ -126,9 +126,9 @@ namespace Rock.Field
         {
             return FormatValue( parentControl, value, configurationValues, condensed );
         }
-
+         
         /// <summary>
-        /// Values the type of as field.
+        /// Returns the value using the most appropriate datatype
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
         /// <param name="value">The value.</param>
@@ -136,7 +136,21 @@ namespace Rock.Field
         /// <returns></returns>
         public virtual object ValueAsFieldType(  Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
         {
+            // by default, get the field type's value
             return value;
+        }
+
+        /// <summary>
+        /// Returns the value that should be used for sorting, using the most appropriate datatype
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public virtual object SortValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            // by default, get the formatted condensed value that would be displayed to the user
+            return FormatValue( parentControl, value, configurationValues, true );
         }
 
         #endregion
@@ -626,10 +640,8 @@ namespace Rock.Field
                 if ( comparisonValue != "0" )
                 {
                     ComparisonType comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-                    MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
-                    ConstantExpression constantExpression = Expression.Constant( filterValues[1], typeof( string ) );
-
-                    return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+                    MemberExpression propertyExpression = Expression.Property( parameterExpression, this.AttributeValueFieldName );
+                    return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( filterValues[1] ) );
                 }
             }
 
@@ -648,6 +660,16 @@ namespace Rock.Field
             {
                 return "Value";
             }
+        }
+
+        /// <summary>
+        /// Attributes the constant expression.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public virtual ConstantExpression AttributeConstantExpression( string value )
+        {
+            return Expression.Constant( value, this.AttributeValueFieldType );
         }
 
         /// <summary>

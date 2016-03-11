@@ -54,6 +54,9 @@
 // 2. HTML Overrides
 //--------------------------------
 
+iframe {
+    border: 1px solid @input-border;
+}
 
 // 3. Utility Classes
 //--------------------------------
@@ -177,8 +180,18 @@ th[align=center] {
 }
 
 .badge-info {
-  background-color: @label-info-bg !important;
+  background-color:  @label-info-bg !important;
   color: #fff !important;
+}
+
+.badge-critical {
+  background-color: @label-critical-bg !important;
+  color: #fff !important;
+}
+
+.badge-legend .badge {
+    margin-right: 4px;
+    cursor: pointer;
 }
 
 // add alternate popover title style that exists inside of the popover-content to use ajax updates

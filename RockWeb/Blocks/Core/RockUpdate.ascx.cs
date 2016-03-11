@@ -219,14 +219,14 @@ namespace RockWeb.Blocks.Core
         {
             if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
             {
-                IPackage package = e.Item.DataItem as IPackage;
+                IPackage package = e.Item.DataItem as IPackage; 
                 if ( package != null )
                 {
-                    Boolean isExactPackageInstalled = NuGetService.IsPackageInstalled( package );
                     LinkButton lbInstall = e.Item.FindControl( "lbInstall" ) as LinkButton;
                     var divPanel = e.Item.FindControl( "divPanel" ) as HtmlGenericControl;
-                    // Only the last item in the list is the primary
-                    if ( e.Item.ItemIndex == _numberOfAvailablePackages - 1 )
+                    
+                    var requiredVersion = ExtractRequiredVersionFromTags( package );
+                    if ( requiredVersion <= _installedVersion )
                     {
                         lbInstall.Enabled = true;
                         lbInstall.AddCssClass( "btn-info" );
@@ -457,15 +457,16 @@ namespace RockWeb.Blocks.Core
         protected SemanticVersion ExtractRequiredVersionFromTags( IPackage package )
         {
             Regex regex = new Regex( @"requires-([\.\d]+)" );
-            Match match = regex.Match( package.Tags );
-            if ( match.Success )
-            {
-                return new SemanticVersion( match.Groups[1].Value );
+            if ( package.Tags != null )
+            { 
+                Match match = regex.Match( package.Tags );
+                if ( match.Success )
+                {
+                    return new SemanticVersion( match.Groups[1].Value );
+                }
             }
-            else
-            {
-                throw new ArgumentException( string.Format( "There is a malformed 'requires-' tag in a Rock package ({0})", package.Version ) );
-            }
+
+            throw new ArgumentException( string.Format( "There is a malformed 'requires-' tag in a Rock package ({0})", package.Version ) );
         }
 
         /// <summary>
@@ -677,7 +678,7 @@ namespace RockWeb.Blocks.Core
                         numberOfActiveRecords = 0;
                     }
 
-                    var environmentData = GetEnvDataAsJson();
+                    var environmentData = Rock.Web.Utilities.RockUpdateHelper.GetEnvDataAsJson( Request, ResolveRockUrl( "~/" ) );
 
                     // now send them to SDN/Rock server
                     SendToSpark( rockInstanceId, version, ipAddress, publicUrl, organizationName, organizationLocation, numberOfActiveRecords, environmentData );
@@ -693,36 +694,6 @@ namespace RockWeb.Blocks.Core
                 }
                 catch { }
             }
-        }
-
-        /// <summary>
-        /// Returns the environment data as json.
-        /// </summary>
-        /// <returns>a JSON formatted string</returns>
-        private string GetEnvDataAsJson()
-        {
-            string sqlVersion = "";
-            try
-            {
-                sqlVersion = Rock.Data.DbService.ExecuteScaler( "SELECT SERVERPROPERTY('productversion')" ).ToString();
-            }
-            catch
-            {
-                // oh well, sorry, I have to move on...
-            }
-
-            EnvData envData = new EnvData()
-            {
-                AppRoot = ResolveRockUrl( "~/" ),
-                Architecture = ( IntPtr.Size == 4 ) ? "32bit" : "64bit",
-                AspNetVersion = Environment.Version.ToString(),
-                IisVersion = Request.ServerVariables["SERVER_SOFTWARE"],
-                //Ram = new Microsoft.VisualBasic.Devices.ComputerInfo().TotalPhysicalMemory,
-                ServerOs = Environment.OSVersion.ToString(),
-                SqlVersion = sqlVersion
-            };
-
-            return envData.ToJson();
         }
 
         /// <summary>
@@ -785,18 +756,6 @@ namespace RockWeb.Blocks.Core
             }
         }
         #endregion
-    }
-
-    [Serializable]
-    public class EnvData
-    {
-        public string AppRoot { get; set; }
-        public string Architecture { get; set; }
-        public string AspNetVersion { get; set; }
-        public string IisVersion { get; set; }
-        public string Ram { get; set; }
-        public string ServerOs { get; set; }
-        public string SqlVersion { get; set; }
     }
 
     [Serializable]

@@ -324,7 +324,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static CategoryCache Read( Rock.Model.Category categoryModel )
         {
-            return GetOrAddExisting( CampusCache.CacheKey( categoryModel.Id ),
+            return GetOrAddExisting( CategoryCache.CacheKey( categoryModel.Id ),
                 () => LoadByModel( categoryModel ) );
         }
 

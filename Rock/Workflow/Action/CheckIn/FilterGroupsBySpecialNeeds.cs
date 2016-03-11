@@ -34,6 +34,7 @@ namespace Rock.Workflow.Action.CheckIn
     [Description( "Removes (or excludes) the groups for each selected family member that are not specific to their special needs attribute." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Groups By Special Needs" )]
+    [TextField( "Special Needs Attribute", "Enter the attribute name used to filter kids with special needs. The default value is Has Special Needs.", false, "Has Special Needs" )]
     [BooleanField( "Remove (or exclude) Special Needs Groups", "If set to true, special-needs groups will be removed if the person is NOT special needs. This basically prevents non-special-needs kids from getting put into special needs classes.  Default true.", true, key: "RemoveSpecialNeedsGroups" )]
     [BooleanField( "Remove (or exclude) Non-Special Needs Groups", "If set to true, non-special-needs groups will be removed if the person is special needs.  This basically prevents special needs kids from getting put into regular classes.  Default false.", false, key: "RemoveNonSpecialNeedsGroups" )]
     [BooleanField( "Remove", "Select 'Yes' if groups should be be removed.  Select 'No' if they should just be marked as excluded.", true )]
@@ -56,6 +57,7 @@ namespace Rock.Workflow.Action.CheckIn
                 return false;
             }
 
+            string specialNeedsAttributeKey = GetAttributeValue( action, "SpecialNeedsAttribute" ).RemoveSpecialCharacters();
             bool removeSNGroups = GetAttributeValue( action, "RemoveSpecialNeedsGroups" ).AsBoolean( true );
             bool removeNonSNGroups = GetAttributeValue( action, "RemoveNonSpecialNeedsGroups" ).AsBoolean();
 
@@ -71,12 +73,12 @@ namespace Rock.Workflow.Action.CheckIn
                         person.Person.LoadAttributes( rockContext );
                     }
 
-                    bool isSNPerson = person.Person.GetAttributeValue( "IsSpecialNeeds" ).AsBoolean();
+                    bool isSNPerson = person.Person.GetAttributeValue( specialNeedsAttributeKey ).AsBoolean();
                     foreach ( var groupType in person.GroupTypes.ToList() )
                     {
                         foreach ( var group in groupType.Groups.ToList() )
                         {
-                            bool isSNGroup = group.Group.GetAttributeValue( "IsSpecialNeeds" ).AsBoolean();
+                            bool isSNGroup = group.Group.GetAttributeValue( specialNeedsAttributeKey ).AsBoolean();
 
                             // If the group is special needs but the person is not, then remove it.
                             if ( removeSNGroups && isSNGroup && !( isSNPerson ) )

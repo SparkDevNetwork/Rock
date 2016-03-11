@@ -366,6 +366,12 @@ namespace Rock.Reporting.DataFilter
                     case ComparisonType.IsBlank:
                         evaluatedComparisonType = ComparisonType.IsNotBlank;
                         break;
+                    case ComparisonType.LessThan:
+                        evaluatedComparisonType = ComparisonType.GreaterThanOrEqualTo;
+                        break;
+                    case ComparisonType.LessThanOrEqualTo:
+                        evaluatedComparisonType = ComparisonType.GreaterThan;
+                        break;
                     case ComparisonType.NotEqualTo:
                         evaluatedComparisonType = ComparisonType.EqualTo;
                         break;
@@ -378,7 +384,6 @@ namespace Rock.Reporting.DataFilter
             }
 
             var filterExpression = entityField.FieldType.Field.AttributeFilterExpression( entityField.FieldConfig, values, attributeValueParameterExpression );
-
             if ( filterExpression != null )
             {
                 attributeValues = attributeValues.Where( attributeValueParameterExpression, filterExpression, null );
