@@ -27,12 +27,12 @@ join EntityType et on a.EntityTypeId = et.Id
 where (et.Name = 'Rock.Model.Block' and av.EntityId not in (Select Id from Block))
 group by et.Name
 
-/*-- Person - Orphaned Attribute Values 
+-- Person - Orphaned Attribute Values 
 select et.Name, count(*) [Count], sum(len(value)) [TotalSizeB], sum(len(value)) / 1024 [TotalSizeKB]  from AttributeValue av
 join Attribute a on av.AttributeId = a.Id
 join EntityType et on a.EntityTypeId = et.Id
-where (et.Name = 'Rock.Model.Person' and av.EntityId not in (Select Id from PersonAlias))
-group by et.Name*/
+where (et.Name = 'Rock.Model.Person' and av.EntityId not in (Select Id from Person))
+group by et.Name
 
 
 
