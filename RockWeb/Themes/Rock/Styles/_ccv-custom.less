@@ -1,4 +1,4 @@
-
+﻿
 
 //
 // CUSTOM CCV STYLES FOR ROCK
@@ -186,4 +186,40 @@
 
 .badge-group.badge-group-steps .badge.step-partial {
   opacity: .4;
+}
+
+.personprofilebar-badge .badge.badge-stepstaken {
+    
+    &:before {
+        font-family: FontAwesome;
+        content: "\f0c8";
+        color: #3c3c3c;
+        font-size: 45px;
+    }
+    
+    color: #afafaf;
+    position: relative;
+
+    i {
+        position: absolute;
+        font-size: 20px;
+        right: 0;
+        left: 0;
+        top: 8px;
+    }
+
+    .steps-thisyear {
+        font-size: 18px;
+        position: absolute;
+        bottom: 7px;
+        left: 14px;
+    }
+
+    .steps-52weeks {
+        font-size: 12px;
+        position: absolute;
+        bottom: 7px;
+        right: 10px;
+        opacity: .8;
+    }
 }

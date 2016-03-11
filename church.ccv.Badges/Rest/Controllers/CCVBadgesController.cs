@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.Http;
-
+using church.ccv.Steps.Model;
 using Rock;
 using Rock.Data;
 using Rock.Model;
@@ -161,6 +161,36 @@ namespace church.ccv.Badges.Rest.Controllers
             }
 
             return result;
+        }
+
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/CCV/Badges/StepsTaken/{personGuid}" )]
+        public StepsTaken GetStepsTaken( Guid personGuid )
+        {
+            var stepsTaken = new StepsTaken();
+
+            using ( RockContext rockContext = new RockContext() )
+            {
+                int currentYear = RockDateTime.Now.Year;
+                DateTime dateYearAgo = RockDateTime.Now.AddDays( -364 ); // technically we want 52 weeks 52*7 = 364
+
+                StepTakenService stepTakenService = new StepTakenService(rockContext);
+
+                stepsTaken.StepsThisYear = stepTakenService.Queryable()
+                                                .Where( t =>
+                                                     t.PersonAlias.Person.Guid == personGuid
+                                                     && t.DateTaken.Year == currentYear )
+                                                .Count();
+
+                stepsTaken.StepsIn52Weeks = stepTakenService.Queryable()
+                                                .Where( t =>
+                                                     t.PersonAlias.Person.Guid == personGuid
+                                                     && t.DateTaken >= dateYearAgo )
+                                                .Count();
+            }
+
+            return stepsTaken;
         }
 
         [Authenticate, Secured]
@@ -524,6 +554,27 @@ namespace church.ccv.Badges.Rest.Controllers
             /// The leader names.
             /// </value>
             public string LeaderNames { get; set; }
+        }
+
+        /// <summary>
+        /// The number of steps a person has taken.
+        /// </summary>
+        public class StepsTaken
+        {
+            /// <summary>
+            /// Gets or sets the steps this year.
+            /// </summary>
+            /// <value>
+            /// The steps this year.
+            /// </value>
+            public int StepsThisYear { get; set; }
+            /// <summary>
+            /// Gets or sets the steps in52 weeks.
+            /// </summary>
+            /// <value>
+            /// The steps in52 weeks.
+            /// </value>
+            public int StepsIn52Weeks { get; set; }
         }
 
         /// <summary>

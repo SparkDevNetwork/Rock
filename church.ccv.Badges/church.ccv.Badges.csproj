@@ -82,12 +82,17 @@
   <ItemGroup>
     <Compile Include="Person\CampusWithLeader.cs" />
     <Compile Include="Person\Coaches.cs" />
+    <Compile Include="Person\StepsTaken.cs" />
     <Compile Include="Person\StepsBar.cs" />
     <Compile Include="Person\GeofencedByCampusGroup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rest\Controllers\CCVBadgesController.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\church.ccv.Steps\church.ccv.Steps.csproj">
+      <Project>{da1fbd70-3d06-46f7-8aa0-a27f18fdfdcd}</Project>
+      <Name>church.ccv.Steps</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
       <Project>{cb9372cd-9c1d-47ab-92d8-702d4d68324f}</Project>
       <Name>DotLiquid</Name>
