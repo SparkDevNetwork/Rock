@@ -328,6 +328,7 @@ namespace Rock.Security.BackgroundCheck
                             backgroundCheck = new Rock.Model.BackgroundCheck();
                             backgroundCheck.PersonAliasId = personAliasId.Value;
                             backgroundCheck.WorkflowId = workflow.Id;
+                            backgroundCheckService.Add( backgroundCheck );
                         }
 
                         backgroundCheck.RequestDate = RockDateTime.Now;
@@ -341,7 +342,6 @@ Response XML ({2}):
 {3}
 
 ", requestDateTime, xdoc.ToString(), responseDateTime, xResult.ToString() );
-                        new BackgroundCheckService( newRockContext ).Add( backgroundCheck );
                         newRockContext.SaveChanges();
                     }
                 }
