@@ -17,11 +17,13 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Web.UI;
 
 using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -43,7 +45,7 @@ namespace RockWeb.Blocks.Event
         private int? EventItemOccurrenceId { get; set; }
         private int? ContentItemId { get; set; }
 
-        private int PageNumber { get; set; }
+        private int? PageNumber { get; set; }
 
         #endregion
 
@@ -81,28 +83,6 @@ namespace RockWeb.Blocks.Event
                 EventItemId = PageParameter( "EventItemId" ).AsIntegerOrNull();
                 EventCalendarId = PageParameter( "EventCalendarId" ).AsIntegerOrNull();
 
-                // Determine current page number based on querystring values
-                if ( ContentItemId.HasValue )
-                {
-                    PageNumber = 5;
-                }
-                else if ( EventItemOccurrenceId.HasValue )
-                {
-                    PageNumber = 4;
-                }
-                else if ( EventItemId.HasValue )
-                {
-                    PageNumber = 3;
-                }
-                else if ( EventCalendarId.HasValue )
-                {
-                    PageNumber = 2;
-                }
-                else
-                {
-                    PageNumber = 1;
-                }
-
                 // Load objects neccessary to display names
                 using ( var rockContext = new RockContext() )
                 {
@@ -113,11 +93,13 @@ namespace RockWeb.Blocks.Event
 
                     if ( ContentItemId.HasValue && ContentItemId.Value > 0 )
                     {
+                        PageNumber = 5;
                         var contentChannel = new ContentChannelItemService( rockContext ).Get( ContentItemId.Value );
                     }
 
                     if ( EventItemOccurrenceId.HasValue && EventItemOccurrenceId.Value > 0 )
                     {
+                        PageNumber = PageNumber ?? 4;
                         eventItemOccurrence = new EventItemOccurrenceService( rockContext ).Get( EventItemOccurrenceId.Value );
                         if ( eventItemOccurrence != null )
                         {
@@ -129,15 +111,35 @@ namespace RockWeb.Blocks.Event
                         }
                     }
 
-                    if ( eventItem == null && EventItemId.HasValue && EventItemId.Value > 0 )
+                    if ( EventItemId.HasValue && EventItemId.Value > 0 )
                     {
-                        eventItem = new EventItemService( rockContext ).Get( EventItemId.Value );
+                        PageNumber = PageNumber ?? 3;
+                        if ( eventItem == null )
+                        {
+                            eventItem = new EventItemService( rockContext ).Get( EventItemId.Value );
+                        }
+
+                        if ( !EventCalendarId.HasValue )
+                        {
+                            foreach ( var cal in eventItem.EventCalendarItems )
+                            {
+                                EventCalendarId = EventCalendarId ?? cal.EventCalendarId;
+                                if ( cal.EventCalendar.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                                {
+                                    EventCalendarId = cal.EventCalendarId;
+                                    break;
+                                }
+                            }
+                        }
                     }
 
                     if ( EventCalendarId.HasValue && EventCalendarId.Value > 0 )
                     {
+                        PageNumber = PageNumber ?? 2;
                         eventCalendar = new EventCalendarService( rockContext ).Get( EventCalendarId.Value );
                     }
+
+                    PageNumber = PageNumber ?? 1;
 
                     // Set the names based on current object values
                     lCalendarName.Text = eventCalendar != null ? eventCalendar.Name : "Calendar";
@@ -169,7 +171,7 @@ namespace RockWeb.Blocks.Event
             ViewState["EventItemOccurrenceId"] = EventItemOccurrenceId;
             ViewState["ContentItemId"] = ContentItemId;
 
-            ViewState["PageNumber"] = PageNumber;
+            ViewState["PageNumber"] = PageNumber.Value;
 
             return base.SaveViewState();
         }
@@ -230,8 +232,8 @@ namespace RockWeb.Blocks.Event
         private string GetDivClass( int pageId )
         {
             return string.Format( "wizard-item{0}{1}", 
-                pageId == PageNumber ? " active" : "", 
-                pageId < PageNumber ? " complete" : "" );
+                pageId == PageNumber.Value ? " active" : "", 
+                pageId < PageNumber.Value ? " complete" : "" );
         }
 
         /// <summary>
@@ -240,7 +242,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="targetPage">The target page.</param>
         private void NavigateToParent( int targetPage )
         {
-            if ( PageNumber > targetPage )
+            if ( PageNumber.Value > targetPage )
             {
                 var pageCache = PageCache.Read( RockPage.PageId );
                 if ( pageCache != null )
@@ -272,7 +274,7 @@ namespace RockWeb.Blocks.Event
 
                     // Find the target page
                     var parentPage = pageCache.ParentPage;
-                    int currentPage = PageNumber - 1;
+                    int currentPage = PageNumber.Value - 1;
                     while ( parentPage != null && currentPage > targetPage )
                     {
                         parentPage = parentPage.ParentPage;
