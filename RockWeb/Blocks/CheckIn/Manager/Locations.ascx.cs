@@ -56,7 +56,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         #region Properties
 
         public string CurrentCampusId { get; set; }
-
+        public string CurrentScheduleId { get; set; }
         public string CurrentNavPath { get; set; }
 
         public NavigationData NavData { get; set; }
@@ -74,6 +74,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             base.LoadViewState( savedState );
 
             CurrentCampusId = ViewState["CurrentCampusId"] as string;
+            CurrentScheduleId = ViewState["CurrentScheduleId"] as string;
             CurrentNavPath = ViewState["CurrentNavPath"] as string;
             NavData = ViewState["NavData"] as NavigationData;
         }
@@ -134,10 +135,20 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             if ( campus != null )
             {
-                if ( campus.Id.ToString() != CurrentCampusId || NavData == null )
+
+                var scheduleEntityType = EntityTypeCache.Read( "Rock.Model.Schedule" );
+                var scheduleContext = RockPage.GetCurrentContext( scheduleEntityType ) as Schedule;
+                string scheduleId = string.Empty;
+                if ( scheduleContext != null )
                 {
-                    NavData = GetNavigationData( campus );
+                    scheduleId = scheduleContext.Id.ToString();
+                }
+
+                if ( campus.Id.ToString() != CurrentCampusId || scheduleId != CurrentScheduleId || NavData == null )
+                {
+                    NavData = GetNavigationData( campus, scheduleId.AsIntegerOrNull() );
                     CurrentCampusId = campus.Id.ToString();
+                    CurrentScheduleId = scheduleId;
 
                     if ( Page.IsPostBack )
                     {
@@ -191,6 +202,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         {
             ViewState["NavData"] = NavData;
             ViewState["CurrentNavPath"] = CurrentNavPath;
+            ViewState["CurrentScheduleId"] = CurrentScheduleId;
             ViewState["CurrentCampusId"] = CurrentCampusId;
 
             return base.SaveViewState();
@@ -445,7 +457,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 int? campusId = CurrentCampusId.AsIntegerOrNull();
                 if ( campusId.HasValue )
                 {
-                    NavData = GetNavigationData( CampusCache.Read( campusId.Value ) );
+                    int? scheduleId = CurrentScheduleId.AsIntegerOrNull();
+                    NavData = GetNavigationData( CampusCache.Read( campusId.Value ), scheduleId );
                 }
                 BuildNavigationControls();
             }
@@ -565,7 +578,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                             int? campusId = CurrentCampusId.AsIntegerOrNull();
                             if ( campusId.HasValue )
                             {
-                                NavData = GetNavigationData( CampusCache.Read( campusId.Value ) );
+                                int? scheduleId = CurrentScheduleId.AsIntegerOrNull();
+                                NavData = GetNavigationData( CampusCache.Read( campusId.Value ), scheduleId );
                             }
                             BuildNavigationControls();
                         }
@@ -683,7 +697,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
         #region Get Navigation Data
 
-        private NavigationData GetNavigationData( CampusCache campus )
+        private NavigationData GetNavigationData( CampusCache campus, int? scheduleId )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -835,7 +849,9 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     var now = RockDateTime.Now;
                     groupIds = NavData.Groups.Select( g => g.Id ).ToList();
 
-                    var attendances = new AttendanceService( rockContext ).Queryable()
+                    var schedules = new List<Schedule>();
+
+                    var attendanceQry = new AttendanceService( rockContext ).Queryable()
                         .Where( a =>
                             a.ScheduleId.HasValue &&
                             a.GroupId.HasValue &&
@@ -846,12 +862,26 @@ namespace RockWeb.Blocks.CheckIn.Manager
                             a.DidAttend.HasValue &&
                             a.DidAttend.Value &&
                             groupIds.Contains( a.GroupId.Value ) &&
-                            locationIds.Contains( a.LocationId.Value ) )
-                        .ToList();
+                            locationIds.Contains( a.LocationId.Value ) );
 
-                    var schedules = new ScheduleService( rockContext ).Queryable()
+                    if ( scheduleId.HasValue )
+                    {
+                        attendanceQry = attendanceQry.Where( a => a.ScheduleId == scheduleId.Value );
+
+                        var schedule = new ScheduleService( rockContext ).Get( scheduleId.Value );
+                        if ( schedule != null )
+                        {
+                            schedules.Add( schedule );
+                        }
+                    }
+                    else
+                    {
+                        schedules = new ScheduleService( rockContext ).Queryable().AsNoTracking()
                             .Where( s => s.CheckInStartOffsetMinutes.HasValue )
                             .ToList();
+                    }
+
+                    var attendanceList = attendanceQry.ToList();
 
                     foreach ( DateTime chartTime in chartTimes )
                     {
@@ -867,7 +897,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                         bool current = chartTime.Equals( chartTimes.Max() );
 
-                        foreach ( var groupLocSched in attendances
+                        foreach ( var groupLocSched in attendanceList
                             .Where( a =>
                                 a.StartDateTime < chartTime &&
                                 a.PersonAlias != null &&
@@ -1244,6 +1274,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                                 activeSchedules.Contains( a.ScheduleId.Value ) )
                             .ToList();
 
+                        int? scheduleId = CurrentScheduleId.AsIntegerOrNull();
+
                         var people = new List<PersonResult>();
                         foreach ( var personId in attendees
                             .OrderBy( a => a.PersonAlias.Person.NickName )
@@ -1255,7 +1287,10 @@ namespace RockWeb.Blocks.CheckIn.Manager
                                 .Where( a => a.PersonAlias.PersonId == personId )
                                 .ToList();
 
-                            people.Add( new PersonResult( matchingAttendees ) );
+                            if ( !scheduleId.HasValue || matchingAttendees.Any( a => a.ScheduleId == scheduleId.Value ) )
+                            {
+                                people.Add( new PersonResult( matchingAttendees ) );
+                            }
                         }
 
                         rptPeople.Visible = true;

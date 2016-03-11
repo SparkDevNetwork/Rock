@@ -146,7 +146,7 @@ namespace Rock.Security
                 Rock.Model.GroupMemberService groupMemberService = new Rock.Model.GroupMemberService( rockContext );
                 Rock.Model.Group groupModel = groupService.Get( id );
 
-                if ( groupModel != null && ( groupModel.IsSecurityRole == true || groupModel.GroupTypeId == securityGroupTypeId ) )
+                if ( groupModel != null && groupModel.IsActive && ( groupModel.IsSecurityRole == true || groupModel.GroupTypeId == securityGroupTypeId ) )
                 {
                     var role = new Role();
                     role.Id = groupModel.Id;
@@ -157,9 +157,7 @@ namespace Rock.Security
 
                     // Add the members
                     foreach ( var personGuid in groupMembersQry
-                        .Where( m => 
-                            m.PersonId != null &&
-                            m.GroupMemberStatus == Model.GroupMemberStatus.Active )
+                        .Where( m => m.GroupMemberStatus == Model.GroupMemberStatus.Active )
                         .Select( m => m.Person.Guid )
                         .ToList()
                         .Distinct() )
@@ -190,8 +188,8 @@ namespace Rock.Security
             Rock.Model.GroupService groupService = new Rock.Model.GroupService( new RockContext() );
             foreach ( int id in groupService.Queryable()
                 .Where( g => 
-                    g.GroupTypeId == securityGroupTypeId ||
-                    g.IsSecurityRole == true )
+                    g.IsActive &&
+                    ( g.GroupTypeId == securityGroupTypeId || g.IsSecurityRole == true  ) )
                 .OrderBy( g => g.Name )
                 .Select( g => g.Id )
                 .ToList() )
