@@ -111,7 +111,7 @@ namespace Rock.Web.UI
                             // don't compile files that start with an underscore
                             foreach ( var file in files.Where( f => f.Name.EndsWith( ".less" ) && !f.Name.StartsWith( "_" ) ) )
                             {
-                                string cssSource = Less.Parse( File.ReadAllText( file.FullName ), dotLessConfiguration );
+                                string cssSource = LessWeb.Parse( File.ReadAllText( file.FullName ), dotLessConfiguration );
                                 File.WriteAllText( file.DirectoryName + @"\" + file.Name.Replace( ".less", ".css" ), cssSource );
                             }
                         }

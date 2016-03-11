@@ -122,11 +122,11 @@ $('.js-panel-toggle').on('click', function (e) {
         }
 
         /// <summary>
-        /// Handles the Click event of the btnBack control.
+        /// Handles the Click event of the btnCancel control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnBack_Click( object sender, EventArgs e )
+        protected void btnCancel_Click( object sender, EventArgs e )
         {
             NavigateToParentPage();
         }
@@ -183,9 +183,8 @@ $('.js-panel-toggle').on('click', function (e) {
             string messages = string.Empty;
             var theme = new RockTheme( _themeName );
             theme.Compile();
-            
-            // redirect to the page to reload the pages styles
-            Response.Redirect( Request.Url.LocalPath + "?EditTheme=" + _themeName );
+
+            NavigateToParentPage();
         }
         #endregion
 
@@ -194,6 +193,11 @@ $('.js-panel-toggle').on('click', function (e) {
         private void BuildControls()
         {
             bool inPanel = false;
+
+            /*Rock.Web.UI.Controls.ImageUploader fupTest = new Rock.Web.UI.Controls.ImageUploader();
+            fupTest.ID = "test";
+            fupTest.BinaryFileTypeGuid
+            phThemeControls.Controls.Add( fupTest );*/
 
             if ( !string.IsNullOrWhiteSpace( _themeName ) )
             {
