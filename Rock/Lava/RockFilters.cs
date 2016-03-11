@@ -2455,6 +2455,14 @@ namespace Rock.Lava
                             result.Add( liquidObject );
                         }
                     }
+                    else if (value is IDictionary<string, object>)
+                    {
+                        var dictionaryObject = value as IDictionary<string, object>;
+                        if ( dictionaryObject.ContainsKey( filterKey ) && dictionaryObject[filterKey].Equals( filterValue ) )
+                        {
+                            result.Add( dictionaryObject );
+                        }
+                    }
                 }
 
                 return result;
@@ -2488,6 +2496,14 @@ namespace Rock.Lava
                         if ( liquidObject.ContainsKey( selectKey ) )
                         {
                             result.Add( liquidObject[selectKey] );
+                        }
+                    }
+                    else if ( value is IDictionary<string, object> )
+                    {
+                        var dictionaryObject = value as IDictionary<string, object>;
+                        if ( dictionaryObject.ContainsKey( selectKey ) && dictionaryObject[selectKey].Equals( selectKey ) )
+                        {
+                            result.Add( dictionaryObject );
                         }
                     }
                 }
