@@ -73,6 +73,7 @@
                 <h1 class="panel-title"><i class="fa fa-bar-chart"></i> Measure Dashboard</h1>
                 <div class="pull-right">
                     <Rock:Toggle ID="tglCompareTo" CssClass="margin-r-sm pull-left"  runat="server" OnText="Active Adults" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" OffText="Weekend Attendance" AutoPostBack="true" OnCheckedChanged="tglCompareTo_CheckedChanged" Checked="true" />
+                    <asp:Label ID="lStaticToggle" runat="server" />
                     <Rock:HighlightLabel ID="hlDate" runat="server" />
                 </div>
             </div>

@@ -32,6 +32,7 @@ using Rock.Attribute;
 using church.ccv.Steps;
 using church.ccv.Steps.Model;
 using System.Drawing;
+using Rock.Security;
 
 namespace RockWeb.Plugins.church_ccv.Steps
 {
@@ -104,6 +105,13 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     pnlMeasure.Visible = true;
                     LoadMeasureItems();
                 }
+
+                if ( !IsUserAuthorized( Authorization.ADMINISTRATE ) )
+                {
+                    lStaticToggle.Text = "<span class='label label-info'>Active Adults</span>";
+                    tglCompareTo.Visible = false;
+                }
+                
 
                 if ( !string.IsNullOrWhiteSpace( Request["CompareTo"] ) )
                 {
