@@ -20,8 +20,8 @@
                     <div class="col-md-6">
                         <div class="clearfix">
                             <div class="pull-right">
-                                <asp:LinkButton ID="btnSave" runat="server" CssClass="btn btn-primary" OnClick="btnSave_Click"><i class="fa fa fa-refresh"></i> Save</asp:LinkButton>
-                                <asp:LinkButton ID="btnBack" runat="server" CssClass="btn btn-default" Text="Back" OnClick="btnBack_Click"  />
+                                <asp:LinkButton ID="btnSave" runat="server" CssClass="btn btn-primary" OnClick="btnSave_Click">Save</asp:LinkButton>
+                                <asp:LinkButton ID="btnBack" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="btnCancel_Click"  />
                             </div>
                         </div>
                         <Rock:CodeEditor ID="ceOverrides" runat="server" Label="CSS Overrides" EditorHeight="600"  />
