@@ -149,6 +149,7 @@
     <Compile Include="Address\VerificationContainer.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\Bing.cs" />
+    <Compile Include="Attribute\BinaryFileTypesFieldAttribute.cs" />
     <Compile Include="Attribute\ConnectionTypesFieldAttribute.cs" />
     <Compile Include="Attribute\ConnectionActivityTypeFieldAttribute.cs" />
     <Compile Include="Attribute\ConnectionTypeFieldAttribute.cs" />
@@ -253,6 +254,7 @@
     <Compile Include="Data\Udf\GetAddressStoreFunctionInjectionConvention.cs" />
     <Compile Include="Data\Udf\DbMetadataExtensions.cs" />
     <Compile Include="Data\Udf\RockUdfHelper.cs" />
+    <Compile Include="Field\Types\BinaryFileTypesFieldType.cs" />
     <Compile Include="Field\Types\MergeTemplateFieldType.cs" />
     <Compile Include="Field\Types\ConnectionActivityTypeFieldType.cs" />
     <Compile Include="Field\Types\ConnectionTypesFieldType.cs" />
