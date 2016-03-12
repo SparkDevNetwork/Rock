@@ -13,6 +13,8 @@
 
 How to import the XLS file:
 
+0.) Add column to excel file with a function of received_time - 1.  Copy column and paste values.  
+0.) Delete received_time col and add received_time as the col name of the newly computed col.
 1.) Create Imports DB.  If it already exists, drop it, then create a new one.
 2.) Right click on the Imports DB and choose Tasks > Import Data
 3.) Move through the wizard to Choose a Data Source and select Microsoft Excel
@@ -36,7 +38,22 @@ How to import the XLS file:
 
 /* ====================================================== */
 
-DECLARE @createdDate AS DATE = DATEADD(DAY, 1, GETDATE());
+-- Clean up data --
+
+DECLARE @start AS DATETIME = '3-6-2016 22:00:00';
+DECLARE @end AS DATETIME = '3-8-2016 23:59:59';
+
+DELETE FROM [Imports].[dbo].[F1Transactions]
+WHERE
+	Received_Time IS NULL
+	OR (CONVERT(DateTime, CONVERT(DATE, Received_Date)) + CONVERT(DATETIME, CONVERT(TIME, Received_Time))) < @start
+	OR (CONVERT(DateTime, CONVERT(DATE, Received_Date)) + CONVERT(DATETIME, CONVERT(TIME, Received_Time))) > @end;
+
+/* ====================================================== */
+
+
+DECLARE @foreignKey AS NVARCHAR(MAX) = 'FromF1PostLaunch';
+DECLARE @createdDate AS DATE = GETDATE();
 DECLARE @contribution AS INT = (SELECT dv.Id FROM DefinedValue dv JOIN DefinedType dt ON dt.Id = dv.DefinedTypeId WHERE dt.Name='Transaction Type' AND dv.Value = 'Contribution');
 DECLARE @IsActive bit = 0;
 
@@ -78,11 +95,11 @@ SELECT
 FROM 
   [FinancialGateway]
 WHERE
-  [Name] = 'Cyber Source';
+  [Name] = 'NMI Gateway';
 
 IF @FinancialGatewayId IS NULL
 BEGIN
-  RAISERROR('Could not find Cyber Source', 20, -1) WITH LOG;
+  RAISERROR('Could not find NMI Gateway', 20, -1) WITH LOG;
 END
 
 -- Create temp table
@@ -127,7 +144,7 @@ SELECT
       WHERE
 	    [Name] = REPLACE([f1t].[SubFund], ' Campus', '')
     ) AS [CampusId]
-  , CAST(CONCAT([f1t].Received_Date, ' ', f1t.Received_Time) AS datetime) AS TransactionDateTime
+  , CONVERT(DateTime, CONVERT(DATE, Received_Date)) + CONVERT(DATETIME, CONVERT(TIME, Received_Time)) AS TransactionDateTime
   , (
 	  SELECT 
 	    [Id] 
@@ -182,13 +199,15 @@ INSERT INTO [FinancialPaymentDetail] (
 	CreditCardTypeValueId,
 	[Guid],
 	CreatedDateTime,
-	AccountNumberMasked)
+	AccountNumberMasked,
+	ForeignKey)
 SELECT
 	CurrencyTypeValueId,
 	CreditCardTypeValueId,
 	PaymentDetailGuid,
 	@createdDate,
-	CASE WHEN LastFour IS NULL THEN NULL ELSE CONCAT('***', LastFour) END
+	CASE WHEN LastFour IS NULL THEN NULL ELSE CONCAT('***', LastFour) END,
+	@foreignKey
 FROM #temp;
 
 INSERT INTO [FinancialTransaction] (
@@ -198,7 +217,8 @@ INSERT INTO [FinancialTransaction] (
 	FinancialGatewayId,
 	FinancialPaymentDetailId,
 	TransactionTypeValueId,
-	CreatedDateTime) 
+	CreatedDateTime,
+	ForeignKey) 
 SELECT
 	TransactionGuid,
 	TransactionDateTime,
@@ -206,7 +226,8 @@ SELECT
 	@FinancialGatewayId,
 	(SELECT Id FROM FinancialPaymentDetail WHERE [Guid] = PaymentDetailGuid),
 	@contribution,
-	@createdDate
+	@createdDate,
+	@foreignKey
 FROM #temp;
 
 INSERT INTO [FinancialTransactionDetail] (
@@ -214,13 +235,15 @@ INSERT INTO [FinancialTransactionDetail] (
   AccountId,
   Amount,
   Guid,
-  CreatedDateTime)
+  CreatedDateTime,
+  ForeignKey)
 SELECT
   (SELECT Id FROM [FinancialTransaction] WHERE [Guid] = t.[TransactionGuid]),
   a.Id,
   Amount,
   DetailGuid,
-  @createdDate
+  @createdDate,
+  @foreignKey
 FROM 
 	#temp t
 	JOIN FinancialAccount a ON a.ParentAccountId = t.ParentAccountId AND a.CampusId = t.CampusId;
