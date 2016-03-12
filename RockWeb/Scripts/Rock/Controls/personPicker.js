@@ -196,10 +196,16 @@
                         // override jQueryUI autocomplete's _renderItem so that we can do Html for the listitems
                         // derived from http://github.com/scottgonzalez/jquery-ui-extensions
 
+                        var inactiveWarning = "";
+
+                        if (!item.IsActive) {
+                            inactiveWarning = " <small>(Inactive)</small>";
+                        }
+
                         var $div = $('<div/>').attr('class', 'radio'),
 
                             $label = $('<label/>')
-                                .html(item.Name + ' <i class="fa fa-refresh fa-spin margin-l-md loading-notification" style="display: none; opacity: .4;"></i>')
+                                .html(item.Name + inactiveWarning +  ' <i class="fa fa-refresh fa-spin margin-l-md loading-notification" style="display: none; opacity: .4;"></i>')
                                 .prependTo($div),
 
                             $radio = $('<input type="radio" name="person-id" />')
@@ -227,7 +233,7 @@
                         }
 
                         if (!item.IsActive) {
-                            $li.addClass('inactive');
+                            $li.addClass('is-inactive');
                         }
 
                         return $resultSection.append($li);
