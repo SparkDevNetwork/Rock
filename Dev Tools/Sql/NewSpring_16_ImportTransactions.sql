@@ -102,6 +102,22 @@ BEGIN
   RAISERROR('Could not find NMI Gateway', 20, -1) WITH LOG;
 END
 
+-- Supplement Bank Card Type from Reference Col
+UPDATE f1t 
+SET
+	[Bank Card_Type] =
+		CASE WHEN Reference = 'amex' THEN
+			'American Express'
+		WHEN Reference = 'discover' THEN 
+			'Discover'
+		WHEN Reference = 'mc' THEN 
+			'MasterCard'
+		WHEN Reference = 'visa' THEN 
+			'Visa'
+		END
+FROM [Imports].[dbo].[F1Transactions] f1t
+WHERE [Bank Card_Type] IS NULL AND Reference IN ('amex', 'mc', 'visa', 'discover');
+
 -- Create temp table
 if object_id('tempdb..#temp') is not null
 begin
