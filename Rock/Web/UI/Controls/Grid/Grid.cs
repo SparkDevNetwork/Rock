@@ -2212,14 +2212,34 @@ namespace Rock.Web.UI.Controls
                     {
                         Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
 
-                        PropertyInfo personIdProp = oType.GetProperty( this.PersonIdField );
                         PropertyInfo idProp = !string.IsNullOrEmpty( dataKeyColumn ) ? oType.GetProperty( dataKeyColumn ) : null;
+
+                        var personIdProp = new List<PropertyInfo>();
+                        var propPath = this.PersonIdField.Split( new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries ).ToList<string>();
+                        while ( propPath.Any() )
+                        {
+                            var property = oType.GetProperty( propPath.First() );
+                            if ( property != null )
+                            {
+                                personIdProp.Add( property );
+                                oType = property.PropertyType;
+                            }
+                            propPath = propPath.Skip( 1 ).ToList();
+                        }
 
                         foreach ( var item in data )
                         {
-                            if ( personIdProp == null )
+                            if ( !personIdProp.Any() )
                             {
-                                personIdProp = item.GetType().GetProperty( this.PersonIdField );
+                                while ( propPath.Any() )
+                                {
+                                    var property = item.GetType().GetProperty( propPath.First() );
+                                    if ( property != null )
+                                    {
+                                        personIdProp.Add( property );
+                                    }
+                                    propPath = propPath.Skip( 1 ).ToList();
+                                }
                             }
 
                             if ( idProp == null )
@@ -2227,12 +2247,22 @@ namespace Rock.Web.UI.Controls
                                 idProp = item.GetType().GetProperty( dataKeyColumn );
                             }
 
-                            if ( personIdProp != null && idProp != null )
+                            if ( personIdProp.Any() && idProp != null )
                             {
-                                object personIdValue = personIdProp.GetValue( item, null );
-                                if ( personIdValue != null )
+                                var personIdObjTree = new List<object>();
+                                personIdObjTree.Add( item );
+                                foreach( var prop in personIdProp )
                                 {
-                                    int personId = (int)personIdValue;
+                                    object obj = prop.GetValue( personIdObjTree.Last(), null );
+                                    if (obj != null )
+                                    {
+                                        personIdObjTree.Add( obj );
+                                    }
+                                }
+
+                                if ( personIdObjTree.Last() is int )
+                                {
+                                    int personId = (int)personIdObjTree.Last();
                                     int id = (int)idProp.GetValue( item, null );
 
                                     // Add the personId if none are selected or if it's one of the selected items.
