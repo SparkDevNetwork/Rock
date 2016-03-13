@@ -154,8 +154,10 @@
                                 <Rock:RockTextBox ID="tbRegistrationRegistrantFirstName" runat="server" Label="Registrant First Name" />
                                 <Rock:RockTextBox ID="tbRegistrationRegistrantLastName" runat="server" Label="Registrant Last Name" />
                             </Rock:GridFilter>
-                            <Rock:Grid ID="gRegistrations" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gRegistrations_RowSelected" RowItemText="Registration" CssClass="js-grid-registration" ExportSource="ColumnOutput" >
+                            <Rock:Grid ID="gRegistrations" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gRegistrations_RowSelected" RowItemText="Registration" 
+                                PersonIdField="PersonAlias.PersonId" CssClass="js-grid-registration" ExportSource="ColumnOutput" >
                                 <Columns>
+                                    <Rock:SelectField ItemStyle-Width="48px"/>
                                     <Rock:RockTemplateField HeaderText="Registered By">
                                         <ItemTemplate>
                                             <asp:Literal ID="lRegisteredBy" runat="server"></asp:Literal>
