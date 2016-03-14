@@ -65,7 +65,9 @@ namespace Rock.Security.BackgroundCheck
         /// Note: If the associated workflow type does not have attributes with the following keys, they
         /// will automatically be added to the workflow type configuration in order to store the results
         /// of the PMM background check request
-        ///     ReportStatus:           The status returned by PMM
+        ///     RequestStatus:          The request status returned by PMM request
+        ///     RequestMessage:         Any error messages returned by PMM request
+        ///     ReportStatus:           The report status returned by PMM
         ///     ReportLink:             The location of the background report on PMM server
         ///     ReportRecommendation:   PMM's recomendataion
         ///     Report (BinaryFile):    The downloaded background report
@@ -348,33 +350,49 @@ Response XML ({2}):
 
                 if ( _HTTPStatusCode == HttpStatusCode.OK )
                 {
-                    var xOrderXML = xResult.Elements( "OrderXML" ).FirstOrDefault();
-                    if ( xOrderXML != null )
+                    using ( var newRockContext = new RockContext() )
                     {
-                        var xErrors = xOrderXML.Elements( "Errors" ).FirstOrDefault();
-                        if ( xErrors != null )
+                        var xOrderXML = xResult.Elements( "OrderXML" ).FirstOrDefault();
+                        if ( xOrderXML != null )
                         {
-                            errorMessages.AddRange( xErrors.Elements( "Message" ).Select( x => x.Value ) );
+                            var xStatus = xOrderXML.Elements( "Status" ).FirstOrDefault();
+                            if ( xStatus != null )
+                            {
+                                SaveAttributeValue( workflow, "RequestStatus", xStatus.Value,
+                                    FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), newRockContext, null );
+                            }
+
+                            var xErrors = xOrderXML.Elements( "Errors" ).FirstOrDefault();
+                            if ( xErrors != null )
+                            {
+                                string errorMsg = xErrors.Elements( "Message" ).Select( x => x.Value ).ToList().AsDelimited( Environment.NewLine );
+                                SaveAttributeValue( workflow, "RequestMessage", errorMsg,
+                                    FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), newRockContext, null );
+                            }
+
+                            if ( xResult.Root.Descendants().Count() > 0 )
+                            {
+                                SaveResults( xResult, workflow, rockContext, false );
+                            }
                         }
-                        return false;
-                    }
+                        else
+                        {
+                            SaveAttributeValue( workflow, "RequestMessage", errorMessages.AsDelimited( Environment.NewLine ),
+                                FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), newRockContext, null );
+                        }
 
-                    if ( xResult.Root.Descendants().Count() > 0 )
-                    {
-                        SaveResults( xResult, workflow, rockContext, false );
+                        newRockContext.SaveChanges();
                     }
-
                     return true;
                 }
                 else
                 {
                     errorMessages.Add( "Invalid HttpStatusCode: " + _HTTPStatusCode.ToString() );
+                    return false;
                 }
-
-                return false;
-
             }
-            catch( Exception ex )
+
+            catch ( Exception ex )
             {
                 ExceptionLogService.LogException( ex, null );
                 errorMessages.Add( ex.Message );
@@ -621,7 +639,7 @@ Response XML ({0}):
                 // If workflow attribute doesn't exist, create it 
                 // ( should only happen first time a background check is processed for given workflow type)
                 var attribute = new Rock.Model.Attribute();
-                attribute.EntityTypeId = workflow.WorkflowType.TypeId;
+                attribute.EntityTypeId = workflow.TypeId;
                 attribute.EntityTypeQualifierColumn = "WorkflowTypeId";
                 attribute.EntityTypeQualifierValue = workflow.WorkflowTypeId.ToString();
                 attribute.Name = key.SplitCase();
