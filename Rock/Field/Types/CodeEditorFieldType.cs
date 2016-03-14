@@ -23,11 +23,10 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class CodeEditorFieldType : FieldType
     {
-
         #region Configuration
 
         private const string EDITOR_MODE = "editorMode";
@@ -176,6 +175,23 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Formatting
+
+        /// <summary>
+        /// Formats the value as HTML.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condesed].</param>
+        /// <returns></returns>
+        public override string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
+        {
+            return System.Web.HttpUtility.HtmlEncode( FormatValue( parentControl, value, configurationValues, condensed ) );
+        }
+
+        #endregion
+
         #region FilterControl
 
         /// <summary>
@@ -209,6 +225,5 @@ namespace Rock.Field.Types
         }
 
         #endregion
-
     }
 }
