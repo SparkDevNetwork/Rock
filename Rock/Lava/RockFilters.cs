@@ -626,6 +626,41 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Sundays the date.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string SundayDate( object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            DateTime date = DateTime.MinValue;
+
+            if ( input.ToString() == "Now" )
+            {
+                date = RockDateTime.Now;
+            }
+            else
+            {
+                if ( !DateTime.TryParse( input.ToString(), out date ) )
+                {
+                    return null;
+                }
+            }
+
+            if ( date != DateTime.MinValue )
+            {
+                return date.SundayDate().ToShortDateString();
+            } else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Dateses from i cal.
         /// </summary>
         /// <param name="input">The input.</param>
