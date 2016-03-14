@@ -2134,6 +2134,9 @@ table.attribute-grid tr th:nth-child(3) {
   color: #5cb85c;
   font-size: 45px;
 }
+.badge-era.era-loss:before {
+  color: #ee7624;
+}
 .badge-era span {
   font-size: 16px;
   position: absolute;
