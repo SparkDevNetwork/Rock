@@ -71,12 +71,9 @@ namespace Rock.Jobs
             //
 
             // giving
-            int entryGivingCountShort = 1;
-            int entryGivingCountLong = 4;
             int exitGivingCount = 1;
 
             // attendance
-            int entryAttendanceCount = 8;
             int exitAttendanceCountShort = 1;
             int exitAttendanceCountLong = 8;
 
@@ -220,6 +217,11 @@ namespace Rock.Jobs
 
                         workflow.SetAttributeValue( "Family", family.Guid );
                         workflow.SetAttributeValue( "HeadOfHouse", headOfHouse.Person.PrimaryAlias.Guid );
+
+                        if ( family.Campus != null )
+                        {
+                            workflow.SetAttributeValue( "Campus", family.Campus.Guid );
+                        }
 
                         if ( spouse != null && spouse.Person != null && spouse.Person.PrimaryAlias != null )
                         {

@@ -1488,6 +1488,26 @@ namespace RockWeb.Blocks.Event
                 {
                     registrar = CurrentPerson;
                     registration.PersonAliasId = CurrentPerson.PrimaryAliasId;
+
+                    // If email that logged in user used is different than their stored email address, update their stored value
+                    if ( !string.IsNullOrWhiteSpace( registration.ConfirmationEmail ) &&
+                        !registration.ConfirmationEmail.Trim().Equals( CurrentPerson.Email.Trim(), StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        var person = personService.Get( CurrentPerson.Id );
+                        if ( person != null )
+                        {
+                            var personChanges = new List<string>();
+                            History.EvaluateChange( personChanges, "Email", person.Email, registration.ConfirmationEmail );
+                            person.Email = registration.ConfirmationEmail;
+
+                            HistoryService.SaveChanges(
+                                new RockContext(),
+                                typeof( Person ),
+                                Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                                person.Id,
+                                personChanges, true, CurrentPersonAliasId );
+                        }
+                    }
                 }
                 else
                 {
@@ -1521,8 +1541,8 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
-            // If the registration includes a payment, make sure there's an actual person associated to registration
-            if ( hasPayment && !registration.PersonAliasId.HasValue )
+            // Make sure there's an actual person associated to registration
+            if ( !registration.PersonAliasId.HasValue )
             {
                 // If a match was not found, create a new person
                 var person = new Person();
@@ -1552,6 +1572,8 @@ namespace RockWeb.Blocks.Event
                 {
                     History.EvaluateChange( registrationChanges, "Registrar", string.Empty, registration.ToString() );
                 }
+
+
             }
 
             // Save the registration ( so we can get an id )
@@ -1568,7 +1590,6 @@ namespace RockWeb.Blocks.Event
                         registration.Id,
                         registrationChanges, true, CurrentPersonAliasId )
                 );
-
 
                 // Get each registrant
                 foreach ( var registrantInfo in RegistrationState.Registrants.ToList() )

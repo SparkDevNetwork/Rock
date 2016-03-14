@@ -31,8 +31,16 @@ namespace Rock.Field.Types
 
         #region Configuration
 
-        private const string NUMBER_OF_ROWS = "numberofrows";
-        private const string ALLOW_HTML = "allowhtml";
+        /// <summary>
+        /// The NUMBER_OF_ROWS constant for MemoFieldType and child classes
+        /// </summary>
+        protected const string NUMBER_OF_ROWS = "numberofrows";
+
+
+        /// <summary>
+        /// The ALLOW_HTML constant for MemoFieldType and child classes
+        /// </summary>
+        protected const string ALLOW_HTML = "allowhtml";
 
         /// <summary>
         /// Returns a list of the configuration keys
