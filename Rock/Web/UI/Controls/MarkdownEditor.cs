@@ -12,6 +12,15 @@ namespace Rock.Web.UI.Controls
     public class MarkdownEditor : RockTextBox
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="MarkdownEditor"/> class.
+        /// </summary>
+        public MarkdownEditor()
+            : base()
+        {
+            this.Rows = 3;
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -19,7 +28,6 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
             this.TextMode = TextBoxMode.MultiLine;
-            this.Rows = 3;
         }
 
         /// <summary>
