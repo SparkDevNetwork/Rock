@@ -25,3 +25,13 @@ If (Test-Path "$rootfolder\temp\Content"){
 # move content folder to temp
 Write-Host "Moving content folder to temp directory"
 Move-Item "$webroot\Content" "$rootfolder\temp"
+
+
+# delete the cache directory in temp
+If (Test-Path "$rootfolder\temp\Cache"){
+	Remove-Item "$rootfolder\temp\Cache" -Force -Confirm:$False -Recurse
+}
+
+# move cache folder to temp
+Write-Host "Moving cache folder to temp directory"
+Move-Item "$webroot\App_Data\Cache" "$rootfolder\temp"
