@@ -31,13 +31,12 @@
         </div>
 
     </div>
-        
    
     <div class="checkin-footer">   
         <div class="checkin-actions">
             <asp:LinkButton CssClass="btn btn-default" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Back" />
             <asp:LinkButton CssClass="btn btn-default" ID="lbCancel" runat="server" OnClick="lbCancel_Click" Text="Cancel" />
-            <asp:LinkButton CssClass="btn btn-default pull-right disabled" ID="lbNext" runat="server" OnClick="lbNext_Click" Text="Next" />
+            <Rock:BootstrapButton ID="lbNext" runat="server" OnClick="lbNext_Click"  CssClass="btn btn-default pull-right disabled"  DataLoadingText="Wait..." >Next</Rock:BootstrapButton>
         </div>
     </div>
 
