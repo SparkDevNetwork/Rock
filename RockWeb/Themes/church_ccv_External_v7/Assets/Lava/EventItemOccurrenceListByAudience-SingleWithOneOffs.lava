@@ -1,5 +1,10 @@
 {% comment %}
 
+For blocks like baptism list where we need to have 'Easter Baptisms' in the same
+list, but marked differently.
+
+{% assign regularEventId = 6 %}
+
 {% assign emptyMessage = "There are currently no events scheduled" %}
 
 {% capture emptyMessage %}There are currently no events scheduled for the {{ Context.Campus.Name }} Campus{% endcapture %}
@@ -20,9 +25,18 @@
       <div class="list-group">
         {% for occurrence in EventItemOccurrences %}
           {% comment %}<a class="list-group-item" href="{{ RegistrationPage }}?RegistrationInstanceId={{ occurrence.Linkages | Select: 'RegistrationInstanceId' }}">{% endcomment %}
-          <a class="list-group-item" href="{{ RegistrationPage }}?EventOccurrenceId={{ occurrence.Id }}">
-            {{ occurrence.EventItem.Name }} <small class="text-muted" style="display: inline-block;">{{ occurrence.Schedule.iCalendarContent | DatesFromICal| First | Date: 'dddd, MMM d / h:mmtt'  }}</small>
-          </a>
+          {% if occurrence.EventItemId == regularEventId %}
+            <a class="list-group-item" href="{{ RegistrationPage }}?EventOccurrenceId={{ occurrence.Id }}">
+              {{ occurrence.Schedule.iCalendarContent | DatesFromICal| First | Date: 'dddd, MMM d / h:mmtt'  }}
+            </a>
+          {% else %}
+            <a class="list-group-item" href="{{ RegistrationPage }}?EventOccurrenceId={{ occurrence.Id }}">
+              {{ occurrence.Schedule.iCalendarContent | DatesFromICal| First | Date: 'dddd, MMM d / h:mmtt'  }}
+              <small class="text-muted" style="display: inline-block;">
+                {{ occurrence.EventItem.Name }}
+              </small>
+            </a>
+          {% endif %}
         {% endfor %}
       </div>
     </div>
