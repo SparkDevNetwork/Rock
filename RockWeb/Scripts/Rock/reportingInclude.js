@@ -184,6 +184,11 @@
                         result = result + ', with member status:' + groupMemberStatus;
                     }
 
+                    var dateRangeText = $('.js-slidingdaterange-text-value', $content).val()
+                    if (dateRangeText) {
+                        result = result + ', added to group in Date Range: ' + dateRangeText;
+                    }
+
                     return result;
                 },
 
