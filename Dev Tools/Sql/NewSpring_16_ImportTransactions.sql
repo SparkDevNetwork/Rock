@@ -13,8 +13,6 @@
 
 How to import the XLS file:
 
-0.) Add column to excel file with a function of received_time - 1.  Copy column and paste values.  
-0.) Delete received_time col and add received_time as the col name of the newly computed col.
 1.) Create Imports DB.  If it already exists, drop it, then create a new one.
 2.) Right click on the Imports DB and choose Tasks > Import Data
 3.) Move through the wizard to Choose a Data Source and select Microsoft Excel
@@ -36,18 +34,22 @@ How to import the XLS file:
 
 */
 
+-- Combine time with date column
+UPDATE [Imports].[dbo].[F1Transactions]
+SET Received_Date = Received_Date + CONVERT(DATETIME, CONVERT(TIME, Received_Time));
+
 /* ====================================================== */
 
 -- Clean up data --
 
-DECLARE @start AS DATETIME = '3-6-2016 22:00:00';
-DECLARE @end AS DATETIME = '3-8-2016 23:59:59';
+DECLARE @start AS DATETIME = '3-9-2016 00:00:00';
+DECLARE @end AS DATETIME = '3-13-2016 23:59:59';
 
 DELETE FROM [Imports].[dbo].[F1Transactions]
 WHERE
 	Received_Time IS NULL
-	OR (CONVERT(DateTime, CONVERT(DATE, Received_Date)) + CONVERT(DATETIME, CONVERT(TIME, Received_Time))) < @start
-	OR (CONVERT(DateTime, CONVERT(DATE, Received_Date)) + CONVERT(DATETIME, CONVERT(TIME, Received_Time))) > @end;
+	OR Received_Date < @start
+	OR Received_Date > @end;
 
 /* ====================================================== */
 
@@ -160,7 +162,7 @@ SELECT
       WHERE
 	    [Name] = REPLACE([f1t].[SubFund], ' Campus', '')
     ) AS [CampusId]
-  , CONVERT(DateTime, CONVERT(DATE, Received_Date)) + CONVERT(DATETIME, CONVERT(TIME, Received_Time)) AS TransactionDateTime
+  , Received_Date AS TransactionDateTime
   , (
 	  SELECT 
 	    [Id] 
