@@ -16,13 +16,14 @@
 //
 using System.Collections.Generic;
 using System.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
     /// <summary>
     /// Field used to edit text in Markdown format and rendered as processed Markdown
     /// </summary>
-    public class MarkdownFieldType : TextFieldType
+    public class MarkdownFieldType : MemoFieldType
     {
         #region Formatting
 
@@ -80,7 +81,26 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new Rock.Web.UI.Controls.MarkdownEditor { ID = id };
+            var mdEditor = new MarkdownEditor { ID = id };
+            int? rows = 3;
+            bool allowHtml = false;
+
+            if ( configurationValues != null )
+            {
+                if ( configurationValues.ContainsKey( NUMBER_OF_ROWS ) )
+                {
+                    rows = configurationValues[NUMBER_OF_ROWS].Value.AsIntegerOrNull() ?? 3;
+                }
+                if ( configurationValues.ContainsKey( ALLOW_HTML ) )
+                {
+                    allowHtml = configurationValues[ALLOW_HTML].Value.AsBoolean();
+                }
+            }
+
+            mdEditor.Rows = rows.HasValue ? rows.Value : 3;
+            mdEditor.ValidateRequestMode = allowHtml ? ValidateRequestMode.Disabled : ValidateRequestMode.Enabled;
+
+            return mdEditor;
         }
 
         #endregion

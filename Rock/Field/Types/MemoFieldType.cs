@@ -31,8 +31,8 @@ namespace Rock.Field.Types
 
         #region Configuration
 
-        private const string NUMBER_OF_ROWS = "numberofrows";
-        private const string ALLOW_HTML = "allowhtml";
+        protected const string NUMBER_OF_ROWS = "numberofrows";
+        protected const string ALLOW_HTML = "allowhtml";
 
         /// <summary>
         /// Returns a list of the configuration keys
