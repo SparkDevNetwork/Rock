@@ -1496,6 +1496,19 @@ namespace Rock.Model
             return firstFamily != null ? firstFamily.Campus : null;
         }
 
+        /// <summary>
+        /// Gets the campus ids for all the families that a person belongs to.
+        /// </summary>
+        /// <returns></returns>
+        public List<int> GetCampusIds()
+        {
+            return this.GetFamilies()
+                .Where( f => f.CampusId.HasValue )
+                .Select( f => f.CampusId.Value )
+                .Distinct()
+                .ToList();
+        }
+
         #endregion
 
         #region Static Helper Methods
