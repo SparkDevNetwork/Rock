@@ -71,12 +71,9 @@ namespace Rock.Jobs
             //
 
             // giving
-            int entryGivingCountShort = 1;
-            int entryGivingCountLong = 4;
             int exitGivingCount = 1;
 
             // attendance
-            int entryAttendanceCount = 8;
             int exitAttendanceCountShort = 1;
             int exitAttendanceCountLong = 8;
 
