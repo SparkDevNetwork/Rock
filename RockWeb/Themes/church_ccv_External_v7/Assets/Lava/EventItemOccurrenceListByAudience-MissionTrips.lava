@@ -1,7 +1,7 @@
 <div class="row">
   {% for occurrence in EventItemOccurrences %}
     {% capture itemLink %}{{ RegistrationPage }}?EventOccurrenceId={{ occurrence.Id }}{% endcapture %}
-    <div class="col-sm-6 col-md-4">
+    <div class="col-sm-6 col-md-5 col-lg-4">
       <div class="hoverthumb">
         <a href="{{ itemLink }}">
           <img src="{{ occurrence.EventItem.Photo.Url }}&width=525&height=295&mode=crop&scale=both">
