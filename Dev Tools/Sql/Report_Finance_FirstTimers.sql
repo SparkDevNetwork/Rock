@@ -41,12 +41,6 @@ FROM
 WHERE
 	CONVERT(DATE, ft.TransactionDateTime) BETWEEN @reportStartDate AND @reportEndDate;
 
--- Giving ids that gave before
-IF object_id('tempdb..#givingIdsThatGaveBefore') IS NOT NULL
-BEGIN
-	drop table #givingIdsThatGaveBefore
-END
-
 -- Filter ids that gave before
 DELETE FROM #givingIds WHERE GivingId IN (
 	SELECT 
