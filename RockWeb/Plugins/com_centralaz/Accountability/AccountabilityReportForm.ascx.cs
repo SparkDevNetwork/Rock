@@ -153,15 +153,17 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
             DateTime nextDueDate = NextReportDate( reportStartDate );
             DateTime lastDueDate = nextDueDate.AddDays( -7 );
             ResponseSetService responseSetService = new ResponseSetService( new AccountabilityContext() );
-            //Submit report for this week case
-            if ( !responseSetService.DoesResponseSetExistWithSubmitDate( nextDueDate, CurrentPersonId, groupId ) )
-            {
-                ddlSubmitForDate.Items.Add( nextDueDate.ToShortDateString() );
-            }
+
             //Report overdue case
             if ( !responseSetService.DoesResponseSetExistWithSubmitDate( lastDueDate, CurrentPersonId, groupId ) )
             {
                 ddlSubmitForDate.Items.Add( lastDueDate.ToShortDateString() );
+            }
+
+            //Submit report for this week case
+            if ( !responseSetService.DoesResponseSetExistWithSubmitDate( nextDueDate, CurrentPersonId, groupId ) )
+            {
+                ddlSubmitForDate.Items.Add( nextDueDate.ToShortDateString() );
             }
         }
 
