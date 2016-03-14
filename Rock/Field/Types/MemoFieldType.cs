@@ -24,23 +24,15 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// 
+    /// Field used to edit text in a multi-line text box
     /// </summary>
     public class MemoFieldType : FieldType
     {
 
         #region Configuration
 
-        /// <summary>
-        /// The NUMBER_OF_ROWS constant for MemoFieldType and child classes
-        /// </summary>
-        protected const string NUMBER_OF_ROWS = "numberofrows";
-
-
-        /// <summary>
-        /// The ALLOW_HTML constant for MemoFieldType and child classes
-        /// </summary>
-        protected const string ALLOW_HTML = "allowhtml";
+        private const string NUMBER_OF_ROWS = "numberofrows";
+        private const string ALLOW_HTML = "allowhtml";
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -62,7 +54,7 @@ namespace Rock.Field.Types
         {
             var controls = base.ConfigurationControls();
 
-            // Add nuber box for selecting the number of rows
+            // Add number box for selecting the number of rows
             var nb = new NumberBox();
             controls.Add( nb );
             nb.AutoPostBack = true;
