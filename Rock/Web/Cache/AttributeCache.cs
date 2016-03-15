@@ -362,12 +362,12 @@ namespace Rock.Web.Cache
                 var rockControl = attributeControl as IRockControl;
                 if ( rockControl != null )
                 {
-                    controls.Add( attributeControl );
-
                     rockControl.Label = labelText;
                     rockControl.Help = helpText;
                     rockControl.Required = required.HasValue ? required.Value : this.IsRequired;
                     rockControl.ValidationGroup = validationGroup;
+
+                    controls.Add( attributeControl );
                 }
                 else
                 {
