@@ -8,9 +8,9 @@ using Rock.Model;
 
 namespace RockWeb.Plugins.church_ccv.Cms
 {
-    [DisplayName( "Invite Entry" )]
+    [DisplayName( "Invite Entry - Mobile " )]
     [Category( "CCV > Cms" )]
-    [Description( "Block that helps a user send an invite message to somebody using email, text, etc" )]
+    [Description( "Block that helps a user send an invite message to somebody using email, text, etc from a Mobile browser" )]
 
     [CodeEditorField( "ContentObject", "JSON Dynamic Array that can be used by the Template as a MergeField.", Rock.Web.UI.Controls.CodeEditorMode.JavaScript, order: 0, defaultValue: @"[
   {
