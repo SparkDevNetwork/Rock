@@ -51,6 +51,14 @@ namespace church.ccv.Utility.Web
         }
 
         /// <summary>
+        /// Flushes the cached content for this Content Block
+        /// </summary>
+        public void FlushCachedContent()
+        {
+            _flushCache = true;
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
