@@ -4,6 +4,15 @@
     Sys.Application.add_load(function () {
         $('.js-legend-badge').tooltip({ html: true, container: 'body', delay: { show: 200, hide: 100 } });
     });
+
+    //Sys.WebForms.PageRequestManager.getInstance().add_endRequest(scrollToGrid);
+    function scrollToGrid() {
+        if (!$('.js-grid-header').visible(true)) {
+            $('html, body').animate({
+                scrollTop: $('.js-grid-header').offset().top + 'px'
+            }, 'fast');
+        }
+    }
 </script>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
@@ -58,7 +67,7 @@
 
             </div>
         </div>
-        <asp:Panel ID="pnlGrid" runat="server" CssClass="panel panel-block" Visible="false">
+        <asp:Panel ID="pnlGrid" runat="server" CssClass="panel panel-block js-grid-header" Visible="false">
             <div class="panel-heading">
                 <h1 class="panel-title"><asp:Literal ID="lOpportunityIcon" runat="server" /> <asp:Literal ID="lConnectionRequest" runat="server"></asp:Literal></h1>
             </div>

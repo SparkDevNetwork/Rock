@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -37,7 +38,7 @@ namespace Rock.Web.UI.Controls
         public override void RenderBaseControl( System.Web.UI.HtmlTextWriter writer )
         {
             base.RenderBaseControl( writer );
-            writer.Write( "<a href='http://commonmark.org/help/' class='btn btn-xs pull-right text-muted' target='_blank'>markdown</a>" );
+            writer.Write( "<small class='pull-right text-muted'><strong>**bold**</strong> &nbsp;<em>*italics*</em> &nbsp;>quote &nbsp;[link text](link address) &nbsp;<a href='http://commonmark.org/help/' class='btn btn-xs text-muted' target='_blank'>more</a></small>" );
         }
     }
 }

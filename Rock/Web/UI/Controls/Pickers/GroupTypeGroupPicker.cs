@@ -212,7 +212,7 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
-                _ddlGroupType.SelectedValue = value.ToString();
+                _ddlGroupType.SetValue( value );
                 if ( value.HasValue )
                 {
                     LoadGroups( value.Value );
