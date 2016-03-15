@@ -39,7 +39,7 @@ namespace church.ccv.Badges.Person
             int groupListPageId = GetPageIdFromLinkedPageAttribute( "GroupListPage", badge );
 
             writer.Write( string.Format( @"<div class='badge-group badge-group-steps js-badge-group-steps badge-id-{0}'>
-                <a class='badge badge-baptism badge-icon step-nottaken' data-toggle='tooltip' data-original-title='{1} is not baptised' data-container='body' href='/page/{4}?PersonGuid={2}&EventItemId={3}'>
+                <a class='badge badge-baptism badge-icon step-nottaken' data-toggle='tooltip' data-original-title='{1} is not baptized' data-container='body' href='/page/{4}?PersonGuid={2}&EventItemId={3}'>
                     <i class='icon ccv-baptism'></i>
                 </a>
 
@@ -103,7 +103,7 @@ namespace church.ccv.Badges.Person
                     var baptismRegistrationDate = new Date(data.BaptismResult.BaptismRegistrationDate);
                     var baptismRegistrationDateFormatted = (baptismRegistrationDate.getMonth() + 1) + '/' + baptismRegistrationDate.getDate() + '/' + baptismRegistrationDate.getFullYear();
 
-                    $badge.find('.badge-baptism').attr('data-original-title', firstName + ' is registered to be baptised on ' + baptismRegistrationDateFormatted );
+                    $badge.find('.badge-baptism').attr('data-original-title', firstName + ' is registered to be baptized on ' + baptismRegistrationDateFormatted );
                     $badge.find('.badge-baptism').removeClass('step-nottaken');
                     $badge.find('.badge-baptism').addClass('step-partial');
                 }} else if (data.BaptismResult.BaptismStatus == 1) {{
@@ -111,7 +111,7 @@ namespace church.ccv.Badges.Person
                     var baptismDateFormatted = (baptismDate.getMonth() + 1) + '/' + baptismDate.getDate() + '/' + baptismDate.getFullYear();
 
                     $badge.find('.badge-baptism').removeClass('step-nottaken');
-                    $badge.find('.badge-baptism').attr('data-original-title', firstName + ' was baptised on ' + baptismDateFormatted + '');
+                    $badge.find('.badge-baptism').attr('data-original-title', firstName + ' was baptized on ' + baptismDateFormatted + '');
                 }}
 
                 // member
