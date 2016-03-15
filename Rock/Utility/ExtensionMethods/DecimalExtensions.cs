@@ -19,7 +19,7 @@ using System;
 namespace Rock
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public static partial class ExtensionMethods
     {
@@ -34,20 +34,20 @@ namespace Rock
         }
 
         /// <summary>
-        /// Returns the floor (round down) value with the given decimal precision 
+        /// Returns the floor (round down) value with the given decimal precision
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
         public static decimal? Floor( this decimal? value, int precision = 0 )
         {
-            if(!value.HasValue)
+            if ( !value.HasValue )
             {
                 return null;
             }
 
-            var shiftFactor = Convert.ToDecimal(Math.Pow( 10, precision ));
+            var shiftFactor = Convert.ToDecimal( Math.Pow( 10, precision ) );
             var shiftedValue = value.Value * shiftFactor;
-            var shiftedFloor = Math.Floor(shiftedValue);
+            var shiftedFloor = Math.Floor( shiftedValue );
             var unshiftedFloor = shiftedFloor / shiftFactor;
             return unshiftedFloor;
         }

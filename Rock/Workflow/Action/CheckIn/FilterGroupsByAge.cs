@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Globalization;
 using System.Linq;
 
 using Rock.Attribute;
@@ -70,9 +69,9 @@ namespace Rock.Workflow.Action.CheckIn
                         continue;
                     }
 
-                    if(ageAsDouble.HasValue)
+                    if ( ageAsDouble.HasValue )
                     {
-                        age = Convert.ToDecimal(ageAsDouble.Value);
+                        age = Convert.ToDecimal( ageAsDouble.Value );
                     }
 
                     foreach ( var groupType in person.GroupTypes.ToList() )
@@ -81,16 +80,16 @@ namespace Rock.Workflow.Action.CheckIn
                         {
                             var attributeGuid = GetAttributeValue( action, "AgeRangeAttribute" ).AsGuid();
 
-                            if(attributeGuid == Guid.Empty)
+                            if ( attributeGuid == Guid.Empty )
                             {
                                 throw new Exception( "The attribute, AgeRangeAttribute, is invalid for FilterGroupsByAge" );
                             }
 
-                            var ageRangeAttribute = group.Group.Attributes.FirstOrDefault(a => a.Value.Guid == attributeGuid);
+                            var ageRangeAttribute = group.Group.Attributes.FirstOrDefault( a => a.Value.Guid == attributeGuid );
 
                             if ( ageRangeAttribute.Equals( default( KeyValuePair<string, Web.Cache.AttributeCache> ) ) )
                             {
-                                throw new Exception( string.Format("The group, {0}, does not have a value for the selected AgeRangeAttribute", group.Group.Name) );
+                                throw new Exception( string.Format( "The group, {0}, does not have a value for the selected AgeRangeAttribute", group.Group.Name ) );
                             }
 
                             var ageRange = group.Group.GetAttributeValue( ageRangeAttribute.Key ) ?? string.Empty;
@@ -115,7 +114,7 @@ namespace Rock.Workflow.Action.CheckIn
                                     if ( age.HasValue )
                                     {
                                         int groupMinAgePrecision = minAge.GetDecimalPrecision();
-                                        personAgePrecise = age.Floor(groupMinAgePrecision);
+                                        personAgePrecise = age.Floor( groupMinAgePrecision );
                                     }
 
                                     if ( !age.HasValue || personAgePrecise < minAge )
@@ -144,7 +143,7 @@ namespace Rock.Workflow.Action.CheckIn
                                     if ( age.HasValue )
                                     {
                                         int groupMaxAgePrecision = maxAge.GetDecimalPrecision();
-                                        personAgePrecise = age.Floor(groupMaxAgePrecision);
+                                        personAgePrecise = age.Floor( groupMaxAgePrecision );
                                     }
 
                                     if ( !age.HasValue || personAgePrecise > maxAge )
