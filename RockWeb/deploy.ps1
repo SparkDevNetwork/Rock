@@ -24,7 +24,7 @@ Move-Item "$rootfolder\temp\Content" "$webroot"
 
 # move cache directory back from temp
 Write-Host "Moving Cache folder back from temp directory"
-Move-Item "$rootfolder\temp\Content" "$webroot\App_Data"
+Move-Item "$rootfolder\temp\Cache" "$webroot\App_Data"
 
 # copy new connection string file
 Write-Host "Copying new web.ConnectionStrings.config to web dir"
