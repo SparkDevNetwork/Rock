@@ -36,19 +36,20 @@ How to import the XLS file:
 
 -- Combine time with date column
 UPDATE [Imports].[dbo].[F1Transactions]
-SET Received_Date = Received_Date + CONVERT(DATETIME, CONVERT(TIME, Received_Time));
+SET Received_Date = Received_Date + CONVERT(DATETIME, CONVERT(TIME, Received_Time))
+WHERE Received_Time IS NOT NULL;
 
 /* ====================================================== */
 
 -- Clean up data --
 
-DECLARE @start AS DATETIME = '3-9-2016 00:00:00';
-DECLARE @end AS DATETIME = '3-13-2016 23:59:59';
+DECLARE @start AS DATETIME = '3-14-2016 00:00:00';
+DECLARE @end AS DATETIME = '3-14-2016 23:59:59';
 
 DELETE FROM [Imports].[dbo].[F1Transactions]
 WHERE
-	Received_Time IS NULL
-	OR Received_Date < @start
+	--Received_Time IS NULL
+	Received_Date < @start
 	OR Received_Date > @end;
 
 /* ====================================================== */
