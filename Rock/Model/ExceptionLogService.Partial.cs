@@ -228,6 +228,20 @@ namespace Rock.Model
                     ModifiedAuditValuesAlreadyUpdated = true
                 };
 
+            if ( exceptionLog.StackTrace == null )
+            {
+                try
+                {
+                    // if the Exception didn't include a StackTrace, manually grab it
+                    var stackTrace = new System.Diagnostics.StackTrace( 2 );
+                    exceptionLog.StackTrace = stackTrace.ToString();
+                }
+                catch
+                {
+                    // ignore
+                }
+            }
+
             try
             {
                 ex.Data.Add( "ExceptionLogGuid", exceptionLog.Guid );
