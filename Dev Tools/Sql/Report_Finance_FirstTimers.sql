@@ -10,6 +10,10 @@
 
 /* ====================================================== */
 
+-- For testing in sql server management studio, uncomment here:
+DECLARE @StartDate AS NVARCHAR(MAX) = '2016-03-13';
+DECLARE @EndDate AS NVARCHAR(MAX) = '2016-03-13';
+
 DECLARE @today AS DATE = GETDATE();
 DECLARE @reportEndDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(WEEKDAY, @today), @today));
 DECLARE @reportStartDate AS DATE = DATEADD(DAY, -6, @reportEndDate);
@@ -20,10 +24,39 @@ BEGIN
     SELECT @reportStartDate = @StartDate;
 END
 
-SELECT
+-- GivingIds in this set of transactions
+IF object_id('tempdb..#givingIds') IS NOT NULL
+BEGIN
+	drop table #givingIds
+END
+
+SELECT 
+	p.GivingId,
+	ft.Id AS TransactionId
+INTO #givingIds
+FROM
+	FinancialTransaction ft
+	JOIN PersonAlias pa ON ft.AuthorizedPersonAliasId = pa.Id
+	JOIN Person p ON pa.PersonId = p.Id
+WHERE
+	CONVERT(DATE, ft.TransactionDateTime) BETWEEN @reportStartDate AND @reportEndDate;
+
+-- Filter ids that gave before
+DELETE FROM #givingIds WHERE GivingId IN (
+	SELECT 
+		p.GivingId
+	FROM
+		FinancialTransaction ft
+		JOIN PersonAlias pa ON ft.AuthorizedPersonAliasId = pa.Id
+		JOIN Person p ON pa.PersonId = p.Id
+	WHERE
+		CONVERT(DATE, ft.TransactionDateTime) < @reportStartDate
+);
+
+SELECT 
 	ft.TransactionDateTime,
 	p.Id AS PersonId,
-	ft.Id AS TransactionId,
+	gid.TransactionId,
 	CONVERT(DATE, ft.TransactionDateTime) AS TransactionDate,
 	CONCAT(p.FirstName, ' ', p.LastName) AS ContributorName,
 	p.Email,
@@ -36,22 +69,14 @@ SELECT
 	fa.PublicName AS SubFund,
 	c.Name AS Campus,
 	ftd.Amount
-FROM
-	FinancialTransaction ft
-	JOIN FinancialTransactionDetail ftd ON ftd.TransactionId = ft.Id
-	JOIN (
-		SELECT
-			ft.AuthorizedPersonAliasId AS PersonAliasId,
-			MIN(ft.TransactionDateTime) AS FirstGiftDate
-		FROM
-			FinancialTransaction ft
-		GROUP BY
-			ft.AuthorizedPersonAliasId
-	) fg ON fg.PersonAliasId = ft.AuthorizedPersonAliasId AND fg.FirstGiftDate = ft.TransactionDateTime
+FROM 
+	#givingIds gid
+	JOIN FinancialTransaction ft ON ft.Id = gid.TransactionId
+	JOIN FinancialTransactionDetail ftd ON ft.Id = ftd.TransactionId
+	JOIN PersonAlias pa ON pa.Id = ft.AuthorizedPersonAliasId
+	JOIN Person p ON pa.PersonId = p.Id
 	LEFT JOIN FinancialAccount fa ON fa.Id = ftd.AccountId
 	LEFT JOIN FinancialAccount fap ON fap.Id = fa.ParentAccountId
-	JOIN PersonAlias pa ON pa.Id = fg.PersonAliasId
-	JOIN Person p ON p.Id = pa.PersonId
 	LEFT JOIN GroupMember gm ON gm.PersonId = p.Id
 	LEFT JOIN [Group] g ON g.Id = gm.GroupId
 	LEFT JOIN GroupLocation gl ON gl.GroupId = g.Id
@@ -62,7 +87,6 @@ WHERE
 	AND (g.Id IS NULL OR g.IsActive = 1)
 	AND (gl.Id IS NULL OR gl.IsMailingLocation = 1)
 	AND (gl.Id IS NULL OR gl.GroupLocationTypeValueId = 19)
-  AND CONVERT(DATE, ft.TransactionDateTime) BETWEEN @reportStartDate AND @reportEndDate
 ORDER BY
 	CONVERT(DATE, ft.TransactionDateTime) DESC,
 	ftd.Amount DESC;
