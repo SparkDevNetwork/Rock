@@ -316,6 +316,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
         /// <param name="e">The <see cref="DayRenderEventArgs" /> instance containing the event data.</param>
         protected void calBaptisms_DayRender( object sender, DayRenderEventArgs e )
         {
+            e.Cell.Attributes.Add( "OnClick", e.SelectUrl );
             DateTime day = e.Day.Date;
             if ( _baptizees != null )
             {
