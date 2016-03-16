@@ -334,6 +334,17 @@ namespace Rock.Security.BackgroundCheck
                         }
 
                         backgroundCheck.RequestDate = RockDateTime.Now;
+
+                        // Clear any SSN nodes before saving XML to record
+                        foreach ( var xSSNElement in xdoc.Descendants( "SSN" ) )
+                        {
+                            xSSNElement.Value = "XXX-XX-XXXX";
+                        }
+                        foreach ( var xSSNElement in xResult.Descendants( "SSN" ) )
+                        {
+                            xSSNElement.Value = "XXX-XX-XXXX";
+                        }
+
                         backgroundCheck.ResponseXml = string.Format( @"
 Request XML ({0}): 
 ------------------------ 
@@ -510,6 +521,12 @@ Response XML ({2}):
 
             if ( backgroundCheck != null && saveResponse )
             {
+                // Clear any SSN nodes before saving XML to record
+                foreach ( var xSSNElement in xResult.Descendants( "SSN" ) )
+                {
+                    xSSNElement.Value = "XXX-XX-XXXX";
+                }
+
                 backgroundCheck.ResponseXml = backgroundCheck.ResponseXml + string.Format( @"
 Response XML ({0}): 
 ------------------------ 
@@ -592,12 +609,6 @@ Response XML ({0}):
                         // Update the background check file
                         if ( backgroundCheck != null )
                         {
-                            // Clear any SSN nodes before saving XML to record
-                            foreach ( var xSSNElement in xResult.Descendants( "SSN" ) )
-                            {
-                                xSSNElement.Value = "XXX-XX-XXXX";
-                            }
-
                             backgroundCheck.ResponseDate = RockDateTime.Now;
                             backgroundCheck.RecordFound = reportStatus == "Review";
 
