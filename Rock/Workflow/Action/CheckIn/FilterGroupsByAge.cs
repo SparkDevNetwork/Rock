@@ -58,6 +58,12 @@ namespace Rock.Workflow.Action.CheckIn
             {
                 var remove = GetAttributeValue( action, "Remove" ).AsBoolean();
                 bool ageRequired = GetAttributeValue( action, "AgeRequired" ).AsBoolean( true );
+                var ageRangeAttributeGuid = GetAttributeValue( action, "AgeRangeAttribute" ).AsGuid();
+
+                if ( ageRangeAttributeGuid == Guid.Empty )
+                {
+                    throw new Exception( "The attribute, AgeRangeAttribute, is invalid for FilterGroupsByAge" );
+                }
 
                 foreach ( var person in family.People )
                 {
@@ -78,21 +84,14 @@ namespace Rock.Workflow.Action.CheckIn
                     {
                         foreach ( var group in groupType.Groups.ToList() )
                         {
-                            var attributeGuid = GetAttributeValue( action, "AgeRangeAttribute" ).AsGuid();
+                            var ageRangeAttribute = group.Group.Attributes.FirstOrDefault( a => a.Value.Guid == ageRangeAttributeGuid );
+                            var ageRange = string.Empty;
 
-                            if ( attributeGuid == Guid.Empty )
+                            if ( !ageRangeAttribute.Equals( default( KeyValuePair<string, Web.Cache.AttributeCache> ) ) )
                             {
-                                throw new Exception( "The attribute, AgeRangeAttribute, is invalid for FilterGroupsByAge" );
+                                ageRange = group.Group.GetAttributeValue( ageRangeAttribute.Key ) ?? string.Empty;
                             }
 
-                            var ageRangeAttribute = group.Group.Attributes.FirstOrDefault( a => a.Value.Guid == attributeGuid );
-
-                            if ( ageRangeAttribute.Equals( default( KeyValuePair<string, Web.Cache.AttributeCache> ) ) )
-                            {
-                                throw new Exception( string.Format( "The group, {0}, does not have a value for the selected AgeRangeAttribute", group.Group.Name ) );
-                            }
-
-                            var ageRange = group.Group.GetAttributeValue( ageRangeAttribute.Key ) ?? string.Empty;
                             var ageRangePair = ageRange.Split( new char[] { ',' }, StringSplitOptions.None );
                             string minAgeValue = null;
                             string maxAgeValue = null;
