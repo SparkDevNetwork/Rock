@@ -207,6 +207,12 @@ namespace RockWeb.Blocks.Groups
                 }
                 else
                 {
+                    int? campusId = locationService.GetCampusIdForLocation( _occurrence.LocationId );
+                    if ( !campusId.HasValue )
+                    {
+                        campusId = _group.CampusId;
+                    }
+
                     if ( cbDidNotMeet.Checked )
                     {
                         // If the occurrence is based on a schedule, set the did not meet flags
@@ -234,7 +240,7 @@ namespace RockWeb.Blocks.Groups
                                 attendance.PersonAliasId = personAliasId;
                                 attendance.StartDateTime = _occurrence.Date.Date.Add( _occurrence.StartTime );
                                 attendance.LocationId = _occurrence.LocationId;
-                                attendance.CampusId = locationService.GetCampusIdForLocation( _occurrence.LocationId );
+                                attendance.CampusId = campusId;
                                 attendance.ScheduleId = _occurrence.ScheduleId;
                                 attendanceService.Add( attendance );
                             }
