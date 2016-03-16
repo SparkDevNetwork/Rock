@@ -43,7 +43,7 @@ Unfortunately, you cannot view the contents of this email as it contains formatt
 by your email client.  
 
 You can view an online version of this email here: 
-{{ GlobalAttribute.PublicApplicationRoot }}GetCommunication.ashx?c={{ Communication.Id }}&p={{ Person.UrlEncodedKey }}
+{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetCommunication.ashx?c={{ Communication.Id }}&p={{ Person.UrlEncodedKey }}
 ", "", 3 )]
     public class Email : MediumComponent
     {
