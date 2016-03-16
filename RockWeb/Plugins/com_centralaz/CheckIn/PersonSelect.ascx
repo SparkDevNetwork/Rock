@@ -36,7 +36,7 @@
         <div class="checkin-actions">
             <asp:LinkButton CssClass="btn btn-default" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Back" />
             <asp:LinkButton CssClass="btn btn-default" ID="lbCancel" runat="server" OnClick="lbCancel_Click" Text="Cancel" />
-            <Rock:BootstrapButton ID="lbNext" runat="server" OnClick="lbNext_Click"  CssClass="btn btn-default pull-right disabled"  DataLoadingText="Wait..." >Next</Rock:BootstrapButton>
+            <Rock:BootstrapButton ID="lbNext" runat="server" OnClick="lbNext_Click"  CssClass="btn btn-default margin-l-md disabled"  DataLoadingText="Wait..." >Next</Rock:BootstrapButton>
         </div>
     </div>
 
