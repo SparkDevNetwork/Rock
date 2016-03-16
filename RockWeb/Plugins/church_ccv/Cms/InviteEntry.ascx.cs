@@ -12,7 +12,7 @@ namespace RockWeb.Plugins.church_ccv.Cms
     [Category( "CCV > Cms" )]
     [Description( "Block that helps a user send an invite message to somebody using email, text, etc" )]
 
-    [CodeEditorField( "ContentObject", "JSON Dynamic Array that can be used by the Template as a MergeField.", Rock.Web.UI.Controls.CodeEditorMode.JavaScript, order: 0, 
+    [CodeEditorField( "ContentObject", "JSON Dynamic Array that can be used by the Template as a MergeField.", Rock.Web.UI.Controls.CodeEditorMode.JavaScript, order: 0,
 defaultValue: @"[
   {
     ""Name"": ""Anthem""
@@ -60,29 +60,29 @@ defaultValue: @"[
 ]
 " )]
 
-    [CodeEditorField( "Template", "Lava template to render the content.  Use the special <pre>{{{{ EmailTemplate }}}}</pre>' and <pre>{{{{ TextTemplate }}}}</pre> to include the templates from the Email and Text templates", Rock.Web.UI.Controls.CodeEditorMode.Lava, order: 1, 
+    [CodeEditorField( "Template", "Lava template to render the content.  Use the special <pre>{{{{ EmailTemplate }}}}</pre>' and <pre>{{{{ TextTemplate }}}}</pre> to include the templates from the Email and Text templates", Rock.Web.UI.Controls.CodeEditorMode.Lava, order: 1,
 defaultValue: @"
 {% for item in ContentObject %}
     <ul>
         <li>Name is {{ item.Name }}</li>
-        <li>Services are 
+        <li>Services are
             <ul>
                 {% for service in item.Services %}
-                    <li>Date: {{ service.Date | Date:'M/d/yyyy' }} 
+                    <li>Date: {{ service.Date | Date:'M/d/yyyy' }}
                         <ul>
                     {% for time in service.Times %}
                         <li>Time: {{ time }} </li>
                     {% endfor %}
                         </ul>
                     </li>
-                {% endfor %}        
+                {% endfor %}
             </ul>
         </li>
 
         {{{{ TextTemplate }}}} <br/>
         {{{{ EmailTemplate }}}}
     </ul>
-    
+
     <hr>
 {% endfor %}
 
@@ -92,7 +92,7 @@ OSFamily: {{ OSFamily  }}
 </pre>
 " )]
 
-    [CodeEditorField( "Email Template", "Lava template which will be used for the <pre>{{{{ EmailTemplate }}}}</pre> which can be used to create a mailto link.", Rock.Web.UI.Controls.CodeEditorMode.Lava, order: 2, 
+    [CodeEditorField( "Email Template", "Lava template which will be used for the <pre>{{{{ EmailTemplate }}}}</pre> which can be used to create a mailto link.", Rock.Web.UI.Controls.CodeEditorMode.Lava, order: 2, required: false,
 defaultValue: @"
 {% capture subject %}
 Fun Event at {{ item.Name }}
@@ -104,9 +104,9 @@ Wanna Go? There will be lots of fun stuff to do!
 
 Which date works best for you?
 {% for service in item.Services %}
-    Date: {{ service.Date | Date:'M/d/yyyy' }} 
+    Date: {{ service.Date | Date:'M/d/yyyy' }}
     {% for time in service.Times %}Time: {{ time }}{% endfor %}
-{% endfor %}        
+{% endfor %}
 
 Your friend,
 {{ CurrentPerson.NickName }}
@@ -115,7 +115,7 @@ Your friend,
 <a class='btn btn-default' href=""mailto:?subject={{ subject | Trim | EscapeDataString }}&body={{ body | EscapeDataString }}"">Email</a>
 " )]
 
-    [CodeEditorField( "Text Template", "Lava template which will be used for the <pre>{{{{ TextTemplate }}}}</pre> which can be used to create an SMS link.", Rock.Web.UI.Controls.CodeEditorMode.Lava, order: 3, 
+    [CodeEditorField( "Text Template", "Lava template which will be used for the <pre>{{{{ TextTemplate }}}}</pre> which can be used to create an SMS link.", Rock.Web.UI.Controls.CodeEditorMode.Lava, order: 3, required: false,
 defaultValue: @"
 {% capture smsAll %}
 I'm going to Fun Event at {{ item.Name }}. Would you like to join me & some friends? Check out the service times at http://mychurch.com/FunEvent and let's plan to go together!
@@ -124,12 +124,12 @@ I'm going to Fun Event at {{ item.Name }}. Would you like to join me & some frie
 <a class='btn btn-default' href=""sms:?body={{ smsAll | Trim | EscapeDataString }}"">Text</a>
 " )]
 
-    [CodeEditorField( "Alternate Email Template", "Lava template which will be used for the <pre>{{{{ AlternateEmailTemplate }}}}</pre> which can be used to create a mailto link.", Rock.Web.UI.Controls.CodeEditorMode.Lava, order: 4, 
+    [CodeEditorField( "Alternate Email Template", "Lava template which will be used for the <pre>{{{{ AlternateEmailTemplate }}}}</pre> which can be used to create a mailto link.", Rock.Web.UI.Controls.CodeEditorMode.Lava, order: 4, required: false,
 defaultValue: @"
 
 " )]
 
-    [CodeEditorField( "Alternate Text Template", "Lava template which will be used for the <pre>{{{{ AlternateTextTemplate }}}}</pre> which can be used to create an SMS link.", Rock.Web.UI.Controls.CodeEditorMode.Lava, order: 5, 
+    [CodeEditorField( "Alternate Text Template", "Lava template which will be used for the <pre>{{{{ AlternateTextTemplate }}}}</pre> which can be used to create an SMS link.", Rock.Web.UI.Controls.CodeEditorMode.Lava, order: 5, required: false,
 defaultValue: @"
 
 " )]
