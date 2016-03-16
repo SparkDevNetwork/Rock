@@ -12,7 +12,8 @@ namespace RockWeb.Plugins.church_ccv.Cms
     [Category( "CCV > Cms" )]
     [Description( "Block that helps a user send an invite message to somebody using email, text, etc" )]
 
-    [CodeEditorField( "ContentObject", "JSON Dynamic Array that can be used by the Template as a MergeField.", Rock.Web.UI.Controls.CodeEditorMode.JavaScript, order: 0, defaultValue: @"[
+    [CodeEditorField( "ContentObject", "JSON Dynamic Array that can be used by the Template as a MergeField.", Rock.Web.UI.Controls.CodeEditorMode.JavaScript, order: 0, 
+defaultValue: @"[
   {
     ""Name"": ""Anthem""
   },
@@ -59,7 +60,8 @@ namespace RockWeb.Plugins.church_ccv.Cms
 ]
 " )]
 
-    [CodeEditorField( "Template", "Lava template to render the content.  Use the special <pre>{{{{ EmailTemplate }}}}</pre>' and <pre>{{{{ TextTemplate }}}}</pre> to include the templates from the Email and Text templates", Rock.Web.UI.Controls.CodeEditorMode.Lava, order: 1, defaultValue: @"
+    [CodeEditorField( "Template", "Lava template to render the content.  Use the special <pre>{{{{ EmailTemplate }}}}</pre>' and <pre>{{{{ TextTemplate }}}}</pre> to include the templates from the Email and Text templates", Rock.Web.UI.Controls.CodeEditorMode.Lava, order: 1, 
+defaultValue: @"
 {% for item in ContentObject %}
     <ul>
         <li>Name is {{ item.Name }}</li>
@@ -90,7 +92,8 @@ OSFamily: {{ OSFamily  }}
 </pre>
 " )]
 
-    [CodeEditorField( "Email Template", "Lava template which will be used for the <pre>{{{{ EmailTemplate }}}}</pre> which can be used to create a mailto link.", Rock.Web.UI.Controls.CodeEditorMode.Lava, order: 2, defaultValue: @"
+    [CodeEditorField( "Email Template", "Lava template which will be used for the <pre>{{{{ EmailTemplate }}}}</pre> which can be used to create a mailto link.", Rock.Web.UI.Controls.CodeEditorMode.Lava, order: 2, 
+defaultValue: @"
 {% capture subject %}
 Fun Event at {{ item.Name }}
 {% endcapture %}
@@ -112,12 +115,23 @@ Your friend,
 <a class='btn btn-default' href=""mailto:?subject={{ subject | Trim | EscapeDataString }}&body={{ body | EscapeDataString }}"">Email</a>
 " )]
 
-    [CodeEditorField( "Text Template", "Lava template which will be used for the <pre>{{{{ TextTemplate }}}}</pre> which can be used to create an SMS link.", Rock.Web.UI.Controls.CodeEditorMode.Lava, order: 3, defaultValue: @"
+    [CodeEditorField( "Text Template", "Lava template which will be used for the <pre>{{{{ TextTemplate }}}}</pre> which can be used to create an SMS link.", Rock.Web.UI.Controls.CodeEditorMode.Lava, order: 3, 
+defaultValue: @"
 {% capture smsAll %}
 I'm going to Fun Event at {{ item.Name }}. Would you like to join me & some friends? Check out the service times at http://mychurch.com/FunEvent and let's plan to go together!
 {% endcapture %}
 
 <a class='btn btn-default' href=""sms:?body={{ smsAll | Trim | EscapeDataString }}"">Text</a>
+" )]
+
+    [CodeEditorField( "Alternate Email Template", "Lava template which will be used for the <pre>{{{{ AlternateEmailTemplate }}}}</pre> which can be used to create a mailto link.", Rock.Web.UI.Controls.CodeEditorMode.Lava, order: 4, 
+defaultValue: @"
+
+" )]
+
+    [CodeEditorField( "Alternate Text Template", "Lava template which will be used for the <pre>{{{{ AlternateTextTemplate }}}}</pre> which can be used to create an SMS link.", Rock.Web.UI.Controls.CodeEditorMode.Lava, order: 5, 
+defaultValue: @"
+
 " )]
     public partial class InviteEntry : church.ccv.Utility.Web.BaseContentBlock
     {
@@ -157,11 +171,15 @@ I'm going to Fun Event at {{ item.Name }}. Would you like to join me & some frie
         public override string GetContentTemplate()
         {
             var template = this.GetAttributeValue( "Template" ) ?? string.Empty;
-            var textTemplate = this.GetAttributeValue( "TextTemplate" ) ?? string.Empty;
             var emailTemplate = this.GetAttributeValue( "EmailTemplate" ) ?? string.Empty;
+            var textTemplate = this.GetAttributeValue( "TextTemplate" ) ?? string.Empty;
+            var alternateEmailTemplate = this.GetAttributeValue( "AlternateEmailTemplate" ) ?? string.Empty;
+            var alternateTextTemplate = this.GetAttributeValue( "AlternateTextTemplate" ) ?? string.Empty;
             template = template
                 .Replace( "{{{{ EmailTemplate }}}}", emailTemplate )
-                .Replace( "{{{{ TextTemplate }}}}", textTemplate );
+                .Replace( "{{{{ TextTemplate }}}}", textTemplate )
+                .Replace( "{{{{ AlternateEmailTemplate }}}}", alternateEmailTemplate )
+                .Replace( "{{{{ AlternateTextTemplate }}}}", alternateTextTemplate );
             return template;
         }
     }
