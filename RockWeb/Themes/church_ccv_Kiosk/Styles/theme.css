@@ -5505,6 +5505,12 @@ th[align=center] {
   background-color: #f5f5f5;
   color: #ffffff;
 }
+.panel .panel-settings {
+  margin: -15px -15px 30px -15px;
+  background-color: #ffffff;
+  padding: 15px;
+  border-bottom: 1px solid #8ab7de;
+}
 .panel-widget {
   border-color: #cde1f1;
 }
