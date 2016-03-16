@@ -177,7 +177,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="visible">if set to <c>true</c> [visible].</param>
         public void SetVisible( bool visible )
         {
-            upnlContent.Visible = visible;
+            pnlContent.Visible = visible;
         }
 
         #endregion
