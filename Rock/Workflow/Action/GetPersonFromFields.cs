@@ -41,7 +41,7 @@ namespace Rock.Workflow.Action
     [WorkflowTextOrAttribute( "Last Name", "Attribute Value", "The last name or an attribute that contains the last name of the person. <span class='tip tip-lava'></span>",
         false, "", "", 1, "LastName", new string[] { "Rock.Field.Types.TextFieldType" } )]
     [WorkflowTextOrAttribute( "Email Address", "Attribute Value", "The email address or an attribute that contains the email address of the person. <span class='tip tip-lava'></span>", 
-        false, "", "", 2, "Email", new string[] { "Rock.Field.Types.TextFieldType" } )]
+        false, "", "", 2, "Email", new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType" } )]
     [WorkflowAttribute( "Person Attribute", "The person attribute to set the value to the person found or created.", 
         true, "", "", 3, "PersonAttribute", new string[] { "Rock.Field.Types.PersonFieldType" } )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS, "Default Record Status", "The record status to use when creating a new person", false, false,
@@ -116,7 +116,7 @@ namespace Rock.Workflow.Action
                                 person.RecordStatusValueId = defaultRecordStatus.Id;
                             }
 
-                            var defaultCampus = CampusCache.Read( GetActionAttributeValue( action, "DefaultCampus" ).AsGuid() );
+                            var defaultCampus = CampusCache.Read( GetValue( action, "DefaultCampus", rockContext ).AsGuid() );
                             var familyGroup = PersonService.SaveNewPerson( person, rockContext, ( defaultCampus != null ? defaultCampus.Id : (int?)null ), false );
                             if ( familyGroup != null && familyGroup.Members.Any() )
                             {
