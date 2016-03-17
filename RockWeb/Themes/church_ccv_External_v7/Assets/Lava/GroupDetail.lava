@@ -352,7 +352,7 @@ REQUIRED VARIABLES
   <script src="/Themes/church_ccv_External_v7/Scripts/pages/toolbox.js"></script>
   {% endcomment %}
 
-  <script src="/Themes/church_ccv_External_v7/Scripts/pages/min/toolbox.min.js"></script>
+  <script src="/Themes/church_ccv_External_v7/Scripts/pages/min/toolbox.min.js?v2"></script>
 
   {% comment %} Group map {% endcomment %}
   <script>

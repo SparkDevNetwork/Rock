@@ -46,7 +46,7 @@ Handlebars.registerHelper('dateFormat', function(context, block) {
   }
 })
 
-Handlebars.registerHelper('status', function(conditional, options) {
+Handlebars.registerHelper('ifStatus', function(conditional, options) {
   if(conditional === options.hash.is) {
     return options.fn(this)
   } else {
