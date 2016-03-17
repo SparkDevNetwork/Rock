@@ -92,8 +92,10 @@ namespace RockWeb.Plugins.church_ccv.Cms
         {
             var selections = GetSelectionList();
 
+            ddlSelection.Items.Clear();
+            
             // First item should be blank
-            ddlSelection.Items.Add( new ListItem( "", "" ) );
+            ddlSelection.Items.Add( new ListItem() );
 ;
             foreach ( var selection in selections )
             {
@@ -103,7 +105,7 @@ namespace RockWeb.Plugins.church_ccv.Cms
             var selectionString = Request.QueryString[pageParameterName];
             if ( selectionString != null )
             {
-                ddlSelection.SelectedIndex = ddlSelection.Items.IndexOf( ddlSelection.Items.FindByValue( selectionString ) );
+                ddlSelection.SetValue( selectionString );
             }
         }
 
