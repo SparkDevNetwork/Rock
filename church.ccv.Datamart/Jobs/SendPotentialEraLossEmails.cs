@@ -57,7 +57,9 @@ namespace church.ccv.Utility
         public void Execute( IJobExecutionContext context )
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
-            
+
+            int emailsSent = 0;
+
             var rockContext = new RockContext();
 
             // get system email
@@ -77,9 +79,6 @@ namespace church.ccv.Utility
                 return;
             }
 
-            // lookup the role id for neighborhood pastors
-            var neighborhoodPastorRoleId = new GroupTypeRoleService(rockContext).Get( SystemGuid.GroupRole.GROUPROLE_NEIGHBORHOOD_PASTOR.AsGuid() ).Id;
-
             DatamartEraLossService eraLossService = new DatamartEraLossService( rockContext );
 
             var lossRecipients = eraLossService.Queryable()
@@ -92,10 +91,9 @@ namespace church.ccv.Utility
 
                 if ( headOfHouse != null )
                 {
-                    var neighborhoodPastor = new GroupService( rockContext ).GetGeofencingGroups( headOfHouse.Id, SystemGuid.GroupType.GROUPTYPE_NEIGHBORHOOD_AREA.AsGuid() )
-                                                .SelectMany( g => g.Members.Where( m => m.GroupRoleId == neighborhoodPastorRoleId ) )
-                                                .Select( m => m.Person )
-                                                .FirstOrDefault();
+                    var familyNeighborhoodId = new DatamartFamilyService( rockContext ).Queryable().Where( a => a.FamilyId == family.Id ).Select( a => a.NeighborhoodId ).FirstOrDefault() ?? 0;
+                    var neighborhoodPastorId = new DatamartNeighborhoodService( rockContext ).Queryable().Where( a => a.NeighborhoodId == familyNeighborhoodId ).Select( a => a.NeighborhoodPastorId ).FirstOrDefault() ?? 0;
+                    var neighborhoodPastor = new PersonService( rockContext ).Get( neighborhoodPastorId );
 
                     if ( neighborhoodPastor != null )
                     {
@@ -112,7 +110,7 @@ namespace church.ccv.Utility
 
                         var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
                         Email.Send( neighborhoodPastor.Email, neighborhoodPastor.FullName, systemEmail.Subject, recipients, systemEmail.Body.ResolveMergeFields( mergeFields ), appRoot );
-
+                        emailsSent++;
                     }
                 }
 
@@ -120,6 +118,8 @@ namespace church.ccv.Utility
                 lossRecipient.Sent = true;
                 rockContext.SaveChanges();
             }
+
+            context.Result = string.Format( "{0} {1} sent", emailsSent, "email".PluralizeIf( emailsSent != 1 ) );
         }
     }
 }
