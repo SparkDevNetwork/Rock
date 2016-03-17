@@ -54,6 +54,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Jobs\SendPotentialEraLossEmails.cs" />
     <Compile Include="Migrations\002_ChangeSomeColumns.cs" />
     <Compile Include="Migrations\001_RebuildTables.cs" />
     <Compile Include="Migrations\003_RemoveAdultxPercentagesColumns.cs" />
@@ -129,9 +130,7 @@
   <ItemGroup>
     <None Include="Migrations\001_RebuildTables_Rebuild_church_ccv_Datamart_Person.sql" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Jobs\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
