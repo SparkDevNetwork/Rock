@@ -2251,6 +2251,7 @@ namespace Rock.Web.UI.Controls
                             {
                                 var personIdObjTree = new List<object>();
                                 personIdObjTree.Add( item );
+                                bool propFound = true;
                                 foreach( var prop in personIdProp )
                                 {
                                     object obj = prop.GetValue( personIdObjTree.Last(), null );
@@ -2258,9 +2259,14 @@ namespace Rock.Web.UI.Controls
                                     {
                                         personIdObjTree.Add( obj );
                                     }
+                                    else
+                                    {
+                                        propFound = false;
+                                        break;
+                                    }
                                 }
 
-                                if ( personIdObjTree.Last() is int )
+                                if ( propFound && personIdObjTree.Last() is int )
                                 {
                                     int personId = (int)personIdObjTree.Last();
                                     int id = (int)idProp.GetValue( item, null );
