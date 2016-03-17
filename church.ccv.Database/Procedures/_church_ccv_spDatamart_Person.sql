@@ -52,7 +52,8 @@ BEGIN
                 ,YEAR(FT.TransactionDateTime)
             ) AS s
         PIVOT(SUM([total]) FOR [year] IN (
-                    [2015]
+					[2016]
+                    ,[2015]
                     ,[2014]
                     ,[2013]
                     ,[2012]
@@ -138,7 +139,8 @@ BEGIN
         ,[WorkPhone]
         ,[IsBaptized]
         ,[BaptismDate]
-        ,[LastContributionDate]
+       ,[LastContributionDate]
+		,[Giving2016]
         ,[Giving2015]
         ,[Giving2014]
         ,[Giving2013]
@@ -156,6 +158,8 @@ BEGIN
         ,[ViewedCount]
         ,[LastAttendedDate]
         ,[LastPublicNote]
+		,[GivingLast12Months]
+		,[IsCoaching]
         )
     SELECT P.[Id] AS [PersonId]
         ,F.[FamilyId] AS [FamilyId]
@@ -215,6 +219,7 @@ BEGIN
                         AND NG.GroupTypeId = 49
                     WHERE NGM.PersonId = P.Id
                         AND NG.IsActive = 1
+						AND NGM.GroupMemberStatus = 1
                     ) IS NOT NULL
                 THEN 1
             ELSE 0
@@ -326,6 +331,7 @@ BEGIN
                     )
                 AND PA.PersonId = P.Id
             ) AS [LastContributionDate]
+		,G.[2016] AS [Giving2016]
         ,G.[2015] AS [Giving2015]
         ,G.[2014] AS [Giving2014]
         ,G.[2013] AS [Giving2013]
@@ -359,13 +365,28 @@ BEGIN
                 AND [n].Id NOT IN (
                     SELECT EntityId
                     FROM Auth
-                    WHERE EntityTypeId = @entityTypeIdNote
+WHERE EntityTypeId = @entityTypeIdNote
                         AND AllowOrDeny = 'D'
                         AND [SpecialRole] = 1
-               )
+                    )
                 AND isnull([n].[Text], '') != ''
                 AND [n].EntityId = p.Id
             ) AS [LastPublicNote]
+			,YGV.Value AS [GivingLast12Months]
+		,CASE 
+            WHEN (
+                    SELECT max(CG.Id)
+                    FROM GroupMember CGM
+                    INNER JOIN [Group] CG ON CG.Id = CGM.GroupId
+                        AND CG.GroupTypeId IN (49,78,59)
+					INNER JOIN [GroupTypeRole] CGR ON CGR.[Id] = CGM.[GroupRoleId]
+                    WHERE CGM.PersonId = P.Id
+                        AND CG.IsActive = 1
+						AND CGR.[IsLeader] = 1
+                    ) IS NOT NULL
+                THEN 1
+            ELSE 0
+            END AS [IsCoaching]
     FROM Person P
     LEFT OUTER JOIN DefinedValue MS ON MS.Id = P.MaritalStatusValueId
     INNER JOIN DefinedValue CS ON CS.Id = P.ConnectionStatusValueId
@@ -404,6 +425,8 @@ BEGIN
             ) ng
     LEFT OUTER JOIN AttributeValue ERAV ON ERAV.EntityId = P.Id
         AND ERAV.AttributeId = 2533
+	LEFT OUTER JOIN AttributeValue YGV ON YGV.EntityId = P.Id
+        AND YGV.AttributeId = 15033
     LEFT OUTER JOIN AttributeValue FVV ON FVV.EntityId = P.Id
         AND FVV.AttributeId = 717
     LEFT OUTER JOIN Giving G ON G.PersonId = P.Id

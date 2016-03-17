@@ -80,7 +80,8 @@ BEGIN
                 ,YEAR(FT.TransactionDateTime)
             ) AS s
         PIVOT(SUM([total]) FOR [year] IN (
-                    [2015]
+					[2016]
+                    ,[2015]
                     ,[2014]
                     ,[2013]
                     ,[2012]
@@ -130,6 +131,7 @@ BEGIN
         ,[Campus]
         ,[AdultNames]
         ,[ChildNames]
+		,[Giving2016]
         ,[Giving2015]
         ,[Giving2014]
         ,[Giving2013]
@@ -250,7 +252,8 @@ BEGIN
                 FOR XML PATH('')
                 ), 1, 1, ''), 2000) [ChildNames]
         ,--childnames
-        G.[2015]
+		G.[2016]
+        ,G.[2015]
         ,G.[2014]
         ,G.[2013]
         ,G.[2012]

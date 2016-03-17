@@ -296,7 +296,7 @@ SELECT
 	COUNT(*),
 	0,
 	16,
-	CAST(MONTH(DATEADD(MONTH, 1, AV.ValueAsDateTime)) AS varchar) + '/1/' + CAST(YEAR(AV.ValueAsDateTime) AS varchar),
+	CAST(MONTH(AV.ValueAsDateTime) AS varchar) + '/1/' + CAST(YEAR(AV.ValueAsDateTime) AS varchar),
 	GETDATE(),
 	NEWID(),
 	C.Id
@@ -309,10 +309,10 @@ INNER JOIN [Campus] C ON C.Id = F.CampusId
 WHERE AV.Value IS NOT NULL
 	AND P.ConnectionStatusValueId IN (65,146)
 	AND AV.ValueAsDateTime >= @MinHistoryDate
-	AND CAST(MONTH(DATEADD(MONTH, 1, AV.ValueAsDateTime)) AS varchar) + '/1/' + CAST(YEAR(AV.ValueAsDateTime) AS varchar) <= GETDATE()
+	AND CAST(MONTH(AV.ValueAsDateTime) AS varchar) + '/1/' + CAST(YEAR(AV.ValueAsDateTime) AS varchar) <= GETDATE()
 	AND AV1.Value = 'True'
-GROUP BY CAST(MONTH(DATEADD(MONTH, 1, AV.ValueAsDateTime)) AS varchar) + '/1/' + CAST(YEAR(AV.ValueAsDateTime) AS varchar), C.Id
-ORDER BY CAST(MONTH(DATEADD(MONTH, 1, AV.ValueAsDateTime)) AS varchar) + '/1/' + CAST(YEAR(AV.ValueAsDateTime) AS varchar)
+GROUP BY CAST(MONTH(AV.ValueAsDateTime) AS varchar) + '/1/' + CAST(YEAR(AV.ValueAsDateTime) AS varchar), C.Id
+ORDER BY CAST(MONTH(AV.ValueAsDateTime) AS varchar) + '/1/' + CAST(YEAR(AV.ValueAsDateTime) AS varchar)
 
 
 /*------------------------------------
@@ -457,7 +457,7 @@ SELECT
 	COUNT(*),
 	0,
 	17,
-	CAST(MONTH(DATEADD(MONTH, 1, AV.ValueAsDateTime)) AS varchar) + '/1/' + CAST(YEAR(AV.ValueAsDateTime) AS varchar),
+	CAST(MONTH(AV.ValueAsDateTime) AS varchar) + '/1/' + CAST(YEAR(AV.ValueAsDateTime) AS varchar),
 	GETDATE(),
 	NEWID(),
 	C.Id
@@ -470,9 +470,9 @@ INNER JOIN [Group] F ON F.Id = FM.GroupId AND F.GroupTypeId = 10
 INNER JOIN [Campus] C ON C.Id = F.CampusId
 WHERE AV.Value IS NOT NULL
 	AND AV.ValueAsDateTime >= @MinHistoryDate
-	AND CAST(MONTH(DATEADD(MONTH, 1, AV.ValueAsDateTime)) AS varchar) + '/1/' + CAST(YEAR(AV.ValueAsDateTime) AS varchar) <= GETDATE()
-GROUP BY CAST(MONTH(DATEADD(MONTH, 1, AV.ValueAsDateTime)) AS varchar) + '/1/' + CAST(YEAR(AV.ValueAsDateTime) AS varchar), C.Id
-ORDER BY CAST(MONTH(DATEADD(MONTH, 1, AV.ValueAsDateTime)) AS varchar) + '/1/' + CAST(YEAR(AV.ValueAsDateTime) AS varchar)
+	AND CAST(MONTH(AV.ValueAsDateTime) AS varchar) + '/1/' + CAST(YEAR(AV.ValueAsDateTime) AS varchar) <= GETDATE()
+GROUP BY CAST(MONTH(AV.ValueAsDateTime) AS varchar) + '/1/' + CAST(YEAR(AV.ValueAsDateTime) AS varchar), C.Id
+ORDER BY CAST(MONTH(AV.ValueAsDateTime) AS varchar) + '/1/' + CAST(YEAR(AV.ValueAsDateTime) AS varchar)
 
 
 /*------------------------------------
@@ -497,7 +497,7 @@ SELECT
 	COUNT(*),
 	0,
 	23,
-	CAST(MONTH(DATEADD(MONTH, 1, A.StartDateTime)) AS varchar) + '/1/' + CAST(YEAR(A.StartDateTime) AS varchar),
+	CAST(MONTH(A.StartDateTime) AS varchar) + '/1/' + CAST(YEAR(A.StartDateTime) AS varchar),
 	GETDATE(),
 	NEWID(),
 	CASE 
@@ -513,6 +513,6 @@ INNER JOIN [GroupType] GT ON GT.Id = G.GroupTypeId
 	AND GT.Id IN (57)
 WHERE A.DidAttend = 1
 	AND A.StartDateTime >= @MinHistoryDate
-	AND CAST(MONTH(DATEADD(MONTH, 1, A.StartDateTime)) AS varchar) + '/1/' + CAST(YEAR(A.StartDateTime) AS varchar) <= GETDATE()
-GROUP BY CAST(MONTH(DATEADD(MONTH, 1, A.StartDateTime)) AS varchar) + '/1/' + CAST(YEAR(A.StartDateTime) AS varchar), F.CampusId
-ORDER BY CAST(MONTH(DATEADD(MONTH, 1, A.StartDateTime)) AS varchar) + '/1/' + CAST(YEAR(A.StartDateTime) AS varchar)
+	AND CAST(MONTH(A.StartDateTime) AS varchar) + '/1/' + CAST(YEAR(A.StartDateTime) AS varchar) <= GETDATE()
+GROUP BY CAST(MONTH(A.StartDateTime) AS varchar) + '/1/' + CAST(YEAR(A.StartDateTime) AS varchar), F.CampusId
+ORDER BY CAST(MONTH(A.StartDateTime) AS varchar) + '/1/' + CAST(YEAR(A.StartDateTime) AS varchar)
