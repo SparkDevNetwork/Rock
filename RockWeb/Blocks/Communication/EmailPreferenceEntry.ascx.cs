@@ -165,49 +165,86 @@ namespace RockWeb.Blocks.Communication
         {
             if (_person != null)
             {
+                var changes = new List<string>();
+
                 var rockContext = new RockContext();
                 var service = new PersonService( rockContext );
                 var person = service.Get(_person.Id);
                 if ( person != null )
                 {
+                    EmailPreference emailPreference = EmailPreference.EmailAllowed;
+
                     switch ( rblEmailPreference.SelectedValue )
                     {
-                        case "0":
-                            {
-                                person.EmailPreference = EmailPreference.EmailAllowed;
-                                break;
-                            }
                         case "1":
                             {
-                                person.EmailPreference = EmailPreference.NoMassEmails;
+                                emailPreference = EmailPreference.NoMassEmails;
                                 break;
                             }
                         case "2":
                         case "3":
                             {
-                                person.EmailPreference = EmailPreference.DoNotEmail;
+                                emailPreference = EmailPreference.DoNotEmail;
                                 break;
                             }
                     }
 
+                    History.EvaluateChange( changes, "Email Preference", person.EmailPreference, emailPreference );
+                    person.EmailPreference = emailPreference;
+
                     if (rblEmailPreference.SelectedValue == "3")
                     {
-                        person.RecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ).Id;
-                        person.RecordStatusReasonValueId = ddlInactiveReason.SelectedValue.AsInteger();
-                        person.ReviewReasonValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_REVIEW_REASON_SELF_INACTIVATED ).Id;
+                        var newRecordStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
+                        if ( newRecordStatus != null )
+                        {
+                            History.EvaluateChange( changes, "Record Status", DefinedValueCache.GetName( person.RecordStatusValueId ), newRecordStatus.Value );
+                            person.RecordStatusValueId = newRecordStatus.Id;
+                        }
+
+                        var newInactiveReason = DefinedValueCache.Read( ddlInactiveReason.SelectedValue.AsInteger() );
+                        if ( newInactiveReason != null )
+                        {
+                            History.EvaluateChange( changes, "Record Status Reason", DefinedValueCache.GetName( person.RecordStatusReasonValueId ), newInactiveReason.Value );
+                            person.RecordStatusReasonValueId = newInactiveReason.Id;
+                        }
+
+                        var newReviewReason = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_REVIEW_REASON_SELF_INACTIVATED );
+                        if ( newReviewReason != null )
+                        {
+                            History.EvaluateChange( changes, "Review Reason", DefinedValueCache.GetName( person.ReviewReasonValueId ), newReviewReason.Value );
+                            person.ReviewReasonValueId = newReviewReason.Id;
+                        }
 
                         // If the inactive reason note is the same as the current review reason note, update it also.
                         if ( ( person.InactiveReasonNote ?? string.Empty ) == ( person.ReviewReasonNote ?? string.Empty ) )
                         {
+                            History.EvaluateChange( changes, "Inactive Reason Note", person.InactiveReasonNote, tbInactiveNote.Text );
                             person.InactiveReasonNote = tbInactiveNote.Text;
                         }
+
+                        History.EvaluateChange( changes, "Review Reason Note", person.ReviewReasonNote, tbInactiveNote.Text );
                         person.ReviewReasonNote = tbInactiveNote.Text;
                     }
                     else
                     {
-                        person.RecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE ).Id;
+                        var newRecordStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE );
+                        if ( newRecordStatus != null )
+                        {
+                            History.EvaluateChange( changes, "Record Status", DefinedValueCache.GetName( person.RecordStatusValueId ), newRecordStatus.Value );
+                            person.RecordStatusValueId = newRecordStatus.Id;
+                        }
+
+                        History.EvaluateChange( changes, "Record Status Reason", DefinedValueCache.GetName( person.RecordStatusReasonValueId ), string.Empty );
                         person.RecordStatusReasonValueId = null;
                     }
+
+                    HistoryService.AddChanges(
+                        rockContext,
+                        typeof( Person ), 
+                        Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                        person.Id,
+                        changes,
+                        CurrentPersonAliasId );
 
                     rockContext.SaveChanges();
 
