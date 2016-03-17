@@ -436,7 +436,7 @@ I'm going to Easter service at CCV on the {{ item.Name }} campus. Would you like
 
 <a class=""{{ inviteAllBtnClasses }} js-track-sms"" data-label=""{{ item.Name }} Don't know yet"" href=""{{ preUrl }}sms:{{ sep }}body={{ smsAll | Trim | EscapeDataString }}"">I don't know yet</a>
 " )]
-    public partial class InviteEntryMobile : church.ccv.Utility.Web.BaseContentBlock
+    public partial class InviteEntryMobile : church.ccv.Web.Cms.BaseContentBlock
     {
         /// <summary>
         /// Shows the content.

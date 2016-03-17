@@ -9,7 +9,7 @@ namespace RockWeb.Plugins.church_ccv.Cms
     [Description( "Block that can use a Lava Template to render HTML content and supports 'lava-aware' caching" )]
 
     [CodeEditorField( "Template", "The Lava template to render the content.", Rock.Web.UI.Controls.CodeEditorMode.Lava, order: 1 )]
-    public partial class GenericContent : church.ccv.Utility.Web.BaseContentBlock
+    public partial class GenericContent : church.ccv.Web.Cms.BaseContentBlock
     {
         /// <summary>
         /// Implement to show the content. For example, simply have it do "lContent.Text = this.GetContentHtml();"

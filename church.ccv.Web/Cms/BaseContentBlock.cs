@@ -6,7 +6,7 @@ using Rock.Attribute;
 using Rock.Web.Cache;
 using UAParser;
 
-namespace church.ccv.Utility.Web
+namespace church.ccv.Web.Cms
 {
 
     /// <summary>

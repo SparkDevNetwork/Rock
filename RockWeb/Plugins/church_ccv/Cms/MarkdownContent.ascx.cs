@@ -10,7 +10,7 @@ namespace RockWeb.Plugins.church_ccv.Cms
     [Description( "Block for editing content using Markdown" )]
 
     [TextField( "MarkdownContent", category: "CustomSetting" )]
-    public partial class MarkdownContent : church.ccv.Utility.Web.BaseContentBlock
+    public partial class MarkdownContent : church.ccv.Web.Cms.BaseContentBlock
     {
         /// <summary>
         /// Implement to show the content. For example, simply have it do "lContent.Text = this.GetContentHtml();"
