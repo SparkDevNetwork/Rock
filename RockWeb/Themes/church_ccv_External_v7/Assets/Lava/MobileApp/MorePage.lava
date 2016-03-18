@@ -14,41 +14,8 @@
       <i class="fa fa-clock-o fa-2x"></i>
     </div>
     <div class="pull-left margin-l-md">
-      {% assign times = campus.ServiceTimes | Split: '|' %}
-
-      {% for time in times %}
-        {% assign split = time | Split: '^' %}
-        {% if split[0] == 'Saturday' %}
-          {% assign hasSaturday = true %}
-        {% endif %}
-        {% if split[0] == 'Sunday' %}
-          {% assign hasSunday = true %}
-        {% endif %}
-      {% endfor %}
-
-      {% if hasSaturday %}
-        <ul class="list-inline margin-b-none">
-          <li><strong>Saturday</strong></li>
-          {% for time in times %}
-            {% assign split = time | Split: '^' %}
-            {% if split[0] == 'Saturday' %}
-              <li>{{ split[1] | Remove: ' ' }}</li>
-            {% endif %}
-          {% endfor %}
-        </ul>
-      {% endif %}
-
-      {% if hasSunday %}
-        <ul class="list-inline margin-b-none">
-          <li><strong>Sunday</strong></li>
-          {% for time in times %}
-            {% assign split = time | Split: '^' %}
-            {% if split[0] == 'Sunday' %}
-              <li>{{ split[1] | Remove: ' ' }}</li>
-            {% endif %}
-          {% endfor %}
-        </ul>
-      {% endif %}
+      {% assign times = campus.ServiceTimes %}
+      {% include '~~/Assets/Lava/ServiceTimes/TwoLines.lava' %}
     </div>
   </div>
 

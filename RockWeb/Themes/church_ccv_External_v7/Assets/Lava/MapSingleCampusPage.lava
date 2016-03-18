@@ -31,34 +31,7 @@
         <div class="well">
           <h3>Service Times</h3>
           <div class="commalist">
-            {% assign hasSaturday = false %}{% assign hasSunday = false %}
-            {% for time in campus.ServiceTimes %}
-              {% if time.Day == 'Saturday' %}
-                {% assign hasSaturday = true %}
-              {% endif %}
-              {% if time.Day == 'Sunday' %}
-                {% assign hasSunday = true %}
-              {% endif %}
-            {% endfor %}
-
-            {% if hasSaturday %}
-              <strong class="margin-r-sm">Saturday</strong>
-              {% for time in campus.ServiceTimes %}
-                {% if time.Day == 'Saturday' %}
-                  <span class="commalist-item">{{ time.Time | Remove: ' ' }}</span>
-                {% endif %}
-              {% endfor %}
-              <br>
-            {% endif %}
-
-            {% if hasSunday %}
-              <strong class="margin-r-sm">Sunday</strong>
-              {% for time in campus.ServiceTimes %}
-                {% if time.Day == 'Sunday' %}
-                  <span class="commalist-item">{{ time.Time | Remove: ' ' }}</span>
-                {% endif %}
-              {% endfor %}
-            {% endif %}
+            {% include '~~/Assets/Lava/ServiceTimes/CommaList.lava' %}
           </div>
         </div>
         <div class="well margin-b-none">
