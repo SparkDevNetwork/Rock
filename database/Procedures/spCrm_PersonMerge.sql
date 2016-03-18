@@ -221,6 +221,19 @@
 			SET [PersonId] = @NewId
 			WHERE [PersonId] = @OldId
 
+			-- Delete any duplicate previous names
+			DELETE PN
+			FROM [PersonPreviousName] PN
+			INNER JOIN [PersonAlias] PA ON PA.[Id] = PN.[PersonAliasId]
+			WHERE PA.[PersonId] = @NewId
+			AND PN.[Id] NOT IN (
+				SELECT MIN(PN2.[Id]) AS [Id]
+				FROM [PersonPreviousName] PN2
+				INNER JOIN [PersonAlias] PA2 ON PA2.[Id] = PN2.[PersonAliasId]
+				WHERE PA2.[PersonId] = @NewId
+				GROUP BY PN2.[LastName]
+			)	
+
 			-- Remaining Tables
 			-----------------------------------------------------------------------------------------------
 			-- Update any column on any table that has a foreign key relationship to the Person table's Id
