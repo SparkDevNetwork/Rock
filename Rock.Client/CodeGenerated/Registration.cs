@@ -64,6 +64,9 @@ namespace Rock.Client
         /// <summary />
         public string LastName { get; set; }
 
+        /// <summary />
+        public DateTime? LastPaymentReminderDateTime { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
@@ -118,6 +121,7 @@ namespace Rock.Client
             this.GroupId = source.GroupId;
             this.IsTemporary = source.IsTemporary;
             this.LastName = source.LastName;
+            this.LastPaymentReminderDateTime = source.LastPaymentReminderDateTime;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.PersonAliasId = source.PersonAliasId;
             this.RegistrationInstanceId = source.RegistrationInstanceId;

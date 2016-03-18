@@ -111,6 +111,11 @@ namespace Rock.Model
             target.MinimumInitialPayment = source.MinimumInitialPayment;
             target.Name = source.Name;
             target.Notify = source.Notify;
+            target.PaymentReminderEmailTemplate = source.PaymentReminderEmailTemplate;
+            target.PaymentReminderFromEmail = source.PaymentReminderFromEmail;
+            target.PaymentReminderFromName = source.PaymentReminderFromName;
+            target.PaymentReminderSubject = source.PaymentReminderSubject;
+            target.PaymentReminderTimeSpan = source.PaymentReminderTimeSpan;
             target.RegistrantsSameFamily = source.RegistrantsSameFamily;
             target.RegistrantTerm = source.RegistrantTerm;
             target.RegistrationTerm = source.RegistrationTerm;
