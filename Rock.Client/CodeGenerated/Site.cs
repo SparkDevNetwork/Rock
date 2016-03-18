@@ -36,7 +36,7 @@ namespace Rock.Client
 
         /// <summary />
         public string AllowedFrameDomains { get; set; }
-        
+
         /// <summary />
         public bool AllowIndexing { get; set; }
 
@@ -158,6 +158,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( Site source )
         {
             this.Id = source.Id;
+            this.AllowedFrameDomains = source.AllowedFrameDomains;
             this.AllowIndexing = source.AllowIndexing;
             this.CommunicationPageId = source.CommunicationPageId;
             this.CommunicationPageRouteId = source.CommunicationPageRouteId;
