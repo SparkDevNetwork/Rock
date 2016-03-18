@@ -10,7 +10,6 @@ $(document).ready(function() {
       pauseOnAction: false,
       pauseOnHover: true,
       start: function(s) {
-        console.log('starting')
         var $sliderWrap = $('.announcement-rotator')
         if ($sliderWrap[0]) {
           $sliderWrap.removeClass('loading')
