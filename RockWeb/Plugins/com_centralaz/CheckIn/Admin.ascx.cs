@@ -37,7 +37,7 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
     [DisplayName( "Administration" )]
     [Category( "com_centralaz > Check-in" )]
     [Description( "Check-in Administration block" )]
-    [BooleanField( "Allow Manual Setup", "If enabled, the block will allow the kiosk to be setup manually if it was not set via other means.", true )]
+    [BooleanField( "Allow Manual Setup", "If enabled, the block will allow the kiosk to be setup manually if it was not set via other means. If you pass the parameter 'cancel' to the page, the kiosk will not be automatically configured.", true )]
     [BooleanField( "Enable Location Sharing", "If enabled, the block will attempt to determine the kiosk's location via location sharing geocode.", false, "Geo Location", 0 )]
     [IntegerField( "Time to Cache Kiosk GeoLocation", "Time in minutes to cache the coordinates of the kiosk. A value of zero (0) means cache forever. Default 20 minutes.", false, 20, "Geo Location", 1 )]
     [BooleanField( "Enable Kiosk Match By Name", "Enable a kiosk match by computer name by doing reverseIP lookup to get computer name based on IP address", false, "", 2, "EnableReverseLookup" )]
@@ -49,35 +49,39 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             RockPage.AddScriptLink( "~/Scripts/iscroll.js" );
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
 
-            if ( !Page.IsPostBack )
+            if ( ! Page.IsPostBack )
             {
-                if ( PageParameter( "bookmark" ).AsBooleanOrNull() != null )
+                // If client is configured via server's device attributes
+                if ( IsClientConfiguredViaServer() )
                 {
-                    RedirectAfterPause();
-                    return;
+                    // If the theme is not yet configured, then redirect and end
+                    if ( Session["IsThemeConfigured"] == null )
+                    {
+                        Session["IsThemeConfigured"] = true;
+                        RedirectToNewTheme( CurrentTheme );
+                        return;
+                    }
                 }
-                else if ( Session["bookmark"] != null )
+                else
                 {
-                    Session["bookmark"] = null;
-                    // Let the admin know they can now bookmark that page
-                    maWarning.Show( "You can now bookmark or add this page to the Home Screen.", ModalAlertType.Information );
-                    return;
+                    // Set the check-in state from values passed on query string
+                    CurrentKioskId = PageParameter( "KioskId" ).AsIntegerOrNull();
+
+                    CurrentGroupTypeIds = ( PageParameter( "GroupTypeIds" ) ?? "" )
+                        .Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries )
+                        .ToList()
+                        .Select( s => s.AsInteger() )
+                        .ToList();
                 }
-
-                // Set the check-in state from values passed on query string
-                CurrentKioskId = PageParameter( "KioskId" ).AsIntegerOrNull();
-
-                CurrentGroupTypeIds = ( PageParameter( "GroupTypeIds" ) ?? "" )
-                    .Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries )
-                    .ToList()
-                    .Select( s => s.AsInteger() )
-                    .ToList();
 
                 // If valid parameters were used, set state and navigate to welcome page
                 if ( CurrentKioskId.HasValue && CurrentGroupTypeIds.Any() )
                 {
                     // Save the check-in state
                     SaveState();
+                    
+                    // Clear the previously configured theme session variable
+                    Session["IsThemeConfigured"] = null;
 
                     // Navigate to the check-in home (welcome) page
                     NavigateToNextPage();
@@ -171,22 +175,40 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
         }
 
         /// <summary>
-        /// Redirects back to this page without the bookmark parameter, and stops before it proceeds to the next
-        /// screen.  This gives admins a chance to add the URL/page to the homescreen (without the bookmark parameter).
+        /// Configures the client via server and sets the: CurrentTheme, CurrentKioskId,
+        /// and CurrentGroupTypeIds CheckInBlock properties.
         /// </summary>
-        private void RedirectAfterPause()
+        /// <returns>true if configuration was found on server; false otherwise.</returns>
+        private bool IsClientConfiguredViaServer()
         {
-            // Set a session variable for temporary use
-            Session["bookmark"] = true;
+            bool isConfiguredViaServer = false;
+            
+            if ( ! string.IsNullOrWhiteSpace( PageParameter( "cancel" ) ) )
+            {
+                return isConfiguredViaServer;
+            }
 
-            var pageRef = RockPage.PageReference;
-            pageRef.QueryString = new System.Collections.Specialized.NameValueCollection();
-            pageRef.Parameters = new Dictionary<string, string>();
+            // try to find matching kiosk by REMOTE_ADDR (ip/name).
+            var checkInDeviceTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
+            using ( var rockContext = new RockContext() )
+            {
+                bool enableReverseLookup = GetAttributeValue( "EnableReverseLookup" ).AsBoolean( false );
+                var device = new DeviceService( rockContext ).GetByIPAddress( Rock.Web.UI.RockPage.GetClientIpAddress(), checkInDeviceTypeId, !enableReverseLookup );
+                if ( device != null )
+                {
+                    device.LoadAttributes();
+                    var theme = device.GetAttributeValue( "Theme" );
+                    if ( !string.IsNullOrWhiteSpace( theme ) )
+                    {
+                        isConfiguredViaServer = true;
+                        CurrentTheme = theme;
+                        CurrentKioskId = device.Id;
+                        CurrentGroupTypeIds = GetAllKiosksGroupTypes( device, rockContext );
+                    }
+                }
+            }
 
-            pageRef.Parameters.Add( "theme", PageParameter( "theme" ) );
-            pageRef.Parameters.Add( "KioskId", PageParameter( "KioskId" ) );
-            pageRef.Parameters.Add( "GroupTypeIds", PageParameter( "GroupTypeIds" ) );
-            Response.Redirect( pageRef.BuildUrl(), false );
+            return isConfiguredViaServer;
         }
 
         /// <summary>
