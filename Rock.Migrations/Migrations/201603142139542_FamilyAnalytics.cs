@@ -79,6 +79,7 @@ namespace Rock.Migrations
 	                WHERE [Guid] = 'FFC9DF57-3E18-492C-B622-3EA167D7EBA1'" );
 
             // add era badge
+            RockMigrationHelper.UpdateEntityType( "Rock.PersonProfile.Badge.Liquid", "95912004-62B5-4460-951F-D752427D44FE", false, true );
             Sql( @"DECLARE @LavaBadgeEntityTypeId int = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = '95912004-62B5-4460-951F-D752427D44FE')
   DECLARE @LavaAttributeId int = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = '01C9BA59-D8D4-4137-90A6-B3C06C70BBC3')
   DECLARE @BadgeEntityId int 
