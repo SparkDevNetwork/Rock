@@ -97,7 +97,7 @@ namespace Rock.Jobs
                     if (result.ExitGiftCountDuration < exitGivingCount && result.ExitAttendanceCountDurationShort < exitAttendanceCountShort && result.ExitAttendanceCountDurationLong < exitAttendanceCountLong )
                     {
                         // exit era (delete attribute value from each person in family)
-                        var family = new GroupService( rockContext ).Queryable( "Members" ).AsNoTracking().Where( m => m.Id == result.FamilyId ).FirstOrDefault();
+                        var family = new GroupService( rockContext ).Queryable( "Members, Members.Person" ).AsNoTracking().Where( m => m.Id == result.FamilyId ).FirstOrDefault();
 
                         if ( family != null ) {
                             foreach ( var person in family.Members.Select( m => m.Person ) ) {
@@ -116,8 +116,9 @@ namespace Rock.Jobs
                                     eraEndAttributeValue = new AttributeValue();
                                     eraEndAttributeValue.EntityId = person.Id;
                                     eraEndAttributeValue.AttributeId = eraEndAttribute.Id;
-                                    attributeValueService.Delete( eraEndAttributeValue );
+                                    attributeValueService.Add( eraEndAttributeValue );
                                 }
+                                eraEndAttributeValue.Value = RockDateTime.Now.ToString();
 
                                 rockContext.SaveChanges();
                             }

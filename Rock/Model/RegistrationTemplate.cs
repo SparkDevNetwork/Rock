@@ -397,6 +397,21 @@ namespace Rock.Model
         [DataMember]
         public int? PaymentReminderTimeSpan { get; set; }
 
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to allow external registration updates (should a person be able to update their regisitration on-line after submitting it).
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [allow external registration updates]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowExternalRegistrationUpdates
+        {
+            get { return _allowExternalRegistrationUpdates; }
+            set { _allowExternalRegistrationUpdates = value; }
+        }
+        private bool _allowExternalRegistrationUpdates = true;
+
         #endregion
 
         #region Virtual Properties

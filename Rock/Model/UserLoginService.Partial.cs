@@ -390,7 +390,8 @@ namespace Rock.Model
                                 EntityTypeId = personEntityTypeId,
                                 CategoryId = activityCategoryId,
                                 EntityId = userLogin.PersonId.Value,
-                                Summary = summary.ToString()
+                                Summary = summary.ToString(),
+                                Verb = "LOGIN"
                             } );
                         }
 
