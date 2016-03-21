@@ -19,8 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using System.Web;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
@@ -48,10 +47,30 @@ namespace Rock
         /// <returns></returns>
         public static string AsDelimited<T>( this List<T> items, string delimiter, string finalDelimiter = null )
         {
+            return AsDelimited<T>( items, delimiter, finalDelimiter, false );
+        }
+
+        /// <summary>
+        /// Concatonate the items into a Delimited string an optionally htmlencode the strings
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="items">The items.</param>
+        /// <param name="delimiter">The delimiter.</param>
+        /// <param name="finalDelimiter">The final delimiter.</param>
+        /// <param name="HtmlEncode">if set to <c>true</c> [HTML encode].</param>
+        /// <returns></returns>
+        public static string AsDelimited<T>( this List<T> items, string delimiter, string finalDelimiter, bool HtmlEncode )
+        {
+
             List<string> strings = new List<string>();
             foreach ( T item in items )
             {
-                strings.Add( item.ToString() );
+                string itemString = item.ToString();
+                if ( HtmlEncode )
+                {
+                    itemString = HttpUtility.HtmlEncode( itemString );
+                }
+                strings.Add( itemString );
             }
 
             if ( finalDelimiter != null && strings.Count > 1 )

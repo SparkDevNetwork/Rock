@@ -2069,6 +2069,38 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Returns the Campus (or Campuses) that the Person belongs to
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="option">The option.</param>
+        /// <returns></returns>
+        public static object Campus( DotLiquid.Context context, object input, object option = null )
+        {
+            var person = GetPerson( input );
+
+            bool getAll = false;
+            if ( option != null && option.GetType() == typeof( string ) )
+            {
+                // if a string of "all" is specified for the option, return all of the campuses (if they are part of multiple families from different campuses)
+                if ( string.Equals( (string)option, "all", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    getAll = true;
+                }
+            }
+
+            if ( getAll )
+            {
+                return person.GetFamilies().Select( a => a.Campus ).OrderBy( a => a.Name );
+            }
+            else
+            {
+                return person.GetCampus();
+            }
+            
+        }
+
+        /// <summary>
         /// Gets the rock context.
         /// </summary>
         /// <param name="context">The context.</param>
@@ -2423,6 +2455,14 @@ namespace Rock.Lava
                             result.Add( liquidObject );
                         }
                     }
+                    else if (value is IDictionary<string, object>)
+                    {
+                        var dictionaryObject = value as IDictionary<string, object>;
+                        if ( dictionaryObject.ContainsKey( filterKey ) && dictionaryObject[filterKey].Equals( filterValue ) )
+                        {
+                            result.Add( dictionaryObject );
+                        }
+                    }
                 }
 
                 return result;
@@ -2456,6 +2496,14 @@ namespace Rock.Lava
                         if ( liquidObject.ContainsKey( selectKey ) )
                         {
                             result.Add( liquidObject[selectKey] );
+                        }
+                    }
+                    else if ( value is IDictionary<string, object> )
+                    {
+                        var dictionaryObject = value as IDictionary<string, object>;
+                        if ( dictionaryObject.ContainsKey( selectKey ) && dictionaryObject[selectKey].Equals( selectKey ) )
+                        {
+                            result.Add( dictionaryObject );
                         }
                     }
                 }
