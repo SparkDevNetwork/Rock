@@ -63,6 +63,9 @@ namespace Rock.Client
         /// <summary />
         public int? OwnerPersonAliasId { get; set; }
 
+        /// <summary />
+        public bool RequiresPlacementGroupToConnect { get; set; }
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -105,6 +108,7 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.OwnerPersonAliasId = source.OwnerPersonAliasId;
+            this.RequiresPlacementGroupToConnect = source.RequiresPlacementGroupToConnect;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

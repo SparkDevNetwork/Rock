@@ -66,15 +66,16 @@ namespace Rock.Jobs
             {
                 // get groups set to sync
                 GroupService groupService = new GroupService( new RockContext() );
-                var groupsThatSync = groupService.Queryable().Where( g => g.SyncDataViewId != null ).ToList();
+                var groupIdsThatSync = groupService.Queryable().Where( g => g.SyncDataViewId != null ).Select( a => a.Id ).ToList();
 
-                foreach ( var syncGroup in groupsThatSync )
+                foreach ( var syncGroupId in groupIdsThatSync )
                 {
                     bool hasGroupChanged = false;
 
                     // use a fresh rockContext per group so that ChangeTracker doesn't get bogged down
                     using ( var rockContext = new RockContext() )
                     {
+                        var syncGroup = new GroupService( rockContext ).Get( syncGroupId );
                         GroupMemberService groupMemberService = new GroupMemberService( rockContext );
 
                         // increase the timeout just in case the dataview source is slow

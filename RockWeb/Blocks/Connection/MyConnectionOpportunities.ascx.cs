@@ -129,6 +129,8 @@ namespace RockWeb.Blocks.Connection
                 rFilter.SaveUserPreference( "State", "State", "0;-2" );
 
                 GetSummaryData();
+
+                RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.visible.min.js" ) );
             }
         }
 
@@ -225,6 +227,13 @@ namespace RockWeb.Blocks.Connection
             SelectedOpportunityId = selectedOpportunityValue.AsIntegerOrNull();
 
             BindSummaryData();
+
+            ScriptManager.RegisterStartupScript(
+                Page,
+                GetType(),
+                "ScrollToGrid",
+                "scrollToGrid();",
+                true );
         }
 
         #endregion

@@ -17,6 +17,7 @@
 using System;
 using System.Text.RegularExpressions;
 using System.Web;
+using CommonMark;
 using HtmlAgilityPack;
 
 namespace Rock
@@ -160,6 +161,36 @@ namespace Rock
                 return false;
             }
             return match.Length == email.Length;
+        }
+
+        /// <summary>
+        /// Convert strings within the text that appear to be http/ftp/https links into clickable html links
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <returns></returns>
+        public static string Linkify( this string text )
+        {
+            // from http://stackoverflow.com/a/4750468
+            var result = Regex.Replace( text,
+                @"((http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?)",
+                "<a target='_blank' href='$1'>$1</a>" );
+
+            return result;
+        }
+
+        /// <summary>
+        /// Uses the CommonMark Markdown library to convert Markdown into HTML
+        /// </summary>
+        /// <param name="markdown">The markdown.</param>
+        /// <param name="renderSoftLineBreaksAsLineBreaks">if set to <c>true</c> [render soft line breaks as line breaks].</param>
+        /// <returns></returns>
+        public static string ConvertMarkdownToHtml( this string markdown, bool renderSoftLineBreaksAsLineBreaks = false )
+        {
+            // convert any Markdown into HTML
+            var settings = CommonMark.CommonMarkSettings.Default.Clone();
+            settings.RenderSoftLineBreaksAsLineBreaks = renderSoftLineBreaksAsLineBreaks;
+
+            return CommonMark.CommonMarkConverter.Convert( markdown, settings );
         }
     }
 }

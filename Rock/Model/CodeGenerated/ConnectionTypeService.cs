@@ -102,6 +102,7 @@ namespace Rock.Model
             target.IconCssClass = source.IconCssClass;
             target.Name = source.Name;
             target.OwnerPersonAliasId = source.OwnerPersonAliasId;
+            target.RequiresPlacementGroupToConnect = source.RequiresPlacementGroupToConnect;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

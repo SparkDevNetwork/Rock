@@ -30,6 +30,7 @@ ALTER PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeFirstDates]
 	, @EndDate datetime = NULL
 	, @CampusIds varchar(max) = NULL
 	, @IncludeNullCampusIds bit = 0
+	WITH RECOMPILE
 
 AS
 
