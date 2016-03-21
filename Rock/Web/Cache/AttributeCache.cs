@@ -351,8 +351,9 @@ namespace Rock.Web.Cache
         /// <param name="required">The required.</param>
         /// <param name="labelText">The label text.</param>
         /// <param name="helpText">The help text.</param>
+        /// <param name="warningText">The warning text.</param>
         /// <returns></returns>
-        public Control AddControl( ControlCollection controls, string value, string validationGroup, bool setValue, bool setId, bool? required = null, string labelText = null, string helpText = null )
+        public Control AddControl( ControlCollection controls, string value, string validationGroup, bool setValue, bool setId, bool? required = null, string labelText = null, string helpText = null, string warningText = null )
         {
             if ( labelText == null )
             {
@@ -378,6 +379,7 @@ namespace Rock.Web.Cache
                 {
                     rockControl.Label = labelText;
                     rockControl.Help = helpText;
+                    rockControl.Warning = warningText;
                     rockControl.Required = required.HasValue ? required.Value : this.IsRequired;
                     rockControl.ValidationGroup = validationGroup;
 
@@ -387,8 +389,9 @@ namespace Rock.Web.Cache
                 {
                     bool renderLabel = !string.IsNullOrEmpty( labelText );
                     bool renderHelp = !string.IsNullOrWhiteSpace( helpText );
+                    bool renderWarning = !string.IsNullOrWhiteSpace( warningText );
 
-                    if ( renderLabel || renderHelp )
+                    if ( renderLabel || renderHelp || renderWarning )
                     {
                         HtmlGenericControl div = new HtmlGenericControl( "div" );
                         controls.Add( div );
@@ -418,6 +421,14 @@ namespace Rock.Web.Cache
                             div.Controls.Add( helpBlock );
                             helpBlock.ClientIDMode = ClientIDMode.AutoID;
                             helpBlock.Text = helpText;
+                        }
+
+                        if ( renderWarning )
+                        {
+                            var warningBlock = new Rock.Web.UI.Controls.WarningBlock();
+                            div.Controls.Add( warningBlock );
+                            warningBlock.ClientIDMode = ClientIDMode.AutoID;
+                            warningBlock.Text = warningText;
                         }
 
                         div.Controls.Add( attributeControl );
