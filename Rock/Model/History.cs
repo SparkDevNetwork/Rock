@@ -77,6 +77,16 @@ namespace Rock.Model
         public int EntityId { get; set; }
 
         /// <summary>
+        /// Gets or sets the verb which is a structured (for querying) field to describe what the action is (ADD, DELETE, VIEW, WATCHED, etc).
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the verb of the History.
+        /// </value>
+        [MaxLength( 20 )]
+        [DataMember]
+        public string Verb { get; set; }
+
+        /// <summary>
         /// Gets or sets the caption
         /// </summary>
         /// <value>

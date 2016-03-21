@@ -213,9 +213,12 @@ namespace Rock.Model
         public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
         {
             string action = string.Empty;
+            string verb = string.Empty;
+
             if ( state == System.Data.Entity.EntityState.Added )
             {
                 action = "Added to group.";
+                verb = "ADD";
                 if ( !this.DateTimeAdded.HasValue )
                 {
                     this.DateTimeAdded = RockDateTime.Now;
@@ -224,6 +227,7 @@ namespace Rock.Model
             else if ( state == System.Data.Entity.EntityState.Deleted )
             {
                 action = "Removed from group.";
+                verb = "DELETE";
             }
 
             if ( !string.IsNullOrWhiteSpace( action ) )
@@ -250,7 +254,8 @@ namespace Rock.Model
                         Summary = action,
                         Caption = group.Name,
                         RelatedEntityTypeId = groupEntityTypeId,
-                        RelatedEntityId = this.GroupId
+                        RelatedEntityId = this.GroupId,
+                        Verb = verb
                     } );
                 }
             }
