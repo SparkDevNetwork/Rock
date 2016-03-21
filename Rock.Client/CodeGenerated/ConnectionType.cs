@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public int DaysUntilRequestIdle { get; set; }
+
+        /// <summary />
         public string Description { get; set; }
 
         /// <summary />
@@ -99,6 +102,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( ConnectionType source )
         {
             this.Id = source.Id;
+            this.DaysUntilRequestIdle = source.DaysUntilRequestIdle;
             this.Description = source.Description;
             this.EnableFullActivityList = source.EnableFullActivityList;
             this.EnableFutureFollowup = source.EnableFutureFollowup;

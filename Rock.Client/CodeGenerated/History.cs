@@ -69,6 +69,9 @@ namespace Rock.Client
         /// <summary />
         public string Summary { get; set; }
 
+        /// <summary />
+        public string Verb { get; set; }
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -113,6 +116,7 @@ namespace Rock.Client
             this.RelatedEntityId = source.RelatedEntityId;
             this.RelatedEntityTypeId = source.RelatedEntityTypeId;
             this.Summary = source.Summary;
+            this.Verb = source.Verb;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
