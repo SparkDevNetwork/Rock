@@ -254,7 +254,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
                 rockContext.SaveChanges();
                 groupMember.SetAttributeValue( "MemberStartDate", dpMemberStartDate.SelectedDate.Value.ToShortDateString() );
                 groupMember.SaveAttributeValues( rockContext );
-                
+
                 group = new GroupService( rockContext ).Get( groupMember.GroupId );
                 if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
                 {
@@ -440,7 +440,11 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
             rblStatus.Label = string.Format( "Status" );
 
             groupMember.LoadAttributes();
-            lblStartDate.Text = groupMember.GetAttributeValue( "MemberStartDate" );
+            var memberStartDate = groupMember.GetAttributeValue( "MemberStartDate" ).AsDateTime();
+            if ( memberStartDate.HasValue )
+            {
+                lblStartDate.Text = memberStartDate.Value.ToLongDateString();
+            }
 
             //Determines visibility of the edit button
             bool readOnly = false;
