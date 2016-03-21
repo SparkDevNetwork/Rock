@@ -29,7 +29,7 @@
                         <span class="pull-left badge badge-info js-legend-badge" data-toggle="tooltip" data-original-title="Assigned To You">&nbsp;</span>
                         <span class="pull-left badge badge-warning js-legend-badge" data-toggle="tooltip" data-original-title="Unassigned Item">&nbsp;</span>
                         <span class="pull-left badge badge-critical js-legend-badge" data-toggle="tooltip" data-original-title="Critical Status">&nbsp;</span>
-                        <span class="pull-left badge badge-danger js-legend-badge" data-toggle="tooltip" data-original-title="Idle (no activity in <%= GetAttributeValue( "NumberDaysToIdle" ).AsInteger() %> days)">&nbsp;</span>
+                        <asp:Literal ID="lIdleToolTip" runat="server" />
                     </div>
                     <Rock:Toggle ID="tglMyOpportunities" CssClass="margin-r-md pull-left" runat="server" OnText="My Requests" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" OffText="All Requests" AutoPostBack="true" OnCheckedChanged="tglMyOpportunities_CheckedChanged" Checked="true" />
                     <asp:LinkButton ID="lbConnectionTypes" runat="server" CssClass=" pull-right" OnClick="lbConnectionTypes_Click" CausesValidation="false"><i class="fa fa-gear"></i></asp:LinkButton>
