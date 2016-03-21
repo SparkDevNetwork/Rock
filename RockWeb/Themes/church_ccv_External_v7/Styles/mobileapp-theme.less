@@ -24,6 +24,8 @@
 @import "_mixins";
 @import "_helpers";
 
+@import "modules/_misc-icons";
+
 @body-bg: #212121;
 // we set bg color inline on the body tag for the layout to prevent a flash of white on load
 @text-color: @gray-lighter;
@@ -63,6 +65,7 @@ html {
 body {
   background-color: @body-bg;
   color: @text-color;
+  fill: @text-color;
   .text-aa();
   padding-bottom: @grid-gutter-width*3;
 }

@@ -14,6 +14,7 @@
       <i class="fa fa-clock-o fa-2x"></i>
     </div>
     <div class="pull-left margin-l-md">
+      {% assign useLightIcon = true %}
       {% assign times = campus.ServiceTimes %}
       {% include '~~/Assets/Lava/ServiceTimes/TwoLines.lava' %}
     </div>
