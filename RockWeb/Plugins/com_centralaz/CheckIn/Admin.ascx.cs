@@ -51,6 +51,19 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
 
             if ( ! Page.IsPostBack )
             {
+                 if ( PageParameter( "bookmark" ).AsBooleanOrNull() != null )
+                 {
+                     RedirectAfterPause();
+                     return;
+                 }
+                 else if ( Session["bookmark"] != null )
+                 {
+                     Session["bookmark"] = null;
+                     // Let the admin know they can now bookmark that page
+                     maWarning.Show( "You can now bookmark or add this page to the Home Screen.", ModalAlertType.Information );
+                     return;
+                }
+
                 // If client is configured via server's device attributes
                 if ( IsClientConfiguredViaServer() )
                 {
@@ -175,6 +188,21 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
         }
 
         /// <summary>
+         /// Redirects back to this page without the bookmark parameter, and stops before it proceeds to the next
+         /// screen.  This gives admins a chance to add the URL/page to the homescreen (without the bookmark parameter).
+         /// </summary>
+         private void RedirectAfterPause()
+         {
+             // Set a session variable for temporary use
+             Session["bookmark"] = true;
+ 
+             var pageRef = RockPage.PageReference;
+             pageRef.QueryString = new System.Collections.Specialized.NameValueCollection();
+             pageRef.Parameters = new Dictionary<string, string>();
+             Response.Redirect( pageRef.BuildUrl(), false );
+         }
+
+        /// <summary>
         /// Configures the client via server and sets the: CurrentTheme, CurrentKioskId,
         /// and CurrentGroupTypeIds CheckInBlock properties.
         /// </summary>
@@ -193,7 +221,8 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             using ( var rockContext = new RockContext() )
             {
                 bool enableReverseLookup = GetAttributeValue( "EnableReverseLookup" ).AsBoolean( false );
-                var device = new DeviceService( rockContext ).GetByIPAddress( Rock.Web.UI.RockPage.GetClientIpAddress(), checkInDeviceTypeId, !enableReverseLookup );
+                //var device = new DeviceService( rockContext ).GetByIPAddress( Rock.Web.UI.RockPage.GetClientIpAddress(), checkInDeviceTypeId, !enableReverseLookup );
+                var device = new DeviceService( rockContext ).GetByIPAddress( Request.ServerVariables["REMOTE_ADDR"], checkInDeviceTypeId, !enableReverseLookup );
                 if ( device != null )
                 {
                     device.LoadAttributes();
@@ -221,7 +250,8 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             using ( var rockContext = new RockContext() )
             {
                 bool enableReverseLookup = GetAttributeValue( "EnableReverseLookup" ).AsBoolean( false );
-                var device = new DeviceService( rockContext ).GetByIPAddress( Rock.Web.UI.RockPage.GetClientIpAddress(), checkInDeviceTypeId, !enableReverseLookup );
+                // var device = new DeviceService( rockContext ).GetByIPAddress( Rock.Web.UI.RockPage.GetClientIpAddress(), checkInDeviceTypeId, !enableReverseLookup );
+                var device = new DeviceService( rockContext ).GetByIPAddress( Request.ServerVariables["REMOTE_ADDR"], checkInDeviceTypeId, !enableReverseLookup );
                 if ( device != null )
                 {
                     ClearMobileCookie();
