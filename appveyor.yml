@@ -59,7 +59,8 @@ install:
 #---------------------------------#
 
 # build Configuration, i.e. Debug, Release, etc.
-configuration: Release
+configuration: 
+  - Release
 
 # scripts to run before build
 before_build:
