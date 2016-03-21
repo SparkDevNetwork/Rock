@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -43,7 +44,6 @@ namespace RockWeb.Blocks.Connection
     [LinkedPage( "Detail Page", "Page used to view details of an requests.", true, "", "", 1 )]
     [ConnectionTypesField("Connection Types", "Optional list of connection types to limit the display to (All will be displayed by default).", false, order:2 )]
     [BooleanField( "Show Last Activity Note", "If enabled, the block will show the last activity note for each request in the list.", false, order:3 )]
-    [IntegerField( "Number Days To Idle", "The number of days with no activity after which a request is considered idle.", false, 14, order: 4 )]
     public partial class MyConnectionOpportunities : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -57,7 +57,6 @@ namespace RockWeb.Blocks.Connection
 
         protected int? SelectedOpportunityId { get; set; }
         protected List<ConnectionTypeSummary> SummaryState { get; set; }
-        protected DateTime IdleDate { get; set; }
         #endregion
 
         #region Base Control Methods
@@ -94,7 +93,6 @@ namespace RockWeb.Blocks.Connection
             gRequests.ShowConfirmDeleteDialog = false;
             gRequests.PersonIdField = "PersonId";
             gRequests.Columns[6].Visible = GetAttributeValue( "ShowLastActivityNote" ).AsBoolean();
-            IdleDate = RockDateTime.Now.AddDays( -GetAttributeValue( "NumberDaysToIdle" ).AsInteger() );
 
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -467,8 +465,8 @@ namespace RockWeb.Blocks.Connection
                                                 || (cr.ConnectionState == ConnectionState.FutureFollowUp && cr.FollowupDate.HasValue && cr.FollowupDate.Value < _midnightToday)
                                             )
                                             && (
-                                                (cr.ConnectionRequestActivities.Count() > 0 && cr.ConnectionRequestActivities.OrderByDescending(ra => ra.CreatedDateTime).Select(ra => ra.CreatedDateTime).FirstOrDefault() < IdleDate))
-                                                || (cr.ConnectionRequestActivities.Count() == 0 && cr.CreatedDateTime < IdleDate)
+                                                ( cr.ConnectionRequestActivities.Count() > 0 && cr.ConnectionRequestActivities.OrderByDescending( ra => ra.CreatedDateTime ).Select( ra => ra.CreatedDateTime ).FirstOrDefault() < RockDateTime.Now.AddDays( -cr.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle ) ) )
+                                                || ( cr.ConnectionRequestActivities.Count() == 0 && cr.CreatedDateTime < RockDateTime.Now.AddDays( -cr.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle ) )
                                                )
                                         .Count();
 
@@ -542,6 +540,24 @@ namespace RockWeb.Blocks.Connection
                 // Flag indicating if current user is connector for any of the active types
                 opportunity.HasActiveRequestsForConnector = opportunityRequests.Any( r => r.ConnectorPersonId == CurrentPersonId );
             }
+
+            //Set the Idle tooltip
+            var connectionTypes = opportunities.Where( o => allOpportunities.Contains( o.Id ) ).Select( o => o.ConnectionType ).Distinct().ToList();
+            StringBuilder sb = new StringBuilder();
+            if ( connectionTypes.Select( t => t.DaysUntilRequestIdle ).Distinct().Count() == 1 )
+            {
+                sb.Append( String.Format( "Idle (no activity in {0} days)", connectionTypes.Select( t => t.DaysUntilRequestIdle ).Distinct().First() ) );
+            }
+            else
+            {
+                sb.Append( "Idle (no activity in several days)<br/><ul class='list-unstyled'>" );
+                foreach ( var connectionType in connectionTypes )
+                {
+                    sb.Append( String.Format( "<li>{0}: {1} days</li>", connectionType.Name, connectionType.DaysUntilRequestIdle ) );
+                }
+                sb.Append( "</ul>" );
+            }
+            lIdleToolTip.Text = String.Format( "<span class='pull-left badge badge-danger js-legend-badge' data-toggle='tooltip' data-original-title=\"{0}\">&nbsp;</span>", sb.ToString() );
 
             BindSummaryData();
         }
