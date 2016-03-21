@@ -374,7 +374,7 @@
 
                     <a id="GeoPickerPolygon"></a>
                     <div runat="server" class="r-example">
-                        <Rock:GeoPicker ID="geopExamplePolygon" runat="server" Label="Rock:GeoPicker (Polygon mode)" DrawingMode="Polygon" Help="You can set the style of this through the 'Map Style' block attribute." />
+                        <Rock:GeoPicker ID="geopExamplePolygon" runat="server" Label="Rock:GeoPicker (Polygon mode)" DrawingMode="Polygon" Help="You can set the style of this through the 'Map Style' block attribute." Warning="If you need to stipulate restrictions, use the warning property." />
                     </div>
 
                     <a id="MergeFieldPicker"></a>

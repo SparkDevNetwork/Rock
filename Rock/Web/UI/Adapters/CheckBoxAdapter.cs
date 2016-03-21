@@ -138,10 +138,16 @@ namespace Rock.Web.UI.Adapters
                 {
                     bool renderRockLabel = !string.IsNullOrEmpty( rockCb.Label );
                     bool renderRockHelp = rockCb.HelpBlock != null && !string.IsNullOrWhiteSpace( rockCb.Help );
+                    bool renderRockWarning = rockCb.WarningBlock != null && !string.IsNullOrWhiteSpace( rockCb.Warning );
 
                     if ( !renderRockLabel && renderRockHelp )
                     {
                         rockCb.HelpBlock.RenderControl( writer );
+                    }
+
+                    if ( !renderRockLabel && renderRockWarning )
+                    {
+                        rockCb.WarningBlock.RenderControl( writer );
                     }
                 }
 

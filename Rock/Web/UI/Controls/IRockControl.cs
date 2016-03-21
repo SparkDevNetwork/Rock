@@ -42,6 +42,14 @@ namespace Rock.Web.UI.Controls
         string Help { get; set; }
 
         /// <summary>
+        /// Gets or sets the warning text.
+        /// </summary>
+        /// <value>
+        /// The warning text.
+        /// </value>
+        string Warning { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="IRockControl" /> is required.
         /// </summary>
         /// <value>
@@ -97,6 +105,14 @@ namespace Rock.Web.UI.Controls
         /// The help block.
         /// </value>
         HelpBlock HelpBlock { get; set;  }
+
+        /// <summary>
+        /// Gets the warning block.
+        /// </summary>
+        /// <value>
+        /// The warning block.
+        /// </value>
+        WarningBlock WarningBlock { get; set; }
 
         /// <summary>
         /// Gets the required field validator.

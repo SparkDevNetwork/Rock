@@ -595,6 +595,29 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the warning text.
+        /// </summary>
+        /// <value>
+        /// The warning text.
+        /// </value>
+        public string Warning
+        {
+            get
+            {
+                EnsureChildControls();
+                return _namedPicker.Warning;
+            }
+            set
+            {
+                EnsureChildControls();
+                _namedPicker.Warning = value;
+                _addressPicker.Warning = value;
+                _pointPicker.Warning = value;
+                _polygonPicker.Warning = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="IRockControl" /> is required.
         /// </summary>
         /// <value>
@@ -708,6 +731,29 @@ namespace Rock.Web.UI.Controls
                 _addressPicker.HelpBlock = value;
                 _pointPicker.HelpBlock = value;
                 _polygonPicker.HelpBlock = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the warning block.
+        /// </summary>
+        /// <value>
+        /// The warning block.
+        /// </value>
+        public WarningBlock WarningBlock
+        {
+            get
+            {
+                EnsureChildControls();
+                return _namedPicker.WarningBlock;
+            }
+            set
+            {
+                EnsureChildControls();
+                _namedPicker.WarningBlock = value;
+                _addressPicker.WarningBlock = value;
+                _pointPicker.WarningBlock = value;
+                _polygonPicker.WarningBlock = value;
             }
         }
 
