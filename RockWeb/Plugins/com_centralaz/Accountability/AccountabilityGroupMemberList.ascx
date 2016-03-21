@@ -50,14 +50,8 @@
                                             <asp:Literal ID="lReportsOpportunities" runat="server" />
                                         </ItemTemplate>
                                     </asp:TemplateField>
-                                   
-                                     <asp:TemplateField SortExpression="PercentSubmitted" HeaderText="% Submitted">
-                                        <ItemTemplate>
-                                            <asp:Literal ID="lPercentSubmitted" runat="server" />
-                                        </ItemTemplate>
-                                    </asp:TemplateField>
                                     
-                                    <asp:TemplateField SortExpression="Score" HeaderText="Score">
+                                    <asp:TemplateField SortExpression="Score" HeaderText="'Yes' Score">
                                         <ItemTemplate>
                                             <asp:Literal ID="lScore" runat="server" />
                                         </ItemTemplate>

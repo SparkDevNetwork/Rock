@@ -175,16 +175,11 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
                     {
                         lReportsOpportunities.Text = personInfo[3];
                     }
-
-                    Literal lPercentSubmitted = e.Row.FindControl( "lPercentSubmitted" ) as Literal;
-                    if ( lPercentSubmitted != null )
-                    {
-                        lPercentSubmitted.Text = personInfo[4];
-                    }
+                    
                     Literal lScore = e.Row.FindControl( "lScore" ) as Literal;
                     if ( lScore != null )
                     {
-                        lScore.Text = personInfo[5];
+                        lScore.Text = personInfo[4];
                     }
                 }
             }
@@ -373,8 +368,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
         /// personInfo[1] holds the last report.
         /// personInfo[2] holds the weeks since last report
         /// personInfo[3] holds the reports / opportunities
-        /// personInfo[4] holds the reports/opportunites percentage
-        /// personInfo[5] holds the person's score</returns>
+        /// personInfo[4] holds the person's score</returns>
         private String[] GetPersonInfo( List<ResponseSet> responseSets, GroupMember groupMember )
         {
             DateTime firstReport = new DateTime();
@@ -383,7 +377,6 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
             double? weeksSinceLast = null;
             double reports = 0;
             double opportunities = 0;
-            double? percentSubmitted = null;
             double score = 0;
             groupMember.LoadAttributes();
             DateTime memberStartDate = DateTime.Parse( groupMember.GetAttributeValue( "MemberStartDate" ) );
@@ -428,7 +421,6 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
             {
                 opportunities = ( ( NextReportDate( _reportStartDate ) - memberStartDate ).Days / 7 );
                 score = score / opportunities;
-                percentSubmitted = reports / opportunities;
             }
             else
             {
@@ -467,22 +459,19 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
             if ( _reportStartDate != null )
             {
                 personInfo[3] = string.Format( "{0} / {1}", reports, opportunities );
-                personInfo[4] = string.Format( "{0:P0}", reports / opportunities );
             }
             else
             {
                 personInfo[3] = "-";
-                personInfo[4] = "-";
             }
 
             if ( opportunities == 0 )
             {
                 personInfo[4] = "-";
-                personInfo[5] = "-";
             }
             else
             {
-                personInfo[5] = score.ToString( "0.00" );
+                personInfo[4] = score.ToString( "P0" );
             }
 
             return personInfo;
