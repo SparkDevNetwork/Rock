@@ -33,6 +33,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.Threading.Tasks;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace RockWeb.Blocks.CheckIn
 {
@@ -301,36 +302,33 @@ namespace RockWeb.Blocks.CheckIn
                 bcAttendance.ChartClick += lcAttendance_ChartClick;
             }
 
-            var lineChartDataSourceUrl = "~/api/Attendances/GetChartData";
-            var dataSourceParams = new Dictionary<string, object>();
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
-
             if ( !dateRange.Start.HasValue || !dateRange.End.HasValue )
             {
                 nbDateRangeWarning.Visible = true;
                 return;
             }
-
             nbDateRangeWarning.Visible = false;
 
-            if ( dateRange.Start.HasValue )
+            var selectedGroupIds = GetSelectedGroupIds();
+            // if no Groups are selected show a warning since no data will show up
+            nbGroupsWarning.Visible = false;
+            if ( !selectedGroupIds.Any() )
             {
-                dataSourceParams.AddOrReplace( "startDate", dateRange.Start.Value.ToString( "o" ) );
+                nbGroupsWarning.Visible = true;
+                return;
             }
 
-            if ( dateRange.End.HasValue )
+            if ( pnlShowByChart.Visible )
             {
-                dataSourceParams.AddOrReplace( "endDate", dateRange.End.Value.ToString( "o" ) );
-            }
-
-            var groupBy = hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week;
-            lcAttendance.TooltipFormatter = null;
-            switch ( groupBy )
-            {
-                case ChartGroupBy.Week:
-                    {
-                        lcAttendance.Options.xaxis.tickSize = new string[] { "7", "day" };
-                        lcAttendance.TooltipFormatter = @"
+                var groupBy = hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week;
+                lcAttendance.TooltipFormatter = null;
+                switch ( groupBy )
+                {
+                    case ChartGroupBy.Week:
+                        {
+                            lcAttendance.Options.xaxis.tickSize = new string[] { "7", "day" };
+                            lcAttendance.TooltipFormatter = @"
 function(item) {
     var itemDate = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
     var dateText = 'Weekend of <br />' + itemDate.toLocaleDateString();
@@ -339,14 +337,14 @@ function(item) {
     return dateText + '<br />' + seriesLabel + ': ' + pointValue;
 }
 ";
-                    }
+                        }
 
-                    break;
+                        break;
 
-                case ChartGroupBy.Month:
-                    {
-                        lcAttendance.Options.xaxis.tickSize = new string[] { "1", "month" };
-                        lcAttendance.TooltipFormatter = @"
+                    case ChartGroupBy.Month:
+                        {
+                            lcAttendance.Options.xaxis.tickSize = new string[] { "1", "month" };
+                            lcAttendance.TooltipFormatter = @"
 function(item) {
     var month_names = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     var itemDate = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
@@ -356,14 +354,14 @@ function(item) {
     return dateText + '<br />' + seriesLabel + ': ' + pointValue;
 }
 ";
-                    }
+                        }
 
-                    break;
+                        break;
 
-                case ChartGroupBy.Year:
-                    {
-                        lcAttendance.Options.xaxis.tickSize = new string[] { "1", "year" };
-                        lcAttendance.TooltipFormatter = @"
+                    case ChartGroupBy.Year:
+                        {
+                            lcAttendance.Options.xaxis.tickSize = new string[] { "1", "year" };
+                            lcAttendance.TooltipFormatter = @"
 function(item) {
     var itemDate = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
     var dateText = itemDate.getFullYear();
@@ -372,62 +370,38 @@ function(item) {
     return dateText + '<br />' + seriesLabel + ': ' + pointValue;
 }
 ";
-                    }
+                        }
 
-                    break;
-            }
+                        break;
+                }
 
-            string groupByTextPlural = groupBy.ConvertToString().ToLower().Pluralize();
-            lPatternXFor.Text = string.Format( " {0} for the selected date range", groupByTextPlural );
-            lPatternAndMissedXBetween.Text = string.Format( " {0} between", groupByTextPlural );
+                string groupByTextPlural = groupBy.ConvertToString().ToLower().Pluralize();
+                lPatternXFor.Text = string.Format( " {0} for the selected date range", groupByTextPlural );
+                lPatternAndMissedXBetween.Text = string.Format( " {0} between", groupByTextPlural );
 
-            var selectedDataViewId = dvpDataView.SelectedValue.AsIntegerOrNull();
-            if ( selectedDataViewId.HasValue )
-            {
-                dataSourceParams.AddOrReplace( "dataViewId", selectedDataViewId.Value.ToString() );
-            }
+                bcAttendance.TooltipFormatter = lcAttendance.TooltipFormatter;
 
-            dataSourceParams.AddOrReplace( "groupBy", hfGroupBy.Value.AsInteger() );
+                var chartData = this.GetAttendanceChartData().ToList();
+                var jsonSetting = new JsonSerializerSettings
+                {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                    ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
+                };
+                string chartDataJson = JsonConvert.SerializeObject( chartData, Formatting.None, jsonSetting );
 
-            dataSourceParams.AddOrReplace( "graphBy", hfGraphBy.Value.AsInteger() );
-
-            var selectedCampusValues = clbCampuses.SelectedValues;
-
-            string campusIdsValue = selectedCampusValues.AsDelimited( "," );
-            dataSourceParams.AddOrReplace( "campusIds", campusIdsValue );
-
-            var selectedGroupIds = GetSelectedGroupIds();
-
-            if ( selectedGroupIds.Any() )
-            {
-                dataSourceParams.AddOrReplace( "groupIds", selectedGroupIds.AsDelimited( "," ) );
-            }
-            else
-            {
-                // set the value to 0 to indicate that no groups where selected (and so that Rest Endpoint doesn't 404)
-                dataSourceParams.AddOrReplace( "groupIds", 0 );
-            }
-
-            SaveSettings();
-
-            lineChartDataSourceUrl += "?" + dataSourceParams.Select( s => string.Format( "{0}={1}", s.Key, s.Value ) ).ToList().AsDelimited( "&" );
-
-            // if no Groups are selected show a warning since no data will show up
-            nbGroupsWarning.Visible = false;
-            if ( !selectedGroupIds.Any() )
-            {
-                nbGroupsWarning.Visible = true;
-                return;
-            }
-
-            lcAttendance.DataSourceUrl = this.ResolveUrl( lineChartDataSourceUrl );
-            bcAttendance.TooltipFormatter = lcAttendance.TooltipFormatter;
-            bcAttendance.DataSourceUrl = this.ResolveUrl( lineChartDataSourceUrl );
-
-            if ( pnlShowByChart.Visible )
-            {
-                var chartData = this.GetAttendanceChartData();
                 var singleDateTime = chartData.GroupBy( a => a.DateTimeStamp ).Count() == 1;
+                if ( singleDateTime )
+                {
+                    bcAttendance.Visible = true;
+                    lcAttendance.Visible = false;
+                    bcAttendance.ChartData = chartDataJson;
+                }
+                else
+                {
+                    bcAttendance.Visible = false;
+                    lcAttendance.Visible = true;
+                    lcAttendance.ChartData = chartDataJson;
+                }
                 bcAttendance.Visible = singleDateTime;
                 lcAttendance.Visible = !singleDateTime;
 
@@ -441,6 +415,9 @@ function(item) {
             {
                 BindAttendeesGrid();
             }
+
+            SaveSettings();
+
         }
 
         /// <summary>

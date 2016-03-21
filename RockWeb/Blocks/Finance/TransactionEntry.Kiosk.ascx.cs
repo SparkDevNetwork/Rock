@@ -444,6 +444,9 @@ namespace RockWeb.Blocks.Finance
                             transaction.TransactionTypeValueId = txnType.Id;
                             History.EvaluateChange( txnChanges, "Type", string.Empty, txnType.Value );
 
+                            transaction.Summary = swipeInfo.Comment1;
+                            History.EvaluateChange( txnChanges, "Transaction Code", string.Empty, transaction.Summary );
+
                             if ( transaction.FinancialPaymentDetail == null )
                             {
                                 transaction.FinancialPaymentDetail = new FinancialPaymentDetail();

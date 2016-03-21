@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -33,6 +34,8 @@ using DotLiquid;
 using DotLiquid.Util;
 using Humanizer;
 using Humanizer.Localisation;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -2066,6 +2069,38 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Returns the Campus (or Campuses) that the Person belongs to
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="option">The option.</param>
+        /// <returns></returns>
+        public static object Campus( DotLiquid.Context context, object input, object option = null )
+        {
+            var person = GetPerson( input );
+
+            bool getAll = false;
+            if ( option != null && option.GetType() == typeof( string ) )
+            {
+                // if a string of "all" is specified for the option, return all of the campuses (if they are part of multiple families from different campuses)
+                if ( string.Equals( (string)option, "all", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    getAll = true;
+                }
+            }
+
+            if ( getAll )
+            {
+                return person.GetFamilies().Select( a => a.Campus ).OrderBy( a => a.Name );
+            }
+            else
+            {
+                return person.GetCampus();
+            }
+            
+        }
+
+        /// <summary>
         /// Gets the rock context.
         /// </summary>
         /// <param name="context">The context.</param>
@@ -2079,7 +2114,7 @@ namespace Rock.Lava
             else
             {
                 var rockContext = new RockContext();
-                context.Registers.Add( "rock_context", rockContext );
+                context.Registers["rock_context"] = rockContext;
                 return rockContext;
             }
         }
@@ -2162,6 +2197,31 @@ namespace Rock.Lava
         public static string ToJSON( object input )
         {
             return input.ToJson();
+        }
+
+        /// <summary>
+        /// Returns a dynamic object from a JSON string
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static object FromJSON( object input )
+        {
+            var converter = new ExpandoObjectConverter();
+            object contentObject = null;
+            var value = input as string;
+
+            try
+            {
+                // first try to deserialize as straight ExpandoObject
+                contentObject = JsonConvert.DeserializeObject<ExpandoObject>( value, converter );
+            }
+            catch
+            {
+                // if it didn't deserialize as straight ExpandoObject, try it as a List of ExpandoObjects
+                contentObject = JsonConvert.DeserializeObject<List<ExpandoObject>>( value, converter );
+            }
+
+            return contentObject;
         }
 
         /// <summary>
@@ -2395,6 +2455,14 @@ namespace Rock.Lava
                             result.Add( liquidObject );
                         }
                     }
+                    else if (value is IDictionary<string, object>)
+                    {
+                        var dictionaryObject = value as IDictionary<string, object>;
+                        if ( dictionaryObject.ContainsKey( filterKey ) && dictionaryObject[filterKey].Equals( filterValue ) )
+                        {
+                            result.Add( dictionaryObject );
+                        }
+                    }
                 }
 
                 return result;
@@ -2428,6 +2496,14 @@ namespace Rock.Lava
                         if ( liquidObject.ContainsKey( selectKey ) )
                         {
                             result.Add( liquidObject[selectKey] );
+                        }
+                    }
+                    else if ( value is IDictionary<string, object> )
+                    {
+                        var dictionaryObject = value as IDictionary<string, object>;
+                        if ( dictionaryObject.ContainsKey( selectKey ) && dictionaryObject[selectKey].Equals( selectKey ) )
+                        {
+                            result.Add( dictionaryObject );
                         }
                     }
                 }

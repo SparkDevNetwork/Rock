@@ -34,60 +34,51 @@ namespace Rock.Address
     [TextField( "License Key", "The Service Objects License Key" )]
     public class ServiceObjects : VerificationComponent
     {
+
+        /// <summary>
+        /// Gets a value indicating whether Melissa Data supports geocoding.
+        /// </summary>
+        public override bool SupportsStandardization
+        {
+            get { return false; }
+        }
+
         /// <summary>
         /// Geocodes the specified address.
         /// </summary>
         /// <param name="location">The location.</param>
-        /// <param name="reVerify">Should location be reverified even if it has already been successfully verified</param>
-        /// <param name="result">The result code unique to the service.</param>
+        /// <param name="resultMsg">The result MSG.</param>
         /// <returns>
         /// True/False value of whether the address was geocoded successfully
         /// </returns>
-        public override bool VerifyLocation( Rock.Model.Location location, bool reVerify, out string result )
+        public override VerificationResult Verify( Rock.Model.Location location, out string resultMsg )
         {
-            bool verified = false;
-            result = string.Empty;
+            VerificationResult result = VerificationResult.None;
+            resultMsg = string.Empty;
 
-            // Only verify if location is valid, has not been locked, and 
-            // has either never been attempted or last attempt was in last 30 secs (prev active service failed) or reverifying
-            if ( location != null && 
-                !(location.IsGeoPointLocked ?? false) &&  
-                (
-                    !location.GeocodeAttemptedDateTime.HasValue || 
-                    location.GeocodeAttemptedDateTime.Value.CompareTo( RockDateTime.Now.AddSeconds(-30) ) > 0 ||
-                    reVerify
-                ) )
+            string licenseKey = GetAttributeValue("LicenseKey");
+
+            var client = new DOTSGeoCoderSoapClient();
+            Location_V3 location_match = client.GetBestMatch_V3(
+                string.Format("{0} {1}",
+                    location.Street1,
+                    location.Street2),
+                location.City,
+                location.State,
+                location.PostalCode,
+                licenseKey );
+
+            resultMsg = location_match.Level;
+
+            if ( location_match.Level == "S" || location_match.Level == "P" )
             {
-                string licenseKey = GetAttributeValue("LicenseKey");
-
-                var client = new DOTSGeoCoderSoapClient();
-                Location_V3 location_match = client.GetBestMatch_V3(
-                    string.Format("{0} {1}",
-                        location.Street1,
-                        location.Street2),
-                    location.City,
-                    location.State,
-                    location.PostalCode,
-                    licenseKey );
-
-                result = location_match.Level;
-
-                location.GeocodeAttemptedServiceType = "ServiceObjects";
-                location.GeocodeAttemptedDateTime = RockDateTime.Now;
-                location.GeocodeAttemptedResult = result;
-
-                if ( location_match.Level == "S" || location_match.Level == "P" )
-                {
-                    double latitude = double.Parse( location_match.Latitude );
-                    double longitude = double.Parse( location_match.Longitude );
-                    location.SetLocationPointFromLatLong(latitude, longitude);
-                    location.GeocodedDateTime = RockDateTime.Now;
-                    verified = true;
-                }
-
+                double latitude = double.Parse( location_match.Latitude );
+                double longitude = double.Parse( location_match.Longitude );
+                location.SetLocationPointFromLatLong(latitude, longitude);
+                result = VerificationResult.Geocoded;
             }
 
-            return verified;
+            return result;
         }
     }
 }

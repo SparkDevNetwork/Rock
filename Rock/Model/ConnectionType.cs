@@ -85,6 +85,17 @@ namespace Rock.Model
         [DataMember]
         public bool EnableFullActivityList { get; set; }
 
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this connection type requires a placement group to connect.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if connection type requires a placement group to connect; otherwise, <c>false</c>.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool RequiresPlacementGroupToConnect { get; set; }
+
         /// <summary>
         /// Gets or sets the owner person alias identifier.
         /// </summary>

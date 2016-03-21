@@ -118,8 +118,8 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlockAttributeValue( "6BF2F96A-51D6-4A84-BDA4-4EE6FDC2B515", "8177CE07-AA1B-43F4-ABCE-23E63DA8EBC8", "C22B0247-7C9F-411B-A1F5-0051FCBAC199" );
             RockMigrationHelper.AddBlockAttributeValue( "75F15397-3B82-4879-B069-DABD3619FAA3", "8177CE07-AA1B-43F4-ABCE-23E63DA8EBC8", "C22B0247-7C9F-411B-A1F5-0051FCBAC199" );
 
-            // Attrib for BlockType: Scheduled Transaction Edit:ACH Card Gateway
-            RockMigrationHelper.UpdateBlockTypeAttribute( "5171C4E5-7698-453E-9CC8-088D362296DE", "A7486B0E-4CA2-4E00-A987-5544C7DABA76", "ACH Card Gateway", "ACHGateway", "", "The payment gateway to use for ACH (bank account) transactions", 1, @"C22B0247-7C9F-411B-A1F5-0051FCBAC199", "FC9DF232-D7B1-4CA9-B348-D139276783BB" );
+            // Attrib for BlockType: Scheduled Transaction Edit:ACH Gateway
+            RockMigrationHelper.UpdateBlockTypeAttribute( "5171C4E5-7698-453E-9CC8-088D362296DE", "A7486B0E-4CA2-4E00-A987-5544C7DABA76", "ACH Gateway", "ACHGateway", "", "The payment gateway to use for ACH (bank account) transactions", 1, @"C22B0247-7C9F-411B-A1F5-0051FCBAC199", "FC9DF232-D7B1-4CA9-B348-D139276783BB" );
             RockMigrationHelper.AddBlockAttributeValue( "CC4AC47D-1EA8-406F-94D5-50D19DC6B87A", "FC9DF232-D7B1-4CA9-B348-D139276783BB", "C22B0247-7C9F-411B-A1F5-0051FCBAC199" );
             RockMigrationHelper.AddBlockAttributeValue( "6BF2F96A-51D6-4A84-BDA4-4EE6FDC2B515", "FC9DF232-D7B1-4CA9-B348-D139276783BB", "C22B0247-7C9F-411B-A1F5-0051FCBAC199" );
             RockMigrationHelper.AddBlockAttributeValue( "75F15397-3B82-4879-B069-DABD3619FAA3", "FC9DF232-D7B1-4CA9-B348-D139276783BB", "C22B0247-7C9F-411B-A1F5-0051FCBAC199" );
@@ -129,8 +129,8 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlockAttributeValue( "20C12A0F-BEC1-4620-9273-EEFE4CFB1D96", "3D478949-1F85-4E81-A403-22BBA96B8F69", "C22B0247-7C9F-411B-A1F5-0051FCBAC199" );
             RockMigrationHelper.AddBlockAttributeValue( "8ADB1C1F-299B-461A-8469-0FF4E2C98216", "3D478949-1F85-4E81-A403-22BBA96B8F69", "C22B0247-7C9F-411B-A1F5-0051FCBAC199" );
 
-            // Attrib for BlockType: Transaction Entry:ACH Card Gateway
-            RockMigrationHelper.UpdateBlockTypeAttribute( "74EE3481-3E5A-4971-A02E-D463ABB45591", "A7486B0E-4CA2-4E00-A987-5544C7DABA76", "ACH Card Gateway", "ACHGateway", "", "The payment gateway to use for ACH (bank account) transactions", 1, @"C22B0247-7C9F-411B-A1F5-0051FCBAC199", "D6429E78-E8F0-4EF2-9D18-DFDDE4ECC6A7" );
+            // Attrib for BlockType: Transaction Entry:ACH Gateway
+            RockMigrationHelper.UpdateBlockTypeAttribute( "74EE3481-3E5A-4971-A02E-D463ABB45591", "A7486B0E-4CA2-4E00-A987-5544C7DABA76", "ACH Gateway", "ACHGateway", "", "The payment gateway to use for ACH (bank account) transactions", 1, @"C22B0247-7C9F-411B-A1F5-0051FCBAC199", "D6429E78-E8F0-4EF2-9D18-DFDDE4ECC6A7" );
             RockMigrationHelper.AddBlockAttributeValue( "20C12A0F-BEC1-4620-9273-EEFE4CFB1D96", "D6429E78-E8F0-4EF2-9D18-DFDDE4ECC6A7", "C22B0247-7C9F-411B-A1F5-0051FCBAC199" );
             RockMigrationHelper.AddBlockAttributeValue( "8ADB1C1F-299B-461A-8469-0FF4E2C98216", "D6429E78-E8F0-4EF2-9D18-DFDDE4ECC6A7", "C22B0247-7C9F-411B-A1F5-0051FCBAC199" );
 

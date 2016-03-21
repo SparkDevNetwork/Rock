@@ -60,6 +60,12 @@
 
                     <Rock:DataTextBox ID="tbEmail" PrependText="<i class='fa fa-envelope'></i>" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" />
 
+                    <Rock:RockRadioButtonList ID="rblEmailPreference" runat="server" RepeatDirection="Horizontal" Label="Email Preference">
+                        <asp:ListItem Text="Email Allowed" Value="EmailAllowed" />
+                        <asp:ListItem Text="No Mass Emails" Value="NoMassEmails" />
+                        <asp:ListItem Text="Do Not Email" Value="DoNotEmail" />
+                    </Rock:RockRadioButtonList>
+
                 </fieldset>
 
                 <asp:Panel ID="pnlAddress" runat="server">

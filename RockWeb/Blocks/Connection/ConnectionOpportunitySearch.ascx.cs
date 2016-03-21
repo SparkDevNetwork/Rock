@@ -221,11 +221,19 @@ namespace RockWeb.Blocks.Connection
                 var opportunities = qrySearch.OrderBy( s => s.PublicName ).ToList();
 
                 var mergeFields = new Dictionary<string, object>();
-                mergeFields.Add( "Opportunities", opportunities);
                 mergeFields.Add( "CurrentPerson", CurrentPerson );
-
+                mergeFields.Add( "CampusContext", RockPage.GetCurrentContext( EntityTypeCache.Read( "Rock.Model.Campus" ) ) as Campus );
                 var pageReference = new PageReference( GetAttributeValue( "DetailPage" ), null );
                 mergeFields.Add( "DetailPage", BuildDetailPageUrl(pageReference.BuildUrl()) );
+
+                // iterate through the opportunities and lava merge the summaries and descriptions
+                foreach(var opportunity in opportunities )
+                {
+                    opportunity.Summary = opportunity.Summary.ResolveMergeFields( mergeFields );
+                    opportunity.Description = opportunity.Description.ResolveMergeFields( mergeFields );
+                }
+
+                mergeFields.Add( "Opportunities", opportunities );
 
                 lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 

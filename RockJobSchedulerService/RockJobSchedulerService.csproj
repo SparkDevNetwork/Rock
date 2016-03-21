@@ -109,6 +109,9 @@
     <Content Include="windows-service.ico" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="packages\" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
       <Project>{cb9372cd-9c1d-47ab-92d8-702d4d68324f}</Project>
       <Name>DotLiquid</Name>
@@ -117,9 +120,6 @@
       <Project>{8f8c2a79-24f4-4157-8b99-45f75fa85799}</Project>
       <Name>Rock</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="packages\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

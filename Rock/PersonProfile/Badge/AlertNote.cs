@@ -59,16 +59,22 @@ namespace Rock.PersonProfile.AlertNote
                 noteTypes = Array.ConvertAll( GetAttributeValue( badge, "NoteTypes" ).Split( ',' ), s => new Guid( s ) ).ToList();
             }
 
+            var currentUser = UserLoginService.GetCurrentUser();
+            int? currentPersonId = currentUser != null ? currentUser.PersonId : null;
+
             // check for alert note
-            var alertNotesExist = new NoteService(new RockContext()).Queryable().AsNoTracking()
-                                .Where(n => noteTypes.Contains(n.NoteType.Guid) 
-                                        && n.EntityId.Value == Person.Id 
-                                        && n.IsAlert == true)
+            var alertNotesExist = new NoteService( new RockContext() ).Queryable().AsNoTracking()
+                                .Where( n => noteTypes.Contains( n.NoteType.Guid )
+                                        && n.EntityId.Value == Person.Id
+                                        && n.IsAlert == true
+                                        && ( !n.IsPrivateNote || n.CreatedByPersonAlias.PersonId == currentPersonId )
+                                        )
                                 .Any();
-            
-            if (alertNotesExist){
+
+            if ( alertNotesExist )
+            {
                 writer.Write( GetAttributeValue( badge, "BadgeContent" ) );
-            }              
+            }
         }
     }
 }

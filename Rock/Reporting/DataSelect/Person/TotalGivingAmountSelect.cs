@@ -132,11 +132,13 @@ namespace Rock.Reporting.DataSelect.Person
             accountPicker.Label = "Accounts";
             parentControl.Controls.Add( accountPicker );
 
-            DateRangePicker dateRangePicker = new DateRangePicker();
-            dateRangePicker.ID = parentControl.ID + "_2";
-            dateRangePicker.Label = "Date Range";
-            dateRangePicker.Required = true;
-            parentControl.Controls.Add( dateRangePicker );
+            SlidingDateRangePicker slidingDateRangePicker = new SlidingDateRangePicker();
+            slidingDateRangePicker.ID = parentControl.ID + "_slidingDateRangePicker";
+            slidingDateRangePicker.AddCssClass( "js-sliding-date-range" );
+            slidingDateRangePicker.Label = "Date Range";
+            slidingDateRangePicker.Help = "The date range of the transactions using the transaction date of each transaction";
+            slidingDateRangePicker.Required = true;
+            parentControl.Controls.Add( slidingDateRangePicker );
 
             RockCheckBox cbCombineGiving = new RockCheckBox();
             cbCombineGiving.ID = parentControl.ID + "_cbCombineGiving";
@@ -145,9 +147,9 @@ namespace Rock.Reporting.DataSelect.Person
             cbCombineGiving.Help = "Combine individuals in the same giving group when calculating totals and reporting the list of individuals.";
             parentControl.Controls.Add( cbCombineGiving );
 
-            var controls = new Control[5] { comparisonControl, numberBoxAmount, accountPicker, dateRangePicker, cbCombineGiving };
+            var controls = new Control[5] { comparisonControl, numberBoxAmount, accountPicker, slidingDateRangePicker, cbCombineGiving };
 
-            SetSelection( controls, string.Format( "{0}|||||", ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() ) );
+            SetSelection( controls, string.Format( "{0}||||||", ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() ) );
 
             return controls;
         }
@@ -181,11 +183,15 @@ namespace Rock.Reporting.DataSelect.Person
                 accountGuids = accounts.Select( a => a.Guid ).ToList().AsDelimited( "," );
             }
 
-            DateRangePicker dateRangePicker = controls[3] as DateRangePicker;
+            SlidingDateRangePicker slidingDateRangePicker = controls[3] as SlidingDateRangePicker;
+
+            // convert pipe to comma delimited
+            var delimitedValues = slidingDateRangePicker.DelimitedValues.Replace( "|", "," );
 
             RockCheckBox cbCombineGiving = controls[4] as RockCheckBox;
 
-            return string.Format( "{0}|{1}|{2}|{3}|{4}|{5}", comparisonType, amount, dateRangePicker.LowerValue, dateRangePicker.UpperValue, accountGuids, cbCombineGiving.Checked );
+            // {2} and {3} used to store the DateRange before, but now we using the SlidingDateRangePicker
+            return string.Format( "{0}|{1}|{2}|{3}|{4}|{5}|{6}", comparisonType, amount, string.Empty, string.Empty, accountGuids, cbCombineGiving.Checked, delimitedValues );
         }
 
         /// <summary>
@@ -201,7 +207,7 @@ namespace Rock.Reporting.DataSelect.Person
                 var comparisonControl = controls[0] as DropDownList;
                 var numberBox = controls[1] as NumberBox;
                 var accountPicker = controls[2] as AccountPicker;
-                var dateRangePicker = controls[3] as DateRangePicker;
+                SlidingDateRangePicker slidingDateRangePicker = controls[3] as SlidingDateRangePicker;
                 var cbCombineGiving = controls[4] as RockCheckBox;
 
                 comparisonControl.SetValue( selectionValues[0] );
@@ -215,8 +221,21 @@ namespace Rock.Reporting.DataSelect.Person
                     numberBox.Text = string.Empty;
                 }
 
-                dateRangePicker.LowerValue = selectionValues[2].AsDateTime();
-                dateRangePicker.UpperValue = selectionValues[3].AsDateTime();
+
+                if ( selectionValues.Length >= 7 )
+                {
+                    // convert comma delimited to pipe
+                    slidingDateRangePicker.DelimitedValues = selectionValues[6].Replace( ',', '|' );
+                }
+                else
+                {
+                    // if converting from a previous version of the selection
+                    var lowerValue = selectionValues[2].AsDateTime();
+                    var upperValue = selectionValues[3].AsDateTime();
+
+                    slidingDateRangePicker.SlidingDateRangeMode = SlidingDateRangePicker.SlidingDateRangeType.DateRange;
+                    slidingDateRangePicker.SetDateRangeModeValue( new DateRange( lowerValue, upperValue ) );
+                }
 
                 if ( selectionValues.Length >= 5 )
                 {
@@ -252,8 +271,29 @@ namespace Rock.Reporting.DataSelect.Person
 
             ComparisonType comparisonType = selectionValues[0].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
             decimal amount = selectionValues[1].AsDecimalOrNull() ?? 0.00M;
-            DateTime? startDate = selectionValues[2].AsDateTime();
-            DateTime? endDate = selectionValues[3].AsDateTime();
+
+            DateRange dateRange;
+
+            if ( selectionValues.Length >= 7 )
+            {
+                string slidingDelimitedValues = selectionValues[6].Replace( ',', '|' );
+                dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( slidingDelimitedValues );
+            }
+            else
+            {
+                // if converting from a previous version of the selection
+                DateTime? startDate = selectionValues[2].AsDateTime();
+                DateTime? endDate = selectionValues[3].AsDateTime();
+                dateRange = new DateRange( startDate, endDate );
+
+                if ( dateRange.End.HasValue )
+                {
+                    // the DateRange picker doesn't automatically add a full day to the end date
+                    dateRange.End.Value.AddDays( 1 );
+                }
+            }
+
+
             var accountIdList = new List<int>();
             if ( selectionValues.Length >= 5 )
             {
@@ -273,14 +313,14 @@ namespace Rock.Reporting.DataSelect.Person
                 .Where( xx => xx.Transaction.TransactionTypeValueId == transactionTypeContributionId )
                 .Where( xx => xx.Transaction.AuthorizedPersonAliasId.HasValue );
 
-            if ( startDate.HasValue )
+            if ( dateRange.Start.HasValue )
             {
-                financialTransactionQry = financialTransactionQry.Where( xx => xx.Transaction.TransactionDateTime >= startDate.Value );
+                financialTransactionQry = financialTransactionQry.Where( xx => xx.Transaction.TransactionDateTime >= dateRange.Start.Value );
             }
 
-            if ( endDate.HasValue )
+            if ( dateRange.End.HasValue )
             {
-                financialTransactionQry = financialTransactionQry.Where( xx => xx.Transaction.TransactionDateTime < endDate.Value );
+                financialTransactionQry = financialTransactionQry.Where( xx => xx.Transaction.TransactionDateTime < dateRange.End.Value );
             }
 
             bool limitToAccounts = accountIdList.Any();

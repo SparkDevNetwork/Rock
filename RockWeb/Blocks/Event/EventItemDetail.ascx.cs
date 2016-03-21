@@ -48,7 +48,7 @@ namespace RockWeb.Blocks.Event
     {
         #region Properties
 
-        public int _calendarId = 0;
+        public int? _calendarId = null;
         public bool _canEdit = false;
         public bool _canApprove = false;
 
@@ -98,7 +98,7 @@ namespace RockWeb.Blocks.Event
             this.AddConfigurationUpdateTrigger( upnlEventItemList );
 
             // Get the calendar id of the calendar that user navigated from 
-            _calendarId = PageParameter( "EventCalendarId" ).AsInteger();
+            _calendarId = PageParameter( "EventCalendarId" ).AsIntegerOrNull();
 
             _canEdit = UserCanEdit;
             _canApprove = UserCanAdministrate;
@@ -111,7 +111,12 @@ namespace RockWeb.Blocks.Event
                     .Queryable().AsNoTracking()
                     .OrderBy( c => c.Name ) )
                 {
-                    if ( calendar.Id == _calendarId )
+                    if ( !_calendarId.HasValue && calendar.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                    {
+                        _calendarId = calendar.Id;
+                    }
+
+                    if ( calendar.Id == ( _calendarId ?? 0 ) )
                     {
                         _canEdit = _canEdit || 
                             calendar.IsAuthorized( Authorization.EDIT, CurrentPerson );
@@ -151,6 +156,7 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
+                SetFollowingOnPostback( PageParameter( "EventItemId" ).AsInteger() );
                 if ( pnlEditDetails.Visible )
                 {
                     ShowItemAttributes();
@@ -436,7 +442,10 @@ namespace RockWeb.Blocks.Event
 
                 // Redirect back to same page so that item grid will show any attributes that were selected to show on grid
                 var qryParams = new Dictionary<string, string>();
-                qryParams["EventCalendarId"] = _calendarId.ToString();
+                if ( _calendarId.HasValue )
+                {
+                    qryParams["EventCalendarId"] = _calendarId.Value.ToString();
+                }
                 qryParams["EventItemId"] = eventItem.Id.ToString();
                 NavigateToPage( RockPage.Guid, qryParams );
             }
@@ -453,7 +462,10 @@ namespace RockWeb.Blocks.Event
             if ( eventItemId == 0 )
             {
                 var qryParams = new Dictionary<string, string>();
-                qryParams.Add( "EventCalendarId", _calendarId.ToString() );
+                if ( _calendarId.HasValue )
+                {
+                    qryParams.Add( "EventCalendarId", _calendarId.Value.ToString() );
+                }
                 NavigateToParentPage( qryParams );
             }
             else
@@ -598,11 +610,13 @@ namespace RockWeb.Blocks.Event
             {
                 eventItem = new EventItem { Id = 0, IsActive = true, Name = "" };
                 eventItem.IsApproved = _canApprove;
-                var calendarItem = new EventCalendarItem { EventCalendarId = _calendarId };
+                var calendarItem = new EventCalendarItem { EventCalendarId = ( _calendarId ?? 0 ) };
                 eventItem.EventCalendarItems.Add( calendarItem );
             }
 
             eventItem.LoadAttributes( rockContext );
+
+            FollowingsHelper.SetFollowing( eventItem, pnlFollowing, this.CurrentPerson );
 
             bool readOnly = false;
             nbEditModeMessage.Text = string.Empty;
@@ -614,7 +628,7 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
-                if ( eventItem.Id != 0 && !eventItem.EventCalendarItems.Any( i => i.EventCalendarId == _calendarId ) )
+                if ( eventItem.Id != 0 && !eventItem.EventCalendarItems.Any( i => i.EventCalendarId == ( _calendarId ?? 0 ) ) )
                 {
                     readOnly = true;
                 }
@@ -640,6 +654,23 @@ namespace RockWeb.Blocks.Event
                     ShowEditDetails( eventItem );
                 }
 
+            }
+        }
+
+        /// <summary>
+        /// Sets the following on postback.
+        /// </summary>
+        /// <param name="eventItemId">The event item identifier.</param>
+        private void SetFollowingOnPostback( int eventItemId )
+        {
+            var rockContext = new RockContext();
+            if ( !eventItemId.Equals( 0 ) )
+            {
+                var eventItem = GetEventItem( eventItemId, rockContext );
+                if ( eventItem != null )
+                {
+                    FollowingsHelper.SetFollowing( eventItem, pnlFollowing, this.CurrentPerson );
+                }
             }
         }
 
@@ -820,7 +851,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void ShowItemAttributes()
         {
-            var eventCalendarList = new List<int> { _calendarId };
+            var eventCalendarList = new List<int> { ( _calendarId ?? 0 ) };
             eventCalendarList.AddRange( cblCalendars.SelectedValuesAsInt );
 
             wpAttributes.Visible = false;

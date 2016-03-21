@@ -96,8 +96,7 @@ namespace Rock.Security
                         .Queryable().AsNoTracking()
                         .Where( t => 
                             t.Group == null ||
-                            t.Group.IsSecurityRole ||
-                            t.Group.GroupTypeId == securityGroupTypeId )
+                            ( t.Group.IsActive && ( t.Group.IsSecurityRole || t.Group.GroupTypeId == securityGroupTypeId ) ) )
                         .OrderBy( A => A.EntityTypeId )
                         .ThenBy( A => A.EntityId )
                         .ThenBy( A => A.Action )
@@ -186,8 +185,7 @@ namespace Rock.Security
                         .AsNoTracking()
                         .Where( t =>
                             t.Group == null ||
-                            t.Group.IsSecurityRole ||
-                            t.Group.GroupTypeId == securityGroupTypeId
+                            ( t.Group.IsActive && ( t.Group.IsSecurityRole || t.Group.GroupTypeId == securityGroupTypeId ) )
                         ) )
                     {
                         newAuthRules.Add( new AuthRule( auth ) );
@@ -221,8 +219,7 @@ namespace Rock.Security
                     .AsNoTracking()
                     .Where( t =>
                         t.Group == null ||
-                        t.Group.IsSecurityRole ||
-                        t.Group.GroupTypeId == securityGroupTypeId
+                        ( t.Group.IsActive && ( t.Group.IsSecurityRole || t.Group.GroupTypeId == securityGroupTypeId ) )
                     ) )
                 {
                     newAuthRules.Add( new AuthRule( auth ) );
@@ -1206,7 +1203,7 @@ namespace Rock.Security
                                     Group group = groupService.Get( GroupId.Value );
                                     if ( group != null )
                                     {
-                                        return string.Format( "<span class='text-muted'>GROUP - {0} <small>(No longer a valid role)</small></span>",
+                                        return string.Format( "<span class='text-muted'>GROUP - {0} <small>(No longer a valid active role)</small></span>",
                                             group.Name ); ;
                                     }
                                 }

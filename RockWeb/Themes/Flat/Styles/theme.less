@@ -76,6 +76,24 @@ a:hover i.fs
   padding: 6px 12px;
 }
 
+/* hide block panels */
+.panel.panel-block {
+    border: 0;
+    box-shadow: none;
+
+    & > .panel-heading {
+        display: none;
+    }
+
+    & > .panel-body {
+        padding: 0;
+
+        .grid.grid-panel {
+            margin: 0;
+        }
+    }
+}
+
 // 3. Theme Styling
 // -------------------------
 

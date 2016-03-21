@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public string AllowedFrameDomains { get; set; }
+        
+        /// <summary />
         public bool AllowIndexing { get; set; }
 
         /// <summary />
