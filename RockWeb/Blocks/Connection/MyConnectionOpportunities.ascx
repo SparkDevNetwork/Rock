@@ -1,4 +1,10 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MyConnectionOpportunities.ascx.cs" Inherits="RockWeb.Blocks.Connection.MyConnectionOpportunities" %>
+<%@ Import namespace="Rock" %>
+<script>
+    Sys.Application.add_load(function () {
+        $('.js-legend-badge').tooltip({ html: true, container: 'body', delay: { show: 200, hide: 100 } });
+    });
+</script>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
@@ -10,6 +16,12 @@
                     My Connection Requests</h1>
 
                 <div class="pull-right">
+                    <div class="pull-left badge-legend padding-r-md">
+                        <span class="pull-left badge badge-info js-legend-badge" data-toggle="tooltip" data-original-title="Assigned To You">&nbsp;</span>
+                        <span class="pull-left badge badge-warning js-legend-badge" data-toggle="tooltip" data-original-title="Unassigned Item">&nbsp;</span>
+                        <span class="pull-left badge badge-critical js-legend-badge" data-toggle="tooltip" data-original-title="Critical Status">&nbsp;</span>
+                        <span class="pull-left badge badge-danger js-legend-badge" data-toggle="tooltip" data-original-title="Idle (no activity in <%= GetAttributeValue( "NumberDaysToIdle" ).AsInteger() %> days)">&nbsp;</span>
+                    </div>
                     <Rock:Toggle ID="tglMyOpportunities" CssClass="margin-r-md pull-left" runat="server" OnText="My Requests" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" OffText="All Requests" AutoPostBack="true" OnCheckedChanged="tglMyOpportunities_CheckedChanged" Checked="true" />
                     <asp:LinkButton ID="lbConnectionTypes" runat="server" CssClass=" pull-right" OnClick="lbConnectionTypes_Click" CausesValidation="false"><i class="fa fa-gear"></i></asp:LinkButton>
                 </div>
@@ -25,13 +37,16 @@
                             <ul>
                                 <asp:Repeater ID="rptConnectionOpportunities" runat="server" OnItemCommand="rptConnectionOpportunities_ItemCommand">
                                     <ItemTemplate>
-                                        <li class='<%# SelectedOpportunityId.HasValue && (int)Eval("Id") == SelectedOpportunityId.Value ? "active" : "" %>'>
+                                        <li class='<%# SelectedOpportunityId.HasValue && (int)Eval("Id") == SelectedOpportunityId.Value ? "active" : "" %> block-status'>
                                             <asp:LinkButton ID="lbConnectionOpportunity" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display">
-                                        <i class='<%# Eval("IconCssClass") %>'></i>
-                                        <h3><%# Eval("Name") %> </h3>
-                                        <div class="notification">
-                                            <span class="label label-danger"><%# ((int)Eval("ActiveCount")).ToString("#,###,###") %></span>
-                                        </div>
+                                                <i class='<%# Eval("IconCssClass") %>'></i>
+                                                <h3><%# Eval("Name") %> </h3>
+                                                <div class="status-list">
+                                                    <span class="badge badge-info"><%# ((int)Eval("AssignedToYou")).ToString("#,###,###") %></span>
+                                                    <span class="badge badge-warning"><%# ((int)Eval("UnassignedCount")).ToString("#,###,###") %></span>
+                                                    <span class="badge badge-critical"><%# ((int)Eval("CriticalCount")).ToString("#,###,###") %></span>
+                                                    <span class="badge badge-danger"><%# ((int)Eval("IdleCount")).ToString("#,###,###") %></span>
+                                                </div>
                                             </asp:LinkButton>
                                         </li>
                                     </ItemTemplate>

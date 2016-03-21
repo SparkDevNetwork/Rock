@@ -1119,10 +1119,7 @@ namespace RockWeb.Blocks.Connection
             else
             {
                 pnlRequirements.Visible = false;
-                // This will be changed in v5.0 to check the opportunity's ConnectionType
-                // RequiresPlacementGroupToConnect bit to see if it should be enabled
-                // or disabled.
-                //lbConnect.Enabled = false;
+                lbConnect.Enabled = !connectionRequest.ConnectionOpportunity.ConnectionType.RequiresPlacementGroupToConnect;
             }
 
             if ( connectionRequest.ConnectionState == ConnectionState.Inactive || connectionRequest.ConnectionState == ConnectionState.Connected )

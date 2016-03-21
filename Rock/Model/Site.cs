@@ -234,6 +234,18 @@ namespace Rock.Model
         public string ExternalUrl { get; set; }
 
         /// <summary>
+        /// The Allowed Frame Domains designates which external domains/sites are allowed to embed iframes of this site.
+        /// It controls what is put into the Content-Security-Policy HTTP response header.
+        /// This is in accordance with the Content Security Policy described here http://w3c.github.io/webappsec-csp/#csp-header
+        /// and here https://www.owasp.org/index.php/Content_Security_Policy_Cheat_Sheet
+        /// </summary>
+        /// <value>
+        /// A space delimited list of domains.
+        /// </value>
+        [DataMember]
+        public string AllowedFrameDomains { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [redirect tablets].
         /// </summary>
         /// <value>
@@ -287,6 +299,7 @@ namespace Rock.Model
             set { _allowIndexing = value; }
         }
         private bool _allowIndexing = true;
+
         #endregion
 
         #region Virtual Properties

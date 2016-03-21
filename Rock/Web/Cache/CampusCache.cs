@@ -324,13 +324,27 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static List<CampusCache> All()
         {
+            return All( true );
+        }
+
+        /// <summary>
+        /// Returns all campuses
+        /// </summary>
+        /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
+        /// <returns></returns>
+        public static List<CampusCache> All( bool includeInactive )
+        {
             List<CampusCache> campuses = new List<CampusCache>();
             var campusIds = GetOrAddExisting( "Rock:Campus:All", () => LoadAll() );
             if ( campusIds != null )
             {
                 foreach ( int campusId in campusIds )
                 {
-                    campuses.Add( CampusCache.Read( campusId ) );
+                    var campusCache = CampusCache.Read( campusId );
+                    if ( campusCache != null && ( includeInactive || ( campusCache.IsActive ?? false ) ) )
+                    {
+                        campuses.Add( campusCache );
+                    }
                 }
             }
             return campuses;

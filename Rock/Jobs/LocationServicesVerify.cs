@@ -67,28 +67,36 @@ namespace Rock.Jobs
 
             var rockContext = new Rock.Data.RockContext();
             LocationService locationService = new LocationService(rockContext);
-            int addressesVerified = 0;
             var addresses = locationService.Queryable()
-                                .Where( l => (
-                                    (l.IsGeoPointLocked == null || l.IsGeoPointLocked == false) // don't ever try locked address
-                                    && (l.IsActive == true && l.Street1 != null && l.PostalCode != null) // or incomplete addresses
-                                    && (
-                                        (l.GeocodedDateTime == null && (l.GeocodeAttemptedDateTime == null || l.GeocodeAttemptedDateTime < retryDate)) // has not been attempted to be geocoded since retry date
-                                        ||
-                                        (l.StandardizedDateTime == null && (l.StandardizeAttemptedDateTime == null || l.StandardizeAttemptedDateTime < retryDate)) // has not been attempted to be standardize since retry date
-                                    )
-                                ))
-                                .Take( maxRecords ).ToList();
+                .Where( l => 
+                    (
+                        ( l.IsGeoPointLocked == null || l.IsGeoPointLocked == false ) &&// don't ever try locked address
+                        l.IsActive == true && 
+                        l.Street1 != null &&
+                        l.Street1 != "" &&
+                        l.City != null && 
+                        l.City != "" &&
+                        (
+                            ( l.GeocodedDateTime == null && ( l.GeocodeAttemptedDateTime == null || l.GeocodeAttemptedDateTime < retryDate ) ) || // has not been attempted to be geocoded since retry date
+                            ( l.StandardizedDateTime == null && ( l.StandardizeAttemptedDateTime == null || l.StandardizeAttemptedDateTime < retryDate ) ) // has not been attempted to be standardize since retry date
+                        )
+                    ) )
+                .Take( maxRecords ).ToList();
 
+            int attempts = 0;
+            int successes = 0;
             foreach ( var address in addresses )
             {
-                locationService.Verify( address, false ); // currently not reverifying 
-                addressesVerified++;
+                attempts++;
+                if ( locationService.Verify( address, true ) ) 
+                {
+                    successes++;
+                }
                 rockContext.SaveChanges();
                 System.Threading.Thread.Sleep( throttlePeriod );
             }
 
-            context.Result = string.Format( "{0} addresses verified", addressesVerified );
+            context.Result = string.Format( "{0:N0} address verifications attempted; {1:N0} successfully verified", attempts, successes );
 
         }
 

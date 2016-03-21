@@ -349,6 +349,54 @@ namespace Rock.Model
         [DataMember]
         public bool AllowGroupPlacement { get;set; }
 
+        /// <summary>
+        /// Gets or sets the name of the payment reminder from.
+        /// </summary>
+        /// <value>
+        /// The name of the payment reminder from.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string PaymentReminderFromName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the payment reminder from email.
+        /// </summary>
+        /// <value>
+        /// The payment reminder from email.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string PaymentReminderFromEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the payment reminder subject.
+        /// </summary>
+        /// <value>
+        /// The payment reminder subject.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string PaymentReminderSubject { get; set; }
+
+        /// <summary>
+        /// Gets or sets the payment reminder email template.
+        /// </summary>
+        /// <value>
+        /// The payment reminder email template.
+        /// </value>
+        [DataMember]
+        public string PaymentReminderEmailTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the payment reminder time span in days.
+        /// </summary>
+        /// <value>
+        /// The payment reminder time span in days.
+        /// </value>
+        [DataMember]
+        public int? PaymentReminderTimeSpan { get; set; }
+
         #endregion
 
         #region Virtual Properties

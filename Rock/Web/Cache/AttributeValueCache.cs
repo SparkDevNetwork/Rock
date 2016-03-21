@@ -85,7 +85,7 @@ namespace Rock.Web.Cache
         public string Value { get; set; }
 
         /// <summary>
-        /// Gets the field type value.
+        /// Gets the value using the most appropriate datatype
         /// </summary>
         /// <value>
         /// The field type value.
@@ -99,6 +99,26 @@ namespace Rock.Web.Cache
                 {
                     return attribute.FieldType.Field.ValueAsFieldType( null, Value, attribute.QualifierValues );
                 }
+                return Value;
+            }
+        }
+
+        /// <summary>
+        /// Get the value that should be used for sorting, using the most appropriate datatype
+        /// </summary>
+        /// <value>
+        /// The field type value.
+        /// </value>
+        public object SortValue
+        {
+            get
+            {
+                var attribute = AttributeCache.Read( this.AttributeId );
+                if ( attribute != null )
+                {
+                    return attribute.FieldType.Field.SortValue( null, Value, attribute.QualifierValues );
+                }
+
                 return Value;
             }
         }
