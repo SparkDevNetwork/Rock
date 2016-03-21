@@ -88,6 +88,8 @@ namespace church.ccv.Utility
             {
                 var family = new GroupService( rockContext ).Get( lossRecipient.FamilyId );
                 var headOfHouse = family.Members.AsQueryable().HeadOfHousehold();
+                var campus = family.Campus.Name;
+                var campusPastor = new PersonAliasService( rockContext ).GetPerson( (int)family.Campus.LeaderPersonAliasId ).FullName;
 
                 if ( headOfHouse != null )
                 {
@@ -102,6 +104,8 @@ namespace church.ccv.Utility
                         var mergeFields = new Dictionary<string, object>();
                         mergeFields.Add( "Person", headOfHouse );
                         mergeFields.Add( "Pastor", neighborhoodPastor );
+                        mergeFields.Add( "Campus", campus );
+                        mergeFields.Add( "CampusPastor", campusPastor );
 
                         var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
                         globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
