@@ -53,11 +53,7 @@ namespace church.ccv.Steps
     [DisallowConcurrentExecution]
     public class UpdateStepMeasures : IJob
     {
-        const string ATTRIBUTE_PERSON_DATE_OF_BAPTISM = "BaptismDate";
-        const string ATTRIBUTE_PERSON_ERA = "CurrentlyanERA";
-        const string ATTRIBUTE_PERSON_GIVING_IN_LAST_12_MONTHS = "GivingInLast12Months";
-        const string ATTRIBUTE_PERSON_DATE_OF_MEMBERSHIP = "DateofMembership";
-
+        
         const string ATTRIBUTE_GLOBAL_TITHE_THRESHOLD = "TitheThreshold";
         const string ATTRIBUTE_GLOBAL_COACHING_GROUPTYPE_IDS = "CoachingGroupTypeIds";
         const string ATTRIBUTE_GLOBAL_CONNECTION_GROUPTYPE_IDS = "ConnectionGroupTypeIds";

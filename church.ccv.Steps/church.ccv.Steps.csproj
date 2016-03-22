@@ -82,6 +82,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Jobs\CalculateStepsTaken.cs" />
     <Compile Include="Jobs\UpdateStepsMeasures.cs" />
     <Compile Include="Migrations\002_StepsTaken.cs" />
     <Compile Include="Migrations\001_CreateDb.cs" />

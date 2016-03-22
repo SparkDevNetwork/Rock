@@ -50,7 +50,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
         #region Fields
 
         public string _compareColor = "red";
-
+        public DateTime? MeasureDate = null;
         #endregion
 
         #region Properties
@@ -88,6 +88,8 @@ namespace RockWeb.Plugins.church_ccv.Steps
             {
                 cpCampus.Campuses = CampusCache.All();
 
+                MeasureDate = Request["Date"].AsDateTime();
+
                 if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "ComparisonLineColor" ) ) )
                 {
                     _compareColor = GetAttributeValue( "ComparisonLineColor" );
@@ -97,13 +99,13 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 {
                     pnlCampus.Visible = true;
                     pnlMeasure.Visible = false;
-                    LoadCampusItems();
+                    LoadCampusItems( MeasureDate );
                 }
                 else
                 {
                     pnlCampus.Visible = false;
                     pnlMeasure.Visible = true;
-                    LoadMeasureItems();
+                    LoadMeasureItems( MeasureDate );
                 }
 
                 if ( !IsUserAuthorized( Authorization.ADMINISTRATE ) )
@@ -122,6 +124,16 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 {
                     lComparisonLegend.Text = string.Format("<div class='well text-center margin-t-md'><span style='border-right: 1px solid {0}; height: 5px; margin-right: 8px;'></span> <small>{1}</small></div>", _compareColor, GetAttributeValue( "ComparisonLabel" ));
                 }
+
+                var dateIndex = RockDateTime.Now == RockDateTime.Now.SundayDate() ? RockDateTime.Now.SundayDate() : RockDateTime.Now.SundayDate().AddDays(-7);
+
+                for ( int i= 0; i < 12; i++ ){
+                    ddlSundayDates.Items.Add( dateIndex.ToShortDateString() );
+                    dateIndex = dateIndex.AddDays( -7 );
+                }
+
+                ddlSundayDates.Items.Insert( 0, "" );
+                
             }
         }
 
@@ -141,11 +153,21 @@ namespace RockWeb.Plugins.church_ccv.Steps
 
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the cpCampus control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cpCampus_SelectedIndexChanged( object sender, EventArgs e )
         {
             LoadCampusItems();
         }
 
+        /// <summary>
+        /// Handles the CheckedChanged event of the tglCompareTo control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void tglCompareTo_CheckedChanged( object sender, EventArgs e )
         {
             if ( string.IsNullOrWhiteSpace( Request["MeasureId"] ))
@@ -158,6 +180,11 @@ namespace RockWeb.Plugins.church_ccv.Steps
             
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnBackToCampus control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnBackToCampus_Click( object sender, EventArgs e )
         {
 
@@ -172,22 +199,56 @@ namespace RockWeb.Plugins.church_ccv.Steps
             
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbSetDate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbSetDate_Click( object sender, EventArgs e )
+        {
+            string date = string.Empty;
+
+            if ( !string.IsNullOrWhiteSpace( ddlSundayDates.SelectedValue ) )
+            {
+                date = ddlSundayDates.SelectedValue;
+            }
+            else
+            {
+                date = dpSundayPicker.Text.AsDateTime().HasValue ? dpSundayPicker.Text.AsDateTime().Value.SundayDate().ToShortDateString() : string.Empty;
+            }
+
+            if ( !string.IsNullOrWhiteSpace( date ) )
+            {
+                Response.Redirect( Request.Url.LocalPath + "?Date=" + date );
+            }
+        }
+
         #endregion
 
         #region Methods
 
-        private void LoadCampusItems()
+        private void LoadCampusItems(DateTime? selectedDate = null)
         {
             using(RockContext rockContext = new RockContext() )
             {
                 StepMeasureValueService stepMeasureValueService = new StepMeasureValueService( rockContext );
 
-                var latestMeasureDate = stepMeasureValueService.Queryable().Max( m => m.SundayDate );
+                DateTime? measureDate = DateTime.MinValue;
 
-                if (latestMeasureDate != null )
+                if ( selectedDate.HasValue )
+                {
+                    measureDate = selectedDate.Value;
+                }
+                else
+                {
+                    measureDate = stepMeasureValueService.Queryable().Max( m => m.SundayDate );
+                }
+
+
+                if (measureDate.HasValue )
                 {
                     int comparisonRangeInWeeks = GetAttributeValue( "ComparisonRange" ).AsInteger();
-                    var historicalMeasureDate = latestMeasureDate.Value.AddDays( comparisonRangeInWeeks * 7 * -1 );
+                    var historicalMeasureDate = measureDate.Value.AddDays( comparisonRangeInWeeks * 7 * -1 );
 
                     if ( cpCampus.SelectedCampusId == null )
                     {
@@ -198,7 +259,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                         lCampusTitle.Text = string.Format( "{0} Campus", cpCampus.SelectedItem.Text );
                     }
 
-                    hlDate.Text = latestMeasureDate.Value.ToShortDateString();
+                    hlDate.Text = measureDate.Value.ToShortDateString();
 
                     List<MeasureSummary> latestMeasures = null;
                     List<MeasureSummary> historicalMeasures = null;
@@ -206,7 +267,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     if ( tglCompareTo.Checked ) {
                         latestMeasures = stepMeasureValueService.Queryable( "StepMeasure" )
                             .Where( m =>
-                                    m.SundayDate == latestMeasureDate
+                                    m.SundayDate == measureDate
                                     && m.StepMeasure.IsActive == true 
                                     && m.PastorPersonAliasId == null
                                     && m.ActiveAdults != null)
@@ -244,7 +305,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     {
                         latestMeasures = stepMeasureValueService.Queryable( "StepMeasure" )
                             .Where( m =>
-                                    m.SundayDate == latestMeasureDate
+                                    m.SundayDate == measureDate
                                     && m.StepMeasure.IsActive == true
                                     && m.PastorPersonAliasId == null 
                                     && m.WeekendAttendance != null)
@@ -324,6 +385,11 @@ namespace RockWeb.Plugins.church_ccv.Steps
                         combinedValues = combinedValues.Where( m => m.CampusId == cpCampus.SelectedCampusId ).ToList();
                     }
 
+                    if (combinedValues.Count() == 0 )
+                    {
+                        nbMessages.Text = "No measures found for selected date.";
+                        nbMessages.NotificationBoxType = NotificationBoxType.Info;
+                    }
 
                     rptCampusMeasures.DataSource = combinedValues;
                     rptCampusMeasures.DataBind();
@@ -331,20 +397,29 @@ namespace RockWeb.Plugins.church_ccv.Steps
             }
         }
 
-        private void LoadMeasureItems()
+        private void LoadMeasureItems(DateTime? selectedDate = null)
         {
             using ( RockContext rockContext = new RockContext() )
             {
                 StepMeasureValueService stepMeasureValueService = new StepMeasureValueService( rockContext );
 
-                var latestMeasureDate = stepMeasureValueService.Queryable().Max( m => m.SundayDate );
-                
-                if ( latestMeasureDate != null )
+                DateTime? measureDate = DateTime.MinValue;
+
+                if ( selectedDate.HasValue )
+                {
+                    measureDate = selectedDate.Value;
+                }
+                else
+                {
+                    measureDate = stepMeasureValueService.Queryable().Max( m => m.SundayDate );
+                }
+
+                if ( measureDate.HasValue )
                 {
                     int comparisonRangeInWeeks = GetAttributeValue( "ComparisonRange").AsInteger();
-                    var historicalMeasureDate = latestMeasureDate.Value.AddDays( comparisonRangeInWeeks * 7 * -1);
+                    var historicalMeasureDate = measureDate.Value.AddDays( comparisonRangeInWeeks * 7 * -1);
 
-                    hlDate.Text = latestMeasureDate.Value.ToShortDateString();
+                    hlDate.Text = measureDate.Value.ToShortDateString();
 
                     int measureId = Request["MeasureId"].AsInteger();
 
@@ -355,7 +430,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     {
                         latestMeasures = stepMeasureValueService.Queryable( "StepMeasure" )
                             .Where( m =>
-                                    m.SundayDate == latestMeasureDate
+                                    m.SundayDate == measureDate
                                     && m.StepMeasure.IsActive == true
                                     && m.PastorPersonAliasId == null
                                     && m.ActiveAdults != null
@@ -397,7 +472,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     {
                         latestMeasures = stepMeasureValueService.Queryable( "StepMeasure" )
                             .Where( m =>
-                                    m.SundayDate == latestMeasureDate
+                                    m.SundayDate == measureDate
                                     && m.StepMeasure.IsActive == true
                                     && m.PastorPersonAliasId == null
                                     && m.WeekendAttendance != null
@@ -625,7 +700,5 @@ namespace RockWeb.Plugins.church_ccv.Steps
             }
 
         }
-
-        
     }
 }

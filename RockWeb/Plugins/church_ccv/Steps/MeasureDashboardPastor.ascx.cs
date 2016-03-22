@@ -46,7 +46,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
     {
         #region Fields
 
-        // used for private variables
+        public DateTime? MeasureDate = null;
 
         #endregion
 
@@ -83,21 +83,31 @@ namespace RockWeb.Plugins.church_ccv.Steps
 
             if ( !Page.IsPostBack )
             {
-
+                MeasureDate = Request["Date"].AsDateTime();
                 LoadPastors();
                 
                 if ( string.IsNullOrWhiteSpace(Request["MeasureId"]) )
                 {
                     pnlCampus.Visible = true;
                     pnlMeasure.Visible = false;
-                    LoadPastorItems();
+                    LoadPastorItems( MeasureDate );
                 }
                 else
                 {
                     pnlCampus.Visible = false;
                     pnlMeasure.Visible = true;
-                    LoadMeasureItems();
+                    LoadMeasureItems( MeasureDate );
                 }
+
+                var dateIndex = RockDateTime.Now == RockDateTime.Now.SundayDate() ? RockDateTime.Now.SundayDate() : RockDateTime.Now.SundayDate().AddDays( -7 );
+
+                for ( int i = 0; i < 12; i++ )
+                {
+                    ddlSundayDates.Items.Add( dateIndex.ToShortDateString() );
+                    dateIndex = dateIndex.AddDays( -7 );
+                }
+
+                ddlSundayDates.Items.Insert( 0, "" );
             }
         }
 
@@ -117,39 +127,84 @@ namespace RockWeb.Plugins.church_ccv.Steps
 
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlPastor control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlPastor_SelectedIndexChanged( object sender, EventArgs e )
         {
             LoadPastorItems();
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnBackToPastor control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnBackToPastor_Click( object sender, EventArgs e )
         {
             Response.Redirect( Request.Url.LocalPath );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbSetDate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbSetDate_Click( object sender, EventArgs e )
+        {
+            string date = string.Empty;
+
+            if ( !string.IsNullOrWhiteSpace( ddlSundayDates.SelectedValue ) )
+            {
+                date = ddlSundayDates.SelectedValue;
+            }
+            else
+            {
+                date = dpSundayPicker.Text.AsDateTime().HasValue ? dpSundayPicker.Text.AsDateTime().Value.SundayDate().ToShortDateString() : string.Empty;
+            }
+
+            if ( !string.IsNullOrWhiteSpace( date ) )
+            {
+                Response.Redirect( Request.Url.LocalPath + "?Date=" + date );
+            }
         }
 
         #endregion
 
         #region Methods
 
-        private void LoadPastorItems()
+        /// <summary>
+        /// Loads the pastor items.
+        /// </summary>
+        private void LoadPastorItems( DateTime? selectedDate = null )
         {
             using(RockContext rockContext = new RockContext() )
             {
                 StepMeasureValueService stepMeasureValueService = new StepMeasureValueService( rockContext );
+                DateTime? measureDate = DateTime.MinValue;
 
-                var latestMeasureDate = stepMeasureValueService.Queryable().Max( m => m.SundayDate );
-
-                if (latestMeasureDate != null )
+                if ( selectedDate.HasValue )
+                {
+                    measureDate = selectedDate.Value;
+                }
+                else
+                {
+                    measureDate = stepMeasureValueService.Queryable().Max( m => m.SundayDate );
+                }
+                
+                if ( measureDate.HasValue )
                 {
                     
                    lPastorName.Text = ddlPastor.SelectedItem.Text;
                     int selectedPastorId = ddlPastor.SelectedValue.AsInteger(); 
 
-                    hlDate.Text = latestMeasureDate.Value.ToShortDateString();
+                    hlDate.Text = measureDate.Value.ToShortDateString();
 
                     List<MeasureSummary> latestMeasures = stepMeasureValueService.Queryable( "StepMeasure" )
                             .Where( m =>
-                                    m.SundayDate == latestMeasureDate
+                                    m.SundayDate == measureDate
                                     && m.StepMeasure.IsActive == true 
                                     && m.CampusId == null
                                     && m.PastorPersonAliasId == selectedPastorId )
@@ -171,27 +226,42 @@ namespace RockWeb.Plugins.church_ccv.Steps
 
                     rptCampusMeasures.DataSource = latestMeasures;
                     rptCampusMeasures.DataBind();
+
+                    if ( latestMeasures.Count() == 0 )
+                    {
+                        nbMessages.Text = "No measures found for selected date.";
+                        nbMessages.NotificationBoxType = NotificationBoxType.Info;
+                    }
                 }
             }
         }
 
-        private void LoadMeasureItems()
+        private void LoadMeasureItems( DateTime? selectedDate = null )
         {
             using ( RockContext rockContext = new RockContext() )
             {
                 StepMeasureValueService stepMeasureValueService = new StepMeasureValueService( rockContext );
 
-                var latestMeasureDate = stepMeasureValueService.Queryable().Max( m => m.SundayDate );
+                DateTime? measureDate = DateTime.MinValue;
 
-                if ( latestMeasureDate != null )
+                if ( selectedDate.HasValue )
                 {
-                    hlDate.Text = latestMeasureDate.Value.ToShortDateString();
+                    measureDate = selectedDate.Value;
+                }
+                else
+                {
+                    measureDate = stepMeasureValueService.Queryable().Max( m => m.SundayDate );
+                }
+                
+                if ( measureDate.HasValue )
+                {
+                    hlDate.Text = measureDate.Value.ToShortDateString();
 
                     int measureId = Request["MeasureId"].AsInteger();
 
                     List<MeasureSummary> latestMeasures = stepMeasureValueService.Queryable( "StepMeasure" )
                             .Where( m =>
-                                    m.SundayDate == latestMeasureDate
+                                    m.SundayDate == measureDate
                                     && m.StepMeasure.IsActive == true
                                     && m.CampusId == null
                                     && m.ActiveAdults != null

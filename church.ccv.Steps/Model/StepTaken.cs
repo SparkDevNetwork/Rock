@@ -55,6 +55,8 @@ namespace church.ccv.Steps.Model
         /// The sunday date.
         /// </value>
         [DataMember]
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        [Column( TypeName = "Date" )]
         public DateTime? SundayDate{ get; set; }
 
         /// <summary>
