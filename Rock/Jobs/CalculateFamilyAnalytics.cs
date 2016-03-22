@@ -89,6 +89,12 @@ namespace Rock.Jobs
 
             var results = rockContext.Database.SqlQuery<EraResult>( "spCrm_FamilyAnalyticsEraDataset" ).ToList();
 
+            HistoryService historyService = new HistoryService( rockContext );
+            int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+            int attributeEntityTypeId = EntityTypeCache.Read( "Rock.Model.Attribute" ).Id;
+            int eraAttributeId = AttributeCache.Read( SystemGuid.Attribute.PERSON_ERA_CURRENTLY_AN_ERA.AsGuid() ).Id;
+            int personAnalyticsCategoryId = CategoryCache.Read( SystemGuid.Category.HISTORY_PERSON_ANALYTICS.AsGuid() ).Id;
+
             foreach (var result in results )
             {
                 // if era ensure it still meets requirements
@@ -119,6 +125,23 @@ namespace Rock.Jobs
                                     attributeValueService.Add( eraEndAttributeValue );
                                 }
                                 eraEndAttributeValue.Value = RockDateTime.Now.ToString();
+
+                                // add a history record
+                                if ( personAnalyticsCategoryId != 0 && personEntityTypeId != 0 && attributeEntityTypeId != 0 && eraAttributeId != 0 )
+                                {
+                                    History historyRecord = new History();
+                                    historyService.Add( historyRecord );
+                                    historyRecord.EntityTypeId = personEntityTypeId;
+                                    historyRecord.EntityId = person.Id;
+                                    historyRecord.CreatedDateTime = RockDateTime.Now;
+                                    historyRecord.CreatedByPersonAliasId = person.PrimaryAliasId;
+                                    historyRecord.Caption = "eRA";
+                                    historyRecord.Summary = "Exited eRA Status";
+                                    historyRecord.Verb = "EXITED";
+                                    historyRecord.RelatedEntityTypeId = attributeEntityTypeId;
+                                    historyRecord.RelatedEntityId = eraAttributeId;
+                                    historyRecord.CategoryId = personAnalyticsCategoryId;
+                                }
 
                                 rockContext.SaveChanges();
                             }
@@ -167,6 +190,23 @@ namespace Rock.Jobs
                             if ( eraEndAttributeValue != null )
                             {
                                 attributeValueService.Delete( eraEndAttributeValue );
+                            }
+
+                            // add a history record
+                            if ( personAnalyticsCategoryId != 0 && personEntityTypeId != 0 && attributeEntityTypeId != 0 && eraAttributeId != 0 )
+                            {
+                                History historyRecord = new History();
+                                historyService.Add( historyRecord );
+                                historyRecord.EntityTypeId = personEntityTypeId;
+                                historyRecord.EntityId = person.Id;
+                                historyRecord.CreatedDateTime = RockDateTime.Now;
+                                historyRecord.CreatedByPersonAliasId = person.PrimaryAliasId;
+                                historyRecord.Caption = "eRA";
+                                historyRecord.Summary = "Entered eRA Status";
+                                historyRecord.Verb = "ENTERED";
+                                historyRecord.RelatedEntityTypeId = attributeEntityTypeId;
+                                historyRecord.RelatedEntityId = eraAttributeId;
+                                historyRecord.CategoryId = personAnalyticsCategoryId;
                             }
 
                             rockContext.SaveChanges();
