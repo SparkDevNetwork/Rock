@@ -62,6 +62,11 @@ namespace Rock.SystemGuid
         public const string HISTORY_PERSON_ACTIVITY = "0836845E-5ED8-4ABE-8787-3B61EF2F0FA5";
 
         /// <summary>
+        /// History of person registering or being registered
+        /// </summary>
+        public const string HISTORY_PERSON_REGISTRATION = "DA9C0CC7-7B31-4E1E-BBA5-50405B2D9EFE";
+
+        /// <summary>
         /// History of changes to batches
         /// </summary>
         public const string HISTORY_FINANCIAL_BATCH = "AF6A8CFF-F24F-4AA8-B126-94B6903961C0";
