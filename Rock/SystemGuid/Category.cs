@@ -71,6 +71,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string HISTORY_FINANCIAL_TRANSACTION = "477EE3BE-C68F-48BD-B218-FAFC99AF56B3";
 
+        /// <summary>
+        /// The history person analytics
+        /// </summary>
+        public const string HISTORY_PERSON_ANALYTICS = "C1524D2E-3E8F-3D83-45F8-526B749D79F0";
+
         #endregion
 
         #region Schedule Categories
