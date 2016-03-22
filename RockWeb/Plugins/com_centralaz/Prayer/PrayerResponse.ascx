@@ -4,6 +4,7 @@
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
             <div class="panel-body">
+                <Rock:NotificationBox ID="nbWarning" runat="server" Visible="false" />
 
                 <asp:Literal ID="lDescription" runat="server" />
 

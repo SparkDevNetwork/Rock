@@ -38,6 +38,7 @@ namespace RockWeb.Plugins.com_centralaz.Prayer
     [Category( "com_centralaz > Prayer" )]
     [Description( "Block for people who have requested prayer to submit an answer to said prayer." )]
     [IntegerField( "Expires After (Days)", "Number of days until the request will expire (only applies when auto-approved is enabled).", false, 14, "Features", 4, "ExpireDays" )]
+    [IntegerField( "Maximum Answer Length", "Maximum character length for prayer answers.", true, 4000 )]
     [CodeEditorField( "Description", "Lava template to use to display information about the block", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"<div>
   We are encouraged to be able to pray for you. If you feel as though your prayer has been answered, feel welcome to fill out just how it has been answered. Otherwise, click the 'Extend Request' button for the prayer request to be extended another week.
   </br>
@@ -107,7 +108,7 @@ Thank you for sharing God's answer to your prayer with us.
                         string encodedEmail = Convert.ToBase64String( b );
 
                         if ( encodedEmail == PageParameter( "Key" )
-                            &&( ( prayerRequest.ExpirationDate != null
+                            && ( ( prayerRequest.ExpirationDate != null
                                 && prayerRequest.ExpirationDate.Value.AddDays( GetAttributeValue( "ExpireDays" ).AsInteger() ) >= DateTime.Now )
                             || prayerRequest.ExpirationDate == null )
                             )
@@ -150,16 +151,26 @@ Thank you for sharing God's answer to your prayer with us.
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSave_Click( object sender, EventArgs e )
         {
-            RockContext rockContext = new RockContext();
-            Guid guid = PageParameter( "Guid" ).AsGuid();
-            PrayerRequest prayerRequest = new PrayerRequestService( rockContext ).Get( guid );
-            prayerRequest.Answer = dtbAnswer.Text;
-            rockContext.SaveChanges();
+            int maxChar = GetAttributeValue( "MaximumAnswerLength" ).AsInteger();
+            if ( dtbAnswer.Text.Length > maxChar )
+            {
+                nbWarning.Text = String.Format( "Please keep response shorter than {0} characters long.", maxChar );
+                nbWarning.Visible = true;
+            }
+            else
+            {
+                nbWarning.Visible = false;
+                RockContext rockContext = new RockContext();
+                Guid guid = PageParameter( "Guid" ).AsGuid();
+                PrayerRequest prayerRequest = new PrayerRequestService( rockContext ).Get( guid );
+                prayerRequest.Answer = dtbAnswer.Text;
+                rockContext.SaveChanges();
 
-            string template = GetAttributeValue( "AnswerSubmittedMessage" );
-            lResponse.Text = template.ResolveMergeFields( GetMergeFields( prayerRequest ) );
-            pnlView.Visible = false;
-            pnlResponse.Visible = true;
+                string template = GetAttributeValue( "AnswerSubmittedMessage" );
+                lResponse.Text = template.ResolveMergeFields( GetMergeFields( prayerRequest ) );
+                pnlView.Visible = false;
+                pnlResponse.Visible = true;
+            }
         }
 
         /// <summary>
