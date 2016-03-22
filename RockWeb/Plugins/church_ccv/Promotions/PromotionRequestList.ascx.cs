@@ -42,15 +42,10 @@ namespace RockWeb.Plugins.church_ccv.Promotions
     [DisplayName( "Promotion Request List" )]
     [Category( "CCV > Promotions" )]
     [Description( "Lists requested promotions for events." )]
-    [TextField("Content Channel Item Campus Key", "The key to use when reading / writing the Campus to a Content Channel Item that uses a single campus. (This should be the same across all content channel items.)", true)]
-    [TextField("Content Channel Item Multi Campus Key", "The key to use when reading / writing the Campus to a Content Channel Item that uses multiple campuses. (This should be the same across all content channel items.)", true)]
     public partial class PromotionRequestList : RockBlock
     {
         public object RockTransactionScope { get; private set; }
-
-        string ContentChannelItemCampusKey { get; set; }
-        string ContentChannelItemMultiCampusKey { get; set; }
-
+        
         #region Control Methods
 
         /// <summary>
@@ -65,9 +60,6 @@ namespace RockWeb.Plugins.church_ccv.Promotions
 
             PopulateCampusSelectorControls( );
             
-            ContentChannelItemCampusKey = GetAttributeValue( "ContentChannelItemCampusKey" );
-            ContentChannelItemMultiCampusKey = GetAttributeValue( "ContentChannelItemMultiCampusKey" );
-
             foreach ( var campus in CampusCache.All() )
             {
                 ddlCampus.Items.Add( new ListItem( campus.Name, campus.Id.ToString().ToUpper() ) );
@@ -240,7 +232,7 @@ namespace RockWeb.Plugins.church_ccv.Promotions
             // figure out if this promo should be using single "Campus" or multiple "Campuses"
             var campusObj = new CampusService( rockContext ).Get( ddlCampus.SelectedValue.AsInteger( ) );
             
-            bool multiCampus = PromotionsUtil.IsContentChannelMultiCampus( promoRequest.ContentChannel.Id, ContentChannelItemMultiCampusKey );
+            bool multiCampus = PromotionsUtil.IsContentChannelMultiCampus( promoRequest.ContentChannel.Id );
 
             // the campus attribute type (multi or single), along with the event's campus,
             // will determine how we setup the data
@@ -255,17 +247,17 @@ namespace RockWeb.Plugins.church_ccv.Promotions
             {
                 // otherwise, it's either a single-campus event and a multi-campus promo type,
                 // or it's a single campus promo type.
-                string campusKey = string.Empty;
+                string campusAttributeGuid = string.Empty;
                 string campusGuids = campusObj.Guid.ToString( );
 
                 // the only difference will be the key
                 if( multiCampus )
                 {
-                    campusKey = ContentChannelItemMultiCampusKey;
+                    campusAttributeGuid = Rock.SystemGuid.FieldType.CAMPUSES;
                 }
                 else
                 {
-                    campusKey = ContentChannelItemCampusKey;
+                    campusAttributeGuid = Rock.SystemGuid.FieldType.CAMPUS;
                 }
                 
                 PromotionsUtil.CreatePromotionOccurrence( promoRequest.ContentChannel.Id, 
@@ -274,7 +266,7 @@ namespace RockWeb.Plugins.church_ccv.Promotions
                                                           CurrentPersonAliasId, 
                                                           eventItem.EventItem.Name,
                                                           BuildPromoContent( eventItem ),
-                                                          campusKey,
+                                                          campusAttributeGuid,
                                                           campusGuids,
                                                           promoRequest.Id );
 
@@ -306,8 +298,8 @@ namespace RockWeb.Plugins.church_ccv.Promotions
                          po.ContentChannelItem.ContentChannelId == promoRequest.ContentChannelId )
                 .ToList( );
                 
-            // now, for each promotion occurrence, join with its "CampusesKey" attribute value
-            var campusesAttribValList = new AttributeValueService( new RockContext( ) ).Queryable( ).Where( av => av.Attribute.Key == ContentChannelItemMultiCampusKey ).ToList( );
+            // now, for each promotion occurrence, join with its "Campuses" attribute value
+            var campusesAttribValList = new AttributeValueService( new RockContext( ) ).Queryable( ).Where( av => av.Attribute.FieldType.Guid == new Guid( Rock.SystemGuid.FieldType.CAMPUSES ) ).ToList( );
 
             var campusGuids = promoOccurrenceList.Join( campusesAttribValList, 
 
@@ -421,7 +413,7 @@ namespace RockWeb.Plugins.church_ccv.Promotions
                                                       CurrentPersonAliasId, 
                                                       eventItem.EventItem.Name,
                                                       BuildPromoContent( eventItem ),
-                                                      ContentChannelItemMultiCampusKey,
+                                                      Rock.SystemGuid.FieldType.CAMPUSES,
                                                       campusGuids,
                                                       promoRequest.Id );
 
@@ -536,7 +528,7 @@ namespace RockWeb.Plugins.church_ccv.Promotions
                         prpo.PromotionOccurrence.ContentChannelItem.ContentChannelId == prpo.PromotionRequest.ContentChannelId ).ToList( );
                 
                 // build single campus content items that should be excluded
-                var campusAttribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.Key == ContentChannelItemCampusKey ).ToList( );
+                var campusAttribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.FieldType.Guid == new Guid( Rock.SystemGuid.FieldType.CAMPUS ) ).ToList( );
                 var excludedCampusPromotionRequestIds = excludedPromotionRequestsQuery.Join( campusAttribValList, 
                     
                     pr => pr.PromotionOccurrence.ContentChannelItem.Id, ca=> ca.EntityId, ( pr, ca ) => new { Promotion = pr, Campus = ca } )
@@ -549,7 +541,7 @@ namespace RockWeb.Plugins.church_ccv.Promotions
 
 
                 // build MULTI-campus content items that should be excluded
-                var campusesAttribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.Key == ContentChannelItemMultiCampusKey ).ToList( );
+                var campusesAttribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.FieldType.Guid == new Guid( Rock.SystemGuid.FieldType.CAMPUSES ) ).ToList( );
                 var excludedCampusesPromotionRequestIds = excludedPromotionRequestsQuery.Join( campusesAttribValList, 
 
                     pr => pr.PromotionOccurrence.ContentChannelItem.Id, ca=> ca.EntityId, ( pr, ca ) => new { Promotion = pr, Campuses = ca } )

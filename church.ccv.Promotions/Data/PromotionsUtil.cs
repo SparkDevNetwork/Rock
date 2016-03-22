@@ -13,12 +13,15 @@ namespace church.ccv.Promotions.Data
 {
     public static class PromotionsUtil
     {
-        public static bool IsContentChannelMultiCampus( int contentChannelId, string multiCampusKey )
+        public static bool IsContentChannelMultiCampus( int contentChannelId )
         {
             RockContext rockContext = new RockContext( );
-            
+                        
             // if it has the multiCampusKey, then it supports multi-campus.
-            var multiCampusAttributeValue = new AttributeService( rockContext ).Queryable( ).Where( a => a.EntityTypeQualifierValue == contentChannelId.ToString( ) && a.Key == multiCampusKey ).SingleOrDefault( );
+            var multiCampusAttributeValue = new AttributeService( rockContext ).Queryable( )
+                .Where( a => a.EntityTypeQualifierValue == contentChannelId.ToString( ) && 
+                            a.FieldType.Guid == new Guid( Rock.SystemGuid.FieldType.CAMPUSES ) ).SingleOrDefault( );
+
             if( multiCampusAttributeValue != null )
             {
                 return true;
@@ -38,7 +41,7 @@ namespace church.ccv.Promotions.Data
         /// <param name="approvedByPersonAliasId"></param>
         /// <param name="title"></param>
         /// <param name="content"></param>
-        /// <param name="contentChannelItemCampusKey"></param>
+        /// <param name="contentChannelItemCampusGuid"></param>
         /// <param name="campusId"></param>
         /// <param name="promoRequestId"></param>
         public static void CreatePromotionOccurrence( int contentChannelId, 
@@ -47,7 +50,7 @@ namespace church.ccv.Promotions.Data
                                                       int? approvedByPersonAliasId, 
                                                       string title, 
                                                       string content, 
-                                                      string contentChannelItemCampusKey, 
+                                                      string contentChannelItemCampusGuid, 
                                                       string campusGuids,
                                                       int? promoRequestId )
         {
@@ -75,14 +78,11 @@ namespace church.ccv.Promotions.Data
             
             // this will either be the key for a single campus attribute, or the multi-campus attribute. It's
             // the caller's responsibility to figure that out.
-            if( contentItem.Attributes.ContainsKey( contentChannelItemCampusKey ) == true )
+            var attribute = contentItem.Attributes.Where( a => a.Value.FieldType.Guid == new Guid( contentChannelItemCampusGuid ) ).Select( a => a.Value ).FirstOrDefault( );
+            if( attribute != null )
             {
-                var attribValueCache = new AttributeValueCache();
+                contentItem.SetAttributeValue( attribute.Key, campusGuids );
                 
-                // this will be a single campus guid
-                attribValueCache.Value = campusGuids;
-
-                contentItem.AttributeValues[ contentChannelItemCampusKey ] = attribValueCache;
                 contentItem.SaveAttributeValues( rockContext );
             }
 

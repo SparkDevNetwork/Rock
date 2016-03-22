@@ -42,15 +42,10 @@ namespace RockWeb.Plugins.church_ccv.Promotions
     [Category( "CCV > Promotions" )]
     [Description( "Lists promotions with active content items." )]
     [LinkedPage( "Detail Page" )]
-    [TextField("Content Channel Item Campus Key", "The key to use when reading / writing the Campus to a Content Channel Item that uses a single campus. (This should be the same across all content channel items.)", true)]
-    [TextField("Content Channel Item Multi Campus Key", "The key to use when reading / writing the Campus to a Content Channel Item that uses multiple campuses. (This should be the same across all content channel items.)", true)]
     public partial class PromotionList : RockBlock
     {
         public object RockTransactionScope { get; private set; }
-
-        string ContentChannelItemCampusKey { get; set; }
-        string ContentChannelItemMultiCampusKey { get; set; }
-
+        
         /// <summary>
         /// Used by the Promotion Occurrences grid to know which promotion/event to enumerate
         /// </summary>
@@ -67,10 +62,7 @@ namespace RockWeb.Plugins.church_ccv.Promotions
             base.OnInit( e );
 
             PopulatePromoTypesControl( );
-
-            ContentChannelItemCampusKey = GetAttributeValue( "ContentChannelItemCampusKey" );
-            ContentChannelItemMultiCampusKey = GetAttributeValue( "ContentChannelItemMultiCampusKey" );
-
+                        
             foreach ( var campus in CampusCache.All() )
             {
                 ddlCampus.Items.Add( new ListItem( campus.Name, campus.Id.ToString().ToUpper() ) );
@@ -224,10 +216,10 @@ namespace RockWeb.Plugins.church_ccv.Promotions
 
                 // figure out if this is a single or multi-campus channel type.
                 var campusObj = new CampusService( rockContext ).Get( ddlCampus.SelectedValue.AsInteger( ) );
-                bool multiCampus = PromotionsUtil.IsContentChannelMultiCampus( contentChannel.Id, ContentChannelItemMultiCampusKey );
+                bool multiCampus = PromotionsUtil.IsContentChannelMultiCampus( contentChannel.Id );
 
                 // the campus attribute type (multi or single) will determine how we setup the data
-                string campusKey = multiCampus == true ? ContentChannelItemMultiCampusKey : ContentChannelItemCampusKey;
+                string campusGuid = multiCampus == true ? Rock.SystemGuid.FieldType.CAMPUSES : Rock.SystemGuid.FieldType.CAMPUS;
                 
                 PromotionsUtil.CreatePromotionOccurrence( contentChannel.Id,
                                                           contentChannel.ContentChannelTypeId,
@@ -235,7 +227,7 @@ namespace RockWeb.Plugins.church_ccv.Promotions
                                                           CurrentPersonAliasId,
                                                           "New Promotion Occurrence",
                                                           string.Empty,
-                                                          campusKey,
+                                                          campusGuid,
                                                           campusObj.Guid.ToString(),
                                                           null );
 
@@ -349,7 +341,7 @@ namespace RockWeb.Plugins.church_ccv.Promotions
             // ( this would mean their campus doesn't match what is being filtered, so it shouldn't display)
             // IF THEY ARE MULTI-CAMPUS, they won't return in this query, which is a GOOD thing.
             Guid selectedCampusGuid = CampusCache.Read( ddlCampus.SelectedValue.AsInteger( ) ).Guid;
-            var campusAttribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.Key == ContentChannelItemCampusKey ).ToList( );
+            var campusAttribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.FieldType.Guid == new Guid( Rock.SystemGuid.FieldType.CAMPUS ) ).ToList( );
 
             var excludedPromotionOccurrenceIds = promoOccurrences.Join( campusAttribValList, 
                                                                       po => po.ContentChannelItem.Id, ca=> ca.EntityId, ( po, ca ) => new { Promotion = po, Campus = ca }  
@@ -364,7 +356,7 @@ namespace RockWeb.Plugins.church_ccv.Promotions
 
             // Like above, this works because items that are not multi-campus simply won't be returned in the query.
             
-            var campusesAttribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.Key == ContentChannelItemMultiCampusKey ).ToList( );
+            var campusesAttribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.FieldType.Guid == new Guid( Rock.SystemGuid.FieldType.CAMPUSES ) ).ToList( );
             var excludedCampusesPromotionRequestIds = promoOccurrences.Join( campusesAttribValList, 
                                                                              
                 po => po.ContentChannelItem.Id, ca=> ca.EntityId, ( po, ca ) => new { Promotion = po, Campuses = ca } )
@@ -426,15 +418,18 @@ namespace RockWeb.Plugins.church_ccv.Promotions
             channelItem.LoadAttributes( );
 
             // is it a single select campus channel?
-            if( channelItem.Attributes.ContainsKey( ContentChannelItemCampusKey ) )
+            var singleCampusAttrib = channelItem.Attributes.Where( a => a.Value.FieldType.Guid == new Guid( Rock.SystemGuid.FieldType.CAMPUS ) ).Select( a => a.Value ).FirstOrDefault( );
+            if( singleCampusAttrib != null )
             {
-                return CampusCache.Read( new Guid( channelItem.AttributeValues[ContentChannelItemCampusKey].Value ) ).Name;
+                return CampusCache.Read( new Guid( channelItem.AttributeValues[ singleCampusAttrib.Key ].Value ) ).Name;
             }
             // then it should be a multi-campus channel
             else
             {
+                var multiCampusAttrib = channelItem.Attributes.Where( a => a.Value.FieldType.Guid == new Guid( Rock.SystemGuid.FieldType.CAMPUSES ) ).Select( a => a.Value ).FirstOrDefault( );
+                
                 // break the guids into a list
-                List<string> campusGuids = channelItem.AttributeValues[ ContentChannelItemMultiCampusKey ].Value.Split( new char[] {  ',' } ).ToList( );
+                List<string> campusGuids = channelItem.AttributeValues[ multiCampusAttrib.Key ].Value.Split( new char[] {  ',' } ).ToList( );
 
                 // first, if this is for all campuses, just say all campuses.
                 if( campusGuids.Count == CampusCache.All( ).Count )
