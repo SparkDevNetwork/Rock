@@ -65,7 +65,9 @@ namespace Rock.Security.BackgroundCheck
         /// Note: If the associated workflow type does not have attributes with the following keys, they
         /// will automatically be added to the workflow type configuration in order to store the results
         /// of the PMM background check request
-        ///     ReportStatus:           The status returned by PMM
+        ///     RequestStatus:          The request status returned by PMM request
+        ///     RequestMessage:         Any error messages returned by PMM request
+        ///     ReportStatus:           The report status returned by PMM
         ///     ReportLink:             The location of the background report on PMM server
         ///     ReportRecommendation:   PMM's recomendataion
         ///     Report (BinaryFile):    The downloaded background report
@@ -305,42 +307,119 @@ namespace Rock.Security.BackgroundCheck
                 }
 
                 XDocument xdoc = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), rootElement );
+                var requestDateTime = RockDateTime.Now;
 
                 XDocument xResult = PostToWebService( xdoc, GetAttributeValue("RequestURL") );
+                var responseDateTime = RockDateTime.Now;
+
+                int? personAliasId = person.PrimaryAliasId;
+                if ( personAliasId.HasValue )
+                {
+                    // Create a background check file
+                    using ( var newRockContext = new RockContext() )
+                    {
+                        var backgroundCheckService = new BackgroundCheckService( newRockContext );
+                        var backgroundCheck = backgroundCheckService.Queryable()
+                            .Where( c =>
+                                c.WorkflowId.HasValue &&
+                                c.WorkflowId.Value == workflow.Id )
+                            .FirstOrDefault();
+
+                        if ( backgroundCheck == null )
+                        {
+                            backgroundCheck = new Rock.Model.BackgroundCheck();
+                            backgroundCheck.PersonAliasId = personAliasId.Value;
+                            backgroundCheck.WorkflowId = workflow.Id;
+                            backgroundCheckService.Add( backgroundCheck );
+                        }
+
+                        backgroundCheck.RequestDate = RockDateTime.Now;
+
+                        // Clear any SSN nodes before saving XML to record
+                        foreach ( var xSSNElement in xdoc.Descendants( "SSN" ) )
+                        {
+                            xSSNElement.Value = "XXX-XX-XXXX";
+                        }
+                        foreach ( var xSSNElement in xResult.Descendants( "SSN" ) )
+                        {
+                            xSSNElement.Value = "XXX-XX-XXXX";
+                        }
+
+                        backgroundCheck.ResponseXml = string.Format( @"
+Request XML ({0}): 
+------------------------ 
+{1}
+
+Response XML ({2}): 
+------------------------ 
+{3}
+
+", requestDateTime, xdoc.ToString(), responseDateTime, xResult.ToString() );
+                        newRockContext.SaveChanges();
+                    }
+                }
 
                 if ( _HTTPStatusCode == HttpStatusCode.OK )
                 {
-                    int? personAliasId = person.PrimaryAliasId;
-                    if ( personAliasId.HasValue )
+                    using ( var newRockContext = new RockContext() )
                     {
-                        // Create a background check file
-                        using ( var newRockContext = new RockContext() )
+                        bool createdNewAttribute = false;
+                        var xOrderXML = xResult.Elements( "OrderXML" ).FirstOrDefault();
+                        if ( xOrderXML != null )
                         {
-                            var backgroundCheck = new Rock.Model.BackgroundCheck();
-                            backgroundCheck.PersonAliasId = personAliasId.Value;
-                            backgroundCheck.WorkflowId = workflow.Id;
-                            backgroundCheck.RequestDate = RockDateTime.Now;
-                            new BackgroundCheckService( newRockContext ).Add( backgroundCheck );
-                            newRockContext.SaveChanges();
+                            var xStatus = xOrderXML.Elements( "Status" ).FirstOrDefault();
+                            if ( xStatus != null )
+                            {
+                                if ( SaveAttributeValue( workflow, "RequestStatus", xStatus.Value,
+                                    FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), newRockContext, null ) )
+                                {
+                                    createdNewAttribute = true;
+                                }
+                            }
+
+                            var xErrors = xOrderXML.Elements( "Errors" ).FirstOrDefault();
+                            if ( xErrors != null )
+                            {
+                                string errorMsg = xErrors.Elements( "Message" ).Select( x => x.Value ).ToList().AsDelimited( Environment.NewLine );
+                                if ( SaveAttributeValue( workflow, "RequestMessage", errorMsg,
+                                    FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), newRockContext, null ) )
+                                {
+                                    createdNewAttribute = true;
+                                }
+                            }
+
+                            if ( xResult.Root.Descendants().Count() > 0 )
+                            {
+                                SaveResults( xResult, workflow, rockContext, false );
+                            }
+                        }
+                        else
+                        {
+                            if ( SaveAttributeValue( workflow, "RequestMessage", errorMessages.AsDelimited( Environment.NewLine ),
+                                FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), newRockContext, null ) )
+                            {
+                                createdNewAttribute = true;
+                            }
+
+                        }
+
+                        newRockContext.SaveChanges();
+
+                        if ( createdNewAttribute )
+                        {
+                            AttributeCache.FlushEntityAttributes();
                         }
                     }
-
-                    if ( xResult.Root.Descendants().Count() > 0 )
-                    {
-                        SaveResults( xResult, workflow, rockContext );
-                    }
-
                     return true;
                 }
                 else
                 {
                     errorMessages.Add( "Invalid HttpStatusCode: " + _HTTPStatusCode.ToString() );
+                    return false;
                 }
-
-                return false;
-
             }
-            catch( Exception ex )
+
+            catch ( Exception ex )
             {
                 ExceptionLogService.LogException( ex, null );
                 errorMessages.Add( ex.Message );
@@ -445,8 +524,35 @@ namespace Rock.Security.BackgroundCheck
         /// <param name="xResult">The x result.</param>
         /// <param name="workflow">The workflow.</param>
         /// <param name="rockContext">The rock context.</param>
-        public static void SaveResults( XDocument xResult, Rock.Model.Workflow workflow, RockContext rockContext )
+        /// <param name="saveResponse">if set to <c>true</c> [save response].</param>
+        public static void SaveResults( XDocument xResult, Rock.Model.Workflow workflow, RockContext rockContext, bool saveResponse = true )
         {
+            bool createdNewAttribute = false;
+
+            var newRockContext = new RockContext();
+            var service = new BackgroundCheckService( newRockContext );
+            var backgroundCheck = service.Queryable()
+                .Where( c =>
+                    c.WorkflowId.HasValue &&
+                    c.WorkflowId.Value == workflow.Id )
+                .FirstOrDefault();
+
+            if ( backgroundCheck != null && saveResponse )
+            {
+                // Clear any SSN nodes before saving XML to record
+                foreach ( var xSSNElement in xResult.Descendants( "SSN" ) )
+                {
+                    xSSNElement.Value = "XXX-XX-XXXX";
+                }
+
+                backgroundCheck.ResponseXml = backgroundCheck.ResponseXml + string.Format( @"
+Response XML ({0}): 
+------------------------ 
+{1}
+
+", RockDateTime.Now.ToString(), xResult.ToString() );
+            }
+
             var xOrderXML = xResult.Elements( "OrderXML" ).FirstOrDefault();
             if ( xOrderXML != null )
             {
@@ -490,9 +596,13 @@ namespace Rock.Security.BackgroundCheck
                         string recommendation = ( from o in xOrder.Elements( "Recommendation" ) select o.Value ).FirstOrDefault();
                         if ( !string.IsNullOrWhiteSpace( recommendation ) )
                         {
-                            SaveAttributeValue( workflow, "ReportRecommendation", recommendation,
+                            if ( SaveAttributeValue( workflow, "ReportRecommendation", recommendation,
                                 FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), rockContext,
-                                new Dictionary<string, string> { { "ispassword", "false" } } );
+                                new Dictionary<string, string> { { "ispassword", "false" } } ) )
+                            {
+                                createdNewAttribute = true;
+                            }
+
                         }
 
                         // Save the report link 
@@ -500,60 +610,59 @@ namespace Rock.Security.BackgroundCheck
                         string reportLink = ( from o in xOrder.Elements( "ReportLink" ) select o.Value ).FirstOrDefault();
                         if ( !string.IsNullOrWhiteSpace( reportLink ) )
                         {
-                            SaveAttributeValue( workflow, "ReportLink", reportLink,
-                                FieldTypeCache.Read( Rock.SystemGuid.FieldType.URL_LINK.AsGuid() ), rockContext );
-
+                            if ( SaveAttributeValue( workflow, "ReportLink", reportLink,
+                                FieldTypeCache.Read( Rock.SystemGuid.FieldType.URL_LINK.AsGuid() ), rockContext ) )
+                            {
+                                createdNewAttribute = true;
+                            }
+                            
                             // Save the report
                             binaryFileGuid = SaveFile( workflow.Attributes["Report"], reportLink, workflow.Id.ToString() + ".pdf" );
                             if ( binaryFileGuid.HasValue )
                             {
-                                SaveAttributeValue( workflow, "Report", binaryFileGuid.Value.ToString(),
+                                if ( SaveAttributeValue( workflow, "Report", binaryFileGuid.Value.ToString(),
                                     FieldTypeCache.Read( Rock.SystemGuid.FieldType.BINARY_FILE.AsGuid() ), rockContext,
-                                    new Dictionary<string, string> { { "binaryFileType", "" } } );
+                                    new Dictionary<string, string> { { "binaryFileType", "" } } ) )
+                                {
+                                    createdNewAttribute = true;
+                                }
                             }
                         }
 
                         // Save the status
-                        SaveAttributeValue( workflow, "ReportStatus", reportStatus,
+                        if ( SaveAttributeValue( workflow, "ReportStatus", reportStatus,
                             FieldTypeCache.Read( Rock.SystemGuid.FieldType.SINGLE_SELECT.AsGuid() ), rockContext,
-                            new Dictionary<string, string> { { "fieldtype", "ddl" }, { "values", "Pass,Fail,Review" } } );
+                            new Dictionary<string, string> { { "fieldtype", "ddl" }, { "values", "Pass,Fail,Review" } } ) )
+                        {
+                            createdNewAttribute = true;
+                        }
 
                         // Update the background check file
-                        using ( var newRockContext = new RockContext() )
+                        if ( backgroundCheck != null )
                         {
-                            var service = new BackgroundCheckService( newRockContext );
-                            var backgroundCheck = service.Queryable()
-                                .Where( c =>
-                                    c.WorkflowId.HasValue &&
-                                    c.WorkflowId.Value == workflow.Id )
-                                .FirstOrDefault();
-                            if ( backgroundCheck != null )
+                            backgroundCheck.ResponseDate = RockDateTime.Now;
+                            backgroundCheck.RecordFound = reportStatus == "Review";
+
+                            if ( binaryFileGuid.HasValue )
                             {
-                                // Clear any SSN nodes before saving XML to record
-                                foreach ( var xSSNElement in xResult.Descendants( "SSN" ) )
+                                var binaryFile = new BinaryFileService( newRockContext ).Get( binaryFileGuid.Value );
+                                if ( binaryFile != null )
                                 {
-                                    xSSNElement.Value = "XXX-XX-XXXX";
+                                    backgroundCheck.ResponseDocumentId = binaryFile.Id;
                                 }
-                                backgroundCheck.ResponseXml = xResult.ToString();
-
-                                backgroundCheck.ResponseDate = RockDateTime.Now;
-                                backgroundCheck.RecordFound = reportStatus == "Review";
-
-                                if ( binaryFileGuid.HasValue )
-                                {
-                                    var binaryFile = new BinaryFileService( newRockContext ).Get( binaryFileGuid.Value );
-                                    if ( binaryFile != null )
-                                    {
-                                        backgroundCheck.ResponseDocumentId = binaryFile.Id;
-                                    }
-                                }
-
-                                newRockContext.SaveChanges();
                             }
                         }
                     }
                 }
             }
+
+            newRockContext.SaveChanges();
+
+            if ( createdNewAttribute )
+            {
+                AttributeCache.FlushEntityAttributes();
+            }
+
         }
 
         /// <summary>
@@ -565,34 +674,50 @@ namespace Rock.Security.BackgroundCheck
         /// <param name="fieldType">Type of the field.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="qualifiers">The qualifiers.</param>
-        private static void SaveAttributeValue( Rock.Model.Workflow workflow, string key, string value, 
+        /// <returns></returns>
+        private static bool SaveAttributeValue( Rock.Model.Workflow workflow, string key, string value, 
             FieldTypeCache fieldType, RockContext rockContext, Dictionary<string, string> qualifiers = null )
         {
+            bool createdNewAttribute = false;
+
             if (workflow.Attributes.ContainsKey(key))
             {
                 workflow.SetAttributeValue( key, value );
             }
             else
             {
+                // Read the attribute
+                var attributeService = new AttributeService( rockContext );
+                var attribute = attributeService
+                    .Get( workflow.TypeId, "WorkflowTypeId", workflow.WorkflowTypeId.ToString() )
+                    .Where( a => a.Key == key )
+                    .FirstOrDefault();
+
                 // If workflow attribute doesn't exist, create it 
                 // ( should only happen first time a background check is processed for given workflow type)
-                var attribute = new Rock.Model.Attribute();
-                attribute.EntityTypeId = workflow.WorkflowType.TypeId;
-                attribute.EntityTypeQualifierColumn = "WorkflowTypeId";
-                attribute.EntityTypeQualifierValue = workflow.WorkflowTypeId.ToString();
-                attribute.Name = key.SplitCase();
-                attribute.Key = key;
-                attribute.FieldTypeId = fieldType.Id;
-
-                if ( qualifiers != null )
+                if ( attribute == null )
                 {
-                    foreach( var keyVal in qualifiers )
+                    attribute = new Rock.Model.Attribute();
+                    attribute.EntityTypeId = workflow.TypeId;
+                    attribute.EntityTypeQualifierColumn = "WorkflowTypeId";
+                    attribute.EntityTypeQualifierValue = workflow.WorkflowTypeId.ToString();
+                    attribute.Name = key.SplitCase();
+                    attribute.Key = key;
+                    attribute.FieldTypeId = fieldType.Id;
+                    attributeService.Add( attribute );
+
+                    if ( qualifiers != null )
                     {
-                        var qualifier = new Rock.Model.AttributeQualifier();
-                        qualifier.Key = keyVal.Key;
-                        qualifier.Value = keyVal.Value;
-                        attribute.AttributeQualifiers.Add( qualifier );
+                        foreach ( var keyVal in qualifiers )
+                        {
+                            var qualifier = new Rock.Model.AttributeQualifier();
+                            qualifier.Key = keyVal.Key;
+                            qualifier.Value = keyVal.Value;
+                            attribute.AttributeQualifiers.Add( qualifier );
+                        }
                     }
+
+                    createdNewAttribute = true;
                 }
 
                 // Set the value for this action's instance to the current time
@@ -603,6 +728,7 @@ namespace Rock.Security.BackgroundCheck
                 new AttributeValueService( rockContext ).Add( attributeValue );
             }
 
+            return createdNewAttribute;
         }
 
         /// <summary>
