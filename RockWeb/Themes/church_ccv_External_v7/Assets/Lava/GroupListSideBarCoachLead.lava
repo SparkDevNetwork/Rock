@@ -1,0 +1,43 @@
+{% assign linkedPage = '/page/490' %}
+
+{% assign coachLeadGroupsNH = CurrentPerson | Groups:'85' | Select:'Group'  %}
+{% assign coachLeadGroupsNS = CurrentPerson | Groups:'82' | Select:'Group'  %}
+{% assign leadGroupsCountNH = coachLeadGroupsNH | Size %}
+{% assign leadGroupsCountNS = coachLeadGroupsNS | Size %}
+{% if leadGroupsCountNH > 0 %}
+
+{% comment %}If this person is a Next Steps 'Coach Lead', list out the groups that the coach lead is over{% endcomment %}
+<div class='panel panel-default'>
+<div class="panel-heading">NH Coach Lead</div>
+    <ul class="list-group list-group-panel">
+    {% for coachLeadGroup in coachLeadGroupsNH %}
+        {% for group in coachLeadGroup.Groups %}
+        	 <li class="list-group-item">
+            <a href="{{ linkedPage }}?GroupId={{group.Id}}" class="js-group-item" data-toggle="tooltip" data-placement="top" title="{{ group.GroupType.Name }}">
+              {{ group.Name }}
+            </a>
+        {% endfor %}
+    {% endfor %}
+    </ul>
+</div>
+
+{% endif %}
+
+{% if leadGroupsCountNS > 0 %}
+{% comment %}If this person is a Next Steps 'Coach Lead', list out the groups that the coach lead is over{% endcomment %}
+<div class='panel panel-default'>
+<div class="panel-heading">NS Coach Lead</div>
+    <ul class="list-group list-group-panel">
+    {% for coachLeadGroup in coachLeadGroupsNS %}
+        {% for group in coachLeadGroup.Groups %}
+        	 <li class="list-group-item">
+            <a href="{{ linkedPage }}?GroupId={{group.Id}}" class="js-group-item" data-toggle="tooltip" data-placement="top" title="{{ group.GroupType.Name }}">
+              {{ group.Name }}
+            </a>
+        {% endfor %}
+    {% endfor %}
+    </ul>
+</div>
+
+
+{% endif %}
