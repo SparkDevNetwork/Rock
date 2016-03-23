@@ -65,7 +65,7 @@ namespace Rock.Workflow.Action.CheckIn
                 var ageRangeAttributeGuid = GetAttributeValue( action, "GroupAgeRangeAttribute" ).AsGuid();
                 if ( ageRangeAttributeGuid != Guid.Empty )
                 {
-                    ageRangeAttributeKey = AttributeCache.Read( ageRangeAttributeGuid, rockContext ).Key ?? string.Empty;
+                    ageRangeAttributeKey = AttributeCache.Read( ageRangeAttributeGuid, rockContext ).Key;
                 }
 
                 // log a warning if the attribute is missing or invalid
