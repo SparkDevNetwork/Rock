@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action.CheckIn
 {
@@ -59,17 +60,18 @@ namespace Rock.Workflow.Action.CheckIn
                 var remove = GetAttributeValue( action, "Remove" ).AsBoolean();
                 bool ageRequired = GetAttributeValue( action, "AgeRequired" ).AsBoolean( true );
 
+                // get the admin-selected attribute key instead of using a hardcoded key
                 var ageRangeAttributeKey = string.Empty;
                 var ageRangeAttributeGuid = GetAttributeValue( action, "GroupAgeRangeAttribute" ).AsGuid();
-
-                // get the admin-selected attribute key instead of using a hardcoded key
                 if ( ageRangeAttributeGuid != Guid.Empty )
                 {
-                    ageRangeAttributeKey = rockContext.Attributes.Where( a => a.Guid == ageRangeAttributeGuid ).Select( a => a.Key ).FirstOrDefault();
+                    ageRangeAttributeKey = AttributeCache.Read( ageRangeAttributeGuid, rockContext ).Key ?? string.Empty;
                 }
-                else
+
+                // log a warning if the attribute is missing or invalid
+                if ( string.IsNullOrWhiteSpace( ageRangeAttributeKey ) )
                 {
-                    action.AddLogEntry( string.Format( "The selected Age Range attribute is missing or invalid for '{0}'.", action.ActionType.Name ) );
+                    action.AddLogEntry( string.Format( "The Group Age Range attribute is not selected or invalid for '{0}'.", action.ActionType.Name ) );
                 }
 
                 foreach ( var person in family.People )
