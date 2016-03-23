@@ -749,7 +749,7 @@ namespace Rock.Web.UI.Controls
             var binaryFile = new BinaryFileService( new RockContext() ).Get( CropBinaryFileId ?? 0 );
             if ( binaryFile != null )
             {
-                _imgCropSource.ImageUrl = "~/GetImage.ashx?guid=" + binaryFile.Guid;
+                _imgCropSource.ImageUrl = binaryFile.Url;
                 if ( binaryFile.MimeType != "image/svg+xml" )
                 {
                     using ( var stream = binaryFile.ContentStream )
