@@ -1,4 +1,13 @@
-Rock McKinley 4.404
+Rock McKinley 4.5
+
++ Updated the Protect My Ministry (PMM) background check integration to check for a valid response from PMM when submitting the initial request and add logging of both the request and the reply.
++ Updated workflow processing so that any errors that occur during a workflow action are always written to the workflow log regardless of log settings.
++ Fixed exception that would occur if new person was trying to signup for a connection request and organization only has one campus.
++ Updated the code editor to correctly escape html values.
++ Updated the email preferences block so that it logs any changes a user makes to their preference (including record status/reason changes) to their history.
++ Fixed an issue with croping person images when using a custom storage provider.
+
+Rock McKinley 4.4
 
 + Updated Check-in to correctly cache device configuration data so that it is not specific to a particular point in time.
 + Fixed paging on grid.
