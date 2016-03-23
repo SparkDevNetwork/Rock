@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action.CheckIn
 {
@@ -58,36 +59,38 @@ namespace Rock.Workflow.Action.CheckIn
                 return false;
             }
 
-            var personSpecialNeedsKey = string.Empty;
-            var groupSpecialNeedsKey = string.Empty;
-            var personSpecialNeedsGuid = GetAttributeValue( action, "PersonSpecialNeedsAttribute" ).AsGuid();
-            var groupSpecialNeedsGuid = GetAttributeValue( action, "GroupSpecialNeedsAttribute" ).AsGuid();
-            bool removeSNGroups = GetAttributeValue( action, "RemoveSpecialNeedsGroups" ).AsBoolean( true );
-            bool removeNonSNGroups = GetAttributeValue( action, "RemoveNonSpecialNeedsGroups" ).AsBoolean();
-
-            // get the admin-selected attribute key instead of using a hardcoded key
-            if ( personSpecialNeedsGuid != Guid.Empty )
-            {
-                personSpecialNeedsKey = rockContext.Attributes.Where( a => a.Guid == personSpecialNeedsGuid ).Select( a => a.Key ).FirstOrDefault();
-            }
-            else
-            {
-                action.AddLogEntry( string.Format( "The selected Person Special Needs attribute is missing or invalid for '{0}'.", action.ActionType.Name ) );
-            }
-
-            if ( groupSpecialNeedsGuid != Guid.Empty )
-            {
-                groupSpecialNeedsKey = rockContext.Attributes.Where( a => a.Guid == groupSpecialNeedsGuid ).Select( a => a.Key ).FirstOrDefault();
-            }
-            else
-            {
-                action.AddLogEntry( string.Format( "The selected Group Special Needs attribute is missing or invalid for '{0}'.", action.ActionType.Name ) );
-            }
-
             var family = checkInState.CheckIn.Families.FirstOrDefault( f => f.Selected );
             if ( family != null )
             {
                 var remove = GetAttributeValue( action, "Remove" ).AsBoolean();
+                bool removeSNGroups = GetAttributeValue( action, "RemoveSpecialNeedsGroups" ).AsBoolean( true );
+                bool removeNonSNGroups = GetAttributeValue( action, "RemoveNonSpecialNeedsGroups" ).AsBoolean();
+
+                // get the admin-selected attribute key instead of using a hardcoded key
+                var personSpecialNeedsKey = string.Empty;
+                var personSpecialNeedsGuid = GetAttributeValue( action, "PersonSpecialNeedsAttribute" ).AsGuid();
+                if ( personSpecialNeedsGuid != Guid.Empty )
+                {
+                    personSpecialNeedsKey = AttributeCache.Read( personSpecialNeedsGuid, rockContext ).Key;
+                }
+
+                var groupSpecialNeedsKey = string.Empty;
+                var groupSpecialNeedsGuid = GetAttributeValue( action, "GroupSpecialNeedsAttribute" ).AsGuid();
+                if ( personSpecialNeedsGuid != Guid.Empty )
+                {
+                    groupSpecialNeedsKey = AttributeCache.Read( groupSpecialNeedsGuid, rockContext ).Key;
+                }
+
+                // log a warning if the attribute is missing or invalid
+                if ( string.IsNullOrWhiteSpace( personSpecialNeedsKey ) )
+                {
+                    action.AddLogEntry( string.Format( "The Person Special Needs attribute is not selected or invalid for '{0}'.", action.ActionType.Name ) );
+                }
+
+                if ( string.IsNullOrWhiteSpace( groupSpecialNeedsKey ) )
+                {
+                    action.AddLogEntry( string.Format( "The Group Special Needs attribute is not selected or invalid for '{0}'.", action.ActionType.Name ) );
+                }
 
                 foreach ( var person in family.People )
                 {
