@@ -33,7 +33,7 @@ namespace Rock.Workflow.Action.CheckIn
     [ExportMetadata( "ComponentName", "Filter Groups By Age" )]
     [BooleanField( "Remove", "Select 'Yes' if groups should be be removed.  Select 'No' if they should just be marked as excluded.", true, "", 0 )]
     [BooleanField( "Age Required", "Select 'Yes' if groups with an age filter should be removed/excluded when person does not have an age.", true, "", 1 )]
-    [AttributeField( "9BBFDA11-0D22-40D5-902F-60ADFBC88987", "Age Range Attribute", "Select the attribute used to define the age range of the group", true, false, "43511B8F-71D9-423A-85BF-D1CD08C1998E" )]
+    [AttributeField( "9BBFDA11-0D22-40D5-902F-60ADFBC88987", "Group Age Range Attribute", "Select the attribute used to define the age range of the group", true, false, "43511B8F-71D9-423A-85BF-D1CD08C1998E", order: 2 )]
     public class FilterGroupsByAge : CheckInActionComponent
     {
         /// <summary>
@@ -58,11 +58,18 @@ namespace Rock.Workflow.Action.CheckIn
             {
                 var remove = GetAttributeValue( action, "Remove" ).AsBoolean();
                 bool ageRequired = GetAttributeValue( action, "AgeRequired" ).AsBoolean( true );
-                var ageRangeAttributeGuid = GetAttributeValue( action, "AgeRangeAttribute" ).AsGuid();
 
-                if ( ageRangeAttributeGuid == Guid.Empty )
+                var ageRangeAttributeKey = string.Empty;
+                var ageRangeAttributeGuid = GetAttributeValue( action, "GroupAgeRangeAttribute" ).AsGuid();
+
+                // get the admin-selected attribute key instead of using a hardcoded key
+                if ( ageRangeAttributeGuid != Guid.Empty )
                 {
-                    throw new Exception( "The attribute, AgeRangeAttribute, is invalid for FilterGroupsByAge" );
+                    ageRangeAttributeKey = rockContext.Attributes.Where( a => a.Guid == ageRangeAttributeGuid ).Select( a => a.Key ).FirstOrDefault();
+                }
+                else
+                {
+                    action.AddLogEntry( string.Format( "The selected Age Range attribute is missing or invalid for '{0}'.", action.ActionType.Name ) );
                 }
 
                 foreach ( var person in family.People )
@@ -84,13 +91,7 @@ namespace Rock.Workflow.Action.CheckIn
                     {
                         foreach ( var group in groupType.Groups.ToList() )
                         {
-                            var ageRangeAttribute = group.Group.Attributes.FirstOrDefault( a => a.Value.Guid == ageRangeAttributeGuid );
-                            var ageRange = string.Empty;
-
-                            if ( !ageRangeAttribute.Equals( default( KeyValuePair<string, Web.Cache.AttributeCache> ) ) )
-                            {
-                                ageRange = group.Group.GetAttributeValue( ageRangeAttribute.Key ) ?? string.Empty;
-                            }
+                            var ageRange = group.Group.GetAttributeValue( ageRangeAttributeKey ).ToStringSafe();
 
                             var ageRangePair = ageRange.Split( new char[] { ',' }, StringSplitOptions.None );
                             string minAgeValue = null;
