@@ -1652,7 +1652,7 @@ function(item) {
                 if ( gAttendeesAttendance.PersonIdField == "ParentId" )
                 {
                     currentPersonId = personDates.ParentId;
-                } else if ( gAttendeesAttendance.PersonIdField == "ChildI")
+                } else if ( gAttendeesAttendance.PersonIdField == "ChildId")
                 {
                     currentPersonId = personDates.ChildId;
                 }
