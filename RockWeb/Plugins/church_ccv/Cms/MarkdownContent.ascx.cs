@@ -18,7 +18,7 @@ namespace RockWeb.Plugins.church_ccv.Cms
         public override void ShowContent()
         {
             mdEdit.Text = this.GetAttributeValue( "MarkdownContent" );
-            lContent.Text = this.GetContentHtml();
+            lView.Text = this.GetContentHtml();
         }
 
         /// <summary>
@@ -27,25 +27,8 @@ namespace RockWeb.Plugins.church_ccv.Cms
         /// <returns></returns>
         public override string GetContentTemplate()
         {
-
             var markdown = this.GetAttributeValue( "MarkdownContent" ) ?? string.Empty;
-            if ( string.IsNullOrWhiteSpace( markdown.Trim() ) )
-            {
-                markdown = "<small>Edit</small>";
-            }
-
             return markdown.ConvertMarkdownToHtml( true );
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnEdit control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        protected void btnEdit_Click( object sender, System.EventArgs e )
-        {
-
-            pnlEdit.Visible = true;
         }
 
         /// <summary>
