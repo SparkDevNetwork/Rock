@@ -13,12 +13,12 @@ using Rock.Model;
 namespace church.ccv.Utility.Jobs
 {
     /// <summary>
-    /// ..
+    /// Sends notifications to group leaders when a group member has a follow up date
     /// </summary>
-    [SystemEmailField( "Email Template", required: true )]
-    [GroupTypeField("Group Type", "Group type to use as a geo-fence (aka neighborhood).",true)]
+    [SystemEmailField( "Email Template", "The email template used for the notification.", required: true )]
+    [GroupTypesField("Group Types", "Group types to include.",true)]
     [DisallowConcurrentExecution]
-    class NextStepFollowUp : IJob
+    class GroupMemberFollowUpNotifications : IJob
     {
         /// <summary> 
         /// Empty constructor for job initialization
@@ -27,7 +27,7 @@ namespace church.ccv.Utility.Jobs
         /// scheduler can instantiate the class whenever it needs.
         /// </para>
         /// </summary>
-        public NextStepFollowUp()
+        public GroupMemberFollowUpNotifications()
         {
         }
 
@@ -45,7 +45,7 @@ namespace church.ccv.Utility.Jobs
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 
             Guid? systemEmailGuid = dataMap.GetString( "EmailTemplate" ).AsGuidOrNull();
-            Guid groupTypeGuid = dataMap.GetString( "GroupType" ).AsGuid();
+            List<Guid> groupTypeGuids = dataMap.GetString( "GroupTypes" ).SplitDelimitedValues().AsGuidList();
 
             // get system email
             SystemEmail systemEmail = null;
@@ -54,9 +54,9 @@ namespace church.ccv.Utility.Jobs
                 systemEmail = emailService.Get( systemEmailGuid.Value );
             }
 
-            if ( groupTypeGuid != null && groupTypeGuid != Guid.Empty )
+            if ( groupTypeGuids.Any() )
             {
-                var groupType = new GroupTypeService( rockContext ).Get( groupTypeGuid );
+                var groupTypes = new GroupTypeService( rockContext ).GetByGuids( groupTypeGuids );
 
                 var groupMemberEntityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( typeof( GroupMember ) );
 
@@ -68,7 +68,7 @@ namespace church.ccv.Utility.Jobs
 
                 var groupMembers = new GroupMemberService( rockContext ).Queryable()
                     .Where( g =>
-                            g.Group.GroupTypeId == groupType.Id &&
+                            groupTypes.Contains( g.Group.GroupType ) &&
                             g.GroupMemberStatus == GroupMemberStatus.Inactive &&
                             followUpDateGroupMemberIds.Contains( g.Id ) );
 
