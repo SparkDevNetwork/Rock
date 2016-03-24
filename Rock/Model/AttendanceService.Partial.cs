@@ -89,7 +89,7 @@ namespace Rock.Model
         /// <param name="campusIds">The campus ids. Include the keyword 'null' in the list to include CampusId is null</param>
         /// <param name="dataViewId">The data view identifier.</param>
         /// <returns></returns>
-        public IEnumerable<IChartData> GetChartData( ChartGroupBy groupBy = ChartGroupBy.Week, AttendanceGraphBy graphBy = AttendanceGraphBy.Total, DateTime? startDate = null, DateTime? endDate = null, string groupIds = null, string campusIds = null, int? dataViewId = null )
+        public IEnumerable<IChartData> GetChartData( ChartGroupBy groupBy = ChartGroupBy.Week, AttendanceGraphBy graphBy = AttendanceGraphBy.Total, DateTime? startDate = null, DateTime? endDate = null, string groupIds = null, string campusIds = null, string scheduleIds = null, int? dataViewId = null )
         {
             var qryAttendance = Queryable().AsNoTracking()
                 .Where( a =>
@@ -136,8 +136,8 @@ namespace Rock.Model
                 qryAttendance = qryAttendance.Where( a => a.GroupId.HasValue && groupIdList.Contains( a.GroupId.Value ) );
             }
 
-            //// If campuses were included, filter attendances by those that have selected campuses
-            //// if 'null' is one of the campuses, treat that as a 'CampusId is Null'
+            // If campuses were included, filter attendances by those that have selected campuses
+            // if 'null' is one of the campuses, treat that as a 'CampusId is Null'
             var includeNullCampus = ( campusIds ?? "" ).Split( ',' ).ToList().Any( a => a.Equals( "null", StringComparison.OrdinalIgnoreCase ) );
             var campusIdList = ( campusIds ?? "" ).Split( ',' ).AsIntegerList();
 
@@ -163,6 +163,13 @@ namespace Rock.Model
                 qryAttendance = qryAttendance.Where( a => !a.CampusId.HasValue );
             }
 
+            // If schedules were included, filter attendances by those that have selected schedules
+            var scheduleIdList = ( scheduleIds ?? "" ).Split( ',' ).AsIntegerList();
+            scheduleIdList.Remove( 0 );
+            if ( scheduleIdList.Any() )
+            {
+                qryAttendance = qryAttendance.Where( a => a.ScheduleId.HasValue && scheduleIdList.Contains( a.ScheduleId.Value ) );
+            }
 
             var qryAttendanceWithSummaryDateTime = qryAttendance.GetAttendanceWithSummaryDateTime( groupBy );
 
@@ -267,9 +274,9 @@ namespace Rock.Model
         /// <param name="includeNullCampusIds">The include null campus ids.</param>
         /// <returns></returns>
         public static DataSet GetAttendanceAnalyticsAttendeeDates( List<int> groupIds, DateTime? start, DateTime? end,
-            List<int> campusIds, bool? includeNullCampusIds )
+            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds )
         {
-            var parameters = GetAttendanceAnalyticsParameters( null, groupIds, start, end, campusIds, includeNullCampusIds );
+            var parameters = GetAttendanceAnalyticsParameters( null, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds );
             return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_AttendeeDates", System.Data.CommandType.StoredProcedure, parameters, 300 );
         }
 
@@ -284,9 +291,9 @@ namespace Rock.Model
         /// <param name="includeNullCampusIds">The include null campus ids.</param>
         /// <returns></returns>
         public static DataSet GetAttendanceAnalyticsAttendeeFirstDates( int GroupTypeId, List<int> groupIds, DateTime? start, DateTime? end,
-            List<int> campusIds, bool? includeNullCampusIds )
+            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds )
         {
-            var parameters = GetAttendanceAnalyticsParameters( GroupTypeId, groupIds, start, end, campusIds, includeNullCampusIds );
+            var parameters = GetAttendanceAnalyticsParameters( GroupTypeId, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds );
             return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_AttendeeFirstDates", System.Data.CommandType.StoredProcedure, parameters, 300 );
         }
 
@@ -300,9 +307,9 @@ namespace Rock.Model
         /// <param name="includeNullCampusIds">The include null campus ids.</param>
         /// <returns></returns>
         public static DataSet GetAttendanceAnalyticsAttendeeLastAttendance( List<int> groupIds, DateTime? start, DateTime? end,
-            List<int> campusIds, bool? includeNullCampusIds )
+            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds )
         {
-            var parameters = GetAttendanceAnalyticsParameters( null, groupIds, start, end, campusIds, includeNullCampusIds );
+            var parameters = GetAttendanceAnalyticsParameters( null, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds );
             return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance", System.Data.CommandType.StoredProcedure, parameters, 300 );
         }
 
@@ -318,9 +325,9 @@ namespace Rock.Model
         /// <param name="IncludeChildrenWithParents">The include children with parents.</param>
         /// <returns></returns>
         public static DataSet GetAttendanceAnalyticsAttendees( List<int> groupIds, DateTime? start, DateTime? end,
-            List<int> campusIds, bool? includeNullCampusIds, bool? IncludeParentsWithChild, bool? IncludeChildrenWithParents )
+            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds, bool? IncludeParentsWithChild, bool? IncludeChildrenWithParents )
         {
-            var parameters = GetAttendanceAnalyticsParameters( null, groupIds, start, end, campusIds, includeNullCampusIds, IncludeParentsWithChild, IncludeChildrenWithParents );
+            var parameters = GetAttendanceAnalyticsParameters( null, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds, IncludeParentsWithChild, IncludeChildrenWithParents );
             return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_Attendees", System.Data.CommandType.StoredProcedure, parameters, 300 );
         }
 
@@ -337,14 +344,14 @@ namespace Rock.Model
         /// <param name="IncludeChildrenWithParents">The include children with parents.</param>
         /// <returns></returns>
         public static DataSet GetAttendanceAnalyticsNonAttendees( int GroupTypeId, List<int> groupIds, DateTime? start, DateTime? end,
-            List<int> campusIds, bool? includeNullCampusIds, bool? IncludeParentsWithChild, bool? IncludeChildrenWithParents )
+            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds, bool? IncludeParentsWithChild, bool? IncludeChildrenWithParents )
         {
-            var parameters = GetAttendanceAnalyticsParameters( GroupTypeId, groupIds, start, end, campusIds, includeNullCampusIds, IncludeParentsWithChild, IncludeChildrenWithParents );
+            var parameters = GetAttendanceAnalyticsParameters( GroupTypeId, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds, IncludeParentsWithChild, IncludeChildrenWithParents );
             return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_NonAttendees", System.Data.CommandType.StoredProcedure, parameters, 300 );
         }
 
         private static Dictionary<string, object> GetAttendanceAnalyticsParameters( int? GroupTypeId, List<int> groupIds, DateTime? start, DateTime? end,
-            List<int> campusIds, bool? includeNullCampusIds, bool? IncludeParentsWithChild = null, bool? IncludeChildrenWithParents = null )
+            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds, bool? IncludeParentsWithChild = null, bool? IncludeChildrenWithParents = null )
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
 
@@ -376,6 +383,11 @@ namespace Rock.Model
             if ( includeNullCampusIds.HasValue )
             {
                 parameters.Add( "includeNullCampusIds", includeNullCampusIds.Value );
+            }
+
+            if ( scheduleIds != null )
+            {
+                parameters.Add( "ScheduleIds", scheduleIds.AsDelimited( "," ) );
             }
 
             if ( IncludeParentsWithChild.HasValue )

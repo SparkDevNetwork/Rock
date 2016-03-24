@@ -433,6 +433,7 @@ function(item) {
             this.SetUserPreference( keyPrefix + "GroupBy", hfGroupBy.Value, false );
             this.SetUserPreference( keyPrefix + "GraphBy", hfGraphBy.Value, false );
             this.SetUserPreference( keyPrefix + "CampusIds", clbCampuses.SelectedValues.AsDelimited( "," ), false );
+            this.SetUserPreference( keyPrefix + "ScheduleIds", spSchedules.SelectedValues.ToList().AsDelimited( "," ), false );
             this.SetUserPreference( keyPrefix + "DataView", dvpDataView.SelectedValue, false );
 
             var selectedGroupIds = GetSelectedGroupIds();
@@ -521,7 +522,6 @@ function(item) {
             hfGraphBy.Value = GetSetting( keyPrefix, "GraphBy" );
 
             var campusIdList = new List<string>();
-
             string campusQryString = Request.QueryString["CampusIds"];
             if ( campusQryString != null )
             {
@@ -547,6 +547,16 @@ function(item) {
                         item.Selected = true;
                     }
                 }
+            }
+
+            var scheduleIdList = GetSetting( keyPrefix, "ScheduleIds" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsIntegerList();
+            if ( scheduleIdList.Any() )
+            {
+                var schedules = new ScheduleService( _rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( s => scheduleIdList.Contains( s.Id ) )
+                    .ToList();
+                spSchedules.SetValues( schedules );
             }
 
             var groupIdList = GetSetting( keyPrefix, "GroupIds" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
@@ -729,6 +739,8 @@ function(item) {
             var selectedCampusIds = clbCampuses.SelectedValues;
             string campusIds = selectedCampusIds.AsDelimited( "," );
 
+            var scheduleIds = spSchedules.SelectedValues.ToList().AsDelimited( "," );
+
             var chartData = new AttendanceService( _rockContext ).GetChartData(
                 hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week,
                 hfGraphBy.Value.ConvertToEnumOrNull<AttendanceGraphBy>() ?? AttendanceGraphBy.Total,
@@ -736,6 +748,7 @@ function(item) {
                 end,
                 groupIds,
                 campusIds,
+                scheduleIds,
                 dvpDataView.SelectedValueAsInt() );
             return chartData;
         }
@@ -777,6 +790,14 @@ function(item) {
             if ( !includeNullCampus && !campusIdList.Any() )
             {
                 campusIdList = null;
+            }
+
+            // If schedules were included, filter attendance by those that have the selected schedules
+            var scheduleIdList = spSchedules.SelectedValues.AsIntegerList();
+            scheduleIdList.Remove( 0 );
+            if ( !scheduleIdList.Any() )
+            {
+                scheduleIdList = null;
             }
 
             // we want to get the first 2 visits at a minimum so we can show the dates in the grid
@@ -839,7 +860,7 @@ function(item) {
                 qryTasks.Add( Task.Run( () =>
                 {
                     DataTable dtAttendeeDates = AttendanceService.GetAttendanceAnalyticsAttendeeDates(
-                        groupIdList, start, end, campusIdList, includeNullCampus ).Tables[0];
+                        groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList ).Tables[0];
 
                     foreach ( DataRow row in dtAttendeeDates.Rows )
                     {
@@ -867,14 +888,14 @@ function(item) {
                 qryTasks.Add( Task.Run( () =>
                 {
                     dtAttendeeLastAttendance = AttendanceService.GetAttendanceAnalyticsAttendeeLastAttendance(
-                        groupIdList, start, end, campusIdList, includeNullCampus ).Tables[0];
+                        groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList ).Tables[0];
                 } ) );
 
                 // Call the stored procedure to get the names/demographic info for attendess
                 qryTasks.Add( Task.Run( () =>
                 {
                     dtAttendees = AttendanceService.GetAttendanceAnalyticsAttendees(
-                        groupIdList, start, end, campusIdList, includeNullCampus, includeParents, includeChildren ).Tables[0];
+                        groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList, includeParents, includeChildren ).Tables[0];
                 } ) );
 
                 // If checking for missed attendance, get the people who missed that number of dates during the missed date range
@@ -888,7 +909,7 @@ function(item) {
 
                         DataTable dtAttendeeDatesMissed = AttendanceService.GetAttendanceAnalyticsAttendeeDates(
                             groupIdList, attendedMissedDateRange.Start.Value, attendedMissedDateRange.End.Value,
-                            campusIdList, includeNullCampus ).Tables[0];
+                            campusIdList, includeNullCampus, scheduleIdList ).Tables[0];
 
                         var missedResults = new Dictionary<int, AttendeeResult>();
                         foreach ( DataRow row in dtAttendeeDatesMissed.Rows )
@@ -928,7 +949,7 @@ function(item) {
                 qryTasks.Add( Task.Run( () =>
                 {
                     dtAttendeeFirstDates = AttendanceService.GetAttendanceAnalyticsAttendeeFirstDates(
-                        groupType.Id, groupIdList, start, end, campusIdList, includeNullCampus ).Tables[0];
+                        groupType.Id, groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList ).Tables[0];
                 } ) );
 
 
@@ -938,7 +959,7 @@ function(item) {
                 qryTasks.Add( Task.Run( () =>
                 {
                     DataSet ds = AttendanceService.GetAttendanceAnalyticsNonAttendees(
-                        groupType.Id, groupIdList, start, end, campusIdList, includeNullCampus, includeParents, includeChildren );
+                        groupType.Id, groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList, includeParents, includeChildren );
 
                     DataTable dtNonAttenders = ds.Tables[0];
                     dtAttendeeFirstDates = ds.Tables[1];
@@ -1886,7 +1907,7 @@ function(item) {
             DisplayShowBy( ShowBy.Chart );
             if ( pnlResults.Visible )
             {
-                BindChartAttendanceGrid();
+                LoadChartAndGrids();
             }
         }
 
