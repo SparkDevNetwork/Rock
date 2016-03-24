@@ -1,3 +1,3 @@
-<section class="callout-full-width bg-image-004 feature" style="background: url({{ImageUrl}});  background-position: 50% 45%; background-size: cover;">
+<section class="callout-full-width bg-image-004 feature" style="background: url({{ImageUrl}});  background-position: {{XAxis}}% {{YAxis}}%; background-size: cover;">
   <h2 class="white title-on-bottom">{{ImageTitle}}</h2>
 </section>

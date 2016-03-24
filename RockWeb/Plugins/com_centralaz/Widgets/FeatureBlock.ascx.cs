@@ -41,6 +41,8 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
     [TextField( "Image Subfolder", "The subfolder to use when displaying or uploading images. It will be appended to the base folder ~/Content/ExternalSite/Headers/", false, "", "", 2 )]
     [TextField( "Default Image", "The image that will appear if nothing is in the specified sub-folder", true, "https://www.centralaz.com/Content/ExternalSite/Headers/Mainbanner.jpg" )]
     [TextField( "Feature Title" )]
+    [IntegerField( "X Axis", "The background position X axis.", true, 50 )]
+    [IntegerField( "Y Axis", "The background position Y axis.", true, 45 )]
 
     [CodeEditorField( "Lava Template", "Lava template to use to display the header.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~/Plugins/com_centralaz/Widgets/Lava/FeatureBlock.lava' %}", "", 2 )]
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 3 )]
@@ -51,9 +53,6 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
 
         private string _virtualBasePath = "~/Content/ExternalSite/Headers";
         private string _physicalPath;
-        private int? _height = null;
-        private int? _width = null;
-        private bool? _specifyingSize = null;
 
         #endregion
 
@@ -65,78 +64,6 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         public string ImageFolderPath { get; set; }
 
         /// <summary>
-        /// The number of milliseconds to pause beteween photos.
-        /// </summary>
-        /// <value>
-        /// number of milliseconds
-        /// </value>
-        public int PauseMilliseconds
-        {
-            get
-            {
-                return GetAttributeValue( "PauseSeconds" ).AsInteger() * 1000;
-            }
-            private set { }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether the height and width should be set on each image.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [specifying size]; otherwise, <c>false</c>.
-        /// </value>
-        public bool SpecifyingSize
-        {
-            get
-            {
-                if ( !_specifyingSize.HasValue )
-                {
-                    _specifyingSize = GetAttributeValue( "SetSize" ).AsBooleanOrNull();
-                }
-                return _specifyingSize ?? false;
-            }
-            private set { }
-        }
-
-        /// <summary>
-        /// The height to constrain the photo to use.
-        /// </summary>
-        /// <value>
-        /// height in pixels
-        /// </value>
-        public int? Height
-        {
-            get
-            {
-                if ( !_height.HasValue )
-                {
-                    _height = GetAttributeValue( "Height" ).AsInteger();
-                }
-                return _height;
-            }
-            private set { }
-        }
-
-        /// <summary>
-        /// The width to constrain the photo to use.
-        /// </summary>
-        /// <value>
-        /// width in pixels
-        /// </value>
-        public int? Width
-        {
-            get
-            {
-                if ( !_width.HasValue )
-                {
-                    _width = GetAttributeValue( "Width" ).AsInteger();
-                }
-                return _width;
-            }
-            private set { }
-        }
-
-        /// <summary>
         /// Gets the settings tool tip.
         /// </summary>
         /// <value>
@@ -146,7 +73,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         {
             get
             {
-                return "Edit Photos";
+                return "Edit Header Image";
             }
         }
 
@@ -218,6 +145,8 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         protected void lbOk_Click( object sender, EventArgs e )
         {
             SetAttributeValue( "FeatureTitle", tbTitle.Text );
+            SetAttributeValue( "XAxis", nbXAxis.Text );
+            SetAttributeValue( "YAxis", nbYAxis.Text );
             SaveAttributeValues();
 
             ShowView();
@@ -234,6 +163,8 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         protected override void ShowSettings()
         {
             tbTitle.Text = GetAttributeValue( "FeatureTitle" );
+            nbXAxis.Text = GetAttributeValue( "XAxis" );
+            nbYAxis.Text = GetAttributeValue( "YAxis" );
             pnlEditModel.Visible = true;
             upnlHtmlContent.Update();
             mdEdit.Show();
@@ -289,6 +220,8 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                 mergeFields.Add( "ImageUrl", GetAttributeValue( "DefaultImage" ) );
             }
 
+            mergeFields.Add( "XAxis", GetAttributeValue( "XAxis" ) );
+            mergeFields.Add( "YAxis", GetAttributeValue( "YAxis" ) );
             mergeFields.Add( "ImageTitle", GetAttributeValue( "FeatureTitle" ) );
 
             mergeFields.Add( "CurrentPerson", CurrentPerson );

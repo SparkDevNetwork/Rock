@@ -28,9 +28,10 @@
                 content: "Bingo. You're free to drop.";
                 font-size: 1.2em;
             }
-            .dz-progress {
-                visibility: hidden;
-            }
+
+    .dz-progress {
+        visibility: hidden;
+    }
 </style>
 <asp:UpdatePanel runat="server" ID="upnlHtmlContent" ChildrenAsTriggers="false" UpdateMode="Conditional">
     <ContentTemplate>
@@ -46,6 +47,8 @@
                     <asp:UpdatePanel runat="server" ID="upnlEdit">
                         <ContentTemplate>
                             <Rock:RockTextBox ID="tbTitle" runat="server" Label="Title" />
+                            <Rock:NumberBox ID="nbXAxis" runat="server" Label="Background Position X Axis" MinimumValue="0" MaximumValue="100" NumberType="Integer" />
+                            <Rock:NumberBox ID="nbYAxis" runat="server" Label="Background Position Y Axis" MinimumValue="0" MaximumValue="100" NumberType="Integer" />
                             <div id="divPhotoDropzone" class="dropzone margin-b-md" runat="server">
                                 <div class="fallback">
                                     <input name="file" type="file" multiple />
