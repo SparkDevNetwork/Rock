@@ -14,22 +14,41 @@
 CREATE PROC [dbo].[_church_ccv_spDatamart_ERA] @CurrentDate DATETIME
 AS
 BEGIN
-    DECLARE @SaturdayDate DATETIME
 
+	-- Get Saturday Date
+    DECLARE @SaturdayDate DATETIME
     SET @SaturdayDate = dbo._church_ccv_ufnGetSaturdayDate(@CurrentDate)
 
+	-- Remove current weeks data (to prevent duplicate data if ERA is ran twice in one week)
     DELETE [dbo].[_church_ccv_Datamart_ERA]
     WHERE WeekendDate = @SaturdayDate;
+	
 
-    /****************************************************************************
-		
-		ATTENDANCE 	 
+    /****************************************************************************		
+		PROCESS ATTENDANCE 	 
 
 		Calculate the number of times each family has attended in the last 16
-		weeks and when they last attended based on children's attendance records.
-		
+		weeks and when they last attended based the these check-in groups:
+
+			Two Year Olds
+			Crawlers
+			Infants
+			Toddlers
+			Kindergarten
+			1st Grade
+			Special Needs
+			2nd Grade
+			3rd Grade
+			4th Grade
+			5th Grade
+			6th Grade
+			Three Year Olds
+			Four Year Olds
+			Five Year Olds	
 	*****************************************************************************/
-    INSERT INTO [dbo].[_church_ccv_Datamart_ERA] (
+    
+	-- create new ERA records and populate with attendance data
+	INSERT INTO [dbo].[_church_ccv_Datamart_ERA] (
         WeekendDate
         ,FamilyId
         ,TimesAttendedLast16Weeks
@@ -63,13 +82,12 @@ BEGIN
         AND A.StartDateTime >= DATEADD(DAY, - 1, DATEADD(week, - 15, @SaturdayDate))
     GROUP BY FM.GroupId
 
-    /****************************************************************************
-		
-		GIVING 	 
+
+    /****************************************************************************	
+		PROCESS GIVING 	 
 
 		Calculate the number of times each family has given in the last 6 weeks,
-		total times they've given and when the last time they gave was
-		
+		total times they've given and when the last time they gave was	
 	*****************************************************************************/
     DECLARE @FamilyContributionCount TABLE (
         FamilyId [int] NOT NULL
@@ -99,9 +117,8 @@ BEGIN
         INNER JOIN [Group] F ON F.Id = FM.GroupId
             AND F.GroupTypeId = 10
         WHERE FTD.Amount > 0
-			AND FTD.AccountId IN (498,609,690,708,727,745)
-        )
-    -- Insert Total Count into temporary table	
+			AND FTD.AccountId IN (SELECT * FROM dbo._church_ccv_ufnUtility_GetGeneralFinanceAccountIds())
+        )	
     INSERT INTO @FamilyContributionCount
     SELECT GroupId
         ,COUNT(*)
@@ -111,7 +128,7 @@ BEGIN
     FROM CTE
     GROUP BY GroupId
 
-    --Update Existing Records
+    --Update existing ERA records with giving information
     UPDATE ERA
     SET TimesGaveLastYear = FCC.year_count
         ,TimesGaveLast6Weeks = FCC.recent_count
@@ -121,7 +138,7 @@ BEGIN
     INNER JOIN _church_ccv_Datamart_ERA ERA ON ERA.FamilyId = FCC.FamilyId
         AND ERA.WeekendDate = @SaturdayDate
 
-    -- Create New Records
+    -- Add new ERA records for those with just giving information
     INSERT INTO _church_ccv_Datamart_ERA (
         WeekendDate
         ,FamilyId
@@ -141,18 +158,22 @@ BEGIN
         AND ERA.WeekendDate = @SaturdayDate
     WHERE ERA.FamilyId IS NULL
 
-    -- Calculate Attendance
+    -- Update FirstAttended and LastAttended dates for each family
     UPDATE CW
     SET CW.FirstAttended = dbo._church_ccv_ufnFamilyFirstAttended(CW.FamilyId)
         ,CW.LastAttended = dbo._church_ccv_ufnFamilyLastAttended(CW.FamilyId, CW.WeekendDate)
     FROM _church_ccv_Datamart_ERA CW
     WHERE CW.WeekendDate = @SaturdayDate
 
+	/****************************************************************************
+		PROCESS ERA STATUS
+	*****************************************************************************/
     UPDATE CW
     SET CW.RegularAttendee = CASE 
+			-- If the family is not an ERA, Check to see if they should be
             WHEN ISNULL(LW.RegularAttendee, 0) = 0
                 THEN
-                    -- In ?
+					-- (Gave at least 3 times in the last 52 weeks AND gave at least once in six weeks) OR attended 8 or more times in 16 weeks 
                     CASE 
                         WHEN (
                                 ISNULL(CW.TimesGaveLastYear, 0) >= 3
@@ -162,8 +183,9 @@ BEGIN
                             THEN 1
                         ELSE 0
                         END
+			-- If the family is an ERA, check to see if they should NOT be
             ELSE
-                -- Out ?
+                -- Gave more than 8 weeks ago AND attended more than 4 weeks ago AND attended less than 8 times in 16 weeks
                 CASE 
                     WHEN DATEADD(week, 8, ISNULL(CW.LastGave, '1/1/1900')) < CW.WeekendDate
                         AND DATEADD(week, 4, ISNULL(CW.LastAttended, '1/1/1900')) < CW.WeekendDate
@@ -177,7 +199,8 @@ BEGIN
         AND CW.WeekendDate = DATEADD(week, 1, LW.WeekendDate)
     WHERE CW.WeekendDate = @SaturdayDate
 
-    -- Calculate Giving/Checking component of regular attendees
+    -- Update RegularAttendeeG and RegularAttendeeC values
+	-- NOTE: this data seems to have no value at this time 
     UPDATE _church_ccv_Datamart_ERA
     SET RegularAttendeeG = CASE 
             WHEN DATEADD(week, 8, LastGave) >= WeekendDate
