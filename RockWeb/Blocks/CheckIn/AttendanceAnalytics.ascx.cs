@@ -977,7 +977,9 @@ function(item) {
                         person.NickName = row["NickName"].ToString();
                         person.LastName = row["LastName"].ToString();
                         person.Email = row["Email"].ToString();
-                        person.Age = Person.GetAge( row["BirthDate"] as DateTime? );
+                        person.Birthdate = row["BirthDate"] as DateTime?;
+                        person.Age = Person.GetAge( person.Birthdate );
+
                         person.ConnectionStatusValueId = row["ConnectionStatusValueId"] as int?;
                         result.Person = person;
 
@@ -988,7 +990,8 @@ function(item) {
                             parent.NickName = row["ParentNickName"].ToString();
                             parent.LastName = row["ParentLastName"].ToString();
                             parent.Email = row["ParentEmail"].ToString();
-                            parent.Age = Person.GetAge( row["ParentBirthDate"] as DateTime? );
+                            parent.Birthdate = row["ParentBirthDate"] as DateTime?;
+                            parent.Age = Person.GetAge( parent.Birthdate );
                             result.Parent = parent;
                         }
 
@@ -999,7 +1002,8 @@ function(item) {
                             child.NickName = row["ChildNickName"].ToString();
                             child.LastName = row["ChildLastName"].ToString();
                             child.Email = row["ChildEmail"].ToString();
-                            child.Age = Person.GetAge( row["ChildBirthDate"] as DateTime? );
+                            child.Birthdate = row["ChildBirthDate"] as DateTime?;
+                            child.Age = Person.GetAge( child.Birthdate );
                             result.Child = child;
                         }
 
@@ -1127,7 +1131,8 @@ function(item) {
                             person.NickName = row["NickName"].ToString();
                             person.LastName = row["LastName"].ToString();
                             person.Email = row["Email"].ToString();
-                            person.Age = Person.GetAge( row["BirthDate"] as DateTime? );
+                            person.Birthdate = row["BirthDate"] as DateTime?;
+                            person.Age = Person.GetAge( person.Birthdate );
                             person.ConnectionStatusValueId = row["ConnectionStatusValueId"] as int?;
                             result.Person = person;
 
@@ -1138,7 +1143,8 @@ function(item) {
                                 parent.NickName = row["ParentNickName"].ToString();
                                 parent.LastName = row["ParentLastName"].ToString();
                                 parent.Email = row["ParentEmail"].ToString();
-                                parent.Age = Person.GetAge( row["ParentBirthDate"] as DateTime? );
+                                parent.Birthdate = row["ParentBirthDate"] as DateTime?;
+                                parent.Age = Person.GetAge( parent.Birthdate );
                                 result.Parent = parent;
                             }
 
@@ -1149,7 +1155,8 @@ function(item) {
                                 child.NickName = row["ChildNickName"].ToString();
                                 child.LastName = row["ChildLastName"].ToString();
                                 child.Email = row["ChildEmail"].ToString();
-                                child.Age = Person.GetAge( row["ChildBirthDate"] as DateTime? );
+                                child.Birthdate = row["ChildBirthDate"] as DateTime?;
+                                child.Age = Person.GetAge( child.Birthdate );
                                 result.Child = child;
                             }
 
@@ -2017,6 +2024,7 @@ function(item) {
             public string LastName { get; set; }
             public string Email { get; set; }
             public int? Age { get; set; }
+            public DateTime? Birthdate { get; set; }
             public int? ConnectionStatusValueId { get; set; }
 
             public override string ToString()
