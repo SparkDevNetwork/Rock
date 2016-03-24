@@ -182,6 +182,11 @@ namespace Rock.Model
         {
             if ( state == System.Data.Entity.EntityState.Added || state == System.Data.Entity.EntityState.Modified )
             {
+                if ( string.IsNullOrEmpty( CountryCode ) )
+                {
+                    CountryCode = PhoneNumber.DefaultCountryCode();
+                }
+                
                 NumberFormatted = PhoneNumber.FormattedNumber( CountryCode, Number );
             }
 
@@ -286,9 +291,16 @@ namespace Rock.Model
         /// <returns>A <see cref="System.String"/> containing the phone number with all non numeric characters removed. </returns>
         public static string CleanNumber( string number )
         {
-            return digitsOnly.Replace( number, string.Empty );
+            if ( !string.IsNullOrEmpty( number ) )
+            {
+                return digitsOnly.Replace( number, string.Empty );
+            }
+            else
+            {
+                return string.Empty;
+            }
         }
-        
+
         private static Regex digitsOnly = new Regex( @"[^\d]" );
 
         #endregion
