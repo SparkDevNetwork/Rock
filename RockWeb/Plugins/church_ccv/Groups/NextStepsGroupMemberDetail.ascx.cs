@@ -26,7 +26,10 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
+
+using church.ccv.Utility.SystemGuids;
 
 namespace RockWeb.Plugins.church_ccv.Groups
 {
@@ -41,6 +44,15 @@ namespace RockWeb.Plugins.church_ccv.Groups
     public partial class NextStepsGroupMemberDetail : RockBlock, IDetailBlock
     {
         #region Control Methods
+
+        DefinedTypeCache OptOutReasonDefinedType { get; set; }
+
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            OptOutReasonDefinedType = DefinedTypeCache.Read( new Guid( church.ccv.Utility.SystemGuids.DefinedType.NEXT_STEPS_OPT_OUT_REASON ) );
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -97,9 +109,8 @@ namespace RockWeb.Plugins.church_ccv.Groups
 
                 // load existing group member
                 groupMember = groupMemberService.Get( groupMemberId );
-
-                var optOutReason = ddlOptOutReason.SelectedValueAsEnumOrNull<OptOutReason>();
-                if ( !optOutReason.HasValue )
+                
+                if ( string.IsNullOrWhiteSpace( ddlOptOutReason.SelectedValue ) == true )
                 {
                     groupMember.GroupMemberStatus = rblActivePendingStatus.SelectedValueAsEnum<GroupMemberStatus>();
                 }
@@ -109,9 +120,9 @@ namespace RockWeb.Plugins.church_ccv.Groups
                 }
 
                 groupMember.LoadAttributes();
-                if ( optOutReason.HasValue )
+                if ( string.IsNullOrWhiteSpace( ddlOptOutReason.SelectedValue ) == false )
                 {
-                    groupMember.SetAttributeValue( "OptOutReason", optOutReason.ConvertToInt().ToString() );
+                    groupMember.SetAttributeValue( "OptOutReason", ddlOptOutReason.SelectedValue );
                     if ( dpFollowUpDate.Visible && dpFollowUpDate.SelectedDate.HasValue )
                     {
                         groupMember.SetAttributeValue( "FollowUpDate", dpFollowUpDate.SelectedDate.Value.ToString( "o" ) );
@@ -172,31 +183,31 @@ namespace RockWeb.Plugins.church_ccv.Groups
                 } );
 
                 // now handle any opt-out specific behavior
-                switch ( optOutReason )
+                switch ( ddlOptOutReason.SelectedValue )
                 {
-                    case OptOutReason.UnableToReach:
+                    case church.ccv.Utility.SystemGuids.DefinedValue.NEXT_STEPS_UNABLE_TO_REACH:
                     {
                         StartWorkflow( "OptOutUnableToReachWorkflow", groupMember.Person, rockContext );
                         break;
                     }
-                    case OptOutReason.DoNotContact:
+                    case church.ccv.Utility.SystemGuids.DefinedValue.NEXT_STEPS_DO_NOT_CONTACT:
                     {
                         StartWorkflow( "OptOutDoNotContactWorkflow", groupMember.Person, rockContext );
                         break;
                     }
-                    case OptOutReason.Reassign:
+                    case church.ccv.Utility.SystemGuids.DefinedValue.NEXT_STEPS_REASSIGN_TO_NEW_COACH:
                     {
                         HandleOptOut_Reassign( personService, groupMember, rockContext );
                         break;
                     }
 
-                    case OptOutReason.RegisteredForNeighborhoodGroup:
+                    case church.ccv.Utility.SystemGuids.DefinedValue.NEXT_STEPS_REGISTERED_FOR_NEIGHBORHOOD_GROUP:
                     {
                         StartWorkflow( "OptOutNeighborhoodWorkflow", groupMember.Person, rockContext );
                         break;
                     }
 
-                    case OptOutReason.NoLongerAttendingCCV:
+                    case church.ccv.Utility.SystemGuids.DefinedValue.NEXT_STEPS_NO_LONGER_ATTENDING_CCV:
                     {
                         StartWorkflow( "OptOutNoLongerAttendsWorkflow", groupMember.Person, rockContext );
                         break;
@@ -338,10 +349,10 @@ namespace RockWeb.Plugins.church_ccv.Groups
             lGroupRole.Text = groupMember.GroupRole.ToString();
             rblActivePendingStatus.SetValue( groupMember.GroupMemberStatus.ConvertToInt() );
             groupMember.LoadAttributes();
-            var optOutReason = groupMember.GetAttributeValue( "OptOutReason" ).ConvertToEnumOrNull<OptOutReason>();
-            if ( optOutReason.HasValue )
+            var optOutReasonValue = groupMember.GetAttributeValue( "OptOutReason" );
+            if ( optOutReasonValue != null )
             {
-                ddlOptOutReason.SetValue( optOutReason.ConvertToInt() );
+                ddlOptOutReason.SetValue( optOutReasonValue );
             }
             else
             {
@@ -396,7 +407,13 @@ namespace RockWeb.Plugins.church_ccv.Groups
             rblActivePendingStatus.Items.Add( new ListItem( GroupMemberStatus.Active.ConvertToString(), GroupMemberStatus.Active.ConvertToInt().ToString() ) );
             rblActivePendingStatus.Items.Add( new ListItem( GroupMemberStatus.Pending.ConvertToString(), GroupMemberStatus.Pending.ConvertToInt().ToString() ) );
 
-            ddlOptOutReason.BindToEnum<OptOutReason>( true );
+            //ddlOptOutReason.BindToEnum<OptOutReason>( true );
+            foreach ( var definedValue in OptOutReasonDefinedType.DefinedValues )
+            {
+                ddlOptOutReason.Items.Add( new ListItem( definedValue.Value, definedValue.Guid.ToString( ).ToUpper( ) ) );
+            }
+            ddlOptOutReason.Items.Insert( 0, string.Empty );
+            ddlOptOutReason.SelectedIndex = 0;
         }
 
         /// <summary>
@@ -414,16 +431,14 @@ namespace RockWeb.Plugins.church_ccv.Groups
         /// </summary>
         private void SetControlVisibilities( )
         {
-            OptOutReason? optOutReason = ddlOptOutReason.SelectedValueAsEnumOrNull<OptOutReason>();
-            
             // toggle the follow-up date on or off depending on the reason.
-            dpFollowUpDate.Visible = optOutReason == OptOutReason.FollowUpLater;
+            dpFollowUpDate.Visible = ddlOptOutReason.SelectedValue == church.ccv.Utility.SystemGuids.DefinedValue.NEXT_STEPS_FOLLOW_UP_LATER;
 
             // show the active / pending status picker if there's NO opt out reason.
-            rblActivePendingStatus.Visible = optOutReason == null;
+            rblActivePendingStatus.Visible = ddlOptOutReason.SelectedValue == string.Empty;
 
             // show the reassignment reason field if that's the opt out choice selected.
-            tbReassignReason.Visible = optOutReason == OptOutReason.Reassign;
+            tbReassignReason.Visible = ddlOptOutReason.SelectedValue == church.ccv.Utility.SystemGuids.DefinedValue.NEXT_STEPS_REASSIGN_TO_NEW_COACH;
 
             dpAnniversaryDate.Visible = IsMarried == true;
         }
@@ -450,49 +465,14 @@ namespace RockWeb.Plugins.church_ccv.Groups
                         new WorkflowService( rockContext ).Process( workflow, person, out workflowErrors );
                     }
                     catch ( Exception ex )
+
                     {
                         ExceptionLogService.LogException( ex, this.Context );
                     }
                 }
             }
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private enum OptOutReason
-        {
-            /// <summary>
-            /// follow up later
-            /// </summary>
-            FollowUpLater = 0,
-
-            /// <summary>
-            /// do not contact
-            /// </summary>
-            DoNotContact = 1,
-
-            /// <summary>
-            /// reassign to a new coach
-            /// </summary>
-            Reassign = 2,
-
-            /// <summary>
-            /// Unable to reach
-            /// </summary>
-            UnableToReach = 3,
-
-            /// <summary>
-            /// Registered for neighborhood group
-            /// </summary>
-            RegisteredForNeighborhoodGroup = 4,
-
-            /// <summary>
-            /// No longer attends
-            /// </summary>
-            NoLongerAttendingCCV = 5
-        }
-
+        
         #endregion
     }
 }
