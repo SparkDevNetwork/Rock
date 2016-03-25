@@ -21,6 +21,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Caching;
 using System.Threading;
+using StackExchange.Redis;
 
 namespace Rock.Web.Cache
 {
@@ -31,6 +32,8 @@ namespace Rock.Web.Cache
     /// </summary>
     public class RockMemoryCache : MemoryCache
     {
+        const string REDIS_CHANNEL_NAME = "rock-cache-instructions";
+
         // object used for locking
         private static object s_initLock;
 
@@ -53,6 +56,38 @@ namespace Rock.Web.Cache
         private bool _isCachingDisabled = false;
 
         /// <summary>
+        /// Gets the redis connection.
+        /// </summary>
+        /// <value>
+        /// The redis connection.
+        /// </value>
+        public ConnectionMultiplexer RedisConnection
+        {
+            get
+            {
+                return _redisConnection;
+            }
+        }
+        private ConnectionMultiplexer _redisConnection;
+
+        /// <summary>
+        /// Gets a value indicating whether the redis cache cluster feature is enabled.
+        /// </summary>
+        /// <value>
+        /// bool <c>true</c> if the redis cache cluster feature is enabled; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsRedisClusterEnabled
+        {
+            get
+            {
+                return _isRedisClusterEnabled;
+            }
+        }
+        private bool _isRedisClusterEnabled = false;
+
+
+
+        /// <summary>
         /// Initializes the <see cref="RockMemoryCache"/> class.
         /// </summary>
         static RockMemoryCache()
@@ -63,9 +98,10 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Initializes a new instance of the <see cref="RockMemoryCache"/> class.
         /// </summary>
-        public RockMemoryCache()
+        private RockMemoryCache()
             : this( "RockDefault", null )
         {
+            
         }
 
         /// <summary>
@@ -73,7 +109,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="config">The configuration.</param>
-        public RockMemoryCache( string name, NameValueCollection config = null )
+        private RockMemoryCache( string name, NameValueCollection config = null )
             : base( name, config )
         {
             // Use lambda expressions to create a set method for MemoryCache._stats._lastTrimGen2Count to circumvent poor functionality of MemoryCache
@@ -111,6 +147,70 @@ namespace Rock.Web.Cache
 
             // Check to see if caching has been disabled
             _isCachingDisabled = ConfigurationManager.AppSettings["DisableCaching"].AsBoolean();
+
+            // setup redis cache clustering if needed
+            _isRedisClusterEnabled = ConfigurationManager.AppSettings["EnableRedisCacheCluster"].AsBoolean();
+
+            if ( _isRedisClusterEnabled && _isCachingDisabled == false )
+            {
+                string connectionString = ConfigurationManager.AppSettings["RedisConnectionString"];
+
+                if ( !string.IsNullOrWhiteSpace( connectionString ) )
+                {
+                    try
+                    {
+                        _redisConnection = ConnectionMultiplexer.Connect( connectionString );
+                        _redisConnection.PreserveAsyncOrder = false; // enable concurrent processing of pub/sub messages https://github.com/StackExchange/StackExchange.Redis/blob/master/Docs/PubSubOrder.md
+                    }
+                    catch ( Exception ex )
+                    {
+                        Model.ExceptionLogService.LogException( ex, null );
+                    }
+
+                    if ( _redisConnection != null )
+                    {
+                        // setup the subscription to listen for published instructions on caching
+                        ISubscriber sub = _redisConnection.GetSubscriber();
+
+                        sub.Subscribe( REDIS_CHANNEL_NAME, ( channel, message ) => {
+                            ProcessRedisCacheInstruction( channel, message );
+                        } );
+                    }
+                    else
+                    {
+                        _isRedisClusterEnabled = false;
+                    }
+                }
+                else
+                {
+                    _isRedisClusterEnabled = false;
+                }
+            }
+        }
+
+        private void ProcessRedisCacheInstruction(RedisChannel channel, RedisValue message )
+        {
+            string[] messageParts = message.ToString().Split( ',' );
+            if (messageParts.Length > 0 )
+            {
+                var action = messageParts[0];
+                switch ( action )
+                {
+                    case "REMOVE":
+                        {
+                            if (messageParts.Length > 1 )
+                            {
+                                RemoveFromMemoryCache( messageParts[1] );
+                            }
+                            break;
+                        }
+                    case "FLUSH":
+                        {
+                            RockMemoryCache.Clear();
+                            break;
+                        }
+                }
+            }
         }
 
         /// <summary>
@@ -242,6 +342,47 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Removes the specified key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="regionName">Name of the region.</param>
+        /// <returns></returns>
+        public new object Remove( string key, string regionName = null )
+        {
+            if ( _isRedisClusterEnabled )
+            {
+                // tell all servers listening to redis to remove the cached item (including us)
+                ISubscriber sub = RockMemoryCache.s_defaultCache.RedisConnection.GetSubscriber();
+                sub.PublishAsync( REDIS_CHANNEL_NAME, "REMOVE," + key );
+                return new object();
+            }
+            else
+            {
+                return RemoveFromMemoryCache( key, regionName );
+            }
+        }
+
+        private object RemoveFromMemoryCache(string key, string regionName = null )
+        {
+            return base.Remove( key, regionName );
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        public new void Dispose()
+        {
+            // unsubscribe from redis commands
+            if ( _isRedisClusterEnabled )
+            {
+                ISubscriber sub = _redisConnection.GetSubscriber();
+                sub.UnsubscribeAll();
+            }
+
+            base.Dispose();
+        }
+
+        /// <summary>
         /// Gets the default.
         /// </summary>
         /// <value>
@@ -275,8 +416,15 @@ namespace Rock.Web.Cache
             {
                 if ( RockMemoryCache.s_defaultCache != null )
                 {
+                    // send flush command to redis cluster
+                    if ( RockMemoryCache.s_defaultCache.IsRedisClusterEnabled )
+                    {
+                        ISubscriber sub = RockMemoryCache.s_defaultCache.RedisConnection.GetSubscriber();
+                        sub.PublishAsync( REDIS_CHANNEL_NAME, "FLUSH" );
+                    }
+
                     RockMemoryCache.s_defaultCache.Dispose();
-                    RockMemoryCache.s_defaultCache = null;
+                    RockMemoryCache.s_defaultCache = new RockMemoryCache();
                 }
             }
         }
