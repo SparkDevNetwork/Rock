@@ -206,7 +206,7 @@ namespace Rock.Web.Cache
                         }
                     case "FLUSH":
                         {
-                            RockMemoryCache.Clear();
+                            FlushMemoryCache();
                             break;
                         }
                 }
@@ -352,7 +352,7 @@ namespace Rock.Web.Cache
             if ( _isRedisClusterEnabled )
             {
                 // tell all servers listening to redis to remove the cached item (including us)
-                ISubscriber sub = RockMemoryCache.s_defaultCache.RedisConnection.GetSubscriber();
+                ISubscriber sub = _redisConnection.GetSubscriber();
                 sub.PublishAsync( REDIS_CHANNEL_NAME, "REMOVE," + key );
                 return new object();
             }
@@ -412,17 +412,28 @@ namespace Rock.Web.Cache
         /// </summary>
         public static void Clear()
         {
+            if ( RockMemoryCache.s_defaultCache != null && RockMemoryCache.s_defaultCache.IsRedisClusterEnabled )
+            {
+                // tell all servers listening to redis to flush the cached (including us)
+                ISubscriber sub = RockMemoryCache.s_defaultCache.RedisConnection.GetSubscriber();
+                sub.PublishAsync( REDIS_CHANNEL_NAME, "FLUSH" );
+                
+            }
+            else
+            {
+                FlushMemoryCache();
+            }
+        }
+
+        /// <summary>
+        /// Flushes the memory cache.
+        /// </summary>
+        private static void FlushMemoryCache()
+        {
             lock ( RockMemoryCache.s_initLock )
             {
                 if ( RockMemoryCache.s_defaultCache != null )
-                {
-                    // send flush command to redis cluster
-                    if ( RockMemoryCache.s_defaultCache.IsRedisClusterEnabled )
-                    {
-                        ISubscriber sub = RockMemoryCache.s_defaultCache.RedisConnection.GetSubscriber();
-                        sub.PublishAsync( REDIS_CHANNEL_NAME, "FLUSH" );
-                    }
-
+                { 
                     RockMemoryCache.s_defaultCache.Dispose();
                     RockMemoryCache.s_defaultCache = new RockMemoryCache();
                 }
