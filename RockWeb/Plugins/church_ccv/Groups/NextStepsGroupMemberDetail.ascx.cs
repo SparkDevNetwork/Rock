@@ -406,8 +406,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
             rblActivePendingStatus.Items.Clear();
             rblActivePendingStatus.Items.Add( new ListItem( GroupMemberStatus.Active.ConvertToString(), GroupMemberStatus.Active.ConvertToInt().ToString() ) );
             rblActivePendingStatus.Items.Add( new ListItem( GroupMemberStatus.Pending.ConvertToString(), GroupMemberStatus.Pending.ConvertToInt().ToString() ) );
-
-            //ddlOptOutReason.BindToEnum<OptOutReason>( true );
+            
             foreach ( var definedValue in OptOutReasonDefinedType.DefinedValues )
             {
                 ddlOptOutReason.Items.Add( new ListItem( definedValue.Value, definedValue.Guid.ToString( ).ToUpper( ) ) );
