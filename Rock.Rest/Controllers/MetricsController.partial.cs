@@ -94,8 +94,9 @@ namespace Rock.Rest.Controllers
                     var lastMetricValue = qryMeasureValues.OrderByDescending( a => a.MetricValueDateTime ).FirstOrDefault();
                     if ( lastMetricValue != null )
                     {
-                        metricYTDData.LastValue = lastMetricValue.YValue.HasValue ? Math.Round( lastMetricValue.YValue.Value, roundYValues ? 0 : 2 ) : (decimal?)null;
                         metricYTDData.LastValueDate = lastMetricValue.MetricValueDateTime.HasValue ? lastMetricValue.MetricValueDateTime.Value.Date : DateTime.MinValue;
+                        var lastMetricCumulativeValues = qryMeasureValues.Where(a => a.MetricValueDateTime == metricYTDData.LastValueDate);
+                        metricYTDData.LastValue = lastMetricCumulativeValues.Sum(a => a.YValue).HasValue ? Math.Round(lastMetricCumulativeValues.Sum(a => a.YValue).Value, roundYValues ? 0 : 2) : (decimal?)null;
                     }
 
                     decimal? sum = qryMeasureValues.Sum( a => a.YValue );
