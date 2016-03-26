@@ -203,21 +203,18 @@ namespace Rock.Communication.Transport
                     using ( var smtpClient = GetSmtpClient() )
                     {
                         // Add Attachments
+                        var attachments = new List<BinaryFile>();
                         string attachmentIds = communication.GetMediumDataValue( "Attachments" );
                         if ( !string.IsNullOrWhiteSpace( attachmentIds ) )
                         {
                             var binaryFileService = new BinaryFileService( communicationRockContext );
 
-                            foreach ( string idVal in attachmentIds.SplitDelimitedValues() )
+                            foreach ( int binaryFileId in attachmentIds.SplitDelimitedValues().AsIntegerList() )
                             {
-                                int binaryFileId = int.MinValue;
-                                if ( int.TryParse( idVal, out binaryFileId ) )
+                                var binaryFile = binaryFileService.Get( binaryFileId );
+                                if ( binaryFile != null )
                                 {
-                                    var binaryFile = binaryFileService.Get( binaryFileId );
-                                    if ( binaryFile != null )
-                                    {
-                                        message.Attachments.Add( new Attachment( binaryFile.ContentStream, binaryFile.FileName ) );
-                                    }
+                                    attachments.Add( binaryFile );
                                 }
                             }
                         }
@@ -283,6 +280,16 @@ namespace Rock.Communication.Transport
                                         {
                                             AlternateView htmlView = AlternateView.CreateAlternateViewFromString( htmlBody, new System.Net.Mime.ContentType( MediaTypeNames.Text.Html ) );
                                             message.AlternateViews.Add( htmlView );
+                                        }
+
+                                        // Recreate the attachments
+                                        message.Attachments.Clear();
+                                        if ( attachments.Any() )
+                                        {
+                                            foreach( var attachment in attachments )
+                                            {
+                                                message.Attachments.Add( new Attachment( attachment.ContentStream, attachment.FileName ) );
+                                            }
                                         }
 
                                         smtpClient.Send( message );
