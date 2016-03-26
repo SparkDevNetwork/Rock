@@ -98,6 +98,13 @@ namespace Rock.Rest.Controllers
                         metricYTDData.LastValueDate = lastMetricValue.MetricValueDateTime.HasValue ? lastMetricValue.MetricValueDateTime.Value.Date : DateTime.MinValue;
                     }
 
+                    var lastMetricCumulativeValues = qryMeasureValues.Where(a => a.MetricValueDateTime == metricYTDData.LastValueDate);
+                    if (lastMetricCumulativeValues != null)
+                    {
+                        metricYTDData.LastCumulativeValue = lastMetricCumulativeValues.Sum(a => a.YValue).HasValue ? Math.Round(lastMetricCumulativeValues.Sum(a => a.YValue).Value, roundYValues ? 0 : 2) : (decimal?)null;
+                        metricYTDData.LastValueDate = lastMetricValue.MetricValueDateTime.HasValue ? lastMetricValue.MetricValueDateTime.Value.Date : DateTime.MinValue;
+                    }
+
                     decimal? sum = qryMeasureValues.Sum( a => a.YValue );
                     metricYTDData.CumulativeValue = sum.HasValue ? Math.Round( sum.Value, roundYValues ? 0 : 2 ) : (decimal?)null;
 
@@ -184,6 +191,15 @@ namespace Rock.Rest.Controllers
         public DateTime LastValueDate { get; set; }
 
         /// <summary>
+        /// Gets or sets the cumulative value from the last value date.
+        /// </summary>
+        /// <value>
+        /// The cumulative value.
+        /// </value>
+        [DataMember]
+        public object LastCumulativeValue { get; set; }
+
+        /// <summary>
         /// Gets or sets the cumulative value.
         /// </summary>
         /// <value>
@@ -200,5 +216,6 @@ namespace Rock.Rest.Controllers
         /// </value>
         [DataMember]
         public object GoalValue { get; set; }
+
     }
 }
