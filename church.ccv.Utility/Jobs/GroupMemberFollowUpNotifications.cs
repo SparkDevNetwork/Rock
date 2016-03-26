@@ -99,8 +99,11 @@ namespace church.ccv.Utility.Jobs
                         var recipients = new List<string>();
                         recipients.Add( coach.Email );
 
+                        var mergeFields = new Dictionary<string, object>();
+                        mergeFields.Add( "Person", groupMember.Person );
+
                         var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
-                        Email.Send( systemEmail.From, systemEmail.FromName, systemEmail.Subject, recipients, systemEmail.Body, appRoot );
+                        Email.Send( systemEmail.From, systemEmail.FromName, systemEmail.Subject, recipients, systemEmail.Body.ResolveMergeFields( mergeFields ), appRoot );
                     }
                 }
 
