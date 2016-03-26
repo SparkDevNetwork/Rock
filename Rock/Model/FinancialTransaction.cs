@@ -224,6 +224,7 @@ namespace Rock.Model
         /// <value>
         /// The authorized person alias.
         /// </value>
+        [DataMember]
         public virtual PersonAlias AuthorizedPersonAlias { get; set; }
 
         /// <summary>
