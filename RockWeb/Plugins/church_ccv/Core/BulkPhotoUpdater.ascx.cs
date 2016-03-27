@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Web.UI;
 
 using Rock;
@@ -18,16 +20,18 @@ namespace RockWeb.Plugins.church_ccv.Core
     {
         #region Fields
 
-        RockContext rockContext = new RockContext();
+        RockContext _rockContext = new RockContext();
 
         #endregion
+
+        #region Properties
 
         protected int SkipCounter
         {
             get
             {
                 object skipCounter = ViewState["SkipCounter"];
-                return skipCounter != null ? (int)skipCounter : 0;
+                return skipCounter != null ? ( int ) skipCounter : 0;
             }
 
             set
@@ -41,7 +45,7 @@ namespace RockWeb.Plugins.church_ccv.Core
             get
             {
                 object currentPhotoId = ViewState["CurrentPhotoId"];
-                return currentPhotoId != null ? (int)currentPhotoId : 0;
+                return currentPhotoId != null ? ( int ) currentPhotoId : 0;
             }
 
             set
@@ -50,19 +54,23 @@ namespace RockWeb.Plugins.church_ccv.Core
             }
         }
 
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit(EventArgs e)
+        protected override void OnInit( EventArgs e )
         {
-            base.OnInit(e);
-            
+            base.OnInit( e );
+
+            dvpDataView.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
+
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
-            this.AddConfigurationUpdateTrigger(upnlContent);
+            this.AddConfigurationUpdateTrigger( upnlContent );
         }
 
         /// <summary>
@@ -75,22 +83,7 @@ namespace RockWeb.Plugins.church_ccv.Core
 
             if ( !Page.IsPostBack )
             {
-                var attributeValueService = new AttributeValueService( rockContext );
-                var personService = new PersonService( rockContext );
-
-                // get a list of people already processed
-                var processedPeople = attributeValueService.GetByAttributeId( 16933 )
-                    .Where( a => a.Value == "True" )
-                    .Select( a => a.EntityId )
-                    .ToList();
-
-                // get a list of person photos
-                var photoIds = personService.Queryable()
-                    .Where( p => p.PhotoId != null )
-                    .Where( p => !processedPeople.Contains( p.Id ) )
-                    .Select( p => p.PhotoId ).ToList();
-
-                hfPhotoIds.Value = photoIds.AsDelimited(",");
+                UpdatePhotoList();
 
                 ShowDetail( hfPhotoIds.Value.SplitDelimitedValues().FirstOrDefault().AsIntegerOrNull() );
             }
@@ -100,14 +93,17 @@ namespace RockWeb.Plugins.church_ccv.Core
 
         #region Methods
 
-        protected void ShowDetail(int? photoId)
+        /// <summary>
+        /// Shows the detail page.
+        /// </summary>
+        protected void ShowDetail( int? photoId )
         {
             CurrentPhotoId = photoId;
 
             imgPhoto.BinaryFileId = photoId;
 
-            var binaryFileService = new BinaryFileService( rockContext );
-            var personService = new PersonService( rockContext );
+            var binaryFileService = new BinaryFileService( _rockContext );
+            var personService = new PersonService( _rockContext );
 
             lProgressBar.Text = string.Format(
                         @"{0} of {1}",
@@ -120,45 +116,83 @@ namespace RockWeb.Plugins.church_ccv.Core
 
             var person = personService.Queryable()
                         .Where( p => p.PhotoId == photoId )
-                        .Select( p => new
-                        {
-                            Name = p.NickName + " " + p.LastName,
-                            Gender = p.Gender.ToString(),
-                            ConnectionStatus = p.ConnectionStatusValue.Value.ToString()
-                        } )
                         .FirstOrDefault();
 
-            imgPhoto.Label = person.Name;
-            lGender.Text = person.Gender;
-            lConnectionStatus.Text = person.ConnectionStatus;
-
-            string imageSquared;
+            imgPhoto.Label = String.Empty;
+            lName.Text = string.Format( "<span class='first-word'>{0}</span> {1}", person.NickName, person.LastName );
+            lAge.Text = person.Age.ToString() + " yrs old";
+            lGender.Text = person.Gender.ToString();
+            lConnectionStatus.Text = person.ConnectionStatusValue.ToString();
 
             if ( image.Width == image.Height )
             {
-                imageSquared = @"<li style='color: #5c9e7d;'><i class='fa fa-check-circle'></i> The image is square (" + image.Width.ToString() + " X " + image.Height.ToString() + ")</li>";
+                lDimenions.Text = @"<span class='label label-success'>" + image.Width.ToString() + " X " + image.Height.ToString() + "</span>";
             }
             else
             {
-                imageSquared = @"<li style='color: #bb5454;'><i class='fa fa-times-circle'></i> The image is not square (" + image.Width.ToString() + " X " + image.Height.ToString() + ")</li>";
+                lDimenions.Text = @"<span class='label label-danger'>" + image.Width.ToString() + " X " + image.Height.ToString() + "</span>";
             }
 
-            string imageLarge;
-
-            if ( image.Width <= 500 || image.Height <= 500 )
+            if ( image.Width >= 500 || image.Height >= 500 )
             {
-                imageLarge = @"<li style='color: #5c9e7d;'><i class='fa fa-check-circle'></i> The image is not too large.</li>";
+                lSizeCheck.Text = @"<span class='label label-danger'>Too Large</span>";
             }
-            else
+        }
+
+        /// <summary>
+        /// Updates the list of photo ids. 
+        /// </summary>
+        protected void UpdatePhotoList()
+        {
+            var attributeValueService = new AttributeValueService( _rockContext );
+            var personService = new PersonService( _rockContext );
+
+            List<int> dataViewPersonIds = new List<int>();
+
+            // get a list of people already processed
+            var processedPeople = attributeValueService.GetByAttributeId( 16933 )
+                .Where( a => a.Value == "True" )
+                .Select( a => a.EntityId )
+                .ToList();
+
+            // filter by dataview
+            var dataViewId = dvpDataView.SelectedValueAsInt();
+            if ( dataViewId.HasValue )
             {
-                imageLarge = @"<li style='color: #bb5454;'><i class='fa fa-times-circle'></i> The image is too large.</li>";
+                dataViewPersonIds = new List<int>();
+                var dataView = new DataViewService( _rockContext ).Get( dataViewId.Value );
+                if ( dataView != null )
+                {
+                    var errorMessages = new List<string>();
+                    var dvPersonService = new PersonService( _rockContext );
+                    ParameterExpression paramExpression = dvPersonService.ParameterExpression;
+                    Expression whereExpression = dataView.GetExpression( dvPersonService, paramExpression, out errorMessages );
+
+                    var dataViewPersonIdQry = dvPersonService
+                        .Queryable().AsNoTracking()
+                        .Where( paramExpression, whereExpression )
+                        .Select( p => p.Id );
+
+                    dataViewPersonIds = dataViewPersonIdQry.ToList();
+                }
             }
 
-            lChecks.Text = string.Format(
-                    @"{0}{1}",
-                    imageSquared, 
-                    imageLarge );
+            // get a list of person photos
+            var photoIds = personService
+                .Queryable().AsNoTracking()
+                .Where( p => p.PhotoId != null )
+                .Where( p => !processedPeople.Contains( p.Id ) );
 
+            if ( dataViewPersonIds.Any() )
+            {
+                photoIds = photoIds.Where( p => dataViewPersonIds.Contains( p.Id ) );
+            }
+
+            var photoIdList = photoIds.Select( p => p.PhotoId ).ToList();
+
+            hfPhotoIds.Value = photoIdList.AsDelimited( "," );
+
+            ShowDetail( hfPhotoIds.Value.SplitDelimitedValues().FirstOrDefault().AsIntegerOrNull() );
         }
 
         #endregion
@@ -170,7 +204,7 @@ namespace RockWeb.Plugins.church_ccv.Core
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnSave_Click(object sender, EventArgs e)
+        protected void btnSave_Click( object sender, EventArgs e )
         {
             // todo
             RockContext rockContext = new RockContext();
@@ -219,16 +253,31 @@ namespace RockWeb.Plugins.church_ccv.Core
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnSkip_Click(object sender, EventArgs e)
+        protected void btnSkip_Click( object sender, EventArgs e )
         {
             SkipCounter += 1;
 
             ShowDetail( hfPhotoIds.Value.SplitDelimitedValues().Skip( SkipCounter ).FirstOrDefault().AsIntegerOrNull() );
         }
 
-        protected void Block_BlockUpdated(object sender, EventArgs e)
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the dvpDataView control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void dvpDataView_SelectedIndexChanged( object sender, EventArgs e )
         {
-            // todo
+            UpdatePhotoList();
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            ShowDetail( hfPhotoIds.Value.SplitDelimitedValues().Skip( SkipCounter ).FirstOrDefault().AsIntegerOrNull() );
         }
 
         #endregion
