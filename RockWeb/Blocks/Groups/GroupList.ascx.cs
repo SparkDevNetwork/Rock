@@ -289,12 +289,14 @@ namespace RockWeb.Blocks.Groups
                     return;
                 }
 
+                var deletedAuths = new List<Auth>();
                 bool isSecurityRoleGroup = group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
                 if ( isSecurityRoleGroup )
                 {
                     Rock.Security.Role.Flush( group.Id );
                     foreach ( var auth in authService.Queryable().Where( a => a.GroupId == group.Id ).ToList() )
                     {
+                        deletedAuths.Add( auth.Clone( false ) );
                         authService.Delete( auth );
                     }
                 }
@@ -303,9 +305,9 @@ namespace RockWeb.Blocks.Groups
 
                 rockContext.SaveChanges();
 
-                if ( isSecurityRoleGroup )
+                foreach ( Auth auth in deletedAuths )
                 {
-                    Rock.Security.Authorization.Flush();
+                    AuthorizationCache.Flush( auth.EntityTypeId, auth.EntityId, auth.Action );
                 }
             }
 

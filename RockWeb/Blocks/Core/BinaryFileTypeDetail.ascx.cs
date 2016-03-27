@@ -350,9 +350,9 @@ namespace RockWeb.Blocks.Core
                 // SaveAttributeValues for the BinaryFileType
                 binaryFileType.SaveAttributeValues( rockContext );
 
-            } );
+                EntityAttributesCache.Flush( entityTypeId );
 
-            AttributeCache.FlushEntityAttributes();
+            } );
 
             NavigateToParentPage();
         }

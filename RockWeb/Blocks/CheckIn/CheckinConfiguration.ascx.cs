@@ -1051,7 +1051,8 @@ namespace RockWeb.Blocks.CheckIn
 
                 rockContext.SaveChanges();
 
-                AttributeCache.FlushEntityAttributes();
+                EntityAttributesCache.Flush( EntityTypeCache.GetId( typeof( GroupType ) ) );
+                EntityAttributesCache.Flush( EntityTypeCache.GetId( typeof( Group ) ) );
 
                 Rock.CheckIn.KioskDevice.FlushAll();
 

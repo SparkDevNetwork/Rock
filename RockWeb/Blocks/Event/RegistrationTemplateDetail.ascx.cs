@@ -861,6 +861,7 @@ namespace RockWeb.Blocks.Event
                 {
                     Helper.SaveAttributeEdits( attr, entityTypeId, qualifierColumn, qualifierValue, rockContext );
                 }
+                EntityAttributesCache.Flush( entityTypeId );
 
                 // add/updated forms/fields
                 foreach ( var formUI in FormState )
@@ -948,8 +949,6 @@ namespace RockWeb.Blocks.Event
                 }
 
                 rockContext.SaveChanges();
-
-                AttributeCache.FlushEntityAttributes();
 
                 // If this is a new template, give the current user and the Registration Administrators role administrative 
                 // rights to this template, and staff, and staff like roles edit rights

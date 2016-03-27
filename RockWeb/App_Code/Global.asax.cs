@@ -248,8 +248,6 @@ namespace RockWeb
 
                     // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
                     AddCallBack();
-                    
-                    Rock.Security.Authorization.Load();
                 }
 
                 EntityTypeService.RegisterEntityTypes( Server.MapPath( "~" ) );

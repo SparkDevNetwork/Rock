@@ -135,7 +135,7 @@ namespace Rock.Attribute
 
             if ( attributesUpdated || attributesDeleted )
             {
-                AttributeCache.FlushEntityAttributes();
+                EntityAttributesCache.Flush( entityTypeId );
             }
 
             return attributesUpdated;
