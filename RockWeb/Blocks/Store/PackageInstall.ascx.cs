@@ -319,9 +319,6 @@ namespace RockWeb.Blocks.Store
                     // Clear all cached items
                     Rock.Web.Cache.RockMemoryCache.Clear();
 
-                    // Clear the static object that contains all auth rules (so that it will be refreshed)
-                    Rock.Security.Authorization.Flush();
-
                     // show result message
                     lMessages.Text = string.Format( "<div class='alert alert-success margin-t-md'><strong>Package Installed</strong><p>{0}</p>", installStep.PostInstallInstructions );
                 }

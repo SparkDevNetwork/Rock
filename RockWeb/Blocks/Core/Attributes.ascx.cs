@@ -301,14 +301,15 @@ namespace RockWeb.Blocks.Core
             Rock.Model.Attribute attribute = attributeService.Get( e.RowKeyId );
             if ( attribute != null )
             {
-                Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
+                var attributeId = attribute.Id;
+                var entityTypeId = attribute.EntityTypeId;
 
                 attributeService.Delete( attribute );
-
                 rockContext.SaveChanges();
-            }
 
-            AttributeCache.FlushEntityAttributes();
+                AttributeCache.Flush( attributeId );
+                EntityAttributesCache.Flush( entityTypeId );
+            }
 
             BindGrid();
         }
@@ -437,7 +438,7 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            AttributeCache.FlushEntityAttributes();
+            EntityAttributesCache.Flush( attribute.EntityTypeId );
 
             HideDialog();
 

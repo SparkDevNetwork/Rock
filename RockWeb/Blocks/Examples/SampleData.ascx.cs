@@ -576,7 +576,6 @@ namespace RockWeb.Blocks.Examples
                 Rock.Security.Role.Flush(role.Id);
             }
 
-            Rock.Security.Authorization.Flush();
         }
 
         /// <summary>
@@ -1457,7 +1456,6 @@ namespace RockWeb.Blocks.Examples
             PersonAliasService personAliasService = new PersonAliasService( rockContext );
             PersonDuplicateService personDuplicateService = new PersonDuplicateService( rockContext );
             NoteService noteService = new NoteService( rockContext );
-            AuthService authService = new AuthService( rockContext );
             CommunicationService communicationService = new CommunicationService( rockContext );
             CommunicationRecipientService communicationRecipientService = new CommunicationRecipientService( rockContext );
             FinancialBatchService financialBatchService = new FinancialBatchService( rockContext );
@@ -1553,12 +1551,6 @@ namespace RockWeb.Blocks.Examples
                         {
                             groupMemberService.Delete( groupMember );
                         }
-
-                        //// delete any Authorization data
-                        //foreach ( var auth in authService.Queryable().Where( a => a.PersonId == person.Id ) )
-                        //{
-                        //    authService.Delete( auth );
-                        //}
 
                         // delete their aliases
                         foreach ( var alias in personAliasService.Queryable().Where( a => a.PersonId == person.Id ) )

@@ -703,7 +703,7 @@ namespace RockWeb.Blocks.Connection
                 var attribute = Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, rockContext );
             }
 
-            AttributeCache.FlushEntityAttributes();
+            EntityAttributesCache.Flush( entityTypeId );
         }
 
         #endregion

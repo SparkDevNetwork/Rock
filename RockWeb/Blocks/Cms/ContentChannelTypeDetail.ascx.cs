@@ -690,7 +690,7 @@ namespace RockWeb.Blocks.Cms
                 Rock.Attribute.Helper.SaveAttributeEdits( attr, entityTypeId, qualifierColumn, qualifierValue, rockContext );
             }
 
-            AttributeCache.FlushEntityAttributes();
+            EntityAttributesCache.Flush( entityTypeId );
         }
 
         /// <summary>

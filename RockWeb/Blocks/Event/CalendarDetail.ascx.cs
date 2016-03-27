@@ -906,7 +906,7 @@ namespace RockWeb.Blocks.Event
                 Helper.SaveAttributeEdits( attribute, entityTypeId, qualifierColumn, qualifierValue, rockContext );
             }
 
-            AttributeCache.FlushEntityAttributes();
+            EntityAttributesCache.Flush( entityTypeId );
         }
 
         #endregion
