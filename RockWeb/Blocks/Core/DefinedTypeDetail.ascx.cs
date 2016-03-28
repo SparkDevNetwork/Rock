@@ -559,15 +559,12 @@ namespace RockWeb.Blocks.Core
                     return;
                 }
 
-                var attributeId = attribute.Id;
-                var entityTypeId = attribute.EntityTypeId;
-
+                AttributeCache.Flush( attribute.Id );
                 attributeService.Delete( attribute );
                 rockContext.SaveChanges();
-
-                AttributeCache.Flush( attributeId );
-                EntityAttributesCache.Flush( entityTypeId );
             }
+
+            AttributeCache.FlushEntityAttributes();
 
             BindDefinedTypeAttributesGrid();            
         }
@@ -601,7 +598,7 @@ namespace RockWeb.Blocks.Core
             pnlDetails.Visible = true;
             pnlDefinedTypeAttributes.Visible = false;
 
-            EntityAttributesCache.Flush( attribute.EntityTypeId );
+            AttributeCache.FlushEntityAttributes();
 
             BindDefinedTypeAttributesGrid();
 

@@ -120,6 +120,14 @@ namespace RockWeb.Blocks.Administration
             Rock.Web.Cache.RockMemoryCache.Clear();
             msgs.Add( "RockMemoryCache has been cleared" );
 
+            // Clear the static object that contains all auth rules (so that it will be refreshed)
+            Rock.Security.Authorization.Flush();
+            msgs.Add( "Authorizations have been cleared" );
+
+            // Flush the static entity attributes cache
+            Rock.Web.Cache.AttributeCache.FlushEntityAttributes();
+            msgs.Add( "EntityAttributes have been cleared" );
+
             string webAppPath = Server.MapPath( "~" );
 
             // Check for any unregistered entity types, field types, and block types

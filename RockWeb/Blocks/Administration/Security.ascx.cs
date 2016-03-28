@@ -251,7 +251,7 @@ namespace RockWeb.Blocks.Administration
             authService.Reorder( rules, e.OldIndex, e.NewIndex );
             rockContext.SaveChanges();
 
-            AuthorizationCache.Flush( iSecured.TypeId, iSecured.Id, CurrentAction );
+            Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, CurrentAction );
 
             BindGrid();
         }
@@ -286,7 +286,7 @@ namespace RockWeb.Blocks.Administration
                 authService.Delete( auth );
                 rockContext.SaveChanges();
 
-                AuthorizationCache.Flush( iSecured.TypeId, iSecured.Id, CurrentAction );
+                Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, CurrentAction );
             }
 
             BindGrid();
@@ -346,7 +346,7 @@ namespace RockWeb.Blocks.Administration
                     auth.AllowOrDeny = rblAllowDeny.SelectedValue;
                     rockContext.SaveChanges();
 
-                    AuthorizationCache.Flush( iSecured.TypeId, iSecured.Id, CurrentAction );
+                    Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, CurrentAction );
                 }
             }
 
@@ -450,7 +450,7 @@ namespace RockWeb.Blocks.Administration
 
                             rockContext.SaveChanges();
 
-                            AuthorizationCache.Flush( iSecured.TypeId, iSecured.Id, li.Text );
+                            Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, li.Text );
                         }
                     }
                 }
@@ -496,7 +496,7 @@ namespace RockWeb.Blocks.Administration
 
                             rockContext.SaveChanges();
 
-                            AuthorizationCache.Flush( iSecured.TypeId, iSecured.Id, CurrentAction );
+                            Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, CurrentAction );
                         }
                     }
                 }

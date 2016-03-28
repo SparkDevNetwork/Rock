@@ -145,13 +145,13 @@ namespace RockWeb.Blocks.Cms
 
             bool isExpanded = expandedPageIdList.Contains( page.Id );
 
-            var authRoles = AuthorizationCache.Read( EntityTypeCache.Read<Rock.Model.Page>().Id, page.Id, Authorization.VIEW );
+            var authRoles = Authorization.AuthRules( EntityTypeCache.Read<Rock.Model.Page>().Id, page.Id, Authorization.VIEW );
             string authHtml = string.Empty;
-            if (authRoles != null && authRoles.Permissions != null && authRoles.Permissions.Any())
+            if (authRoles.Any())
             {
                 authHtml += string.Format(
                     "&nbsp<i class=\"fa fa-lock\">&nbsp;</i>{0}",
-                    authRoles.Permissions.Select( a => "<span class=\"badge badge-" + (a.AllowOrDeny == 'A' ? "success" : "danger")  + "\">" + a.DisplayName + "</span>"  ).ToList().AsDelimited( " " ) );
+                    authRoles.Select( a => "<span class=\"badge badge-" + (a.AllowOrDeny == 'A' ? "success" : "danger")  + "\">" + a.DisplayName + "</span>"  ).ToList().AsDelimited( " " ) );
             }
 
             sb.AppendFormat(
