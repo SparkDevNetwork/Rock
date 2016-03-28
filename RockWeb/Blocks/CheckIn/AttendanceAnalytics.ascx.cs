@@ -1921,7 +1921,7 @@ function(item) {
             DisplayShowBy( ShowBy.Attendees );
             if ( pnlResults.Visible )
             {
-                BindAttendeesGrid();
+                LoadChartAndGrids();
             }
         }
 
