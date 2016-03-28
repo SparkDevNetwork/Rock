@@ -33,8 +33,12 @@ REQUIRED VARIABLES
   </ul>
 </div>
 
-<header class="bigblock bigblock-flexbg bigblock-flexbg-md" style="background-image: url('http://arena.ccv.church/Arena/cachedblob.aspx?guid={{ table1.rows.first.MessageImageBlobId3 }}');">
-</header>
+{% if table1.rows.first.MessageImageBlobId3 != '' %}
+  <header class="bigblock bigblock-flexbg bigblock-flexbg-md" style="background-image: url('http://arena.ccv.church/Arena/cachedblob.aspx?guid={{ table1.rows.first.MessageImageBlobId3 }}');"></header>
+{% else %}
+  <header class="bigblock bigblock-flexbg bigblock-flexbg-md bigblock-flexbg-contain" style="background-image: url('http://arena.ccv.church/Arena/cachedblob.aspx?guid={{ table1.rows.first.MessageImageBlobId1 }}');"></header>
+{% endif %}
+
 
 <div class="container container-md">
   <p class="lead">{{ table1.rows.first.Description }}</p>
@@ -51,4 +55,3 @@ REQUIRED VARIABLES
     {% endfor %}
   </ol>
 </div>
-

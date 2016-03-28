@@ -101,6 +101,7 @@
 .bigblock-flexbg {
   background-size: cover;
   background-position: center center;
+  background-repeat: no-repeat;
 }
   .bigblock-flexbg-md {
     min-height: 215px;
@@ -108,6 +109,9 @@
     @media @md { min-height: 400px; }
     @media @lg { min-height: 460px; }
     @media @xl { min-height: 520px;}
+  }
+  .bigblock-flexbg-contain {
+    background-size: contain;
   }
 
 // Pseudo Flex Bg (introduced for campus detail page)
