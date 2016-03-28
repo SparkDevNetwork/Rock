@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -16,11 +17,14 @@ namespace RockWeb.Plugins.church_ccv.Core
     [DisplayName( "Bulk Photo Updater" )]
     [Category( "CCV > Core" )]
     [Description( "Block for mass updating person photos." )]
+
+    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Photo Processed Attribute", "A person attribute used to track which person photos have been proceesed.", true, false, "", "" )]
     public partial class BulkPhotoUpdater : Rock.Web.UI.RockBlock
     {
         #region Fields
 
         RockContext _rockContext = new RockContext();
+        private Guid? _photoProcessedAttribute = new Guid();
 
         #endregion
 
@@ -71,6 +75,8 @@ namespace RockWeb.Plugins.church_ccv.Core
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            imgPhoto.FileSaved += new EventHandler( imgPhoto_FileSaved );
         }
 
         /// <summary>
@@ -81,12 +87,26 @@ namespace RockWeb.Plugins.church_ccv.Core
         {
             base.OnLoad( e );
 
-            if ( !Page.IsPostBack )
-            {
-                UpdatePhotoList();
+            nbWarning.Visible = false;
+            nbConfigurationWarning.Visible = false;
 
-                ShowDetail( hfPhotoIds.Value.SplitDelimitedValues().FirstOrDefault().AsIntegerOrNull() );
+            _photoProcessedAttribute = GetAttributeValue( "PhotoProcessedAttribute" ).AsGuidOrNull();
+
+            if ( _photoProcessedAttribute != null)
+            {
+                if ( !Page.IsPostBack )
+                {
+                    UpdatePhotoList();
+
+                    ShowDetail( hfPhotoIds.Value.SplitDelimitedValues().FirstOrDefault().AsIntegerOrNull() );
+                }
             }
+            else
+            {
+                nbConfigurationWarning.Text = "An attribute needs to be configured in block settings";
+                nbConfigurationWarning.Visible = true;
+                pnlView.Visible = false;
+            }            
         }
 
         #endregion
@@ -100,43 +120,63 @@ namespace RockWeb.Plugins.church_ccv.Core
         {
             CurrentPhotoId = photoId;
 
-            imgPhoto.BinaryFileId = photoId;
+            if ( CurrentPhotoId != null && CurrentPhotoId != 0 )
+            {
+                imgPhoto.BinaryFileId = photoId;
 
-            var binaryFileService = new BinaryFileService( _rockContext );
-            var personService = new PersonService( _rockContext );
+                var binaryFileService = new BinaryFileService( _rockContext );
+                var personService = new PersonService( _rockContext );
 
-            lProgressBar.Text = string.Format(
-                        @"{0} of {1}",
-                       SkipCounter + 1,
-                       hfPhotoIds.Value.SplitDelimitedValues().Count() );
+                lProgressBar.Text = string.Format(
+                            @"<span class='label label-info'>{0} of {1}</span>",
+                           SkipCounter + 1,
+                           hfPhotoIds.Value.SplitDelimitedValues().Count() );
 
-            // Get photo data so we can see dimensions
-            var photoData = binaryFileService.Queryable().Where( b => b.Id == photoId ).FirstOrDefault();
-            System.Drawing.Image image = System.Drawing.Image.FromStream( photoData.ContentStream, useEmbeddedColorManagement: false, validateImageData: false );
+                // Get photo data so we can see dimensions
+                var photoData = binaryFileService.Queryable().Where( b => b.Id == photoId ).FirstOrDefault();
 
-            var person = personService.Queryable()
+                using ( System.Drawing.Image image = System.Drawing.Image.FromStream( photoData.ContentStream ) )
+                {
+                    if ( image.Width == image.Height )
+                    {
+                        lDimenions.Text = @"<span class='label label-success'>" + image.Width.ToString() + " X " + image.Height.ToString() + "</span>";
+                    }
+                    else
+                    {
+                        lDimenions.Text = @"<span class='label label-danger'>" + image.Width.ToString() + " X " + image.Height.ToString() + "</span>";
+                    }
+
+                    if ( image.Width >= 500 || image.Height >= 500 )
+                    {
+                        lSizeCheck.Text = @"<span class='label label-danger'>Too Large</span>";
+                        lSizeCheck.Visible = true;
+                    }
+                    else
+                    {
+                        lSizeCheck.Visible = false;
+                    }
+                }
+
+                var person = personService.Queryable()
                         .Where( p => p.PhotoId == photoId )
                         .FirstOrDefault();
 
-            imgPhoto.Label = String.Empty;
-            lName.Text = string.Format( "<span class='first-word'>{0}</span> {1}", person.NickName, person.LastName );
-            lAge.Text = person.Age.ToString() + " yrs old";
-            lGender.Text = person.Gender.ToString();
-            lConnectionStatus.Text = person.ConnectionStatusValue.ToString();
+                imgPhoto.Label = String.Empty;
+                lName.Text = string.Format( "<span class='first-word'>{0}</span> {1}", person.NickName, person.LastName );
+                lAge.Text = person.Age.ToString() + " yrs old";
+                lGender.Text = person.Gender.ToString();
+                lConnectionStatus.Text = person.ConnectionStatusValue.ToString();
 
-            if ( image.Width == image.Height )
-            {
-                lDimenions.Text = @"<span class='label label-success'>" + image.Width.ToString() + " X " + image.Height.ToString() + "</span>";
+                pnlDetails.Visible = true;
             }
             else
             {
-                lDimenions.Text = @"<span class='label label-danger'>" + image.Width.ToString() + " X " + image.Height.ToString() + "</span>";
-            }
+                lProgressBar.Text = "";
 
-            if ( image.Width >= 500 || image.Height >= 500 )
-            {
-                lSizeCheck.Text = @"<span class='label label-danger'>Too Large</span>";
+                pnlDetails.Visible = false;
+                nbWarning.Visible = true;
             }
+            
         }
 
         /// <summary>
@@ -150,12 +190,13 @@ namespace RockWeb.Plugins.church_ccv.Core
             List<int> dataViewPersonIds = new List<int>();
 
             // get a list of people already processed
-            var processedPeople = attributeValueService.GetByAttributeId( 16933 )
+            var processedPeople = attributeValueService
+                .GetByAttributeId( AttributeCache.Read( _photoProcessedAttribute.Value ).Id )
                 .Where( a => a.Value == "True" )
                 .Select( a => a.EntityId )
                 .ToList();
 
-            // filter by dataview
+            // get a list of people from data view
             var dataViewId = dvpDataView.SelectedValueAsInt();
             if ( dataViewId.HasValue )
             {
@@ -183,14 +224,16 @@ namespace RockWeb.Plugins.church_ccv.Core
                 .Where( p => p.PhotoId != null )
                 .Where( p => !processedPeople.Contains( p.Id ) );
 
-            if ( dataViewPersonIds.Any() )
+            // if data view is selected, then filter the results
+            if ( dataViewPersonIds.Any() || ( !dataViewPersonIds.Any() && dataViewId.HasValue ) )
             {
                 photoIds = photoIds.Where( p => dataViewPersonIds.Contains( p.Id ) );
             }
 
             var photoIdList = photoIds.Select( p => p.PhotoId ).ToList();
-
             hfPhotoIds.Value = photoIdList.AsDelimited( "," );
+
+            SkipCounter = 0;
 
             ShowDetail( hfPhotoIds.Value.SplitDelimitedValues().FirstOrDefault().AsIntegerOrNull() );
         }
@@ -216,7 +259,7 @@ namespace RockWeb.Plugins.church_ccv.Core
 
             // set photo processed attribute so we know that this photo is done
             person.LoadAttributes();
-            person.SetAttributeValue( "PhotoProcessed", "True" );
+            person.SetAttributeValue( AttributeCache.Read( _photoProcessedAttribute.Value ).Key, "True" );
             person.SaveAttributeValues( rockContext );
 
             if ( person.PhotoId != imgPhoto.BinaryFileId )
@@ -268,6 +311,44 @@ namespace RockWeb.Plugins.church_ccv.Core
         protected void dvpDataView_SelectedIndexChanged( object sender, EventArgs e )
         {
             UpdatePhotoList();
+        }
+
+        /// <summary>
+        /// Handles the imgPhoto_FileSaved event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void imgPhoto_FileSaved( object sender, EventArgs e )
+        {
+            if ( imgPhoto.CropBinaryFileId.HasValue )
+            {
+                var binaryFileService = new BinaryFileService( _rockContext );
+
+                // Get photo data so we can see dimensions
+                var photoData = binaryFileService.Get( imgPhoto.BinaryFileId.Value );
+
+                using ( System.Drawing.Image image = System.Drawing.Image.FromStream( photoData.ContentStream ) )
+                {
+                    if ( image.Width == image.Height )
+                    {
+                        lDimenions.Text = @"<span class='label label-success'>" + image.Width.ToString() + " X " + image.Height.ToString() + "</span>";
+                    }
+                    else
+                    {
+                        lDimenions.Text = @"<span class='label label-danger'>" + image.Width.ToString() + " X " + image.Height.ToString() + "</span>";
+                    }
+
+                    if ( image.Width >= 500 || image.Height >= 500 )
+                    {
+                        lSizeCheck.Text = @"<span class='label label-danger'>Too Large</span>";
+                        lSizeCheck.Visible = true;
+                    }
+                    else
+                    {
+                        lSizeCheck.Visible = false;
+                    }
+                }
+            }
         }
 
         /// <summary>
