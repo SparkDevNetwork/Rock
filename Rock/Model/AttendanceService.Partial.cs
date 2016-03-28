@@ -87,6 +87,7 @@ namespace Rock.Model
         /// <param name="endDate">The end date.</param>
         /// <param name="groupIds">The group ids.</param>
         /// <param name="campusIds">The campus ids. Include the keyword 'null' in the list to include CampusId is null</param>
+        /// <param name="scheduleIds">The schedule ids.</param>
         /// <param name="dataViewId">The data view identifier.</param>
         /// <returns></returns>
         public IEnumerable<IChartData> GetChartData( ChartGroupBy groupBy = ChartGroupBy.Week, AttendanceGraphBy graphBy = AttendanceGraphBy.Total, DateTime? startDate = null, DateTime? endDate = null, string groupIds = null, string campusIds = null, string scheduleIds = null, int? dataViewId = null )
@@ -272,6 +273,7 @@ namespace Rock.Model
         /// <param name="end">The end.</param>
         /// <param name="campusIds">The campus ids.</param>
         /// <param name="includeNullCampusIds">The include null campus ids.</param>
+        /// <param name="scheduleIds">The schedule ids.</param>
         /// <returns></returns>
         public static DataSet GetAttendanceAnalyticsAttendeeDates( List<int> groupIds, DateTime? start, DateTime? end,
             List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds )
@@ -289,6 +291,7 @@ namespace Rock.Model
         /// <param name="end">The end.</param>
         /// <param name="campusIds">The campus ids.</param>
         /// <param name="includeNullCampusIds">The include null campus ids.</param>
+        /// <param name="scheduleIds">The schedule ids.</param>
         /// <returns></returns>
         public static DataSet GetAttendanceAnalyticsAttendeeFirstDates( int GroupTypeId, List<int> groupIds, DateTime? start, DateTime? end,
             List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds )
@@ -305,6 +308,7 @@ namespace Rock.Model
         /// <param name="end">The end.</param>
         /// <param name="campusIds">The campus ids.</param>
         /// <param name="includeNullCampusIds">The include null campus ids.</param>
+        /// <param name="scheduleIds">The schedule ids.</param>
         /// <returns></returns>
         public static DataSet GetAttendanceAnalyticsAttendeeLastAttendance( List<int> groupIds, DateTime? start, DateTime? end,
             List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds )
@@ -321,6 +325,7 @@ namespace Rock.Model
         /// <param name="end">The end.</param>
         /// <param name="campusIds">The campus ids.</param>
         /// <param name="includeNullCampusIds">The include null campus ids.</param>
+        /// <param name="scheduleIds">The schedule ids.</param>
         /// <param name="IncludeParentsWithChild">The include parents with child.</param>
         /// <param name="IncludeChildrenWithParents">The include children with parents.</param>
         /// <returns></returns>
@@ -340,6 +345,7 @@ namespace Rock.Model
         /// <param name="end">The end.</param>
         /// <param name="campusIds">The campus ids.</param>
         /// <param name="includeNullCampusIds">The include null campus ids.</param>
+        /// <param name="scheduleIds">The schedule ids.</param>
         /// <param name="IncludeParentsWithChild">The include parents with child.</param>
         /// <param name="IncludeChildrenWithParents">The include children with parents.</param>
         /// <returns></returns>
