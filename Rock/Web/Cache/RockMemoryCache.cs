@@ -374,7 +374,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public new object Remove( string key, string regionName = null )
         {
-            if ( _isRedisClusterEnabled )
+            if ( _isRedisClusterEnabled && _isRedisConnected  )
             {
                 // tell all servers listening to redis to remove the cached item (including us)
                 SendRedisCommand( "REMOVE," + key );
@@ -390,7 +390,7 @@ namespace Rock.Web.Cache
         /// Sends the redis command.
         /// </summary>
         /// <param name="command">The command.</param>
-        private void SendRedisCommand(string command )
+        public void SendRedisCommand(string command )
         {
             if ( _isRedisConnected )
             {
