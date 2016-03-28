@@ -48,6 +48,12 @@ namespace Rock.Web.UI.Controls
 
         #region Properties
 
+        /// <summary>
+        /// Gets or sets the number of rows that textbox should use
+        /// </summary>
+        /// <value>
+        /// The number of rows.
+        /// </value>
         public int Rows
         {
             get { return ViewState["Rows"] as int? ?? 1; }
