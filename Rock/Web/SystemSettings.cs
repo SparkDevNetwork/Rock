@@ -117,7 +117,7 @@ namespace Rock.Web
             AttributeCache.Flush( attribute.Id );
             if ( isNew )
             {
-                EntityAttributesCache.Flush( null );
+                AttributeCache.FlushEntityAttributes();
             }
 
             var settings = SystemSettings.Read();

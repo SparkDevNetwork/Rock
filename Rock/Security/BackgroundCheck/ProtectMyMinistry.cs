@@ -407,7 +407,7 @@ Response XML ({2}):
 
                         if ( createdNewAttribute )
                         {
-                            EntityAttributesCache.Flush( workflow.TypeId );
+                            AttributeCache.FlushEntityAttributes();
                         }
                     }
                     return true;
@@ -660,7 +660,7 @@ Response XML ({0}):
 
             if ( createdNewAttribute )
             {
-                EntityAttributesCache.Flush( workflow.TypeId );
+                AttributeCache.FlushEntityAttributes();
             }
 
         }

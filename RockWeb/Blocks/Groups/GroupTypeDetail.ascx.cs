@@ -529,10 +529,7 @@ namespace RockWeb.Blocks.Groups
             } );
 
             GroupTypeCache.Flush( groupType.Id );
-
-            EntityAttributesCache.Flush( EntityTypeCache.Read( typeof( GroupType ) ).Id );
-            EntityAttributesCache.Flush( EntityTypeCache.Read( typeof( Group ) ).Id );
-            EntityAttributesCache.Flush( EntityTypeCache.Read( typeof( GroupMember ) ).Id );
+            AttributeCache.FlushEntityAttributes();
 
             if ( triggersUpdated )
             {

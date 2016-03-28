@@ -396,10 +396,7 @@ namespace RockWeb.Blocks.Groups
 
                 if ( isSecurityRoleGroup )
                 {
-                    foreach( var auth in new AuthService( rockContext ).Queryable().Where( a => a.GroupId == hfGroupId.Value.AsInteger() ) )
-                    {
-                        AuthorizationCache.Flush( auth.EntityTypeId, auth.EntityId, auth.Action );
-                    }
+                    Rock.Security.Authorization.Flush();
                 }
             }
 
@@ -741,15 +738,13 @@ namespace RockWeb.Blocks.Groups
 
             bool isNowSecurityRole = group.IsActive && ( group.IsSecurityRole || group.GroupTypeId == roleGroupTypeId );
 
-            int? flushId = null;
-
             if ( group != null && wasSecurityRole )
             {
                 if ( !isNowSecurityRole )
                 {
                     // if this group was a SecurityRole, but no longer is, flush
                     Rock.Security.Role.Flush( group.Id );
-                    flushId = group.Id;
+                    Rock.Security.Authorization.Flush();
                 }
             }
             else
@@ -757,19 +752,11 @@ namespace RockWeb.Blocks.Groups
                 if ( isNowSecurityRole )
                 {
                     // new security role, flush
-                    flushId = group.Id;
-                }
-            }
-            if ( flushId.HasValue )
-            {
-                foreach ( var auth in new AuthService( rockContext ).Queryable().Where( a => a.GroupId == flushId.Value ) )
-                {
-                    AuthorizationCache.Flush( auth.EntityTypeId, auth.EntityId, auth.Action );
+                    Rock.Security.Authorization.Flush();
                 }
             }
 
-            EntityAttributesCache.Flush( EntityTypeCache.Read( typeof( Group ) ).Id );
-            EntityAttributesCache.Flush( EntityTypeCache.Read( typeof( GroupMember ) ).Id );
+            AttributeCache.FlushEntityAttributes();
 
             if ( triggersUpdated )
             {

@@ -331,7 +331,6 @@ namespace RockWeb.Blocks.Crm
                 var userLoginService = new UserLoginService( rockContext );
                 var groupService = new GroupService( rockContext );
                 var groupMemberService = new GroupMemberService( rockContext );
-                var authService = new AuthService( rockContext );
                 var binaryFileService = new BinaryFileService( rockContext );
                 var phoneNumberService = new PhoneNumberService( rockContext );
                 var taggedItemService = new TaggedItemService( rockContext );
@@ -528,23 +527,28 @@ namespace RockWeb.Blocks.Crm
                         }
                     }
 
+                    // Flush any security roles that the merged person's other records were a part of
                     foreach ( var p in MergeData.People.Where( p => p.Id != primaryPersonId.Value ) )
                     {
-                        // Flush any security roles that the merged person's other records were a part of
                         foreach ( var groupMember in groupMemberService.Queryable().Where( m => m.PersonId == p.Id ) )
                         {
                             Group group = new GroupService( rockContext ).Get( groupMember.GroupId );
                             if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
                             {
                                 Rock.Security.Role.Flush( group.Id );
+                                Rock.Security.Authorization.Flush();
                             }
                         }
+                    }
 
-                        // Flush any auths that contained a permission rule for any of the merged person's other records
-                        foreach ( var auth in authService.Queryable().Where( m => m.PersonAlias.PersonId == p.Id ) )
-                        {
-                            AuthorizationCache.Flush( auth.EntityTypeId, auth.EntityId, auth.Action );
-                        }
+                    // now that the Merge is complete, the EntitySet can be marked to be deleted by the RockCleanup job
+                    var entitySetService = new EntitySetService( rockContext );
+                    var entitySet = entitySetService.Get( MergeData.EntitySetId );
+                    if ( entitySet != null )
+                    {
+                        entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes(-1);
+                        entitySet.EntitySetPurposeValueId = null;
+                        rockContext.SaveChanges();
                     }
 
                 }
@@ -557,12 +561,6 @@ namespace RockWeb.Blocks.Crm
                 parms.Add( "OldId", p.Id );
                 parms.Add( "NewId", primaryPersonId.Value );
                 DbService.ExecuteCommand( "spCrm_PersonMerge", CommandType.StoredProcedure, parms );
-            }
-
-            // Flush any auths that now contain the new person's record
-            foreach ( var auth in new AuthService( new RockContext() ).Queryable().Where( m => m.PersonAlias.PersonId == primaryPersonId.Value ) )
-            {
-                AuthorizationCache.Flush( auth.EntityTypeId, auth.EntityId, auth.Action );
             }
 
             NavigateToLinkedPage( "PersonDetailPage", "PersonId", primaryPersonId.Value );
