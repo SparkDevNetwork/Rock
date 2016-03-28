@@ -425,11 +425,12 @@ namespace RockWeb.Plugins.church_ccv.Promotions
         string BuildPromoContent( EventItemOccurrence eventItem )
         {
             return "<p>" + eventItem.EventItem.Summary + "</p>" +
-                    "<p>" + "Contact Person: " + (eventItem.ContactPersonAlias != null ? eventItem.ContactPersonAlias.Person.FullName : string.Empty) + "</p>" +
-                    "<p>" + "Contact Email: " + eventItem.ContactEmail + "</p>" +
-                    "<p>" + "Contact Phone: " + eventItem.ContactPhone + "</p>" +
-                    "<p>" + "Location: " + eventItem.Location + "</p>" +
-                    "<p>" + "Event Date: " + eventItem.NextStartDateTime + "</p>";
+                   "<p>" + eventItem.EventItem.Description + "</p>" +
+                   "<p>" + "Contact Person: " + (eventItem.ContactPersonAlias != null ? eventItem.ContactPersonAlias.Person.FullName : string.Empty) + "</p>" +
+                   "<p>" + "Contact Email: " + eventItem.ContactEmail + "</p>" +
+                   "<p>" + "Contact Phone: " + eventItem.ContactPhone + "</p>" +
+                   "<p>" + "Location: " + eventItem.Location + "</p>" +
+                   "<p>" + "Event Date: " + eventItem.NextStartDateTime + "</p>";
         }
         #endregion
 
