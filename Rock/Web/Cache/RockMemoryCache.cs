@@ -55,6 +55,9 @@ namespace Rock.Web.Cache
         // Whether caching is being disabled or not
         private bool _isCachingDisabled = false;
 
+        // status of the redis connection
+        private bool _isRedisConnected = false;
+
         /// <summary>
         /// Gets the redis connection.
         /// </summary>
@@ -161,6 +164,10 @@ namespace Rock.Web.Cache
                     {
                         _redisConnection = ConnectionMultiplexer.Connect( connectionString );
                         _redisConnection.PreserveAsyncOrder = false; // enable concurrent processing of pub/sub messages https://github.com/StackExchange/StackExchange.Redis/blob/master/Docs/PubSubOrder.md
+                        _redisConnection.ConnectionRestored += _redisConnection_ConnectionRestored;
+                        _redisConnection.ConnectionFailed += _redisConnection_ConnectionFailed;
+
+                        _isRedisConnected = true;
                     }
                     catch ( Exception ex )
                     {
@@ -185,6 +192,24 @@ namespace Rock.Web.Cache
                 {
                     _isRedisClusterEnabled = false;
                 }
+            }
+        }
+
+        private void _redisConnection_ConnectionFailed( object sender, ConnectionFailedEventArgs e )
+        {
+            if ( e.ConnectionType == ConnectionType.Subscription )
+            {
+                _isRedisConnected = false;
+            }
+        }
+
+        private void _redisConnection_ConnectionRestored( object sender, ConnectionFailedEventArgs e )
+        {
+            // flush the cache when the connection is restored
+            if ( e.ConnectionType == ConnectionType.Subscription && _isRedisConnected == false )
+            {
+                FlushMemoryCache();
+                _isRedisConnected = true;
             }
         }
 
@@ -352,8 +377,7 @@ namespace Rock.Web.Cache
             if ( _isRedisClusterEnabled )
             {
                 // tell all servers listening to redis to remove the cached item (including us)
-                ISubscriber sub = _redisConnection.GetSubscriber();
-                sub.PublishAsync( REDIS_CHANNEL_NAME, "REMOVE," + key );
+                SendRedisCommand( "REMOVE," + key );
                 return new object();
             }
             else
@@ -362,6 +386,25 @@ namespace Rock.Web.Cache
             }
         }
 
+        /// <summary>
+        /// Sends the redis command.
+        /// </summary>
+        /// <param name="command">The command.</param>
+        private void SendRedisCommand(string command )
+        {
+            if ( _isRedisConnected )
+            {
+                ISubscriber sub = _redisConnection.GetSubscriber();
+                sub.PublishAsync( REDIS_CHANNEL_NAME, command );
+            }
+        }
+
+        /// <summary>
+        /// Removes from memory cache.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="regionName">Name of the region.</param>
+        /// <returns></returns>
         private object RemoveFromMemoryCache(string key, string regionName = null )
         {
             return base.Remove( key, regionName );
@@ -377,6 +420,11 @@ namespace Rock.Web.Cache
             {
                 ISubscriber sub = _redisConnection.GetSubscriber();
                 sub.UnsubscribeAll();
+
+                if ( _redisConnection != null )
+                {
+                    _redisConnection.Dispose();
+                }
             }
 
             base.Dispose();
@@ -415,9 +463,7 @@ namespace Rock.Web.Cache
             if ( RockMemoryCache.s_defaultCache != null && RockMemoryCache.s_defaultCache.IsRedisClusterEnabled )
             {
                 // tell all servers listening to redis to flush the cached (including us)
-                ISubscriber sub = RockMemoryCache.s_defaultCache.RedisConnection.GetSubscriber();
-                sub.PublishAsync( REDIS_CHANNEL_NAME, "FLUSH" );
-                
+                RockMemoryCache.s_defaultCache.SendRedisCommand( "FLUSH" );               
             }
             else
             {
@@ -433,7 +479,7 @@ namespace Rock.Web.Cache
             lock ( RockMemoryCache.s_initLock )
             {
                 if ( RockMemoryCache.s_defaultCache != null )
-                { 
+                {
                     RockMemoryCache.s_defaultCache.Dispose();
                     RockMemoryCache.s_defaultCache = new RockMemoryCache();
                 }
