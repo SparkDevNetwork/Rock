@@ -33,11 +33,11 @@ using Rock.Attribute;
 namespace RockWeb.Plugins.com_centralaz.Utility
 {
     /// <summary>
-    /// Template block for developers to use to start a new block.
+    /// Allows you to pick a person, group, or workflow instance entity and test your lava.
     /// </summary>
     [DisplayName( "Lava Tester" )]
     [Category( "com_centralaz > Utility" )]
-    [Description( "Allows you to pick a person entity and test your lava." )]
+    [Description( "Allows you to pick a person, group, or workflow instance entity to test your lava." )]
     public partial class LavaTester : Rock.Web.UI.RockBlock
     {
         #region Fields
