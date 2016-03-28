@@ -113,7 +113,7 @@ namespace church.ccv.Utility
                         recipients.Add( headOfHouse.Email );
 
                         var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
-                        Email.Send( neighborhoodPastor.Email, neighborhoodPastor.FullName, systemEmail.Subject, recipients, systemEmail.Body.ResolveMergeFields( mergeFields ), appRoot );
+                        Email.Send( neighborhoodPastor.Email, campusPastor, systemEmail.Subject, recipients, systemEmail.Body.ResolveMergeFields( mergeFields ), appRoot );
                         emailsSent++;
                     }
                 }
