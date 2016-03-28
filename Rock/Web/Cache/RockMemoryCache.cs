@@ -55,7 +55,19 @@ namespace Rock.Web.Cache
         // Whether caching is being disabled or not
         private bool _isCachingDisabled = false;
 
-        // status of the redis connection
+        /// <summary>
+        /// Gets a value indicating whether Redis is connected.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is redis connected; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsRedisConnected
+        {
+            get
+            {
+                return _isRedisConnected;
+            }
+        }
         private bool _isRedisConnected = false;
 
         /// <summary>
@@ -460,7 +472,7 @@ namespace Rock.Web.Cache
         /// </summary>
         public static void Clear()
         {
-            if ( RockMemoryCache.s_defaultCache != null && RockMemoryCache.s_defaultCache.IsRedisClusterEnabled )
+            if ( RockMemoryCache.s_defaultCache != null && RockMemoryCache.s_defaultCache.IsRedisClusterEnabled && RockMemoryCache.s_defaultCache.IsRedisConnected)
             {
                 // tell all servers listening to redis to flush the cached (including us)
                 RockMemoryCache.s_defaultCache.SendRedisCommand( "FLUSH" );               
