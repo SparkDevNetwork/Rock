@@ -385,11 +385,18 @@ namespace RockWeb.Blocks.Event
                             Location = eventItemOccurrence.Campus != null ? eventItemOccurrence.Campus.Name : "All Campuses",
                             Description = eventItemOccurrence.EventItem.Description,
                             Summary = eventItemOccurrence.EventItem.Summary,
+                            OccurrenceNote = eventItemOccurrence.Note.SanitizeHtml(),
                             DetailPage = String.IsNullOrWhiteSpace( eventItemOccurrence.EventItem.DetailsUrl ) ? null : eventItemOccurrence.EventItem.DetailsUrl
                         } );
                     }
                 }
             }
+
+            var eventSummaries = eventOccurrenceSummaries
+                .OrderBy( e => e.DateTime )
+                .GroupBy( e => e.Name )
+                .Select( e => e.ToList() )
+                .ToList();
 
             eventOccurrenceSummaries = eventOccurrenceSummaries
                 .OrderBy( e => e.DateTime )
@@ -399,6 +406,7 @@ namespace RockWeb.Blocks.Event
             var mergeFields = new Dictionary<string, object>();
             mergeFields.Add( "TimeFrame", ViewMode );
             mergeFields.Add( "DetailsPage", LinkedPageUrl( "DetailsPage", null ) );
+            mergeFields.Add( "EventItems", eventSummaries );
             mergeFields.Add( "EventItemOccurrences", eventOccurrenceSummaries );
             mergeFields.Add( "CurrentPerson", CurrentPerson );
 
@@ -573,7 +581,7 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// A class to store event item occurrence data for liquid
         /// </summary>
-        [DotLiquid.LiquidType( "EventItemOccurrence", "DateTime", "Name", "Date", "Time", "Location", "Description", "Summary", "DetailPage" )]
+        [DotLiquid.LiquidType( "EventItemOccurrence", "DateTime", "Name", "Date", "Time", "Location", "Description", "Summary", "OccurrenceNote", "DetailPage" )]
         public class EventOccurrenceSummary
         {
             public EventItemOccurrence EventItemOccurrence { get; set; }
@@ -584,6 +592,7 @@ namespace RockWeb.Blocks.Event
             public String Location { get; set; }
             public String Summary { get; set; }
             public String Description { get; set; }
+            public String OccurrenceNote { get; set; }
             public String DetailPage { get; set; }
         }
 

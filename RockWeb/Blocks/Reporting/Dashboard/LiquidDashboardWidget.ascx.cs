@@ -69,7 +69,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
             {
                 string result = ResolveUrl( "~/api/Metrics/GetHtmlForBlock/" ) + this.BlockId.ToString();
                 string[] entityValues = ( GetAttributeValue( "Entity" ) ?? "" ).Split( '|' );
-                if ( entityValues.Length == 2 )
+                if ( entityValues.Length == 2 && !string.IsNullOrEmpty(entityValues[1]))
                 {
                     var entityType = EntityTypeCache.Read( entityValues[0].AsGuid() );
                     if ( entityType != null )

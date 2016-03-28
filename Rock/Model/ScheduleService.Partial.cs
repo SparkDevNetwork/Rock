@@ -52,41 +52,44 @@ namespace Rock.Model
                 var scheduleService = new ScheduleService( rockContext );
                 var locationService = new LocationService( rockContext );
 
-                // Set up an 'occurrences' query for the group
-                var qry = attendanceService
+                using ( new Rock.Data.QueryHintScope( rockContext, QueryHintType.RECOMPILE ) )
+                {
+
+                    // Set up an 'occurrences' query for the group
+                    var qry = attendanceService
                     .Queryable().AsNoTracking()
                     .Where( a => a.GroupId == group.Id );
 
-                // Filter by date range
-                if ( fromDateTime.HasValue )
-                {
-                    var fromDate = fromDateTime.Value.Date;
-                    qry = qry.Where( a => DbFunctions.TruncateTime( a.StartDateTime ) >= ( fromDate ) );
-                }
-                if ( toDateTime.HasValue )
-                {
-                    var toDate = toDateTime.Value.Date;
-                    qry = qry.Where( a => DbFunctions.TruncateTime( a.StartDateTime ) < ( toDate ) );
-                }
+                    // Filter by date range
+                    if ( fromDateTime.HasValue )
+                    {
+                        var fromDate = fromDateTime.Value.Date;
+                        qry = qry.Where( a => DbFunctions.TruncateTime( a.StartDateTime ) >= ( fromDate ) );
+                    }
+                    if ( toDateTime.HasValue )
+                    {
+                        var toDate = toDateTime.Value.Date;
+                        qry = qry.Where( a => DbFunctions.TruncateTime( a.StartDateTime ) < ( toDate ) );
+                    }
 
-                // Location Filter
-                if ( locationIds.Any()  )
-                {
-                    qry = qry.Where( a =>
-                        a.LocationId.HasValue && 
-                        locationIds.Contains( a.LocationId.Value ) );
-                }
+                    // Location Filter
+                    if ( locationIds.Any() )
+                    {
+                        qry = qry.Where( a =>
+                            a.LocationId.HasValue &&
+                            locationIds.Contains( a.LocationId.Value ) );
+                    }
 
-                // Schedule Filter
-                if ( scheduleIds.Any() )
-                {
-                    qry = qry.Where( a =>
-                        a.ScheduleId.HasValue &&
-                        scheduleIds.Contains( a.ScheduleId.Value ) );
-                }
+                    // Schedule Filter
+                    if ( scheduleIds.Any() )
+                    {
+                        qry = qry.Where( a =>
+                            a.ScheduleId.HasValue &&
+                            scheduleIds.Contains( a.ScheduleId.Value ) );
+                    }
 
-                // Get the unique combination of location/schedule/date for the selected group
-                var occurrenceDates = qry
+                    // Get the unique combination of location/schedule/date for the selected group
+                    var occurrenceDates = qry
                     .Select( a => new
                     {
                         a.LocationId,
@@ -96,60 +99,63 @@ namespace Rock.Model
                     .Distinct()
                     .ToList();
 
-                // Get the locations for each unique location id
-                var selectedlocationIds = occurrenceDates.Select( o => o.LocationId ).Distinct().ToList();
-                var locations = locationService
-                    .Queryable().AsNoTracking()
-                    .Where( l => selectedlocationIds.Contains( l.Id ) )
-                    .Select( l => new { l.Id, l.ParentLocationId, l.Name } )
-                    .ToList();
-                var locationNames = new Dictionary<int, string>();
-                locations.ForEach( l => locationNames.Add( l.Id, l.Name ) );
+                    // Get the locations for each unique location id
+                    var selectedlocationIds = occurrenceDates.Select( o => o.LocationId ).Distinct().ToList();
 
-                // Get the parent location path for each unique location
-                var parentlocationPaths = new Dictionary<int, string>();
-                locations
-                    .Where( l => l.ParentLocationId.HasValue )
-                    .Select( l => l.ParentLocationId.Value )
-                    .Distinct()
-                    .ToList()
-                    .ForEach( l => parentlocationPaths.Add( l, locationService.GetPath( l ) ) );
-                var locationPaths = new Dictionary<int, string>();
-                locations
-                    .Where( l => l.ParentLocationId.HasValue )
-                    .ToList()
-                    .ForEach( l => locationPaths.Add( l.Id, parentlocationPaths[l.ParentLocationId.Value] ) );
+                    var locations = locationService
+                        .Queryable().AsNoTracking()
+                        .Where( l => selectedlocationIds.Contains( l.Id ) )
+                        .Select( l => new { l.Id, l.ParentLocationId, l.Name } )
+                        .ToList();
+                    var locationNames = new Dictionary<int, string>();
+                    locations.ForEach( l => locationNames.Add( l.Id, l.Name ) );
 
-                // Get the schedules for each unique schedule id
-                var selectedScheduleIds = occurrenceDates.Select( o => o.ScheduleId ).Distinct().ToList();
-                var schedules = scheduleService
-                    .Queryable().AsNoTracking()
-                    .Where( s => selectedScheduleIds.Contains( s.Id ) )
-                    .ToList();
-                var scheduleNames = new Dictionary<int, string>();
-                var scheduleStartTimes = new Dictionary<int, TimeSpan>();
-                schedules
-                    .ForEach( s => {
-                        scheduleNames.Add( s.Id, s.Name );
-                        scheduleStartTimes.Add( s.Id, s.StartTimeOfDay );
-                    });
+                    // Get the parent location path for each unique location
+                    var parentlocationPaths = new Dictionary<int, string>();
+                    locations
+                        .Where( l => l.ParentLocationId.HasValue )
+                        .Select( l => l.ParentLocationId.Value )
+                        .Distinct()
+                        .ToList()
+                        .ForEach( l => parentlocationPaths.Add( l, locationService.GetPath( l ) ) );
+                    var locationPaths = new Dictionary<int, string>();
+                    locations
+                        .Where( l => l.ParentLocationId.HasValue )
+                        .ToList()
+                        .ForEach( l => locationPaths.Add( l.Id, parentlocationPaths[l.ParentLocationId.Value] ) );
 
-                foreach ( var occurrence in occurrenceDates.Where( o => o.Date.HasValue ) )
-                {
-                    occurrences.Add(
-                        new ScheduleOccurrence(
-                            occurrence.Date.Value,
-                            occurrence.ScheduleId.HasValue && scheduleStartTimes.ContainsKey( occurrence.ScheduleId.Value ) ?
-                                scheduleStartTimes[occurrence.ScheduleId.Value] : new TimeSpan(),
-                            occurrence.ScheduleId,
-                            occurrence.ScheduleId.HasValue && scheduleNames.ContainsKey( occurrence.ScheduleId.Value ) ?
-                                scheduleNames[occurrence.ScheduleId.Value] : string.Empty,
-                            occurrence.LocationId,
-                            occurrence.LocationId.HasValue && locationNames.ContainsKey( occurrence.LocationId.Value ) ?
-                                locationNames[occurrence.LocationId.Value] : string.Empty,
-                            occurrence.LocationId.HasValue && locationPaths.ContainsKey( occurrence.LocationId.Value ) ?
-                                locationPaths[occurrence.LocationId.Value] : string.Empty
-                        ) );
+                    // Get the schedules for each unique schedule id
+                    var selectedScheduleIds = occurrenceDates.Select( o => o.ScheduleId ).Distinct().ToList();
+                    var schedules = scheduleService
+                        .Queryable().AsNoTracking()
+                        .Where( s => selectedScheduleIds.Contains( s.Id ) )
+                        .ToList();
+                    var scheduleNames = new Dictionary<int, string>();
+                    var scheduleStartTimes = new Dictionary<int, TimeSpan>();
+                    schedules
+                        .ForEach( s =>
+                        {
+                            scheduleNames.Add( s.Id, s.Name );
+                            scheduleStartTimes.Add( s.Id, s.StartTimeOfDay );
+                        } );
+
+                    foreach ( var occurrence in occurrenceDates.Where( o => o.Date.HasValue ) )
+                    {
+                        occurrences.Add(
+                            new ScheduleOccurrence(
+                                occurrence.Date.Value,
+                                occurrence.ScheduleId.HasValue && scheduleStartTimes.ContainsKey( occurrence.ScheduleId.Value ) ?
+                                    scheduleStartTimes[occurrence.ScheduleId.Value] : new TimeSpan(),
+                                occurrence.ScheduleId,
+                                occurrence.ScheduleId.HasValue && scheduleNames.ContainsKey( occurrence.ScheduleId.Value ) ?
+                                    scheduleNames[occurrence.ScheduleId.Value] : string.Empty,
+                                occurrence.LocationId,
+                                occurrence.LocationId.HasValue && locationNames.ContainsKey( occurrence.LocationId.Value ) ?
+                                    locationNames[occurrence.LocationId.Value] : string.Empty,
+                                occurrence.LocationId.HasValue && locationPaths.ContainsKey( occurrence.LocationId.Value ) ?
+                                    locationPaths[occurrence.LocationId.Value] : string.Empty
+                            ) );
+                    }
                 }
 
                 // Load the attendance data for each occurrence
