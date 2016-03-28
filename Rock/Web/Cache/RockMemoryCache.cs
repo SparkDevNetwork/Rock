@@ -100,8 +100,6 @@ namespace Rock.Web.Cache
         }
         private bool _isRedisClusterEnabled = false;
 
-
-
         /// <summary>
         /// Initializes the <see cref="RockMemoryCache"/> class.
         /// </summary>
@@ -244,6 +242,32 @@ namespace Rock.Web.Cache
                     case "FLUSH":
                         {
                             FlushMemoryCache();
+                            break;
+                        }
+                    case "REFRESH_AUTH_ENTITY":
+                        {
+                            if ( messageParts.Length > 2 )
+                            {
+                                Rock.Security.Authorization.RefreshEntity( messageParts[1].AsInteger(), messageParts[2].AsInteger() );
+                            }
+                            break;
+                        }
+                    case "REFRESH_AUTH_ACTION":
+                        {
+                            if ( messageParts.Length > 3 )
+                            {
+                                Rock.Security.Authorization.RefreshAction( messageParts[1].AsInteger(), messageParts[2].AsInteger(), messageParts[3] );
+                            }
+                            break;
+                        }
+                    case "FLUSH_AUTH":
+                        {
+                            Rock.Security.Authorization.FlushAuth();
+                            break;
+                        }
+                    case "REMOVE_ENTITY_ATTRIBUTES":
+                        {
+                            Rock.Web.Cache.AttributeCache.RemoveEntityAttributes();
                             break;
                         }
                 }
