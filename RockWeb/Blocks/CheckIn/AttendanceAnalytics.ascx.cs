@@ -1764,8 +1764,9 @@ function(item) {
                     cblGroupTypeGroups.Label = groupType.Name;
                     cblGroupTypeGroups.Items.Clear();
 
+                    // limit to Groups that don't have a Parent, or the ParentGroup is a different grouptype so we don't end up with infinite recursion
                     foreach ( var group in groupType.Groups
-                        .Where( g => !g.ParentGroupId.HasValue )
+                        .Where( g => !g.ParentGroupId.HasValue || ( g.ParentGroup.GroupTypeId != groupType.Id ) )
                         .OrderBy( a => a.Order )
                         .ThenBy( a => a.Name )
                         .ToList() )
