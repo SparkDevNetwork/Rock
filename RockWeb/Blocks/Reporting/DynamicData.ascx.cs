@@ -839,7 +839,7 @@ namespace RockWeb.Blocks.Reporting
 
                         if ( col.DataType.Name == "String" )
                         {
-                            query.Add( string.Format( "[{0}] LIKE '{1}*'", colName, value ) );
+                            query.Add( string.Format( "[{0}] LIKE '%{1}%'", colName, value ) );
                         }
                         else if ( col.DataType.Name.StartsWith( "Int" ) )
                         {
