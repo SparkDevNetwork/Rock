@@ -270,6 +270,12 @@ namespace Rock.Web.Cache
                             Rock.Web.Cache.AttributeCache.RemoveEntityAttributes();
                             break;
                         }
+                    case "PING":
+                        {
+                            var response = string.Format( "PONG: From {0}: {1}", System.Environment.MachineName, System.AppDomain.CurrentDomain.FriendlyName );
+                            SendRedisCommand( response );
+                            break;
+                        }
                 }
             }
         }
@@ -517,8 +523,9 @@ namespace Rock.Web.Cache
                 if ( RockMemoryCache.s_defaultCache != null )
                 {
                     RockMemoryCache.s_defaultCache.Dispose();
-                    RockMemoryCache.s_defaultCache = new RockMemoryCache();
                 }
+
+                RockMemoryCache.s_defaultCache = new RockMemoryCache();
             }
         }
     }
