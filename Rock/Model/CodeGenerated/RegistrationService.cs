@@ -98,6 +98,7 @@ namespace Rock.Model
             target.GroupId = source.GroupId;
             target.IsTemporary = source.IsTemporary;
             target.LastName = source.LastName;
+            target.LastPaymentReminderDateTime = source.LastPaymentReminderDateTime;
             target.PersonAliasId = source.PersonAliasId;
             target.RegistrationInstanceId = source.RegistrationInstanceId;
             target.CreatedDateTime = source.CreatedDateTime;

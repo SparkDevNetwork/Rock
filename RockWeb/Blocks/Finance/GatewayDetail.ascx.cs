@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Web.UI.WebControls;
 using Rock;
 using Rock.Constants;
 using Rock.Data;
@@ -269,6 +270,11 @@ namespace RockWeb.Blocks.Finance
 
             phAttributes.Controls.Clear();
             Rock.Attribute.Helper.AddEditControls( gateway, phAttributes, SetValues, BlockValidationGroup, new List<string> { "Active", "Order" } );
+            foreach ( var tb in phAttributes.ControlsOfTypeRecursive<TextBox>() )
+            {
+                tb.AutoCompleteType = AutoCompleteType.Disabled;
+                tb.Attributes["autocomplete"] = "off";
+            }
         }
 
         #endregion
