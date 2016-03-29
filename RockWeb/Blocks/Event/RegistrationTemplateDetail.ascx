@@ -70,6 +70,13 @@
                                                 adding registrants to specific child groups of a selected parent group." />
                                     </div>
                                 </div>
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                        <Rock:RockCheckBox ID="cbAllowExternalUpdates" runat="server" Label="Allow External Updates to Saved Registrations" Text="Yes"
+                                            Help="Allow saved registrations to be updated online. If false the individual will be able to make additional payments, but will
+                                            not be allow to change any of the registrant information and attributes." />
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="row">
