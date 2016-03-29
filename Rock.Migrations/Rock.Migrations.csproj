@@ -141,6 +141,22 @@
     <Compile Include="Migrations\201603092127444_ConnectionTypePlacementGroupOptional.Designer.cs">
       <DependentUpon>201603092127444_ConnectionTypePlacementGroupOptional.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201603142139542_FamilyAnalytics.cs" />
+    <Compile Include="Migrations\201603142139542_FamilyAnalytics.Designer.cs">
+      <DependentUpon>201603142139542_FamilyAnalytics.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201603142203529_MigrationRollupv5a.cs" />
+    <Compile Include="Migrations\201603142203529_MigrationRollupv5a.Designer.cs">
+      <DependentUpon>201603142203529_MigrationRollupv5a.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201603151246313_BackgroundCheckSubmitHandler.cs" />
+    <Compile Include="Migrations\201603151246313_BackgroundCheckSubmitHandler.Designer.cs">
+      <DependentUpon>201603151246313_BackgroundCheckSubmitHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201603162100288_AddBusinessSearch.cs" />
+    <Compile Include="Migrations\201603162100288_AddBusinessSearch.Designer.cs">
+      <DependentUpon>201603162100288_AddBusinessSearch.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.cs" />
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.Designer.cs">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
@@ -2089,6 +2105,18 @@
     <EmbeddedResource Include="Migrations\201603092127444_ConnectionTypePlacementGroupOptional.resx">
       <DependentUpon>201603092127444_ConnectionTypePlacementGroupOptional.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603142139542_FamilyAnalytics.resx">
+      <DependentUpon>201603142139542_FamilyAnalytics.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603142203529_MigrationRollupv5a.resx">
+      <DependentUpon>201603142203529_MigrationRollupv5a.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603151246313_BackgroundCheckSubmitHandler.resx">
+      <DependentUpon>201603151246313_BackgroundCheckSubmitHandler.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603162100288_AddBusinessSearch.resx">
+      <DependentUpon>201603162100288_AddBusinessSearch.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.resx">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
     </EmbeddedResource>
@@ -3501,6 +3529,9 @@
     <Content Include="Migrations\201602161036322_AttendanceAnalyticsQuery_NonAttendees.sql" />
     <Content Include="Migrations\201602161036322_AttendanceAnalyticsQuery_AttendeeDates.sql" />
     <Content Include="Migrations\201602041745307_TuneDuplicateFinder.sql" />
+    <Content Include="Migrations\201603142139542_FamilyAnalytics_spCrm_FamilyAnalyticsAttendance.sql" />
+    <Content Include="Migrations\201603142139542_FamilyAnalytics_spCrm_FamilyAnalyticsEraDataset.sql" />
+    <Content Include="Migrations\201603142139542_FamilyAnalytics_spCrm_FamilyAnalyticsGiving.sql" />
     <Content Include="Migrations\Version 4.0\Version 1.4.0\201506051749054_AddSampleMergeDocs.sql" />
     <Content Include="Migrations\Version 4.0\Version 1.4.0\201506112030400_PersonDaysUntilBirthday.sql" />
     <Content Include="Migrations\Version 4.0\Version 1.4.0\201506281615197_GivingAnalyticsEmail_1.sql" />

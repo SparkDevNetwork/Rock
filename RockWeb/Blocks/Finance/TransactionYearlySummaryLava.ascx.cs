@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Finance
     [ContextAware( typeof( Person ) )]
     [CodeEditorField( "Lava Template", "The lava template to use to format the transaction summary.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/TransactionYearlySummary.lava' %}", "", 1 )]
     [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 2 )]
-    public partial class TransactionYearlySummaryLava : RockBlock
+    public partial class TransactionYearlySummaryLava : RockBlock, ISecondaryBlock
     {
         #region Base Control Methods
 
@@ -165,6 +165,19 @@ namespace RockWeb.Blocks.Finance
 
                 lLavaOutput.Text += template.ResolveMergeFields( mergeObjects ).ResolveClientIds( upnlContent.ClientID );
             }
+        }
+
+        #endregion
+
+        #region Internal Methods
+
+        /// <summary>
+        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on it's page
+        /// </summary>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
+        {
+            pnlContent.Visible = visible;
         }
 
         #endregion

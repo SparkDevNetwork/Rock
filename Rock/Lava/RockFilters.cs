@@ -626,6 +626,41 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Sundays the date.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string SundayDate( object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            DateTime date = DateTime.MinValue;
+
+            if ( input.ToString() == "Now" )
+            {
+                date = RockDateTime.Now;
+            }
+            else
+            {
+                if ( !DateTime.TryParse( input.ToString(), out date ) )
+                {
+                    return null;
+                }
+            }
+
+            if ( date != DateTime.MinValue )
+            {
+                return date.SundayDate().ToShortDateString();
+            } else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Dateses from i cal.
         /// </summary>
         /// <param name="input">The input.</param>
@@ -1718,12 +1753,48 @@ namespace Rock.Lava
 
         /// <summary>
         /// Gets the profile photo for a person object in a string that zebra printers can use.
+        /// If the person has no photo, a default silhouette photo (adult/child, male/female)
+        /// photo is used.
+        /// See http://www.rockrms.com/lava/person#ZebraPhoto for details.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="input">The input, which is the person.</param>
         /// <param name="size">The size.</param>
-        /// <returns></returns>
+        /// <returns>A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:LOGO,P,P,{0},,{1} ^FD").</returns>
+        [Obsolete( "ZebraPhoto is deprecated, please use ZebraPersonPhoto instead." )]
         public static string ZebraPhoto( DotLiquid.Context context, object input, string size )
+        {
+            return ZebraPersonPhoto( context, input, size, 1.0, 1.0 );
+        }
+
+        /// <summary>
+        /// Gets the profile photo for a person object in a string that zebra printers can use.
+        /// If the person has no photo, a default silhouette photo (adult/child, male/female)
+        /// photo is used.
+        /// See http://www.rockrms.com/lava/person#ZebraPhoto for details.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input, which is the person.</param>
+        /// <param name="size">The size.</param>
+        /// <returns>A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:LOGO,P,P,{0},,{1} ^FD").</returns>
+        public static string ZebraPersonPhoto( DotLiquid.Context context, object input, string size )
+        {
+            return ZebraPersonPhoto( context, input, size, 1.0, 1.0 );
+        }
+
+        /// <summary>
+        /// Gets the profile photo for a person object in a string that zebra printers can use.
+        /// If the person has no photo, a default silhouette photo (adult/child, male/female)
+        /// photo is used.
+        /// See http://www.rockrms.com/lava/person#ZebraPhoto for details.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input, which is the person.</param>
+        /// <param name="size">The size.</param>
+        /// <param name="brightness">The brightness adjustment (-1.0 to 1.0).</param>
+        /// <param name="contrast">The contrast adjustment (-1.0 to 1.0).</param>
+        /// <returns>A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:LOGO,P,P,{0},,{1} ^FD").</returns>
+        public static string ZebraPersonPhoto( DotLiquid.Context context, object input, string size, double brightness = 1.0, double contrast = 1.0 )
         {
             var person = GetPerson( input );
             try
@@ -1769,6 +1840,12 @@ namespace Rock.Lava
                     }
 
                     Bitmap initialBitmap = new Bitmap( initialPhotoStream );
+
+                    // Adjust the image if any of the parameters not default
+                    if ( brightness != 1.0 || contrast != 1.0 )
+                    {
+                        initialBitmap = ImageAdjust( initialBitmap, (float)brightness, (float)contrast );
+                    }
 
                     // Calculate rectangle to crop image into
                     int height = initialBitmap.Height;
@@ -1874,6 +1951,39 @@ namespace Rock.Lava
             }
 
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Adjust the brightness, contrast or gamma of the given image.
+        /// </summary>
+        /// <param name="originalImage">The original image.</param>
+        /// <param name="brightness">The brightness multiplier (-1.99 to 1.99 fully white).</param>
+        /// <param name="contrast">The contrast multiplier (2.0 would be twice the contrast).</param>
+        /// <param name="gamma">The gamma multiplier (1.0 would no change in gamma).</param>
+        /// <returns>A new adjusted image.</returns>
+        private static Bitmap ImageAdjust( Bitmap originalImage, float brightness = 1.0f, float contrast = 1.0f, float gamma = 1.0f )
+        {
+            Bitmap adjustedImage = originalImage;
+
+            float adjustedBrightness = brightness - 1.0f;
+            // Matrix used to effect the image
+            float[][] ptsArray = {
+                new float[] { contrast, 0, 0, 0, 0 }, // scale red
+                new float[] { 0, contrast, 0, 0, 0 }, // scale green
+                new float[] { 0, 0, contrast, 0, 0 }, // scale blue
+                new float[] { 0, 0, 0, 1.0f, 0 },     // no change to alpha
+                new float[] { adjustedBrightness, adjustedBrightness, adjustedBrightness, 0, 1 }
+            };
+
+            var imageAttributes = new ImageAttributes();
+            imageAttributes.ClearColorMatrix();
+            imageAttributes.SetColorMatrix( new ColorMatrix( ptsArray ), ColorMatrixFlag.Default, ColorAdjustType.Bitmap );
+            imageAttributes.SetGamma( gamma, ColorAdjustType.Bitmap );
+            Graphics g = Graphics.FromImage( adjustedImage );
+            g.DrawImage( originalImage, new Rectangle( 0, 0, adjustedImage.Width, adjustedImage.Height ),
+                0, 0, originalImage.Width, originalImage.Height, GraphicsUnit.Pixel, imageAttributes );
+
+            return adjustedImage;
         }
 
         /// <summary>

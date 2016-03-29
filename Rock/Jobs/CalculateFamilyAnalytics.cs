@@ -218,6 +218,11 @@ namespace Rock.Jobs
                         workflow.SetAttributeValue( "Family", family.Guid );
                         workflow.SetAttributeValue( "HeadOfHouse", headOfHouse.Person.PrimaryAlias.Guid );
 
+                        if ( family.Campus != null )
+                        {
+                            workflow.SetAttributeValue( "Campus", family.Campus.Guid );
+                        }
+
                         if ( spouse != null && spouse.Person != null && spouse.Person.PrimaryAlias != null )
                         {
                             workflow.SetAttributeValue( "Spouse", spouse.Person.PrimaryAlias.Guid );
