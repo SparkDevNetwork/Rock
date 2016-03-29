@@ -39,7 +39,7 @@ namespace Rock
                 {
                     if ( trimmed == trimmed.ToUpper() )
                     {
-                        // if all uppercasse, do a ToLower first so that Humanizer doesn't assume it is an acronym 
+                        // if all uppercase, do a ToLower first so that Humanizer doesn't assume it is an acronym 
                         // see https://github.com/Humanizr/Humanizer/issues/452
                         return trimmed.ToLower().Transform( To.TitleCase );
                     }
