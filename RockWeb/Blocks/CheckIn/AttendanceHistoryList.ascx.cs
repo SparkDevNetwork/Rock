@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -57,6 +58,7 @@ namespace RockWeb.Blocks.Checkin
             base.OnInit( e );
             gHistory.GridRebind += gHistory_GridRebind;
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
+            rFilter.ClearFilterClick += RFilter_ClearFilterClick;
             rFilter.DisplayFilterValue += rFilter_DisplayFilterValue;
         }
 
@@ -140,23 +142,52 @@ namespace RockWeb.Blocks.Checkin
                     break;
 
                 case "Person":
-                    var person = new PersonService( rockContext ).Get( e.Value.AsIntegerOrNull() ?? 0 );
-                    if ( person != null )
+                    int? personId = e.Value.AsIntegerOrNull();
+                    e.Value = null;
+                    if ( personId.HasValue )
                     {
-                        e.Value = person.ToString();
+                        var person = new PersonService( rockContext ).Get( personId.Value );
+                        if ( person != null )
+                        {
+                            e.Value = person.ToString();
+                        }
                     }
-                    else
-                    {
-                        e.Value = null;
-                    }
-
                     break;
 
                 case "Group":
-                    var group = new GroupService( rockContext ).Get( e.Value.AsIntegerOrNull() ?? 0 );
-                    if ( group != null )
+                    int? groupId = e.Value.AsIntegerOrNull();
+                    e.Value = null;
+                    if ( groupId.HasValue )
                     {
-                        e.Value = group.ToString();
+                        var group = new GroupService( rockContext ).Get( groupId.Value );
+                        if ( group != null )
+                        {
+                            e.Value = group.ToString();
+                        }
+                    }
+                    break;
+
+                case "Schedule":
+                    int? scheduleId = e.Value.AsIntegerOrNull();
+                    e.Value = null;
+                    if ( scheduleId.HasValue )
+                    {
+                        var schedule = new ScheduleService( rockContext ).Get( scheduleId.Value );
+                        if ( schedule != null )
+                        {
+                            e.Value = schedule.Name;
+                        }
+                    }
+                    break;
+
+                case "Attended":
+                    if ( e.Value == "1" )
+                    {
+                        e.Value = "Did Attend";
+                    }
+                    else if ( e.Value == "0" )
+                    {
+                        e.Value = "Did Not Attend";
                     }
                     else
                     {
@@ -165,17 +196,8 @@ namespace RockWeb.Blocks.Checkin
 
                     break;
 
-                case "Schedule":
-                    var schedule = new ScheduleService( rockContext ).Get( e.Value.AsIntegerOrNull() ?? 0 );
-                    if ( schedule != null )
-                    {
-                        e.Value = schedule.Name;
-                    }
-                    else
-                    {
-                        e.Value = null;
-                    }
-
+                default:
+                    e.Value = null;
                     break;
             }
         }
@@ -192,14 +214,14 @@ namespace RockWeb.Blocks.Checkin
             rFilter.SaveUserPreference( "Person", ppPerson.SelectedValue.ToString() );
             rFilter.SaveUserPreference( "Group", ddlAttendanceGroup.SelectedValue );
             rFilter.SaveUserPreference( "Schedule", spSchedule.SelectedValue );
-            if ( ddlDidAttend.SelectedValue == "all" )
-            {
-                rFilter.SaveUserPreference( "Did Attend", string.Empty );
-            }
-            else
-            {
-                rFilter.SaveUserPreference( "Did Attend", ddlDidAttend.SelectedValue );
-            }
+            rFilter.SaveUserPreference( "Attended", ddlDidAttend.SelectedValue );
+
+            BindGrid();
+        }
+
+        protected void RFilter_ClearFilterClick( object sender, EventArgs e )
+        {
+            rFilter.DeleteUserPreferences();
             BindGrid();
         }
 
@@ -214,32 +236,61 @@ namespace RockWeb.Blocks.Checkin
         {
             drpDates.DelimitedValues = rFilter.GetUserPreference( "Date Range" );
 
-            ppPerson.Visible = _person == null;
-            ddlAttendanceGroup.Visible = _group == null && _person != null;
-            ddlAttendanceGroup.Items.Clear();
-            ddlAttendanceGroup.Items.Add( new ListItem() );
-
-            if ( _person != null )
+            using ( var rockContext = new RockContext() )
             {
-                var rockContext = new RockContext();
-                var qryGroup = new GroupService( rockContext ).Queryable();
-
-                var qryPersonAttendance = new AttendanceService( rockContext ).Queryable().Where( a => a.PersonAlias.PersonId == _person.Id );
-
-                // only list groups that this person has attended before
-                var groupList = qryGroup.Where( g => qryPersonAttendance.Any( a => a.GroupId == g.Id ) )
-                    .OrderBy( a => a.Name )
-                    .Select( a => new { a.Name, a.Id } ).ToList();
-
-                foreach ( var group in groupList )
+                if ( _person != null )
                 {
-                    ddlAttendanceGroup.Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
-                }
+                    ppPerson.Visible = false;
 
-                ddlAttendanceGroup.SetValue( rFilter.GetUserPreference( "Group" ).AsIntegerOrNull() );
+                    if ( _group == null )
+                    {
+                        ddlAttendanceGroup.Visible = true;
+                        ddlAttendanceGroup.Items.Clear();
+                        ddlAttendanceGroup.Items.Add( new ListItem() );
+
+                        // only list groups that this person has attended before
+                        var groupIdsAttended = new AttendanceService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( a =>
+                                a.PersonAlias != null &&
+                                a.PersonAlias.PersonId == _person.Id )
+                            .Select( a => a.GroupId )
+                            .Distinct()
+                            .ToList();
+
+                        foreach ( var group in new GroupService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( g => groupIdsAttended.Contains( g.Id ) )
+                            .OrderBy( g => g.Name )
+                            .Select( g => new { g.Name, g.Id } ).ToList() )
+                        { 
+                            ddlAttendanceGroup.Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
+                        }
+
+                        ddlAttendanceGroup.SetValue( rFilter.GetUserPreference( "Group" ).AsIntegerOrNull() );
+                    }
+                    else
+                    {
+                        ddlAttendanceGroup.Visible = false;
+                    }
+                }
+                else
+                {
+                    ppPerson.Visible = true;
+                    int? personId = rFilter.GetUserPreference( "Person" ).AsIntegerOrNull();
+                    if ( personId.HasValue )
+                    {
+                        var person = new PersonService( rockContext ).Get( personId.Value );
+                        ppPerson.SetValue( person );
+                    }
+
+                    ddlAttendanceGroup.Visible = false;
+                }
             }
 
             spSchedule.SetValue( rFilter.GetUserPreference( "Schedule" ).AsIntegerOrNull() );
+
+            ddlDidAttend.SetValue( rFilter.GetUserPreference( "Attended" ) );
         }
 
         private List<GroupTypePath> _groupTypePaths;
@@ -253,6 +304,7 @@ namespace RockWeb.Blocks.Checkin
             var rockContext = new RockContext();
             var attendanceService = new AttendanceService( rockContext );
             var qryAttendance = attendanceService.Queryable();
+
             var personField = gHistory.Columns.OfType<PersonField>().FirstOrDefault();
             if ( personField != null )
             {
@@ -268,55 +320,56 @@ namespace RockWeb.Blocks.Checkin
             if ( _person != null )
             {
                 qryAttendance = qryAttendance.Where( a => a.PersonAlias.PersonId == _person.Id );
+
+                if ( _group != null )
+                {
+                    qryAttendance = qryAttendance.Where( a => a.GroupId == _group.Id );
+                }
+                else
+                {
+                    int? groupId = ddlAttendanceGroup.SelectedValueAsInt();
+                    if ( groupId.HasValue )
+                    {
+                        qryAttendance = qryAttendance.Where( a => a.GroupId == groupId.Value );
+                    }
+                }
             }
-            else if ( _group != null )
+            else
             {
-                qryAttendance = qryAttendance.Where( a => a.GroupId == _group.Id );
+                int? personId = ppPerson.SelectedValue;
+                if ( personId.HasValue )
+                {
+                    qryAttendance = qryAttendance.Where( a => a.PersonAlias.PersonId == personId.Value );
+                }
             }
 
             // Filter by Date Range
-            var drp = new DateRangePicker();
-            drp.DelimitedValues = rFilter.GetUserPreference( "Date Range" );
-            if ( drp.LowerValue.HasValue )
+            if ( drpDates.LowerValue.HasValue )
             {
-                qryAttendance = qryAttendance.Where( t => t.StartDateTime >= drp.LowerValue.Value );
+                qryAttendance = qryAttendance.Where( t => t.StartDateTime >= drpDates.LowerValue.Value );
             }
-
-            if ( drp.UpperValue.HasValue )
+            if ( drpDates.UpperValue.HasValue )
             {
-                DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
+                DateTime upperDate = drpDates.UpperValue.Value.Date.AddDays( 1 );
                 qryAttendance = qryAttendance.Where( t => t.EndDateTime < upperDate );
             }
 
-            // Filter by Person
-            int? personId = ppPerson.SelectedValue;
-            if ( personId.HasValue && ppPerson.Visible )
-            {
-                qryAttendance = qryAttendance.Where( a => a.PersonAlias.PersonId == personId.Value );
-            }
-
-            // Filter by Group
-            int groupId = ddlAttendanceGroup.SelectedValue.AsInteger();
-            if ( groupId > 0 && ddlAttendanceGroup.Visible )
-            {
-                qryAttendance = qryAttendance.Where( a => a.GroupId == groupId );
-            }
-
             // Filter by Schedule
-            int scheduleId = spSchedule.SelectedValue.AsInteger();
-            if ( scheduleId > 0 && spSchedule.Visible )
+            int? scheduleId = spSchedule.SelectedValue.AsIntegerOrNull();
+            if ( scheduleId.HasValue && scheduleId.Value > 0 )
             {
-                qryAttendance = qryAttendance.Where( h => h.ScheduleId == scheduleId );
+                qryAttendance = qryAttendance.Where( h => h.ScheduleId == scheduleId.Value );
             }
 
             // Filter by DidAttend
-            if ( ddlDidAttend.SelectedIndex > -1 )
+            int? didAttend = ddlDidAttend.SelectedValueAsInt( false );
+            if ( didAttend.HasValue )
             {
-                if ( ddlDidAttend.SelectedValue == "didattend" )
+                if ( didAttend.Value == 1 )
                 {
                     qryAttendance = qryAttendance.Where( a => a.DidAttend == true );
                 }
-                else if (ddlDidAttend.SelectedValue == "didnotattend")
+                else
                 {
                     qryAttendance = qryAttendance.Where( a => a.DidAttend == false );
                 }

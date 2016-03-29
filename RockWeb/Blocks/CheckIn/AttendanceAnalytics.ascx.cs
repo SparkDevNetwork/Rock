@@ -1342,7 +1342,26 @@ function(item) {
                 var currentPageItems = gAttendeesAttendance.DataSource as List<AttendeeResult>;
                 if ( currentPageItems != null )
                 {
-                    var currentPagePersonIds = currentPageItems.Select( i => i.PersonId ).ToList();
+                    var currentPagePersonIds = new List<int>();
+                    if ( includeParents )
+                    {
+                        currentPagePersonIds = currentPageItems.Select( i => i.ParentId ).ToList();
+                        gAttendeesAttendance.PersonIdField = "ParentId";
+                        gAttendeesAttendance.DataKeyNames = new string[] { "ParentId", "PersonId" };
+                    }
+                    else if ( includeChildren )
+                    {
+                        currentPagePersonIds = currentPageItems.Select( i => i.ChildId ).ToList();
+                        gAttendeesAttendance.PersonIdField = "ChildId";
+                        gAttendeesAttendance.DataKeyNames = new string[] { "ChildId", "PersonId" };
+                    }
+                    else
+                    {
+                        currentPagePersonIds = currentPageItems.Select( i => i.PersonId ).ToList();
+                        gAttendeesAttendance.PersonIdField = "PersonId";
+                        gAttendeesAttendance.DataKeyNames = new string[] { "PersonId" };
+                    }
+
                     LoadCurrentPageObjects( currentPagePersonIds );
                 }
 
@@ -1634,12 +1653,20 @@ function(item) {
                     }
                 }
 
+                int currentPersonId = personDates.PersonId;
+                if ( gAttendeesAttendance.PersonIdField == "ParentId" )
+                {
+                    currentPersonId = personDates.ParentId;
+                } else if ( gAttendeesAttendance.PersonIdField == "ChildId")
+                {
+                    currentPersonId = personDates.ChildId;
+                }
+
                 try
                 {
-                    if ( _personLocations != null && _personLocations.ContainsKey( personDates.PersonId ) )
+                    if ( _personLocations != null && _personLocations.ContainsKey( currentPersonId ) )
                     {
-
-                        lHomeAddress.Text = _personLocations[personDates.PersonId].FormattedHtmlAddress;
+                        lHomeAddress.Text = _personLocations[currentPersonId].FormattedHtmlAddress;
                     }
                 }
                 catch ( Exception ex )
@@ -1647,11 +1674,11 @@ function(item) {
                     string msg = ex.Message;
                 }
 
-                if ( _personPhoneNumbers != null && _personPhoneNumbers.ContainsKey( personDates.PersonId ) )
+                if ( _personPhoneNumbers != null && _personPhoneNumbers.ContainsKey( currentPersonId ) )
                 {
                     var sb = new StringBuilder();
                     sb.Append( "<ul class='list-unstyled phonenumbers'>" );
-                    foreach ( var phoneNumber in _personPhoneNumbers[personDates.PersonId] )
+                    foreach ( var phoneNumber in _personPhoneNumbers[currentPersonId] )
                     {
                         string formattedNumber = "Unlisted";
                         if ( !phoneNumber.IsUnlisted )
