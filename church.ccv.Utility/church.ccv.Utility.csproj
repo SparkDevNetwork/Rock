@@ -56,6 +56,7 @@
     <Compile Include="Jobs\CreateFirstVisitWorkflows.cs" />
     <Compile Include="Jobs\GroupMemberFollowUpNotifications.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Workflow\Action\SetPersonMobileSMSNumber.cs" />
     <Compile Include="SystemGuids\DefinedType.cs" />
     <Compile Include="SystemGuids\DefinedValue.cs" />
     <Compile Include="SystemGuids\GroupRole.cs" />
