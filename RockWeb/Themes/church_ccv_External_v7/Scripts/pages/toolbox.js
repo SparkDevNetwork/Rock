@@ -71,7 +71,20 @@ CCV.renderBadges = function(data) {
       $badgeHolder.replaceWith(CCV.badge.template(person))
     }
   }
+  this.bindUIAfterLoad()
+}
+
+CCV.bindUIAfterLoad = function() {
   $('[data-toggle="tooltip"]').tooltip()
+  $('.js-toggle-badge-vis-wrapper').addClass('in')
+  $('.js-toggle-badge-vis').click(function(){
+    var $badges = $('.js-badge-group-steps')
+    if (this.checked) {
+      $badges.removeClass('hide')
+    } else {
+      $badges.addClass('hide')
+    }
+  })
 }
 
 Sys.Application.add_load(function(){
