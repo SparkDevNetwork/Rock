@@ -113,7 +113,7 @@ deploy:
   - provider: Environment
     name: Gauntlet (gauntlet.newspring.cc)
     on:
-      branch: pre-alpha-release
+      branch: gauntlet
 
 
 #---------------------------------#
