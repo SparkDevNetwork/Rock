@@ -243,7 +243,7 @@ REQUIRED VARIABLES
   <script type="text/javascript">
     CURRENT_GROUP_GUID = '{{ Group.Guid }}'
   </script>
-  <script src="/Themes/church_ccv_External_v7/Scripts/pages/min/toolbox.min.js?v2"></script>
+  <script src="/Themes/church_ccv_External_v7/Scripts/pages/min/toolbox.min.js?v=3"></script>
 
   <script>
     $(function () {
