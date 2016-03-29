@@ -171,6 +171,10 @@
     <Compile Include="Migrations\201603241157527_AttendanceAnalyticsScheduleFilter.Designer.cs">
       <DependentUpon>201603241157527_AttendanceAnalyticsScheduleFilter.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201603292244479_RegistrationAllowExternalEdits.cs" />
+    <Compile Include="Migrations\201603292244479_RegistrationAllowExternalEdits.Designer.cs">
+      <DependentUpon>201603292244479_RegistrationAllowExternalEdits.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.cs" />
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.Designer.cs">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
@@ -2142,6 +2146,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201603241157527_AttendanceAnalyticsScheduleFilter.resx">
       <DependentUpon>201603241157527_AttendanceAnalyticsScheduleFilter.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603292244479_RegistrationAllowExternalEdits.resx">
+      <DependentUpon>201603292244479_RegistrationAllowExternalEdits.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.resx">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
