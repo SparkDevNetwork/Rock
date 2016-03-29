@@ -1,10 +1,21 @@
-{% comment %}{% include '~~/Assets/Lava/EventItemList.lava' %}{% endcomment %}
+{% comment %}
+
+{% assign calendarId = 1 %}
+{% assign tierAttributeName = 'TierLevel' %}
+{% include '~~/Assets/Lava/EventItemList.lava' %}
+
+{% endcomment %}
 
 
 {% if Context.Campus %}
   {% assign firstEventOccurrenceSummary = EventOccurrenceSummaries | First %}
   {% assign firstMonth = firstEventOccurrenceSummary.DateTime | Date: 'MMMM' %}
   {% assign currentMonth = firstMonth %}
+
+  {% unless calendarId %}
+    {% assign calendarId = 1 %}
+  {% endunless %}
+  {% assign tierAttributeName = tierAttributeName | Default: 'TierLevel' %}
 
   {% assign tier1Classes = "panel panel-card panel-card-half" %}
   {% assign tier2Classes = "panel panel-card panel-card-half panel-card-black" %}
@@ -22,10 +33,10 @@
       {% if eventOccurrenceSummary.EventItem.IsApproved %}
 
         {% comment %} EventCalendarId 1 is public calendar {% endcomment %}
-        {% assign eventCalendarItem = eventOccurrenceSummary.EventItem.EventCalendarItems | Where: 'EventCalendarId', 1 | First %}
+        {% assign eventCalendarItem = eventOccurrenceSummary.EventItem.EventCalendarItems | Where: 'EventCalendarId', calendarId | First %}
 
         {% assign tierLevel = 0 %} {% comment %} Reset {% endcomment %}
-        {% assign tierLevel = eventCalendarItem | Attribute: 'TierLevel' %}
+        {% assign tierLevel = eventCalendarItem | Attribute: tierAttributeName %}
 
         {% case tierLevel %}
           {% when 1 %}
