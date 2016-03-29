@@ -778,6 +778,22 @@ namespace Rock.Web.Cache
         /// </summary>
         public static void FlushEntityAttributes()
         {
+            var rockMemoryCache = RockMemoryCache.Default;
+            if ( rockMemoryCache.IsRedisClusterEnabled && rockMemoryCache.IsRedisConnected )
+            { 
+                rockMemoryCache.SendRedisCommand( "REMOVE_ENTITY_ATTRIBUTES" );
+            }
+            else
+            {
+                RemoveEntityAttributes();
+            }
+        }
+
+        /// <summary>
+        /// Removes the entity attributes.
+        /// </summary>
+        internal static void RemoveEntityAttributes()
+        {
             lock ( _lock )
             {
                 AllEntityAttributes = null;
