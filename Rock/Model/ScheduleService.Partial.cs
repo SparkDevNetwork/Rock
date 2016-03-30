@@ -163,15 +163,15 @@ namespace Rock.Model
                 {
                     var minDate = occurrences.Min( o => o.Date );
                     var maxDate = occurrences.Max( o => o.Date ).AddDays( 1 );
-                    var attendances = attendanceService
+                    var attendanceQry = attendanceService
                         .Queryable().AsNoTracking()
                         .Where( a =>
-                            a.PersonAlias != null &&
-                            a.PersonAliasId.HasValue &&
                             a.GroupId.HasValue &&
                             a.GroupId == group.Id &&
                             a.StartDateTime >= minDate &&
-                            a.StartDateTime < maxDate )
+                            a.StartDateTime < maxDate && 
+                            a.PersonAlias != null &&
+                            a.PersonAliasId.HasValue )
                         .Select( a => new
                         {
                             a.LocationId,
@@ -196,16 +196,18 @@ namespace Rock.Model
                             )
                             .Select( m => m.PersonId );
 
-                        attendances = attendances
+                        attendanceQry = attendanceQry
                             .Where( s => campusQry.Contains( s.PersonId ) );
                     }
 
-                    foreach( var summary in attendances
+                    var attendances = attendanceQry.ToList();
+
+                    foreach ( var summary in attendances
                         .GroupBy( a => new
                         {
                             a.LocationId,
                             a.ScheduleId,
-                            Date = DbFunctions.TruncateTime( a.StartDateTime )
+                            Date = a.StartDateTime.Date
                         } )
                         .Select( a => new
                         {
