@@ -77,6 +77,12 @@ BEGIN
             ,1199600
             ,1199601
             ,1199602
+			,1199229
+			,1199230
+			,1199596
+			,1199597
+			,1199598
+			,1199599
             )
         AND A.StartDateTime <= DATEADD(DAY, - 1, @SaturdayDate)
         AND A.StartDateTime >= DATEADD(DAY, - 1, DATEADD(week, - 15, @SaturdayDate))
