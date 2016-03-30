@@ -119,14 +119,24 @@ namespace Rock.Lava
         /// <param name="input">The input.</param>
         /// <param name="quantity">The quantity.</param>
         /// <returns></returns>
-        public static string PluralizeForQuantity( string input, int quantity )
+        public static string PluralizeForQuantity( string input, object quantity )
         {
             if ( input == null )
             {
                 return input;
             }
 
-            if ( quantity > 1 )
+            decimal numericQuantity;
+            if ( quantity is string )
+            {
+                numericQuantity = ( quantity as string ).AsDecimal();
+            }
+            else
+            {
+                numericQuantity = Convert.ToDecimal( quantity );
+            }
+
+            if ( numericQuantity > 1 )
             {
                 return input.Pluralize();
             }
@@ -320,11 +330,21 @@ namespace Rock.Lava
         /// <param name="input">The input.</param>
         /// <param name="quantity">The quantity.</param>
         /// <returns></returns>
-        public static string ToQuantity( string input, int quantity )
+        public static string ToQuantity( string input, object quantity )
         {
+            int numericQuantity;
+            if ( quantity is string )
+            {
+                numericQuantity = (int)( ( quantity as string ).AsDecimal() );
+            }
+            else
+            {
+                numericQuantity = Convert.ToInt32( quantity );
+            }
+
             return input == null
                 ? input
-                : input.ToQuantity( quantity );
+                : input.ToQuantity( numericQuantity );
         }
 
         /// <summary>
