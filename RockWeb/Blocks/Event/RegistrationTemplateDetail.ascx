@@ -94,8 +94,8 @@
                                     Help="Typical relationship of registrants that user would register." />
                                 <div class="well">
                                     <Rock:Toggle ID="tglSetCostOnTemplate" runat="server" Label="Set Cost On" OnText="Template" OffText="Instance" 
-                                        ActiveButtonCssClass="btn-info" OnCheckedChanged="tglSetCost_CheckedChanged" />
-                                    <Rock:CurrencyBox ID="cbCost" runat="server" Label="Cost" cs
+                                        ActiveButtonCssClass="btn-info" OnCheckedChanged="tglSetCost_CheckedChanged" ButtonSizeCssClass="btn-xs" />
+                                    <Rock:CurrencyBox ID="cbCost" runat="server" Label="Cost"
                                         Help="The cost per registrant." />
                                     <Rock:CurrencyBox ID="cbMinimumInitialPayment" runat="server" Label="Minimum Initial Payment"
                                         Help="The minimum amount required per registrant. Leave value blank if full amount is required." />
