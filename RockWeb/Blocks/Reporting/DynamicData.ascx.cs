@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Reporting
     [CodeEditorField( "Page Title Lava", "Optional Lava for setting the page title. If nothing is provided then the page's title will be used.",
         CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, "", "CustomSetting" )]
     [BooleanField( "Paneled Grid", "Add the 'grid-panel' class to the grid to allow it to fit nicely in a block.", false, "Advanced" )]
-    [BooleanField( "Use Dynamic Filter Controls", "Show filtering controls that are dynamically generated to match the columns of the dynamic data." )]
+    [BooleanField( "Show Grid Filter", "Show filtering controls that are dynamically generated to match the columns of the dynamic data.", true, "CustomSetting" )]
     public partial class DynamicData : RockBlockCustomSettings
     {
         #region Fields
@@ -227,6 +227,7 @@ namespace RockWeb.Blocks.Reporting
             SetAttributeValue( "ShowBulkUpdate", ( cbPersonReport.Checked && cbShowBulkUpdate.Checked ).ToString() );
             SetAttributeValue( "ShowExcelExport", cbShowExcelExport.Checked.ToString() );
             SetAttributeValue( "ShowMergeTemplate", cbShowMergeTemplate.Checked.ToString() );
+            SetAttributeValue( "ShowGridFilter", cbShowGridFilter.Checked.ToString() );
 
             SetAttributeValue( "MergeFields", tbMergeFields.Text );
             SaveAttributeValues();
@@ -363,6 +364,7 @@ namespace RockWeb.Blocks.Reporting
             cbShowBulkUpdate.Checked = GetAttributeValue( "ShowBulkUpdate" ).AsBoolean();
             cbShowExcelExport.Checked = GetAttributeValue( "ShowExcelExport" ).AsBoolean();
             cbShowMergeTemplate.Checked = GetAttributeValue( "ShowMergeTemplate" ).AsBoolean();
+            cbShowGridFilter.Checked = GetAttributeValue( "ShowGridFilter" ).AsBoolean();
 
             tbMergeFields.Text = GetAttributeValue( "MergeFields" );
         }
@@ -414,7 +416,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="setData">if set to <c>true</c> [set data].</param>
         private void BuildControls( bool setData )
         {
-            var useDynamicFilterControls = GetAttributeValue( "UseDynamicFilterControls" ).AsBoolean();
+            var showGridFilterControls = GetAttributeValue( "ShowGridFilter" ).AsBoolean();
             string errorMessage = string.Empty;
             var dataSet = GetData( out errorMessage );
 
@@ -496,7 +498,7 @@ namespace RockWeb.Blocks.Reporting
                             div.Controls.Add( GridFilter );
                             GridFilter.ApplyFilterClick += ApplyFilterClick;
                             GridFilter.DisplayFilterValue += DisplayFilterValue;
-                            GridFilter.Visible = useDynamicFilterControls;
+                            GridFilter.Visible = showGridFilterControls;
 
                             var grid = new Grid();
                             div.Controls.Add( grid );
@@ -784,10 +786,10 @@ namespace RockWeb.Blocks.Reporting
         /// <returns></returns>
         private void FilterTable( Grid grid, DataTable dataTable )
         {
-            var useDynamicFilterControls = GetAttributeValue( "UseDynamicFilterControls" ).AsBoolean();
+            var showGridFilterControls = GetAttributeValue( "ShowGridFilter" ).AsBoolean();
             System.Data.DataView dataView = dataTable.DefaultView;
 
-            if ( !useDynamicFilterControls )
+            if ( !showGridFilterControls )
             {
                 dataView.RowFilter = null;
                 return;
