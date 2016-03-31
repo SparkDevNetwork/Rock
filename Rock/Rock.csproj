@@ -1491,7 +1491,6 @@
   <ItemGroup>
     <Content Include="packages.config" />
     <None Include="App.config" />
-    <Fakes Include="Fakes\Humanizer.fakes" />
     <None Include="Service References\MelissaData.AddressCheck\Rock.MelissaData.AddressCheck.ResponseArray.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
