@@ -256,7 +256,6 @@ namespace Rock.Security
         /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityId">The entity id.</param>
         /// <param name="action">The action.</param>
-        /// <param name="isRedisCommand">if set to <c>true</c> [is redis command].</param>
         internal static void RefreshAction( int entityTypeId, int entityId, string action )
         {
             // if the authorizations have already been loaded, update just the selected action
