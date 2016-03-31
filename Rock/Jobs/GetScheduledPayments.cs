@@ -34,6 +34,7 @@ namespace Rock.Jobs
     [IntegerField( "Days Back", "The number of days prior to the current date to use as the start date when querying for scheduled payments that were processed.", true, 7, "", 1 )]
     [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving", "", 2 )]
     [SystemEmailField( "Receipt Email", "The system email to use to send the receipts.", false, "", "", 3 )]
+    [WorkflowTypeField( "Reversal Workflow", "The workflow to run when a failed (reversal) transaction is downloaded.", false, false, "", "", 4 )]
 
     [DisallowConcurrentExecution]
     public class GetScheduledPayments : IJob
@@ -91,8 +92,9 @@ namespace Rock.Jobs
                             if ( string.IsNullOrWhiteSpace( errorMessage ) )
                             {
                                 Guid? systemEmailGuid = dataMap.GetString( "ReceiptEmail" ).AsGuidOrNull();
+                                Guid? reversalWorkflowGuid = dataMap.GetString( "ReversalWorkflow" ).AsGuidOrNull();
                                 string batchNamePrefix = dataMap.GetString( "BatchNamePrefix" );
-                                FinancialScheduledTransactionService.ProcessPayments( financialGateway, batchNamePrefix, payments, string.Empty, systemEmailGuid );
+                                FinancialScheduledTransactionService.ProcessPayments( financialGateway, batchNamePrefix, payments, string.Empty, systemEmailGuid, reversalWorkflowGuid );
                                 scheduledPaymentsProcessed += payments.Count();
                             }
                             else

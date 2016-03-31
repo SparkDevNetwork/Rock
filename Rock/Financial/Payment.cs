@@ -63,5 +63,19 @@ namespace Rock.Financial
         /// </summary>
         public bool ScheduleActive { get; set; }
 
+        /// <summary>
+        /// Gets or sets the status.
+        /// </summary>
+        public string Status { get; set; }
+
+        /// <summary>
+        /// Gets or sets the status message.
+        /// </summary>
+        public string StatusMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is failure.
+        /// </summary>
+        public bool IsFailure { get; set; }
     }
 }

@@ -62,26 +62,34 @@ namespace Rock.Workflow.Action
                     var attribute = AttributeCache.Read( guid, rockContext );
                     if ( attribute != null )
                     {
-                        // Person is handled special since it needs the person alias id
-                        if ( entity is Person && attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.PERSON.AsGuid(), rockContext ).Id )
+                        // If a lava template was specified, use that to set the attribute value
+                        string lavaTemplate = GetAttributeValue( action, "LavaTemplate" );
+                        if ( !string.IsNullOrWhiteSpace( lavaTemplate ) )
                         {
-                            var person = (Person)entity;
-
-                            var primaryAlias = new PersonAliasService( rockContext ).Queryable().FirstOrDefault( a => a.AliasPersonId == person.Id );
-                            if ( primaryAlias != null )
-                            {
-                                SetWorkflowAttributeValue( action, guid, primaryAlias.Guid.ToString() );
-                                return true;
-                            }
-                            else
-                            {
-                                errorMessages.Add( "Could not determine person primary alias!" );
-                            }
+                            var mergeFields = GetMergeFields( action );
+                            mergeFields.Add( "Entity", entity );
+                            string parsedValue = lavaTemplate.ResolveMergeFields( mergeFields );
+                            SetWorkflowAttributeValue( action, guid, parsedValue );
                         }
                         else
                         {
-                            string lavaTemplate = GetAttributeValue( action, "LavaTemplate" );
-                            if ( string.IsNullOrWhiteSpace( lavaTemplate ) )
+                            // Person is handled special since it needs the person alias id
+                            if ( entity is Person && attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.PERSON.AsGuid(), rockContext ).Id )
+                            {
+                                var person = (Person)entity;
+
+                                var primaryAlias = new PersonAliasService( rockContext ).Queryable().FirstOrDefault( a => a.AliasPersonId == person.Id );
+                                if ( primaryAlias != null )
+                                {
+                                    SetWorkflowAttributeValue( action, guid, primaryAlias.Guid.ToString() );
+                                    return true;
+                                }
+                                else
+                                {
+                                    errorMessages.Add( "Could not determine person primary alias!" );
+                                }
+                            }
+                            else
                             {
                                 if ( GetAttributeValue( action, "UseId" ).AsBoolean() )
                                 {
@@ -92,16 +100,9 @@ namespace Rock.Workflow.Action
                                     SetWorkflowAttributeValue( action, guid, ( (IEntity)entity ).Guid.ToString() );
                                 }
                             }
-                            else
-                            {
-                                var mergeFields = GetMergeFields( action );
-                                mergeFields.Add( "Entity", entity );
-                                string parsedValue = lavaTemplate.ResolveMergeFields( mergeFields );
-                                SetWorkflowAttributeValue( action, guid, parsedValue );
-                            }
-
-                            return true;
                         }
+
+                        return true;
                     }
                     else
                     {
