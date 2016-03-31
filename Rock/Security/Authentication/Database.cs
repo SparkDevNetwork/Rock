@@ -245,6 +245,7 @@ namespace Rock.Security.Authentication
         {
             user.Password = EncodePassword( user, password );
             user.LastPasswordChangedDateTime = RockDateTime.Now;
+            user.IsPasswordChangeRequired = false;
         }
 
         /// <summary>

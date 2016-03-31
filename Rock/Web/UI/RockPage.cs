@@ -663,6 +663,16 @@ namespace Rock.Web.UI
                     slDebugTimings.AppendFormat( "GetCurrentPerson [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
                     stopwatchInitEvents.Restart();
                 }
+
+                // check that they aren't required to change their password
+                if ( user.IsPasswordChangeRequired == true && Site.ChangePasswordPageReference != null )
+                {
+                    // don't redirect if this is the change password page
+                    if ( Site.ChangePasswordPageReference.PageId != this.PageId )
+                    {
+                        Site.RedirectToChangePasswordPage( true, true );
+                    }
+                }
             }
 
             // If a PageInstance exists

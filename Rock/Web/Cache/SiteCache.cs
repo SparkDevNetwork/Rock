@@ -537,6 +537,34 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Redirects to change password page.
+        /// </summary>
+        /// <param name="isChangePasswordRequired">if set to <c>true</c> [is change password required].</param>
+        public void RedirectToChangePasswordPage( bool isChangePasswordRequired, bool includeReturnUrl )
+        {
+            var context = HttpContext.Current;
+
+            var pageReference = ChangePasswordPageReference;
+
+            var parms = new Dictionary<string, string>();
+
+            if ( isChangePasswordRequired )
+            {
+                parms.Add( "ChangeRequired", "True" ); 
+            }
+
+            if ( includeReturnUrl )
+            {
+                parms.Add( "ReturnUrl", context.Request.QueryString["returnUrl"] ?? context.Server.UrlEncode( context.Request.RawUrl ) );
+            }
+
+            pageReference.Parameters = parms;
+
+            context.Response.Redirect( pageReference.BuildUrl(), false );
+            context.ApplicationInstance.CompleteRequest();
+        }
+
+        /// <summary>
         /// Redirects to communication page.
         /// </summary>
         public void RedirectToCommunicationPage()
