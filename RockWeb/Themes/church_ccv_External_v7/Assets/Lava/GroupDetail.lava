@@ -1,11 +1,16 @@
 {% comment %}
 
 
-REQUIRED VARIABLES
+OPTIONAL VARIABLES
 ==================
+If variables not set, buttons will not display
 
 {% assign fullRosterPage = "/page/558" %}
 {% assign invitationListPage = "/page/559" %}
+
+
+INCLUDE
+==================
 
 {% include '~~/Assets/Lava/GroupDetail.lava' %}
 
