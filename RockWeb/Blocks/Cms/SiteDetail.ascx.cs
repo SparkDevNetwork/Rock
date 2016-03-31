@@ -499,6 +499,15 @@ namespace RockWeb.Blocks.Cms
                 ppLoginPage.SetValue( site.LoginPage );
             }
 
+            if ( site.ChangePasswordPageRoute != null )
+            {
+                ppChangePasswordPage.SetValue( site.ChangePasswordPageRoute );
+            }
+            else
+            {
+                ppChangePasswordPage.SetValue( site.ChangePasswordPage );
+            }
+
             if ( site.CommunicationPageRoute != null )
             {
                 ppCommunicationPage.SetValue( site.CommunicationPageRoute );

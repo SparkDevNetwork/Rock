@@ -16,6 +16,7 @@
 
                     <fieldset>
                         <legend>Change Password</legend>
+
                         <Rock:RockTextBox ID="tbOldPassword" runat="server" Label="Old Password" Required="true" TextMode="Password"></Rock:RockTextBox>
                         <Rock:RockTextBox ID="tbPassword" runat="server" Label="New Password" Required="true" TextMode="Password"></Rock:RockTextBox>
                         <Rock:RockTextBox ID="tbPasswordConfirm" runat="server" Label="Confirm Password" Required="true" TextMode="Password"></Rock:RockTextBox>
