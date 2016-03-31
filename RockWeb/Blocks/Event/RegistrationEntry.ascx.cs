@@ -2584,6 +2584,11 @@ namespace RockWeb.Blocks.Event
             // If this is an existing registration, go directly to the summary
             if ( RegistrationState != null && RegistrationState.RegistrationId.HasValue && !PageParameter( START_AT_BEGINNING ).AsBoolean() )
             {
+                // check if template does not allow updating the saved registration, if so hide the back button on the summary screen
+                if ( !RegistrationTemplate.AllowExternalRegistrationUpdates )
+                {
+                    lbSummaryPrev.Visible = false;
+                }
                 ShowSummary();
             }
             else

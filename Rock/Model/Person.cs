@@ -2378,6 +2378,16 @@ namespace Rock.Model
                     p.NumberTypeValueId.Value == numberTypeValueId )
                 .FirstOrDefault();
 
+            // Since only one number can be used for SMS, before anything else, if isMessagingEnabled is true, turn it off on ALL
+            // numbers, so we only enable it for this one. 
+            if( isMessagingEnabled.HasValue && isMessagingEnabled.Value == true )
+            {
+                foreach( PhoneNumber currPhoneNumber in person.PhoneNumbers )
+                {
+                    currPhoneNumber.IsMessagingEnabled = false;
+                }
+            }
+            
             // do they currently have this type of number?
             if ( phoneObject != null )
             {

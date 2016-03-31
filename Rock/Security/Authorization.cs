@@ -162,12 +162,101 @@ namespace Rock.Security
         }
 
         /// <summary>
+        /// Reloads the entity.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        public static void ReloadEntity( int entityTypeId, int entityId )
+        {
+            var rockMemoryCache = RockMemoryCache.Default;
+            if ( rockMemoryCache.IsRedisClusterEnabled && rockMemoryCache.IsRedisConnected )
+            {
+                rockMemoryCache.SendRedisCommand( string.Format( "REFRESH_AUTH_ENTITY,{0},{1}", entityTypeId, entityId ) );
+            }
+            else
+            {
+                RefreshEntity( entityTypeId, entityId );
+            }
+        }
+
+        /// <summary>
+        /// Reloads the entity.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        internal static void RefreshEntity( int entityTypeId, int entityId )
+        {
+            if ( !Load() )
+            {
+                lock ( _lock )
+                {
+                    if ( _authorizations != null && _authorizations.ContainsKey(entityTypeId) )
+                    {
+                        var entityAuths = _authorizations[entityTypeId];
+                        if ( entityAuths.ContainsKey( entityId ) )
+                        {
+                            entityAuths[entityId] = new Dictionary<string, List<AuthRule>>();
+                        }
+                    }
+                }
+
+                // Query database for the authorizations related to this entitytype, entity, and action
+                using ( var rockContext = new RockContext() )
+                {
+                    var securityGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid(), rockContext );
+                    int securityGroupTypeId = securityGroupType != null ? securityGroupType.Id : 0;
+
+                    var auths = new AuthService( rockContext )
+                        .Get( entityTypeId, entityId )
+                        .AsNoTracking()
+                        .Where( t =>
+                            t.Group == null ||
+                            ( t.Group.IsActive && ( t.Group.IsSecurityRole || t.Group.GroupTypeId == securityGroupTypeId ) )
+                        )
+                        .OrderBy( a => a.Order )
+                        .ToList();
+
+                    var actions = auths.Select( a => a.Action ).Distinct().ToList();
+                    foreach ( string action in actions )
+                    {
+                        var newAuthRules = new List<AuthRule>();
+
+                        foreach ( Auth auth in auths.Where( a => a.Action == action ) )
+                        {
+                            newAuthRules.Add( new AuthRule( auth ) );
+                        }
+                        ResetAction( entityTypeId, entityId, action, newAuthRules );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Reloads the action.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="action">The action.</param>
+        public static void ReloadAction( int entityTypeId, int entityId, string action )
+        {
+            var rockMemoryCache = RockMemoryCache.Default;
+            if ( rockMemoryCache.IsRedisClusterEnabled && rockMemoryCache.IsRedisConnected )
+            {
+                rockMemoryCache.SendRedisCommand( string.Format( "REFRESH_AUTH_ACTION,{0},{1},{2}", entityTypeId, entityId, action ) );
+            }
+            else
+            {
+                RefreshAction( entityTypeId, entityId, action );
+            }
+        }
+
+        /// <summary>
         /// Reloads the authorizations for the specified entity and action.
         /// </summary>
         /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityId">The entity id.</param>
         /// <param name="action">The action.</param>
-        public static void ReloadAction( int entityTypeId, int entityId, string action )
+        internal static void RefreshAction( int entityTypeId, int entityId, string action )
         {
             // if the authorizations have already been loaded, update just the selected action
             if ( !Load() )
@@ -205,13 +294,33 @@ namespace Rock.Security
         /// <param name="rockContext">The rock context.</param>
         public static void ReloadAction( int entityTypeId, int entityId, string action, RockContext rockContext )
         {
+            var rockMemoryCache = RockMemoryCache.Default;
+            if ( rockMemoryCache.IsRedisClusterEnabled && rockMemoryCache.IsRedisConnected )
+            {
+                rockMemoryCache.SendRedisCommand( string.Format( "REFRESH_AUTH_ACTION,{0},{1},{2}", entityTypeId, entityId, action ) );
+            }
+            else
+            {
+                RefreshAction( entityTypeId, entityId, action, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Reloads the action.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="rockContext">The rock context.</param>
+        public static void RefreshAction( int entityTypeId, int entityId, string action, RockContext rockContext )
+        {
             // if the authorizations have already been loaded, update just the selected action
             if ( !Load() )
             {
+                var newAuthRules = new List<AuthRule>();
+
                 var securityGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid(), rockContext );
                 int securityGroupTypeId = securityGroupType != null ? securityGroupType.Id : 0;
-
-                var newAuthRules = new List<AuthRule>();
 
                 // Query database for the authorizations related to this entitytype, entity, and action
                 foreach ( Auth auth in new AuthService( rockContext )
@@ -488,7 +597,6 @@ namespace Rock.Security
             rockContext.SaveChanges();
 
             // Copy target auths to source auths
-            var newActions = new Dictionary<string, List<AuthRule>>();
             int order = 0;
             foreach( Auth sourceAuth in authService.Get( sourceEntityTypeId, sourceEntity.Id ).ToList() )
             {
@@ -507,28 +615,10 @@ namespace Rock.Security
 
                     authService.Add( auth );
                     rockContext.SaveChanges();
-
-                    newActions.AddOrIgnore( auth.Action, new List<AuthRule>() );
-                    newActions[auth.Action].Add( new AuthRule( auth ) );
                 }
             }
 
-            lock ( _lock )
-            {
-                if ( _authorizations != null )
-                {
-                    _authorizations.AddOrIgnore( targetEntityTypeId, new Dictionary<int, Dictionary<string, List<AuthRule>>>() );
-                    var entityType = _authorizations[targetEntityTypeId];
-
-                    entityType.AddOrReplace( targetEntity.Id, new Dictionary<string, List<AuthRule>>() );
-                    var entity = entityType[targetEntity.Id];
-
-                    foreach ( var newAction in newActions )
-                    {
-                        entity.Add( newAction.Key, newAction.Value );
-                    }
-                }
-            }
+            ReloadEntity( targetEntityTypeId, targetEntity.Id );
 
         }
 
@@ -548,6 +638,22 @@ namespace Rock.Security
         /// Clear the static Authorizations object
         /// </summary>
         public static void Flush()
+        {
+            var rockMemoryCache = RockMemoryCache.Default;
+            if ( rockMemoryCache.IsRedisClusterEnabled && rockMemoryCache.IsRedisConnected )
+            {
+                rockMemoryCache.SendRedisCommand( "FLUSH_AUTH" );
+            }
+            else
+            {
+                FlushAuth();
+            }
+        }
+
+        /// <summary>
+        /// Clear the static Authorizations object
+        /// </summary>
+        internal static void FlushAuth()
         {
             lock ( _lock )
             {

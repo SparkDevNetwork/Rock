@@ -286,6 +286,7 @@ namespace RockWeb.Blocks.Core
             ddlPrinter.Items.Clear();
             ddlPrinter.DataSource = new DeviceService( new RockContext() )
                 .GetByDeviceTypeGuid( new Guid( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_PRINTER ) )
+                .OrderBy( d => d.Name )
                 .ToList();
             ddlPrinter.DataBind();
             ddlPrinter.Items.Insert( 0, new ListItem( None.Text, None.IdValue ) );

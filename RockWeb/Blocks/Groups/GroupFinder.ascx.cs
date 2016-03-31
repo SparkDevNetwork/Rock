@@ -219,7 +219,6 @@ namespace RockWeb.Blocks.Groups
                 {
                     ShowView();
                 }
-                
             }
         }
 
@@ -307,6 +306,10 @@ namespace RockWeb.Blocks.Groups
             SetAttributeValue( "ShowCount", cbShowCount.Checked.ToString() );
             SetAttributeValue( "ShowAge", cbShowAge.Checked.ToString() );
             SetAttributeValue( "AttributeColumns", cblGridAttributes.Items.Cast<ListItem>().Where( i => i.Selected ).Select( i => i.Value ).ToList().AsDelimited( "," ) );
+
+            var ppFieldType = new PageReferenceFieldType();
+            SetAttributeValue( "GroupDetailPage", ppFieldType.GetEditValue( ppGroupDetailPage, null ) );
+            SetAttributeValue( "RegisterPage", ppFieldType.GetEditValue( ppRegisterPage, null ) );
 
             SaveAttributeValues();
 
@@ -438,7 +441,7 @@ namespace RockWeb.Blocks.Groups
             ceLavaOutput.Text = GetAttributeValue( "LavaOutput" );
             cbLavaOutputDebug.Checked = GetAttributeValue( "LavaOutputDebug" ).AsBoolean();
 
-            cbShowGrid.Checked = GetAttributeValue( "ShowMap" ).AsBoolean();
+            cbShowGrid.Checked = GetAttributeValue( "ShowGrid" ).AsBoolean();
             cbShowSchedule.Checked = GetAttributeValue( "ShowSchedule" ).AsBoolean();
             cbShowDescription.Checked = GetAttributeValue( "ShowDescription" ).AsBoolean();
             cbProximity.Checked = GetAttributeValue( "ShowProximity" ).AsBoolean();
@@ -454,7 +457,9 @@ namespace RockWeb.Blocks.Groups
                     li.Selected = true;
                 }
             }
-
+            var ppFieldType = new PageReferenceFieldType();
+            ppFieldType.SetEditValue( ppGroupDetailPage, null, GetAttributeValue( "GroupDetailPage" ) );
+            ppFieldType.SetEditValue( ppRegisterPage, null, GetAttributeValue( "RegisterPage" ) );
 
             upnlContent.Update();
         }
@@ -492,7 +497,7 @@ namespace RockWeb.Blocks.Groups
             cblGridAttributes.Visible = cblAttributes.Items.Count > 0;
         }
 
-        private void ShowViewForPerson(Guid targetPersonGuid)
+        private void ShowViewForPerson( Guid targetPersonGuid )
         {
             // check for a specific person in the query string
             Person targetPerson = null;
@@ -520,7 +525,6 @@ namespace RockWeb.Blocks.Groups
                     lTitle.Text += String.Format( "<p>The position of the address on file ({0}) could not be determined.</p>", targetPersonLocation.ToString() );
                 }
             }
-            
         }
 
 
@@ -528,14 +532,14 @@ namespace RockWeb.Blocks.Groups
         /// Shows the view.
         /// </summary>
         private void ShowView()
-        {            
+        {
             // If the groups should be limited by geofence, or the distance should be displayed,
             // then we need to capture the person's address
             Guid? fenceTypeGuid = GetAttributeValue( "GeofencedGroupType" ).AsGuidOrNull();
             if ( fenceTypeGuid.HasValue || GetAttributeValue( "ShowProximity" ).AsBoolean() )
             {
                 acAddress.Visible = true;
-               
+
                 if ( CurrentPerson != null )
                 {
                     acAddress.SetValues( CurrentPerson.GetHomeLocation() );
@@ -717,7 +721,7 @@ namespace RockWeb.Blocks.Groups
         {
             if ( control is IRockControl )
             {
-                var rockControl = (IRockControl)control;
+                var rockControl = ( IRockControl ) control;
                 rockControl.Label = name;
                 rockControl.Help = description;
                 phFilterControls.Controls.Add( control );
@@ -758,7 +762,7 @@ namespace RockWeb.Blocks.Groups
             var groupService = new GroupService( rockContext );
             var groupQry = groupService
                 .Queryable( "GroupLocations.Location" )
-                .Where( g => g.IsActive && g.GroupType.Guid.Equals( groupTypeGuid.Value ) && g.IsPublic);
+                .Where( g => g.IsActive && g.GroupType.Guid.Equals( groupTypeGuid.Value ) && g.IsPublic );
 
             var groupParameterExpression = groupService.ParameterExpression;
             var schedulePropertyExpression = Expression.Property( groupParameterExpression, "Schedule" );
@@ -944,7 +948,7 @@ namespace RockWeb.Blocks.Groups
                 int? pageSize = ddlPageSize.SelectedValue.AsIntegerOrNull();
                 if ( pageSize.HasValue && pageSize > 0 )
                 {
-                    groups = groups.Take(pageSize.Value).ToList();
+                    groups = groups.Take( pageSize.Value ).ToList();
                 }
 
                 // If a map is to be shown
@@ -952,8 +956,6 @@ namespace RockWeb.Blocks.Groups
                 {
 
                     Template template = Template.Parse( GetAttributeValue( "MapInfo" ) );
-                    //string detailPageValue = GetAttributeValue("DetailPage");
-                    //string registerPageValue = GetAttributeValue("RegisterPage");
 
                     bool showDebug = UserCanEdit && GetAttributeValue( "MapInfoDebug" ).AsBoolean();
                     lMapInfoDebug.Visible = showDebug;
@@ -976,14 +978,13 @@ namespace RockWeb.Blocks.Groups
 
                             if ( _targetPersonGuid != Guid.Empty )
                             {
-                                linkedPages.Add( "RegisterPage", LinkedPageUrl( "RegisterPage", _urlParms) );
+                                linkedPages.Add( "RegisterPage", LinkedPageUrl( "RegisterPage", _urlParms ) );
                             }
                             else
                             {
                                 linkedPages.Add( "RegisterPage", LinkedPageUrl( "RegisterPage", null ) );
                             }
-                            
-                            
+
                             mergeFields.Add( "LinkedPages", linkedPages );
 
                             // add collection of allowed security actions
@@ -1041,6 +1042,21 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 mergeFields.Add( "Groups", groups );
+
+                Dictionary<string, object> linkedPages = new Dictionary<string, object>();
+                linkedPages.Add( "GroupDetailPage", LinkedPageUrl( "GroupDetailPage", null ) );
+
+                if ( _targetPersonGuid != Guid.Empty )
+                {
+                    linkedPages.Add( "RegisterPage", LinkedPageUrl( "RegisterPage", _urlParms ) );
+                }
+                else
+                {
+                    linkedPages.Add( "RegisterPage", LinkedPageUrl( "RegisterPage", null ) );
+                }
+
+                mergeFields.Add( "LinkedPages", linkedPages );
+
                 lLavaOverview.Text = template.ResolveMergeFields( mergeFields );
 
                 bool showDebug = UserCanEdit && GetAttributeValue( "LavaOutputDebug" ).AsBoolean();
@@ -1507,5 +1523,5 @@ namespace RockWeb.Blocks.Groups
         {
             ShowResults();
         }
-}
+    }
 }

@@ -70,6 +70,13 @@
                                                 adding registrants to specific child groups of a selected parent group." />
                                     </div>
                                 </div>
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                        <Rock:RockCheckBox ID="cbAllowExternalUpdates" runat="server" Label="Allow External Updates to Saved Registrations" Text="Yes"
+                                            Help="Allow saved registrations to be updated online. If false the individual will be able to make additional payments, but will
+                                            not be allow to change any of the registrant information and attributes." />
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="row">
@@ -87,8 +94,8 @@
                                     Help="Typical relationship of registrants that user would register." />
                                 <div class="well">
                                     <Rock:Toggle ID="tglSetCostOnTemplate" runat="server" Label="Set Cost On" OnText="Template" OffText="Instance" 
-                                        ActiveButtonCssClass="btn-info" OnCheckedChanged="tglSetCost_CheckedChanged" />
-                                    <Rock:CurrencyBox ID="cbCost" runat="server" Label="Cost" cs
+                                        ActiveButtonCssClass="btn-info" OnCheckedChanged="tglSetCost_CheckedChanged" ButtonSizeCssClass="btn-xs" />
+                                    <Rock:CurrencyBox ID="cbCost" runat="server" Label="Cost"
                                         Help="The cost per registrant." />
                                     <Rock:CurrencyBox ID="cbMinimumInitialPayment" runat="server" Label="Minimum Initial Payment"
                                         Help="The minimum amount required per registrant. Leave value blank if full amount is required." />

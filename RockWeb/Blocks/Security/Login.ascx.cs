@@ -79,8 +79,6 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
                 .ToList()
                 .ForEach( v => selectedGuids.Add( v.AsGuid() ) );
 
-            
-
             // Look for active external authentication providers
             foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
             {
@@ -156,6 +154,7 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
             if ( !Page.IsPostBack )
             {
                 lPromptMessage.Text = GetAttributeValue( "PromptMessage" );
+                tbUserName.Focus();
             }
 
             pnlMessage.Visible = false;
