@@ -313,7 +313,9 @@ namespace RockWeb.Plugins.church_ccv.Promotions
             PromotionsContext promoContext = new PromotionsContext();
             PromotionsService<PromotionOccurrence> promoService = new PromotionsService<PromotionOccurrence>( promoContext );
 
-            var promoOccurrences = promoService.Queryable( ).ToList( );
+            // Temp workaround until we transition systems. Content Channel Items SHOULD NOT be deleted,
+            // but if they are, this will protect it.
+            var promoOccurrences = promoService.Queryable( ).ToList( ).Where( po => po.ContentChannelItem != null ).ToList( );
             
             // ---- Apply Filters ----
 
