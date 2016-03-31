@@ -231,10 +231,8 @@ namespace Rock.Model
         /// <param name="payments">The payments.</param>
         /// <param name="batchUrlFormat">The batch URL format.</param>
         /// <param name="recieptEmail">The reciept email.</param>
-        /// <param name="reversalWorkflowType">Type of the reversal workflow.</param>
         /// <returns></returns>
-        public static string ProcessPayments( FinancialGateway gateway, string batchNamePrefix, List<Payment> payments, string batchUrlFormat = ""
-            , Guid? recieptEmail = null, Guid? reversalWorkflowType = null )
+        public static string ProcessPayments( FinancialGateway gateway, string batchNamePrefix, List<Payment> payments, string batchUrlFormat = "", Guid? recieptEmail = null )
         {
             int totalPayments = 0;
             int totalAlreadyDownloaded = 0;
@@ -251,7 +249,6 @@ namespace Rock.Model
             var gatewayComponent = gateway.GetGatewayComponent();
 
             var newTransactions = new List<FinancialTransaction>();
-            var reversalTransactions = new List<FinancialTransaction>();
 
             using ( var rockContext = new RockContext() )
             {
@@ -448,11 +445,6 @@ namespace Rock.Model
                             else
                             {
                                 totalReversals++;
-
-                                if ( reversalWorkflowType.HasValue )
-                                {
-                                    reversalTransactions.Add( transaction );
-                                }
                             }
                         }
                         else
@@ -478,14 +470,6 @@ namespace Rock.Model
                     var newTransactionIds = newTransactions.Select( t => t.Id ).ToList();
                     var sendPaymentRecieptsTxn = new Rock.Transactions.SendPaymentReciepts( recieptEmail.Value, newTransactionIds );
                     Rock.Transactions.RockQueue.TransactionQueue.Enqueue( sendPaymentRecieptsTxn );
-                }
-
-                if ( reversalWorkflowType.HasValue )
-                {
-                    // Queue a transaction to launch workflows for each payment reversal
-                    var reversalTransactionIds = reversalTransactions.Select( t => t.Id ).ToList();
-                    var launchPaymentReversalsWorkflowTxn = new Rock.Transactions.LaunchPaymentReversalsWorkflowTransaction( reversalWorkflowType.Value, reversalTransactionIds );
-                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( launchPaymentReversalsWorkflowTxn );
                 }
             }
              
