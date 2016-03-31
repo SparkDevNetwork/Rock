@@ -40,7 +40,6 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             this.AddConfigurationUpdateTrigger(upnlContent);
         }
 
-
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
@@ -58,7 +57,6 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         #endregion
 
         #region Internal Methods
-
 
         public void LoadContent()
         {
