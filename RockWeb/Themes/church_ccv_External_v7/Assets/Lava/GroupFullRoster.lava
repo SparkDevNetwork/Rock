@@ -163,17 +163,6 @@
     {% endif %}
   </div>
 
-  <div class="well margin-t-xl hidden-print fade js-toggle-badge-vis-wrapper">
-    <div class="container">
-      <div class="checkbox">
-        <label>
-          <input class="js-toggle-badge-vis" type="checkbox" checked>
-          Display badge bar
-        </label>
-      </div>
-    </div>
-  </div>
-
   <script type="text/javascript">
     CURRENT_GROUP_GUID = '{{ Group.Guid }}'
   </script>
