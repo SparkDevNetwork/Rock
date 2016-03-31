@@ -128,6 +128,15 @@ namespace Rock.Model
         public bool? IsLockedOut { get; set; }
 
         /// <summary>
+        /// Gets or sets the is password change required.
+        /// </summary>
+        /// <value>
+        /// The is password change required.
+        /// </value>
+        [DataMember]
+        public bool? IsPasswordChangeRequired { get; set; }
+
+        /// <summary>
         /// Gets or sets date and time that the UserLogin was last locked out.
         /// </summary>
         /// <value>

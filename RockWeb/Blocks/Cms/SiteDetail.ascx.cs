@@ -211,6 +211,8 @@ namespace RockWeb.Blocks.Cms
                 site.DefaultPageRouteId = ppDefaultPage.PageRouteId;
                 site.LoginPageId = ppLoginPage.PageId;
                 site.LoginPageRouteId = ppLoginPage.PageRouteId;
+                site.ChangePasswordPageId = ppChangePasswordPage.PageId;
+                site.ChangePasswordPageRouteId = ppChangePasswordPage.PageRouteId;
                 site.CommunicationPageId = ppCommunicationPage.PageId;
                 site.CommunicationPageRouteId = ppCommunicationPage.PageRouteId;
                 site.RegistrationPageId = ppRegistrationPage.PageId;
