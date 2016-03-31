@@ -407,7 +407,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( gm != null )
             {
                 return _IsFamilyGroupType ?
-                    ( gm.Person.Age.HasValue ? gm.Person.Age.Value.ToString( "N0" ) : "" ) :
+                    ( gm.Person.FormatAge() ) :
                     gm.GroupRole.Name;
             }
             return string.Empty;

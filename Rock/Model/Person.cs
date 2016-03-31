@@ -1010,6 +1010,30 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns a formatted age in years, months, or days.
+        /// </summary>
+        /// <returns></returns>
+        public string FormatAge()
+        {
+            if (Age > 0)
+            {
+                return Age + (Age == 1 ? " yr old " : " yrs old ");
+            }
+            var today = RockDateTime.Today;
+            if (BirthMonth != null && BirthMonth < today.Month)
+            {
+                int months = today.Month - BirthMonth.Value;
+                return months + (months == 1 ? " mnth old " : " mnths old ");
+            }
+            if (BirthDay != null)
+            {
+                int days = today.Day - BirthDay.Value;
+                return days + (days == 1 ? " day old " : " days old ");
+            }
+            return string.Empty;
+        }
+
+        /// <summary>
         /// Gets the next birth day.
         /// </summary>
         /// <value>
