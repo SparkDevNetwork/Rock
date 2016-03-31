@@ -201,6 +201,36 @@ namespace Rock.Web.Cache
         public int? PageNotFoundPageId { get; set; }
 
         /// <summary>
+        /// Gets or sets the change password page identifier.
+        /// </summary>
+        /// <value>
+        /// The change password page identifier.
+        /// </value>
+        public int? ChangePasswordPageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the change password page route identifier.
+        /// </summary>
+        /// <value>
+        /// The change password page route identifier.
+        /// </value>
+        public int? ChangePasswordPageRouteId { get; set; }
+
+        /// <summary>
+        /// Gets the change password page reference.
+        /// </summary>
+        /// <value>
+        /// The change password page reference.
+        /// </value>
+        public PageReference ChangePasswordPageReference
+        {
+            get
+            {
+                return new Rock.Web.PageReference( ChangePasswordPageId ?? 0, ChangePasswordPageRouteId ?? 0 );
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the 404 page route unique identifier.
         /// </summary>
         /// <value>
@@ -456,6 +486,7 @@ namespace Rock.Web.Cache
                 this.PageViewRetentionPeriodDays = site.PageViewRetentionPeriodDays;
                 this.PageHeaderContent = site.PageHeaderContent;
                 this.AllowIndexing = site.AllowIndexing;
+                this.ChangePasswordPageId = site.ChangePasswordPageId;
 
                 foreach ( var domain in site.SiteDomains.Select( d => d.Domain ).ToList() )
                 {
