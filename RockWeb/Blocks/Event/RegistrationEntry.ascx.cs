@@ -2474,9 +2474,20 @@ namespace RockWeb.Blocks.Event
                 {
                     var batchService = new FinancialBatchService( rockContext );
 
+                    // determine batch prefix
+                    string batchPrefix = string.Empty;
+                    if ( !string.IsNullOrWhiteSpace( RegistrationTemplate.BatchNamePrefix ) )
+                    {
+                        batchPrefix = RegistrationTemplate.BatchNamePrefix;
+                    }
+                    else
+                    {
+                        batchPrefix = GetAttributeValue( "BatchNamePrefix" );
+                    }
+
                     // Get the batch
                     var batch = batchService.Get(
-                        GetAttributeValue( "BatchNamePrefix" ),
+                        batchPrefix,
                         paymentInfo.CurrencyTypeValue,
                         paymentInfo.CreditCardTypeValue,
                         transaction.TransactionDateTime.Value,

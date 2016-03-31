@@ -677,6 +677,7 @@ namespace RockWeb.Blocks.Event
             RegistrationTemplate.Cost = cbCost.Text.AsDecimal();
             RegistrationTemplate.MinimumInitialPayment = cbMinimumInitialPayment.Text.AsDecimalOrNull();
             RegistrationTemplate.FinancialGatewayId = fgpFinancialGateway.SelectedValueAsInt();
+            RegistrationTemplate.BatchNamePrefix = txtBatchNamePrefix.Text;
 
             RegistrationTemplate.ConfirmationFromName = tbConfirmationFromName.Text;
             RegistrationTemplate.ConfirmationFromEmail = tbConfirmationFromEmail.Text;
@@ -1965,6 +1966,7 @@ namespace RockWeb.Blocks.Event
             cbCost.Text = RegistrationTemplate.Cost.ToString();
             cbMinimumInitialPayment.Text = RegistrationTemplate.MinimumInitialPayment.HasValue ? RegistrationTemplate.MinimumInitialPayment.Value.ToString( "N2" ) : "";
             fgpFinancialGateway.SetValue( RegistrationTemplate.FinancialGatewayId );
+            txtBatchNamePrefix.Text = RegistrationTemplate.BatchNamePrefix;
             SetCostVisibility();
 
             tbConfirmationFromName.Text = RegistrationTemplate.ConfirmationFromName;
