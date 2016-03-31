@@ -178,11 +178,21 @@ namespace RockWeb.Blocks.Reporting
             gReport_GridRebind( sender, e );
         }
 
+        /// <summary>
+        /// Handles the BlockUpdated event of the DynamicData control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void DynamicData_BlockUpdated( object sender, EventArgs e )
         {
             BuildControls( true );
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSave_Click( object sender, EventArgs e )
         {
             if ( _updatePage )
@@ -332,6 +342,9 @@ namespace RockWeb.Blocks.Reporting
             return null;
         }
 
+        /// <summary>
+        /// Shows the settings.
+        /// </summary>
         protected override void ShowSettings()
         {
             pnlEditModel.Visible = true;
@@ -854,6 +867,11 @@ namespace RockWeb.Blocks.Reporting
             dataView.RowFilter = string.Join( " AND ", query );
         }
 
+        /// <summary>
+        /// Converts bool to string.
+        /// </summary>
+        /// <param name="b">The b.</param>
+        /// <returns></returns>
         private string BoolToString( bool? b )
         {
             if ( b.HasValue )
@@ -864,6 +882,11 @@ namespace RockWeb.Blocks.Reporting
             return string.Empty;
         }
 
+        /// <summary>
+        /// Converts string to bool
+        /// </summary>
+        /// <param name="s">The s.</param>
+        /// <returns></returns>
         private bool? StringToBool( string s )
         {
             if ( s == BoolToString( true ) )
