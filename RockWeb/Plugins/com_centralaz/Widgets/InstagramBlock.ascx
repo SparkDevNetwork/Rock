@@ -53,6 +53,8 @@
                         coldiv.style.paddingRight = 0;
                         coldiv.style.backgroundImage = "url(" + bckgrndimg.src + ")";
                         coldiv.style.backgroundPosition = "50% 50%";
+                        coldiv.style.backgroundSize = "cover";
+                        coldiv.style.backgroundRepeat = "no-repeat";
                         coldiv.style.minHeight = minimageheight;
 
                         anchor.appendChild(coldiv);
@@ -101,6 +103,8 @@
                         coldiv.style.paddingRight = 0;
                         coldiv.style.backgroundImage = "url(" + bckgrndimg.src + ")";
                         coldiv.style.backgroundPosition = "50% 50%";
+                        coldiv.style.backgroundSize = "cover";
+                        coldiv.style.backgroundRepeat = "no-repeat";
                         coldiv.style.minHeight = minimageheight;
 
                         anchor.appendChild(coldiv);
@@ -149,6 +153,8 @@
                         coldiv.style.paddingRight = 0;
                         coldiv.style.backgroundImage = "url(" + bckgrndimg.src + ")";
                         coldiv.style.backgroundPosition = "50% 50%";
+                        coldiv.style.backgroundSize = "cover";
+                        coldiv.style.backgroundRepeat = "no-repeat";
                         coldiv.style.minHeight = minimageheight;
 
                         anchor.appendChild(coldiv);
