@@ -108,6 +108,8 @@ namespace Rock.Model
             target.ProcessedDateTime = source.ProcessedDateTime;
             target.ScheduledTransactionId = source.ScheduledTransactionId;
             target.SourceTypeValueId = source.SourceTypeValueId;
+            target.Status = source.Status;
+            target.StatusMessage = source.StatusMessage;
             target.Summary = source.Summary;
             target.TransactionCode = source.TransactionCode;
             target.TransactionDateTime = source.TransactionDateTime;

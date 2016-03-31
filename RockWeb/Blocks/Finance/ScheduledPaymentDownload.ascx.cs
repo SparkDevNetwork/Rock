@@ -41,6 +41,8 @@ namespace RockWeb.Blocks.Finance
 
     [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving", "", 0 )]
     [LinkedPage( "Batch Detail Page", "The page used to display details of a batch.", false, "", "", 1)]
+    [SystemEmailField( "Receipt Email", "The system email to use to send the receipts.", false, "", "", 2 )]
+    [WorkflowTypeField("Reversal Workflow", "The workflow to run when a failed (reversal) transaction is downloaded.", false, false, "", "", 3)]
     public partial class ScheduledPaymentDownload : Rock.Web.UI.RockBlock
     {
 
@@ -108,11 +110,13 @@ namespace RockWeb.Blocks.Finance
         protected void btnDownload_Click( object sender, EventArgs e )
         {
             string batchNamePrefix = GetAttributeValue( "BatchNamePrefix" );
+            Guid? receiptEmail = GetAttributeValue( "ReceiptEmail" ).AsGuidOrNull();
+            Guid? reversalWorkflowType = GetAttributeValue( "ReversalWorkflow" ).AsGuidOrNull();
 
             DateTime? startDateTime = drpDates.LowerValue;
             DateTime? endDateTime = drpDates.UpperValue;
 
-            if (startDateTime.HasValue && endDateTime.HasValue && endDateTime.Value.CompareTo(startDateTime.Value) >= 0)
+            if ( startDateTime.HasValue && endDateTime.HasValue && endDateTime.Value.CompareTo(startDateTime.Value) >= 0)
             {
                 var financialGateway = GetSelectedGateway();
                 if ( financialGateway != null )
@@ -132,7 +136,7 @@ namespace RockWeb.Blocks.Finance
                             qryParam.Add( "batchId", "9999" );
                             string batchUrlFormat = LinkedPageUrl( "BatchDetailPage", qryParam ).Replace( "9999", "{0}" );
 
-                            string resultSummary = FinancialScheduledTransactionService.ProcessPayments( financialGateway, batchNamePrefix, payments, batchUrlFormat );
+                            string resultSummary = FinancialScheduledTransactionService.ProcessPayments( financialGateway, batchNamePrefix, payments, batchUrlFormat, receiptEmail, reversalWorkflowType );
 
                             if ( !string.IsNullOrWhiteSpace( resultSummary ) )
                             {
