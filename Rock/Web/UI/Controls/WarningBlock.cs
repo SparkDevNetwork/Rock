@@ -23,15 +23,15 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// Displays a help icon that will display the Text property when clicked
+    /// Displays a warning icon that will display the Text property when clicked
     /// </summary>
-    [ToolboxData( "<{0}:HelpBlock runat=server></{0}:HelpBlock>" )]
-    public class HelpBlock : Literal
+    [ToolboxData( "<{0}:WarningBlock runat=server></{0}:WarningBlock>" )]
+    public class WarningBlock : Literal
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="HelpBlock"/> class.
+        /// Initializes a new instance of the <see cref="WarningBlock"/> class.
         /// </summary>
-        public HelpBlock()
+        public WarningBlock()
         {
             var style = new Style();
             this.Style = style.GetStyleAttributes( this );
@@ -47,17 +47,16 @@ namespace Rock.Web.UI.Controls
 
             string script = @"
 $(document).ready(function() {
-    $('a.help').click(function (e) {
+    $('a.warning').click(function (e) {
         e.preventDefault();
-        $(this).siblings('div.alert-info').slideToggle(function(){
+        $(this).siblings('div.alert-warning').slideToggle(function(){
             Rock.controls.modal.updateSize(this);
         });
-        $(this).siblings('a.warning').insertAfter($(this));
-        $(this).siblings('div.alert-warning').slideUp();
+        $(this).siblings('div.alert-info').slideUp();
     });
 });
 ";
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "help-block", script, true );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "warning-block", script, true );
 
         }
 
@@ -77,7 +76,7 @@ $(document).ready(function() {
         {
             if ( this.Text.Trim() != string.Empty )
             {
-                writer.AddAttribute( "class", "help" );
+                writer.AddAttribute( "class", "warning" );
                 writer.AddAttribute( "href", "#" );
                 writer.AddAttribute( "tabindex", "-1" );
 
@@ -87,12 +86,12 @@ $(document).ready(function() {
                 }
 
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.AddAttribute("class", "fa fa-question-circle");
+                writer.AddAttribute("class", "fa fa-exclamation-triangle");
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
                 writer.RenderEndTag();
 
-                writer.AddAttribute( "class", "alert alert-info help-message" );
+                writer.AddAttribute( "class", "alert alert-warning warning-message" );
                 writer.AddAttribute( "style", "display:none" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.RenderBeginTag( HtmlTextWriterTag.Small );

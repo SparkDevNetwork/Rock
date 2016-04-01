@@ -556,6 +556,7 @@
     <Compile Include="Web\InternalContext.cs" />
     <Compile Include="Web\UI\Controls\Grid\GroupPickerField.cs" />
     <Compile Include="Web\UI\Controls\MarkdownEditor.cs" />
+    <Compile Include="Web\UI\Controls\WarningBlock.cs" />
     <Compile Include="Web\UI\Controls\Pickers\WorkflowActionTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ConnectionRequestPicker.cs" />
     <Compile Include="Web\UI\Controls\RangeSlider.cs" />
