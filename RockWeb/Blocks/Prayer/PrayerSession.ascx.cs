@@ -50,18 +50,36 @@ namespace RockWeb.Blocks.Prayer
 
         #region Properties
 
+        /// <summary>
+        /// Gets or sets the note type identifier.
+        /// </summary>
+        /// <value>
+        /// The note type identifier.
+        /// </value>
         public int? NoteTypeId
         {
             get { return ViewState["NoteTypeId"] as int?; }
             set { ViewState["NoteTypeId"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the current prayer request identifier.
+        /// </summary>
+        /// <value>
+        /// The current prayer request identifier.
+        /// </value>
         public int? CurrentPrayerRequestId
         {
             get { return ViewState["CurrentPrayerRequestId"] as int?; }
             set { ViewState["CurrentPrayerRequestId"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the prayer request ids.
+        /// </summary>
+        /// <value>
+        /// The prayer request ids.
+        /// </value>
         public List<int> PrayerRequestIds
         {
             get { return ViewState["PrayerRequestIds"] as List<int>; }
@@ -310,7 +328,6 @@ namespace RockWeb.Blocks.Prayer
         private void UpdateSessionCountLabel( int currentNumber, int total )
         {
             hlblNumber.Text = string.Format( "{0} of {1}", currentNumber, total );
-            //hlblNumber.ToolTip = string.Format( "You've prayed for {0} out of {1} requests.", currentNumber, total );
         }
 
         /// <summary>
@@ -360,7 +377,6 @@ namespace RockWeb.Blocks.Prayer
                     Id = a.Key.Id,
                     Name = a.Key.Name + " (" + System.Data.Entity.SqlServer.SqlFunctions.StringConvert( (double)a.Count() ).Trim() + ")",
                     Count = a.Count()
-                    //,Checked = selectedIDs.Contains( a.Key.Id )
                 } ).ToList();
 
             cblCategories.DataTextField = "Name";
@@ -441,14 +457,13 @@ namespace RockWeb.Blocks.Prayer
             hlblUrgent.Visible = prayerRequest.IsUrgent ?? false;
             lTitle.Text = prayerRequest.FullName.FormatAsHtmlTitle();
 
-            //lPrayerText.Text = prayerRequest.Text.EncodeHtmlThenConvertCrLfToHtmlBr();
             lPrayerText.Text = prayerRequest.Text.ScrubHtmlAndConvertCrLfToBr();
 
             if ( prayerRequest.EnteredDateTime != null )
             {
-                lPrayerRequestDate.Text = string.Format("Date Entered: {0}", prayerRequest.EnteredDateTime.ToShortDateString());
+                lPrayerRequestDate.Text = string.Format( "Date Entered: {0}", prayerRequest.EnteredDateTime.ToShortDateString() );
             }
-            
+
             hlblCategory.Text = prayerRequest.Category.Name;
 
             // Show their answer if there is one on the request.
@@ -491,8 +506,5 @@ namespace RockWeb.Blocks.Prayer
         }
 
         #endregion
-
-        
-        
-}
+    }
 }
