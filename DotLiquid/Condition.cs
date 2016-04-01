@@ -113,7 +113,14 @@ namespace DotLiquid
 			{
                 try
                 {
-                    right = Convert.ChangeType( right, left.GetType() );
+                    if ( right is string && left.GetType().IsEnum )
+                    {
+                        left = left.ToString();
+                    }
+                    else
+                    {
+                        right = Convert.ChangeType( right, left.GetType() );
+                    }
                 }
                 catch ( Exception )
                 {

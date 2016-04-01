@@ -42,6 +42,7 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         /// <param name="fieldTypeClassNames">The field type class names.</param>
+        /// <param name="rows">The rows.</param>
         public WorkflowTextOrAttributeAttribute( string textLabel, string attributeLabel, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null, string[] fieldTypeClassNames = null, int rows = 1 )
             : base( textLabel + "|" + attributeLabel, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.WorkflowTextOrAttributeFieldType ).FullName )
         {

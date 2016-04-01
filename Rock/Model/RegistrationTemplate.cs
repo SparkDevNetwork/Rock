@@ -397,6 +397,14 @@ namespace Rock.Model
         [DataMember]
         public int? PaymentReminderTimeSpan { get; set; }
 
+        /// <summary>
+        /// Gets or sets the batch name prefix.
+        /// </summary>
+        /// <value>
+        /// The batch name prefix.
+        /// </value>
+        [DataMember]
+        public string BatchNamePrefix { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether to allow external registration updates (should a person be able to update their regisitration on-line after submitting it).

@@ -70,7 +70,7 @@
     </Reference>
     <Reference Include="Humanizer, Version=1.37.7.0, Culture=neutral, PublicKeyToken=979442b78dfc278e, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Humanizer.1.37.7\lib\portable-win+net40+sl50+wp8+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10\Humanizer.dll</HintPath>
+      <HintPath>..\libs\Humanizer.1.37.7\Humanizer.dll</HintPath>
     </Reference>
     <Reference Include="ImageResizer, Version=3.4.3.103, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -98,6 +98,10 @@
     <Reference Include="RestSharp, Version=105.0.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\RestSharp.105.0.1\lib\net4\RestSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="StackExchange.Redis, Version=1.0.316.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\StackExchange.Redis.1.0.488\lib\net45\StackExchange.Redis.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
@@ -540,6 +544,7 @@
     <Compile Include="Transactions\SaveCommunicationTransaction.cs" />
     <Compile Include="Transactions\SendPaymentReciepts.cs" />
     <Compile Include="Transactions\UpdatePaymentStatusTransaction.cs" />
+    <Compile Include="Transactions\WorkflowTriggerTransaction.cs" />
     <Compile Include="Utility\DebugHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\StringHumanizerExtensions.cs" />
     <Compile Include="Utility\FileUtilities.cs" />
@@ -551,6 +556,7 @@
     <Compile Include="Web\InternalContext.cs" />
     <Compile Include="Web\UI\Controls\Grid\GroupPickerField.cs" />
     <Compile Include="Web\UI\Controls\MarkdownEditor.cs" />
+    <Compile Include="Web\UI\Controls\WarningBlock.cs" />
     <Compile Include="Web\UI\Controls\Pickers\WorkflowActionTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ConnectionRequestPicker.cs" />
     <Compile Include="Web\UI\Controls\RangeSlider.cs" />
@@ -1351,7 +1357,6 @@
     <Compile Include="SystemGuid\DefinedType.cs" />
     <Compile Include="SystemGuid\Page.cs" />
     <Compile Include="Transactions\AuditTransaction.cs" />
-    <Compile Include="Transactions\WorkflowTriggerTransaction.cs" />
     <Compile Include="Transactions\UserLastActivityTransaction.cs" />
     <Compile Include="Transactions\PersonViewTransaction.cs" />
     <Compile Include="Transactions\ITransaction.cs" />

@@ -17,7 +17,7 @@
 using System;
 using System.ComponentModel;
 using System.Web.UI;
-
+using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -59,6 +59,13 @@ namespace RockWeb.Blocks.Security
             {
                 if ( !Page.IsPostBack )
                 {
+                    if ( PageParameter( "ChangeRequired" ).AsBoolean() )
+                    {
+                        nbMessage.NotificationBoxType = NotificationBoxType.Info;
+                        nbMessage.Text = "Please change your password before continuing.";
+                        nbMessage.Visible = true;
+                    }
+
                     var component = Rock.Security.AuthenticationContainer.GetComponent( CurrentUser.EntityType.Name );
                     if ( !component.SupportsChangePassword )
                     {
@@ -97,6 +104,13 @@ namespace RockWeb.Blocks.Security
                         if ( component.ChangePassword( userLogin, tbOldPassword.Text, tbPassword.Text, out warningMessage ) )
                         {
                             rockContext.SaveChanges();
+
+                            if ( !string.IsNullOrWhiteSpace( PageParameter( "ReturnUrl" ) ) )
+                            {
+                                string redirectUrl = Server.UrlDecode( PageParameter( "ReturnUrl" ) );
+                                Response.Redirect( redirectUrl );
+                                Context.ApplicationInstance.CompleteRequest();
+                            }
 
                             DisplayMessage( GetAttributeValue( "SuccessCaption" ) , NotificationBoxType.Success );
                             pnlChangePassword.Visible = false;

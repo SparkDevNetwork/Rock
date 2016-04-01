@@ -48,6 +48,12 @@ namespace Rock.Web.UI.Controls
 
         #region Properties
 
+        /// <summary>
+        /// Gets or sets the number of rows that textbox should use
+        /// </summary>
+        /// <value>
+        /// The number of rows.
+        /// </value>
         public int Rows
         {
             get { return ViewState["Rows"] as int? ?? 1; }
@@ -160,6 +166,27 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the warning text.
+        /// </summary>
+        /// <value>
+        /// The warning text.
+        /// </value>
+        public string Warning
+        {
+            get
+            {
+                EnsureChildControls();
+                return _textBox.Warning;
+            }
+            set
+            {
+                EnsureChildControls();
+                _textBox.Warning = value;
+                _dropDownList.Warning = string.Empty;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="IRockControl" /> is required.
         /// </summary>
         /// <value>
@@ -224,6 +251,26 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _textBox.HelpBlock = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the warning block.
+        /// </summary>
+        /// <value>
+        /// The warning block.
+        /// </value>
+        public WarningBlock WarningBlock
+        {
+            get
+            {
+                EnsureChildControls();
+                return _textBox.WarningBlock;
+            }
+            set
+            {
+                EnsureChildControls();
+                _textBox.WarningBlock = value;
             }
         }
 

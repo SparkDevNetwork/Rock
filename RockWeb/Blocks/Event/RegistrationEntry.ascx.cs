@@ -2474,9 +2474,20 @@ namespace RockWeb.Blocks.Event
                 {
                     var batchService = new FinancialBatchService( rockContext );
 
+                    // determine batch prefix
+                    string batchPrefix = string.Empty;
+                    if ( !string.IsNullOrWhiteSpace( RegistrationTemplate.BatchNamePrefix ) )
+                    {
+                        batchPrefix = RegistrationTemplate.BatchNamePrefix;
+                    }
+                    else
+                    {
+                        batchPrefix = GetAttributeValue( "BatchNamePrefix" );
+                    }
+
                     // Get the batch
                     var batch = batchService.Get(
-                        GetAttributeValue( "BatchNamePrefix" ),
+                        batchPrefix,
                         paymentInfo.CurrencyTypeValue,
                         paymentInfo.CreditCardTypeValue,
                         transaction.TransactionDateTime.Value,
@@ -2584,6 +2595,11 @@ namespace RockWeb.Blocks.Event
             // If this is an existing registration, go directly to the summary
             if ( RegistrationState != null && RegistrationState.RegistrationId.HasValue && !PageParameter( START_AT_BEGINNING ).AsBoolean() )
             {
+                // check if template does not allow updating the saved registration, if so hide the back button on the summary screen
+                if ( !RegistrationTemplate.AllowExternalRegistrationUpdates )
+                {
+                    lbSummaryPrev.Visible = false;
+                }
                 ShowSummary();
             }
             else

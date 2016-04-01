@@ -25,7 +25,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Xml.Linq;
-
+using RestSharp;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Financial;
@@ -508,47 +508,65 @@ namespace Rock.Financial
             var queryParams = new Dictionary<string, string>();
             queryParams.Add( "username", GetAttributeValue( financialGateway, "AdminUsername" ) );
             queryParams.Add( "password", GetAttributeValue( financialGateway, "AdminPassword" ) );
-            queryParams.Add( "condition", "complete" );
             queryParams.Add( "start_date", startDate.ToString( "yyyyMMddHHmmss" ) );
             queryParams.Add( "end_date", endDate.ToString( "yyyyMMddHHmmss" ) );
 
             string url = GetAttributeValue( financialGateway, "QueryUrl" );
             string queryString = queryParams.ToList().Select( p => string.Format( "{0}={1}", p.Key, p.Value ) ).ToList().AsDelimited( "&" );
-            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create( url + "?" + queryString );
-            request.ContentType = "text/xml";
-            request.Method = "GET";
+
+            var restClient = new RestClient( url + "?" + queryString );
+            var restRequest = new RestRequest( Method.GET );
 
             try
             {
-                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                var result = GetResponse( response.GetResponseStream(), response.ContentType, response.StatusCode );
-                if ( result != null )
+                var response = restClient.Execute( restRequest );
+                var xdocResult = GetXmlResponse( response );
+                if ( xdocResult != null )
                 {
-                    foreach ( var xTxn in result.Root.Elements( "transaction" ) )
+                    foreach ( var xTxn in xdocResult.Root.Elements( "transaction" ) )
                     {
-                        string subscriptionId = GetXElementValue( xTxn, "original_transaction_id" );
+                        string subscriptionId = GetXElementValue( xTxn, "original_transaction_id" ).Trim();
                         if ( !string.IsNullOrWhiteSpace( subscriptionId ) )
                         {
+                            Payment payment = null;
+                            var statusMessage = new StringBuilder();
+
                             foreach ( var xAction in xTxn.Elements( "action" ) )
                             {
-                                if ( GetXElementValue( xAction, "action_type" ) == "sale" &&
-                                    GetXElementValue( xAction, "source" ) == "recurring" )
+                                DateTime? actionDate = ParseDateValue( GetXElementValue( xAction, "date" ) );
+                                string actionType = GetXElementValue( xAction, "action_type" );
+                                string responseText = GetXElementValue( xAction, "response_text" );
+                                if ( actionDate.HasValue )
+                                {
+                                    statusMessage.AppendFormat( "{0} {1}: {2}; Status: {3}",
+                                        actionDate.Value.ToShortDateString(), actionDate.Value.ToShortTimeString(),
+                                        actionType.FixCase(), responseText );
+                                    statusMessage.AppendLine();
+                                }
+
+                                // Don't create the payment record unless there is a sale from a subscription
+                                if ( payment == null && actionType == "sale" && GetXElementValue( xAction, "source" ) == "recurring" )
                                 {
                                     decimal? txnAmount = GetXElementValue( xAction, "amount" ).AsDecimalOrNull();
-                                    DateTime? txnDate = ParseDateValue( GetXElementValue( xAction, "date" ) );
-                                    if ( txnAmount.HasValue && txnDate.HasValue )
+                                    if ( txnAmount.HasValue && actionDate.HasValue )
                                     {
-                                        var payment = new Payment();
+                                        payment = new Payment();
+                                        payment.Status = GetXElementValue( xTxn, "condition" ).FixCase();
+                                        payment.IsFailure = payment.Status == "Failed";
+                                        payment.StatusMessage = GetXElementValue( xTxn, "response_text" );
                                         payment.Amount = txnAmount.Value;
-                                        payment.TransactionDateTime = txnDate.Value;
+                                        payment.TransactionDateTime = actionDate.Value;
                                         payment.TransactionCode = GetXElementValue( xTxn, "transaction_id" );
                                         payment.GatewayScheduleId = subscriptionId;
                                         payment.ScheduleActive = true;
-                                        txns.Add( payment );
-
-                                        break;
                                     }
                                 }
+                            }
+
+                            if ( payment != null )
+                            {
+                                payment.StatusMessage = statusMessage.ToString();
+                                txns.Add( payment );
                             }
                         }
                     }
@@ -669,16 +687,14 @@ namespace Rock.Financial
         /// <exception cref="System.Exception"></exception>
         private Dictionary<string, string> PostToGateway( FinancialGateway financialGateway, XDocument data )
         {
-            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create( GetAttributeValue( financialGateway, "APIUrl" ) );
-            request.ContentType = "text/xml";
-            request.Method = "POST";
-            StreamWriter writer = new StreamWriter( request.GetRequestStream() );
-            data.Save( writer );
-
+            var restClient = new RestClient( GetAttributeValue( financialGateway, "APIUrl" ) );
+            var restRequest = new RestRequest( Method.POST );
+            restRequest.RequestFormat = DataFormat.Xml;
+            restRequest.AddBody( data );
             try
             {
-                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                var xdocResult = GetResponse( response.GetResponseStream(), response.ContentType, response.StatusCode );
+                var response = restClient.Execute( restRequest );
+                var xdocResult = GetXmlResponse( response );
                 if ( xdocResult != null )
                 {
                     // Convert XML result to a dictionary
@@ -690,12 +706,12 @@ namespace Rock.Financial
                             string prefix = element.Name.LocalName;
                             foreach ( XElement childElement in element.Elements() )
                             {
-                                result.Add( prefix + "_" + childElement.Name.LocalName, childElement.Value );
+                                result.Add( prefix + "_" + childElement.Name.LocalName, childElement.Value.Trim() );
                             }
                         }
                         else
                         {
-                            result.Add( element.Name.LocalName, element.Value );
+                            result.Add( element.Name.LocalName, element.Value.Trim() );
                         }
                     }
                     return result;
@@ -711,35 +727,20 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Gets the response.
+        /// Gets the response as an XDocument
         /// </summary>
-        /// <param name="responseStream">The response stream.</param>
-        /// <param name="contentType">Type of the content.</param>
-        /// <param name="statusCode">The status code.</param>
+        /// <param name="response">The response.</param>
         /// <returns></returns>
-        private XDocument GetResponse( Stream responseStream, string contentType, HttpStatusCode statusCode )
+        private XDocument GetXmlResponse( IRestResponse response )
         {
-            Stream receiveStream = responseStream;
-            Encoding encode = System.Text.Encoding.GetEncoding( "utf-8" );
-            StreamReader readStream = new StreamReader( receiveStream, encode );
-
-            StringBuilder sb = new StringBuilder();
-            Char[] read = new Char[8192];
-            int count = 0;
-            do
+            if ( response.StatusCode == HttpStatusCode.OK &&
+                response.Content.Trim().Length > 0 &&
+                response.Content.Contains( "<?xml" ) )
             {
-                count = readStream.Read( read, 0, 8192 );
-                String str = new String( read, 0, count );
-                sb.Append( str );
+                return XDocument.Parse( response.Content );
             }
-            while ( count > 0 );
-
-            string HTMLResponse = sb.ToString();
-
-            if ( HTMLResponse.Trim().Length > 0 && HTMLResponse.Contains( "<?xml" ) )
-                return XDocument.Parse( HTMLResponse );
-            else
-                return null;
+            
+            return null;
         }
 
         /// <summary>

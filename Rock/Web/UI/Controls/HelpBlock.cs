@@ -52,6 +52,8 @@ $(document).ready(function() {
         $(this).siblings('div.alert-info').slideToggle(function(){
             Rock.controls.modal.updateSize(this);
         });
+        $(this).siblings('a.warning').insertAfter($(this));
+        $(this).siblings('div.alert-warning').slideUp();
     });
 });
 ";
