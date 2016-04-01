@@ -62,6 +62,12 @@ namespace RockWeb.Blocks.Prayer
             set { ViewState["CurrentPrayerRequestId"] = value; }
         }
 
+        public List<int> PrayerRequestIds
+        {
+            get { return ViewState["PrayerRequestIds"] as List<int>; }
+            set { ViewState["PrayerRequestIds"] = value; }
+        }
+
         #endregion
 
         #region Base Control Methods
@@ -160,9 +166,9 @@ namespace RockWeb.Blocks.Prayer
 
             index++;
 
-            List<int> prayerRequestIds = (List<int>)Session[_sessionKey];
+            List<int> prayerRequestIds = this.PrayerRequestIds;
             int currentNumber = index + 1;
-            if ( currentNumber <= prayerRequestIds.Count )
+            if ( ( prayerRequestIds != null ) && ( currentNumber <= prayerRequestIds.Count ) )
             {
                 UpdateSessionCountLabel( currentNumber, prayerRequestIds.Count );
 
@@ -194,9 +200,9 @@ namespace RockWeb.Blocks.Prayer
 
             index--;
 
-            List<int> prayerRequestIds = (List<int>)Session[_sessionKey];
+            List<int> prayerRequestIds = this.PrayerRequestIds;
             int currentNumber = index + 1;
-            if ( currentNumber > 0 )
+            if ( ( prayerRequestIds != null ) && ( currentNumber > 0 ) )
             {
                 UpdateSessionCountLabel( currentNumber, prayerRequestIds.Count );
 
@@ -410,7 +416,7 @@ namespace RockWeb.Blocks.Prayer
             var prayerRequests = service.GetByCategoryIds( categoriesList.SelectedValuesAsInt ).OrderByDescending( p => p.IsUrgent ).ThenBy( p => p.PrayerCount ).ToList();
             List<int> list = prayerRequests.Select( p => p.Id ).ToList<int>();
 
-            Session[_sessionKey] = list;
+            PrayerRequestIds = list;
             if ( list.Count > 0 )
             {
                 UpdateSessionCountLabel( 1, list.Count );
