@@ -1,5 +1,5 @@
-// <copyright>
-// Copyright 2013 by the Spark Development Network
+ï»¿// <copyright>
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -2277,7 +2277,7 @@ namespace Rock.Web.UI
                 if ( AddScriptTags )
                 {
                     l.Text = string.Format( @"
-    <script type=""text/javascript"">       
+    <script type=""text/javascript"">ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 
 {0}
     </script>
 
