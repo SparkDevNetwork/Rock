@@ -16,6 +16,7 @@
                 <Rock:PersonPicker ID="ppBaptizer1" runat="server" Label="Primary Baptizer" />
                 <Rock:PersonPicker ID="ppBaptizer2" runat="server" Label="Secondary Baptizer (Optional)" />
                 <Rock:PersonPicker ID="ppApprover" runat="server" Label="Approved By" />
+                <Rock:RockCheckBox ID="cbIsPrivate" runat="server" Label="Is this a private baptism" />
                 <Rock:RockCheckBox ID="cbIsConfirmed" runat="server" Label="Confirmed" />
 
                 <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_OnClick" />

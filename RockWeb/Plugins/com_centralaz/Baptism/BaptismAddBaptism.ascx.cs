@@ -198,6 +198,10 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
 
             History.EvaluateChange( changes, "Confirmed", _baptizee.IsConfirmed, cbIsConfirmed.Checked );
             _baptizee.IsConfirmed = cbIsConfirmed.Checked;
+
+            History.EvaluateChange( changes, "Changed to private baptism", _baptizee.IsPrivateBaptism, cbIsPrivate.Checked );
+            _baptizee.IsPrivateBaptism = cbIsPrivate.Checked;
+
             if ( _baptizee.Id.Equals( 0 ) )
             {
                 baptizeeService.Add( _baptizee );
@@ -367,6 +371,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             }
 
             cbIsConfirmed.Checked = baptizee.IsConfirmed;
+            cbIsPrivate.Checked = baptizee.IsPrivateBaptism;
 
             if ( baptizee.IsDeleted )
             {

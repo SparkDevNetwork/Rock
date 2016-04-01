@@ -71,6 +71,15 @@ namespace com.centralaz.Baptism.Model
         public bool IsDeleted { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is private.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is private; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsPrivateBaptism { get; set; }
+
+        /// <summary>
         /// The baptism time
         /// </summary>
         [DataMember]

@@ -507,7 +507,8 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             phBaptismList.Controls.Add( new LiteralControl( "<div class='col-md-2'><h5>Phone Number</h5></div>" ) );
             phBaptismList.Controls.Add( new LiteralControl( "<div class='col-md-2'><h5>Baptized By</h5></div>" ) );
             phBaptismList.Controls.Add( new LiteralControl( "<div class='col-md-2'><h5>Approved By</h5></div>" ) );
-            phBaptismList.Controls.Add( new LiteralControl( "<div class='col-md-2'><h5>Confirmed</h5></div>" ) );
+            phBaptismList.Controls.Add( new LiteralControl( "<div class='col-md-1'><h5>Confirmed</h5></div>" ) );
+            phBaptismList.Controls.Add( new LiteralControl( "<div class='col-md-1'><h5>Private</h5></div>" ) );
             phBaptismList.Controls.Add( new LiteralControl( "</div>" ) );
         }
 
@@ -544,6 +545,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             listSubHeaderTable.AddCell( new Phrase( "Baptized By", listSubHeaderFont ) );
             listSubHeaderTable.AddCell( new Phrase( "Approved By", listSubHeaderFont ) );
             listSubHeaderTable.AddCell( new Phrase( "Confirmed", listSubHeaderFont ) );
+            listSubHeaderTable.AddCell( new Phrase( "Private Baptism", listSubHeaderFont ) );
 
             document.Add( listSubHeaderTable );
         }
@@ -614,13 +616,20 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
                 PostBackUrl = linkedPageUrl
             };
 
-            phBaptismList.Controls.Add( new LiteralControl( "<div class='col-md-2'>" ) );
+            phBaptismList.Controls.Add( new LiteralControl( "<div class='col-md-1'>" ) );
             if ( baptizee.IsConfirmed )
             {
                 phBaptismList.Controls.Add( new LiteralControl( "<i class='fa fa-check'></i>" ) );
             }
-
             phBaptismList.Controls.Add( new LiteralControl( "  </div>" ) );
+
+            phBaptismList.Controls.Add( new LiteralControl( "<div class='col-md-1'>" ) );
+            if ( baptizee.IsPrivateBaptism )
+            {
+                phBaptismList.Controls.Add( new LiteralControl( "<i class='fa fa-check'></i>" ) );
+            }
+            phBaptismList.Controls.Add( new LiteralControl( "  </div>" ) );
+
             phBaptismList.Controls.Add( new LiteralControl( "<div class='col-md-2'>" ) );
             phBaptismList.Controls.Add( lbEdit );
             phBaptismList.Controls.Add( new LiteralControl( "</div>" ) );
@@ -683,6 +692,8 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             listItemTable.AddCell( new Phrase( approverName, listItemFont ) );
 
             listItemTable.AddCell( new Phrase( baptizee.IsConfirmed.ToYesNo(), listItemFont ) );
+
+            listItemTable.AddCell( new Phrase( baptizee.IsPrivateBaptism.ToYesNo(), listItemFont ) );
 
             document.Add( listItemTable );
         }
