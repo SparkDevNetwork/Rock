@@ -356,7 +356,7 @@ namespace RockWeb.Blocks.Groups
             string dateRangePreference = rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Date Range" ) );
             if ( string.IsNullOrWhiteSpace( dateRangePreference ) )
             {
-                // set the dateRangePreference to force rFilter_DisplayFilterValue to show our default one year limit
+                // set the dateRangePreference to force rFilter_DisplayFilterValue to show our default three month limit
                 dateRangePreference = ",";
                 rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Date Range" ), "Date Range", dateRangePreference );
             }
