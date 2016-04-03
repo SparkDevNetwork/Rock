@@ -20,22 +20,20 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Groups
 {
     [DisplayName( "Group Attendance List" )]
     [Category( "Groups" )]
     [Description( "Lists all the scheduled occurrences for a given group." )]
-
     [LinkedPage( "Detail Page", "", true, "", "", 0 )]
     [BooleanField( "Allow Add", "Should block support adding new attendance dates outside of the group's configured schedule and group type's exclusion dates?", true, "", 1 )]
     [BooleanField( "Allow Campus Filter", "Should block add an option to allow filtering attendance counts and percentage by campus?", false, "", 2 )]
@@ -86,13 +84,12 @@ namespace RockWeb.Blocks.Groups
 
             _allowCampusFilter = GetAttributeValue( "AllowCampusFilter" ).AsBoolean();
             bddlCampus.Visible = _allowCampusFilter;
-            if (_allowCampusFilter )
+            if ( _allowCampusFilter )
             {
                 bddlCampus.DataSource = CampusCache.All();
                 bddlCampus.DataBind();
                 bddlCampus.Items.Insert( 0, new ListItem( "All Campuses", "0" ) );
             }
-
         }
 
         /// <summary>
@@ -205,7 +202,7 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
-        void gOccurrences_RowDataBound( object sender, GridViewRowEventArgs e )
+        private void gOccurrences_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             if ( e.Row.RowType == System.Web.UI.WebControls.DataControlRowType.DataRow )
             {
@@ -232,7 +229,7 @@ namespace RockWeb.Blocks.Groups
         {
             // The iCalendar date format is returned as UTC kind date, so we need to manually format it instead of using 'o'
             string occurrenceDate = ( (DateTime)e.RowKeyValues["Date"] ).ToString( "yyyy-MM-ddTHH:mm:ss" );
-            var qryParams = new Dictionary<string, string> { 
+            var qryParams = new Dictionary<string, string> {
                 { "GroupId", _group.Id.ToString() },
                 { "Date", occurrenceDate },
             };
@@ -260,8 +257,8 @@ namespace RockWeb.Blocks.Groups
         /// <exception cref="System.NotImplementedException"></exception>
         protected void gOccurrences_Add( object sender, EventArgs e )
         {
-            var qryParams = new Dictionary<string, string> { 
-                { "GroupId", _group.Id.ToString() } 
+            var qryParams = new Dictionary<string, string> {
+                { "GroupId", _group.Id.ToString() }
             };
 
             if ( ddlSchedule.Visible && ddlSchedule.SelectedValue != "0" )
@@ -280,7 +277,6 @@ namespace RockWeb.Blocks.Groups
 
             NavigateToLinkedPage( "DetailPage", qryParams );
         }
-
 
         /// <summary>
         /// Handles the Delete event of the gOccurrences control.
@@ -303,11 +299,11 @@ namespace RockWeb.Blocks.Groups
                             a.GroupId == _group.Id &&
                             a.StartDateTime >= startDate &&
                             a.StartDateTime < endDate );
-                    
+
                     int? scheduleId = e.RowKeyValues["ScheduleId"] as int?;
                     if ( scheduleId.HasValue )
                     {
-                        qry = qry.Where( a => 
+                        qry = qry.Where( a =>
                             a.ScheduleId.HasValue &&
                             a.ScheduleId.Value == scheduleId.Value );
                     }
@@ -315,12 +311,12 @@ namespace RockWeb.Blocks.Groups
                     int? locationId = e.RowKeyValues["LocationId"] as int?;
                     if ( locationId.HasValue )
                     {
-                        qry = qry.Where( a => 
+                        qry = qry.Where( a =>
                             a.LocationId.HasValue &&
                             a.LocationId.Value == locationId.Value );
                     }
 
-                    foreach( var attendance in qry )
+                    foreach ( var attendance in qry )
                     {
                         attendanceService.Delete( attendance );
                     }
@@ -331,7 +327,7 @@ namespace RockWeb.Blocks.Groups
 
             BindGrid();
         }
-        
+
         /// <summary>
         /// Handles the GridRebind event of the gOccurrences control.
         /// </summary>
@@ -362,8 +358,8 @@ namespace RockWeb.Blocks.Groups
 
             var dateRange = DateRangePicker.CalculateDateRangeFromDelimitedValues( dateRangePreference );
 
-            // if there is no start date, default to a year ago to minimize the chance of loading too much data
-            drpDates.LowerValue = dateRange.Start ?? RockDateTime.Today.AddYears( -1 );
+            // if there is no start date, default to three months ago to minimize the chance of loading too much data
+            drpDates.LowerValue = dateRange.Start ?? RockDateTime.Today.AddMonths( -3 );
             drpDates.UpperValue = dateRange.End;
 
             if ( _group != null )
@@ -512,6 +508,5 @@ namespace RockWeb.Blocks.Groups
         }
 
         #endregion
-
-}
+    }
 }
