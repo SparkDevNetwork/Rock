@@ -202,7 +202,12 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
-        private void gOccurrences_RowDataBound( object sender, GridViewRowEventArgs e )
+        /// <summary>
+        /// Handles the RowDataBound event of the gOccurrences control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gOccurrences_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             if ( e.Row.RowType == System.Web.UI.WebControls.DataControlRowType.DataRow )
             {
