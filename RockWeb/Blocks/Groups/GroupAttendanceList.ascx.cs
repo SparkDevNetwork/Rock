@@ -356,15 +356,15 @@ namespace RockWeb.Blocks.Groups
             string dateRangePreference = rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Date Range" ) );
             if ( string.IsNullOrWhiteSpace( dateRangePreference ) )
             {
-                // set the dateRangePreference to force rFilter_DisplayFilterValue to show our default one year limit
+                // set the dateRangePreference to force rFilter_DisplayFilterValue to show our default three month limit
                 dateRangePreference = ",";
                 rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Date Range" ), "Date Range", dateRangePreference );
             }
 
             var dateRange = DateRangePicker.CalculateDateRangeFromDelimitedValues( dateRangePreference );
 
-            // if there is no start date, default to a year ago to minimize the chance of loading too much data
-            drpDates.LowerValue = dateRange.Start ?? RockDateTime.Today.AddYears( -1 );
+            // if there is no start date, default to three months ago to minimize the chance of loading too much data
+            drpDates.LowerValue = dateRange.Start ?? RockDateTime.Today.AddMonths( -3 );
             drpDates.UpperValue = dateRange.End;
 
             if ( _group != null )
