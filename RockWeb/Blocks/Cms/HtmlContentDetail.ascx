@@ -15,6 +15,7 @@
                         <ContentTemplate>
                             <asp:HiddenField ID="hfVersion" runat="server" />
                             <asp:Panel ID="pnlEdit" runat="server" Visible="false">
+                                <Rock:NotificationBox ID="nbInvalidHtml" runat="server" NotificationBoxType="Warning" Visible="false" />
 
                                 <!-- Approval -->
                                 <asp:UpdatePanel ID="upnlApproval" runat="server">
