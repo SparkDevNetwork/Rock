@@ -63,6 +63,8 @@ namespace church.ccv.Steps
 
         int _searchDateSpan = 365;
 
+        DateTime? lastProcessedDate;
+
         /// <summary> 
         /// Empty constructor for job initialization
         /// <para>
@@ -96,7 +98,7 @@ namespace church.ccv.Steps
             _sharingMeasureId = dataMap.GetIntFromString( "SharingMeasureId" );
 
             // get time of last run
-            var lastProcessedDate = Rock.Web.SystemSettings.GetValue( "church_ccv_StepsTakenLastUpdate" ).AsDateTime();
+            lastProcessedDate = Rock.Web.SystemSettings.GetValue( "church_ccv_StepsTakenLastUpdate" ).AsDateTime();
 
             if ( !lastProcessedDate.HasValue )
             {
@@ -269,10 +271,16 @@ namespace church.ccv.Steps
 
         private void ProcessGiving()
         {
-            // a giving step will occur the FIRST time a person gives more than the threshold amount for 52 weeks
-            // once they get this step they won't be able to get it again
-            // on initial load we set all the 'current' givers to be a year in the past so they would not show up
-            // on the steps bar
+            // To get the give step you must give more than $250 in 12 months. If you drop below this amount you won’t get 
+            // another give step unless you remain below $250 for more than 12 months.
+            //
+            // To be able to calculate this logic we need to write to the person's history when the cross into and out of 
+            // the giving threshold.
+
+            // STEP 1: Find all people giving over $250 whos last history is STOPPED and is older than 12 months, or they don't have a giving history of giving. 
+            //         We'll give them a new step.
+
+            var lastYearDate = RockDateTime.Now.AddYears( -1 );
 
             using ( RockContext rockContext = new RockContext() )
             {
@@ -281,16 +289,28 @@ namespace church.ccv.Steps
                 decimal titheThreshold = GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_TITHE_THRESHOLD ).AsDecimal();
 
                 StepTakenService stepTakenService = new StepTakenService( rockContext );
+                HistoryService historyService = new HistoryService( rockContext );
 
-                var givingStepPersonIds = stepTakenService.Queryable()
-                                                .Where( s =>
-                                                         s.StepMeasureId == _givingMeasureId )
-                                                 .Select( s => s.PersonAlias.PersonId );
+                var personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+                var attributeEntityTypeId = EntityTypeCache.Read( "Rock.Model.Attribute" ).Id;
+
+                var olderThan12MonthsHistory = new HistoryService( rockContext ).Queryable()
+                                                .Where( h =>
+                                                    h.Caption == "Giving"
+                                                    && h.Verb == "STOPPED"
+                                                    && h.CreatedDateTime < lastYearDate
+                                                )
+                                                .Select( h => h.EntityId );
+
+                var noHistory = new HistoryService( rockContext ).Queryable()
+                                                .Where( h =>
+                                                    h.Caption == "Giving"
+                                                );
 
                 var newSteps = datamartPersonService.Queryable()
                                                 .Where( p =>
                                                         p.GivingLast12Months > titheThreshold
-                                                        && !givingStepPersonIds.Contains( p.PersonId ) )
+                                                        && ( olderThan12MonthsHistory.Contains( p.PersonId ) ) || !noHistory.Any(h => h.EntityId == p.PersonId) )
                                                 .ToList();
 
                 foreach ( var newStep in newSteps )
@@ -315,9 +335,141 @@ namespace church.ccv.Steps
                     }
                 }
 
+                // STEP 2: Find all people giving over $250 whos last history is STOPPED, or they don't have a giving history of giving. 
+                //         We'll mark them as STARTED
+                var stoppedHistory = new HistoryService( rockContext ).Queryable()
+                                                .Where( h =>
+                                                    h.Caption == "Giving"
+                                                    && h.Verb == "STOPPED"
+                                                );
+
+                var markStarted = datamartPersonService.Queryable()
+                                                .Where( p =>
+                                                        p.GivingLast12Months > titheThreshold
+                                                        && (stoppedHistory.Any(h => h.EntityId == p.PersonId )) || !noHistory.Any( h => h.EntityId == p.PersonId ) )
+                                                .ToList();
+
+                foreach(var item in markStarted )
+                {
+                    var person = new PersonService( rockContext ).Get( item.PersonId );
+                    if ( person.PrimaryAliasId.HasValue )
+                    {
+                        History history = new History();
+                        historyService.Add( history );
+                        history.EntityTypeId = personEntityTypeId;
+                        history.EntityId = item.PersonId;
+                        history.RelatedEntityTypeId = attributeEntityTypeId;
+                        history.RelatedEntityId = 12;
+                        history.Caption = "Giving";
+                        history.Summary = "Started Giving (CCV)";
+                        history.Verb = "STARTED";
+                        history.CreatedDateTime = RockDateTime.Now;
+                        history.CreatedByPersonAliasId = person.PrimaryAliasId;
+
+                        rockContext.SaveChanges();
+                    }
+                }
+
+                // STEP 3: Find all people giving less $250 whos last history is STARTED 
+                //         We'll mark them as STOPPED
+
+                var startedHistory = new HistoryService( rockContext ).Queryable()
+                                                    .Where( h =>
+                                                        h.Caption == "Giving"
+                                                        && h.Verb == "STARTED"
+                                                    );
+                var markStopped = datamartPersonService.Queryable()
+                                                .Where( p =>
+                                                        p.GivingLast12Months <= titheThreshold
+                                                        && startedHistory.Any( h => h.EntityId == p.PersonId )
+                                                 )
+                                                .ToList();
+
+                foreach ( var item in markStopped )
+                {
+                    var person = new PersonService( rockContext ).Get( item.PersonId );
+                    if ( person.PrimaryAliasId.HasValue )
+                    {
+                        History history = new History();
+                        historyService.Add( history );
+                        history.EntityTypeId = personEntityTypeId;
+                        history.EntityId = item.PersonId;
+                        history.RelatedEntityTypeId = attributeEntityTypeId;
+                        history.RelatedEntityId = 12;
+                        history.Caption = "Giving";
+                        history.Summary = "Started Giving (CCV)";
+                        history.Verb = "STOPPED";
+                        history.CreatedDateTime = RockDateTime.Now;
+                        history.CreatedByPersonAliasId = person.PrimaryAliasId;
+
+                        rockContext.SaveChanges();
+                    }
+                }
             }
 
 
+        }
+
+        private void ProcessGroupTypes(List<int> groupTypes, int measureId)
+        {
+            // get list of history STARTS for the group type(s) since our last run where there was no STOP in the last 12 months
+
+            var groupTypeEntityTypeId = EntityTypeCache.Read( "Rock.Model.GroupType" ).Id;
+            int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+
+            using (RockContext rockContext = new RockContext() )
+            {
+                var newStarts = new HistoryService( rockContext ).Queryable()
+                                            .Where( h =>
+                                                 h.EntityTypeId == personEntityTypeId
+                                                 && h.RelatedEntityTypeId == groupTypeEntityTypeId
+                                                 && h.RelatedEntityId.HasValue
+                                                 && groupTypes.Contains( h.RelatedEntityId.Value )
+                                                 && h.CreatedDateTime > lastProcessedDate.Value
+                                             )
+                                             .GroupBy( h => h.EntityId )
+                                             .Select( g => g.OrderByDescending( h => h.CreatedDateTime ).FirstOrDefault() )
+                                             .Where( h => h.Verb == "STARTED")
+                                             .ToList();
+
+                foreach(var start in newStarts )
+                {
+                    // check when the last stop was
+                    var lastStop = new HistoryService( rockContext ).Queryable()
+                                        .Where( h =>
+                                                h.EntityTypeId == start.EntityTypeId
+                                                && h.EntityId == start.EntityId
+                                                && h.RelatedEntityTypeId == start.RelatedEntityTypeId
+                                                && h.RelatedEntityId == start.RelatedEntityId
+                                                && h.CreatedDateTime < start.CreatedDateTime
+                                        )
+                                        .GroupBy( h => h.EntityId )
+                                        .Select( g => g.OrderByDescending( h => h.CreatedDateTime ).FirstOrDefault() )
+                                        .Where( h => h.Verb == "STOPPED" )
+                                        .FirstOrDefault();
+
+                    if (lastStop == null || lastStop.CreatedDateTime < lastProcessedDate.Value.AddYears( -1 ) )
+                    {
+                        RockContext updateContext = new RockContext();
+                        StepTakenService stepTakenService = new StepTakenService( updateContext );
+
+                        Person person = new PersonService( rockContext ).Get( start.EntityId );
+
+                        if ( person != null )
+                        {
+                            // create new step
+                            StepTaken step = new StepTaken();
+                            step.DateTaken = start.CreatedDateTime.Value;
+                            step.StepMeasureId = measureId;
+                            step.PersonAliasId = person.PrimaryAliasId.Value;
+                            step.CampusId = person.GetCampus().Id;
+
+                            stepTakenService.Add( step );
+                            updateContext.SaveChanges();
+                        }
+                    }
+                }
+            }
         }
     }
 }
