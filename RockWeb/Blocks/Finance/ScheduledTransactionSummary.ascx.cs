@@ -118,7 +118,7 @@ namespace RockWeb.Blocks.Finance
                 FinancialScheduledTransactionService transactionService = new FinancialScheduledTransactionService( rockContext );
 
                 var schedules = transactionService.Queryable( "ScheduledTransactionDetails.Account" )
-                                .Where( s => s.AuthorizedPersonAlias.Person.GivingLeaderId == CurrentPerson.GivingLeaderId && s.IsActive == true );
+                                .Where( s => s.AuthorizedPersonAlias.Person.GivingId == CurrentPerson.GivingId && s.IsActive == true );
 
                 foreach ( FinancialScheduledTransaction schedule in schedules )
                 {
