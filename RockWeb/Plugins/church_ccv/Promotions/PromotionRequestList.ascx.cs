@@ -341,7 +341,10 @@ namespace RockWeb.Plugins.church_ccv.Promotions
 
             string campusString = eventItem.Campus != null ? eventItem.Campus.Name : "All Campuses";
             
-            lbCampusSelectEventInfo.Text = "Event Details: " + eventItem.EventItem.Name + ", " + campusString + ", " + eventItem.NextStartDateTime.Value.ToShortDateString( );
+            // verify the Date as a sanity-check. We don't allow Promo Requests with no future event to show up, but this is a just-in-case.
+            string nextEventTime = eventItem.NextStartDateTime.HasValue ? eventItem.NextStartDateTime.Value.ToShortDateString( ) : "Date: N/A";
+
+            lbCampusSelectEventInfo.Text = "Event Details: " + eventItem.EventItem.Name + ", " + campusString + ", " + nextEventTime;
             mdCampusSelect.Show( );
         }
                 
@@ -568,13 +571,13 @@ namespace RockWeb.Plugins.church_ccv.Promotions
                 var promoItems = promoRequestQuery.ToList( );
 
                 // target range (remove any events that are before our target promotion date) (we do this in case the "Lower Range" is before the target weekend. That would be a mistake but we want to help them.)
-                promoItems = promoItems.Where( pr => eventService.Get( pr.EventItemOccurrenceId ).NextStartDateTime.Value >= dpTargetPromoDate.SelectedDate.Value ).ToList( );
+                promoItems = promoItems.Where( pr => eventService.Get( pr.EventItemOccurrenceId ).NextStartDateTime >= dpTargetPromoDate.SelectedDate.Value ).ToList( );
 
                 // lower range
-                promoItems = promoItems.Where( pr => eventService.Get( pr.EventItemOccurrenceId ).NextStartDateTime.Value >= drpFutureWeeks.LowerValue.Value ).ToList( );
+                promoItems = promoItems.Where( pr => eventService.Get( pr.EventItemOccurrenceId ).NextStartDateTime >= drpFutureWeeks.LowerValue.Value ).ToList( );
 
                 // upper range
-                promoItems = promoItems.Where( pr => eventService.Get( pr.EventItemOccurrenceId ).NextStartDateTime.Value <= drpFutureWeeks.UpperValue.Value ).ToList( );
+                promoItems = promoItems.Where( pr => eventService.Get( pr.EventItemOccurrenceId ).NextStartDateTime <= drpFutureWeeks.UpperValue.Value ).ToList( );
 
                 // put it back to a query
                 promoRequestQuery = promoItems.AsQueryable( );
@@ -616,7 +619,7 @@ namespace RockWeb.Plugins.church_ccv.Promotions
                     Guid = i.Guid,
                     Title = i.EventItemOccurrence.EventItem.Name,
                     Campus = i.EventItemOccurrence.Campus != null ? i.EventItemOccurrence.Campus.Name : "All Campuses",
-                    EventDate = GetDate(eventService, i ),
+                    EventDate = GetDate( eventService, i ),
                     PromoType = string.Format( "<span class='{0}'></span> {1}", i.ContentChannel.IconCssClass, i.ContentChannel.Name )
                 }).OrderBy( a => a.EventDate ).ToList( );
             }
@@ -628,7 +631,15 @@ namespace RockWeb.Plugins.church_ccv.Promotions
         {
             var eventItem = eventService.Get( promoRequest.EventItemOccurrenceId );
 
-            return eventItem.NextStartDateTime.Value.ToShortDateString( );
+            // sanity check for the 
+            if( eventItem.NextStartDateTime.HasValue )
+            {
+                return eventItem.NextStartDateTime.Value.ToShortDateString();
+            }
+            else
+            {
+                return "N/A";
+            }
         }
         
         #endregion

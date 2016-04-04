@@ -407,7 +407,14 @@ namespace RockWeb.Plugins.church_ccv.Promotions
             {
                 var eventItem = eventService.Get( promoOccurr.PromotionRequest.EventItemOccurrenceId );
 
-                return eventItem.NextStartDateTime.Value.ToShortDateString();
+                if( eventItem.NextStartDateTime.HasValue )
+                {
+                    return eventItem.NextStartDateTime.Value.ToShortDateString();
+                }
+                else
+                {
+                    return "N/A";
+                }
             }
             else
             {
