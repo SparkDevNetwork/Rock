@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -34,7 +33,6 @@ namespace Rock.Model
     [DataContract]
     public partial class PhoneNumber : Model<PhoneNumber>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -46,7 +44,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the PersonId of the <see cref="Rock.Model.Person" /> that the PhoneNumber belongs to. This property is required.
         /// </summary>
@@ -63,7 +61,7 @@ namespace Rock.Model
         /// <value>
         /// The country code.
         /// </value>
-        [MaxLength(3)]
+        [MaxLength( 3 )]
         [DataMember]
         public string CountryCode { get; set; }
 
@@ -135,7 +133,7 @@ namespace Rock.Model
         [DataMember]
         [LavaIgnore]
         public string Description { get; set; }
-        
+
         #endregion
 
         #region Virtual Properties
@@ -184,6 +182,11 @@ namespace Rock.Model
         {
             if ( state == System.Data.Entity.EntityState.Added || state == System.Data.Entity.EntityState.Modified )
             {
+                if ( string.IsNullOrEmpty( CountryCode ) )
+                {
+                    CountryCode = PhoneNumber.DefaultCountryCode();
+                }
+                
                 NumberFormatted = PhoneNumber.FormattedNumber( CountryCode, Number );
             }
 
@@ -215,14 +218,15 @@ namespace Rock.Model
         public static string DefaultCountryCode()
         {
             var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
-            if (definedType != null)
+            if ( definedType != null )
             {
-                string countryCode = definedType.DefinedValues.OrderBy( v => v.Order).Select( v => v.Value).FirstOrDefault();
-                if (!string.IsNullOrWhiteSpace(countryCode))
+                string countryCode = definedType.DefinedValues.OrderBy( v => v.Order ).Select( v => v.Value ).FirstOrDefault();
+                if ( !string.IsNullOrWhiteSpace( countryCode ) )
                 {
                     return countryCode;
                 }
             }
+
             return "1";
         }
 
@@ -245,20 +249,20 @@ namespace Rock.Model
             number = CleanNumber( number );
 
             var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
-            if (definedType != null)
+            if ( definedType != null )
             {
-                var definedValues = definedType.DefinedValues.OrderBy( v => v.Order);
-                if ( definedValues != null && definedValues.Any())
+                var definedValues = definedType.DefinedValues.OrderBy( v => v.Order );
+                if ( definedValues != null && definedValues.Any() )
                 {
-                    if (string.IsNullOrWhiteSpace(countryCode))
+                    if ( string.IsNullOrWhiteSpace( countryCode ) )
                     {
-                        countryCode = definedValues.Select( v => v.Value).FirstOrDefault();
+                        countryCode = definedValues.Select( v => v.Value ).FirstOrDefault();
                     }
 
                     foreach ( var phoneFormat in definedValues.Where( v => v.Value.Equals( countryCode ) ).OrderBy( v => v.Order ) )
                     {
-                        string match = phoneFormat.GetAttributeValue("MatchRegEx");
-                        string replace = phoneFormat.GetAttributeValue("FormatRegEx");
+                        string match = phoneFormat.GetAttributeValue( "MatchRegEx" );
+                        string replace = phoneFormat.GetAttributeValue( "FormatRegEx" );
                         if ( !string.IsNullOrWhiteSpace( match ) && !string.IsNullOrWhiteSpace( replace ) )
                         {
                             number = Regex.Replace( number, match, replace, RegexOptions.None );
@@ -267,9 +271,9 @@ namespace Rock.Model
                 }
             }
 
-            if (includeCountryCode)
+            if ( includeCountryCode )
             {
-                if (string.IsNullOrWhiteSpace(countryCode))
+                if ( string.IsNullOrWhiteSpace( countryCode ) )
                 {
                     countryCode = "1";
                 }
@@ -287,12 +291,19 @@ namespace Rock.Model
         /// <returns>A <see cref="System.String"/> containing the phone number with all non numeric characters removed. </returns>
         public static string CleanNumber( string number )
         {
-            return digitsOnly.Replace(number, "");
+            if ( !string.IsNullOrEmpty( number ) )
+            {
+                return digitsOnly.Replace( number, string.Empty );
+            }
+            else
+            {
+                return string.Empty;
+            }
         }
+
         private static Regex digitsOnly = new Regex( @"[^\d]" );
 
         #endregion
-
     }
 
     #region Entity Configuration
@@ -313,5 +324,4 @@ namespace Rock.Model
     }
 
     #endregion
-
 }

@@ -1237,5 +1237,164 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201603142139542_FamilyAnalytics_spCrm_FamilyAnalyticsGiving", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeDates]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeDates]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns attendee person ids and the dates they attended based on selected filter criteria
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* PersonId
+        ///		* SundayDate
+        ///		* MonthDate
+        ///		* Year Date
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;GroupTypeId&apos; datatype=&apos;int&apos;&gt;The C [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201603241157527_AttendanceAnalyticsScheduleFilter_AttendeeDates {
+            get {
+                return ResourceManager.GetString("_201603241157527_AttendanceAnalyticsScheduleFilter_AttendeeDates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeFirstDates]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeFirstDates]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///        This function return people who attended based on selected filter criteria and the first 5 dates they ever attended the selected group type
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* PersonId
+        ///		* TimeAttending
+        ///		* SundayDate
+        ///	&lt;/returns&gt;
+        ///	&lt;param [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201603241157527_AttendanceAnalyticsScheduleFilter_AttendeeFirstDates {
+            get {
+                return ResourceManager.GetString("_201603241157527_AttendanceAnalyticsScheduleFilter_AttendeeFirstDates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance]
+        ///GO
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///        This function return people who attended based on selected filter criteria and the first 5 dates they ever attended the selected group type
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* PersonId
+        ///		* TimeAttending
+        ///		* SundayDate
+        ///	&lt;/returns&gt;
+        ///	 [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201603241157527_AttendanceAnalyticsScheduleFilter_AttendeeLastAttendance {
+            get {
+                return ResourceManager.GetString("_201603241157527_AttendanceAnalyticsScheduleFilter_AttendeeLastAttendance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCheckin_AttendanceAnalyticsQuery_Attendees]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_Attendees]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns the people that attended based on selected filter criteria
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* Id 
+        ///		* NickName
+        ///		* LastName
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;GroupTypeId&apos; datatype=&apos;int&apos;&gt;The Check-in Area Group Type Id (only attendance for this a [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201603241157527_AttendanceAnalyticsScheduleFilter_Attendees {
+            get {
+                return ResourceManager.GetString("_201603241157527_AttendanceAnalyticsScheduleFilter_Attendees", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCheckin_AttendanceAnalyticsQuery_NonAttendees]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_NonAttendees]
+        ///GO
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns any person ids for people that have attended previously but who have not attended since the beginning date
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* PersonId 
+        ///		* SundayDate - Last time attended
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;GroupTypeId&apos; datatyp [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201603241157527_AttendanceAnalyticsScheduleFilter_NonAttendees {
+            get {
+                return ResourceManager.GetString("_201603241157527_AttendanceAnalyticsScheduleFilter_NonAttendees", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCrm_PersonMerge]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spCrm_PersonMerge]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This procedure merges the data from the non-primary person to the primary person.  It
+        ///		is used when merging people in Rock and should never be used outside of that process. 
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&quot;Old Id&quot; datatype=&quot;int&quot;&gt;The person id of the non-primary Person being merged&lt;/param&gt;        /// [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201603241157527_spCrm_PersonMerge {
+            get {
+                return ResourceManager.GetString("_201603241157527_spCrm_PersonMerge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- History table indexe changes
+        ///IF EXISTS ( SELECT * FROM sys.indexes WHERE name=&apos;IX_CreatedByPersonAliasId&apos; AND object_id = OBJECT_ID(N&apos;[dbo].[History]&apos;) )
+        ///DROP INDEX [IX_CreatedByPersonAliasId] ON [dbo].[History]
+        ///GO
+        ///
+        ///IF EXISTS ( SELECT * FROM sys.indexes WHERE name=&apos;IX_EntityTypeId&apos; AND object_id = OBJECT_ID(N&apos;[dbo].[History]&apos;) )
+        ///DROP INDEX [IX_EntityTypeId] ON [dbo].[History]
+        ///GO
+        ///
+        ///IF EXISTS ( SELECT * FROM sys.indexes WHERE name=&apos;IX_ForeignGuid&apos; AND object_id = OBJECT_ID(N&apos;[dbo].[History]&apos;) )
+        ///DR [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201603241157527_UpdateIndexes {
+            get {
+                return ResourceManager.GetString("_201603241157527_UpdateIndexes", resourceCulture);
+            }
+        }
     }
 }

@@ -78,26 +78,36 @@ namespace Rock.Jobs
             int exitAttendanceCountLong = 8;
 
             // get era dataset from stored proc
-            var rockContext = new RockContext();
+            var resultContext = new RockContext();
 
-            var attributeValueService = new AttributeValueService( rockContext );
+            
             var eraAttribute = AttributeCache.Read( SystemGuid.Attribute.PERSON_ERA_CURRENTLY_AN_ERA.AsGuid() );
             var eraStartAttribute = AttributeCache.Read( SystemGuid.Attribute.PERSON_ERA_START_DATE.AsGuid() );
             var eraEndAttribute = AttributeCache.Read( SystemGuid.Attribute.PERSON_ERA_END_DATE.AsGuid() );
 
-            rockContext.Database.CommandTimeout = 1200;
+            resultContext.Database.CommandTimeout = 1200;
 
-            var results = rockContext.Database.SqlQuery<EraResult>( "spCrm_FamilyAnalyticsEraDataset" ).ToList();
+            var results = resultContext.Database.SqlQuery<EraResult>( "spCrm_FamilyAnalyticsEraDataset" ).ToList();
+
+            int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+            int attributeEntityTypeId = EntityTypeCache.Read( "Rock.Model.Attribute" ).Id;
+            int eraAttributeId = AttributeCache.Read( SystemGuid.Attribute.PERSON_ERA_CURRENTLY_AN_ERA.AsGuid() ).Id;
+            int personAnalyticsCategoryId = CategoryCache.Read( SystemGuid.Category.HISTORY_PERSON_ANALYTICS.AsGuid() ).Id;
 
             foreach (var result in results )
             {
+                // create new rock context for each family (https://weblog.west-wind.com/posts/2014/Dec/21/Gotcha-Entity-Framework-gets-slow-in-long-Iteration-Loops)
+                RockContext updateContext = new RockContext();
+                var attributeValueService = new AttributeValueService( updateContext );
+                var historyService = new HistoryService( updateContext );
+
                 // if era ensure it still meets requirements
                 if ( result.IsEra )
                 {
                     if (result.ExitGiftCountDuration < exitGivingCount && result.ExitAttendanceCountDurationShort < exitAttendanceCountShort && result.ExitAttendanceCountDurationLong < exitAttendanceCountLong )
                     {
                         // exit era (delete attribute value from each person in family)
-                        var family = new GroupService( rockContext ).Queryable( "Members" ).AsNoTracking().Where( m => m.Id == result.FamilyId ).FirstOrDefault();
+                        var family = new GroupService( updateContext ).Queryable( "Members, Members.Person" ).AsNoTracking().Where( m => m.Id == result.FamilyId ).FirstOrDefault();
 
                         if ( family != null ) {
                             foreach ( var person in family.Members.Select( m => m.Person ) ) {
@@ -116,10 +126,28 @@ namespace Rock.Jobs
                                     eraEndAttributeValue = new AttributeValue();
                                     eraEndAttributeValue.EntityId = person.Id;
                                     eraEndAttributeValue.AttributeId = eraEndAttribute.Id;
-                                    attributeValueService.Delete( eraEndAttributeValue );
+                                    attributeValueService.Add( eraEndAttributeValue );
+                                }
+                                eraEndAttributeValue.Value = RockDateTime.Now.ToString();
+
+                                // add a history record
+                                if ( personAnalyticsCategoryId != 0 && personEntityTypeId != 0 && attributeEntityTypeId != 0 && eraAttributeId != 0 )
+                                {
+                                    History historyRecord = new History();
+                                    historyService.Add( historyRecord );
+                                    historyRecord.EntityTypeId = personEntityTypeId;
+                                    historyRecord.EntityId = person.Id;
+                                    historyRecord.CreatedDateTime = RockDateTime.Now;
+                                    historyRecord.CreatedByPersonAliasId = person.PrimaryAliasId;
+                                    historyRecord.Caption = "eRA";
+                                    historyRecord.Summary = "Exited eRA Status";
+                                    historyRecord.Verb = "EXITED";
+                                    historyRecord.RelatedEntityTypeId = attributeEntityTypeId;
+                                    historyRecord.RelatedEntityId = eraAttributeId;
+                                    historyRecord.CategoryId = personAnalyticsCategoryId;
                                 }
 
-                                rockContext.SaveChanges();
+                                updateContext.SaveChanges();
                             }
 
                             // launch exit workflow
@@ -133,7 +161,7 @@ namespace Rock.Jobs
                 else
                 {
                     // entered era
-                    var family = new GroupService( rockContext ).Queryable( "Members" ).AsNoTracking().Where( m => m.Id == result.FamilyId ).FirstOrDefault();
+                    var family = new GroupService( updateContext ).Queryable( "Members" ).AsNoTracking().Where( m => m.Id == result.FamilyId ).FirstOrDefault();
 
                     if ( family != null )
                     {
@@ -168,7 +196,24 @@ namespace Rock.Jobs
                                 attributeValueService.Delete( eraEndAttributeValue );
                             }
 
-                            rockContext.SaveChanges();
+                            // add a history record
+                            if ( personAnalyticsCategoryId != 0 && personEntityTypeId != 0 && attributeEntityTypeId != 0 && eraAttributeId != 0 )
+                            {
+                                History historyRecord = new History();
+                                historyService.Add( historyRecord );
+                                historyRecord.EntityTypeId = personEntityTypeId;
+                                historyRecord.EntityId = person.Id;
+                                historyRecord.CreatedDateTime = RockDateTime.Now;
+                                historyRecord.CreatedByPersonAliasId = person.PrimaryAliasId;
+                                historyRecord.Caption = "eRA";
+                                historyRecord.Summary = "Entered eRA Status";
+                                historyRecord.Verb = "ENTERED";
+                                historyRecord.RelatedEntityTypeId = attributeEntityTypeId;
+                                historyRecord.RelatedEntityId = eraAttributeId;
+                                historyRecord.CategoryId = personAnalyticsCategoryId;
+                            }
+
+                            updateContext.SaveChanges();
                         }
 
                         // launch entry workflow
@@ -183,10 +228,10 @@ namespace Rock.Jobs
             }
 
             // load giving attributes
-            rockContext.Database.ExecuteSqlCommand( "spCrm_FamilyAnalyticsGiving" );
+            resultContext.Database.ExecuteSqlCommand( "spCrm_FamilyAnalyticsGiving" );
 
             // load attendance attributes
-            rockContext.Database.ExecuteSqlCommand( "spCrm_FamilyAnalyticsAttendance" );
+            resultContext.Database.ExecuteSqlCommand( "spCrm_FamilyAnalyticsAttendance" );
         }
 
         /// <summary>

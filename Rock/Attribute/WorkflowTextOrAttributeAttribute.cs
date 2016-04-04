@@ -28,6 +28,7 @@ namespace Rock.Attribute
     public class WorkflowTextOrAttributeAttribute : FieldAttribute
     {
         private const string ATTRIBUTE_FIELD_TYPES_KEY = "attributefieldtypes";
+        private const string TEXTBOX_ROWS_KEY = "textboxRows";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkflowAttributeAttribute" /> class.
@@ -41,13 +42,20 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         /// <param name="fieldTypeClassNames">The field type class names.</param>
-        public WorkflowTextOrAttributeAttribute( string textLabel, string attributeLabel, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null, string[] fieldTypeClassNames = null )
+        /// <param name="rows">The rows.</param>
+        public WorkflowTextOrAttributeAttribute( string textLabel, string attributeLabel, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null, string[] fieldTypeClassNames = null, int rows = 1 )
             : base( textLabel + "|" + attributeLabel, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.WorkflowTextOrAttributeFieldType ).FullName )
         {
             if ( fieldTypeClassNames != null && fieldTypeClassNames.Length > 0 )
             {
                 var workflowTypeConfigValue = new Field.ConfigurationValue( fieldTypeClassNames.ToList().AsDelimited("|") );
                 FieldConfigurationValues.Add( ATTRIBUTE_FIELD_TYPES_KEY, workflowTypeConfigValue );
+            }
+
+            if ( rows > 1 )
+            {
+                var rowsConfigValue = new Field.ConfigurationValue( rows.ToString() );
+                FieldConfigurationValues.Add( TEXTBOX_ROWS_KEY, rowsConfigValue );
             }
         }
     }

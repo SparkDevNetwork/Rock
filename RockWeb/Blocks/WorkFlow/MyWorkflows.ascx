@@ -32,7 +32,7 @@
                     </ul>
                 </div>
 
-                <h4><asp:Literal ID="lWorkflow" runat="server"></asp:Literal></h4>
+                <h4 class="js-grid-header"><asp:Literal ID="lWorkflow" runat="server"></asp:Literal></h4>
                 <div class="grid">
                     <Rock:Grid ID="gWorkflows" runat="server" OnRowSelected="gWorkflows_Edit" >
                         <Columns>
@@ -50,6 +50,14 @@
                 $(".my-workflows .list-as-blocks li").removeClass('active');
                 $(this).addClass('active');
             });
+
+            function scrollToGrid() {
+                if (!$('.js-grid-header').visible(true)) {
+                    $('html, body').animate({
+                        scrollTop: $('.js-grid-header').offset().top + 'px'
+                    }, 'fast');
+                }
+            }
         </script>
     </ContentTemplate>
 </asp:UpdatePanel>
