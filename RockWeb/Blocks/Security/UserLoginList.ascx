@@ -79,8 +79,8 @@
                     </div>
                     <div class="col-md-6">
                         <Rock:ComponentPicker ID="compProvider" runat="server" Label="Authentication Provider" ContainerType="Rock.Security.AuthenticationContainer, Rock" Required="true" AutoPostBack="true" ValidationGroup="Login" />
-                        <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" TextMode="Password" Enabled="false"></Rock:RockTextBox>
-                        <Rock:RockTextBox ID="tbPasswordConfirm" runat="server" Label="Confirm" TextMode="Password" Enabled="false"></Rock:RockTextBox>
+                        <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" ValidateRequestMode="Disabled" TextMode="Password" Enabled="false"></Rock:RockTextBox>
+                        <Rock:RockTextBox ID="tbPasswordConfirm" runat="server" Label="Confirm" ValidateRequestMode="Disabled" TextMode="Password" Enabled="false"></Rock:RockTextBox>
                     </div>
                 </div>
 
