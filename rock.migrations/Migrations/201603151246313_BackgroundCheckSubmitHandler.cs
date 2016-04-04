@@ -1,5 +1,5 @@
-// <copyright>
-// Copyright 2013 by the Spark Development Network
+ï»¿// <copyright>
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -138,7 +138,7 @@ namespace Rock.Migrations
     END
 " );
 
-            // TC: Add Giving Transactions to Business Detail Page
+            // TC:ï¿½Add Giving Transactions to Business Detail Page
 
             // First delete any existing blocks of these types that might have been manually added to the page.
             Sql( @"
