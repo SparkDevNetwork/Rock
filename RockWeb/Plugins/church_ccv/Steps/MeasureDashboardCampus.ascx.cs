@@ -160,7 +160,8 @@ namespace RockWeb.Plugins.church_ccv.Steps
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cpCampus_SelectedIndexChanged( object sender, EventArgs e )
         {
-            LoadCampusItems();
+            MeasureDate = Request["Date"].AsDateTime();
+            LoadCampusItems( MeasureDate );
         }
 
         /// <summary>
