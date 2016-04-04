@@ -105,6 +105,15 @@ namespace Rock.Model
         [DataMember]
         public int? OwnerPersonAliasId {get;set;}
 
+        /// <summary>
+        /// Gets or sets the number of days until the request is considered idle.
+        /// </summary>
+        /// <value>
+        /// This determines how many days can pass before the request is considered idle.
+        /// </value>
+        [DataMember]
+        public int DaysUntilRequestIdle { get; set; }
+
         #endregion
 
         #region Virtual Properties

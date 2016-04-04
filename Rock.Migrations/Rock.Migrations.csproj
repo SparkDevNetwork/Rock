@@ -157,6 +157,22 @@
     <Compile Include="Migrations\201603162100288_AddBusinessSearch.Designer.cs">
       <DependentUpon>201603162100288_AddBusinessSearch.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201603211730586_DaysUntilConsideredIdle.cs" />
+    <Compile Include="Migrations\201603211730586_DaysUntilConsideredIdle.Designer.cs">
+      <DependentUpon>201603211730586_DaysUntilConsideredIdle.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201603212040044_HistoryRegUpdates.cs" />
+    <Compile Include="Migrations\201603212040044_HistoryRegUpdates.Designer.cs">
+      <DependentUpon>201603212040044_HistoryRegUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201603221609084_HistoryCategories.cs" />
+    <Compile Include="Migrations\201603221609084_HistoryCategories.Designer.cs">
+      <DependentUpon>201603221609084_HistoryCategories.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201603241157527_AttendanceAnalyticsScheduleFilter.cs" />
+    <Compile Include="Migrations\201603241157527_AttendanceAnalyticsScheduleFilter.Designer.cs">
+      <DependentUpon>201603241157527_AttendanceAnalyticsScheduleFilter.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.cs" />
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.Designer.cs">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
@@ -2117,6 +2133,18 @@
     <EmbeddedResource Include="Migrations\201603162100288_AddBusinessSearch.resx">
       <DependentUpon>201603162100288_AddBusinessSearch.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603211730586_DaysUntilConsideredIdle.resx">
+      <DependentUpon>201603211730586_DaysUntilConsideredIdle.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603212040044_HistoryRegUpdates.resx">
+      <DependentUpon>201603212040044_HistoryRegUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603221609084_HistoryCategories.resx">
+      <DependentUpon>201603221609084_HistoryCategories.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603241157527_AttendanceAnalyticsScheduleFilter.resx">
+      <DependentUpon>201603241157527_AttendanceAnalyticsScheduleFilter.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.resx">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
     </EmbeddedResource>
@@ -3521,11 +3549,18 @@
     <None Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase_PopulateData.sql" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Migrations\201603241157527_UpdateIndexes.sql" />
+    <Content Include="Migrations\201603241157527_spCrm_PersonMerge.sql" />
+    <Content Include="Migrations\201603241157527_AttendanceAnalyticsScheduleFilter_AttendeeDates.sql" />
+    <Content Include="Migrations\201603241157527_AttendanceAnalyticsScheduleFilter_AttendeeFirstDates.sql" />
     <Content Include="Migrations\201602161036322_AttendanceAnalyticsQuery_AttendeeFirstDates.sql" />
+    <Content Include="Migrations\201603241157527_AttendanceAnalyticsScheduleFilter_AttendeeLastAttendance.sql" />
     <Content Include="Migrations\201602161036322_AttendanceAnalyticsQuery_AttendeeLastAttendance.sql" />
+    <Content Include="Migrations\201603241157527_AttendanceAnalyticsScheduleFilter_Attendees.sql" />
     <Content Include="Migrations\201602161036322_AttendanceAnalyticsQuery_Attendees.sql" />
     <Content Include="Migrations\201602161036322_AttendanceAnalyticsQuery_GroupTypeAttendance.sql" />
     <Content Include="Migrations\201602161036322_AttendanceAnalyticsQuery_Indexes.sql" />
+    <Content Include="Migrations\201603241157527_AttendanceAnalyticsScheduleFilter_NonAttendees.sql" />
     <Content Include="Migrations\201602161036322_AttendanceAnalyticsQuery_NonAttendees.sql" />
     <Content Include="Migrations\201602161036322_AttendanceAnalyticsQuery_AttendeeDates.sql" />
     <Content Include="Migrations\201602041745307_TuneDuplicateFinder.sql" />

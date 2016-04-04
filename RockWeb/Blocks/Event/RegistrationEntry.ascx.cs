@@ -2202,8 +2202,20 @@ namespace RockWeb.Blocks.Event
                                 note.Text = noteText.ToString();
                                 noteService.Add( note );
                             }
-                        }
 
+                            var changes = new List<string> { "Registered for" };
+                            HistoryService.SaveChanges(
+                                rockContext,
+                                typeof( Person ),
+                                Rock.SystemGuid.Category.HISTORY_PERSON_REGISTRATION.AsGuid(),
+                                registrant.Id,
+                                changes,
+                                RegistrationInstanceState.Name,
+                                typeof( Registration ),
+                                registration.Id,
+                                false,
+                                registration.PersonAliasId );
+                        }
                     }
 
                     if ( registrar != null && registrantNames.Any() )
@@ -2231,6 +2243,19 @@ namespace RockWeb.Blocks.Event
                         note.Text = string.Format( "Registered {0} for {1}", namesText, RegistrationInstanceState.Name );
                         noteService.Add( note );
 
+                        var changes = new List<string> { string.Format( "Registered {0} for", namesText ) };
+
+                        HistoryService.SaveChanges(
+                            rockContext,
+                            typeof( Person ),
+                            Rock.SystemGuid.Category.HISTORY_PERSON_REGISTRATION.AsGuid(),
+                            registrar.Id,
+                            changes,
+                            RegistrationInstanceState.Name,
+                            typeof( Registration ),
+                            registration.Id,
+                            false,
+                            registration.PersonAliasId );
                     }
 
                     rockContext.SaveChanges();

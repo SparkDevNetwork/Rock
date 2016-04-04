@@ -314,17 +314,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     if ( !groups.Any() && GetAttributeValue("AutoCreateGroup").AsBoolean(true) )
                     {
                         // ensure that the person is in a group
-                        var groupMember = new GroupMember();
-                        groupMember.PersonId = Person.Id;
-                        groupMember.GroupRoleId = _groupType.DefaultGroupRoleId.Value;
 
+                        var groupService = new GroupService( _bindGroupsRockContext );
                         var group = new Group();
                         group.Name = Person.LastName;
                         group.GroupTypeId = _groupType.Id;
-                        group.Members.Add( groupMember );
-
-                        var groupService = new GroupService( _bindGroupsRockContext );
                         groupService.Add( group );
+                        _bindGroupsRockContext.SaveChanges();
+
+                        var groupMember = new GroupMember();
+                        groupMember.PersonId = Person.Id;
+                        groupMember.GroupRoleId = _groupType.DefaultGroupRoleId.Value;
+                        groupMember.GroupId = group.Id;
+                        group.Members.Add( groupMember );
                         _bindGroupsRockContext.SaveChanges();
 
                         groups.Add( groupService.Get( group.Id ) );

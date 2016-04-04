@@ -49,6 +49,18 @@ namespace Rock.Web.UI.Controls
         #region Properties
 
         /// <summary>
+        /// Gets or sets the number of rows that textbox should use
+        /// </summary>
+        /// <value>
+        /// The number of rows.
+        /// </value>
+        public int Rows
+        {
+            get { return ViewState["Rows"] as int? ?? 1; }
+            set { ViewState["Rows"] = value; }
+        }
+
+        /// <summary>
         /// Gets the text box.
         /// </summary>
         /// <value>
@@ -293,6 +305,16 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
+            if ( Rows > 1 )
+            {
+                _textBox.TextMode = TextBoxMode.MultiLine;
+                _textBox.Rows = Rows;
+            }
+            else
+            {
+                _textBox.TextMode = TextBoxMode.SingleLine;
+            }
+
             bool ddlItemSelected = false;
             foreach ( ListItem li in _dropDownList.Items )
             {

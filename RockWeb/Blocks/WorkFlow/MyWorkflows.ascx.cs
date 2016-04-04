@@ -114,6 +114,8 @@ namespace RockWeb.Blocks.WorkFlow
         {
             base.OnLoad( e );
 
+            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.visible.min.js" ) );
+
             if ( !Page.IsPostBack )
             {
                 bool? queryStatusFilter = Request.QueryString["StatusFilter"].AsBooleanOrNull();
@@ -196,6 +198,13 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             GetData();
+
+            ScriptManager.RegisterStartupScript(
+                Page,
+                GetType(),
+                "ScrollToGrid",
+                "scrollToGrid();",
+                true );
         }
 
         /// <summary>
