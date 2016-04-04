@@ -540,6 +540,7 @@ namespace Rock.Web.Cache
         /// Redirects to change password page.
         /// </summary>
         /// <param name="isChangePasswordRequired">if set to <c>true</c> [is change password required].</param>
+        /// <param name="includeReturnUrl">if set to <c>true</c> [include return URL].</param>
         public void RedirectToChangePasswordPage( bool isChangePasswordRequired, bool includeReturnUrl )
         {
             var context = HttpContext.Current;
