@@ -383,7 +383,7 @@ SELECT @MetricServiceRosterSQL = N'
 	-- Returns a timestamp of 00:00:00 when no schedule is assigned
 	/* ====================================================================== */
 	SELECT COUNT(1) AS Value, Campus.Id AS EntityId, 
-		DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + LEFT(ISNULL(Schedule.Value, ''00:00''), 5) AS ScheduleDate
+		DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + ISNULL(CONVERT(datetime, LEFT(Schedule.Value, ISNULL(NULLIF(CHARINDEX('P', Schedule.Value),0), NULLIF(CHARINDEX('A', Schedule.Value),0))) + 'M'), ''00:00'') AS ScheduleDate	
 	FROM GroupMember GM
 	INNER JOIN [Group] G
 		ON GM.GroupId = G.Id
