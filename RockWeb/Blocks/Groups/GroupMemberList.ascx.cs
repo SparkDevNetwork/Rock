@@ -1013,7 +1013,7 @@ namespace RockWeb.Blocks.Groups
                             Registrations = g.ToList()
                                 .Select( r => new {
                                     Id = r.Registration.Id,
-                                    Name = r.Registration.RegistrationInstance.Name } )
+                                    Name = r.Registration.RegistrationInstance.Name } ).Distinct()
                                 .ToDictionary( r => r.Id, r => r.Name )
                         } )
                         .ToDictionary( r => r.GroupMemberId, r => r.Registrations );
