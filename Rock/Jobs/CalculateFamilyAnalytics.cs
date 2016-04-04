@@ -251,61 +251,30 @@ namespace Rock.Jobs
                         // if the person is in a group of that type and the last history record for that group type isn't START write a start
                         RockContext rockContext = new RockContext();
 
-                        var historyQuery = new HistoryService( rockContext ).Queryable()
+                        // get history for this group type
+                        var historyRecords = new HistoryService( rockContext ).Queryable()
                                             .Where( h =>
                                                  h.EntityTypeId == personEntityTypeId
                                                  && h.RelatedEntityTypeId == groupTypeEntityTypeId
                                                  && h.RelatedEntityId == groupType.Id
-                                             );
+                                             )
+                                             .GroupBy( h => h.EntityId )
+                                             .Select( g => g.OrderByDescending( h => h.CreatedDateTime ).Select( h => new { h.EntityId, h.Verb } ).FirstOrDefault() )
+                                             .ToList();
 
-                        var startItems = new GroupMemberService( rockContext ).Queryable()
+                        // get group member information
+                        var groupMemberInfo = new GroupMemberService( rockContext ).Queryable()
                                             .Where( m =>
                                                  m.Group.GroupTypeId == groupType.Id
                                                  && m.GroupMemberStatus == GroupMemberStatus.Active
-                                                 && historyQuery.Where( s => s.EntityId == m.PersonId ).OrderByDescending( h => h.CreatedDateTime ).Select( h => h.Verb ).FirstOrDefault() != "STARTED"
                                              )
-                                             .Select( m => m.Person )
-                                             .ToList(); 
+                                             .GroupBy( m => m.PersonId )
+                                             .Select( g => g.OrderByDescending( m => m.CreatedDateTime ).Select( m => new { m.PersonId, m.CreatedDateTime, PersonAliasId = m.Person.Aliases.Select( p => p.Id ).FirstOrDefault() } ).FirstOrDefault() )
+                                             .ToList();
 
-                        foreach(var startItem in startItems )
-                        {
-                            using(RockContext updateContext = new RockContext() )
-                            {
-                                var historyService = new HistoryService( updateContext );
-                                History history = new History();
-                                historyService.Add( history );
-                                history.EntityTypeId = personEntityTypeId;
-                                history.EntityId = startItem.Id;
-                                history.RelatedEntityTypeId = groupTypeEntityTypeId;
-                                history.RelatedEntityId = groupType.Id;
-                                history.Caption = groupType.Name;
-                                history.Summary = "Started Membership in Group Of Type";
-                                history.Verb = "STARTED";
-                                history.CreatedDateTime = RockDateTime.Now;
-                                history.CreatedByPersonAliasId = startItem.PrimaryAliasId;
-                                history.CategoryId = personAnalyticsCategoryId;
+                        var needsStartDate = groupMemberInfo.Where( m => !historyRecords.Any( h => h.EntityId == m.PersonId && h.Verb == "STARTED" ) );
 
-                                updateContext.SaveChanges();
-                            }
-                        }
-
-                        // if the person has a history of started and is not in a group of that type add a STOPPED record to history
-                        var inGroupOfType = new GroupMemberService( rockContext ).Queryable()
-                                                .Where( m => m.Group.GroupTypeId == groupType.Id && m.GroupMemberStatus == GroupMemberStatus.Active );                 
-
-                        var startHistory = historyQuery
-                                            .GroupBy( h => h.EntityId )
-                                            .Select( g => g.OrderByDescending( h => h.CreatedDateTime ).FirstOrDefault() )
-                                            .Where( x => x.Verb == "STARTED" );
-
-                        var stopItems = new PersonService( rockContext ).Queryable()
-                                            .Where( p => 
-                                                !inGroupOfType.Where( m => m.PersonId == p.Id ).Any()
-                                                && startHistory.Where(h => h.EntityId == p.Id ).Any()
-                                            )
-                                            .ToList();
-
-                        foreach(var stopItem in stopItems )
+                        foreach ( var startItem in needsStartDate )
                         {
                             using ( RockContext updateContext = new RockContext() )
                             {
@@ -313,20 +282,48 @@ namespace Rock.Jobs
                                 History history = new History();
                                 historyService.Add( history );
                                 history.EntityTypeId = personEntityTypeId;
-                                history.EntityId = stopItem.Id;
+                                history.EntityId = startItem.PersonId;
                                 history.RelatedEntityTypeId = groupTypeEntityTypeId;
                                 history.RelatedEntityId = groupType.Id;
                                 history.Caption = groupType.Name;
-                                history.Summary = "Stopped Membership in Group Of Type";
-                                history.Verb = "STOPPED";
-                                history.CreatedDateTime = RockDateTime.Now;
-                                history.CreatedByPersonAliasId = stopItem.PrimaryAliasId;
+                                history.Summary = "Started Membership in Group Of Type";
+                                history.Verb = "STARTED";
+                                history.CreatedDateTime = startItem.CreatedDateTime;
+                                history.CreatedByPersonAliasId = startItem.PersonAliasId;
                                 history.CategoryId = personAnalyticsCategoryId;
 
                                 updateContext.SaveChanges();
                             }
                         }
-                                            
+
+                        var needsStoppedDate = historyRecords.Where( h => h.Verb == "STARTED" && !groupMemberInfo.Any( m => m.PersonId == h.EntityId ) );
+
+                        foreach ( var stopItem in needsStoppedDate )
+                        {
+                            using ( RockContext updateContext = new RockContext() )
+                            {
+                                var person = new PersonService( updateContext ).Get( stopItem.EntityId );
+
+                                if ( person != null )
+                                {
+                                    var historyService = new HistoryService( updateContext );
+                                    History history = new History();
+                                    historyService.Add( history );
+                                    history.EntityTypeId = personEntityTypeId;
+                                    history.EntityId = person.Id;
+                                    history.RelatedEntityTypeId = groupTypeEntityTypeId;
+                                    history.RelatedEntityId = groupType.Id;
+                                    history.Caption = groupType.Name;
+                                    history.Summary = "Stopped Membership in Group Of Type";
+                                    history.Verb = "STOPPED";
+                                    history.CreatedDateTime = RockDateTime.Now;
+                                    history.CreatedByPersonAliasId = person.PrimaryAliasId;
+                                    history.CategoryId = personAnalyticsCategoryId;
+
+                                    updateContext.SaveChanges();
+                                }
+                            }
+                        }
                     }
                 }
                 
