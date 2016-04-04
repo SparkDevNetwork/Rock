@@ -34,7 +34,7 @@
                         <div class="col-md-6">
                         <Rock:DataTextBox ID="tbTitle" runat="server" SourceTypeName="Rock.Model.ContentChannelItem, Rock" PropertyName="Title" />
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-3">
                             <div class="form-group" id="divStatus" runat="server">
                                 
                                 <div class="form-control-static">
@@ -52,6 +52,9 @@
                                     </asp:Panel>
                                 </div>
                             </div>
+                        </div>
+                        <div class="col-md-3">
+                            <Rock:RockLiteral ID="lCreatedBy" runat="server" Label="Created By"></Rock:RockLiteral>
                         </div>
                     </div>
 
@@ -94,6 +97,10 @@
             </div>
 
         </asp:Panel>
-        
+
+        <script>
+            $('.js-date-rollover').tooltip();
+        </script>
+
     </ContentTemplate>
 </asp:UpdatePanel>

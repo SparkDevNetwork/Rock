@@ -32,7 +32,7 @@ namespace Rock.Workflow.Action
     /// Sends email
     /// </summary>
     [ActionCategory( "Communications" )]
-    [Description( "Send a system email." )]
+    [Description( "Send a system email. The recipient can either be a group, person or email address determined by the 'To Attribute' value, or an email address entered in the 'To' field. Only people with an active email address without the 'Do Not Email' preference are included. If attribute is a group, only members with an <em>Active</em> member status are included." )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata("ComponentName", "Send System Email")]
 

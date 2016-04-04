@@ -73,8 +73,11 @@ namespace RockWeb.Blocks.Cms
             if ( SelectedChannelId.HasValue )
             {
                 var channel = new ContentChannelService( new RockContext() ).Get( SelectedChannelId.Value );
-                BindAttributes( channel );
-                AddDynamicControls( channel );
+                if ( channel != null )
+                {
+                    BindAttributes( channel );
+                    AddDynamicControls( channel );
+                }
             }
         }
 
@@ -99,6 +102,7 @@ namespace RockWeb.Blocks.Cms
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.visible.min.js" ) );
 
             string eventTarget = this.Page.Request.Params["__EVENTTARGET"] ?? string.Empty;
 
@@ -173,6 +177,13 @@ namespace RockWeb.Blocks.Cms
             SelectedChannelId = selectedChannelValue.AsIntegerOrNull();
 
             GetData();
+
+            ScriptManager.RegisterStartupScript(
+                Page,
+                GetType(),
+                "ScrollToGrid",
+                "scrollToGrid();",
+                true );
         }
 
         /// <summary>
@@ -218,6 +229,23 @@ namespace RockWeb.Blocks.Cms
             {
                 return;
             }
+            else if ( e.Key == "Created By" )
+            {
+                string personName = string.Empty;
+
+                int? personId = e.Value.AsIntegerOrNull();
+                if ( personId.HasValue )
+                {
+                    var personService = new PersonService( new RockContext() );
+                    var person = personService.Get( personId.Value );
+                    if ( person != null )
+                    {
+                        personName = person.FullName;
+                    }
+                }
+
+                e.Value = personName;
+            }
             else
             {
                 e.Value = string.Empty;
@@ -235,6 +263,8 @@ namespace RockWeb.Blocks.Cms
             gfFilter.SaveUserPreference( "Date Range", drpDateRange.DelimitedValues );
             gfFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
             gfFilter.SaveUserPreference( "Title", tbTitle.Text );
+            int personId = ppCreatedBy.PersonId ?? 0;
+            gfFilter.SaveUserPreference( "Created By", personId.ToString() );
 
             if ( SelectedChannelId.HasValue && AvailableAttributes != null )
             {
@@ -339,14 +369,24 @@ namespace RockWeb.Blocks.Cms
             }
 
             tbTitle.Text = gfFilter.GetUserPreference( "Title" );
+
+            int? personId = gfFilter.GetUserPreference( "Created By" ).AsIntegerOrNull();
+
+            if ( personId.HasValue && personId.Value != 0 )
+            {
+                var personService = new PersonService( new RockContext() );
+                var person = personService.Get( personId.Value );
+                if ( person != null )
+                {
+                    ppCreatedBy.SetValue( person );
+                }
+            }
         }
 
         private void GetData()
         {
             var rockContext = new RockContext();
             var itemService = new ContentChannelItemService(rockContext);
-
-            int personId = CurrentPerson != null ? CurrentPerson.Id : 0;
 
             // Get all of the content channels
             var allChannels = new ContentChannelService( rockContext ).Queryable( "ContentChannelType" )
@@ -449,6 +489,12 @@ namespace RockWeb.Blocks.Cms
                     itemQry = itemQry.Where( i => i.Title.Contains( title ) );
                 }
 
+                int? personId = gfFilter.GetUserPreference( "Created By" ).AsIntegerOrNull();
+                if ( personId.HasValue && personId.Value != 0 )
+                {
+                    itemQry = itemQry.Where( i => i.CreatedByPersonAlias.PersonId == personId );
+                }
+
                 // Filter query by any configured attribute filters
                 if ( AvailableAttributes != null && AvailableAttributes.Any() )
                 {
@@ -507,7 +553,8 @@ namespace RockWeb.Blocks.Cms
                     i.ExpireDateTime,
                     i.Priority,
                     Status = DisplayStatus( i.Status ),
-                    Occurrences = i.EventItemOccurrences.Any()
+                    Occurrences = i.EventItemOccurrences.Any(),
+                    CreatedByPersonName = i.CreatedByPersonAlias != null ? String.Format( "<a href={0}>{1}</a>", ResolveRockUrl( string.Format( "~/Person/{0}", i.CreatedByPersonAlias.PersonId ) ), i.CreatedByPersonName ) : String.Empty
                 } ).ToList();
                 gContentChannelItems.DataBind();
 
@@ -675,7 +722,14 @@ namespace RockWeb.Blocks.Cms
                 occurrencesField.DataField = "Occurrences";
                 occurrencesField.HeaderText = "Event Occurrences";
                 gContentChannelItems.Columns.Add( occurrencesField );
-                
+
+                // Add Created By column
+                var createdByPersonNameField = new BoundField();
+                createdByPersonNameField.DataField = "CreatedByPersonName";
+                createdByPersonNameField.HeaderText = "Created By";
+                createdByPersonNameField.HtmlEncode = false;
+                gContentChannelItems.Columns.Add( createdByPersonNameField );
+
                 bool canEditChannel = channel.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
                 gContentChannelItems.Actions.ShowAdd = canEditChannel;
                 gContentChannelItems.IsDeleteEnabled = canEditChannel;

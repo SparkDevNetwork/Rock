@@ -237,7 +237,8 @@ INSERT INTO [FinancialTransaction] (
 	FinancialPaymentDetailId,
 	TransactionTypeValueId,
 	CreatedDateTime,
-	ForeignKey) 
+	ForeignKey,
+	SourceTypeValueId) 
 SELECT
 	TransactionGuid,
 	TransactionDateTime,
@@ -246,7 +247,8 @@ SELECT
 	(SELECT Id FROM FinancialPaymentDetail WHERE [Guid] = PaymentDetailGuid),
 	@contribution,
 	@createdDate,
-	@foreignKey
+	@foreignKey,
+	10
 FROM #temp;
 
 INSERT INTO [FinancialTransactionDetail] (

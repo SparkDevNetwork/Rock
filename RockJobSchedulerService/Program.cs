@@ -46,6 +46,13 @@ namespace RockJobSchedulerService
             //JobScheduler debug = new JobScheduler();
             //debug.StartJobScheduler();
 
+            // if you'd rather debug the app running as an actual service do the following:
+            // 1. Install the app as a service 'installutil <yourproject>.exe' (installutil is found C:\Windows\Microsoft.NET\Framework64\v4.0.30319\)
+            // 2. Add the line System.Diagnostics.Debugger.Launch(); where you'd like to debug
+            //
+            // Note: to uninstall the service run 'installutil /u <yourproject>.exe'
+            //System.Diagnostics.Debugger.Launch();
+
             ServiceBase.Run( ServicesToRun );
             
         }

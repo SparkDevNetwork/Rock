@@ -22,7 +22,7 @@ using System.Web;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute to select 0 or more Person Badges
+    /// Field Attribute to select 0 or more Person Badges. Stored as a comma-delimited list of PersonBadge Guids
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class PersonBadgesFieldAttribute : FieldAttribute

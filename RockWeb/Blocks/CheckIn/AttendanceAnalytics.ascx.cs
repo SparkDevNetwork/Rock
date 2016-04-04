@@ -33,6 +33,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.Threading.Tasks;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace RockWeb.Blocks.CheckIn
 {
@@ -301,36 +302,33 @@ namespace RockWeb.Blocks.CheckIn
                 bcAttendance.ChartClick += lcAttendance_ChartClick;
             }
 
-            var lineChartDataSourceUrl = "~/api/Attendances/GetChartData";
-            var dataSourceParams = new Dictionary<string, object>();
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
-
             if ( !dateRange.Start.HasValue || !dateRange.End.HasValue )
             {
                 nbDateRangeWarning.Visible = true;
                 return;
             }
-
             nbDateRangeWarning.Visible = false;
 
-            if ( dateRange.Start.HasValue )
+            var selectedGroupIds = GetSelectedGroupIds();
+            // if no Groups are selected show a warning since no data will show up
+            nbGroupsWarning.Visible = false;
+            if ( !selectedGroupIds.Any() )
             {
-                dataSourceParams.AddOrReplace( "startDate", dateRange.Start.Value.ToString( "o" ) );
+                nbGroupsWarning.Visible = true;
+                return;
             }
 
-            if ( dateRange.End.HasValue )
+            if ( pnlShowByChart.Visible )
             {
-                dataSourceParams.AddOrReplace( "endDate", dateRange.End.Value.ToString( "o" ) );
-            }
-
-            var groupBy = hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week;
-            lcAttendance.TooltipFormatter = null;
-            switch ( groupBy )
-            {
-                case ChartGroupBy.Week:
-                    {
-                        lcAttendance.Options.xaxis.tickSize = new string[] { "7", "day" };
-                        lcAttendance.TooltipFormatter = @"
+                var groupBy = hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week;
+                lcAttendance.TooltipFormatter = null;
+                switch ( groupBy )
+                {
+                    case ChartGroupBy.Week:
+                        {
+                            lcAttendance.Options.xaxis.tickSize = new string[] { "7", "day" };
+                            lcAttendance.TooltipFormatter = @"
 function(item) {
     var itemDate = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
     var dateText = 'Weekend of <br />' + itemDate.toLocaleDateString();
@@ -339,14 +337,14 @@ function(item) {
     return dateText + '<br />' + seriesLabel + ': ' + pointValue;
 }
 ";
-                    }
+                        }
 
-                    break;
+                        break;
 
-                case ChartGroupBy.Month:
-                    {
-                        lcAttendance.Options.xaxis.tickSize = new string[] { "1", "month" };
-                        lcAttendance.TooltipFormatter = @"
+                    case ChartGroupBy.Month:
+                        {
+                            lcAttendance.Options.xaxis.tickSize = new string[] { "1", "month" };
+                            lcAttendance.TooltipFormatter = @"
 function(item) {
     var month_names = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     var itemDate = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
@@ -356,14 +354,14 @@ function(item) {
     return dateText + '<br />' + seriesLabel + ': ' + pointValue;
 }
 ";
-                    }
+                        }
 
-                    break;
+                        break;
 
-                case ChartGroupBy.Year:
-                    {
-                        lcAttendance.Options.xaxis.tickSize = new string[] { "1", "year" };
-                        lcAttendance.TooltipFormatter = @"
+                    case ChartGroupBy.Year:
+                        {
+                            lcAttendance.Options.xaxis.tickSize = new string[] { "1", "year" };
+                            lcAttendance.TooltipFormatter = @"
 function(item) {
     var itemDate = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
     var dateText = itemDate.getFullYear();
@@ -372,62 +370,38 @@ function(item) {
     return dateText + '<br />' + seriesLabel + ': ' + pointValue;
 }
 ";
-                    }
+                        }
 
-                    break;
-            }
+                        break;
+                }
 
-            string groupByTextPlural = groupBy.ConvertToString().ToLower().Pluralize();
-            lPatternXFor.Text = string.Format( " {0} for the selected date range", groupByTextPlural );
-            lPatternAndMissedXBetween.Text = string.Format( " {0} between", groupByTextPlural );
+                string groupByTextPlural = groupBy.ConvertToString().ToLower().Pluralize();
+                lPatternXFor.Text = string.Format( " {0} for the selected date range", groupByTextPlural );
+                lPatternAndMissedXBetween.Text = string.Format( " {0} between", groupByTextPlural );
 
-            var selectedDataViewId = dvpDataView.SelectedValue.AsIntegerOrNull();
-            if ( selectedDataViewId.HasValue )
-            {
-                dataSourceParams.AddOrReplace( "dataViewId", selectedDataViewId.Value.ToString() );
-            }
+                bcAttendance.TooltipFormatter = lcAttendance.TooltipFormatter;
 
-            dataSourceParams.AddOrReplace( "groupBy", hfGroupBy.Value.AsInteger() );
+                var chartData = this.GetAttendanceChartData().ToList();
+                var jsonSetting = new JsonSerializerSettings
+                {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                    ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
+                };
+                string chartDataJson = JsonConvert.SerializeObject( chartData, Formatting.None, jsonSetting );
 
-            dataSourceParams.AddOrReplace( "graphBy", hfGraphBy.Value.AsInteger() );
-
-            var selectedCampusValues = clbCampuses.SelectedValues;
-
-            string campusIdsValue = selectedCampusValues.AsDelimited( "," );
-            dataSourceParams.AddOrReplace( "campusIds", campusIdsValue );
-
-            var selectedGroupIds = GetSelectedGroupIds();
-
-            if ( selectedGroupIds.Any() )
-            {
-                dataSourceParams.AddOrReplace( "groupIds", selectedGroupIds.AsDelimited( "," ) );
-            }
-            else
-            {
-                // set the value to 0 to indicate that no groups where selected (and so that Rest Endpoint doesn't 404)
-                dataSourceParams.AddOrReplace( "groupIds", 0 );
-            }
-
-            SaveSettings();
-
-            lineChartDataSourceUrl += "?" + dataSourceParams.Select( s => string.Format( "{0}={1}", s.Key, s.Value ) ).ToList().AsDelimited( "&" );
-
-            // if no Groups are selected show a warning since no data will show up
-            nbGroupsWarning.Visible = false;
-            if ( !selectedGroupIds.Any() )
-            {
-                nbGroupsWarning.Visible = true;
-                return;
-            }
-
-            lcAttendance.DataSourceUrl = this.ResolveUrl( lineChartDataSourceUrl );
-            bcAttendance.TooltipFormatter = lcAttendance.TooltipFormatter;
-            bcAttendance.DataSourceUrl = this.ResolveUrl( lineChartDataSourceUrl );
-
-            if ( pnlShowByChart.Visible )
-            {
-                var chartData = this.GetAttendanceChartData();
                 var singleDateTime = chartData.GroupBy( a => a.DateTimeStamp ).Count() == 1;
+                if ( singleDateTime )
+                {
+                    bcAttendance.Visible = true;
+                    lcAttendance.Visible = false;
+                    bcAttendance.ChartData = chartDataJson;
+                }
+                else
+                {
+                    bcAttendance.Visible = false;
+                    lcAttendance.Visible = true;
+                    lcAttendance.ChartData = chartDataJson;
+                }
                 bcAttendance.Visible = singleDateTime;
                 lcAttendance.Visible = !singleDateTime;
 
@@ -441,6 +415,9 @@ function(item) {
             {
                 BindAttendeesGrid();
             }
+
+            SaveSettings();
+
         }
 
         /// <summary>
@@ -456,6 +433,7 @@ function(item) {
             this.SetUserPreference( keyPrefix + "GroupBy", hfGroupBy.Value, false );
             this.SetUserPreference( keyPrefix + "GraphBy", hfGraphBy.Value, false );
             this.SetUserPreference( keyPrefix + "CampusIds", clbCampuses.SelectedValues.AsDelimited( "," ), false );
+            this.SetUserPreference( keyPrefix + "ScheduleIds", spSchedules.SelectedValues.ToList().AsDelimited( "," ), false );
             this.SetUserPreference( keyPrefix + "DataView", dvpDataView.SelectedValue, false );
 
             var selectedGroupIds = GetSelectedGroupIds();
@@ -544,7 +522,6 @@ function(item) {
             hfGraphBy.Value = GetSetting( keyPrefix, "GraphBy" );
 
             var campusIdList = new List<string>();
-
             string campusQryString = Request.QueryString["CampusIds"];
             if ( campusQryString != null )
             {
@@ -570,6 +547,16 @@ function(item) {
                         item.Selected = true;
                     }
                 }
+            }
+
+            var scheduleIdList = GetSetting( keyPrefix, "ScheduleIds" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsIntegerList();
+            if ( scheduleIdList.Any() )
+            {
+                var schedules = new ScheduleService( _rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( s => scheduleIdList.Contains( s.Id ) )
+                    .ToList();
+                spSchedules.SetValues( schedules );
             }
 
             var groupIdList = GetSetting( keyPrefix, "GroupIds" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
@@ -752,6 +739,8 @@ function(item) {
             var selectedCampusIds = clbCampuses.SelectedValues;
             string campusIds = selectedCampusIds.AsDelimited( "," );
 
+            var scheduleIds = spSchedules.SelectedValues.ToList().AsDelimited( "," );
+
             var chartData = new AttendanceService( _rockContext ).GetChartData(
                 hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week,
                 hfGraphBy.Value.ConvertToEnumOrNull<AttendanceGraphBy>() ?? AttendanceGraphBy.Total,
@@ -759,6 +748,7 @@ function(item) {
                 end,
                 groupIds,
                 campusIds,
+                scheduleIds,
                 dvpDataView.SelectedValueAsInt() );
             return chartData;
         }
@@ -800,6 +790,14 @@ function(item) {
             if ( !includeNullCampus && !campusIdList.Any() )
             {
                 campusIdList = null;
+            }
+
+            // If schedules were included, filter attendance by those that have the selected schedules
+            var scheduleIdList = spSchedules.SelectedValues.AsIntegerList();
+            scheduleIdList.Remove( 0 );
+            if ( !scheduleIdList.Any() )
+            {
+                scheduleIdList = null;
             }
 
             // we want to get the first 2 visits at a minimum so we can show the dates in the grid
@@ -862,7 +860,7 @@ function(item) {
                 qryTasks.Add( Task.Run( () =>
                 {
                     DataTable dtAttendeeDates = AttendanceService.GetAttendanceAnalyticsAttendeeDates(
-                        groupIdList, start, end, campusIdList, includeNullCampus ).Tables[0];
+                        groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList ).Tables[0];
 
                     foreach ( DataRow row in dtAttendeeDates.Rows )
                     {
@@ -890,14 +888,14 @@ function(item) {
                 qryTasks.Add( Task.Run( () =>
                 {
                     dtAttendeeLastAttendance = AttendanceService.GetAttendanceAnalyticsAttendeeLastAttendance(
-                        groupIdList, start, end, campusIdList, includeNullCampus ).Tables[0];
+                        groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList ).Tables[0];
                 } ) );
 
                 // Call the stored procedure to get the names/demographic info for attendess
                 qryTasks.Add( Task.Run( () =>
                 {
                     dtAttendees = AttendanceService.GetAttendanceAnalyticsAttendees(
-                        groupIdList, start, end, campusIdList, includeNullCampus, includeParents, includeChildren ).Tables[0];
+                        groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList, includeParents, includeChildren ).Tables[0];
                 } ) );
 
                 // If checking for missed attendance, get the people who missed that number of dates during the missed date range
@@ -911,7 +909,7 @@ function(item) {
 
                         DataTable dtAttendeeDatesMissed = AttendanceService.GetAttendanceAnalyticsAttendeeDates(
                             groupIdList, attendedMissedDateRange.Start.Value, attendedMissedDateRange.End.Value,
-                            campusIdList, includeNullCampus ).Tables[0];
+                            campusIdList, includeNullCampus, scheduleIdList ).Tables[0];
 
                         var missedResults = new Dictionary<int, AttendeeResult>();
                         foreach ( DataRow row in dtAttendeeDatesMissed.Rows )
@@ -951,7 +949,7 @@ function(item) {
                 qryTasks.Add( Task.Run( () =>
                 {
                     dtAttendeeFirstDates = AttendanceService.GetAttendanceAnalyticsAttendeeFirstDates(
-                        groupType.Id, groupIdList, start, end, campusIdList, includeNullCampus ).Tables[0];
+                        groupType.Id, groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList ).Tables[0];
                 } ) );
 
 
@@ -961,7 +959,7 @@ function(item) {
                 qryTasks.Add( Task.Run( () =>
                 {
                     DataSet ds = AttendanceService.GetAttendanceAnalyticsNonAttendees(
-                        groupType.Id, groupIdList, start, end, campusIdList, includeNullCampus, includeParents, includeChildren );
+                        groupType.Id, groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList, includeParents, includeChildren );
 
                     DataTable dtNonAttenders = ds.Tables[0];
                     dtAttendeeFirstDates = ds.Tables[1];
@@ -979,7 +977,9 @@ function(item) {
                         person.NickName = row["NickName"].ToString();
                         person.LastName = row["LastName"].ToString();
                         person.Email = row["Email"].ToString();
-                        person.Age = Person.GetAge( row["BirthDate"] as DateTime? );
+                        person.Birthdate = row["BirthDate"] as DateTime?;
+                        person.Age = Person.GetAge( person.Birthdate );
+
                         person.ConnectionStatusValueId = row["ConnectionStatusValueId"] as int?;
                         result.Person = person;
 
@@ -990,7 +990,8 @@ function(item) {
                             parent.NickName = row["ParentNickName"].ToString();
                             parent.LastName = row["ParentLastName"].ToString();
                             parent.Email = row["ParentEmail"].ToString();
-                            parent.Age = Person.GetAge( row["ParentBirthDate"] as DateTime? );
+                            parent.Birthdate = row["ParentBirthDate"] as DateTime?;
+                            parent.Age = Person.GetAge( parent.Birthdate );
                             result.Parent = parent;
                         }
 
@@ -1001,7 +1002,8 @@ function(item) {
                             child.NickName = row["ChildNickName"].ToString();
                             child.LastName = row["ChildLastName"].ToString();
                             child.Email = row["ChildEmail"].ToString();
-                            child.Age = Person.GetAge( row["ChildBirthDate"] as DateTime? );
+                            child.Birthdate = row["ChildBirthDate"] as DateTime?;
+                            child.Age = Person.GetAge( child.Birthdate );
                             result.Child = child;
                         }
 
@@ -1129,7 +1131,8 @@ function(item) {
                             person.NickName = row["NickName"].ToString();
                             person.LastName = row["LastName"].ToString();
                             person.Email = row["Email"].ToString();
-                            person.Age = Person.GetAge( row["BirthDate"] as DateTime? );
+                            person.Birthdate = row["BirthDate"] as DateTime?;
+                            person.Age = Person.GetAge( person.Birthdate );
                             person.ConnectionStatusValueId = row["ConnectionStatusValueId"] as int?;
                             result.Person = person;
 
@@ -1140,7 +1143,8 @@ function(item) {
                                 parent.NickName = row["ParentNickName"].ToString();
                                 parent.LastName = row["ParentLastName"].ToString();
                                 parent.Email = row["ParentEmail"].ToString();
-                                parent.Age = Person.GetAge( row["ParentBirthDate"] as DateTime? );
+                                parent.Birthdate = row["ParentBirthDate"] as DateTime?;
+                                parent.Age = Person.GetAge( parent.Birthdate );
                                 result.Parent = parent;
                             }
 
@@ -1151,7 +1155,8 @@ function(item) {
                                 child.NickName = row["ChildNickName"].ToString();
                                 child.LastName = row["ChildLastName"].ToString();
                                 child.Email = row["ChildEmail"].ToString();
-                                child.Age = Person.GetAge( row["ChildBirthDate"] as DateTime? );
+                                child.Birthdate = row["ChildBirthDate"] as DateTime?;
+                                child.Age = Person.GetAge( child.Birthdate );
                                 result.Child = child;
                             }
 
@@ -1652,7 +1657,8 @@ function(item) {
                 if ( gAttendeesAttendance.PersonIdField == "ParentId" )
                 {
                     currentPersonId = personDates.ParentId;
-                } else if ( gAttendeesAttendance.PersonIdField == "ChildId")
+                }
+                else if ( gAttendeesAttendance.PersonIdField == "ChildId")
                 {
                     currentPersonId = personDates.ChildId;
                 }
@@ -1929,7 +1935,7 @@ function(item) {
             DisplayShowBy( ShowBy.Chart );
             if ( pnlResults.Visible )
             {
-                BindChartAttendanceGrid();
+                LoadChartAndGrids();
             }
         }
 
@@ -2018,6 +2024,7 @@ function(item) {
             public string LastName { get; set; }
             public string Email { get; set; }
             public int? Age { get; set; }
+            public DateTime? Birthdate { get; set; }
             public int? ConnectionStatusValueId { get; set; }
 
             public override string ToString()

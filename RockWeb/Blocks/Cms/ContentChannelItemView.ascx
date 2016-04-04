@@ -33,7 +33,7 @@
             </div>
         </div>
 
-        <div class="panel panel-block" id="divItemPanel" runat="server" visible="false">
+        <div class="panel panel-block js-grid-header" id="divItemPanel" runat="server" visible="false">
             <div class="panel-heading">
                 <div class="panel-title">
                     <i class="fa fa-bullhorn"></i> <asp:Literal ID="lContentChannelItems" runat="server"></asp:Literal></h1>
@@ -46,6 +46,7 @@
                         <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
                         <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Date Range" />
                         <Rock:RockTextBox ID="tbTitle" runat="server" Label="Title" />
+                        <Rock:PersonPicker ID="ppCreatedBy" runat="server" Label="Created By" />
                         <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                     </Rock:GridFilter>               
 
@@ -62,6 +63,14 @@
                 $(".my-contentItems .list-as-blocks li").removeClass('active');
                 $(this).addClass('active');
             });
+
+            function scrollToGrid() {
+                if (!$('.js-grid-header').visible(true)) {
+                    $('html, body').animate({
+                        scrollTop: $('.js-grid-header').offset().top + 'px'
+                    }, 'fast');
+                }
+            }
         </script>
     </ContentTemplate>
 </asp:UpdatePanel>

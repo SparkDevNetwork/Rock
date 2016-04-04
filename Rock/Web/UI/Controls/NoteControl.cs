@@ -736,6 +736,15 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "details" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
+                // first, encode the text to ensure html tags get encoded
+                string renderedText = Text.EncodeHtml();
+
+                // convert any http, etc text into clickable links (do this before applying Markdown)
+                renderedText = renderedText.Linkify();
+                
+                // convert any markdown into HTML, and convert into crlf into <br />
+                renderedText = renderedText.ConvertMarkdownToHtml( true );
+
                 if ( DisplayType == NoteDisplayType.Full )
                 {
                     // Heading
@@ -756,11 +765,11 @@ namespace Rock.Web.UI.Controls
                     }
                     writer.RenderEndTag();
 
-                    writer.Write( Text.EncodeHtml().ConvertCrLfToHtmlBr() );
+                    writer.Write( renderedText );
                 }
                 else
                 {
-                    writer.Write( Text.EncodeHtml().ConvertCrLfToHtmlBr() );
+                    writer.Write( renderedText );
                     writer.Write( " - " );
                     if ( !string.IsNullOrWhiteSpace( CreatedByName ) )
                     {

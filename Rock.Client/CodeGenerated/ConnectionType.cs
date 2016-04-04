@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public int DaysUntilRequestIdle { get; set; }
+
+        /// <summary />
         public string Description { get; set; }
 
         /// <summary />
@@ -62,6 +65,9 @@ namespace Rock.Client
 
         /// <summary />
         public int? OwnerPersonAliasId { get; set; }
+
+        /// <summary />
+        public bool RequiresPlacementGroupToConnect { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -96,6 +102,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( ConnectionType source )
         {
             this.Id = source.Id;
+            this.DaysUntilRequestIdle = source.DaysUntilRequestIdle;
             this.Description = source.Description;
             this.EnableFullActivityList = source.EnableFullActivityList;
             this.EnableFutureFollowup = source.EnableFutureFollowup;
@@ -105,6 +112,7 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.OwnerPersonAliasId = source.OwnerPersonAliasId;
+            this.RequiresPlacementGroupToConnect = source.RequiresPlacementGroupToConnect;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

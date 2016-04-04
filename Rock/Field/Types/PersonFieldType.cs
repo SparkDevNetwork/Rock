@@ -34,6 +34,79 @@ namespace Rock.Field.Types
     [Serializable]
     public class PersonFieldType : FieldType, IEntityFieldType, ILinkableFieldType
     {
+        #region configuration
+
+        private const string ENABLE_SELF_SELECTION_KEY = "EnableSelfSelection";
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            var configKeys = base.ConfigurationKeys();
+            configKeys.Add( ENABLE_SELF_SELECTION_KEY );
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            var controls = base.ConfigurationControls();
+
+            var cbEnableSelfSelection = new RockCheckBox();
+            controls.Add( cbEnableSelfSelection );
+            cbEnableSelfSelection.Label = "Enable Self Selection";
+            cbEnableSelfSelection.Text = "Yes";
+            cbEnableSelfSelection.Help = "When using Person Picker, show the self selection option";
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( ENABLE_SELF_SELECTION_KEY, new ConfigurationValue( "Enable Self Selection", "When using Person Picker, show the self selection option", string.Empty ) );
+
+            if ( controls != null && controls.Count > 0 )
+            {
+                var cbEnableSelfSelection = controls[0] as RockCheckBox;
+                if ( cbEnableSelfSelection != null )
+                {
+                    configurationValues[ENABLE_SELF_SELECTION_KEY].Value = cbEnableSelfSelection.Checked.ToString();
+                }
+
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && configurationValues != null && controls.Count > 0 )
+            {
+                var cbEnableSelfSelection = controls[0] as RockCheckBox;
+
+                if ( cbEnableSelfSelection != null && configurationValues.ContainsKey( ENABLE_SELF_SELECTION_KEY ) )
+                {
+                    cbEnableSelfSelection.Checked = configurationValues[ENABLE_SELF_SELECTION_KEY].Value.AsBoolean();
+                }
+            }
+        }
+
+        #endregion
 
         #region Formatting
 
@@ -96,7 +169,13 @@ namespace Rock.Field.Types
         /// </returns>
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new PersonPicker { ID = id }; 
+            var personPicker = new PersonPicker { ID = id }; 
+            if ( configurationValues.ContainsKey( ENABLE_SELF_SELECTION_KEY ) )
+            {
+                personPicker.EnableSelfSelection = configurationValues[ENABLE_SELF_SELECTION_KEY].Value.AsBoolean();
+            }
+
+            return personPicker;
         }
 
         /// <summary>

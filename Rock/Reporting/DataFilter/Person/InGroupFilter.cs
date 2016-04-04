@@ -132,6 +132,8 @@ namespace Rock.Reporting.DataFilter.Person
 
                 var groupTypeRoles = new GroupTypeRoleService( rockContext ).Queryable().Where( a => groupTypeRoleGuidList.Contains( a.Guid ) ).ToList();
 
+                SlidingDateRangePicker fakeSlidingDateRangePicker = null;
+
                 bool includeChildGroups = false;
                 bool includeChildGroupsPlusDescendants = false;
                 bool includeChildGroupsIncludeSelected = false;
@@ -148,6 +150,14 @@ namespace Rock.Reporting.DataFilter.Person
                     if ( selectionValues.Length >= 7 )
                     {
                         includeInactiveGroups = selectionValues[6].AsBooleanOrNull() ?? false;
+                    }
+
+                    if ( selectionValues.Length >= 8 )
+                    {
+                        fakeSlidingDateRangePicker = new SlidingDateRangePicker();
+
+                        // convert comma delimited to pipe
+                        fakeSlidingDateRangePicker.DelimitedValues = selectionValues[7].Replace( ',', '|' );
                     }
                 }
 
@@ -191,6 +201,11 @@ namespace Rock.Reporting.DataFilter.Person
                     if ( groupMemberStatus.HasValue )
                     {
                         result += string.Format( ", with member status: {0}", groupMemberStatus.ConvertToString() );
+                    }
+
+                    if ( fakeSlidingDateRangePicker != null )
+                    {
+                        result += string.Format( ", added to group in Date Range: {0}", SlidingDateRangePicker.FormatDelimitedValues( fakeSlidingDateRangePicker.DelimitedValues ) );
                     }
                 }
             }
@@ -290,7 +305,20 @@ namespace Rock.Reporting.DataFilter.Person
             ddlGroupMemberStatus.SetValue( GroupMemberStatus.Active.ConvertToInt() );
             filterControl.Controls.Add( ddlGroupMemberStatus );
 
-            return new Control[7] { gp, cbChildGroups, cbIncludeSelectedGroup, cbChildGroupsPlusDescendants, cblRole, ddlGroupMemberStatus, cbIncludeInactiveGroups };
+            PanelWidget pwAdvanced = new PanelWidget();
+            filterControl.Controls.Add( pwAdvanced );
+            pwAdvanced.ID = filterControl.ID + "_pwAttributes";
+            pwAdvanced.Title = "Advanced Filters";
+            pwAdvanced.CssClass = "advanced-panel";
+
+            SlidingDateRangePicker addedOnDateRangePicker = new SlidingDateRangePicker();
+            addedOnDateRangePicker.ID = pwAdvanced.ID + "_addedOnDateRangePicker";
+            addedOnDateRangePicker.AddCssClass( "js-sliding-date-range" );
+            addedOnDateRangePicker.Label = "Date Added:";
+            addedOnDateRangePicker.Help = "Select the date range that the person was added to the group. Leaving this blank will not restrict results to a date range.";
+            pwAdvanced.Controls.Add( addedOnDateRangePicker );
+
+            return new Control[9] { gp, cbChildGroups, cbIncludeSelectedGroup, cbChildGroupsPlusDescendants, cblRole, ddlGroupMemberStatus, cbIncludeInactiveGroups, addedOnDateRangePicker, pwAdvanced };
         }
 
         /// <summary>
@@ -382,7 +410,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <param name="controls">The controls.</param>
         public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
-            if ( controls.Count() < 6 )
+            if ( controls.Count() < 9 )
             {
                 return;
             }
@@ -394,6 +422,7 @@ namespace Rock.Reporting.DataFilter.Person
             RockCheckBoxList cblRoles = controls[4] as RockCheckBoxList;
             RockDropDownList ddlGroupMemberStatus = controls[5] as RockDropDownList;
             RockCheckBox cbIncludeInactiveGroups = controls[6] as RockCheckBox;
+            PanelWidget pwAdvanced = controls[8] as PanelWidget;
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -425,6 +454,7 @@ namespace Rock.Reporting.DataFilter.Person
             cblRoles.RenderControl( writer );
 
             ddlGroupMemberStatus.RenderControl( writer );
+            pwAdvanced.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.RenderEndTag();
@@ -438,7 +468,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <returns></returns>
         public override string GetSelection( Type entityType, Control[] controls )
         {
-            if ( controls.Count() < 6 )
+            if ( controls.Count() < 8 )
             {
                 return null;
             }
@@ -449,21 +479,25 @@ namespace Rock.Reporting.DataFilter.Person
             RockCheckBox cbChildGroupsPlusDescendants = controls[3] as RockCheckBox;
             RockCheckBoxList cblRoles = controls[4] as RockCheckBoxList;
             RockDropDownList ddlGroupMemberStatus = controls[5] as RockDropDownList;
-
             RockCheckBox cbInactiveGroups = controls[6] as RockCheckBox;
+            SlidingDateRangePicker addedOnDateRangePicker = controls[7] as SlidingDateRangePicker;
 
             List<int> groupIdList = groupPicker.SelectedValues.AsIntegerList();
             var groupGuids = new GroupService( new RockContext() ).GetByIds( groupIdList ).Select( a => a.Guid ).Distinct().ToList();
 
+            // convert pipe to comma delimited
+            var delimitedValues = addedOnDateRangePicker.DelimitedValues.Replace( "|", "," );
+
             return string.Format(
-                "{0}|{1}|{2}|{3}|{4}|{5}|{6}",
+                "{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}",
                 groupGuids.AsDelimited( "," ),
                 cblRoles.SelectedValues.AsDelimited( "," ),
                 cbChildGroups.Checked.ToString(),
                 ddlGroupMemberStatus.SelectedValue,
                 cbIncludeSelectedGroup.Checked.ToString(),
                 cbChildGroupsPlusDescendants.Checked.ToString(),
-                cbIncludeInactiveGroups.Checked.ToString() );
+                cbIncludeInactiveGroups.Checked.ToString(),
+                delimitedValues );
         }
 
         /// <summary>
@@ -474,7 +508,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <param name="selection">The selection.</param>
         public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
-            if ( controls.Count() < 6 )
+            if ( controls.Count() < 8 )
             {
                 return;
             }
@@ -486,6 +520,7 @@ namespace Rock.Reporting.DataFilter.Person
             RockCheckBoxList cblRoles = controls[4] as RockCheckBoxList;
             RockDropDownList ddlGroupMemberStatus = controls[5] as RockDropDownList;
             RockCheckBox cbIncludeInactive = controls[6] as RockCheckBox;
+            SlidingDateRangePicker addedOnDateRangePicker = controls[7] as SlidingDateRangePicker;
 
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 2 )
@@ -539,6 +574,12 @@ namespace Rock.Reporting.DataFilter.Person
                 else
                 {
                     ddlGroupMemberStatus.SetValue( string.Empty );
+                }
+
+                if ( selectionValues.Length >= 8 )
+                {
+                    // convert comma delimited to pipe
+                    addedOnDateRangePicker.DelimitedValues = selectionValues[7].Replace( ',', '|' );
                 }
             }
         }
@@ -652,6 +693,21 @@ namespace Rock.Reporting.DataFilter.Person
                 if ( groupRoleGuids.Count() > 0 )
                 {
                     groupMemberServiceQry = groupMemberServiceQry.Where( xx => groupRoleGuids.Contains( xx.GroupRole.Guid ) );
+                }
+
+                if ( selectionValues.Length >= 8 )
+                {
+                    string slidingDelimitedValues = selectionValues[7].Replace( ',', '|' );
+                    DateRange dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( slidingDelimitedValues );
+                    if ( dateRange.Start.HasValue )
+                    {
+                        groupMemberServiceQry = groupMemberServiceQry.Where( xx => xx.DateTimeAdded >= dateRange.Start.Value );
+                    }
+
+                    if ( dateRange.End.HasValue )
+                    {
+                        groupMemberServiceQry = groupMemberServiceQry.Where( xx => xx.DateTimeAdded < dateRange.End.Value );
+                    }
                 }
 
                 var qry = new PersonService( (RockContext)serviceInstance.Context ).Queryable()

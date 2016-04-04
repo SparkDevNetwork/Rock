@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -33,6 +34,8 @@ using DotLiquid;
 using DotLiquid.Util;
 using Humanizer;
 using Humanizer.Localisation;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -620,6 +623,41 @@ namespace Rock.Lava
             return DateTime.TryParse( input.ToString(), out date )
                 ? Liquid.UseRubyDateFormat ? date.ToStrFTime( format ).Trim() : date.ToString( format ).Trim()
                 : input.ToString().Trim();
+        }
+
+        /// <summary>
+        /// Sundays the date.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string SundayDate( object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            DateTime date = DateTime.MinValue;
+
+            if ( input.ToString() == "Now" )
+            {
+                date = RockDateTime.Now;
+            }
+            else
+            {
+                if ( !DateTime.TryParse( input.ToString(), out date ) )
+                {
+                    return null;
+                }
+            }
+
+            if ( date != DateTime.MinValue )
+            {
+                return date.SundayDate().ToShortDateString();
+            } else
+            {
+                return null;
+            }
         }
 
         /// <summary>
@@ -1715,12 +1753,48 @@ namespace Rock.Lava
 
         /// <summary>
         /// Gets the profile photo for a person object in a string that zebra printers can use.
+        /// If the person has no photo, a default silhouette photo (adult/child, male/female)
+        /// photo is used.
+        /// See http://www.rockrms.com/lava/person#ZebraPhoto for details.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="input">The input, which is the person.</param>
         /// <param name="size">The size.</param>
-        /// <returns></returns>
+        /// <returns>A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:LOGO,P,P,{0},,{1} ^FD").</returns>
+        [Obsolete( "ZebraPhoto is deprecated, please use ZebraPersonPhoto instead." )]
         public static string ZebraPhoto( DotLiquid.Context context, object input, string size )
+        {
+            return ZebraPersonPhoto( context, input, size, 1.0, 1.0 );
+        }
+
+        /// <summary>
+        /// Gets the profile photo for a person object in a string that zebra printers can use.
+        /// If the person has no photo, a default silhouette photo (adult/child, male/female)
+        /// photo is used.
+        /// See http://www.rockrms.com/lava/person#ZebraPhoto for details.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input, which is the person.</param>
+        /// <param name="size">The size.</param>
+        /// <returns>A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:LOGO,P,P,{0},,{1} ^FD").</returns>
+        public static string ZebraPersonPhoto( DotLiquid.Context context, object input, string size )
+        {
+            return ZebraPersonPhoto( context, input, size, 1.0, 1.0 );
+        }
+
+        /// <summary>
+        /// Gets the profile photo for a person object in a string that zebra printers can use.
+        /// If the person has no photo, a default silhouette photo (adult/child, male/female)
+        /// photo is used.
+        /// See http://www.rockrms.com/lava/person#ZebraPhoto for details.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input, which is the person.</param>
+        /// <param name="size">The size.</param>
+        /// <param name="brightness">The brightness adjustment (-1.0 to 1.0).</param>
+        /// <param name="contrast">The contrast adjustment (-1.0 to 1.0).</param>
+        /// <returns>A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:LOGO,P,P,{0},,{1} ^FD").</returns>
+        public static string ZebraPersonPhoto( DotLiquid.Context context, object input, string size, double brightness = 1.0, double contrast = 1.0 )
         {
             var person = GetPerson( input );
             try
@@ -1766,6 +1840,12 @@ namespace Rock.Lava
                     }
 
                     Bitmap initialBitmap = new Bitmap( initialPhotoStream );
+
+                    // Adjust the image if any of the parameters not default
+                    if ( brightness != 1.0 || contrast != 1.0 )
+                    {
+                        initialBitmap = ImageAdjust( initialBitmap, (float)brightness, (float)contrast );
+                    }
 
                     // Calculate rectangle to crop image into
                     int height = initialBitmap.Height;
@@ -1871,6 +1951,39 @@ namespace Rock.Lava
             }
 
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Adjust the brightness, contrast or gamma of the given image.
+        /// </summary>
+        /// <param name="originalImage">The original image.</param>
+        /// <param name="brightness">The brightness multiplier (-1.99 to 1.99 fully white).</param>
+        /// <param name="contrast">The contrast multiplier (2.0 would be twice the contrast).</param>
+        /// <param name="gamma">The gamma multiplier (1.0 would no change in gamma).</param>
+        /// <returns>A new adjusted image.</returns>
+        private static Bitmap ImageAdjust( Bitmap originalImage, float brightness = 1.0f, float contrast = 1.0f, float gamma = 1.0f )
+        {
+            Bitmap adjustedImage = originalImage;
+
+            float adjustedBrightness = brightness - 1.0f;
+            // Matrix used to effect the image
+            float[][] ptsArray = {
+                new float[] { contrast, 0, 0, 0, 0 }, // scale red
+                new float[] { 0, contrast, 0, 0, 0 }, // scale green
+                new float[] { 0, 0, contrast, 0, 0 }, // scale blue
+                new float[] { 0, 0, 0, 1.0f, 0 },     // no change to alpha
+                new float[] { adjustedBrightness, adjustedBrightness, adjustedBrightness, 0, 1 }
+            };
+
+            var imageAttributes = new ImageAttributes();
+            imageAttributes.ClearColorMatrix();
+            imageAttributes.SetColorMatrix( new ColorMatrix( ptsArray ), ColorMatrixFlag.Default, ColorAdjustType.Bitmap );
+            imageAttributes.SetGamma( gamma, ColorAdjustType.Bitmap );
+            Graphics g = Graphics.FromImage( adjustedImage );
+            g.DrawImage( originalImage, new Rectangle( 0, 0, adjustedImage.Width, adjustedImage.Height ),
+                0, 0, originalImage.Width, originalImage.Height, GraphicsUnit.Pixel, imageAttributes );
+
+            return adjustedImage;
         }
 
         /// <summary>
@@ -2066,6 +2179,38 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Returns the Campus (or Campuses) that the Person belongs to
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="option">The option.</param>
+        /// <returns></returns>
+        public static object Campus( DotLiquid.Context context, object input, object option = null )
+        {
+            var person = GetPerson( input );
+
+            bool getAll = false;
+            if ( option != null && option.GetType() == typeof( string ) )
+            {
+                // if a string of "all" is specified for the option, return all of the campuses (if they are part of multiple families from different campuses)
+                if ( string.Equals( (string)option, "all", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    getAll = true;
+                }
+            }
+
+            if ( getAll )
+            {
+                return person.GetFamilies().Select( a => a.Campus ).OrderBy( a => a.Name );
+            }
+            else
+            {
+                return person.GetCampus();
+            }
+            
+        }
+
+        /// <summary>
         /// Gets the rock context.
         /// </summary>
         /// <param name="context">The context.</param>
@@ -2079,7 +2224,7 @@ namespace Rock.Lava
             else
             {
                 var rockContext = new RockContext();
-                context.Registers.Add( "rock_context", rockContext );
+                context.Registers["rock_context"] = rockContext;
                 return rockContext;
             }
         }
@@ -2162,6 +2307,31 @@ namespace Rock.Lava
         public static string ToJSON( object input )
         {
             return input.ToJson();
+        }
+
+        /// <summary>
+        /// Returns a dynamic object from a JSON string
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static object FromJSON( object input )
+        {
+            var converter = new ExpandoObjectConverter();
+            object contentObject = null;
+            var value = input as string;
+
+            try
+            {
+                // first try to deserialize as straight ExpandoObject
+                contentObject = JsonConvert.DeserializeObject<ExpandoObject>( value, converter );
+            }
+            catch
+            {
+                // if it didn't deserialize as straight ExpandoObject, try it as a List of ExpandoObjects
+                contentObject = JsonConvert.DeserializeObject<List<ExpandoObject>>( value, converter );
+            }
+
+            return contentObject;
         }
 
         /// <summary>
@@ -2395,6 +2565,14 @@ namespace Rock.Lava
                             result.Add( liquidObject );
                         }
                     }
+                    else if (value is IDictionary<string, object>)
+                    {
+                        var dictionaryObject = value as IDictionary<string, object>;
+                        if ( dictionaryObject.ContainsKey( filterKey ) && dictionaryObject[filterKey].Equals( filterValue ) )
+                        {
+                            result.Add( dictionaryObject );
+                        }
+                    }
                 }
 
                 return result;
@@ -2428,6 +2606,14 @@ namespace Rock.Lava
                         if ( liquidObject.ContainsKey( selectKey ) )
                         {
                             result.Add( liquidObject[selectKey] );
+                        }
+                    }
+                    else if ( value is IDictionary<string, object> )
+                    {
+                        var dictionaryObject = value as IDictionary<string, object>;
+                        if ( dictionaryObject.ContainsKey( selectKey ) && dictionaryObject[selectKey].Equals( selectKey ) )
+                        {
+                            result.Add( dictionaryObject );
                         }
                     }
                 }

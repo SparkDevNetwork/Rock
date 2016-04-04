@@ -177,6 +177,27 @@ namespace RockWeb.Blocks.Event
                 
                 // make lava merge fields
                 var mergeFields = new Dictionary<string, object>();
+
+                var contextObjects = new Dictionary<string, object>();
+                foreach (var contextEntityType in RockPage.GetContextEntityTypes())
+                {
+                    var contextEntity = RockPage.GetCurrentContext(contextEntityType);
+                    if (contextEntity != null && contextEntity is DotLiquid.ILiquidizable)
+                    {
+                        var type = Type.GetType(contextEntityType.AssemblyName ?? contextEntityType.Name);
+                        if (type != null)
+                        {
+                            contextObjects.Add(type.Name, contextEntity);
+                        }
+                    }
+
+                }
+
+                if (contextObjects.Any())
+                {
+                    mergeFields.Add("Context", contextObjects);
+                }
+
                 mergeFields.Add( "ListTitle", GetAttributeValue("ListTitle") );
                 mergeFields.Add( "RegistrationPage", LinkedPageUrl( "RegistrationPage", null ) );
                 mergeFields.Add( "EventItemOccurrences", itemOccurrences );
