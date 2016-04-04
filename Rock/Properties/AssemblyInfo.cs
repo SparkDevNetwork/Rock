@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Revision and Build Numbers 
 // by using the '*' as shown below:
 //[assembly: AssemblyVersion( "0.0.0.*" )]    // I've read some things that make me think we should not do this... comments?
-[assembly: AssemblyVersion( "1.4.4.0" )]
-[assembly: AssemblyFileVersion( "1.4.4.0" )]
+[assembly: AssemblyVersion( "1.4.5.0" )]
+[assembly: AssemblyFileVersion( "1.4.5.0" )]
 
 

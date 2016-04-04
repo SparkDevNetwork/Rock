@@ -36,9 +36,15 @@ namespace Rock.Client
 
         /// <summary />
         public string AllowedFrameDomains { get; set; }
-        
+
         /// <summary />
         public bool AllowIndexing { get; set; }
+
+        /// <summary />
+        public int? ChangePasswordPageId { get; set; }
+
+        /// <summary />
+        public int? ChangePasswordPageRouteId { get; set; }
 
         /// <summary />
         public int? CommunicationPageId { get; set; }
@@ -158,7 +164,10 @@ namespace Rock.Client
         public void CopyPropertiesFrom( Site source )
         {
             this.Id = source.Id;
+            this.AllowedFrameDomains = source.AllowedFrameDomains;
             this.AllowIndexing = source.AllowIndexing;
+            this.ChangePasswordPageId = source.ChangePasswordPageId;
+            this.ChangePasswordPageRouteId = source.ChangePasswordPageRouteId;
             this.CommunicationPageId = source.CommunicationPageId;
             this.CommunicationPageRouteId = source.CommunicationPageRouteId;
             this.DefaultPageId = source.DefaultPageId;
@@ -200,6 +209,9 @@ namespace Rock.Client
     /// </summary>
     public partial class Site : SiteEntity
     {
+        /// <summary />
+        public PageRoute ChangePasswordPageRoute { get; set; }
+
         /// <summary />
         public Page CommunicationPage { get; set; }
 

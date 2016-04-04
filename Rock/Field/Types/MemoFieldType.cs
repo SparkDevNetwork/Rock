@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// 
+    /// Field used to edit text in a multi-line text box
     /// </summary>
     public class MemoFieldType : FieldType
     {
@@ -54,7 +54,7 @@ namespace Rock.Field.Types
         {
             var controls = base.ConfigurationControls();
 
-            // Add nuber box for selecting the number of rows
+            // Add number box for selecting the number of rows
             var nb = new NumberBox();
             controls.Add( nb );
             nb.AutoPostBack = true;

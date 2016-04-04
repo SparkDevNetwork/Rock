@@ -31,24 +31,20 @@ ALTER PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_Attendees]
 	, @IncludeNullCampusIds bit = 0
     , @IncludeParentsWithChild bit = 0
     , @IncludeChildrenWithParents bit = 0
+	, @ScheduleIds varchar(max) = NULL
+	WITH RECOMPILE
 
 AS
 
 BEGIN
 
-	DECLARE @LocGroupIds varchar(max) = @GroupIds
-	DECLARE @LocStartDate DateTime = COALESCE( DATEADD( day, ( 0 - DATEDIFF( day, CONVERT( datetime, '19000101', 112 ), @StartDate ) % 7 ), CONVERT( date, @StartDate ) ), '1900-01-01' )
-	DECLARE @LocEndDate	DateTime = COALESCE( DATEADD( day, ( 0 - DATEDIFF( day, CONVERT( datetime, '19000107', 112 ), @EndDate ) % 7 ), @EndDate ), '2100-01-01' )
-	DECLARE @LocCampusIds varchar(max) = @CampusIds
-	DECLARE @LocIncludeNullCampusIds bit = @IncludeNullCampusIds
-	DECLARE @LocIncludeParentsWithChild bit = @IncludeParentsWithChild
-	DECLARE @LocIncludeChildrenWithParents bit = @IncludeChildrenWithParents
-
-    -- Check for enddate that is previous to start date
-    IF @LocEndDate < @LocStartDate SET @LocEndDate = DATEADD( day, 6 + DATEDIFF( day, @LocEndDate, @LocStartDate ), @LocEndDate )
+    -- Manipulate dates to only be those dates who's SundayDate value would fall between the selected date range ( so that sunday date does not need to be used in where clause )
+	SET @StartDate = COALESCE( DATEADD( day, ( 0 - DATEDIFF( day, CONVERT( datetime, '19000101', 112 ), @StartDate ) % 7 ), CONVERT( date, @StartDate ) ), '1900-01-01' )
+	SET @EndDate = COALESCE( DATEADD( day, ( 0 - DATEDIFF( day, CONVERT( datetime, '19000107', 112 ), @EndDate ) % 7 ), @EndDate ), '2100-01-01' )
+    IF @EndDate < @StartDate SET @EndDate = DATEADD( day, 6 + DATEDIFF( day, @EndDate, @StartDate ), @EndDate )
 
 	-- Get all the attendees
-    IF @LocIncludeChildrenWithParents = 0 AND @LocIncludeParentsWithChild = 0
+    IF @IncludeChildrenWithParents = 0 AND @IncludeParentsWithChild = 0
     BEGIN
 
         -- Just return the person who attended
@@ -64,17 +60,19 @@ BEGIN
 			FROM (
 				SELECT 
 					A.[PersonAliasId],
-					A.[CampusId]
+					A.[CampusId],
+					A.[ScheduleId]
  				FROM [Attendance] A
-				WHERE A.[GroupId] in ( SELECT * FROM ufnUtility_CsvToTable( @LocGroupIds ) ) 
-				AND [StartDateTime] BETWEEN @LocStartDate AND @LocEndDate
+				WHERE A.[GroupId] in ( SELECT * FROM ufnUtility_CsvToTable( @GroupIds ) ) 
+				AND [StartDateTime] BETWEEN @StartDate AND @EndDate
 				AND [DidAttend] = 1
 			) A
             INNER JOIN [PersonAlias] PA ON PA.[Id] = A.[PersonAliasId]
 			WHERE ( 
-				( @LocCampusIds IS NULL OR A.[CampusId] in ( SELECT * FROM ufnUtility_CsvToTable( @LocCampusIds ) ) ) OR  
-				( @LocIncludeNullCampusIds = 1 AND A.[CampusId] IS NULL ) 
+				( @CampusIds IS NULL OR A.[CampusId] in ( SELECT * FROM ufnUtility_CsvToTable( @CampusIds ) ) ) OR  
+				( @IncludeNullCampusIds = 1 AND A.[CampusId] IS NULL ) 
 			)
+			AND ( @ScheduleIds IS NULL OR A.[ScheduleId] IN ( SELECT * FROM ufnUtility_CsvToTable( @ScheduleIds ) ) )
 	    ) [Attendee]
 	    INNER JOIN [Person] P 
 			ON P.[Id] = [Attendee].[PersonId]
@@ -86,7 +84,7 @@ BEGIN
         DECLARE @AdultRoleId INT = ( SELECT TOP 1 [Id] FROM [GroupTypeRole] WHERE [Guid] = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42' )
         DECLARE @ChildRoleId INT = ( SELECT TOP 1 [Id] FROM [GroupTypeRole] WHERE [Guid] = 'C8B1814F-6AA7-4055-B2D7-48FE20429CB9' )
 
-        IF @LocIncludeParentsWithChild = 1 
+        IF @IncludeParentsWithChild = 1 
         BEGIN
 
             -- Child attended, also include their parents
@@ -107,17 +105,19 @@ BEGIN
 				FROM (
 					SELECT 
 						A.[PersonAliasId],
-						A.[CampusId]
+						A.[CampusId],
+						A.[ScheduleId]
  					FROM [Attendance] A
-					WHERE A.[GroupId] in ( SELECT * FROM ufnUtility_CsvToTable( @LocGroupIds ) ) 
-					AND [StartDateTime] BETWEEN @LocStartDate AND @LocEndDate
+					WHERE A.[GroupId] in ( SELECT * FROM ufnUtility_CsvToTable( @GroupIds ) ) 
+					AND [StartDateTime] BETWEEN @StartDate AND @EndDate
 					AND [DidAttend] = 1
 				) A
 				INNER JOIN [PersonAlias] PA ON PA.[Id] = A.[PersonAliasId]
 				WHERE ( 
-					( @LocCampusIds IS NULL OR A.[CampusId] in ( SELECT * FROM ufnUtility_CsvToTable( @LocCampusIds ) ) ) OR  
-					( @LocIncludeNullCampusIds = 1 AND A.[CampusId] IS NULL ) 
+					( @CampusIds IS NULL OR A.[CampusId] in ( SELECT * FROM ufnUtility_CsvToTable( @CampusIds ) ) ) OR  
+					( @IncludeNullCampusIds = 1 AND A.[CampusId] IS NULL ) 
 				)
+				AND ( @ScheduleIds IS NULL OR A.[ScheduleId] IN ( SELECT * FROM ufnUtility_CsvToTable( @ScheduleIds ) ) )
 	        ) [Attendee]
 	        INNER JOIN [Person] C 
 				ON C.[Id] = [Attendee].[PersonId]
@@ -132,7 +132,7 @@ BEGIN
 
         END
         
-        IF @LocIncludeChildrenWithParents = 1
+        IF @IncludeChildrenWithParents = 1
         BEGIN
 
             -- Parents attended, include their children
@@ -153,17 +153,19 @@ BEGIN
 				FROM (
 					SELECT 
 						A.[PersonAliasId],
-						A.[CampusId]
+						A.[CampusId],
+						A.[ScheduleId]
  					FROM [Attendance] A
-					WHERE A.[GroupId] in ( SELECT * FROM ufnUtility_CsvToTable( @LocGroupIds ) ) 
-					AND [StartDateTime] BETWEEN @LocStartDate AND @LocEndDate
+					WHERE A.[GroupId] in ( SELECT * FROM ufnUtility_CsvToTable( @GroupIds ) ) 
+					AND [StartDateTime] BETWEEN @StartDate AND @EndDate
 					AND [DidAttend] = 1
 				) A
 				INNER JOIN [PersonAlias] PA ON PA.[Id] = A.[PersonAliasId]
 				WHERE ( 
-					( @LocCampusIds IS NULL OR A.[CampusId] in ( SELECT * FROM ufnUtility_CsvToTable( @LocCampusIds ) ) ) OR  
-					( @LocIncludeNullCampusIds = 1 AND A.[CampusId] IS NULL ) 
+					( @CampusIds IS NULL OR A.[CampusId] in ( SELECT * FROM ufnUtility_CsvToTable( @CampusIds ) ) ) OR  
+					( @IncludeNullCampusIds = 1 AND A.[CampusId] IS NULL ) 
 				)
+				AND ( @ScheduleIds IS NULL OR A.[ScheduleId] IN ( SELECT * FROM ufnUtility_CsvToTable( @ScheduleIds ) ) )
 	        ) [Attendee]
 	        INNER JOIN [Person] A 
 				ON A.[Id] = [Attendee].[PersonId]

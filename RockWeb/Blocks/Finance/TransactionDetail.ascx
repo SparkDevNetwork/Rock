@@ -145,6 +145,17 @@
                                     </Columns>
                                 </Rock:Grid>
                             </asp:Panel>
+
+                            <asp:Panel ID="pnlRelated" runat="server">
+                                <Rock:Grid ID="gRelated" runat="server" RowItemText="Transaction" DisplayType="Light">
+                                    <Columns>
+                                        <asp:HyperLinkField DataTextField="TransactionDateTime" DataNavigateUrlFields="Id" HeaderText="Related Transactions" />
+                                        <Rock:RockBoundField DataField="TransactionCode" />
+                                        <Rock:CurrencyField DataField="TotalAmount" ItemStyle-HorizontalAlign="Right" />
+                                    </Columns>
+                                </Rock:Grid>
+                            </asp:Panel>
+
                         </div>
                     </div>
 

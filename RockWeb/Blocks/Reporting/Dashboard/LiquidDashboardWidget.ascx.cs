@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
             {
                 string result = ResolveUrl( "~/api/Metrics/GetHtmlForBlock/" ) + this.BlockId.ToString();
                 string[] entityValues = ( GetAttributeValue( "Entity" ) ?? "" ).Split( '|' );
-                if ( entityValues.Length == 2 )
+                if ( entityValues.Length == 2 && !string.IsNullOrEmpty(entityValues[1]))
                 {
                     var entityType = EntityTypeCache.Read( entityValues[0].AsGuid() );
                     if ( entityType != null )

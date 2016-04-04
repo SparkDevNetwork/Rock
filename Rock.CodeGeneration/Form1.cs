@@ -234,8 +234,8 @@ namespace Rock.CodeGeneration
                 string filePath = Path.Combine( databaseRootFolder, folder, routineName + ".sql" );
                 Directory.CreateDirectory( Path.GetDirectoryName( filePath ) );
 
-                script = Regex.Replace( script, "^CREATE\\s*PROCEDURE", "ALTER PROCEDURE", RegexOptions.IgnoreCase | RegexOptions.Multiline );
-                script = Regex.Replace( script, "^CREATE\\s*FUNCTION", "ALTER FUNCTION", RegexOptions.IgnoreCase | RegexOptions.Multiline );
+                script = Regex.Replace( script, "(^\\s*)CREATE\\s*PROCEDURE", "$1ALTER PROCEDURE", RegexOptions.IgnoreCase | RegexOptions.Multiline );
+                script = Regex.Replace( script, "(^\\s*)CREATE\\s*FUNCTION", "$1ALTER FUNCTION", RegexOptions.IgnoreCase | RegexOptions.Multiline );
                 
                 if (string.IsNullOrEmpty(procPrefixFilter) || routineName.StartsWith(procPrefixFilter, StringComparison.OrdinalIgnoreCase))
                 {
@@ -253,7 +253,7 @@ namespace Rock.CodeGeneration
 
                 string filePath = Path.Combine( databaseRootFolder, "Views", viewName + ".sql" );
                 Directory.CreateDirectory( Path.GetDirectoryName( filePath ) );
-                script = Regex.Replace( script, "^CREATE\\s*VIEW", "ALTER VIEW", RegexOptions.IgnoreCase | RegexOptions.Multiline );
+                script = Regex.Replace( script, "(^\\s*)CREATE\\s*VIEW", "$1ALTER VIEW", RegexOptions.IgnoreCase | RegexOptions.Multiline );
 
                 if ( string.IsNullOrEmpty( procPrefixFilter ) || viewName.StartsWith( procPrefixFilter, StringComparison.OrdinalIgnoreCase ) )
                 {

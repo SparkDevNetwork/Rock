@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -299,6 +299,7 @@ namespace RockWeb.Blocks.Security
                 userLogin.UserName = newUserName;
                 userLogin.IsConfirmed = cbIsConfirmed.Checked;
                 userLogin.IsLockedOut = cbIsLockedOut.Checked;
+                userLogin.IsPasswordChangeRequired = cbIsRequirePasswordChange.Checked;
 
                 var entityType = EntityTypeCache.Read( compProvider.SelectedValue.AsGuid() );
                 if ( entityType != null )
@@ -464,7 +465,8 @@ namespace RockWeb.Blocks.Security
                     CreatedDateTime = l.CreatedDateTime,
                     LastLoginDateTime = l.LastLoginDateTime,
                     IsConfirmed = l.IsConfirmed,
-                    IsLockedOut = l.IsLockedOut
+                    IsLockedOut = l.IsLockedOut,
+                    IsPasswordChangeRequired = l.IsPasswordChangeRequired
                 } ).ToList();
             gUserLogins.DataBind();
         }
@@ -503,6 +505,8 @@ namespace RockWeb.Blocks.Security
             tbUserName.Text = userLogin.UserName;
             cbIsConfirmed.Checked = userLogin.IsConfirmed ?? false;
             cbIsLockedOut.Checked = userLogin.IsLockedOut ?? false;
+            cbIsRequirePasswordChange.Checked = userLogin.IsPasswordChangeRequired ?? false;
+
             if ( userLogin.EntityType != null )
             {
                 compProvider.SetValue( userLogin.EntityType.Guid.ToString().ToUpper() );
@@ -531,6 +535,13 @@ namespace RockWeb.Blocks.Security
                 var component = AuthenticationContainer.GetComponent( entityType.Name );
                 if ( component != null )
                 {
+                    cbIsRequirePasswordChange.Visible = component.SupportsChangePassword;
+
+                    if ( !component.SupportsChangePassword )
+                    {
+                        cbIsRequirePasswordChange.Checked = false;
+                    }
+
                     if ( component.ServiceType == AuthenticationServiceType.Internal )
                     {
                         tbPassword.Enabled = true;

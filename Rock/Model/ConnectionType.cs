@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -104,6 +104,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? OwnerPersonAliasId {get;set;}
+
+        /// <summary>
+        /// Gets or sets the number of days until the request is considered idle.
+        /// </summary>
+        /// <value>
+        /// This determines how many days can pass before the request is considered idle.
+        /// </value>
+        [DataMember]
+        public int DaysUntilRequestIdle { get; set; }
 
         #endregion
 

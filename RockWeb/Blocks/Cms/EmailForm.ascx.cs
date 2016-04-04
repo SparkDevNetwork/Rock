@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -94,7 +94,7 @@ namespace RockWeb.Blocks.Cms
     <input type=""file"" id=""attachment2"" name=""attachment2"" />
 </div>
 ", "", 4 )]
-    [CodeEditorField( "Message Body", "The email message body. <span class='tip tip-lava'></span>", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, false, @"{{ GlobalAttribute.EmailHeader }}
+    [CodeEditorField( "Message Body", "The email message body. <span class='tip tip-lava'></span>", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
 
 <p>
     A email form has been submitted. Please find the information below:
@@ -108,7 +108,7 @@ namespace RockWeb.Blocks.Cms
 
 <p>&nbsp;</p>
 
-{{ GlobalAttribute.EmailFooter }}", "", 5 )]
+{{ 'Global' | Attribute:'EmailFooter' }}", "", 5 )]
     [CodeEditorField( "Response Message", "The message the user will see when they submit the form if no response page if provided. Lava merege fields are available for you to use in your message.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"<div class=""alert alert-info"">
     Thank you for your response. We appreciate your feedback!
 </div>", "", 6 )]

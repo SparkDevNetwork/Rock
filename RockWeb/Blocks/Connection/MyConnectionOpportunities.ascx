@@ -4,6 +4,15 @@
     Sys.Application.add_load(function () {
         $('.js-legend-badge').tooltip({ html: true, container: 'body', delay: { show: 200, hide: 100 } });
     });
+
+    //Sys.WebForms.PageRequestManager.getInstance().add_endRequest(scrollToGrid);
+    function scrollToGrid() {
+        if (!$('.js-grid-header').visible(true)) {
+            $('html, body').animate({
+                scrollTop: $('.js-grid-header').offset().top + 'px'
+            }, 'fast');
+        }
+    }
 </script>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
@@ -20,7 +29,7 @@
                         <span class="pull-left badge badge-info js-legend-badge" data-toggle="tooltip" data-original-title="Assigned To You">&nbsp;</span>
                         <span class="pull-left badge badge-warning js-legend-badge" data-toggle="tooltip" data-original-title="Unassigned Item">&nbsp;</span>
                         <span class="pull-left badge badge-critical js-legend-badge" data-toggle="tooltip" data-original-title="Critical Status">&nbsp;</span>
-                        <span class="pull-left badge badge-danger js-legend-badge" data-toggle="tooltip" data-original-title="Idle (no activity in <%= GetAttributeValue( "NumberDaysToIdle" ).AsInteger() %> days)">&nbsp;</span>
+                        <asp:Literal ID="lIdleToolTip" runat="server" />
                     </div>
                     <Rock:Toggle ID="tglMyOpportunities" CssClass="margin-r-md pull-left" runat="server" OnText="My Requests" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" OffText="All Requests" AutoPostBack="true" OnCheckedChanged="tglMyOpportunities_CheckedChanged" Checked="true" />
                     <asp:LinkButton ID="lbConnectionTypes" runat="server" CssClass=" pull-right" OnClick="lbConnectionTypes_Click" CausesValidation="false"><i class="fa fa-gear"></i></asp:LinkButton>
@@ -58,7 +67,7 @@
 
             </div>
         </div>
-        <asp:Panel ID="pnlGrid" runat="server" CssClass="panel panel-block" Visible="false">
+        <asp:Panel ID="pnlGrid" runat="server" CssClass="panel panel-block js-grid-header" Visible="false">
             <div class="panel-heading">
                 <h1 class="panel-title"><asp:Literal ID="lOpportunityIcon" runat="server" /> <asp:Literal ID="lConnectionRequest" runat="server"></asp:Literal></h1>
             </div>

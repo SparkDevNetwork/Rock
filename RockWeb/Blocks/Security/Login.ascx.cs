@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ Thank-you for logging in, however, we need to confirm the email associated with 
     [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)", false, "", "", 3 )]
     [SystemEmailField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "", 4 )]
     [CodeEditorField( "Locked Out Caption", "The text (HTML) to display when a user's account has been locked.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"
-Sorry, your account has been locked.  Please contact our office at {{ GlobalAttribute.OrganizationPhone }} or email {{ GlobalAttribute.OrganizationEmail }} to resolve this.  Thank-you. 
+Sorry, your account has been locked.  Please contact our office at {{ 'Global' | Attribute:'OrganizationPhone' }} or email {{ 'Global' | Attribute:'OrganizationEmail' }} to resolve this.  Thank-you. 
 ", "", 5 )]
     [BooleanField("Hide New Account Option", "Should 'New Account' option be hidden?  For site's that require user to be in a role (Internal Rock Site for example), users shouldn't be able to create their own account.", false, "", 6, "HideNewAccount" )]
     [TextField( "New Account Text", "The text to show on the New Account button.", false, "Register", "", 7, "NewAccountButtonText" )]
@@ -78,8 +78,6 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
             GetAttributeValue( "RemoteAuthorizationTypes" ).SplitDelimitedValues()
                 .ToList()
                 .ForEach( v => selectedGuids.Add( v.AsGuid() ) );
-
-            
 
             // Look for active external authentication providers
             foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
@@ -156,6 +154,7 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
             if ( !Page.IsPostBack )
             {
                 lPromptMessage.Text = GetAttributeValue( "PromptMessage" );
+                tbUserName.Focus();
             }
 
             pnlMessage.Visible = false;

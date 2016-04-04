@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -347,6 +347,7 @@ namespace RockWeb.Blocks.Connection
                     connectionType.Name = tbName.Text;
                     connectionType.Description = tbDescription.Text;
                     connectionType.IconCssClass = tbIconCssClass.Text;
+                    connectionType.DaysUntilRequestIdle = nbDaysUntilRequestIdle.Text.AsInteger();
                     connectionType.EnableFutureFollowup = cbFutureFollowUp.Checked;
                     connectionType.EnableFullActivityList = cbFullActivityList.Checked;
                     connectionType.RequiresPlacementGroupToConnect = cbRequiresPlacementGroup.Checked;
@@ -1358,6 +1359,7 @@ namespace RockWeb.Blocks.Connection
             if ( connectionType.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( ConnectionType.FriendlyTypeName ).FormatAsHtmlTitle();
+                connectionType.DaysUntilRequestIdle = 14;
             }
             else
             {
@@ -1370,6 +1372,7 @@ namespace RockWeb.Blocks.Connection
             tbName.Text = connectionType.Name;
             tbDescription.Text = connectionType.Description;
             tbIconCssClass.Text = connectionType.IconCssClass;
+            nbDaysUntilRequestIdle.Text = connectionType.DaysUntilRequestIdle.ToString();
             cbRequiresPlacementGroup.Checked = connectionType.RequiresPlacementGroupToConnect;
             cbFullActivityList.Checked = connectionType.EnableFullActivityList;
             cbFutureFollowUp.Checked = connectionType.EnableFutureFollowup;

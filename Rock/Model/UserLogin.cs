@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -126,6 +126,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool? IsLockedOut { get; set; }
+
+        /// <summary>
+        /// Gets or sets the is password change required.
+        /// </summary>
+        /// <value>
+        /// The is password change required.
+        /// </value>
+        [DataMember]
+        public bool? IsPasswordChangeRequired { get; set; }
 
         /// <summary>
         /// Gets or sets date and time that the UserLogin was last locked out.

@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -1496,6 +1496,19 @@ namespace Rock.Model
             return firstFamily != null ? firstFamily.Campus : null;
         }
 
+        /// <summary>
+        /// Gets the campus ids for all the families that a person belongs to.
+        /// </summary>
+        /// <returns></returns>
+        public List<int> GetCampusIds()
+        {
+            return this.GetFamilies()
+                .Where( f => f.CampusId.HasValue )
+                .Select( f => f.CampusId.Value )
+                .Distinct()
+                .ToList();
+        }
+
         #endregion
 
         #region Static Helper Methods
@@ -2365,6 +2378,16 @@ namespace Rock.Model
                     p.NumberTypeValueId.Value == numberTypeValueId )
                 .FirstOrDefault();
 
+            // Since only one number can be used for SMS, before anything else, if isMessagingEnabled is true, turn it off on ALL
+            // numbers, so we only enable it for this one. 
+            if( isMessagingEnabled.HasValue && isMessagingEnabled.Value == true )
+            {
+                foreach( PhoneNumber currPhoneNumber in person.PhoneNumbers )
+                {
+                    currPhoneNumber.IsMessagingEnabled = false;
+                }
+            }
+            
             // do they currently have this type of number?
             if ( phoneObject != null )
             {

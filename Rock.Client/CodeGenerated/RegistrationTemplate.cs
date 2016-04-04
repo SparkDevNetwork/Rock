@@ -38,10 +38,16 @@ namespace Rock.Client
         public bool AddPersonNote { get; set; }
 
         /// <summary />
+        public bool AllowExternalRegistrationUpdates { get; set; }
+
+        /// <summary />
         public bool AllowGroupPlacement { get; set; }
 
         /// <summary />
         public bool AllowMultipleRegistrants { get; set; }
+
+        /// <summary />
+        public string BatchNamePrefix { get; set; }
 
         /// <summary />
         public int? CategoryId { get; set; }
@@ -107,6 +113,21 @@ namespace Rock.Client
 
         /// <summary />
         public Rock.Client.Enums.RegistrationNotify Notify { get; set; }
+
+        /// <summary />
+        public string PaymentReminderEmailTemplate { get; set; }
+
+        /// <summary />
+        public string PaymentReminderFromEmail { get; set; }
+
+        /// <summary />
+        public string PaymentReminderFromName { get; set; }
+
+        /// <summary />
+        public string PaymentReminderSubject { get; set; }
+
+        /// <summary />
+        public int? PaymentReminderTimeSpan { get; set; }
 
         /// <summary />
         public Rock.Client.Enums.RegistrantsSameFamily RegistrantsSameFamily { get; set; }
@@ -175,8 +196,10 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.AddPersonNote = source.AddPersonNote;
+            this.AllowExternalRegistrationUpdates = source.AllowExternalRegistrationUpdates;
             this.AllowGroupPlacement = source.AllowGroupPlacement;
             this.AllowMultipleRegistrants = source.AllowMultipleRegistrants;
+            this.BatchNamePrefix = source.BatchNamePrefix;
             this.CategoryId = source.CategoryId;
             this.ConfirmationEmailTemplate = source.ConfirmationEmailTemplate;
             this.ConfirmationFromEmail = source.ConfirmationFromEmail;
@@ -198,6 +221,11 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.Notify = source.Notify;
+            this.PaymentReminderEmailTemplate = source.PaymentReminderEmailTemplate;
+            this.PaymentReminderFromEmail = source.PaymentReminderFromEmail;
+            this.PaymentReminderFromName = source.PaymentReminderFromName;
+            this.PaymentReminderSubject = source.PaymentReminderSubject;
+            this.PaymentReminderTimeSpan = source.PaymentReminderTimeSpan;
             this.RegistrantsSameFamily = source.RegistrantsSameFamily;
             this.RegistrantTerm = source.RegistrantTerm;
             this.RegistrationTerm = source.RegistrationTerm;

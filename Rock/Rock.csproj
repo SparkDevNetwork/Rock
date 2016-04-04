@@ -36,6 +36,9 @@
     <DocumentationFile>bin\Rock.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CommonMark">
+      <HintPath>..\packages\CommonMark.NET.0.11.0\lib\net45\CommonMark.dll</HintPath>
+    </Reference>
     <Reference Include="CronExpressionDescriptor, Version=1.12.0.0, Culture=neutral, PublicKeyToken=a2ab0e0f73f9b037, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\CronExpressionDescriptor.1.12.0\lib\net35\CronExpressionDescriptor.dll</HintPath>
@@ -67,7 +70,7 @@
     </Reference>
     <Reference Include="Humanizer, Version=1.37.7.0, Culture=neutral, PublicKeyToken=979442b78dfc278e, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Humanizer.1.37.7\lib\portable-win+net40+sl50+wp8+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10\Humanizer.dll</HintPath>
+      <HintPath>..\libs\Humanizer.1.37.7\Humanizer.dll</HintPath>
     </Reference>
     <Reference Include="ImageResizer, Version=3.4.3.103, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -95,6 +98,10 @@
     <Reference Include="RestSharp, Version=105.0.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\RestSharp.105.0.1\lib\net4\RestSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="StackExchange.Redis, Version=1.0.316.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\StackExchange.Redis.1.0.488\lib\net45\StackExchange.Redis.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
@@ -176,6 +183,7 @@
     <Compile Include="Attribute\EnumFieldAttribute.cs" />
     <Compile Include="Attribute\SchedulesFieldAttribute.cs" />
     <Compile Include="Attribute\EncryptedTextFieldAttribute.cs" />
+    <Compile Include="Attribute\MarkdownFieldAttribute.cs" />
     <Compile Include="Attribute\UrlLinkFieldAttribute.cs" />
     <Compile Include="Attribute\GroupTypeGroupFieldAttribute.cs" />
     <Compile Include="Attribute\EmailFieldAttribute.cs" />
@@ -269,6 +277,7 @@
     <Compile Include="Field\Types\NoteTypeFieldType.cs" />
     <Compile Include="Field\Types\EnumFieldType.cs" />
     <Compile Include="Field\Types\RangeSliderFieldType.cs" />
+    <Compile Include="Field\Types\MarkdownFieldType.cs" />
     <Compile Include="Financial\NMIGateway.cs" />
     <Compile Include="Follow\Event\PersonFirstAttendedGroupType.cs" />
     <Compile Include="Follow\Event\PersonFirstJoinedGroupType.cs" />
@@ -529,11 +538,13 @@
     <Compile Include="Reporting\DataTransform\Person\ChildrenTransform.cs" />
     <Compile Include="Reporting\ReportingHelper.cs" />
     <Compile Include="Reporting\DataSelect\Person\GroupParticipationSelect.cs" />
+    <Compile Include="Search\Person\BusinessName.cs" />
     <Compile Include="Security\Authentication\Twitter.cs" />
     <Compile Include="Store\PackageVersionRatingService.cs" />
     <Compile Include="Transactions\SaveCommunicationTransaction.cs" />
     <Compile Include="Transactions\SendPaymentReciepts.cs" />
     <Compile Include="Transactions\UpdatePaymentStatusTransaction.cs" />
+    <Compile Include="Transactions\WorkflowTriggerTransaction.cs" />
     <Compile Include="Utility\DebugHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\StringHumanizerExtensions.cs" />
     <Compile Include="Utility\FileUtilities.cs" />
@@ -544,6 +555,8 @@
     <Compile Include="Web\Cache\AttributeValueCache.cs" />
     <Compile Include="Web\InternalContext.cs" />
     <Compile Include="Web\UI\Controls\Grid\GroupPickerField.cs" />
+    <Compile Include="Web\UI\Controls\MarkdownEditor.cs" />
+    <Compile Include="Web\UI\Controls\WarningBlock.cs" />
     <Compile Include="Web\UI\Controls\Pickers\WorkflowActionTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ConnectionRequestPicker.cs" />
     <Compile Include="Web\UI\Controls\RangeSlider.cs" />
@@ -1140,6 +1153,7 @@
     <Compile Include="Workflow\Action\RemovePersonFromGroupAttribute.cs" />
     <Compile Include="Workflow\Action\RemovePersonFromGroup.cs" />
     <Compile Include="Workflow\Action\GetPersonFromFields.cs" />
+    <Compile Include="Workflow\Action\AddNoteToGroupMember.cs" />
     <Compile Include="Workflow\Action\SetGroupMemberNote.cs" />
     <Compile Include="Workflow\Action\UpdateGroupMemberStatus.cs" />
     <Compile Include="Workflow\Action\AddPersonToGroupAttribute.cs" />
@@ -1343,7 +1357,6 @@
     <Compile Include="SystemGuid\DefinedType.cs" />
     <Compile Include="SystemGuid\Page.cs" />
     <Compile Include="Transactions\AuditTransaction.cs" />
-    <Compile Include="Transactions\WorkflowTriggerTransaction.cs" />
     <Compile Include="Transactions\UserLastActivityTransaction.cs" />
     <Compile Include="Transactions\PersonViewTransaction.cs" />
     <Compile Include="Transactions\ITransaction.cs" />

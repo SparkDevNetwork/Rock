@@ -30,20 +30,17 @@ ALTER PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeFirstDates]
 	, @EndDate datetime = NULL
 	, @CampusIds varchar(max) = NULL
 	, @IncludeNullCampusIds bit = 0
+	, @ScheduleIds varchar(max) = NULL
+	WITH RECOMPILE
 
 AS
 
 BEGIN
 
-	DECLARE @LocGroupTypeId int = @GroupTypeId
-	DECLARE @LocGroupIds varchar(max) = @GroupIds
-	DECLARE @LocStartDate DateTime = COALESCE( DATEADD( day, ( 0 - DATEDIFF( day, CONVERT( datetime, '19000101', 112 ), @StartDate ) % 7 ), CONVERT( date, @StartDate ) ), '1900-01-01' )
-	DECLARE @LocEndDate	DateTime = COALESCE( DATEADD( day, ( 0 - DATEDIFF( day, CONVERT( datetime, '19000107', 112 ), @EndDate ) % 7 ), @EndDate ), '2100-01-01' )
-	DECLARE @LocCampusIds varchar(max) = @CampusIds
-	DECLARE @LocIncludeNullCampusIds bit = @IncludeNullCampusIds
-
-    -- Check for enddate that is previous to start date
-    IF @LocEndDate < @LocStartDate SET @LocEndDate = DATEADD( day, 6 + DATEDIFF( day, @LocEndDate, @LocStartDate ), @LocEndDate )
+    -- Manipulate dates to only be those dates who's SundayDate value would fall between the selected date range ( so that sunday date does not need to be used in where clause )
+	SET @StartDate = COALESCE( DATEADD( day, ( 0 - DATEDIFF( day, CONVERT( datetime, '19000101', 112 ), @StartDate ) % 7 ), CONVERT( date, @StartDate ) ), '1900-01-01' )
+	SET @EndDate = COALESCE( DATEADD( day, ( 0 - DATEDIFF( day, CONVERT( datetime, '19000107', 112 ), @EndDate ) % 7 ), @EndDate ), '2100-01-01' )
+    IF @EndDate < @StartDate SET @EndDate = DATEADD( day, 6 + DATEDIFF( day, @EndDate, @StartDate ), @EndDate )
 
 	-- Get all the attendees
 	DECLARE @PersonIdTbl TABLE ( [PersonId] INT NOT NULL )
@@ -51,13 +48,14 @@ BEGIN
 	SELECT DISTINCT PA.[PersonId]
 	FROM [Attendance] A
     INNER JOIN [PersonAlias] PA ON PA.[Id] = A.[PersonAliasId]
-    WHERE A.[GroupId] in ( SELECT * FROM ufnUtility_CsvToTable( @LocGroupIds ) ) 
-    AND [StartDateTime] BETWEEN @LocStartDate AND @LocEndDate
+    WHERE A.[GroupId] in ( SELECT * FROM ufnUtility_CsvToTable( @GroupIds ) ) 
+    AND [StartDateTime] BETWEEN @StartDate AND @EndDate
 	AND [DidAttend] = 1
 	AND ( 
-		( @LocCampusIds IS NULL OR A.[CampusId] in ( SELECT * FROM ufnUtility_CsvToTable( @LocCampusIds ) ) ) OR  
-		( @LocIncludeNullCampusIds = 1 AND A.[CampusId] IS NULL ) 
+		( @CampusIds IS NULL OR A.[CampusId] in ( SELECT * FROM ufnUtility_CsvToTable( @CampusIds ) ) ) OR  
+		( @IncludeNullCampusIds = 1 AND A.[CampusId] IS NULL ) 
 	)	
+	AND ( @ScheduleIds IS NULL OR A.[ScheduleId] IN ( SELECT * FROM ufnUtility_CsvToTable( @ScheduleIds ) ) )
 
     -- Get the first 5 times they attended this group type (any group or campus)
 	SELECT 
@@ -72,7 +70,7 @@ BEGIN
         FROM (
             SELECT DISTINCT [StartDate]
 		    FROM [vCheckin_GroupTypeAttendance] A
-		    WHERE A.[GroupTypeId] = @LocGroupTypeId
+		    WHERE A.[GroupTypeId] = @GroupTypeId
 		    AND A.[PersonId] = P.[PersonId]
         ) S
 	) D

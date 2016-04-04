@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ using Rock.Model;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// 
+    /// Select multiple Person Badges from a checkbox list. Stored as a comma-delimited list of PersonBadge Guids
     /// </summary>
     public class PersonBadgesFieldType : SelectFromListFieldType
     {

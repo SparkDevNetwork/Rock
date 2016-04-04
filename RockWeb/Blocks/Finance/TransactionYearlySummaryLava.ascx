@@ -2,9 +2,9 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-
-        <asp:Literal ID="lLavaOutput" runat="server" />
-
+        <asp:Panel ID="pnlContent" runat="server">
+            <asp:Literal ID="lLavaOutput" runat="server" />
+        </asp:Panel>
     </ContentTemplate>
 </asp:UpdatePanel>
 

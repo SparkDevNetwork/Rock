@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -496,23 +496,26 @@ namespace Rock.Model
         public IEnumerable<Location> GetByDevice( int deviceId, bool includeChildLocations = true )
         {
             string childQuery = includeChildLocations ? @"
-                    UNION ALL
-                    SELECT [a].*
-                        FROM [Location] [a]
-                            INNER JOIN  CTE pcte ON pcte.Id = [a].[ParentLocationId]
+
+        UNION ALL
+
+        SELECT [a].*
+        FROM [Location] [a]
+        INNER JOIN  CTE pcte ON pcte.Id = [a].[ParentLocationId]
+        WHERE [a].[ParentLocationId] IS NOT NULL
 " : "";
 
             return ExecuteQuery( string.Format(
                 @"
-            WITH CTE AS (
-                SELECT L.*
-                    FROM [DeviceLocation] D
-                        INNER JOIN [Location] L ON L.[Id] = D.[LocationId]
-                WHERE D.[DeviceId] = {0}
-                {1}
-            )
+    WITH CTE AS (
+        SELECT L.*
+        FROM [DeviceLocation] D
+        INNER JOIN [Location] L ON L.[Id] = D.[LocationId]
+        WHERE D.[DeviceId] = {0}
+{1}
+    )
 
-            SELECT * FROM CTE
+    SELECT * FROM CTE
             ", deviceId, childQuery ) );
         }
     }

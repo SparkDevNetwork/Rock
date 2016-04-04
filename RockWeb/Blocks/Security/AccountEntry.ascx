@@ -75,8 +75,8 @@
                         <dt></dt>
                         <dd><div id="availabilityMessage" class="alert"/></dd>
                     </dl>
-                    <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" Required="true" TextMode="Password" ></Rock:RockTextBox>
-                    <Rock:RockTextBox ID="tbPasswordConfirm" runat="server" Label="Confirmation" Required="true" TextMode="Password" ></Rock:RockTextBox>
+                    <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" Required="true" TextMode="Password" ValidateRequestMode="Disabled" ></Rock:RockTextBox>
+                    <Rock:RockTextBox ID="tbPasswordConfirm" runat="server" Label="Confirmation" Required="true" TextMode="Password" ValidateRequestMode="Disabled" ></Rock:RockTextBox>
                     <asp:CompareValidator ID="covalPassword" runat="server" ControlToCompare="tbPassword" ControlToValidate="tbPasswordConfirm" ErrorMessage="Password and Confirmation do not match" Display="Dynamic" CssClass="validation-error"></asp:CompareValidator>
 
                 </fieldset>

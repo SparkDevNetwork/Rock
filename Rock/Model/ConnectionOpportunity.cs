@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -274,6 +274,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.ConnectionOpportunityCampus">ConnectionOpportunityCampuses</see> who are associated with the ConnectionOpportunity.
         /// </value>
+        [LavaInclude]
         public virtual ICollection<ConnectionOpportunityCampus> ConnectionOpportunityCampuses
         {
             get { return _connectionOpportunityCampuses ?? ( _connectionOpportunityCampuses = new Collection<ConnectionOpportunityCampus>() ); }

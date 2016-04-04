@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -2202,8 +2202,20 @@ namespace RockWeb.Blocks.Event
                                 note.Text = noteText.ToString();
                                 noteService.Add( note );
                             }
-                        }
 
+                            var changes = new List<string> { "Registered for" };
+                            HistoryService.SaveChanges(
+                                rockContext,
+                                typeof( Person ),
+                                Rock.SystemGuid.Category.HISTORY_PERSON_REGISTRATION.AsGuid(),
+                                registrant.Id,
+                                changes,
+                                RegistrationInstanceState.Name,
+                                typeof( Registration ),
+                                registration.Id,
+                                false,
+                                registration.PersonAliasId );
+                        }
                     }
 
                     if ( registrar != null && registrantNames.Any() )
@@ -2231,6 +2243,19 @@ namespace RockWeb.Blocks.Event
                         note.Text = string.Format( "Registered {0} for {1}", namesText, RegistrationInstanceState.Name );
                         noteService.Add( note );
 
+                        var changes = new List<string> { string.Format( "Registered {0} for", namesText ) };
+
+                        HistoryService.SaveChanges(
+                            rockContext,
+                            typeof( Person ),
+                            Rock.SystemGuid.Category.HISTORY_PERSON_REGISTRATION.AsGuid(),
+                            registrar.Id,
+                            changes,
+                            RegistrationInstanceState.Name,
+                            typeof( Registration ),
+                            registration.Id,
+                            false,
+                            registration.PersonAliasId );
                     }
 
                     rockContext.SaveChanges();
@@ -2449,9 +2474,20 @@ namespace RockWeb.Blocks.Event
                 {
                     var batchService = new FinancialBatchService( rockContext );
 
+                    // determine batch prefix
+                    string batchPrefix = string.Empty;
+                    if ( !string.IsNullOrWhiteSpace( RegistrationTemplate.BatchNamePrefix ) )
+                    {
+                        batchPrefix = RegistrationTemplate.BatchNamePrefix;
+                    }
+                    else
+                    {
+                        batchPrefix = GetAttributeValue( "BatchNamePrefix" );
+                    }
+
                     // Get the batch
                     var batch = batchService.Get(
-                        GetAttributeValue( "BatchNamePrefix" ),
+                        batchPrefix,
                         paymentInfo.CurrencyTypeValue,
                         paymentInfo.CreditCardTypeValue,
                         transaction.TransactionDateTime.Value,
@@ -2559,6 +2595,11 @@ namespace RockWeb.Blocks.Event
             // If this is an existing registration, go directly to the summary
             if ( RegistrationState != null && RegistrationState.RegistrationId.HasValue && !PageParameter( START_AT_BEGINNING ).AsBoolean() )
             {
+                // check if template does not allow updating the saved registration, if so hide the back button on the summary screen
+                if ( !RegistrationTemplate.AllowExternalRegistrationUpdates )
+                {
+                    lbSummaryPrev.Visible = false;
+                }
                 ShowSummary();
             }
             else

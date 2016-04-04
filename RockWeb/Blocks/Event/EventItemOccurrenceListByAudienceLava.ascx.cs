@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -177,6 +177,27 @@ namespace RockWeb.Blocks.Event
                 
                 // make lava merge fields
                 var mergeFields = new Dictionary<string, object>();
+
+                var contextObjects = new Dictionary<string, object>();
+                foreach (var contextEntityType in RockPage.GetContextEntityTypes())
+                {
+                    var contextEntity = RockPage.GetCurrentContext(contextEntityType);
+                    if (contextEntity != null && contextEntity is DotLiquid.ILiquidizable)
+                    {
+                        var type = Type.GetType(contextEntityType.AssemblyName ?? contextEntityType.Name);
+                        if (type != null)
+                        {
+                            contextObjects.Add(type.Name, contextEntity);
+                        }
+                    }
+
+                }
+
+                if (contextObjects.Any())
+                {
+                    mergeFields.Add("Context", contextObjects);
+                }
+
                 mergeFields.Add( "ListTitle", GetAttributeValue("ListTitle") );
                 mergeFields.Add( "RegistrationPage", LinkedPageUrl( "RegistrationPage", null ) );
                 mergeFields.Add( "EventItemOccurrences", itemOccurrences );

@@ -1,5 +1,5 @@
-// <copyright>
-// Copyright 2013 by the Spark Development Network
+﻿// <copyright>
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -116,10 +116,6 @@ namespace RockWeb.Blocks.Administration
         {
             var msgs = new List<string>();
 
-            // Clear all cached items
-            Rock.Web.Cache.RockMemoryCache.Clear();
-            msgs.Add( "RockMemoryCache has been cleared" );
-
             // Clear the static object that contains all auth rules (so that it will be refreshed)
             Rock.Security.Authorization.Flush();
             msgs.Add( "Authorizations have been cleared" );
@@ -127,6 +123,10 @@ namespace RockWeb.Blocks.Administration
             // Flush the static entity attributes cache
             Rock.Web.Cache.AttributeCache.FlushEntityAttributes();
             msgs.Add( "EntityAttributes have been cleared" );
+
+            // Clear all cached items
+            Rock.Web.Cache.RockMemoryCache.Clear();
+            msgs.Add( "RockMemoryCache has been cleared" );
 
             string webAppPath = Server.MapPath( "~" );
 

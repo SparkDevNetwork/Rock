@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -48,8 +48,8 @@ using System.Runtime.InteropServices;
 // match the correct version exactly.
 
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion( "1.4.4.0" )]
-[assembly: AssemblyFileVersion( "1.4.4.0" )]
+[assembly: AssemblyVersion( "1.4.5.0" )]
+[assembly: AssemblyFileVersion( "1.4.5.0" )]
 
 // This number can change for each build (and should change) so that we can correctly
 // identify exactly which version someone is running.  This number should increment
@@ -63,6 +63,6 @@ using System.Runtime.InteropServices;
 // This is the "official" product name that will be shown to people. 
 // It's shown in the SystemInfo details and perhaps the RockUpdate page.
 // JICK - J(on) / (N)ick versioning system.
-[assembly: AssemblyInformationalVersion( "Rock McKinley 4.4" )]
+[assembly: AssemblyInformationalVersion( "Rock McKinley 4.5" )]
 //[assembly: AssemblyInformationalVersion( "Rock McKinley 0.7 (beta)" )]    // 1.0.10
 //[assembly: AssemblyInformationalVersion( "Rock McKinley 1.0" )]           // 1.3.4

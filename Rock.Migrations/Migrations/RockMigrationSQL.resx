@@ -268,4 +268,34 @@
   <data name="_201602161036322_AttendanceAnalyticsQuery_NonAttendees" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201602161036322_attendanceanalyticsquery_nonattendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
   </data>
+  <data name="_201603142139542_FamilyAnalytics_spCrm_FamilyAnalyticsAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201603142139542_FamilyAnalytics_spCrm_FamilyAnalyticsAttendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
+  <data name="_201603142139542_FamilyAnalytics_spCrm_FamilyAnalyticsEraDataset" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201603142139542_FamilyAnalytics_spCrm_FamilyAnalyticsEraDataset.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
+  <data name="_201603142139542_FamilyAnalytics_spCrm_FamilyAnalyticsGiving" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201603142139542_FamilyAnalytics_spCrm_FamilyAnalyticsGiving.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
+  <data name="_201603241157527_AttendanceAnalyticsScheduleFilter_AttendeeDates" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201603241157527_attendanceanalyticsschedulefilter_attendeedates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201603241157527_AttendanceAnalyticsScheduleFilter_AttendeeFirstDates" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201603241157527_attendanceanalyticsschedulefilter_attendeefirstdates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201603241157527_AttendanceAnalyticsScheduleFilter_AttendeeLastAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201603241157527_attendanceanalyticsschedulefilter_attendeelastattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201603241157527_AttendanceAnalyticsScheduleFilter_Attendees" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201603241157527_attendanceanalyticsschedulefilter_attendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201603241157527_AttendanceAnalyticsScheduleFilter_NonAttendees" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201603241157527_attendanceanalyticsschedulefilter_nonattendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201603241157527_spCrm_PersonMerge" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201603241157527_spcrm_personmerge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201603241157527_UpdateIndexes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201603241157527_updateindexes.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>
