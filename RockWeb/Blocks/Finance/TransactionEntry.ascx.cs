@@ -1885,11 +1885,18 @@ namespace RockWeb.Blocks.Finance
 
         // Disable the submit button as soon as it's clicked to prevent double-clicking
         $('a[id$=""btnNext""]').click(function() {{
-			$(this).addClass('disabled');
-			$(this).unbind('click');
-			$(this).click(function () {{
-				return false;
-			}});
+            $(this).unbind('click');
+            if (typeof (Page_ClientValidate) == 'function') {{
+                if (Page_IsValid) {{
+                    Page_ClientValidate();
+                }}
+            }}
+            if (Page_IsValid) {{
+			    $(this).addClass('disabled');
+			    $(this).click(function () {{
+				    return false;
+			    }});
+            }}
         }});
     }});
 
