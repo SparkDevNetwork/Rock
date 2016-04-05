@@ -165,9 +165,14 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                         }
 
                         string printContent = labelCache.FileContent;
-                        // TODO: Document this in our documentation!
+                        // This is documented in <\IT\Projects\Rock RMS\CustomProjects\Check-in\Rock Central Check-in Setup and Design.docx>
                         if ( printContent.StartsWith( "Assembly:" ) )
                         {
+                            if ( socket != null && socket.Connected )
+                            {
+                                socket.Shutdown( SocketShutdown.Both );
+                                socket.Close();
+                            }
                             LoadPrintLabelAndPrint( printContent, label, CurrentCheckInState, person, groupType );
                         }
                         else

@@ -8,7 +8,7 @@ using System.Drawing.Drawing2D;
 namespace com.centralaz.CheckInLabels
 {
     /// <summary>
-    /// This class represents the set of ironman check-in labels.
+    /// This class represents the ironman check-in nametag.
     /// </summary>
     public class IronmanLabelSet
     {
@@ -63,32 +63,11 @@ namespace com.centralaz.CheckInLabels
             set { _FirstTime = value; }
         }
 
-        protected string _LogoImageFile = @"C:\Inetpub\wwwroot\CheckIn\images\xlogo_bw_lg.bmp";
+        protected string _LogoImageFile = @"C:\temp\ironman_w_text_304x74@203.bmp";
         public string LogoImageFile
         {
             get { return _LogoImageFile; }
             set { _LogoImageFile = value; }
-        }
-
-        protected string _BirthdayImageFile = @"C:\Inetpub\wwwroot\CheckIn\images\cake.bmp";
-        public string BirthdayImageFile
-        {
-            get { return _BirthdayImageFile; }
-            set { _BirthdayImageFile = value; }
-        }
-
-        protected DateTime _BirthdayDate = DateTime.MinValue;
-        public DateTime BirthdayDate
-        {
-            get { return _BirthdayDate; }
-            set { _BirthdayDate = value; }
-        }
-
-        protected string _RoomName = string.Empty;
-        public string RoomName
-        {
-            get { return _RoomName; }
-            set { _RoomName = value; }
         }
 
         #endregion
@@ -103,8 +82,8 @@ namespace com.centralaz.CheckInLabels
         /// if a problem occurs when printing.</exception>
         public void PrintLabel( string printerURL )
         {
-
             PrintDocument pDoc = new PrintDocument();
+            pDoc.DefaultPageSettings.Landscape = true;
 
             // hook up the event handler for the PrintPage
             // method, which is where we will build our	document
@@ -156,18 +135,17 @@ namespace com.centralaz.CheckInLabels
         /// <param name="e"></param>
         private void pEvent_PrintLabel( object sender, PrintPageEventArgs e )
         {
-
-            int labelwidth = 384;  // 4 inches * 96dpi
-            int labelheight = 220;//192;  // 2 inches * 96dpi
+            int labelheight = 400;  // 4 inches * 96dpi
+            int labelwidth = 220;   // 2 inches * 96dpi
 
             //String format used to center text on label
             StringFormat format = new StringFormat();
+            format.FormatFlags = StringFormatFlags.NoClip;
             // Define the "brush" for printing
             SolidBrush br = new SolidBrush( Color.Black );
             Rectangle rectangle = new Rectangle();
 
             Bitmap bmp = new Bitmap( labelwidth, labelheight, PixelFormat.Format8bppIndexed );
-
             Graphics g = e.Graphics;
 
             // smothing mode on
@@ -182,11 +160,11 @@ namespace com.centralaz.CheckInLabels
             format.Alignment = StringAlignment.Near;
 
             //Set X Position to 0 (left) and Y position down a bit
-            rectangle.X = 36;
-            rectangle.Y = 256;
+            rectangle.X = 10;
+            rectangle.Y = 36;
 
             // Set rectangle's width to width of label
-            rectangle.Width = labelwidth;
+            rectangle.Width = labelheight;
 
             string firstName = this.FirstName;
 
@@ -194,53 +172,75 @@ namespace com.centralaz.CheckInLabels
             int fontSize = 48; // size for names 4 chars in length or less
             if ( 5 < this.FirstName.Length && this.FirstName.Length <= 10 )
             {
-                fontSize = 24;
+                fontSize = 42;
             }
             else if ( 11 <= this.FirstName.Length )
             {
-                fontSize = 20; // max size
+                fontSize = 36; // max size
                 if ( firstName.Length >= 13 )
+                {
                     firstName = firstName.Substring( 0, 13 );
+                }
             }
 
-            g.DrawString( firstName, new Font( "Gotham", fontSize, FontStyle.Bold ), br, rectangle, format );
+            g.DrawString( firstName, new Font( "Arial Black", fontSize, FontStyle.Regular ), br, rectangle, format );
+
+            /**************************************************************************
+             * This creates a sort of alignment template so you can visually see where
+             * everything goes on a label
+             **************************************************************************/
+            /*
+            fontSize = 6;
+            rectangle.X = 0;
+            rectangle.Y = 0;
+            g.DrawString( "0,0", new Font( "Arial", fontSize, FontStyle.Regular ), br, rectangle, format );
+			
+            rectangle.X = 50;
+            rectangle.Y = 0;
+            g.DrawString( "50,0", new Font( "Arial", fontSize, FontStyle.Regular ), br, rectangle, format );
+			
+            rectangle.X = 380;
+            rectangle.Y = 0;
+            g.DrawString( "380,0", new Font( "Arial", fontSize, FontStyle.Regular ), br, rectangle, format );
+			
+            rectangle.X = 0;
+            rectangle.Y = 50;
+            g.DrawString( "0,50", new Font( "Arial", fontSize, FontStyle.Regular ), br, rectangle, format );
+			
+            rectangle.X = 0;
+            rectangle.Y = 180;
+            g.DrawString( "0,180", new Font( "Arial", fontSize, FontStyle.Regular ), br, rectangle, format );
+			
+            Pen pen = new Pen( Color.Black, 4F );
+            g.DrawRectangle( pen, 0, 0, 400, 200 );
+            */
 
             /*******************************************************************/
             /*                             Separator Line                      */
             /*******************************************************************/
-
-            //Set color to black
             br.Color = Color.Black;
-            g.FillRectangle( br, 35, 292, 928, 2 );
+            g.FillRectangle( br, 30, 140, 340, 2 );
 
             /*******************************************************************/
-            /*                             First Time Line                      */
+            /*                             First Time Line                     */
             /*******************************************************************/
             if ( this.FirstTime )
             {
-                g.FillRectangle( br, 39, 292, 928, 2 );
+                g.FillRectangle( br, 30, 150, 170, 2 );
             }
 
             /*******************************************************************/
-            /*                             Birthday Cake or Logo               */
+            /*                             Logo                                */
             /*******************************************************************/
             // Try to process the images, but don't die if unable to find them
             try
             {
                 System.Drawing.Image img;
-
                 img = System.Drawing.Image.FromFile( this._LogoImageFile, true );
-
-
-                // Define a rectangle to locate the graphic:
-                // x,y ,width, height (where x,y is the coord of the upper left corner of the rectangle)
-                RectangleF rect = new RectangleF( 608F, 608F, 56.0F, 56.0F );
-
                 // Add the image to the document
-                g.DrawImage( img, rect );
+                g.DrawImageUnscaled( img, 220, 150 ); // 220 over, 150 down
             }
             catch { }
-
         }
 
         #endregion
