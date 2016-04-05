@@ -2281,7 +2281,7 @@ namespace Rock.Web.UI
                 if ( AddScriptTags )
                 {
                     l.Text = string.Format( @"
-    <script type=""text/javascript"">������ 
+    <script type=""text/javascript""> 
 {0}
     </script>
 
