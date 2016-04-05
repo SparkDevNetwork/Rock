@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -2474,9 +2474,20 @@ namespace RockWeb.Blocks.Event
                 {
                     var batchService = new FinancialBatchService( rockContext );
 
+                    // determine batch prefix
+                    string batchPrefix = string.Empty;
+                    if ( !string.IsNullOrWhiteSpace( RegistrationTemplate.BatchNamePrefix ) )
+                    {
+                        batchPrefix = RegistrationTemplate.BatchNamePrefix;
+                    }
+                    else
+                    {
+                        batchPrefix = GetAttributeValue( "BatchNamePrefix" );
+                    }
+
                     // Get the batch
                     var batch = batchService.Get(
-                        GetAttributeValue( "BatchNamePrefix" ),
+                        batchPrefix,
                         paymentInfo.CurrencyTypeValue,
                         paymentInfo.CreditCardTypeValue,
                         transaction.TransactionDateTime.Value,

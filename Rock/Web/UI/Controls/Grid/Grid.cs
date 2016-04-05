@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -1068,31 +1068,42 @@ namespace Rock.Web.UI.Controls
         {
             base.OnRowDataBound( e );
 
-            if ( e.Row.RowType == DataControlRowType.Header && this.AllowSorting )
+            if ( e.Row.RowType == DataControlRowType.Header)
             {
-                string asc = SortDirection.Ascending.ToString();
-                string desc = SortDirection.Descending.ToString();
-
-                // Remove the sort css classes and add the data priority
+                //add data priority
                 for ( int i = 0; i < e.Row.Cells.Count; i++ )
                 {
                     var cell = e.Row.Cells[i];
-                    cell.RemoveCssClass( asc );
-                    cell.RemoveCssClass( desc );
                     cell.Attributes.Add( "data-priority", _columnDataPriorities[i] );
                 }
 
-                // Add the new sort css class
-                SortProperty sortProperty = this.SortProperty;
-                if ( sortProperty != null )
+                if ( this.AllowSorting )
                 {
-                    foreach ( var column in this.Columns )
+
+                    string asc = SortDirection.Ascending.ToString();
+                    string desc = SortDirection.Descending.ToString();
+
+                    // Remove the sort css classes
+                    for ( int i = 0; i < e.Row.Cells.Count; i++ )
                     {
-                        var dcf = column as DataControlField;
-                        if ( dcf != null && dcf.SortExpression == this.SortProperty.Property )
+                        var cell = e.Row.Cells[i];
+                        cell.RemoveCssClass( asc );
+                        cell.RemoveCssClass( desc );
+                    }
+
+
+                    // Add the new sort css class
+                    SortProperty sortProperty = this.SortProperty;
+                    if ( sortProperty != null )
+                    {
+                        foreach ( var column in this.Columns )
                         {
-                            e.Row.Cells[this.Columns.IndexOf( dcf )].AddCssClass( sortProperty.Direction.ToString().ToLower() );
-                            break;
+                            var dcf = column as DataControlField;
+                            if ( dcf != null && dcf.SortExpression == this.SortProperty.Property )
+                            {
+                                e.Row.Cells[this.Columns.IndexOf( dcf )].AddCssClass( sortProperty.Direction.ToString().ToLower() );
+                                break;
+                            }
                         }
                     }
                 }

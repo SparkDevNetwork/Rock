@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -1781,25 +1781,9 @@ namespace Rock.Lava
         /// <param name="input">The input, which is the person.</param>
         /// <param name="size">The size.</param>
         /// <returns>A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:LOGO,P,P,{0},,{1} ^FD").</returns>
-        [Obsolete( "ZebraPhoto is deprecated, please use ZebraPersonPhoto instead." )]
         public static string ZebraPhoto( DotLiquid.Context context, object input, string size )
         {
-            return ZebraPersonPhoto( context, input, size, 1.0, 1.0 );
-        }
-
-        /// <summary>
-        /// Gets the profile photo for a person object in a string that zebra printers can use.
-        /// If the person has no photo, a default silhouette photo (adult/child, male/female)
-        /// photo is used.
-        /// See http://www.rockrms.com/lava/person#ZebraPhoto for details.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        /// <param name="input">The input, which is the person.</param>
-        /// <param name="size">The size.</param>
-        /// <returns>A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:LOGO,P,P,{0},,{1} ^FD").</returns>
-        public static string ZebraPersonPhoto( DotLiquid.Context context, object input, string size )
-        {
-            return ZebraPersonPhoto( context, input, size, 1.0, 1.0 );
+            return ZebraPhoto( context, input, size, 1.0, 1.0 );
         }
 
         /// <summary>
@@ -1814,7 +1798,7 @@ namespace Rock.Lava
         /// <param name="brightness">The brightness adjustment (-1.0 to 1.0).</param>
         /// <param name="contrast">The contrast adjustment (-1.0 to 1.0).</param>
         /// <returns>A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:LOGO,P,P,{0},,{1} ^FD").</returns>
-        public static string ZebraPersonPhoto( DotLiquid.Context context, object input, string size, double brightness = 1.0, double contrast = 1.0 )
+        public static string ZebraPhoto( DotLiquid.Context context, object input, string size, double brightness = 1.0, double contrast = 1.0 )
         {
             var person = GetPerson( input );
             try
@@ -2642,6 +2626,54 @@ namespace Rock.Lava
             }
 
             return input;
+        }
+
+        /// <summary>
+        /// Sorts the list of items by the specified attribute's value
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <returns></returns>
+        public static object SortByAttribute( DotLiquid.Context context, object input, string attributeKey )
+        {
+            if ( input is IEnumerable<Rock.Attribute.IHasAttributes> )
+            {
+                var rockContext = GetRockContext( context );
+                var inputList = ( input as IEnumerable<Rock.Attribute.IHasAttributes> ).ToList();
+                foreach ( var item in inputList )
+                {
+                    if ( item.Attributes == null )
+                    {
+                        item.LoadAttributes( rockContext );
+                    }
+                }
+
+                if ( inputList.Count > 1 && inputList[0].Attributes.ContainsKey( attributeKey ) )
+                {
+                    var attributeCache = inputList[0].Attributes[attributeKey];
+
+                    inputList.Sort( ( item1, item2 ) =>
+                    {
+                        var item1AttributeValue = item1.AttributeValues.Where( a => a.Key == attributeKey ).FirstOrDefault().Value.SortValue;
+                        var item2AttributeValue = item2.AttributeValues.Where( a => a.Key == attributeKey ).FirstOrDefault().Value.SortValue;
+                        if ( item1AttributeValue is IComparable && item2AttributeValue is IComparable )
+                        {
+                            return ( item1AttributeValue as IComparable ).CompareTo( item2AttributeValue as IComparable );
+                        }
+                        else
+                        {
+                            return 0;
+                        }
+                    } );
+                }
+
+                return inputList;
+            }
+            else
+            {
+                return input;
+            }
         }
 
         #endregion

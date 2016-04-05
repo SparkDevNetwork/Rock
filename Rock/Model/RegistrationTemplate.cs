@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -397,6 +397,14 @@ namespace Rock.Model
         [DataMember]
         public int? PaymentReminderTimeSpan { get; set; }
 
+        /// <summary>
+        /// Gets or sets the batch name prefix.
+        /// </summary>
+        /// <value>
+        /// The batch name prefix.
+        /// </value>
+        [DataMember]
+        public string BatchNamePrefix { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether to allow external registration updates (should a person be able to update their regisitration on-line after submitting it).

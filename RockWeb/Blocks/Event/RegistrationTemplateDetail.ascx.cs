@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -677,6 +677,7 @@ namespace RockWeb.Blocks.Event
             RegistrationTemplate.Cost = cbCost.Text.AsDecimal();
             RegistrationTemplate.MinimumInitialPayment = cbMinimumInitialPayment.Text.AsDecimalOrNull();
             RegistrationTemplate.FinancialGatewayId = fgpFinancialGateway.SelectedValueAsInt();
+            RegistrationTemplate.BatchNamePrefix = txtBatchNamePrefix.Text;
 
             RegistrationTemplate.ConfirmationFromName = tbConfirmationFromName.Text;
             RegistrationTemplate.ConfirmationFromEmail = tbConfirmationFromEmail.Text;
@@ -1965,6 +1966,7 @@ namespace RockWeb.Blocks.Event
             cbCost.Text = RegistrationTemplate.Cost.ToString();
             cbMinimumInitialPayment.Text = RegistrationTemplate.MinimumInitialPayment.HasValue ? RegistrationTemplate.MinimumInitialPayment.Value.ToString( "N2" ) : "";
             fgpFinancialGateway.SetValue( RegistrationTemplate.FinancialGatewayId );
+            txtBatchNamePrefix.Text = RegistrationTemplate.BatchNamePrefix;
             SetCostVisibility();
 
             tbConfirmationFromName.Text = RegistrationTemplate.ConfirmationFromName;

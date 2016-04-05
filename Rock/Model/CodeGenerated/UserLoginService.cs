@@ -97,6 +97,7 @@ namespace Rock.Model
             target.IsConfirmed = source.IsConfirmed;
             target.IsLockedOut = source.IsLockedOut;
             target.IsOnLine = source.IsOnLine;
+            target.IsPasswordChangeRequired = source.IsPasswordChangeRequired;
             target.LastActivityDateTime = source.LastActivityDateTime;
             target.LastLockedOutDateTime = source.LastLockedOutDateTime;
             target.LastLoginDateTime = source.LastLoginDateTime;

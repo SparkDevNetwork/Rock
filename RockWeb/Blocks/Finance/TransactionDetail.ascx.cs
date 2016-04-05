@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -128,15 +128,25 @@ namespace RockWeb.Blocks.Finance
             gAccountsView.DataKeyNames = new string[] { "Guid" };
             gAccountsView.ShowActionRow = false;
 
+            var qryParam = new Dictionary<string, string>();
+            qryParam.Add( "transactionId", "PLACEHOLDER" );
+
             gRefunds.DataKeyNames = new string[] { "Id" };
             gRefunds.ShowActionRow = false;
 
-            var qryParam = new Dictionary<string, string>();
-            qryParam.Add( "transactionId", "PLACEHOLDER" );
-            var hlCol = gRefunds.Columns[0] as HyperLinkField;
-            if ( hlCol != null )
+            var hlRefundCol = gRefunds.Columns[0] as HyperLinkField;
+            if ( hlRefundCol != null )
             {
-                hlCol.DataNavigateUrlFormatString = new PageReference( CurrentPageReference.PageId, 0, qryParam ).BuildUrl().Replace( "PLACEHOLDER", "{0}" );
+                hlRefundCol.DataNavigateUrlFormatString = new PageReference( CurrentPageReference.PageId, 0, qryParam ).BuildUrl().Replace( "PLACEHOLDER", "{0}" );
+            }
+
+            gRelated.DataKeyNames = new string[] { "Id" };
+            gRelated.ShowActionRow = false;
+
+            var hlRelatedCol = gRelated.Columns[0] as HyperLinkField;
+            if ( hlRelatedCol != null )
+            {
+                hlRelatedCol.DataNavigateUrlFormatString = new PageReference( CurrentPageReference.PageId, 0, qryParam ).BuildUrl().Replace( "PLACEHOLDER", "{0}" );
             }
 
             gAccountsEdit.DataKeyNames = new string[] { "Guid" };
@@ -1230,6 +1240,15 @@ namespace RockWeb.Blocks.Finance
                     }
                     detailsLeft.Add( "Refund Summary", txn.RefundDetails.RefundReasonSummary );
                 }
+                if ( !string.IsNullOrWhiteSpace(txn.Status) )
+                {
+                    string status = txn.Status;
+                    if ( !string.IsNullOrWhiteSpace( txn.StatusMessage ) )
+                    {
+                        status += string.Format( "<br/><small>{0}</small>", txn.StatusMessage.ConvertCrLfToHtmlBr() );
+                    }
+                    detailsLeft.Add( "Status", status );
+                }
 
                 var modified = new StringBuilder(); ;
                 if ( txn.CreatedByPersonAlias != null && txn.CreatedByPersonAlias.Person != null && txn.CreatedDateTime.HasValue )
@@ -1305,6 +1324,41 @@ namespace RockWeb.Blocks.Finance
                 {
                     pnlRefunds.Visible = false;
                 }
+
+                if ( !string.IsNullOrWhiteSpace( txn.TransactionCode ) )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var relatedTxns = new FinancialTransactionService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( t =>
+                                t.TransactionCode == txn.TransactionCode &&
+                                t.Id != txn.Id &&
+                                t.TransactionDateTime.HasValue )
+                            .OrderBy( t => t.TransactionDateTime.Value )
+                            .ToList();
+                        if ( relatedTxns.Any() )
+                        {
+                            pnlRelated.Visible = true;
+                            gRelated.DataSource = relatedTxns
+                                .Select( t => new
+                                {
+                                    Id = t.Id,
+                                    TransactionDateTime = t.TransactionDateTime.Value.ToShortDateString() + " " +
+                                        t.TransactionDateTime.Value.ToShortTimeString(),
+                                    TransactionCode = t.TransactionCode,
+                                    TotalAmount = t.TotalAmount
+                                } )
+                                .ToList();
+                            gRelated.DataBind();
+                        }
+                        else
+                        {
+                            pnlRelated.Visible = false;
+                        }
+                    }
+                }
+
             }
             else
             {
