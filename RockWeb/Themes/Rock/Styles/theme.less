@@ -7,6 +7,7 @@
 // Load Master Styles
 // -------------------------
 @import "../../../Styles/Bootstrap/variables.less";
+
 @import "../../../Styles/_rock-core.less";
 @import "../../../Styles/_store.less";
 @import "../../../Styles/_rock-variables.less";
@@ -410,13 +411,14 @@ a.link-block,
         width: 95px;
         height: 34px;
         margin: 8px 0 0 6px;
+        opacity: .8;
 
         svg {
           height: 100%;
           width: 100%;
 
           .rock-logo {
-            fill: #d3cec5;
+            fill: darken(@theme-4, 5%);
           }
         }
       }
@@ -684,11 +686,12 @@ body#splash {
     background-color: @nav-logo-bg;
 
     .logo {
-      background: url(../../../Assets/Images/rock-logo-sm.svg) no-repeat top left;
-      height: 35px;
-      width: 36px;
-      background-size: contain;
-      margin: 8px auto 0;
+        background: url(../../../Assets/Images/rock-logo-sm.svg) no-repeat top left;
+        height: 35px;
+        width: 36px;
+        background-size: contain;
+        margin: 8px auto 0;
+        opacity: .8;
     }
   }
 
@@ -834,3 +837,4 @@ body.navbar-side-close {
 
 
 @import "_print.less";
+@import "_css-overrides.less";
