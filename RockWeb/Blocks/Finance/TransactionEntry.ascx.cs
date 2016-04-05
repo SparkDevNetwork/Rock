@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Creates a new financial transaction or scheduled transaction." )]
     [FinancialGatewayField( "Credit Card Gateway", "The payment gateway to use for Credit Card transactions", false, "", "", 0, "CCGateway" )]
-    [FinancialGatewayField( "ACH Card Gateway", "The payment gateway to use for ACH (bank account) transactions", false, "", "", 1, "ACHGateway" )]
+    [FinancialGatewayField( "ACH Gateway", "The payment gateway to use for ACH (bank account) transactions", false, "", "", 1, "ACHGateway" )]
     [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving", "", 2 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source", "The Financial Source Type to use when creating transactions", false, false,
         Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE, "", 3 )]
@@ -1547,6 +1547,12 @@ namespace RockWeb.Blocks.Finance
                             changeSummary.AppendLine();
                         }
 
+                        if ( !string.IsNullOrWhiteSpace( paymentInfo.Comment1 ) )
+                        {
+                            changeSummary.Append( paymentInfo.Comment1 );
+                            changeSummary.AppendLine();
+                        }
+
                         var transactionService = new FinancialScheduledTransactionService( rockContext );
                         transactionService.Add( scheduledTransaction );
                         rockContext.SaveChanges();
@@ -1595,6 +1601,9 @@ namespace RockWeb.Blocks.Finance
                         var txnType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) );
                         transaction.TransactionTypeValueId = txnType.Id;
                         History.EvaluateChange( txnChanges, "Type", string.Empty, txnType.Value );
+
+                        transaction.Summary = paymentInfo.Comment1;
+                        History.EvaluateChange( txnChanges, "Transaction Code", string.Empty, transaction.Summary );
 
                         if ( transaction.FinancialPaymentDetail == null )
                         {

@@ -226,7 +226,7 @@ namespace RockWeb.Blocks.Core
                     var divPanel = e.Item.FindControl( "divPanel" ) as HtmlGenericControl;
                     
                     var requiredVersion = ExtractRequiredVersionFromTags( package );
-                    if ( requiredVersion >= _installedVersion )
+                    if ( requiredVersion <= _installedVersion )
                     {
                         lbInstall.Enabled = true;
                         lbInstall.AddCssClass( "btn-info" );
@@ -457,15 +457,16 @@ namespace RockWeb.Blocks.Core
         protected SemanticVersion ExtractRequiredVersionFromTags( IPackage package )
         {
             Regex regex = new Regex( @"requires-([\.\d]+)" );
-            Match match = regex.Match( package.Tags );
-            if ( match.Success )
-            {
-                return new SemanticVersion( match.Groups[1].Value );
+            if ( package.Tags != null )
+            { 
+                Match match = regex.Match( package.Tags );
+                if ( match.Success )
+                {
+                    return new SemanticVersion( match.Groups[1].Value );
+                }
             }
-            else
-            {
-                throw new ArgumentException( string.Format( "There is a malformed 'requires-' tag in a Rock package ({0})", package.Version ) );
-            }
+
+            throw new ArgumentException( string.Format( "There is a malformed 'requires-' tag in a Rock package ({0})", package.Version ) );
         }
 
         /// <summary>

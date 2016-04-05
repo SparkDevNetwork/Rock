@@ -28,7 +28,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
+    <DebugType>none</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
@@ -38,6 +38,9 @@
     <DocumentationFile>bin\Rock.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CommonMark">
+      <HintPath>..\packages\CommonMark.NET.0.11.0\lib\net45\CommonMark.dll</HintPath>
+    </Reference>
     <Reference Include="CronExpressionDescriptor, Version=1.12.0.0, Culture=neutral, PublicKeyToken=a2ab0e0f73f9b037, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\CronExpressionDescriptor.1.12.0\lib\net35\CronExpressionDescriptor.dll</HintPath>
@@ -159,6 +162,7 @@
     <Compile Include="Address\VerificationContainer.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\Bing.cs" />
+    <Compile Include="Attribute\BinaryFileTypesFieldAttribute.cs" />
     <Compile Include="Attribute\ConnectionTypesFieldAttribute.cs" />
     <Compile Include="Attribute\ConnectionActivityTypeFieldAttribute.cs" />
     <Compile Include="Attribute\ConnectionTypeFieldAttribute.cs" />
@@ -185,6 +189,7 @@
     <Compile Include="Attribute\EnumFieldAttribute.cs" />
     <Compile Include="Attribute\SchedulesFieldAttribute.cs" />
     <Compile Include="Attribute\EncryptedTextFieldAttribute.cs" />
+    <Compile Include="Attribute\MarkdownFieldAttribute.cs" />
     <Compile Include="Attribute\UrlLinkFieldAttribute.cs" />
     <Compile Include="Attribute\GroupTypeGroupFieldAttribute.cs" />
     <Compile Include="Attribute\EmailFieldAttribute.cs" />
@@ -244,7 +249,6 @@
     <Compile Include="Chart\SummaryData.cs" />
     <Compile Include="Communication\RecipientData.cs" />
     <Compile Include="Communication\SMTPComponent.cs" />
-    <Compile Include="Communication\Transport\MandrillSmtp.cs" />
     <Compile Include="Communication\Transport\Twilio.cs" />
     <Compile Include="Constants\SystemSettingKeys.cs" />
     <Compile Include="Data\BoundFieldTypeAttribute.cs" />
@@ -264,6 +268,7 @@
     <Compile Include="Data\Udf\GetAddressStoreFunctionInjectionConvention.cs" />
     <Compile Include="Data\Udf\DbMetadataExtensions.cs" />
     <Compile Include="Data\Udf\RockUdfHelper.cs" />
+    <Compile Include="Field\Types\BinaryFileTypesFieldType.cs" />
     <Compile Include="Field\Types\MergeTemplateFieldType.cs" />
     <Compile Include="Field\Types\ConnectionActivityTypeFieldType.cs" />
     <Compile Include="Field\Types\ConnectionTypesFieldType.cs" />
@@ -278,6 +283,7 @@
     <Compile Include="Field\Types\NoteTypeFieldType.cs" />
     <Compile Include="Field\Types\EnumFieldType.cs" />
     <Compile Include="Field\Types\RangeSliderFieldType.cs" />
+    <Compile Include="Field\Types\MarkdownFieldType.cs" />
     <Compile Include="Financial\NMIGateway.cs" />
     <Compile Include="Follow\Event\PersonFirstAttendedGroupType.cs" />
     <Compile Include="Follow\Event\PersonFirstJoinedGroupType.cs" />
@@ -289,8 +295,10 @@
     <Compile Include="Follow\EventComponent.cs" />
     <Compile Include="Follow\SuggestionContainer.cs" />
     <Compile Include="Follow\EventContainer.cs" />
+    <Compile Include="Jobs\CalculateFamilyAnalytics.cs" />
     <Compile Include="Jobs\SendFollowingEvents.cs" />
     <Compile Include="Jobs\SendFollowingSuggestions.cs" />
+    <Compile Include="Jobs\SendRegistrationPaymentReminders.cs" />
     <Compile Include="Jobs\SendRegistrationReminders.cs" />
     <Compile Include="Jobs\SendGroupRequirementsNotification.cs" />
     <Compile Include="Model\BackgroundCheck.cs" />
@@ -536,6 +544,7 @@
     <Compile Include="Reporting\DataTransform\Person\ChildrenTransform.cs" />
     <Compile Include="Reporting\ReportingHelper.cs" />
     <Compile Include="Reporting\DataSelect\Person\GroupParticipationSelect.cs" />
+    <Compile Include="Search\Person\BusinessName.cs" />
     <Compile Include="Security\Authentication\Twitter.cs" />
     <Compile Include="Store\PackageVersionRatingService.cs" />
     <Compile Include="Transactions\SaveCommunicationTransaction.cs" />
@@ -543,7 +552,8 @@
     <Compile Include="Transactions\UpdatePaymentStatusTransaction.cs" />
     <Compile Include="Utility\DebugHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\DecimalExtensions.cs" />
-    <Compile Include="Utility\ImageUtilities.cs" />
+    <Compile Include="Utility\ExtensionMethods\StringHumanizerExtensions.cs" />
+    <Compile Include="Utility\FileUtilities.cs" />
     <Compile Include="Utility\NotNullJsonConverter.cs" />
     <Compile Include="Utility\ExtensionMethods\CurrencyExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\ExceptionExtensions.cs" />
@@ -551,6 +561,7 @@
     <Compile Include="Web\Cache\AttributeValueCache.cs" />
     <Compile Include="Web\InternalContext.cs" />
     <Compile Include="Web\UI\Controls\Grid\GroupPickerField.cs" />
+    <Compile Include="Web\UI\Controls\MarkdownEditor.cs" />
     <Compile Include="Web\UI\Controls\Pickers\WorkflowActionTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ConnectionRequestPicker.cs" />
     <Compile Include="Web\UI\Controls\RangeSlider.cs" />
@@ -1147,6 +1158,7 @@
     <Compile Include="Workflow\Action\RemovePersonFromGroupAttribute.cs" />
     <Compile Include="Workflow\Action\RemovePersonFromGroup.cs" />
     <Compile Include="Workflow\Action\GetPersonFromFields.cs" />
+    <Compile Include="Workflow\Action\AddNoteToGroupMember.cs" />
     <Compile Include="Workflow\Action\SetGroupMemberNote.cs" />
     <Compile Include="Workflow\Action\UpdateGroupMemberStatus.cs" />
     <Compile Include="Workflow\Action\AddPersonToGroupAttribute.cs" />

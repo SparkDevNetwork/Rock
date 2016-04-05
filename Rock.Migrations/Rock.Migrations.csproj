@@ -19,15 +19,15 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>bin\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
+    <DebugType>none</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>bin\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -116,6 +116,62 @@
     <Compile Include="Migrations\201602161036322_AttendanceAnalyticsQuery.cs" />
     <Compile Include="Migrations\201602161036322_AttendanceAnalyticsQuery.Designer.cs">
       <DependentUpon>201602161036322_AttendanceAnalyticsQuery.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201602231841538_RegistrationPaymentReminders.cs" />
+    <Compile Include="Migrations\201602231841538_RegistrationPaymentReminders.Designer.cs">
+      <DependentUpon>201602231841538_RegistrationPaymentReminders.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201602242247579_PaymentReminderPageAndJob.cs" />
+    <Compile Include="Migrations\201602242247579_PaymentReminderPageAndJob.Designer.cs">
+      <DependentUpon>201602242247579_PaymentReminderPageAndJob.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201602271652548_AddAllowedDomainsToSite.cs" />
+    <Compile Include="Migrations\201602271652548_AddAllowedDomainsToSite.Designer.cs">
+      <DependentUpon>201602271652548_AddAllowedDomainsToSite.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201602292030218_DiscEnhancements.cs" />
+    <Compile Include="Migrations\201602292030218_DiscEnhancements.Designer.cs">
+      <DependentUpon>201602292030218_DiscEnhancements.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201603071844003_FollowingEventsAndRegistrations.cs" />
+    <Compile Include="Migrations\201603071844003_FollowingEventsAndRegistrations.Designer.cs">
+      <DependentUpon>201603071844003_FollowingEventsAndRegistrations.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201603092127444_ConnectionTypePlacementGroupOptional.cs" />
+    <Compile Include="Migrations\201603092127444_ConnectionTypePlacementGroupOptional.Designer.cs">
+      <DependentUpon>201603092127444_ConnectionTypePlacementGroupOptional.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201603142139542_FamilyAnalytics.cs" />
+    <Compile Include="Migrations\201603142139542_FamilyAnalytics.Designer.cs">
+      <DependentUpon>201603142139542_FamilyAnalytics.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201603142203529_MigrationRollupv5a.cs" />
+    <Compile Include="Migrations\201603142203529_MigrationRollupv5a.Designer.cs">
+      <DependentUpon>201603142203529_MigrationRollupv5a.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201603151246313_BackgroundCheckSubmitHandler.cs" />
+    <Compile Include="Migrations\201603151246313_BackgroundCheckSubmitHandler.Designer.cs">
+      <DependentUpon>201603151246313_BackgroundCheckSubmitHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201603162100288_AddBusinessSearch.cs" />
+    <Compile Include="Migrations\201603162100288_AddBusinessSearch.Designer.cs">
+      <DependentUpon>201603162100288_AddBusinessSearch.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201603211730586_DaysUntilConsideredIdle.cs" />
+    <Compile Include="Migrations\201603211730586_DaysUntilConsideredIdle.Designer.cs">
+      <DependentUpon>201603211730586_DaysUntilConsideredIdle.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201603212040044_HistoryRegUpdates.cs" />
+    <Compile Include="Migrations\201603212040044_HistoryRegUpdates.Designer.cs">
+      <DependentUpon>201603212040044_HistoryRegUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201603221609084_HistoryCategories.cs" />
+    <Compile Include="Migrations\201603221609084_HistoryCategories.Designer.cs">
+      <DependentUpon>201603221609084_HistoryCategories.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201603241157527_AttendanceAnalyticsScheduleFilter.cs" />
+    <Compile Include="Migrations\201603241157527_AttendanceAnalyticsScheduleFilter.Designer.cs">
+      <DependentUpon>201603241157527_AttendanceAnalyticsScheduleFilter.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.cs" />
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.Designer.cs">
@@ -2047,6 +2103,48 @@
     <EmbeddedResource Include="Migrations\201602161036322_AttendanceAnalyticsQuery.resx">
       <DependentUpon>201602161036322_AttendanceAnalyticsQuery.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201602231841538_RegistrationPaymentReminders.resx">
+      <DependentUpon>201602231841538_RegistrationPaymentReminders.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201602242247579_PaymentReminderPageAndJob.resx">
+      <DependentUpon>201602242247579_PaymentReminderPageAndJob.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201602271652548_AddAllowedDomainsToSite.resx">
+      <DependentUpon>201602271652548_AddAllowedDomainsToSite.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201602292030218_DiscEnhancements.resx">
+      <DependentUpon>201602292030218_DiscEnhancements.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603071844003_FollowingEventsAndRegistrations.resx">
+      <DependentUpon>201603071844003_FollowingEventsAndRegistrations.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603092127444_ConnectionTypePlacementGroupOptional.resx">
+      <DependentUpon>201603092127444_ConnectionTypePlacementGroupOptional.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603142139542_FamilyAnalytics.resx">
+      <DependentUpon>201603142139542_FamilyAnalytics.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603142203529_MigrationRollupv5a.resx">
+      <DependentUpon>201603142203529_MigrationRollupv5a.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603151246313_BackgroundCheckSubmitHandler.resx">
+      <DependentUpon>201603151246313_BackgroundCheckSubmitHandler.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603162100288_AddBusinessSearch.resx">
+      <DependentUpon>201603162100288_AddBusinessSearch.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603211730586_DaysUntilConsideredIdle.resx">
+      <DependentUpon>201603211730586_DaysUntilConsideredIdle.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603212040044_HistoryRegUpdates.resx">
+      <DependentUpon>201603212040044_HistoryRegUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603221609084_HistoryCategories.resx">
+      <DependentUpon>201603221609084_HistoryCategories.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603241157527_AttendanceAnalyticsScheduleFilter.resx">
+      <DependentUpon>201603241157527_AttendanceAnalyticsScheduleFilter.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.resx">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
     </EmbeddedResource>
@@ -3451,14 +3549,24 @@
     <None Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase_PopulateData.sql" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Migrations\201603241157527_UpdateIndexes.sql" />
+    <Content Include="Migrations\201603241157527_spCrm_PersonMerge.sql" />
+    <Content Include="Migrations\201603241157527_AttendanceAnalyticsScheduleFilter_AttendeeDates.sql" />
+    <Content Include="Migrations\201603241157527_AttendanceAnalyticsScheduleFilter_AttendeeFirstDates.sql" />
     <Content Include="Migrations\201602161036322_AttendanceAnalyticsQuery_AttendeeFirstDates.sql" />
+    <Content Include="Migrations\201603241157527_AttendanceAnalyticsScheduleFilter_AttendeeLastAttendance.sql" />
     <Content Include="Migrations\201602161036322_AttendanceAnalyticsQuery_AttendeeLastAttendance.sql" />
+    <Content Include="Migrations\201603241157527_AttendanceAnalyticsScheduleFilter_Attendees.sql" />
     <Content Include="Migrations\201602161036322_AttendanceAnalyticsQuery_Attendees.sql" />
     <Content Include="Migrations\201602161036322_AttendanceAnalyticsQuery_GroupTypeAttendance.sql" />
     <Content Include="Migrations\201602161036322_AttendanceAnalyticsQuery_Indexes.sql" />
+    <Content Include="Migrations\201603241157527_AttendanceAnalyticsScheduleFilter_NonAttendees.sql" />
     <Content Include="Migrations\201602161036322_AttendanceAnalyticsQuery_NonAttendees.sql" />
     <Content Include="Migrations\201602161036322_AttendanceAnalyticsQuery_AttendeeDates.sql" />
     <Content Include="Migrations\201602041745307_TuneDuplicateFinder.sql" />
+    <Content Include="Migrations\201603142139542_FamilyAnalytics_spCrm_FamilyAnalyticsAttendance.sql" />
+    <Content Include="Migrations\201603142139542_FamilyAnalytics_spCrm_FamilyAnalyticsEraDataset.sql" />
+    <Content Include="Migrations\201603142139542_FamilyAnalytics_spCrm_FamilyAnalyticsGiving.sql" />
     <Content Include="Migrations\Version 4.0\Version 1.4.0\201506051749054_AddSampleMergeDocs.sql" />
     <Content Include="Migrations\Version 4.0\Version 1.4.0\201506112030400_PersonDaysUntilBirthday.sql" />
     <Content Include="Migrations\Version 4.0\Version 1.4.0\201506281615197_GivingAnalyticsEmail_1.sql" />
@@ -3502,6 +3610,9 @@
     <Content Include="Migrations\Version 4.0\Version 1.4.0\201511182310362_ProtectMyMinistry.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy /Y /R "$(ProjectDir)bin\$(TargetFileName)" "$(SolutionDir)RockWeb\bin"</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

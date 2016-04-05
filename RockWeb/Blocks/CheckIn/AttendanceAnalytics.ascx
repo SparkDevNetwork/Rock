@@ -45,7 +45,6 @@
                         <Rock:NotificationBox ID="nbGroupTypeWarning" runat="server" NotificationBoxType="Warning" Text="Please select a group type template in the block settings." Dismissable="false" />
 
                         <div class="actions margin-b-md">
-                            
                         </div>
 
                         <Rock:NotificationBox ID="nbDateRangeWarning" runat="server" NotificationBoxType="Warning" Text="Date Range is required" Visible="false" Dismissable="true" />
@@ -64,6 +63,9 @@
                                 </div>
                             </div>
                         </Rock:RockControlWrapper>
+
+                        <Rock:SchedulePicker ID="spSchedules" runat="server" Label="Schedules" AllowMultiSelect="true"
+                            Help="The schedules to display attendance for. Leave blank to not filter by schedule." />
 
                         <Rock:RockCheckBoxList ID="clbCampuses" runat="server" FormGroupCssClass="campuses-picker js-campuses-picker" CssClass="campuses-picker-vertical" Label="Campuses" 
                             Help="The campuses to display attendance for. Leave blank to not filter by campus." />
@@ -237,6 +239,7 @@
                                         <Rock:RockBoundField DataField="Person" HeaderText="Person" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockBoundField DataField="Person.Email" HeaderText="Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockBoundField DataField="Person.Age" HeaderText="Age" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                        <Rock:RockBoundField DataField="Person.Birthdate" HeaderText="Birthdate" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:DefinedValueField DataField="Person.ConnectionStatusValueId" HeaderText="Connection Status" SortExpression="Person.ConnectionStatusValueId" />
                                         <Rock:RockLiteralField HeaderText="First Visit" ID="lFirstVisitDate" SortExpression="FirstVisit.StartDateTime"/>
                                         <Rock:RockLiteralField HeaderText="Second Visit" ID="lSecondVisitDate" />

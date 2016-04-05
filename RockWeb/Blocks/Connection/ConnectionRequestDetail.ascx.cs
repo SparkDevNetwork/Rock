@@ -1062,12 +1062,13 @@ namespace RockWeb.Blocks.Connection
                                 g.ConnectorGroup != null &&
                                 g.ConnectorGroup.Members.Any( m => m.PersonId == CurrentPersonId ) );
 
-                        if ( !editAllowed && connectionRequest.CampusId.HasValue )
+                        if ( !editAllowed )
                         {
+                            //If this is a new request, grant edit access to any connector group. Otherwise, match the request's campus to the corresponding campus-specific connector group
                             foreach ( var groupCampus in connectionOpportunity
                                 .ConnectionOpportunityConnectorGroups
                                 .Where( g =>
-                                    g.CampusId == connectionRequest.CampusId.Value &&
+                                    ( connectionRequest.Id == 0 || ( connectionRequest.CampusId.HasValue && g.CampusId == connectionRequest.CampusId.Value ) ) &&
                                     g.ConnectorGroup != null &&
                                     g.ConnectorGroup.Members.Any( m => m.PersonId == CurrentPersonId ) ) )
                             {
@@ -1119,10 +1120,7 @@ namespace RockWeb.Blocks.Connection
             else
             {
                 pnlRequirements.Visible = false;
-                // This will be changed in v5.0 to check the opportunity's ConnectionType
-                // RequiresPlacementGroupToConnect bit to see if it should be enabled
-                // or disabled.
-                //lbConnect.Enabled = false;
+                lbConnect.Enabled = !connectionRequest.ConnectionOpportunity.ConnectionType.RequiresPlacementGroupToConnect;
             }
 
             if ( connectionRequest.ConnectionState == ConnectionState.Inactive || connectionRequest.ConnectionState == ConnectionState.Connected )

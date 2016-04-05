@@ -304,17 +304,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             var role = new GroupTypeRoleService( rockContext ).Get( ownerRoleGuid );
                             if ( role != null && role.GroupTypeId.HasValue )
                             {
-                                var groupMember = new GroupMember();
-                                groupMember.PersonId = Person.Id;
-                                groupMember.GroupRoleId = role.Id;
-
+                                var groupService = new GroupService( rockContext );
                                 group = new Group();
                                 group.Name = role.GroupType.Name;
                                 group.GroupTypeId = role.GroupTypeId.Value;
-                                group.Members.Add( groupMember );
-
-                                var groupService = new GroupService( rockContext );
                                 groupService.Add( group );
+                                rockContext.SaveChanges();
+
+                                var groupMember = new GroupMember();
+                                groupMember.PersonId = Person.Id;
+                                groupMember.GroupRoleId = role.Id;
+                                groupMember.GroupId = group.Id;
+                                group.Members.Add( groupMember );
                                 rockContext.SaveChanges();
 
                                 group = groupService.Get( group.Id );

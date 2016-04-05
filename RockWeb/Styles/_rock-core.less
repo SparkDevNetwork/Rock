@@ -54,6 +54,9 @@
 // 2. HTML Overrides
 //--------------------------------
 
+iframe {
+    border: 1px solid @input-border;
+}
 
 // 3. Utility Classes
 //--------------------------------
@@ -177,8 +180,18 @@ th[align=center] {
 }
 
 .badge-info {
-  background-color: @label-info-bg !important;
+  background-color:  @label-info-bg !important;
   color: #fff !important;
+}
+
+.badge-critical {
+  background-color: @label-critical-bg !important;
+  color: #fff !important;
+}
+
+.badge-legend .badge {
+    margin-right: 4px;
+    cursor: pointer;
 }
 
 // add alternate popover title style that exists inside of the popover-content to use ajax updates
@@ -294,6 +307,13 @@ th[align=center] {
   .panel-footer {
     background-color: @panel-footer-bg;
     color: @panel-footer-color;
+  }
+
+  .panel-settings {
+      margin: -(@panel-body-padding) -(@panel-body-padding) (@panel-body-padding *2) -(@panel-body-padding);
+      background-color: lighten(@panel-heading-bg, 3%);
+      padding: (@panel-body-padding);
+      border-bottom: 1px solid lighten(@panel-heading-border, 3%);
   }
 }
 

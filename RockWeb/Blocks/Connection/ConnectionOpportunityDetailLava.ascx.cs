@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -143,14 +144,21 @@ namespace RockWeb.Blocks.Connection
                 var opportunity = qry.FirstOrDefault();
 
                 var mergeFields = new Dictionary<string, object>();
-                mergeFields.Add( "Opportunity", opportunity );
-
-                // add linked pages
                 Dictionary<string, object> linkedPages = new Dictionary<string, object>();
                 linkedPages.Add( "SignupPage", LinkedPageUrl( "SignupPage", null ) );
                 mergeFields.Add( "LinkedPages", linkedPages );
 
                 mergeFields.Add( "CurrentPerson", CurrentPerson );
+                mergeFields.Add( "CampusContext", RockPage.GetCurrentContext( EntityTypeCache.Read( "Rock.Model.Campus" ) ) as Campus );
+
+                // run opportunity summary and details through lava
+                opportunity.Summary = opportunity.Summary.ResolveMergeFields(mergeFields);
+                opportunity.Description = opportunity.Description.ResolveMergeFields( mergeFields );
+
+                mergeFields.Add( "Opportunity", opportunity );
+
+                // add linked pages
+                
 
                 var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
                 globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );

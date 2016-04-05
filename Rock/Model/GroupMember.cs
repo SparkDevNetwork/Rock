@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Configuration;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -213,9 +214,12 @@ namespace Rock.Model
         public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
         {
             string action = string.Empty;
+            string verb = string.Empty;
+
             if ( state == System.Data.Entity.EntityState.Added )
             {
                 action = "Added to group.";
+                verb = "ADD";
                 if ( !this.DateTimeAdded.HasValue )
                 {
                     this.DateTimeAdded = RockDateTime.Now;
@@ -224,6 +228,7 @@ namespace Rock.Model
             else if ( state == System.Data.Entity.EntityState.Deleted )
             {
                 action = "Removed from group.";
+                verb = "DELETE";
             }
 
             if ( !string.IsNullOrWhiteSpace( action ) )
@@ -250,7 +255,8 @@ namespace Rock.Model
                         Summary = action,
                         Caption = group.Name,
                         RelatedEntityTypeId = groupEntityTypeId,
-                        RelatedEntityId = this.GroupId
+                        RelatedEntityId = this.GroupId,
+                        Verb = verb
                     } );
                 }
             }
@@ -298,19 +304,25 @@ namespace Rock.Model
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
             var groupRole = this.GroupRole ?? new GroupTypeRoleService( rockContext ).Get( this.GroupRoleId );
 
-            // check to see if the person is already a member of the group/role
             var existingGroupMembership = groupMemberService.GetByGroupIdAndPersonId( this.GroupId, this.PersonId );
-            if ( existingGroupMembership.Any( a => a.GroupRoleId == this.GroupRoleId && a.Id != this.Id ) )
+
+            // check to see if the person is already a member of the group/role
+            bool allowDuplicateGroupMembers = ConfigurationManager.AppSettings["AllowDuplicateGroupMembers"].AsBoolean();
+
+            if ( !allowDuplicateGroupMembers )
             {
-                var person = this.Person ?? new PersonService( rockContext ).Get( this.PersonId );
+                if ( existingGroupMembership.Any( a => a.GroupRoleId == this.GroupRoleId && a.Id != this.Id ) )
+                {
+                    var person = this.Person ?? new PersonService( rockContext ).Get( this.PersonId );
 
-                errorMessage = string.Format(
-                    "{0} already belongs to the {1} role for this {2}, and cannot be added again with the same role",
-                    person,
-                    groupRole.Name,
-                    groupRole.GroupType.GroupTerm );
+                    errorMessage = string.Format(
+                        "{0} already belongs to the {1} role for this {2}, and cannot be added again with the same role",
+                        person,
+                        groupRole.Name,
+                        groupRole.GroupType.GroupTerm );
 
-                return false;
+                    return false;
+                }
             }
 
             var databaseRecord = existingGroupMembership.FirstOrDefault( a => a.Id == this.Id );

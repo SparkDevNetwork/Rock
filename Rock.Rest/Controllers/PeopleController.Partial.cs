@@ -404,8 +404,11 @@ namespace Rock.Rest.Controllers
             if ( person != null )
             {
                 GetPersonSearchDetails( personSearchResult, person );
-                string searchDetailsFormat = @"{0}<div class='contents'>{1}</div>";
-                return string.Format( searchDetailsFormat, personSearchResult.PickerItemDetailsImageHtml, personSearchResult.PickerItemDetailsPersonInfoHtml );
+                // Generate the HTML for the ConnectionStatus; "label-success" matches the default config of the
+                // connection status badge on the Bio bar, but I think label-default works better here.
+                string connectionStatusHtml = string.IsNullOrWhiteSpace( personSearchResult.ConnectionStatus ) ? string.Empty : string.Format( "<span class='label label-default pull-right'>{0}</span>", personSearchResult.ConnectionStatus );
+                string searchDetailsFormat = @"{0}{1}<div class='contents'>{2}</div>";
+                return string.Format( searchDetailsFormat, personSearchResult.PickerItemDetailsImageHtml, connectionStatusHtml, personSearchResult.PickerItemDetailsPersonInfoHtml );
             }
             else
             {

@@ -1488,6 +1488,26 @@ namespace RockWeb.Blocks.Event
                 {
                     registrar = CurrentPerson;
                     registration.PersonAliasId = CurrentPerson.PrimaryAliasId;
+
+                    // If email that logged in user used is different than their stored email address, update their stored value
+                    if ( !string.IsNullOrWhiteSpace( registration.ConfirmationEmail ) &&
+                        !registration.ConfirmationEmail.Trim().Equals( CurrentPerson.Email.Trim(), StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        var person = personService.Get( CurrentPerson.Id );
+                        if ( person != null )
+                        {
+                            var personChanges = new List<string>();
+                            History.EvaluateChange( personChanges, "Email", person.Email, registration.ConfirmationEmail );
+                            person.Email = registration.ConfirmationEmail;
+
+                            HistoryService.SaveChanges(
+                                new RockContext(),
+                                typeof( Person ),
+                                Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                                person.Id,
+                                personChanges, true, CurrentPersonAliasId );
+                        }
+                    }
                 }
                 else
                 {
@@ -1521,8 +1541,8 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
-            // If the registration includes a payment, make sure there's an actual person associated to registration
-            if ( hasPayment && !registration.PersonAliasId.HasValue )
+            // Make sure there's an actual person associated to registration
+            if ( !registration.PersonAliasId.HasValue )
             {
                 // If a match was not found, create a new person
                 var person = new Person();
@@ -1552,6 +1572,8 @@ namespace RockWeb.Blocks.Event
                 {
                     History.EvaluateChange( registrationChanges, "Registrar", string.Empty, registration.ToString() );
                 }
+
+
             }
 
             // Save the registration ( so we can get an id )
@@ -1568,7 +1590,6 @@ namespace RockWeb.Blocks.Event
                         registration.Id,
                         registrationChanges, true, CurrentPersonAliasId )
                 );
-
 
                 // Get each registrant
                 foreach ( var registrantInfo in RegistrationState.Registrants.ToList() )
@@ -2164,7 +2185,7 @@ namespace RockWeb.Blocks.Event
                                 registrantNames.Add( registrant.FullName );
                             }
 
-                            if ( registrar == null && ( RegistrationState.FirstName != registrar.NickName || RegistrationState.LastName != registrar.LastName ) )
+                            if ( registrar != null && ( RegistrationState.FirstName != registrar.NickName || RegistrationState.LastName != registrar.LastName ) )
                             {
                                 noteText.AppendFormat( " by {0}", RegistrationState.FirstName + " " + RegistrationState.LastName );
                             }
@@ -2181,8 +2202,20 @@ namespace RockWeb.Blocks.Event
                                 note.Text = noteText.ToString();
                                 noteService.Add( note );
                             }
-                        }
 
+                            var changes = new List<string> { "Registered for" };
+                            HistoryService.SaveChanges(
+                                rockContext,
+                                typeof( Person ),
+                                Rock.SystemGuid.Category.HISTORY_PERSON_REGISTRATION.AsGuid(),
+                                registrant.Id,
+                                changes,
+                                RegistrationInstanceState.Name,
+                                typeof( Registration ),
+                                registration.Id,
+                                false,
+                                registration.PersonAliasId );
+                        }
                     }
 
                     if ( registrar != null && registrantNames.Any() )
@@ -2210,6 +2243,19 @@ namespace RockWeb.Blocks.Event
                         note.Text = string.Format( "Registered {0} for {1}", namesText, RegistrationInstanceState.Name );
                         noteService.Add( note );
 
+                        var changes = new List<string> { string.Format( "Registered {0} for", namesText ) };
+
+                        HistoryService.SaveChanges(
+                            rockContext,
+                            typeof( Person ),
+                            Rock.SystemGuid.Category.HISTORY_PERSON_REGISTRATION.AsGuid(),
+                            registrar.Id,
+                            changes,
+                            RegistrationInstanceState.Name,
+                            typeof( Registration ),
+                            registration.Id,
+                            false,
+                            registration.PersonAliasId );
                     }
 
                     rockContext.SaveChanges();
@@ -3013,7 +3059,7 @@ namespace RockWeb.Blocks.Event
                         cpHomeCampus.Label = "Campus";
                         cpHomeCampus.Required = field.IsRequired;
                         cpHomeCampus.ValidationGroup = BlockValidationGroup;
-                        cpHomeCampus.Campuses = CampusCache.All();
+                        cpHomeCampus.Campuses = CampusCache.All( false );
 
                         phRegistrantControls.Controls.Add( cpHomeCampus );
 
@@ -3912,7 +3958,7 @@ namespace RockWeb.Blocks.Event
                     pnlRegistrantsReview.Visible = true;
 
                     lRegistrantsReview.Text = string.Format( "<p>The following {0} will be registered for {1}:",
-                        RegistrationTemplate.RegistrantTerm.PluralizeIf( RegistrationState.Registrants.Count > 0 ).ToLower(), RegistrationTemplate.Name );
+                        RegistrationTemplate.RegistrantTerm.PluralizeIf( RegistrationState.Registrants.Count > 0 ).ToLower(), RegistrationInstanceState.Name );
 
                     rptrRegistrantReview.DataSource = RegistrationState.Registrants
                         .Select( r => new

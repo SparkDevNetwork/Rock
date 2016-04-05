@@ -17,9 +17,11 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
+using Rock.Chart;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -43,7 +45,7 @@ namespace Rock.Web.UI.Controls
         }
 
         #region Controls
-        
+
         private HiddenFieldWithClass _hfRestUrl;
         private HiddenFieldWithClass _hfRestUrlParams;
         private HiddenFieldWithClass _hfSeriesNameUrl;
@@ -313,6 +315,25 @@ namespace Rock.Web.UI.Controls
         public ChartOptions Options { get; set; }
 
         /// <summary>
+        /// Gets or sets the chart data (json objects)
+        /// </summary>
+        /// <value>
+        /// The chart data.
+        /// </value>
+        public string ChartData
+        {
+            get
+            {
+                return ViewState["ChartData"] as string;
+            }
+
+            set
+            {
+                ViewState["ChartData"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the data source URL.
         /// Defaults to "~/api/MetricValues/GetByMetricId/"
         /// </summary>
@@ -521,8 +542,14 @@ namespace Rock.Web.UI.Controls
                 _hfRestUrlParams.Value = string.Empty;
             }
 
-            string scriptFormat =
-@"
+            var scriptFormat = new StringBuilder();
+
+            if ( !string.IsNullOrWhiteSpace( DataSourceUrl ) )
+            { 
+                string restUrl = this.ResolveUrl( this.DataSourceUrl );
+                _hfRestUrl.Value = restUrl;
+
+                scriptFormat.Append( @"
             var restUrl_{0} = $('#{0} .js-rest-url').val() + $('#{0} .js-rest-url-params').val();
 
             $.ajax({{
@@ -531,52 +558,67 @@ namespace Rock.Web.UI.Controls
                 contentType: 'application/json'
             }})
             .done( function (chartData) {{
+" );
+            }
+            else
+            {
+                scriptFormat.Append( @"
+            $(function() {{
+                var chartData = {5};
+");
+            }
 
+            scriptFormat.Append( @"
                 var chartOptions = {1}; 
                 var plotSelector = '#{0} .js-chart-placeholder';
                 var yaxisLabelText = $('#{0} .js-yaxis-value').val();
                 var getSeriesUrl = $('#{0} .js-seriesname-url').val();
                 var combineValues = {4};
-";
+");
 
             if ( this.GetType() == typeof( PieChart ) )
             {
-                scriptFormat += @"
+                scriptFormat.Append( @"
                 Rock.controls.charts.plotPieChartData(chartData, chartOptions, plotSelector);
                 
-";
+");
             }
             else if ( this.GetType() == typeof( BarChart ) )
             {
-                scriptFormat += @"
+                scriptFormat.Append( @"
                 Rock.controls.charts.plotBarChartData(chartData, chartOptions, plotSelector);
-";
+");
             }
             else
             {
-                scriptFormat += @"
+                scriptFormat.Append( @"
                 Rock.controls.charts.plotChartData(chartData, chartOptions, plotSelector, yaxisLabelText, getSeriesUrl, combineValues);
-";
+");
             }
 
-            scriptFormat += @"
+            scriptFormat.Append( @"
                 // plothover script (tooltip script) 
                 {2}
 
                 // plotclick script
                 {3}
+");
+            if ( !string.IsNullOrWhiteSpace( DataSourceUrl ) )
+            { 
+                scriptFormat.Append( @"
             }})
             .fail(function (jqXHR, textStatus, errorThrown) {{
                 //debugger
+");
+            }
+
+            scriptFormat.Append( @"
             }});
-";
+" );
 
             string chartOptionsJson = JsonConvert.SerializeObject( this.Options, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore, NullValueHandling = NullValueHandling.Ignore } );
 
             _hbChartOptions.Text = "<div style='white-space: pre; max-height: 120px; overflow-y:scroll' Font-Names='Consolas' Font-Size='8'><br />" + chartOptionsJson + "</div>";
-
-            string restUrl = this.ResolveUrl( this.DataSourceUrl );
-            _hfRestUrl.Value = restUrl;
 
             var seriesNameUrl = this.SeriesNameUrl;
             if ( this.MetricId.HasValue )
@@ -598,12 +640,13 @@ namespace Rock.Web.UI.Controls
             string chartClickScript = GetChartClickScript();
 
             string script = string.Format(
-                scriptFormat,
+                scriptFormat.ToString(),
                 this.ClientID,      // {0}
                 chartOptionsJson,   // {1}
                 tooltipScript,      // {2}
                 chartClickScript,   // {3}
-                this.CombineValues.ToTrueFalse().ToLower() );  // {4}
+                this.CombineValues.ToTrueFalse().ToLower(),  // {4}
+                ChartData );        // {5}
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "flot-chart-script_" + this.ClientID, script, true );
         }

@@ -90,7 +90,7 @@ Please confirm the information below. Once you have confirmed that the informati
 " );
             // Attrib Value for Block:Giving Profile Detail, Attribute:Credit Card Gateway Page: Contribution Detail, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "6BF2F96A-51D6-4A84-BDA4-4EE6FDC2B515", "8177CE07-AA1B-43F4-ABCE-23E63DA8EBC8", @"D4A40C4A-336F-49A6-9F44-88F149726126" );
-            // Attrib Value for Block:Giving Profile Detail, Attribute:ACH Card Gateway Page: Contribution Detail, Site: Rock RMS
+            // Attrib Value for Block:Giving Profile Detail, Attribute:ACH Gateway Page: Contribution Detail, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "6BF2F96A-51D6-4A84-BDA4-4EE6FDC2B515", "FC9DF232-D7B1-4CA9-B348-D139276783BB", @"D4A40C4A-336F-49A6-9F44-88F149726126" );
             // Attrib Value for Block:Giving Profile Detail, Attribute:Accounts Page: Contribution Detail, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "6BF2F96A-51D6-4A84-BDA4-4EE6FDC2B515", "32B27FF4-0EDC-4709-B714-41084F8FE99C", @"4410306f-3fb5-4a57-9a80-09a3f9d40d0c,67c6181c-1d8c-44d7-b262-b81e746f06d8" );
@@ -139,7 +139,7 @@ Thank-you,<br/>
             RockMigrationHelper.DeleteBlockAttributeValue( "6BF2F96A-51D6-4A84-BDA4-4EE6FDC2B515", "42F035FE-A1E8-4856-86A6-BA009BC6F33B" );
             // Attrib Value for Block:Giving Profile Detail, Attribute:Credit Card Gateway Page: Contribution Detail, Site: Rock RMS
             RockMigrationHelper.DeleteBlockAttributeValue( "6BF2F96A-51D6-4A84-BDA4-4EE6FDC2B515", "8177CE07-AA1B-43F4-ABCE-23E63DA8EBC8" );
-            // Attrib Value for Block:Giving Profile Detail, Attribute:ACH Card Gateway Page: Contribution Detail, Site: Rock RMS
+            // Attrib Value for Block:Giving Profile Detail, Attribute:ACH Gateway Page: Contribution Detail, Site: Rock RMS
             RockMigrationHelper.DeleteBlockAttributeValue( "6BF2F96A-51D6-4A84-BDA4-4EE6FDC2B515", "FC9DF232-D7B1-4CA9-B348-D139276783BB" );
             // Attrib Value for Block:Giving Profile Detail, Attribute:Accounts Page: Contribution Detail, Site: Rock RMS
             RockMigrationHelper.DeleteBlockAttributeValue( "6BF2F96A-51D6-4A84-BDA4-4EE6FDC2B515", "32B27FF4-0EDC-4709-B714-41084F8FE99C" );

@@ -23,7 +23,7 @@ using Rock.Model;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// 
+    /// Select multiple Person Badges from a checkbox list. Stored as a comma-delimited list of PersonBadge Guids
     /// </summary>
     public class PersonBadgesFieldType : SelectFromListFieldType
     {

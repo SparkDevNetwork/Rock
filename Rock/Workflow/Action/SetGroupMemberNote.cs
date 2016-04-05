@@ -42,8 +42,8 @@ namespace Rock.Workflow.Action
     [WorkflowAttribute( "Group", "Workflow Attribute that contains the group the person is in.", true, "", "", 1, null,
         new string[] { "Rock.Field.Types.GroupFieldType" } )]
 
-    [WorkflowTextOrAttribute( "Note", "Attribute Value", "Text or workflow attribute that contains the text to set the group member note to.", true, "", "", 2, "Note",
-        new string[] { "Rock.Field.Types.TextFieldType" } )]
+    [WorkflowTextOrAttribute( "Note", "Attribute Value", "Text or workflow attribute that contains the text to set the group member note to. <span class='tip tip-lava'></span>", true, "", "", 2, "Note",
+        new string[] { "Rock.Field.Types.TextFieldType" }, 3 )]
     public class SetGroupMemberNote : ActionComponent
     {
         /// <summary>
@@ -60,6 +60,7 @@ namespace Rock.Workflow.Action
 
             Guid? groupGuid = null;
             Person person = null;
+            Group group = null;
             string noteValue = string.Empty;
 
             // get the group attribute
@@ -69,9 +70,18 @@ namespace Rock.Workflow.Action
             {
                 groupGuid = action.GetWorklowAttributeValue( groupAttributeGuid ).AsGuidOrNull();
 
-                if ( !groupGuid.HasValue )
+                if ( groupGuid.HasValue )
                 {
-                    errorMessages.Add( "The group could not be found!" );
+                    group = new GroupService( rockContext ).Get( groupGuid.Value );
+
+                    if ( group == null )
+                    {
+                        errorMessages.Add( "The group provided does not exist." );
+                    }
+                }
+                else
+                {
+                    errorMessages.Add( "Invalid group provided." );
                 }
             }
 
@@ -95,10 +105,15 @@ namespace Rock.Workflow.Action
                                     .Where( p => p.Guid.Equals( personAliasGuid ) )
                                     .Select( p => p.Person )
                                     .FirstOrDefault();
+
+                    if (person == null )
+                    {
+                        errorMessages.Add( "The person could not be found." );
+                    }
                 }
                 else
                 {
-                    errorMessages.Add( "The person could not be found!" );
+                    errorMessages.Add( "Invalid person provided." );
                 }
             }
 
@@ -120,13 +135,23 @@ namespace Rock.Workflow.Action
             }
 
             // set note
-            if ( groupGuid.HasValue && person != null )
+            if ( group != null && person != null )
             {
-                var groupMember = new GroupMemberService( rockContext ).Queryable()
-                                .Where( m => m.Group.Guid == groupGuid && m.PersonId == person.Id ).FirstOrDefault();
+                var groupMembers = new GroupMemberService( rockContext ).Queryable()
+                                .Where( m => m.Group.Guid == groupGuid && m.PersonId == person.Id ).ToList();
 
-                groupMember.Note = noteValue;
-                rockContext.SaveChanges();
+                if ( groupMembers.Count() > 0 )
+                {
+                    foreach ( var groupMember in groupMembers )
+                    {
+                        groupMember.Note = noteValue;
+                        rockContext.SaveChanges();
+                    }
+                }
+                else
+                {
+                    errorMessages.Add( string.Format( "{0} is not a member of the group {1}.", person.FullName, group.Name ) );
+                }
             }
 
             errorMessages.ForEach( m => action.AddLogEntry( m, true ) );

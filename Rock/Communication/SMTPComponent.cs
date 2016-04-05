@@ -203,21 +203,18 @@ namespace Rock.Communication.Transport
                     using ( var smtpClient = GetSmtpClient() )
                     {
                         // Add Attachments
+                        var attachments = new List<BinaryFile>();
                         string attachmentIds = communication.GetMediumDataValue( "Attachments" );
                         if ( !string.IsNullOrWhiteSpace( attachmentIds ) )
                         {
                             var binaryFileService = new BinaryFileService( communicationRockContext );
 
-                            foreach ( string idVal in attachmentIds.SplitDelimitedValues() )
+                            foreach ( int binaryFileId in attachmentIds.SplitDelimitedValues().AsIntegerList() )
                             {
-                                int binaryFileId = int.MinValue;
-                                if ( int.TryParse( idVal, out binaryFileId ) )
+                                var binaryFile = binaryFileService.Get( binaryFileId );
+                                if ( binaryFile != null )
                                 {
-                                    var binaryFile = binaryFileService.Get( binaryFileId );
-                                    if ( binaryFile != null )
-                                    {
-                                        message.Attachments.Add( new Attachment( binaryFile.ContentStream, binaryFile.FileName ) );
-                                    }
+                                    attachments.Add( binaryFile );
                                 }
                             }
                         }
@@ -286,6 +283,16 @@ namespace Rock.Communication.Transport
                                         var metaData = new Dictionary<string, string>();
                                         metaData.Add( "communication_recipient_guid", recipient.Guid.ToString() );
                                         AddAdditionalHeaders( message, metaData );
+
+                                        // Recreate the attachments
+                                        message.Attachments.Clear();
+                                        if ( attachments.Any() )
+                                        {
+                                            foreach( var attachment in attachments )
+                                            {
+                                                message.Attachments.Add( new Attachment( attachment.ContentStream, attachment.FileName ) );
+                                            }
+                                        }
 
                                         smtpClient.Send( message );
                                         recipient.Status = CommunicationRecipientStatus.Delivered;
@@ -554,6 +561,20 @@ namespace Rock.Communication.Transport
                     {
                         message.From = new MailAddress( from, fromName );
                     }
+
+                    // Reply To
+                    try
+                    {
+                        string replyTo = string.Empty;
+                        mediumData.TryGetValue( "ReplyTo", out replyTo );
+
+                        if ( !string.IsNullOrWhiteSpace( replyTo ) )
+                        {
+                            message.ReplyToList.Add( new MailAddress( replyTo ) );
+                        }
+                    }
+                    catch { }
+
                     CheckSafeSender( message, globalAttributes );
 
                     message.IsBodyHtml = true;
@@ -577,10 +598,8 @@ namespace Rock.Communication.Transport
                             recipients, fromName, from, subject, body );
                         RockQueue.TransactionQueue.Enqueue( transaction );
                     }
-
                 }
             }
-
             catch ( Exception ex )
             {
                 ExceptionLogService.LogException( ex, null );

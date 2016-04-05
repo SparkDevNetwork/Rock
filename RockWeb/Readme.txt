@@ -1,3 +1,35 @@
+Rock McKinley 4.5
+
++ Updated the Protect My Ministry (PMM) background check integration to check for a valid response from PMM when submitting the initial request and add logging of both the request and the reply.
++ Updated workflow processing so that any errors that occur during a workflow action are always written to the workflow log regardless of log settings.
++ Fixed exception that would occur if new person was trying to signup for a connection request and organization only has one campus.
++ Updated the code editor to correctly escape html values.
++ Updated the email preferences block so that it logs any changes a user makes to their preference (including record status/reason changes) to their history.
++ Fixed an issue with croping person images when using a custom storage provider.
+
+Rock McKinley 4.4
+
++ Updated Check-in to correctly cache device configuration data so that it is not specific to a particular point in time.
++ Fixed paging on grid.
++ Fixed Facebook login for organizations using a newer Facebook App API Version v2.4 or v2.5. This change was also tested to be backwards compatible with their API Version as old as v2.0 (Fixes #1419).
++ Fixed exception that would occur when adding a new location (Fixes #1408).
++ Fixed issue with deleted channels causing exception on content page (Fixes #1406).
++ Added id header text to fix export to Excel issue (Fixes #1391).
++ Fixed issue with security when changing if a group is a security role or not (Fixes #1399).
++ Fixed issue with registration saving a blank person/registrant if user navigated away from registration and then used browser navigation to return before submitting the registration.
++ Fixed Tag Report so that after sorting it deletes the correct item (Fixes #1398).
++ Fix issue with Group Requirements when the Expire In Days setting has not been set (Fixes #1389).
++ Fixed error in the People REST endpoint (Fixes #1388).
++ Updated Lava debug display to only display each object type/id once, and limit iterations to first two items (Fixes #1365).
++ Changed z-index of the admin toolbar to keep it from being hidden when editing page zones. (Fixes #1397)
++ Changed the ConnectionRequestDetail block to allow a request to be Connected even if there is no placement group. 
++ Fixed Communication Entry block so that the Subject is cleared if a selected template does not specify a subject (Fixes #1393).
++ Fixed issue where creating a new communication from a dataview caused the block to timeout before the configured database timeout occurred. (Fixes #909).
++ Fixed issue when trying to add group attendance and location filter is set to a parent location (i.e. campus/building) vs. an actual room location.
++ Fixed Registration Entry so that it does not create person notes until registration and payment was successful.
++ Updated the Group Attendance Detail block so that if adding attendance for a particular schedule, the attendance record gets created with the correct start time.
++ Updated the Connection Search block so that it now has access to the complete opportunity model including the opportunity attributes. Note, there is a small change in the Lava for this update. If you use a custom theme you'll want to grab a new copy of 'OpportunitySearch.lava' as you should use the property of 'PublicName' instead of 'Name'.
+
 Rock McKinley 4.3
 
 + Fixed issue with check-in "randomly" not allowing check-ins

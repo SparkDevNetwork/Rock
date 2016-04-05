@@ -1130,7 +1130,7 @@ namespace Rock.Web.UI
 
                 stopwatchInitEvents.Restart();
 
-                string pageTitle = BrowserTitle;
+                string pageTitle = BrowserTitle ?? string.Empty;
                 string siteTitle = _pageCache.Layout.Site.Name;
                 string seperator = pageTitle.Trim() != string.Empty && siteTitle.Trim() != string.Empty ? " | " : "";
 

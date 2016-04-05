@@ -92,8 +92,7 @@ namespace Rock.Reporting.DataFilter.Person
 function() {
     var comparisonText = $('select:first', $content).find(':selected').text();
     var totalAmount = $('.number-box', $content).find('input').val();
-    var startDate = $('.date-range-picker', $content).find('input:first').val();
-    var endDate = $('.date-range-picker', $content).find('input:last').val();
+    var dateRangeText = $('.js-slidingdaterange-text-value', $content).val()
     var combineGiving = $('[id$=""cbCombineGiving""]', $content).is(':checked')
     var accountPicker = $('.js-account-picker', $content);
     var accountNames = accountPicker.find('.selected-names').text()
@@ -107,7 +106,7 @@ function() {
     }
     result += comparisonText.toLowerCase() + ' $' + totalAmount; 
     result += ' to accounts:' + accountNames;
-    result += ' between ' + startDate + ' and ' + endDate;
+    result += ' DateRange: ' + dateRangeText;
     
 
     return result;
@@ -130,8 +129,6 @@ function() {
             {
                 ComparisonType comparisonType = selectionValues[0].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
                 decimal amount = selectionValues[1].AsDecimalOrNull() ?? 0.00M;
-                DateTime startDate = selectionValues[2].AsDateTime() ?? DateTime.MinValue;
-                DateTime endDate = selectionValues[3].AsDateTime() ?? DateTime.MaxValue;
                 string accountNames = string.Empty;
                 if ( selectionValues.Length >= 5 )
                 {
@@ -145,13 +142,29 @@ function() {
                     combineGiving = selectionValues[5].AsBooleanOrNull() ?? false;
                 }
 
+                SlidingDateRangePicker fakeSlidingDateRangePicker = new SlidingDateRangePicker();
+
+                if ( selectionValues.Length >= 7 )
+                {
+                    // convert comma delimited to pipe
+                    fakeSlidingDateRangePicker.DelimitedValues = selectionValues[6].Replace( ',', '|' );
+                }
+                else
+                {
+                    // if converting from a previous version of the selection
+                    var lowerValue = selectionValues[2].AsDateTime();
+                    var upperValue = selectionValues[3].AsDateTime();
+
+                    fakeSlidingDateRangePicker.SlidingDateRangeMode = SlidingDateRangePicker.SlidingDateRangeType.DateRange;
+                    fakeSlidingDateRangePicker.SetDateRangeModeValue( new DateRange( lowerValue, upperValue ) );
+                }
+
                 result = string.Format(
-                    "{5}Giving amount total {0} {1} {2} between {3} and {4}",
+                    "{4}Giving amount total {0} {1} {2}. Date Range: {3}",
                     comparisonType.ConvertToString().ToLower(),
                     amount.ToString( "C" ),
                     !string.IsNullOrWhiteSpace( accountNames ) ? " to accounts:" + accountNames : string.Empty,
-                    startDate.ToShortDateString(),
-                    endDate.ToShortDateString(),
+                    SlidingDateRangePicker.FormatDelimitedValues( fakeSlidingDateRangePicker.DelimitedValues ),
                     combineGiving ? "Combined " : string.Empty);
             }
 
@@ -185,11 +198,13 @@ function() {
             accountPicker.Label = "Accounts";
             filterControl.Controls.Add( accountPicker );
 
-            DateRangePicker dateRangePicker = new DateRangePicker();
-            dateRangePicker.ID = filterControl.ID + "_dateRangePicker";
-            dateRangePicker.Label = "Date Range";
-            dateRangePicker.Required = true;
-            filterControl.Controls.Add( dateRangePicker );
+            SlidingDateRangePicker slidingDateRangePicker = new SlidingDateRangePicker();
+            slidingDateRangePicker.ID = filterControl.ID + "_slidingDateRangePicker";
+            slidingDateRangePicker.AddCssClass( "js-sliding-date-range" );
+            slidingDateRangePicker.Label = "Date Range";
+            slidingDateRangePicker.Help = "The date range of the transactions using the transaction date of each transaction";
+            slidingDateRangePicker.Required = true;
+            filterControl.Controls.Add( slidingDateRangePicker );
 
             RockCheckBox cbCombineGiving = new RockCheckBox();
             cbCombineGiving.ID = filterControl.ID + "_cbCombineGiving";
@@ -198,9 +213,9 @@ function() {
             cbCombineGiving.Help = "Combine individuals in the same giving group when calculating totals and reporting the list of individuals.";
             filterControl.Controls.Add( cbCombineGiving );
 
-            var controls = new Control[5] { comparisonControl, numberBoxAmount, accountPicker, dateRangePicker, cbCombineGiving };
+            var controls = new Control[5] { comparisonControl, numberBoxAmount, accountPicker, slidingDateRangePicker, cbCombineGiving };
 
-            SetSelection( entityType, controls, string.Format( "{0}|||||", ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() ) );
+            SetSelection( entityType, controls, string.Format( "{0}||||||", ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() ) );
 
             return controls;
         }
@@ -236,11 +251,14 @@ function() {
                 accountGuids = accounts.Select( a => a.Guid ).ToList().AsDelimited( "," );
             }
 
-            DateRangePicker dateRangePicker = controls[3] as DateRangePicker;
+            SlidingDateRangePicker slidingDateRangePicker = controls[3] as SlidingDateRangePicker;
+
+            // convert pipe to comma delimited
+            var delimitedValues = slidingDateRangePicker.DelimitedValues.Replace( "|", "," );
 
             RockCheckBox cbCombineGiving = controls[4] as RockCheckBox;
 
-            return string.Format( "{0}|{1}|{2}|{3}|{4}|{5}", comparisonType, amount, dateRangePicker.LowerValue, dateRangePicker.UpperValue, accountGuids, cbCombineGiving.Checked );
+            return string.Format( "{0}|{1}|{2}|{3}|{4}|{5}|{6}", comparisonType, amount, string.Empty, string.Empty, accountGuids, cbCombineGiving.Checked, delimitedValues );
         }
 
         /// <summary>
@@ -257,7 +275,23 @@ function() {
                 var comparisonControl = controls[0] as DropDownList;
                 var numberBox = controls[1] as NumberBox;
                 var accountPicker = controls[2] as AccountPicker;
-                var dateRangePicker = controls[3] as DateRangePicker;
+                var slidingDateRangePicker = controls[3] as SlidingDateRangePicker;
+
+                if ( selectionValues.Length >= 7 )
+                {
+                    // convert comma delimited to pipe
+                    slidingDateRangePicker.DelimitedValues = selectionValues[6].Replace( ',', '|' );
+                }
+                else
+                {
+                    // if converting from a previous version of the selection
+                    var lowerValue = selectionValues[2].AsDateTime();
+                    var upperValue = selectionValues[3].AsDateTime();
+
+                    slidingDateRangePicker.SlidingDateRangeMode = SlidingDateRangePicker.SlidingDateRangeType.DateRange;
+                    slidingDateRangePicker.SetDateRangeModeValue( new DateRange( lowerValue, upperValue ) );
+                }
+
                 var cbCombineGiving = controls[4] as RockCheckBox;
 
                 comparisonControl.SetValue( selectionValues[0] );
@@ -270,9 +304,6 @@ function() {
                 {
                     numberBox.Text = string.Empty;
                 }
-
-                dateRangePicker.LowerValue = selectionValues[2].AsDateTime();
-                dateRangePicker.UpperValue = selectionValues[3].AsDateTime();
 
                 if ( selectionValues.Length >= 5 )
                 {
@@ -311,8 +342,27 @@ function() {
 
             ComparisonType comparisonType = selectionValues[0].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
             decimal amount = selectionValues[1].AsDecimalOrNull() ?? 0.00M;
-            DateTime? startDate = selectionValues[2].AsDateTime();
-            DateTime? endDate = selectionValues[3].AsDateTime();
+            DateRange dateRange;
+
+            if ( selectionValues.Length >= 7 )
+            {
+                string slidingDelimitedValues = selectionValues[6].Replace( ',', '|' );
+                dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( slidingDelimitedValues );
+            }
+            else
+            {
+                // if converting from a previous version of the selection
+                DateTime? startDate = selectionValues[2].AsDateTime();
+                DateTime? endDate = selectionValues[3].AsDateTime();
+                dateRange = new DateRange( startDate, endDate );
+
+                if ( dateRange.End.HasValue )
+                {
+                    // the DateRange picker doesn't automatically add a full day to the end date
+                    dateRange.End.Value.AddDays( 1 );
+                }
+            }
+
             var accountIdList = new List<int>();
             if ( selectionValues.Length >= 5 )
             {
@@ -332,14 +382,14 @@ function() {
                 .Where( xx => xx.AuthorizedPersonAliasId.HasValue )
                 .Where( xx => xx.TransactionTypeValueId == transactionTypeContributionId );
 
-            if ( startDate.HasValue )
+            if ( dateRange.Start.HasValue )
             {
-                financialTransactionQry = financialTransactionQry.Where( xx => xx.TransactionDateTime >= startDate.Value );
+                financialTransactionQry = financialTransactionQry.Where( xx => xx.TransactionDateTime >= dateRange.Start.Value );
             }
 
-            if ( endDate.HasValue )
+            if ( dateRange.End.HasValue )
             {
-                financialTransactionQry = financialTransactionQry.Where( xx => xx.TransactionDateTime < endDate.Value );
+                financialTransactionQry = financialTransactionQry.Where( xx => xx.TransactionDateTime < dateRange.End.Value );
             }
 
             bool limitToAccounts = accountIdList.Any();
