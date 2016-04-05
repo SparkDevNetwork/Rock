@@ -1530,7 +1530,11 @@ namespace Rock.Web.UI
         public string ResolveRockUrlIncludeRoot( string url )
         {
             string virtualPath = this.ResolveRockUrl( url );
-            return string.Format( "{0}://{1}{2}", Context.Request.Url.Scheme, Context.Request.Url.Authority, virtualPath );
+            if ( Context.Request.UrlReferrer != null )
+            {
+                return string.Format( "{0}://{1}{2}", Context.Request.UrlReferrer.Scheme, Context.Request.UrlReferrer.Authority, virtualPath );
+            }
+            return GlobalAttributesCache.Read().GetValue("PublicApplicationRoot").EnsureTrailingForwardslash() + virtualPath;
         }
 
         /// <summary>
@@ -2277,7 +2281,7 @@ namespace Rock.Web.UI
                 if ( AddScriptTags )
                 {
                     l.Text = string.Format( @"
-    <script type=""text/javascript"">������ 
+    <script type=""text/javascript""> 
 {0}
     </script>
 
