@@ -37,6 +37,7 @@ namespace Rock
         /// Returns the floor (round down) value with the given decimal precision
         /// </summary>
         /// <param name="value">The value.</param>
+        /// <param name="precision">The precision.</param>
         /// <returns></returns>
         public static decimal? Floor( this decimal? value, int precision = 0 )
         {
