@@ -24,12 +24,15 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Caching;
 using System.Web.Http;
 using System.Web.Optimization;
 using System.Web.Routing;
+using dotless.Core;
+using dotless.Core.configuration;
 using DotLiquid;
 using Quartz;
 using Quartz.Impl;
@@ -41,7 +44,9 @@ using Rock.Jobs;
 using Rock.Model;
 using Rock.Plugin;
 using Rock.Transactions;
+using Rock.Utility;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace RockWeb
 {
@@ -273,6 +278,16 @@ namespace RockWeb
                 SetError66();
                 throw ( new Exception( "Error occurred during application startup", ex ) );
             }
+
+            
+            // compile less files
+            new Thread( () =>
+            {
+                Thread.CurrentThread.IsBackground = true;
+                RockTheme.CompileAll();
+                
+            } ).Start();
+            
         }
 
         /// <summary>
