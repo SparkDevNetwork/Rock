@@ -18,7 +18,7 @@
                 <div id="live_feed" class="live_feed"></div>
             </div>
             <div id="live_jw_player"></div>
-            <script src='//player.ooyala.com/v3/MWNjYzYxMWIxNjNkMzRmYThlN2Q1MWZl?namespace=live_player'></script>
+            <script src='//player.ooyala.com/v3/d2ac021eb96c49fdb5d58883c017773e?namespace=live_player'></script>
         </div>
     </div>
 
