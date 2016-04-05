@@ -3,97 +3,111 @@
 <asp:UpdatePanel ID="upPayment" runat="server">
     <ContentTemplate>
 
-        <asp:Panel ID="pnlPaymentInfo" CssClass="panel panel-block" runat="server">
+        <asp:HiddenField ID="hfCurrentPage" runat="server" Value="1" />
+
+        <Rock:NotificationBox ID="nbMessage" runat="server" Visible="false"></Rock:NotificationBox>
+
+        <asp:Panel ID="pnlSelection" CssClass="panel panel-block" runat="server">
 
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-credit-card"></i> <asp:Literal ID="lPanelTitle1" runat="server" /></h1>
             </div>
             <div class="panel-body">
 
-                <% if ( FluidLayout )
-                { %>
-                <div class="row">
-                    <div class="col-md-6">
-                <% } %>
-
-                        <div class="panel panel-default contribution-info">
-                            <div class="panel-heading"><h3 class="panel-title"><asp:Literal ID="lContributionInfoTitle" runat="server" /></h3></div>
-                            <div class="panel-body">
-                                <fieldset>
-
-                                    <asp:Repeater ID="rptAccountList" runat="server">
-                                        <ItemTemplate>
-                                            <Rock:CurrencyBox ID="txtAccountAmount" runat="server" Label='<%# Eval("PublicName") %>' Text='<%# ((decimal)Eval("Amount")).ToString("N2") %>' Placeholder="0.00" CssClass="account-amount" />
-                                        </ItemTemplate>
-                                    </asp:Repeater>
-                                    <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" Visible="false" Label=" "
-                                        DataTextField="PublicName" DataValueField="Id" OnSelectionChanged="btnAddAccount_SelectionChanged" />
-
-                                    <div class="form-group">
-                                        <label>Total</label>
-                                        <asp:Label ID="lblTotalAmount" runat="server" CssClass="form-control-static total-amount" />
-                                    </div>
-
-                                    <div id="divRepeatingPayments" runat="server" visible="false">
-                                        <Rock:ButtonDropDownList ID="btnFrequency" runat="server" Label="Frequency"
-                                            DataTextField="Value" DataValueField="Id" />
-                                        <Rock:DatePicker ID="dtpStartDate" runat="server" Label="First Payment" />
-                                    </div>
-
-                                    <Rock:RockTextBox ID="txtCommentEntry" runat="server" Required="true" Label="Comment" />
-
-                                </fieldset>
-                            </div>
-                        </div>
+                <asp:Panel ID="pnlContributionInfo" runat="server">
 
                     <% if ( FluidLayout )
                     { %>
-                    </div>
-                    <div class="col-md-6">
+                    <div class="row">
+                        <div class="col-md-6">
                     <% } %>
 
-                        <div class="panel panel-default contribution-personal">
-                            <div class="panel-heading"><h3 class="panel-title"><asp:Literal ID="lPersonalInfoTitle" runat="server" /></h3></div>
-                            <div class="panel-body">
-                                <fieldset>
-                                    <Rock:RockLiteral ID="txtCurrentName" runat="server" Label="Name" Visible="true" />
-                                    <Rock:RockTextBox ID="txtFirstName" runat="server" Label="First Name"></Rock:RockTextBox>
-                                    <Rock:RockTextBox ID="txtLastName" runat="server" Label="Last Name"></Rock:RockTextBox>
-                                    <Rock:PhoneNumberBox ID="pnbPhone" runat="server" Label="Phone"></Rock:PhoneNumberBox>
-                                    <Rock:RockTextBox ID="txtEmail" runat="server" Label="Email"></Rock:RockTextBox>
-                                    <Rock:AddressControl ID="acAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" />
-                                </fieldset>
+                            <div class="panel panel-default contribution-info">
+                                <div class="panel-heading"><h3 class="panel-title"><asp:Literal ID="lContributionInfoTitle" runat="server" /></h3></div>
+                                <div class="panel-body">
+                                    <fieldset>
+
+                                        <asp:Repeater ID="rptAccountList" runat="server">
+                                            <ItemTemplate>
+                                                <Rock:CurrencyBox ID="txtAccountAmount" runat="server" Label='<%# Eval("PublicName") %>' Text='<%# ((decimal)Eval("Amount")).ToString("N2") %>' Placeholder="0.00" CssClass="account-amount" />
+                                            </ItemTemplate>
+                                        </asp:Repeater>
+                                        <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" Visible="false" Label=" "
+                                            DataTextField="PublicName" DataValueField="Id" OnSelectionChanged="btnAddAccount_SelectionChanged" />
+
+                                        <div class="form-group">
+                                            <label>Total</label>
+                                            <asp:Label ID="lblTotalAmount" runat="server" CssClass="form-control-static total-amount" />
+                                        </div>
+
+                                        <div id="divRepeatingPayments" runat="server" visible="false">
+                                            <Rock:ButtonDropDownList ID="btnFrequency" runat="server" Label="Frequency"
+                                                DataTextField="Value" DataValueField="Id" AutoPostBack="true" OnSelectionChanged="btnFrequency_SelectionChanged" />
+                                            <Rock:DatePicker ID="dtpStartDate" runat="server" Label="First Gift" />
+                                        </div>
+
+                                        <Rock:RockTextBox ID="txtCommentEntry" runat="server" Required="true" Label="Comment" />
+
+                                    </fieldset>
+                                </div>
                             </div>
+
+                        <% if ( FluidLayout )
+                        { %>
                         </div>
+                        <div class="col-md-6">
+                        <% } %>
 
-                <% if ( FluidLayout )
-                { %>
+                            <div class="panel panel-default contribution-personal">
+                                <div class="panel-heading"><h3 class="panel-title"><asp:Literal ID="lPersonalInfoTitle" runat="server" /></h3></div>
+                                <div class="panel-body">
+                                    <fieldset>
+                                        <Rock:RockLiteral ID="txtCurrentName" runat="server" Label="Name" Visible="false" />
+                                        <Rock:RockTextBox ID="txtFirstName" runat="server" Label="First Name" />
+                                        <Rock:RockTextBox ID="txtLastName" runat="server" Label="Last Name" />
+                                        <Rock:PhoneNumberBox ID="pnbPhone" runat="server" Label="Phone"></Rock:PhoneNumberBox>
+                                        <Rock:RockTextBox ID="txtEmail" runat="server" Label="Email"></Rock:RockTextBox>
+                                        <Rock:AddressControl ID="acAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" />
+                                    </fieldset>
+                                </div>
+                            </div>
+
+                    <% if ( FluidLayout )
+                    { %>
+                        </div>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                <% } %>
+                    <% } %>
 
-                <div class="panel panel-default contribution-payment">
+                </asp:Panel>
 
-                    <asp:HiddenField ID="hfPaymentTab" runat="server" />
+                <asp:Panel ID="pnlContributionPayment" runat="server">
 
-                    <div class="panel-heading"><h3 class="panel-title"><asp:Literal ID="lPaymentInfoTitle" runat="server" /></h3></div>
-                
-                    <div class="panel-body">   
-                        <asp:PlaceHolder ID="phPills" runat="server" Visible="false">
-                            <ul class="nav nav-pills">
-                                <li id="liCreditCard" runat="server"><a href='#<%=divCCPaymentInfo.ClientID%>' data-toggle="pill">Credit Card</a></li>
-                                <li id="liACH" runat="server"><a href='#<%=divACHPaymentInfo.ClientID%>' data-toggle="pill">Bank Account</a></li>
-                            </ul>
-                        </asp:PlaceHolder>
+                    <% if ( FluidLayout )
+                    { %>
+                    <div class="row">
+                        <div class="col-md-6">
+                    <% } %>
 
-                        <div class="tab-content">
+                    <asp:Panel ID="pnlPayment" runat="server" CssClass="panel panel-default contribution-payment">
 
-                            <div id="divCCPaymentInfo" runat="server" visible="false">
-                                <fieldset>
-                                    <Rock:RockRadioButtonList ID="rblSavedCC" runat="server" Label=" " CssClass="radio-list" RepeatDirection="Vertical" DataValueField="Id" DataTextField="Name" />
-                                    <div id="divNewCard" runat="server" class="radio-content">
+                        <div class="panel-heading"><h3 class="panel-title"><asp:Literal ID="lPaymentInfoTitle" runat="server" /></h3></div>
+                        <div class="panel-body">   
+
+                            <Rock:RockRadioButtonList ID="rblSavedAccount" runat="server" CssClass="radio-list margin-b-lg" RepeatDirection="Vertical" DataValueField="Id" DataTextField="Name" />
+
+                            <div id="divNewPayment" runat="server" class="radio-content">
+
+                                <asp:HiddenField ID="hfPaymentTab" runat="server" />
+                                <asp:PlaceHolder ID="phPills" runat="server" Visible="false">
+                                    <ul class="nav nav-pills">
+                                        <li id="liCreditCard" runat="server"><a href='#<%=divCCPaymentInfo.ClientID%>' data-toggle="pill">Credit Card</a></li>
+                                        <li id="liACH" runat="server"><a href='#<%=divACHPaymentInfo.ClientID%>' data-toggle="pill">Bank Account</a></li>
+                                    </ul>
+                                </asp:PlaceHolder>
+
+                                <div class="tab-content">
+
+                                    <div id="divCCPaymentInfo" runat="server" visible="false" class="tab-pane">
                                         <Rock:RockTextBox ID="txtCardFirstName" runat="server" Label="First Name on Card" Visible="false"></Rock:RockTextBox>
                                         <Rock:RockTextBox ID="txtCardLastName" runat="server" Label="Last Name on Card" Visible="false"></Rock:RockTextBox>
                                         <Rock:RockTextBox ID="txtCardName" runat="server" Label="Name on Card" Visible="false"></Rock:RockTextBox>
@@ -104,7 +118,6 @@
                                             <li class="card-amex"></li>
                                             <li class="card-discover"></li>
                                         </ul>
-                                        
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <Rock:MonthYearPicker ID="mypExpiration" runat="server" Label="Expiration Date" />
@@ -113,42 +126,55 @@
                                                 <Rock:NumberBox ID="txtCVV" Label="Card Security Code" CssClass="input-width-xs" runat="server" MaxLength="4" />
                                             </div>
                                         </div>
-
                                         <Rock:RockCheckBox ID="cbBillingAddress" runat="server" Text="Enter a different billing address" CssClass="toggle-input" />
                                         <div id="divBillingAddress" runat="server" class="toggle-content">
                                             <Rock:AddressControl ID="acBillingAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" />
                                         </div>                                    
                                     </div>
-                                </fieldset>
-                            </div>
 
-                            <div id="divACHPaymentInfo" runat="server" visible="false">
-                                <fieldset>
-                                    <Rock:RockRadioButtonList ID="rblSavedAch" runat="server" Label=" " CssClass="radio-list" RepeatDirection="Vertical" DataValueField="Id" DataTextField="Name" />
-                                    <div id="divNewBank" runat="server" class="radio-content">                                    
+                                    <div id="divACHPaymentInfo" runat="server" visible="false" class="tab-pane">
+                                        <Rock:RockTextBox ID="txtAccountName" runat="server" Label="Account Name" />
                                         <Rock:RockTextBox ID="txtRoutingNumber" runat="server" Label="Routing #" />
                                         <Rock:RockTextBox ID="txtAccountNumber" runat="server" Label="Account #" />
                                         <Rock:RockRadioButtonList ID="rblAccountType" runat="server" RepeatDirection="Horizontal" Label="Account Type">
-                                            <asp:ListItem Text="Checking" Selected="true" />
-                                            <asp:ListItem Text="Savings" />
+                                            <asp:ListItem Text="Checking" Value="checking" Selected="true" />
+                                            <asp:ListItem Text="Savings" Value="savings" />
                                         </Rock:RockRadioButtonList>
                                         <asp:Image ID="imgCheck" runat="server" ImageUrl="<%$ Fingerprint:~/Assets/Images/check-image.png %>" />                                    
                                     </div>
-                                </fieldset>
+
+                                </div>
+
                             </div>
+                        </div> 
+                    </asp:Panel>
 
-
+                    <% if ( FluidLayout )
+                    { %>
                         </div>
-                    </div> 
-                </div>
+                    </div>            
+                    <% } %>
 
-                <% if ( FluidLayout )
-                { %>
-                    </div>
-                </div>            
-                <% } %>
+                </asp:Panel>
 
             </div>
+
+            <Rock:NotificationBox ID="nbSelectionMessage" runat="server" Visible="false"></Rock:NotificationBox>
+
+            <div class="actions clearfix margin-b-lg">
+                <asp:LinkButton ID="btnPaymentInfoNext" runat="server" Text="Next" CssClass="btn btn-primary pull-right" OnClick="btnPaymentInfoNext_Click" />
+                <asp:LinkButton ID="btnStep2PaymentPrev" runat="server" Text="Previous" CssClass="btn btn-link" OnClick="btnStep2PaymentPrev_Click" />
+                <asp:Label ID="aStep2Submit" runat="server" ClientIDMode="Static" CssClass="btn btn-primary pull-right" Text="Next" />
+            </div>
+
+            <iframe id="iframeStep2" src="<%=this.Step2IFrameUrl%>" style="display:none"></iframe>
+
+            <asp:HiddenField ID="hfStep2AutoSubmit" runat="server" Value="false" />
+            <asp:HiddenField ID="hfStep2Url" runat="server" />
+            <asp:HiddenField ID="hfStep2ReturnQueryString" runat="server" />
+            <span style="display:none" >
+                <asp:LinkButton ID="lbStep2Return" runat="server" Text="Step 2 Return" OnClick="lbStep2Return_Click" CausesValidation="false" ></asp:LinkButton>
+            </span>
 
         </asp:Panel>
 
@@ -157,6 +183,7 @@
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-credit-card"></i> <asp:Literal ID="lPanelTitle2" runat="server" /></h1>
             </div>
+
             <div class="panel-body">
                 <div class="panel panel-default">
 
@@ -164,7 +191,7 @@
                         <h1 class="panel-title"><asp:Literal ID="lConfirmationTitle" runat="server" /></h1>
                     </div>
                     <div class="panel-body">
-                        <asp:PlaceHolder ID="phConfirmationHeader" runat="server"></asp:PlaceHolder>
+                        <asp:Literal ID="lConfirmationHeader" runat="server" />
                         <dl class="dl-horizontal gift-confirmation margin-b-md">
                             <Rock:TermDescription ID="tdNameConfirm" runat="server" Term="Name" />
                             <Rock:TermDescription ID="tdPhoneConfirm" runat="server" Term="Phone" />
@@ -183,7 +210,7 @@
                             <Rock:TermDescription ID="tdWhenConfirm" runat="server" Term="When" />
                         </dl>
                 
-                        <asp:PlaceHolder ID="phConfirmationFooter" runat="server" />
+                        <asp:Literal ID="lConfirmationFooter" runat="server" />
                         <asp:Panel ID="pnlDupWarning" runat="server" CssClass="alert alert-block">
                             <h4>Warning!</h4>
                             <p>
@@ -196,12 +223,20 @@
                 </div>
             </div>
 
+            <Rock:NotificationBox ID="nbConfirmationMessage" runat="server" Visible="false"></Rock:NotificationBox>
+
+            <div class="actions clearfix margin-b-lg">
+                <asp:LinkButton ID="btnConfirmationPrev" runat="server" Text="Previous" CssClass="btn btn-link" OnClick="btnConfirmationPrev_Click" Visible="false" />
+                <asp:LinkButton ID="btnConfirmationNext" runat="server" Text="Finish" CssClass="btn btn-primary pull-right" OnClick="btnConfirmationNext_Click" />
+            </div>
+
         </asp:Panel>
 
         <asp:Panel ID="pnlSuccess" runat="server" Visible="false">
+
             <div class="well">
                 <legend><asp:Literal ID="lSuccessTitle" runat="server" /></legend>
-                <asp:PlaceHolder ID="phSuccessHeader" runat="server"></asp:PlaceHolder>
+                <asp:Literal ID="lSuccessHeader" runat="server"></asp:Literal>
                 <dl class="dl-horizontal gift-success">
                     <Rock:TermDescription ID="tdScheduleId" runat="server" Term="Payment Schedule ID" />
                     <Rock:TermDescription ID="tdTransactionCodeReceipt" runat="server" Term="Confirmation Code" />
@@ -265,18 +300,11 @@
                 </div>
             </asp:Panel>
 
-            <asp:PlaceHolder ID="phSuccessFooter" runat="server" />
+            <asp:Literal ID="lSuccessFooter" runat="server" />
+
+            <Rock:NotificationBox ID="nbSuccessMessage" runat="server" Visible="false"></Rock:NotificationBox>
 
         </asp:Panel>
-
-        <Rock:NotificationBox ID="nbMessage" runat="server" Visible="false"></Rock:NotificationBox>
-
-        <div id="divActions" runat="server" class="actions clearfix margin-b-lg">
-            <asp:LinkButton ID="btnPrev" runat="server" Text="Previous" CssClass="btn btn-link" OnClick="btnPrev_Click" Visible="false" />
-            <asp:LinkButton ID="btnNext" runat="server" Text="Next" CssClass="btn btn-primary pull-right" OnClick="btnNext_Click" />
-        </div>
-
-        <asp:HiddenField ID="hfCurrentPage" runat="server" />
 
     </ContentTemplate>
 </asp:UpdatePanel>
