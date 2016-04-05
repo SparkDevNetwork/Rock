@@ -153,11 +153,57 @@ namespace Rock.Financial
         }
 
         /// <summary>
+        /// Gets a value indicating whether the gateway requires the name on card for CC processing
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <returns></returns>
+        /// <value>
+        ///   <c>true</c> if [name on card required]; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool PromptForNameOnCard( FinancialGateway financialGateway )
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Prompts the name of for bank account.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <returns></returns>
+        public virtual bool PromptForBankAccountName( FinancialGateway financialGateway )
+        {
+            return false;
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether [address required].
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <returns></returns>
+        /// <value>
+        ///   <c>true</c> if [address required]; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool PromptForBillingAddress( FinancialGateway financialGateway )
+        {
+            return true;
+        }
+
+        /// <summary>
         /// Returnes a boolean value indicating if 'Saved Account' functionality is supported for the given currency type. 
         /// </summary>
         /// <param name="currencyType">Type of the currency.</param>
         /// <returns></returns>
         public virtual bool SupportsSavedAccount( DefinedValueCache currencyType )
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Returnes a boolean value indicating if 'Saved Account' functionality is supported for frequency (i.e. one-time vs repeating )
+        /// </summary>
+        /// <param name="isRepeating">if set to <c>true</c> [is repeating].</param>
+        /// <returns></returns>
+        public virtual bool SupportsSavedAccount( bool isRepeating )
         {
             return true;
         }
@@ -185,32 +231,6 @@ namespace Rock.Financial
         public abstract FinancialTransaction Charge( FinancialGateway financialGateway, PaymentInfo paymentInfo, out string errorMessage );
 
         /// <summary>
-        /// Performs the first step of a three-step charge
-        /// </summary>
-        /// <param name="financialGateway">The financial gateway.</param>
-        /// <param name="paymentInfo">The payment information.</param>
-        /// <param name="errorMessage">The error message.</param>
-        /// <returns></returns>
-        public virtual string ChargeStep1( FinancialGateway financialGateway, PaymentInfo paymentInfo, out string errorMessage )
-        {
-            errorMessage = "Gateway does not support three-step charge";
-            return null;
-        }
-
-        /// <summary>
-        /// Performs the final step of a three-step charge.
-        /// </summary>
-        /// <param name="financialGateway">The financial gateway.</param>
-        /// <param name="paymentInfo">The payment information.</param>
-        /// <param name="errorMessage">The error message.</param>
-        /// <returns></returns>
-        public virtual FinancialTransaction ChargeStep3( FinancialGateway financialGateway, PaymentInfo paymentInfo, out string errorMessage )
-        {
-            errorMessage = "Gateway does not support three-step charge";
-            return null;
-        }
-
-        /// <summary>
         /// Credits (Refunds) the specified transaction.
         /// </summary>
         /// <param name="origTransaction">The original transaction.</param>
@@ -231,30 +251,12 @@ namespace Rock.Financial
         public abstract FinancialScheduledTransaction AddScheduledPayment( FinancialGateway financialGateway, PaymentSchedule schedule, PaymentInfo paymentInfo, out string errorMessage );
 
         /// <summary>
-        /// Performs the first step of adding a new payment schedule
+        /// Flag indicating if gateway supports updating a scheduled payment.
         /// </summary>
-        /// <param name="financialGateway">The financial gateway.</param>
-        /// <param name="schedule">The schedule.</param>
-        /// <param name="paymentInfo">The payment information.</param>
-        /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        public virtual string AddScheduledPaymentStep1( FinancialGateway financialGateway, PaymentSchedule schedule, PaymentInfo paymentInfo, out string errorMessage )
+        public virtual bool UpdateScheduledPaymentSupported
         {
-            errorMessage = "Gateway does not support three-step adding of payment schedule";
-            return null;
-        }
-
-        /// <summary>
-        /// Performs the third step of adding a new payment schedule
-        /// </summary>
-        /// <param name="financialGateway">The financial gateway.</param>
-        /// <param name="paymentInfo">The payment information.</param>
-        /// <param name="errorMessage">The error message.</param>
-        /// <returns></returns>
-        public virtual FinancialScheduledTransaction AddScheduledPaymentStep3( FinancialGateway financialGateway, PaymentInfo paymentInfo, out string errorMessage )
-        {
-            errorMessage = "Gateway does not support three-step adding of payment schedule";
-            return null;
+            get { return true; }
         }
 
         /// <summary>
@@ -275,12 +277,30 @@ namespace Rock.Financial
         public abstract bool CancelScheduledPayment( FinancialScheduledTransaction transaction, out string errorMessage );
 
         /// <summary>
+        /// Flag indicating if gateway supports reactivating a scheduled payment.
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool ReactivateScheduledPaymentSupported
+        {
+            get { return true; }
+        }
+
+        /// <summary>
         /// Reactivates the scheduled payment.
         /// </summary>
         /// <param name="transaction">The transaction.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
         public abstract bool ReactivateScheduledPayment( FinancialScheduledTransaction transaction, out string errorMessage );
+
+        /// <summary>
+        /// Flag indicating if gateway supports getting status of a scheduled payment.
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool GetScheduledPaymentStatusSupported
+        {
+            get { return true; }
+        }
 
         /// <summary>
         /// Gets the scheduled payment status.
