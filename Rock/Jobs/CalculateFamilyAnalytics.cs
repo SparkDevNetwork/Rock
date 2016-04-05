@@ -269,7 +269,7 @@ namespace Rock.Jobs
                                                  && m.GroupMemberStatus == GroupMemberStatus.Active
                                              )
                                              .GroupBy( m => m.PersonId )
-                                             .Select( g => g.OrderByDescending( m => m.CreatedDateTime ).Select( m => new { m.PersonId, m.CreatedDateTime, PersonAliasId = m.Person.Aliases.Select( p => p.Id ).FirstOrDefault() } ).FirstOrDefault() )
+                                             .Select( g => g.OrderBy( m => m.CreatedDateTime ).Select( m => new { m.PersonId, m.CreatedDateTime, PersonAliasId = m.Person.Aliases.Select( p => p.Id ).FirstOrDefault() } ).FirstOrDefault() )
                                              .ToList();
 
                         var needsStartDate = groupMemberInfo.Where( m => !historyRecords.Any( h => h.EntityId == m.PersonId && h.Verb == "STARTED" ) );
