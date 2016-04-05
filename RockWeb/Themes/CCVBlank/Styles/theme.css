@@ -13711,6 +13711,11 @@ a.help {
   outline: 0;
   color: #86b8cc;
 }
+a.warning {
+  margin-left: 6px;
+  outline: 0;
+  color: #f0ad4e;
+}
 .help-message {
   font-weight: normal;
 }
