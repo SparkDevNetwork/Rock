@@ -225,6 +225,19 @@ namespace Rock.Model
                     this.DateTimeAdded = RockDateTime.Now;
                 }
             }
+            else if ( state == System.Data.Entity.EntityState.Modified )
+            {
+                var changeEntry = dbContext.ChangeTracker.Entries<GroupMember>().Where( a => a.Entity == this ).FirstOrDefault();
+                if ( changeEntry != null )
+                {
+                    var origGroupMemberStatus = (GroupMemberStatus)changeEntry.OriginalValues["GroupMemberStatus"];
+                    if ( origGroupMemberStatus != this.GroupMemberStatus )
+                    {
+                        action = string.Format( "Group member status changed from {0} to {1}", origGroupMemberStatus.ToString(), this.GroupMemberStatus.ToString() );
+                        verb = "UPDATE";
+                    }
+                }
+            }
             else if ( state == System.Data.Entity.EntityState.Deleted )
             {
                 action = "Removed from group.";
