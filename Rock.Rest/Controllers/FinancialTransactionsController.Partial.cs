@@ -24,6 +24,7 @@ using System.Web.Http;
 using System.Web.Http.OData;
 using Rock;
 using Rock.Data;
+using Rock.Financial;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;
@@ -315,6 +316,38 @@ namespace Rock.Rest.Controllers
 
             return dataSet;
         }
+
+        //[HttpGet]
+        //[System.Web.Http.Route( "api/FinancialTransactions/ChargeStep3/{GatewayId}/{TokenId}" )]
+        //public FinancialTransaction ChargeStep3( int gatewayId, string tokenId )
+        //{
+        //    SetProxyCreation( true );
+        //    var rockContext = (RockContext)Service.Context;
+        //    var financialGateway = new FinancialGatewayService( rockContext ).Get( gatewayId );
+        //    if ( financialGateway == null )
+        //    {
+        //        throw new HttpResponseException( Request.CreateErrorResponse( HttpStatusCode.NotFound, "Gateway does not exist!" ) );
+        //    }
+
+        //    var gateway = financialGateway.GetGatewayComponent();
+        //    if ( gateway == null )
+        //    {
+        //        throw new HttpResponseException( Request.CreateErrorResponse( HttpStatusCode.NotFound, "Gateway component could not be loaded!" ) );
+        //    }
+
+        //    var paymentInfo = new PaymentInfo();
+        //    paymentInfo.AdditionalParameters.Add( "token-id", tokenId );
+
+        //    string errorMessage = string.Empty;
+
+        //    var transaction = gateway.ChargeStep3( financialGateway, paymentInfo, out errorMessage );
+        //    if ( transaction == null || !string.IsNullOrWhiteSpace( errorMessage ) )
+        //    {
+        //        throw new HttpResponseException( Request.CreateErrorResponse( HttpStatusCode.BadRequest, errorMessage ) );
+        //    }
+
+        //    return transaction;
+        //}
 
         /// <summary>
         /// Gets transactions by people with the supplied givingId.

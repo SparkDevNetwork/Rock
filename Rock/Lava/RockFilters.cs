@@ -2628,6 +2628,54 @@ namespace Rock.Lava
             return input;
         }
 
+        /// <summary>
+        /// Sorts the list of items by the specified attribute's value
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <returns></returns>
+        public static object SortByAttribute( DotLiquid.Context context, object input, string attributeKey )
+        {
+            if ( input is IEnumerable<Rock.Attribute.IHasAttributes> )
+            {
+                var rockContext = GetRockContext( context );
+                var inputList = ( input as IEnumerable<Rock.Attribute.IHasAttributes> ).ToList();
+                foreach ( var item in inputList )
+                {
+                    if ( item.Attributes == null )
+                    {
+                        item.LoadAttributes( rockContext );
+                    }
+                }
+
+                if ( inputList.Count > 1 && inputList[0].Attributes.ContainsKey( attributeKey ) )
+                {
+                    var attributeCache = inputList[0].Attributes[attributeKey];
+
+                    inputList.Sort( ( item1, item2 ) =>
+                    {
+                        var item1AttributeValue = item1.AttributeValues.Where( a => a.Key == attributeKey ).FirstOrDefault().Value.SortValue;
+                        var item2AttributeValue = item2.AttributeValues.Where( a => a.Key == attributeKey ).FirstOrDefault().Value.SortValue;
+                        if ( item1AttributeValue is IComparable && item2AttributeValue is IComparable )
+                        {
+                            return ( item1AttributeValue as IComparable ).CompareTo( item2AttributeValue as IComparable );
+                        }
+                        else
+                        {
+                            return 0;
+                        }
+                    } );
+                }
+
+                return inputList;
+            }
+            else
+            {
+                return input;
+            }
+        }
+
         #endregion
     }
 }

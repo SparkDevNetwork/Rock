@@ -729,7 +729,7 @@ achieve our mission.  We are so grateful for your commitment.
                 var savedAccounts = new FinancialPersonSavedAccountService( new RockContext() )
                     .GetByPersonId( TargetPersonId.Value );
 
-                if ( Gateway != null )
+                if ( Gateway != null && Gateway.SupportsSavedAccount( true ) )
                 {
                     var ccCurrencyType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) );
                     if ( Gateway.SupportsSavedAccount( ccCurrencyType ) )

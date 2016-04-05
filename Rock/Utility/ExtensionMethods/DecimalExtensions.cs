@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ namespace Rock
         /// Returns the floor (round down) value with the given decimal precision
         /// </summary>
         /// <param name="value">The value.</param>
+        /// <param name="precision">The precision.</param>
         /// <returns></returns>
         public static decimal? Floor( this decimal? value, int precision = 0 )
         {
