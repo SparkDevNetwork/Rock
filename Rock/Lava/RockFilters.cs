@@ -2637,10 +2637,10 @@ namespace Rock.Lava
         /// <returns></returns>
         public static object SortByAttribute( DotLiquid.Context context, object input, string attributeKey )
         {
-            if ( input is IEnumerable<Rock.Attribute.IHasAttributes> )
+            if ( input is IEnumerable )
             {
                 var rockContext = GetRockContext( context );
-                var inputList = ( input as IEnumerable<Rock.Attribute.IHasAttributes> ).ToList();
+                var inputList = ( input as IEnumerable ).OfType<Rock.Attribute.IHasAttributes>().ToList();
                 foreach ( var item in inputList )
                 {
                     if ( item.Attributes == null )
