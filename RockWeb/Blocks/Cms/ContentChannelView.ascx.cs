@@ -242,6 +242,7 @@ $(document).ready(function() {
 
             rockContext.SaveChanges();
 
+            SetAttributeValue( "Status", cblStatus.SelectedValuesAsInt.AsDelimited(",") );
             SetAttributeValue( "Channel", ddlChannel.SelectedValue );
             SetAttributeValue( "EnableDebug", cbDebug.Checked.ToString() );
             SetAttributeValue( "MergeContent", cbMergeContent.Checked.ToString() );
