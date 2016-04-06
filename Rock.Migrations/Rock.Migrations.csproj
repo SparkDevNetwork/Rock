@@ -187,6 +187,10 @@
     <Compile Include="Migrations\201604051122039_RenameNMIGateway.Designer.cs">
       <DependentUpon>201604051122039_RenameNMIGateway.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201604062309433_LessPages.cs" />
+    <Compile Include="Migrations\201604062309433_LessPages.Designer.cs">
+      <DependentUpon>201604062309433_LessPages.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.cs" />
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.Designer.cs">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
@@ -2170,6 +2174,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201604051122039_RenameNMIGateway.resx">
       <DependentUpon>201604051122039_RenameNMIGateway.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201604062309433_LessPages.resx">
+      <DependentUpon>201604062309433_LessPages.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.resx">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
