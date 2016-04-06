@@ -1487,7 +1487,8 @@ namespace Rock.Model
 
             groupMember.GroupId = groupId;
             groupMember.GroupRoleId = groupRoleId;
-            var role = group.GroupType.Roles.FirstOrDefault( a => a.Id == groupRoleId );
+            var groupType = GroupTypeCache.Read( group.GroupTypeId );
+            var role = groupType.Roles.FirstOrDefault( a => a.Id == groupRoleId );
 
             if ( role != null )
             {
