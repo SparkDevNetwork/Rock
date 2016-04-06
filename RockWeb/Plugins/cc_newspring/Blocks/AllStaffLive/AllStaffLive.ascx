@@ -20,7 +20,6 @@
             <div id="live_jw_player"></div>
             <script src='//player.ooyala.com/v3/d2ac021eb96c49fdb5d58883c017773e?namespace=live_player&tweaks=android-enable-hls'></script>
         </div>
-        s
     </div>
 
     <script type="text/javascript" src="../plugins/cc_newspring/Blocks/AllStaffLive/Scripts/scripts.js"></script>
