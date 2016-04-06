@@ -25,8 +25,8 @@
 @font-weight-bold:      700;
 @font-weight-semibold:  600;
 
-@bg-color:      #ffffff;
-@text-color:    #76908B;
+@bg-color:      #4b5c65;
+@text-color:    #fff;
 
 @modal-body-bg: @bg-color;
 @modal-body-text-color: @text-color;
@@ -35,22 +35,22 @@
 @modal-footer-bg: @bg-color;
 @modal-footer-text-color: @text-color;
 
-@header-text-color:     #333332;
+@header-text-color:     #fff;
 @header-font-weight:    @font-weight-bold;
 
-@subheader-text-color:      #707372;
+@subheader-text-color:      #dcdcdc;
 @subheader-font-weight:     @font-weight-light;
 
 // Button Styles
-@btn-default-bg: #c4c5c6;
-@btn-default-color:     #626161;
+@btn-default-bg: #76908B;
+@btn-default-color:     #fff;
 @btn-default-border:   #adaeaf;
 @checkin-button-text-weight:    @font-weight-bold;
 @checkin-button-alttext-weight: @font-weight-light;
 
 @btn-primary-color:    #fff;
-@btn-primary-border:   #707372;
-@btn-primary-bg:    #76908B;
+@btn-primary-border:   #18272d;
+@btn-primary-bg:    #9FBB99;
 
 @btn-disabled-color: @btn-primary-border;
 @btn-disabled-bg: darken(@btn-primary-bg, 20%);
@@ -129,7 +129,7 @@
 // --------------------------------------------------
 
 html {
-    background-color: @bg-color;
+    background: @bg-color url('../Assets/Images/background.jpg') top right no-repeat fixed;
     background-size: cover;
     height: 100%;
 }
@@ -137,91 +137,19 @@ html {
 body {
     background: url('../Assets/Images/logo.png') right bottom no-repeat;
     height: 100%;
-    background-size: auto;
-}
-
-.checkin-start {
-    margin-top:auto;
-    padding-top: 50%;
-    background-image:    url('../Assets/Images/background.png');
-    background-size:     contain;
-    background-repeat:   no-repeat;
-    background-position: center center;              /* optional, center the image */
-}
-
-.checkin-actions a.btn-primary {
-    font-size: 22px;
-    font-weight: 700;
-    padding: 12px 24px;
-}
-
-.checkin-footer {
-    width: 70%;
+    -ms-touch-action: manipulation !important;
+    -ms-content-zooming: none; /* Disables zooming */
+    touch-action: manipulation   /* Disable any special actions on tap/touch */
 }
 
 @media all and (-webkit-min-device-pixel-ratio: 1.5) {
   html {
-
+        background-image: url('../Assets/Images/background@2x.jpg');
+        background-size: 1348px 1024px;
     }
 
     body {
-
+        background-image: url('../Assets/Images/logo@2x.png');
+        background-size: 496px 504px;
     }
-}
-
-@media (max-height: 800px) {
-    html {
-        background-color: #ffffff;
-    }
-    .checkin-header {
-        margin-top: 3px;
-        margin-bottom: 3px;
-    }
-    .checkin-header h1 {
-        font-size: 32px;
-        margin-top: 5px;
-    }
-    .checkin-phone-keypad {
-        margin-bottom: 5px;
-    }
-    /* Added due to iPad crowding */
-    label.control-label{
-        margin-top:5px;
-    }
-    label[for$="_tbPhone"] {
-        display: none;
-    }
-    .checkin-scroll-panel {
-        top: 30px !important;
-    }
-    input.checkin-phone-entry {
-        height: 45px;
-        font-size: 28px;
-        padding: 1px 20px;
-        width: 212px;
-        margin-bottom: 2px;
-    }
-    .tenkey a.digit {
-        font-size: 42px;
-    }
-    .tenkey a.btn {
-        width: 67px;
-        height: 67px;
-    }
-    .tenkey a.command {
-        padding-top: 18px;
-    }
-    .btn-group-lg>.btn, .btn-lg {
-        padding: 0px;
-     }
-    .checkin-body .checkin-actions .btn {
-        font-size: 22px;
-    }
-    .checkin-actions a.btn {
-        padding: 10px 20px;
-    }
-    .checkin-footer {
-        width: 40%;
-    }
-
 }
