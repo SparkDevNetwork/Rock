@@ -24,7 +24,6 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.Model;
 using Rock.Security;
 
 namespace Rock.Web.UI.Controls
@@ -64,19 +63,16 @@ namespace Rock.Web.UI.Controls
             var rockPage = this.Page as RockPage;
             if ( rockPage != null )
             {
-                var currentPerson = rockPage.CurrentPerson;
-                if ( currentPerson != null )
+                foreach ( KeyValuePair<int, Lazy<Rock.Search.SearchComponent, Rock.Extension.IComponentData>> service in Rock.Search.SearchContainer.Instance.Components )
                 {
-                    foreach ( KeyValuePair<int, Lazy<Rock.Search.SearchComponent, Rock.Extension.IComponentData>> service in Rock.Search.SearchContainer.Instance.Components )
+                    var searchComponent = service.Value.Value;
+                    if ( searchComponent.IsAuthorized( Authorization.VIEW, rockPage.CurrentPerson ) )
                     {
-                        if ( service.Value.Value.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                        if ( !searchComponent.AttributeValues.ContainsKey( "Active" ) || bool.Parse( searchComponent.AttributeValues["Active"].Value ) )
                         {
-                            if ( !service.Value.Value.AttributeValues.ContainsKey( "Active" ) || bool.Parse( service.Value.Value.AttributeValues["Active"].Value ) )
-                            {
-                                searchExtensions.Add( service.Key.ToString(), Tuple.Create<string, string>( service.Value.Value.SearchLabel, service.Value.Value.ResultUrl ) );
-                                if ( string.IsNullOrWhiteSpace( hfFilter.Value ) )
-                                    hfFilter.Value = service.Key.ToString();
-                            }
+                            searchExtensions.Add( service.Key.ToString(), Tuple.Create<string, string>( searchComponent.SearchLabel, searchComponent.ResultUrl ) );
+                            if ( string.IsNullOrWhiteSpace( hfFilter.Value ) )
+                                hfFilter.Value = service.Key.ToString();
                         }
                     }
                 }
