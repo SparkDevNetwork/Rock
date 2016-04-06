@@ -35,6 +35,7 @@ namespace Rock.Field.Types
         #region Configuration
 
         private const string ATTRIBUTE_FIELD_TYPES_KEY = "attributefieldtypes";
+        private const string TEXTBOX_ROWS_KEY = "textboxRows";
         private const string WORKFLOW_TYPE_ATTRIBUTES_KEY = "WorkflowTypeAttributes";
         private const string ACTIVITY_TYPE_ATTRIBUTES_KEY = "ActivityTypeAttributes";
 
@@ -46,6 +47,7 @@ namespace Rock.Field.Types
         {
             var configKeys = base.ConfigurationKeys();
             configKeys.Add( ATTRIBUTE_FIELD_TYPES_KEY );
+            configKeys.Add( TEXTBOX_ROWS_KEY );
             return configKeys;
         }
 
@@ -66,6 +68,13 @@ namespace Rock.Field.Types
             tbCustomValues.Label = "Limit Attributes by Field Type";
             tbCustomValues.Help = "Optional list of field type classes for limiting selection to attributes using those field types (e.g. 'Rock.Field.Types.PersonFieldType|Rock.Field.Types.GroupFieldType').";
 
+            var nbRows = new NumberBox();
+            controls.Add( nbRows );
+            nbRows.AutoPostBack = true;
+            nbRows.TextChanged += OnQualifierUpdated;
+            nbRows.Label = "Textbox Rows";
+            nbRows.Help = "The number of rows to use for textbox.";
+
             return controls;
         }
 
@@ -79,11 +88,21 @@ namespace Rock.Field.Types
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( ATTRIBUTE_FIELD_TYPES_KEY, new ConfigurationValue( "Limit Attributes by Field Type", "Optional list of field type classes for limiting selection to attributes using those field types (e.g. 'Rock.Field.Types.PersonFieldType|Rock.Field.Types.GroupFieldType').", "" ) );
 
-            if ( controls != null && controls.Count == 1 )
+            if ( controls != null )
             {
-                if ( controls[0] != null && controls[0] is RockTextBox )
+                if ( controls.Count >= 1 )
                 {
-                    configurationValues[ATTRIBUTE_FIELD_TYPES_KEY].Value = ( (RockTextBox)controls[0] ).Text;
+                    if ( controls[0] != null && controls[0] is RockTextBox )
+                    {
+                        configurationValues[ATTRIBUTE_FIELD_TYPES_KEY].Value = ( (RockTextBox)controls[0] ).Text;
+                    }
+                }
+                if ( controls.Count >= 2 )
+                {
+                    if ( controls[1] != null && controls[1] is NumberBox )
+                    {
+                        configurationValues[TEXTBOX_ROWS_KEY].Value = ( (NumberBox)controls[0] ).Text;
+                    }
                 }
             }
 
@@ -97,11 +116,15 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( controls != null && controls.Count == 1 && configurationValues != null )
+            if ( controls != null && configurationValues != null )
             {
-                if ( controls[0] != null && controls[0] is RockTextBox && configurationValues.ContainsKey( ATTRIBUTE_FIELD_TYPES_KEY ) )
+                if ( controls.Count >= 1 && controls[0] != null && controls[0] is RockTextBox && configurationValues.ContainsKey( ATTRIBUTE_FIELD_TYPES_KEY ) )
                 {
                     ( (RockTextBox)controls[0] ).Text = configurationValues[ATTRIBUTE_FIELD_TYPES_KEY].Value;
+                }
+                if ( controls.Count >= 2 && controls[1] != null && controls[1] is NumberBox && configurationValues.ContainsKey( TEXTBOX_ROWS_KEY ) )
+                {
+                    ( (NumberBox)controls[1] ).Text = configurationValues[TEXTBOX_ROWS_KEY].Value;
                 }
             }
         }
@@ -170,6 +193,12 @@ namespace Rock.Field.Types
 
             var editControl = new Rock.Web.UI.Controls.RockTextOrDropDownList { ID = id };
             editControl.ValidateRequestMode = ValidateRequestMode.Disabled;
+
+            if ( configurationValues != null &&
+                configurationValues.ContainsKey( TEXTBOX_ROWS_KEY ) )
+            {
+                editControl.Rows = configurationValues[TEXTBOX_ROWS_KEY].Value.AsIntegerOrNull() ?? 1;
+            }
 
             editControl.DropDownList.Items.Add( new ListItem() );
 

@@ -103,17 +103,13 @@ namespace Rock.Rest.Controllers
 
                 var binaryFileService = new BinaryFileService( rockContext );
                 var binaryFile = new BinaryFile();
+                binaryFileService.Add( binaryFile );
 
-                if ( uploadedFile != null )
-                {
-                    binaryFileService.Add( binaryFile );
-
-                    binaryFile.IsTemporary = false;
-                    binaryFile.BinaryFileTypeId = binaryFileType.Id;
-                    binaryFile.MimeType = uploadedFile.ContentType;
-                    binaryFile.FileName = Path.GetFileName( uploadedFile.FileName );
-                    binaryFile.ContentStream = ImageUtilities.GetFileContentStream( uploadedFile, true, true );
-                }
+                binaryFile.IsTemporary = false;
+                binaryFile.BinaryFileTypeId = binaryFileType.Id;
+                binaryFile.MimeType = uploadedFile.ContentType;
+                binaryFile.FileName = Path.GetFileName( uploadedFile.FileName );
+                binaryFile.ContentStream = FileUtilities.GetFileContentStream( uploadedFile );
 
                 rockContext.SaveChanges();
 
@@ -125,13 +121,6 @@ namespace Rock.Rest.Controllers
             catch ( HttpResponseException exception )
             {
                 return exception.Response;
-            }
-            catch ( InvalidDataException idException )
-            {
-                return new HttpResponseMessage( HttpStatusCode.BadRequest )
-                {
-                    Content = new StringContent( idException.Message )
-                };
             }
             catch
             {

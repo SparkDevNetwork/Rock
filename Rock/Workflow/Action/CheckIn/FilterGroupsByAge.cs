@@ -18,11 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Globalization;
 using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action.CheckIn
 {
@@ -34,6 +34,7 @@ namespace Rock.Workflow.Action.CheckIn
     [ExportMetadata( "ComponentName", "Filter Groups By Age" )]
     [BooleanField( "Remove", "Select 'Yes' if groups should be be removed.  Select 'No' if they should just be marked as excluded.", true, "", 0 )]
     [BooleanField( "Age Required", "Select 'Yes' if groups with an age filter should be removed/excluded when person does not have an age.", true, "", 1 )]
+    [AttributeField( "9BBFDA11-0D22-40D5-902F-60ADFBC88987", "Group Age Range Attribute", "Select the attribute used to define the age range of the group", true, false, "43511B8F-71D9-423A-85BF-D1CD08C1998E", order: 2 )]
     public class FilterGroupsByAge : CheckInActionComponent
     {
         /// <summary>
@@ -59,24 +60,45 @@ namespace Rock.Workflow.Action.CheckIn
                 var remove = GetAttributeValue( action, "Remove" ).AsBoolean();
                 bool ageRequired = GetAttributeValue( action, "AgeRequired" ).AsBoolean( true );
 
+                // get the admin-selected attribute key instead of using a hardcoded key
+                var ageRangeAttributeKey = string.Empty;
+                var ageRangeAttributeGuid = GetAttributeValue( action, "GroupAgeRangeAttribute" ).AsGuid();
+                if ( ageRangeAttributeGuid != Guid.Empty )
+                {
+                    ageRangeAttributeKey = AttributeCache.Read( ageRangeAttributeGuid, rockContext ).Key;
+                }
+
+                // log a warning if the attribute is missing or invalid
+                if ( string.IsNullOrWhiteSpace( ageRangeAttributeKey ) )
+                {
+                    action.AddLogEntry( string.Format( "The Group Age Range attribute is not selected or invalid for '{0}'.", action.ActionType.Name ) );
+                }
+
                 foreach ( var person in family.People )
                 {
-                    double? age = person.Person.AgePrecise;
+                    var ageAsDouble = person.Person.AgePrecise;
+                    decimal? age = null;
 
-                    if ( age == null && !ageRequired )
+                    if ( !ageAsDouble.HasValue && !ageRequired )
                     {
                         continue;
+                    }
+
+                    if ( ageAsDouble.HasValue )
+                    {
+                        age = Convert.ToDecimal( ageAsDouble.Value );
                     }
 
                     foreach ( var groupType in person.GroupTypes.ToList() )
                     {
                         foreach ( var group in groupType.Groups.ToList() )
                         {
-                            string ageRange = group.Group.GetAttributeValue( "AgeRange" ) ?? string.Empty;
+                            var ageRange = group.Group.GetAttributeValue( ageRangeAttributeKey ).ToStringSafe();
 
-                            string[] ageRangePair = ageRange.Split( new char[] { ',' }, StringSplitOptions.None );
+                            var ageRangePair = ageRange.Split( new char[] { ',' }, StringSplitOptions.None );
                             string minAgeValue = null;
                             string maxAgeValue = null;
+
                             if ( ageRangePair.Length == 2 )
                             {
                                 minAgeValue = ageRangePair[0];
@@ -90,18 +112,11 @@ namespace Rock.Workflow.Action.CheckIn
                                 if ( decimal.TryParse( minAgeValue, out minAge ) )
                                 {
                                     decimal? personAgePrecise = null;
+
                                     if ( age.HasValue )
                                     {
-                                        int groupMinAgePrecision = 0;
-                                        var decimalIndex = minAgeValue.IndexOf( NumberFormatInfo.CurrentInfo.NumberDecimalSeparator );
-                                        if ( decimalIndex > 0 )
-                                        {
-                                            groupMinAgePrecision = minAgeValue.Length - decimalIndex - 1;
-                                        }
-
-                                        // converts to decimal and removes a step at the desired precision to prevent rounding up
-                                        decimal precisionStep = .5M / ( groupMinAgePrecision > 0 ? groupMinAgePrecision : 1 );
-                                        personAgePrecise = Math.Round( Convert.ToDecimal( age ) - precisionStep, groupMinAgePrecision );
+                                        int groupMinAgePrecision = minAge.GetDecimalPrecision();
+                                        personAgePrecise = age.Floor( groupMinAgePrecision );
                                     }
 
                                     if ( !age.HasValue || personAgePrecise < minAge )
@@ -126,18 +141,11 @@ namespace Rock.Workflow.Action.CheckIn
                                 if ( decimal.TryParse( maxAgeValue, out maxAge ) )
                                 {
                                     decimal? personAgePrecise = null;
+
                                     if ( age.HasValue )
                                     {
-                                        int groupMaxAgePrecision = 0;
-                                        var decimalIndex = maxAgeValue.IndexOf( NumberFormatInfo.CurrentInfo.NumberDecimalSeparator );
-                                        if ( decimalIndex > 0 )
-                                        {
-                                            groupMaxAgePrecision = maxAgeValue.Length - decimalIndex - 1;
-                                        }
-
-                                        // converts to decimal and removes a step at the desired precision to prevent rounding up
-                                        decimal precisionStep = .5M / ( groupMaxAgePrecision > 0 ? groupMaxAgePrecision : 1 );
-                                        personAgePrecise = Math.Round( Convert.ToDecimal( age ) - precisionStep, groupMaxAgePrecision );
+                                        int groupMaxAgePrecision = maxAge.GetDecimalPrecision();
+                                        personAgePrecise = age.Floor( groupMaxAgePrecision );
                                     }
 
                                     if ( !age.HasValue || personAgePrecise > maxAge )

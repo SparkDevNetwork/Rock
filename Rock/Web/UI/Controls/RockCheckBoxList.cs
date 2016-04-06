@@ -127,13 +127,13 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return RequiredFieldValidator != null ? RequiredFieldValidator.ErrorMessage : string.Empty;
+                return CustomValidator != null ? CustomValidator.ErrorMessage : string.Empty;
             }
             set
             {
-                if ( RequiredFieldValidator != null )
+                if ( CustomValidator != null )
                 {
-                    RequiredFieldValidator.ErrorMessage = value;
+                    CustomValidator.ErrorMessage = value;
                 }
             }
         }
@@ -148,7 +148,12 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid;
+                if ( this.Required )
+                {
+                    return this.SelectedIndex != -1;
+                }
+
+                return true;
             }
         }
 
@@ -169,6 +174,14 @@ namespace Rock.Web.UI.Controls
         public RequiredFieldValidator RequiredFieldValidator { get; set; }
 
         /// <summary>
+        /// Gets or sets the custom validator.
+        /// </summary>
+        /// <value>
+        /// The custom validator.
+        /// </value>
+        public CustomValidator CustomValidator { get; set; }
+
+        /// <summary>
         /// Gets or sets the group of controls for which the control that is derived from the <see cref="T:System.Web.UI.WebControls.ListControl" /> class causes validation when it posts back to the server.
         /// </summary>
         /// <returns>The group of controls for which the derived <see cref="T:System.Web.UI.WebControls.ListControl" /> causes validation when it posts back to the server. The default is an empty string ("").</returns>
@@ -181,9 +194,9 @@ namespace Rock.Web.UI.Controls
             set
             {
                 base.ValidationGroup = value;
-                if ( RequiredFieldValidator != null )
+                if ( CustomValidator != null )
                 {
-                    RequiredFieldValidator.ValidationGroup = value;
+                    CustomValidator.ValidationGroup = value;
                 }
             }
         }
@@ -191,11 +204,47 @@ namespace Rock.Web.UI.Controls
         #endregion
 
         /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( System.EventArgs e )
+        {
+            EnsureChildControls();
+            base.OnInit( e );
+
+            string script = string.Format( @" function ValidateCheckboxList_{0}(source, args) {{
+                var checkboxes = $(""input[id ^= '{0}']"");
+                var isValid = false;
+                for ( var i = 0; i < checkboxes.length; i++ )
+                {{
+                    if ( checkboxes[i].checked) {{
+                        isValid = true;
+                        break;
+                    }}
+                }}
+
+                var control = $(""label[for='{0}']"").closest('.rock-check-box-list');
+                if (isValid) {{
+                    control.removeClass('has-error');
+                }} else {{
+                    control.addClass('has-error');
+                }}
+
+                args.IsValid = isValid;
+
+        }}", this.ClientID);
+            ScriptManager.RegisterClientScriptBlock( this, typeof( RockCheckBoxList ), "RockCheckBoxListScript_" + this.ClientID, script, true );
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="RockCheckBoxList"/> class.
         /// </summary>
         public RockCheckBoxList()
             : base()
         {
+            CustomValidator = new CustomValidator();
+            CustomValidator.ValidationGroup = this.ValidationGroup;
+
             HelpBlock = new HelpBlock();
         }
 
@@ -212,6 +261,16 @@ namespace Rock.Web.UI.Controls
             _hfCheckListBoxId.Value = "1";
 
             Controls.Add( _hfCheckListBoxId );
+
+            // add custom validator
+            CustomValidator.ID = this.ID + "_cfv";
+            CustomValidator.ClientValidationFunction = "ValidateCheckboxList_" + this.ClientID;
+            CustomValidator.ErrorMessage = this.Label != string.Empty ? this.Label + " is Required." : string.Empty;
+            CustomValidator.CssClass = "validation-error help-inline";
+            CustomValidator.Enabled = this.Required;
+            CustomValidator.Display = ValidatorDisplay.Dynamic;
+
+            Controls.Add( CustomValidator );
 
             RockControlHelper.CreateChildControls( this, Controls );
         }
@@ -274,7 +333,7 @@ namespace Rock.Web.UI.Controls
             }
 
             base.RenderControl( writer );
-
+            CustomValidator.RenderControl( writer );
             writer.RenderEndTag();
         }
 
@@ -317,3 +376,4 @@ namespace Rock.Web.UI.Controls
 
     }
 }
+ 

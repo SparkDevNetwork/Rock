@@ -1391,10 +1391,10 @@ namespace RockWeb.Blocks.Event
                 registrationChanges.Add( string.Format( "Manually added payment of {0}.", amount.FormatAsCurrency() ) );
             }
 
-            transaction.Summary = tbSummary.Text;
-
             if ( transaction != null )
             {
+                transaction.Summary = tbSummary.Text;
+                
                 History.EvaluateChange( txnChanges, "Transaction Code", string.Empty, transaction.TransactionCode );
 
                 transaction.AuthorizedPersonAliasId = registration.PersonAliasId;

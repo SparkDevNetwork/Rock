@@ -317,29 +317,25 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Gets the contribution transactions.
+        /// Gets transactions by people with the supplied givingId.
         /// </summary>
-        /// <param name="groupId">The group unique identifier.</param>
+        /// <param name="givingId">The giving ID.</param>
         /// <returns></returns>
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [Authenticate, Secured]
         [HttpGet]
         [EnableQuery]
-        [System.Web.Http.Route( "api/FinancialTransactions/GetTransactionsForGivingGroup/{personId}" )]
-        public IQueryable<FinancialTransaction> GetTransactionsForGivingGroup( int personId )
+        [System.Web.Http.Route( "api/FinancialTransactions/GetByGivingId/{givingId}" )]
+        public IQueryable<FinancialTransaction> GetByGivingId( string givingId )
         {
-            var rockContext = new RockContext();
-            var personService = new PersonService( rockContext );
-            var person = personService.Get( personId );
-
-            if ( person == null )
+            if ( string.IsNullOrWhiteSpace( givingId ) || !( givingId.StartsWith( "P" ) || givingId.StartsWith( "G" ) ) )
             {
                 var response = new HttpResponseMessage( HttpStatusCode.BadRequest );
-                response.Content = new StringContent( "Person was not found" );
+                response.Content = new StringContent( "The supplied givingId is not valid" );
                 throw new HttpResponseException( response );
             }
 
-            return Get().Where( t => t.AuthorizedPersonAlias.Person.GivingId == person.GivingId );
+            return Get().Where( t => t.AuthorizedPersonAlias.Person.GivingId == givingId );
         }
 
         /// <summary>

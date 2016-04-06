@@ -251,6 +251,10 @@ namespace Rock.Model
                     {
                         _stream.Position = 0;
                     }
+                    else
+                    {
+                        _stream = StorageProvider.GetContentStream( this );
+                    }
                 }
 
                 return _stream;

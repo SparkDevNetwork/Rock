@@ -1179,23 +1179,8 @@ namespace Rock.Model
                 }
                 else
                 {
-                    // Use the GradeTransitionDate (aka grade promotion date) to figure out what grade (gradeOffset) they're in
                     var globalAttributes = GlobalAttributesCache.Read();
-                    var transitionDate = globalAttributes.GetValue( "GradeTransitionDate" ).AsDateTime();
-                    if ( transitionDate.HasValue )
-                    {
-                        // if the next graduation mm/dd won't happen until next year, refactor the graduationyear to the prior year
-                        // Example, if Transition Date is 6/1/YYYY and today is 6/1/YYYY or later, refactor the graduationyear to the prior year
-                        // in other words, we are treating the grade transition date as the last day of the "school" year
-                        int graduationYearRefactor = ( RockDateTime.Now < transitionDate.Value ) ? this.GraduationYear.Value : ( this.GraduationYear.Value - 1 );
-
-                        int offsetYears = graduationYearRefactor - RockDateTime.Now.Year;
-                        return offsetYears;
-                    }
-                    else
-                    {
-                        return null;
-                    }
+                    return GraduationYear.Value - globalAttributes.CurrentGraduationYear;
                 }
             }
 
@@ -1511,6 +1496,19 @@ namespace Rock.Model
             return firstFamily != null ? firstFamily.Campus : null;
         }
 
+        /// <summary>
+        /// Gets the campus ids for all the families that a person belongs to.
+        /// </summary>
+        /// <returns></returns>
+        public List<int> GetCampusIds()
+        {
+            return this.GetFamilies()
+                .Where( f => f.CampusId.HasValue )
+                .Select( f => f.CampusId.Value )
+                .Distinct()
+                .ToList();
+        }
+
         #endregion
 
         #region Static Helper Methods
@@ -1680,7 +1678,6 @@ namespace Rock.Model
             }
         }
 
-
         /// <summary>
         /// Gets the person photo URL.
         /// </summary>
@@ -1690,9 +1687,8 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPersonPhotoUrl( Person person, int? maxWidth = null, int? maxHeight = null )
         {
-            return GetPersonPhotoUrl( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordStatusReasonValue != null? (Guid?)person.RecordStatusReasonValue.Guid : null, maxWidth, maxHeight );
+            return GetPersonPhotoUrl( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValueId.HasValue ? DefinedValueCache.Read( person.RecordTypeValueId.Value ).Guid : (Guid?)null, maxWidth, maxHeight );
         }
-
 
         /// <summary>
         /// Gets the person photo URL from a person id (warning this will cause a database lookup).
@@ -2235,12 +2231,11 @@ namespace Rock.Model
             if (gradeOffset.HasValue && gradeOffset.Value >= 0)
             {
                 var globalAttributes = GlobalAttributesCache.Read();
-                var transitionDate = globalAttributes.GetValue("GradeTransitionDate").AsDateTime();
-                if (transitionDate.HasValue)
-                {
-                    int gradeOffsetAdjustment = (RockDateTime.Now < transitionDate.Value) ? gradeOffset.Value : gradeOffset.Value + 1;
-                    return transitionDate.Value.Year + gradeOffsetAdjustment;
-                }
+                var transitionDate = globalAttributes.GetValue("GradeTransitionDate").AsDateTime() ?? new DateTime( RockDateTime.Today.Year, 6, 1 );
+                transitionDate = new DateTime( RockDateTime.Today.Year, transitionDate.Month, transitionDate.Day );
+
+                int gradeOffsetAdjustment = (RockDateTime.Now.Date < transitionDate) ? gradeOffset.Value : gradeOffset.Value + 1;
+                return transitionDate.Year + gradeOffsetAdjustment;
             }
 
             return null;
@@ -2552,8 +2547,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static IQueryable<Person> WhereGradeOffsetRange( this IQueryable<Person> personQry, int? minGradeOffset, int? maxGradeOffset, bool includePeopleWithNoGrade = true )
         {
-            var transitionDate = GlobalAttributesCache.Read().GetValue( "GradeTransitionDate" ).AsDateTime() ?? RockDateTime.Now.AddDays( 1 );
-            var currentGradYear = RockDateTime.Now < transitionDate ? RockDateTime.Now.Year : RockDateTime.Now.Year + 1;
+            var currentGradYear = GlobalAttributesCache.Read().CurrentGraduationYear;
 
             var qryWithGradeOffset = personQry.Select(
                       p => new

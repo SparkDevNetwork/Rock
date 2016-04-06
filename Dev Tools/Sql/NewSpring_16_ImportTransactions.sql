@@ -13,8 +13,6 @@
 
 How to import the XLS file:
 
-0.) Add column to excel file with a function of received_time - 1.  Copy column and paste values.  
-0.) Delete received_time col and add received_time as the col name of the newly computed col.
 1.) Create Imports DB.  If it already exists, drop it, then create a new one.
 2.) Right click on the Imports DB and choose Tasks > Import Data
 3.) Move through the wizard to Choose a Data Source and select Microsoft Excel
@@ -36,18 +34,23 @@ How to import the XLS file:
 
 */
 
+-- Combine time with date column
+UPDATE [Imports].[dbo].[F1Transactions]
+SET Received_Date = Received_Date + CONVERT(DATETIME, CONVERT(TIME, Received_Time))
+WHERE Received_Time IS NOT NULL;
+
 /* ====================================================== */
 
 -- Clean up data --
 
-DECLARE @start AS DATETIME = '3-6-2016 22:00:00';
-DECLARE @end AS DATETIME = '3-8-2016 23:59:59';
+DECLARE @start AS DATETIME = '3-14-2016 00:00:00';
+DECLARE @end AS DATETIME = '3-14-2016 23:59:59';
 
 DELETE FROM [Imports].[dbo].[F1Transactions]
 WHERE
-	Received_Time IS NULL
-	OR (CONVERT(DateTime, CONVERT(DATE, Received_Date)) + CONVERT(DATETIME, CONVERT(TIME, Received_Time))) < @start
-	OR (CONVERT(DateTime, CONVERT(DATE, Received_Date)) + CONVERT(DATETIME, CONVERT(TIME, Received_Time))) > @end;
+	--Received_Time IS NULL
+	Received_Date < @start
+	OR Received_Date > @end;
 
 /* ====================================================== */
 
@@ -102,6 +105,22 @@ BEGIN
   RAISERROR('Could not find NMI Gateway', 20, -1) WITH LOG;
 END
 
+-- Supplement Bank Card Type from Reference Col
+UPDATE f1t 
+SET
+	[Bank Card_Type] =
+		CASE WHEN Reference = 'amex' THEN
+			'American Express'
+		WHEN Reference = 'discover' THEN 
+			'Discover'
+		WHEN Reference = 'mc' THEN 
+			'MasterCard'
+		WHEN Reference = 'visa' THEN 
+			'Visa'
+		END
+FROM [Imports].[dbo].[F1Transactions] f1t
+WHERE [Bank Card_Type] IS NULL AND Reference IN ('amex', 'mc', 'visa', 'discover');
+
 -- Create temp table
 if object_id('tempdb..#temp') is not null
 begin
@@ -144,7 +163,7 @@ SELECT
       WHERE
 	    [Name] = REPLACE([f1t].[SubFund], ' Campus', '')
     ) AS [CampusId]
-  , CONVERT(DateTime, CONVERT(DATE, Received_Date)) + CONVERT(DATETIME, CONVERT(TIME, Received_Time)) AS TransactionDateTime
+  , Received_Date AS TransactionDateTime
   , (
 	  SELECT 
 	    [Id] 
@@ -218,7 +237,8 @@ INSERT INTO [FinancialTransaction] (
 	FinancialPaymentDetailId,
 	TransactionTypeValueId,
 	CreatedDateTime,
-	ForeignKey) 
+	ForeignKey,
+	SourceTypeValueId) 
 SELECT
 	TransactionGuid,
 	TransactionDateTime,
@@ -227,7 +247,8 @@ SELECT
 	(SELECT Id FROM FinancialPaymentDetail WHERE [Guid] = PaymentDetailGuid),
 	@contribution,
 	@createdDate,
-	@foreignKey
+	@foreignKey,
+	10
 FROM #temp;
 
 INSERT INTO [FinancialTransactionDetail] (

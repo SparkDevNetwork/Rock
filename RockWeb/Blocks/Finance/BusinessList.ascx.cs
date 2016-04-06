@@ -108,7 +108,18 @@ namespace RockWeb.Blocks.Finance
                 gfBusinessFilter.SaveUserPreference( "Active Status", ddlActiveFilter.SelectedValue );
             }
 
-            BindGrid();
+            // If it's there, strip the SearchTerm parameter from the query string and reload.
+            if ( !string.IsNullOrWhiteSpace( PageParameter( "SearchTerm" ) ) )
+            {
+                var parameters = System.Web.HttpUtility.ParseQueryString( Request.Url.Query );
+                parameters.Remove( "SearchTerm" );
+                string url = Request.Url.AbsolutePath + ( parameters.Count > 0 ? "?" + parameters.ToString() : string.Empty );
+                Response.Redirect( url );
+            }
+            else
+            {
+                BindGrid();
+            }
         }
 
         /// <summary>
@@ -146,7 +157,6 @@ namespace RockWeb.Blocks.Finance
             NavigateToLinkedPage( "DetailPage", parms );
         }
 
-
         #endregion Events
 
         #region Internal Methods
@@ -180,32 +190,49 @@ namespace RockWeb.Blocks.Finance
             var queryable = new PersonService( rockContext ).Queryable()
                 .Where( q => q.RecordTypeValueId == recordTypeValueId );
 
-            // Business Name Filter
-            var businessName = gfBusinessFilter.GetUserPreference( "Business Name" );
+            var businessName = string.Empty;
+            bool viaSearch = false;
+
+            // Use the name passed in the page parameter if given
+            if ( !string.IsNullOrWhiteSpace( PageParameter( "SearchTerm" ) ) )
+            {
+                viaSearch = true;
+                gfBusinessFilter.Visible = false;
+                businessName = PageParameter( "SearchTerm" );
+            }
+            else
+            {
+                // Business Name Filter
+                businessName = gfBusinessFilter.GetUserPreference( "Business Name" );
+            }
+
             if ( !string.IsNullOrWhiteSpace( businessName ) )
             {
                 queryable = queryable.Where( a => a.LastName.Contains( businessName ) );
             }
 
-            var activeRecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
-            string activeFilterValue = gfBusinessFilter.GetUserPreference( "Active Status" );
-            if (activeFilterValue == "inactive")
+            if ( ! viaSearch )
             {
-                queryable = queryable.Where( b => b.RecordStatusValueId != activeRecordStatusValueId );
-            }
-            else if (activeFilterValue == "active")
-            {
-                queryable = queryable.Where( b => b.RecordStatusValueId == activeRecordStatusValueId );
-            }
+                var activeRecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+                string activeFilterValue = gfBusinessFilter.GetUserPreference( "Active Status" );
+                if ( activeFilterValue == "inactive" )
+                {
+                    queryable = queryable.Where( b => b.RecordStatusValueId != activeRecordStatusValueId );
+                }
+                else if ( activeFilterValue == "active" )
+                {
+                    queryable = queryable.Where( b => b.RecordStatusValueId == activeRecordStatusValueId );
+                }
 
-            SortProperty sortProperty = gBusinessList.SortProperty;
-            if ( sortProperty != null )
-            {
-                queryable = queryable.Sort( sortProperty );
-            }
-            else
-            {
-                queryable = queryable.OrderBy( q => q.LastName );
+                SortProperty sortProperty = gBusinessList.SortProperty;
+                if ( sortProperty != null )
+                {
+                    queryable = queryable.Sort( sortProperty );
+                }
+                else
+                {
+                    queryable = queryable.OrderBy( q => q.LastName );
+                }
             }
 
             var groupMemberQuery = new GroupMemberService( rockContext ).Queryable();
@@ -229,9 +256,16 @@ namespace RockWeb.Blocks.Finance
                                 .Select( p => p.Person.LastName + ", " + p.Person.NickName)
             } );
 
-            gBusinessList.EntityTypeId = EntityTypeCache.Read<Person>().Id;
-            gBusinessList.DataSource = businessList.ToList();
-            gBusinessList.DataBind();
+            if ( viaSearch && businessList.ToList().Count == 1 )
+            {
+                ShowDetailForm( businessList.ToList()[0].Id );
+            }
+            else
+            {
+                gBusinessList.EntityTypeId = EntityTypeCache.Read<Person>().Id;
+                gBusinessList.DataSource = businessList.ToList();
+                gBusinessList.DataBind();
+            }
         }
 
         /// <summary>

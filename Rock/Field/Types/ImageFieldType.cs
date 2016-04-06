@@ -154,7 +154,7 @@ namespace Rock.Field.Types
                 if ( imageGuid.HasValue )
                 {
                     string imageUrl = string.Format( "{0}?guid={1}", imagePath, imageGuid );
-                    var imageTag = string.Format( "<img src='{0}{1}' />", imageUrl, queryParms );
+                    var imageTag = string.Format( "<img src='{0}{1}' class='img-responsive' />", imageUrl, queryParms );
 
                     if ( configurationValues != null &&
                         configurationValues.ContainsKey( FORMAT_AS_LINK ) &&

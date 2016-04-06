@@ -230,6 +230,16 @@ namespace RockWeb
                         if ( binaryFileMetaData.BinaryFileType_AllowCaching )
                         {
                             Cache( fileContent, physCachedFilePath );
+
+                            // Reset stream
+                            if ( fileContent.CanSeek )
+                            {
+                                fileContent.Seek( 0, SeekOrigin.Begin );
+                            }
+                            else
+                            {
+                                fileContent = FetchFromCache( physCachedFilePath );
+                            }
                         }
                     }
                 }

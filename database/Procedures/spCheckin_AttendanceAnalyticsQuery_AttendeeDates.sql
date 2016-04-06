@@ -30,6 +30,8 @@ ALTER PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeDates]
 	, @EndDate datetime = NULL
 	, @CampusIds varchar(max) = NULL
 	, @IncludeNullCampusIds bit = 0
+	, @ScheduleIds varchar(max) = NULL
+	WITH RECOMPILE
 
 AS
 
@@ -60,6 +62,7 @@ BEGIN
 			( @CampusIds IS NULL OR A.[CampusId] in ( SELECT * FROM ufnUtility_CsvToTable( @CampusIds ) ) ) OR  
 			( @IncludeNullCampusIds = 1 AND A.[CampusId] IS NULL ) 
 		)
+		AND ( @ScheduleIds IS NULL OR A.[ScheduleId] IN ( SELECT * FROM ufnUtility_CsvToTable( @ScheduleIds ) ) )
 	) A 
 	INNER JOIN [PersonAlias] PA ON PA.[Id] = A.[PersonAliasId]
 

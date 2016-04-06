@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -45,19 +46,17 @@ namespace RockWeb.Blocks.Connection
     [BooleanField( "Show Last Activity Note", "If enabled, the block will show the last activity note for each request in the list.", false, order:3 )]
     public partial class MyConnectionOpportunities : Rock.Web.UI.RockBlock
     {
-
         #region Fields
 
         private const string TOGGLE_SETTING = "MyConnectionOpportunities_Toggle";
         private const string SELECTED_OPPORTUNITY_SETTING = "MyConnectionOpportunities_SelectedOpportunity";
-
+        DateTime _midnightToday = RockDateTime.Today.AddDays( 1 );
         #endregion
 
         #region Properties
 
         protected int? SelectedOpportunityId { get; set; }
         protected List<ConnectionTypeSummary> SummaryState { get; set; }
-
         #endregion
 
         #region Base Control Methods
@@ -109,8 +108,6 @@ namespace RockWeb.Blocks.Connection
     });
 ";
             ScriptManager.RegisterStartupScript( gRequests, gRequests.GetType(), "deleteRequestScript", deleteScript, true );
-
-
         }
 
         /// <summary>
@@ -130,6 +127,8 @@ namespace RockWeb.Blocks.Connection
                 rFilter.SaveUserPreference( "State", "State", "0;-2" );
 
                 GetSummaryData();
+
+                RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.visible.min.js" ) );
             }
         }
 
@@ -226,6 +225,13 @@ namespace RockWeb.Blocks.Connection
             SelectedOpportunityId = selectedOpportunityValue.AsIntegerOrNull();
 
             BindSummaryData();
+
+            ScriptManager.RegisterStartupScript(
+                Page,
+                GetType(),
+                "ScrollToGrid",
+                "scrollToGrid();",
+                true );
         }
 
         #endregion
@@ -451,12 +457,38 @@ namespace RockWeb.Blocks.Connection
                         SummaryState.Add( connectionTypeSummary );
                     }
 
+                    // Count number of idle requests (no activity in past X days)
+                    int idleCount = opportunity.ConnectionRequests
+                                        .Where( cr => 
+                                            (
+                                                cr.ConnectionState == ConnectionState.Active 
+                                                || (cr.ConnectionState == ConnectionState.FutureFollowUp && cr.FollowupDate.HasValue && cr.FollowupDate.Value < _midnightToday)
+                                            )
+                                            && (
+                                                ( cr.ConnectionRequestActivities.Count() > 0 && cr.ConnectionRequestActivities.OrderByDescending( ra => ra.CreatedDateTime ).Select( ra => ra.CreatedDateTime ).FirstOrDefault() < RockDateTime.Now.AddDays( -cr.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle ) ) )
+                                                || ( cr.ConnectionRequestActivities.Count() == 0 && cr.CreatedDateTime < RockDateTime.Now.AddDays( -cr.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle ) )
+                                               )
+                                        .Count();
+
+                    // Count the number requests that have a status that is considered critical.
+                    int criticalCount = opportunity.ConnectionRequests
+                                            .Where( r => 
+                                                r.ConnectionStatus.IsCritical 
+                                                && (
+                                                    r.ConnectionState == ConnectionState.Active 
+                                                    || (r.ConnectionState == ConnectionState.FutureFollowUp && r.FollowupDate.HasValue && r.FollowupDate.Value < _midnightToday)
+                                                    )
+                                                    )
+                                            .Count();
+
                     // Add the opportunity
                     var opportunitySummary = new OpportunitySummary
                     {
                         Id = opportunity.Id,
                         Name = opportunity.Name,
-                        IconCssClass = opportunity.IconCssClass
+                        IconCssClass = opportunity.IconCssClass,
+                        IdleCount = idleCount,
+                        CriticalCount = criticalCount
                     };
 
                     // If the user is limited requests with specific campus(es) set the list, otherwise leave it to be null
@@ -499,12 +531,33 @@ namespace RockWeb.Blocks.Connection
                         ) )
                     .ToList();
 
-                // The count of active requests 
-                opportunity.ActiveCount = opportunityRequests.Count();
+                // The count of active requests assigned to the current person
+                opportunity.AssignedToYou = opportunityRequests.Count( r => r.ConnectorPersonId == CurrentPersonId );
+
+                // The count of active requests that are unassigned
+                opportunity.UnassignedCount = opportunityRequests.Count( r => r.ConnectorPersonId == -1 );
 
                 // Flag indicating if current user is connector for any of the active types
                 opportunity.HasActiveRequestsForConnector = opportunityRequests.Any( r => r.ConnectorPersonId == CurrentPersonId );
             }
+
+            //Set the Idle tooltip
+            var connectionTypes = opportunities.Where( o => allOpportunities.Contains( o.Id ) ).Select( o => o.ConnectionType ).Distinct().ToList();
+            StringBuilder sb = new StringBuilder();
+            if ( connectionTypes.Select( t => t.DaysUntilRequestIdle ).Distinct().Count() == 1 )
+            {
+                sb.Append( String.Format( "Idle (no activity in {0} days)", connectionTypes.Select( t => t.DaysUntilRequestIdle ).Distinct().First() ) );
+            }
+            else
+            {
+                sb.Append( "Idle (no activity in several days)<br/><ul class='list-unstyled'>" );
+                foreach ( var connectionType in connectionTypes )
+                {
+                    sb.Append( String.Format( "<li>{0}: {1} days</li>", connectionType.Name, connectionType.DaysUntilRequestIdle ) );
+                }
+                sb.Append( "</ul>" );
+            }
+            lIdleToolTip.Text = String.Format( "<span class='pull-left badge badge-danger js-legend-badge' data-toggle='tooltip' data-original-title=\"{0}\">&nbsp;</span>", sb.ToString() );
 
             BindSummaryData();
         }
@@ -660,12 +713,12 @@ namespace RockWeb.Blocks.Connection
                     }
 
                     // Filter by State
-                    var midnightToday = RockDateTime.Today.AddDays(1);
+                    
                     if ( tglMyOpportunities.Checked )
                     {
                         requests = requests
                             .Where( r => r.ConnectionState == ConnectionState.Active || 
-                                    ( r.ConnectionState == ConnectionState.FutureFollowUp && r.FollowupDate.HasValue && r.FollowupDate.Value < midnightToday ) );
+                                    ( r.ConnectionState == ConnectionState.FutureFollowUp && r.FollowupDate.HasValue && r.FollowupDate.Value < _midnightToday ) );
                     }
                     else
                     {
@@ -685,7 +738,7 @@ namespace RockWeb.Blocks.Connection
                             requests = requests
                                 .Where( r =>
                                     ( futureFollowup && r.ConnectionState == ConnectionState.FutureFollowUp &&
-                                        r.FollowupDate.HasValue && r.FollowupDate.Value < midnightToday ) ||
+                                        r.FollowupDate.HasValue && r.FollowupDate.Value < _midnightToday ) ||
                                     states.Contains( r.ConnectionState ) );
                         }
                     }
@@ -844,7 +897,10 @@ namespace RockWeb.Blocks.Connection
             public string IconCssClass { get; set; }
             public bool CampusSpecificConnector { get; set; }
             public List<int> ConnectorCampusIds { get; set; }  // Will be null if user is a connector for all campuses
-            public int ActiveCount { get; set; }
+            public int AssignedToYou { get; set; }
+            public int UnassignedCount { get; set; }
+            public int CriticalCount { get; set; }
+            public int IdleCount { get; set; }
             public bool HasActiveRequestsForConnector { get; set; }
         }
 

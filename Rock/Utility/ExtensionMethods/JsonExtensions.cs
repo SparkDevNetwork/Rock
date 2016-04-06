@@ -20,6 +20,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Rock
 {
@@ -67,6 +68,35 @@ namespace Rock
             {
                 return default( T );
             }
+        }
+
+        #endregion
+
+        #region JObject extension methods
+
+        /// <summary>
+        /// Converts a jObject to a dictionary
+        /// </summary>
+        /// <param name="jobject">The jobject.</param>
+        /// <returns></returns>
+        public static IDictionary<string, object> ToDictionary( this JObject jobject )
+        {
+            var result = jobject.ToObject<Dictionary<string, object>>();
+
+            var valueKeys = result
+                .Where( r => r.Value != null && r.Value.GetType() == typeof( JObject ) )
+                .Select( r => r.Key )
+                .ToList();
+
+            var arrayKeys = result
+                .Where( r => r.Value != null && r.Value.GetType() == typeof( JArray ) )
+                .Select( r => r.Key )
+                .ToList();
+
+            arrayKeys.ForEach( k => result[k] = ( (JArray)result[k] ).Values().Select( v => ( (JValue)v ).Value ).ToArray() );
+            valueKeys.ForEach( k => result[k] = ToDictionary( result[k] as JObject ) );
+
+            return result;
         }
 
         #endregion

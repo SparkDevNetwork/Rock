@@ -347,8 +347,10 @@ namespace RockWeb.Blocks.Connection
                     connectionType.Name = tbName.Text;
                     connectionType.Description = tbDescription.Text;
                     connectionType.IconCssClass = tbIconCssClass.Text;
+                    connectionType.DaysUntilRequestIdle = nbDaysUntilRequestIdle.Text.AsInteger();
                     connectionType.EnableFutureFollowup = cbFutureFollowUp.Checked;
                     connectionType.EnableFullActivityList = cbFullActivityList.Checked;
+                    connectionType.RequiresPlacementGroupToConnect = cbRequiresPlacementGroup.Checked;
 
                     foreach ( var connectionActivityTypeState in ActivityTypesState )
                     {
@@ -1357,6 +1359,7 @@ namespace RockWeb.Blocks.Connection
             if ( connectionType.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( ConnectionType.FriendlyTypeName ).FormatAsHtmlTitle();
+                connectionType.DaysUntilRequestIdle = 14;
             }
             else
             {
@@ -1369,6 +1372,8 @@ namespace RockWeb.Blocks.Connection
             tbName.Text = connectionType.Name;
             tbDescription.Text = connectionType.Description;
             tbIconCssClass.Text = connectionType.IconCssClass;
+            nbDaysUntilRequestIdle.Text = connectionType.DaysUntilRequestIdle.ToString();
+            cbRequiresPlacementGroup.Checked = connectionType.RequiresPlacementGroupToConnect;
             cbFullActivityList.Checked = connectionType.EnableFullActivityList;
             cbFutureFollowUp.Checked = connectionType.EnableFutureFollowup;
 

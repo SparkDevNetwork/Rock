@@ -81,7 +81,37 @@ namespace RockWeb
         {
             Response.Headers.Remove( "Server" );
             Response.Headers.Remove( "X-AspNet-Version" );
-            Response.AddHeader( "X-Frame-Options", "SAMEORIGIN" );
+
+            bool useFrameDomains = false;
+            string allowedDomains = string.Empty;
+
+            int? siteId = ( Context.Items["Rock:SiteId"] ?? "" ).ToString().AsIntegerOrNull();
+            try
+            {
+                if ( siteId.HasValue )
+                {
+                    var site = SiteCache.Read( siteId.Value );
+                    if ( site != null && ! String.IsNullOrWhiteSpace( site.AllowedFrameDomains ) )
+                    {
+                        useFrameDomains = true;
+                        allowedDomains = site.AllowedFrameDomains;
+                    }
+                }
+            }
+            catch
+            { }
+
+            if ( useFrameDomains )
+            {
+                // string concat is 5x faster than String.Format in this senario
+                Response.AddHeader( "Content-Security-Policy", "frame-ancestors " + allowedDomains );
+            }
+            else
+            {
+                Response.AddHeader( "X-Frame-Options", "SAMEORIGIN" );
+                Response.AddHeader( "Content-Security-Policy", "frame-ancestors 'self'" );
+            }
+            
         }
 
         /// <summary>

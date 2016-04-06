@@ -23,7 +23,7 @@ using System.Web;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute for selecting an item from a checkbox list.
+    /// Field Attribute for selecting items from a checkbox list. Value is saved as a comma-delimited list
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class CustomCheckboxListFieldAttribute : FieldAttribute

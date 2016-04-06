@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action.CheckIn
 {
@@ -34,10 +35,11 @@ namespace Rock.Workflow.Action.CheckIn
     [Description( "Removes (or excludes) the groups for each selected family member that are not specific to their special needs attribute." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Groups By Special Needs" )]
-    [TextField( "Special Needs Attribute", "Enter the attribute name used to filter kids with special needs. The default value is Has Special Needs.", false, "Has Special Needs" )]
-    [BooleanField( "Remove (or exclude) Special Needs Groups", "If set to true, special-needs groups will be removed if the person is NOT special needs. This basically prevents non-special-needs kids from getting put into special needs classes.  Default true.", true, key: "RemoveSpecialNeedsGroups" )]
-    [BooleanField( "Remove (or exclude) Non-Special Needs Groups", "If set to true, non-special-needs groups will be removed if the person is special needs.  This basically prevents special needs kids from getting put into regular classes.  Default false.", false, key: "RemoveNonSpecialNeedsGroups" )]
-    [BooleanField( "Remove", "Select 'Yes' if groups should be be removed.  Select 'No' if they should just be marked as excluded.", true )]
+    [AttributeField( "72657ED8-D16E-492E-AC12-144C5E7567E7", "Person Special Needs Attribute", "Select the attribute used to filter special needs people.", true, false, "8B562561-2F59-4F5F-B7DC-92B2BB7BB7CF", order: 1 )]
+    [AttributeField( "9BBFDA11-0D22-40D5-902F-60ADFBC88987", "Group Special Needs Attribute", "Select the attribute used to filter special needs groups.", true, false, "9210EC95-7B85-4D11-A82E-0B677B32704E", order: 2 )]
+    [BooleanField( "Remove (or exclude) Special Needs Groups", "If set to true, special-needs groups will be removed if the person is NOT special needs. This basically prevents non-special-needs kids from getting put into special needs classes.  Default true.", true, key: "RemoveSpecialNeedsGroups", order: 3 )]
+    [BooleanField( "Remove (or exclude) Non-Special Needs Groups", "If set to true, non-special-needs groups will be removed if the person is special needs.  This basically prevents special needs kids from getting put into regular classes.  Default false.", false, key: "RemoveNonSpecialNeedsGroups", order: 4 )]
+    [BooleanField( "Remove", "Select 'Yes' if groups should be be removed.  Select 'No' if they should just be marked as excluded.", true, order: 5 )]
     public class FilterGroupsBySpecialNeeds : CheckInActionComponent
     {
         /// <summary>
@@ -57,14 +59,38 @@ namespace Rock.Workflow.Action.CheckIn
                 return false;
             }
 
-            string specialNeedsAttributeKey = GetAttributeValue( action, "SpecialNeedsAttribute" ).RemoveSpecialCharacters();
-            bool removeSNGroups = GetAttributeValue( action, "RemoveSpecialNeedsGroups" ).AsBoolean( true );
-            bool removeNonSNGroups = GetAttributeValue( action, "RemoveNonSpecialNeedsGroups" ).AsBoolean();
-
             var family = checkInState.CheckIn.Families.FirstOrDefault( f => f.Selected );
             if ( family != null )
             {
                 var remove = GetAttributeValue( action, "Remove" ).AsBoolean();
+                bool removeSNGroups = GetAttributeValue( action, "RemoveSpecialNeedsGroups" ).AsBoolean( true );
+                bool removeNonSNGroups = GetAttributeValue( action, "RemoveNonSpecialNeedsGroups" ).AsBoolean();
+
+                // get the admin-selected attribute key instead of using a hardcoded key
+                var personSpecialNeedsKey = string.Empty;
+                var personSpecialNeedsGuid = GetAttributeValue( action, "PersonSpecialNeedsAttribute" ).AsGuid();
+                if ( personSpecialNeedsGuid != Guid.Empty )
+                {
+                    personSpecialNeedsKey = AttributeCache.Read( personSpecialNeedsGuid, rockContext ).Key;
+                }
+
+                var groupSpecialNeedsKey = string.Empty;
+                var groupSpecialNeedsGuid = GetAttributeValue( action, "GroupSpecialNeedsAttribute" ).AsGuid();
+                if ( personSpecialNeedsGuid != Guid.Empty )
+                {
+                    groupSpecialNeedsKey = AttributeCache.Read( groupSpecialNeedsGuid, rockContext ).Key;
+                }
+
+                // log a warning if the attribute is missing or invalid
+                if ( string.IsNullOrWhiteSpace( personSpecialNeedsKey ) )
+                {
+                    action.AddLogEntry( string.Format( "The Person Special Needs attribute is not selected or invalid for '{0}'.", action.ActionType.Name ) );
+                }
+
+                if ( string.IsNullOrWhiteSpace( groupSpecialNeedsKey ) )
+                {
+                    action.AddLogEntry( string.Format( "The Group Special Needs attribute is not selected or invalid for '{0}'.", action.ActionType.Name ) );
+                }
 
                 foreach ( var person in family.People )
                 {
@@ -73,12 +99,12 @@ namespace Rock.Workflow.Action.CheckIn
                         person.Person.LoadAttributes( rockContext );
                     }
 
-                    bool isSNPerson = person.Person.GetAttributeValue( specialNeedsAttributeKey ).AsBoolean();
+                    bool isSNPerson = person.Person.GetAttributeValue( personSpecialNeedsKey ).AsBoolean();
                     foreach ( var groupType in person.GroupTypes.ToList() )
                     {
                         foreach ( var group in groupType.Groups.ToList() )
                         {
-                            bool isSNGroup = group.Group.GetAttributeValue( specialNeedsAttributeKey ).AsBoolean();
+                            bool isSNGroup = group.Group.GetAttributeValue( groupSpecialNeedsKey ).AsBoolean();
 
                             // If the group is special needs but the person is not, then remove it.
                             if ( removeSNGroups && isSNGroup && !( isSNPerson ) )

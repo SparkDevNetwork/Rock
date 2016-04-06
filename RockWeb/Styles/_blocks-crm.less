@@ -276,6 +276,28 @@
     color: #23a5c5;
 }
 
+.badge-era {
+    position: relative;
+
+    &:before {
+        font-family: FontAwesome;
+        content: "\f111";
+        color: @brand-success;
+        font-size: 45px;
+    }
+
+    &.era-loss:before {
+        color: #ee7624;
+    }
+
+    span {
+        font-size: 16px;
+        position: absolute;
+        left: 11px;
+        top: 17px
+    }
+}
+
 .badge-icon {
     font-size: 45px;
 
@@ -326,13 +348,16 @@
 }
 
 .badge-disc {
+
+    position: relative;
+
     ul.badge-disc-chart { //http://codepen.io/Victa/pen/xDqbf
         display: table;
         table-layout: fixed;
         height: 40px;
         margin: 0 auto;
         width: 45px;
-
+        
         li {
             position: relative;
             display: table-cell;
@@ -358,7 +383,25 @@
                     background: #4f89bd;
                 }
             }
+
+            &.badge-disc-disabled {
+                span {
+                    opacity: 0.2;
+                    background-color: #939393;
+                }
+            }
         }
+    }
+
+    .requested {
+        position: absolute;
+        top: 14px;
+        left: 12px;
+        font-size: 24px;
+        background-color: #e3ded7;
+        padding: 1px 5px;
+        border-radius: 99px;
+        opacity: .8;
     }
 
     &.annimate {
