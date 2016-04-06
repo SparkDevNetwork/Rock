@@ -2277,6 +2277,9 @@ namespace RockWeb.Blocks.Event
                             .ThenBy( r => r.PersonAlias.Person.NickName );
                     }
 
+                    // increase the timeout just in case. A complex filter on the grid might slow things down
+                    rockContext.Database.CommandTimeout = 180;
+
                     // Set the grids LinqDataSource which will run query and set results for current page
                     gRegistrants.SetLinqDataSource<RegistrationRegistrant>( orderedQry );
 
