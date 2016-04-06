@@ -251,7 +251,7 @@ namespace RockWeb.Plugins.church_ccv.Promotions
             gPromotionOccurrencesGrid.Actions.ShowMergePerson = false;
             gPromotionOccurrencesGrid.Actions.ShowMergeTemplate = false;
 
-            gPromotionOccurrencesGrid.Actions.ShowAdd = true;
+            gPromotionOccurrencesGrid.Actions.ShowAdd = IsUserAuthorized( Authorization.EDIT );
             gPromotionOccurrencesGrid.Actions.AddClick += PromotionOccurrencesGrid_AddClick;
 
             gPromotionOccurrencesGrid.GridRebind += PromotionOccurrencesGrid_Rebind;
@@ -305,100 +305,103 @@ namespace RockWeb.Plugins.church_ccv.Promotions
             // A Promotion Occurrence is literally just a content channel item. Using the "SelectedPromotionId",
             // enumerate the content items associated.
 
-            // get the event item occurrence service
-            RockContext rockContext = new RockContext();
-            EventItemOccurrenceService eventService = new EventItemOccurrenceService( rockContext );
+            if( dpTargetPromoDate.SelectedDate.HasValue )
+            {
+                // get the event item occurrence service
+                RockContext rockContext = new RockContext();
+                EventItemOccurrenceService eventService = new EventItemOccurrenceService( rockContext );
 
-            // start by getting every promotion occurrence
-            PromotionsContext promoContext = new PromotionsContext();
-            PromotionsService<PromotionOccurrence> promoService = new PromotionsService<PromotionOccurrence>( promoContext );
+                // start by getting every promotion occurrence
+                PromotionsContext promoContext = new PromotionsContext();
+                PromotionsService<PromotionOccurrence> promoService = new PromotionsService<PromotionOccurrence>( promoContext );
 
-            // Temp workaround until we transition systems. Content Channel Items SHOULD NOT be deleted,
-            // but if they are, this will protect it.
-            var promoOccurrences = promoService.Queryable( ).ToList( ).Where( po => po.ContentChannelItem != null ).ToList( );
+                // Temp workaround until we transition systems. Content Channel Items SHOULD NOT be deleted,
+                // but if they are, this will protect it.
+                var promoOccurrences = promoService.Queryable( ).ToList( ).Where( po => po.ContentChannelItem != null ).ToList( );
             
-            // ---- Apply Filters ----
+                // ---- Apply Filters ----
 
-            // Since Date and Content Channel Type require the ContentChannelItem, we'll work "backwards". First,
-            // we'll eliminate any promotion occurrences that are outside the filter. 
+                // Since Date and Content Channel Type require the ContentChannelItem, we'll work "backwards". First,
+                // we'll eliminate any promotion occurrences that are outside the filter. 
             
-            // Then, we'll create a unique list of the remaining events. This effectively filters the events.
-            promoOccurrences = promoOccurrences.Where( po => 
+                // Then, we'll create a unique list of the remaining events. This effectively filters the events.
+                promoOccurrences = promoOccurrences.Where( po => 
                     
-            // If there's only a start date, then it needs to be the target date selected.
-                (po.ContentChannelItem.ExpireDateTime.HasValue == false && 
-                po.ContentChannelItem.StartDateTime == dpTargetPromoDate.SelectedDate.Value) ||
+                // If there's only a start date, then it needs to be the target date selected.
+                    (po.ContentChannelItem.ExpireDateTime.HasValue == false && 
+                    po.ContentChannelItem.StartDateTime == dpTargetPromoDate.SelectedDate.Value) ||
 
-                // otherwise, if there's an expire date, then the target needs to be inbetween start & end
-                (po.ContentChannelItem.ExpireDateTime.HasValue == true &&
-                po.ContentChannelItem.StartDateTime <= dpTargetPromoDate.SelectedDate.Value &&
-                po.ContentChannelItem.ExpireDateTime >= dpTargetPromoDate.SelectedDate.Value)
+                    // otherwise, if there's an expire date, then the target needs to be inbetween start & end
+                    (po.ContentChannelItem.ExpireDateTime.HasValue == true &&
+                    po.ContentChannelItem.StartDateTime <= dpTargetPromoDate.SelectedDate.Value &&
+                    po.ContentChannelItem.ExpireDateTime >= dpTargetPromoDate.SelectedDate.Value)
                       
-            ).ToList( );
+                ).ToList( );
 
 
-            // Here, want to only show Content Items whose campus matches our selection.
+                // Here, want to only show Content Items whose campus matches our selection.
 
-            // First, look for Content Items with a Single Campus that DOES NOT match, OR IS BLANK. 
-            // ( this would mean their campus doesn't match what is being filtered, so it shouldn't display)
-            // IF THEY ARE MULTI-CAMPUS, they won't return in this query, which is a GOOD thing.
-            Guid selectedCampusGuid = CampusCache.Read( ddlCampus.SelectedValue.AsInteger( ) ).Guid;
-            var campusAttribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.FieldType.Guid == new Guid( Rock.SystemGuid.FieldType.CAMPUS ) ).ToList( );
+                // First, look for Content Items with a Single Campus that DOES NOT match, OR IS BLANK. 
+                // ( this would mean their campus doesn't match what is being filtered, so it shouldn't display)
+                // IF THEY ARE MULTI-CAMPUS, they won't return in this query, which is a GOOD thing.
+                Guid selectedCampusGuid = CampusCache.Read( ddlCampus.SelectedValue.AsInteger( ) ).Guid;
+                var campusAttribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.FieldType.Guid == new Guid( Rock.SystemGuid.FieldType.CAMPUS ) ).ToList( );
 
-            var excludedPromotionOccurrenceIds = promoOccurrences.Join( campusAttribValList, 
-                                                                      po => po.ContentChannelItem.Id, ca=> ca.EntityId, ( po, ca ) => new { Promotion = po, Campus = ca }  
-                                                                      ).Where( po => string.IsNullOrWhiteSpace( po.Campus.Value ) == true || selectedCampusGuid != Guid.Parse( po.Campus.Value ) ).Select( po => po.Promotion.Id );
+                var excludedPromotionOccurrenceIds = promoOccurrences.Join( campusAttribValList, 
+                                                                          po => po.ContentChannelItem.Id, ca=> ca.EntityId, ( po, ca ) => new { Promotion = po, Campus = ca }  
+                                                                          ).Where( po => string.IsNullOrWhiteSpace( po.Campus.Value ) == true || selectedCampusGuid != Guid.Parse( po.Campus.Value ) ).Select( po => po.Promotion.Id );
 
-            promoOccurrences = promoOccurrences.Where( po => excludedPromotionOccurrenceIds.Contains( po.Id ) == false ).ToList( );
+                promoOccurrences = promoOccurrences.Where( po => excludedPromotionOccurrenceIds.Contains( po.Id ) == false ).ToList( );
 
 
-            // build MULTI-campus content items that should be excluded
-            // For each item, we look at it's list of campus guids, and do a search for the selected campus guid IN it. If NOT found, we add it to our exclusion list.
-            // NOTE: We treat "all unchecked" as "all campuses". So if the campus list is blank, we'll never exclude it.
+                // build MULTI-campus content items that should be excluded
+                // For each item, we look at it's list of campus guids, and do a search for the selected campus guid IN it. If NOT found, we add it to our exclusion list.
+                // NOTE: We treat "all unchecked" as "all campuses". So if the campus list is blank, we'll never exclude it.
 
-            // Like above, this works because items that are not multi-campus simply won't be returned in the query.
+                // Like above, this works because items that are not multi-campus simply won't be returned in the query.
             
-            var campusesAttribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.FieldType.Guid == new Guid( Rock.SystemGuid.FieldType.CAMPUSES ) ).ToList( );
-            var excludedCampusesPromotionRequestIds = promoOccurrences.Join( campusesAttribValList, 
+                var campusesAttribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.FieldType.Guid == new Guid( Rock.SystemGuid.FieldType.CAMPUSES ) ).ToList( );
+                var excludedCampusesPromotionRequestIds = promoOccurrences.Join( campusesAttribValList, 
                                                                              
-                po => po.ContentChannelItem.Id, ca=> ca.EntityId, ( po, ca ) => new { Promotion = po, Campuses = ca } )
+                    po => po.ContentChannelItem.Id, ca=> ca.EntityId, ( po, ca ) => new { Promotion = po, Campuses = ca } )
                 
-                // Exclude the item IF it has at least one campus checked, and that campus is NOT what's selected.
-                .Where( po => (string.IsNullOrWhiteSpace( po.Campuses.Value ) == false && po.Campuses.Value.Contains( selectedCampusGuid.ToString( ) ) == false) )
+                    // Exclude the item IF it has at least one campus checked, and that campus is NOT what's selected.
+                    .Where( po => (string.IsNullOrWhiteSpace( po.Campuses.Value ) == false && po.Campuses.Value.Contains( selectedCampusGuid.ToString( ) ) == false) )
                 
-                // Take just the IDs
-                .Select( po => po.Promotion.Id );
+                    // Take just the IDs
+                    .Select( po => po.Promotion.Id );
 
-            promoOccurrences = promoOccurrences.Where( po => excludedCampusesPromotionRequestIds.Contains( po.Id ) == false ).ToList( );
+                promoOccurrences = promoOccurrences.Where( po => excludedCampusesPromotionRequestIds.Contains( po.Id ) == false ).ToList( );
 
             
             
 
-            // Content Channel Type (Promo Type)
-            ListItem promoItem = ddlPromoType.Items[ ddlPromoType.SelectedIndex ];
-            if( string.IsNullOrEmpty( promoItem.Value ) == false )
-            {
-                int filteredChannelId = promoItem.Value.AsInteger( );
-                promoOccurrences = promoOccurrences.Where( po => po.ContentChannelItem.ContentChannelId == filteredChannelId ).ToList( );
+                // Content Channel Type (Promo Type)
+                ListItem promoItem = ddlPromoType.Items[ ddlPromoType.SelectedIndex ];
+                if( string.IsNullOrEmpty( promoItem.Value ) == false )
+                {
+                    int filteredChannelId = promoItem.Value.AsInteger( );
+                    promoOccurrences = promoOccurrences.Where( po => po.ContentChannelItem.ContentChannelId == filteredChannelId ).ToList( );
+                }
+
+                // in the promo table, we just filtered out all promos with a date / content channel type we don't care about.
+                // That will implicitely filter out any event that only has content items out of that range.
+            
+                // Done Filtering
+                gPromotionOccurrencesGrid.DataSource = promoOccurrences.Select( i => new
+                {
+                    Id = i.Id,
+                    Guid = i.Guid,
+                    Title = i.ContentChannelItem.Title,
+                    Campus = GetCampus( i.ContentChannelItem ),
+                    PromoDate = GetPromoDate( i.ContentChannelItem ),
+                    EventDate = GetDate( eventService, i ),
+                    Priority = i.ContentChannelItem.Priority,
+                    PromoType = string.Format( "<span class='{0}'></span> {1}", i.ContentChannelItem.ContentChannel.IconCssClass, i.ContentChannelItem.ContentChannel.Name )
+                }).ToList( );
+
+                gPromotionOccurrencesGrid.DataBind( );
             }
-
-            // in the promo table, we just filtered out all promos with a date / content channel type we don't care about.
-            // That will implicitely filter out any event that only has content items out of that range.
-            
-            // Done Filtering
-            gPromotionOccurrencesGrid.DataSource = promoOccurrences.Select( i => new
-            {
-                Id = i.Id,
-                Guid = i.Guid,
-                Title = i.ContentChannelItem.Title,
-                Campus = GetCampus( i.ContentChannelItem ),
-                PromoDate = GetPromoDate( i.ContentChannelItem ),
-                EventDate = GetDate( eventService, i ),
-                Priority = i.ContentChannelItem.Priority,
-                PromoType = string.Format( "<span class='{0}'></span> {1}", i.ContentChannelItem.ContentChannel.IconCssClass, i.ContentChannelItem.ContentChannel.Name )
-            }).ToList( );
-
-            gPromotionOccurrencesGrid.DataBind( );
         }
 
         string GetDate( EventItemOccurrenceService eventService, PromotionOccurrence promoOccurr )
