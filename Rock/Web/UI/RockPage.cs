@@ -1530,11 +1530,12 @@ namespace Rock.Web.UI
         public string ResolveRockUrlIncludeRoot( string url )
         {
             string virtualPath = this.ResolveRockUrl( url );
-            if ( Context.Request.UrlReferrer != null )
+            if ( Context.Request != null && Context.Request.Url != null )
             {
-                return string.Format( "{0}://{1}{2}", Context.Request.UrlReferrer.Scheme, Context.Request.UrlReferrer.Authority, virtualPath );
+                return string.Format( "{0}://{1}{2}", Context.Request.Url.Scheme, Context.Request.Url.Authority, virtualPath );
             }
-            return GlobalAttributesCache.Read().GetValue("PublicApplicationRoot").EnsureTrailingForwardslash() + virtualPath;
+
+            return GlobalAttributesCache.Read().GetValue("PublicApplicationRoot").EnsureTrailingForwardslash() + virtualPath.RemoveLeadingForwardslash();
         }
 
         /// <summary>
