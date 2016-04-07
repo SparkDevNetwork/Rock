@@ -60,6 +60,8 @@ namespace RockWeb.Blocks.CheckIn
         private Dictionary<int, Location> _personLocations = null;
         private Dictionary<int, List<PhoneNumber>> _personPhoneNumbers = null;
 
+        private bool _currentlyExporting = false;
+
         #endregion
 
         #region Base Control Methods
@@ -86,7 +88,7 @@ namespace RockWeb.Blocks.CheckIn
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             gChartAttendance.GridRebind += gChartAttendance_GridRebind;
-            gAttendeesAttendance.GridRebind += gAttendeesAttendance_GridRebind;
+            gAttendeesAttendance.GridRebind += GAttendeesAttendance_GridRebind;
 
             gAttendeesAttendance.EntityTypeId = EntityTypeCache.Read<Rock.Model.Person>().Id;
 
@@ -99,13 +101,13 @@ namespace RockWeb.Blocks.CheckIn
         }
 
         /// <summary>
-        /// Handles the GridRebind event of the gAttendeesAttendance control.
+        /// Handles the GridRebind event of the GAttendeesAttendance control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void gAttendeesAttendance_GridRebind( object sender, EventArgs e )
+        /// <param name="e">The <see cref="GridRebindEventArgs"/> instance containing the event data.</param>
+        private void GAttendeesAttendance_GridRebind( object sender, GridRebindEventArgs e )
         {
-            BindAttendeesGrid();
+            BindAttendeesGrid( e.IsExporting );
         }
 
         /// <summary>
@@ -756,7 +758,7 @@ function(item) {
         /// <summary>
         /// Binds the attendees grid.
         /// </summary>
-        private void BindAttendeesGrid()
+        private void BindAttendeesGrid( bool isExporting = false )
         {
             // Get Group Type filter
             var groupType = this.GetSelectedTemplateGroupType();
@@ -1365,8 +1367,11 @@ function(item) {
                     LoadCurrentPageObjects( currentPagePersonIds );
                 }
 
+                _currentlyExporting = isExporting;
                 gAttendeesAttendance.DataBind();
+                _currentlyExporting = false;
             }
+
             catch ( Exception exception )
             {
                 LogAndShowException( exception );
@@ -1675,10 +1680,19 @@ function(item) {
                     string msg = ex.Message;
                 }
 
+                bool isExporting = _currentlyExporting;
+                if ( !isExporting && e is RockGridViewRowEventArgs )
+                {
+                    isExporting = ( (RockGridViewRowEventArgs)e ).IsExporting;
+                }
+
                 if ( _personPhoneNumbers != null && _personPhoneNumbers.ContainsKey( currentPersonId ) )
                 {
                     var sb = new StringBuilder();
-                    sb.Append( "<ul class='list-unstyled phonenumbers'>" );
+                    if ( !isExporting )
+                    {
+                        sb.Append( "<ul class='list-unstyled phonenumbers'>" );
+                    }
                     foreach ( var phoneNumber in _personPhoneNumbers[currentPersonId] )
                     {
                         string formattedNumber = "Unlisted";
@@ -1692,13 +1706,24 @@ function(item) {
                             var phoneType = DefinedValueCache.Read( phoneNumber.NumberTypeValueId.Value );
                             if ( phoneType != null )
                             {
-                                formattedNumber = string.Format( "{0} <small>{1}</small>", formattedNumber, phoneType.Value );
+                                formattedNumber = isExporting ?
+                                    string.Format( "{1}: {0}", formattedNumber, phoneType.Value ) :
+                                    string.Format( "{0} <small>{1}</small>", formattedNumber, phoneType.Value );
                             }
                         }
-                        sb.AppendFormat( "<li>{0}</li>", formattedNumber );
+                        if ( isExporting )
+                        {
+                            sb.AppendFormat( "{0}{1}", sb.Length > 0 ? Environment.NewLine : string.Empty, formattedNumber );
+                        }
+                        else
+                        {
+                            sb.AppendFormat( "<li>{0}</li>", formattedNumber );
+                        }
                     }
-                    sb.Append( "</ul>" );
-
+                    if ( !isExporting )
+                    {
+                        sb.Append( "</ul>" );
+                    }
                     lPhoneNumbers.Text = sb.ToString();
                 }
 

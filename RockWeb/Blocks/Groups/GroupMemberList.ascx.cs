@@ -491,11 +491,11 @@ namespace RockWeb.Blocks.Groups
         /// Handles the GridRebind event of the gGroupMembers control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        /// <param name="e">The <see cref="GridRebindEventArgs" /> instance containing the event data.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        protected void gGroupMembers_GridRebind( object sender, EventArgs e )
+        protected void gGroupMembers_GridRebind( object sender, GridRebindEventArgs e )
         {
-            BindGroupMembersGrid( !gGroupMembers.AllowPaging );
+            BindGroupMembersGrid( e.IsExporting );
         }
 
         #endregion
@@ -840,7 +840,7 @@ namespace RockWeb.Blocks.Groups
         /// <summary>
         /// Binds the group members grid.
         /// </summary>
-        protected void BindGroupMembersGrid( bool selectAll = false )
+        protected void BindGroupMembersGrid( bool isExporting = false )
         {
             if ( _group != null )
             {
@@ -987,7 +987,7 @@ namespace RockWeb.Blocks.Groups
 
                     // If exporting to Excel, the selectAll option will be true, and home location should be calculated
                     var homeLocations = new Dictionary<int, Location>();
-                    if ( selectAll )
+                    if ( isExporting )
                     {
                         foreach ( var m in groupMembersList )
                         {
@@ -1040,7 +1040,7 @@ namespace RockWeb.Blocks.Groups
                         m.Person.NickName,
                         m.Person.LastName,
                         Name =
-                        ( selectAll ? m.Person.LastName + ", " + m.Person.NickName : string.Format(photoFormat, m.PersonId, m.Person.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-male.svg" ) )  +
+                        ( isExporting ? m.Person.LastName + ", " + m.Person.NickName : string.Format(photoFormat, m.PersonId, m.Person.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-male.svg" ) )  +
                         m.Person.NickName + " " + m.Person.LastName
                             + ( hasGroupRequirements && groupMemberIdsThatLackGroupRequirements.Contains( m.Id )
                                 ? " <i class='fa fa-exclamation-triangle text-warning'></i>"
@@ -1052,12 +1052,12 @@ namespace RockWeb.Blocks.Groups
                         m.Person.Age,
                         m.Person.ConnectionStatusValueId,
                         Email = m.Person.Email,
-                        HomePhone = selectAll && homePhoneType != null ?
+                        HomePhone = isExporting && homePhoneType != null ?
                             m.Person.PhoneNumbers
                                 .Where( p => p.NumberTypeValueId.HasValue && p.NumberTypeValueId.Value == homePhoneType.Id )
                                 .Select( p => p.NumberFormatted )
                                 .FirstOrDefault() : string.Empty,
-                        CellPhone = selectAll && cellPhoneType != null ?
+                        CellPhone = isExporting && cellPhoneType != null ?
                             m.Person.PhoneNumbers
                                 .Where( p => p.NumberTypeValueId.HasValue && p.NumberTypeValueId.Value == cellPhoneType.Id )
                                 .Select( p => p.NumberFormatted )
