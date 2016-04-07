@@ -53,19 +53,19 @@
 
     </asp:Panel>
 
-    <asp:Panel ID="pnlSummary" runat="server" Visible="false" CssClass="registrationentry-summary">
+    <asp:Panel ID="pnlSummaryAndPayment" runat="server" Visible="false" CssClass="registrationentry-summary">
         
-        <h1>Review <asp:Literal ID="lRegistrationTerm" runat="server" /></h1>
+        <h1><asp:Literal ID="lSummaryAndPaymentTitle" runat="server" /></h1>
 
-        <asp:Panel ID="pnlSummaryProgressBar" runat="server">
+        <asp:Panel ID="pnlSummaryAndPaymentProgressBar" runat="server">
             <div class="progress">
                 <div class="progress-bar" role="progressbar" aria-valuenow="<%=this.PercentComplete%>" aria-valuemin="0" aria-valuemax="100" style="width: <%=this.PercentComplete%>%;">
                     <span class="sr-only"><%=this.PercentComplete%>% Complete</span>
                 </div>
             </div>
         </asp:Panel>
-           
-        <div class="well">
+        
+        <asp:Panel ID="pnlRegistrarInfo" runat="server" CssClass="well">
             
             <h4>This <asp:Literal id="lRegistrationTerm2" runat="server" /> Was Completed By</h4>
             <div class="row">
@@ -86,7 +86,8 @@
                     </asp:Panel>
                 </div>
             </div>
-        </div>
+
+        </asp:Panel>
         
         <asp:Panel ID="pnlRegistrantsReview" CssClass="margin-b-md" runat="server" Visible="false">
             <asp:Literal ID="lRegistrantsReview" runat="server" />
@@ -171,32 +172,34 @@
                 </div>
             </div>
                 
-            <div id="divPaymentInfo" runat="server" class="well">
+        </asp:Panel>
 
-                <h4><asp:Literal ID="lPaymentInfoTitle" runat="server" /></h4>
-                <Rock:RockRadioButtonList ID="rblSavedCC" runat="server" Label=" " CssClass="radio-list" RepeatDirection="Vertical" DataValueField="Id" DataTextField="Name" />
-                <div id="divNewCard" runat="server" class="radio-content">
-                    <Rock:RockTextBox ID="txtCardFirstName" runat="server" Label="First Name on Card" Visible="false" ></Rock:RockTextBox>
-                    <Rock:RockTextBox ID="txtCardLastName" runat="server" Label="Last Name on Card" Visible="false" ></Rock:RockTextBox>
-                    <Rock:RockTextBox ID="txtCardName" runat="server" Label="Name on Card" Visible="false" ></Rock:RockTextBox>
-                    <Rock:RockTextBox ID="txtCreditCard" runat="server" Label="Credit Card #" MaxLength="19" CssClass="credit-card" />
-                    <ul class="card-logos list-unstyled">
-                        <li class="card-visa"></li>
-                        <li class="card-mastercard"></li>
-                        <li class="card-amex"></li>
-                        <li class="card-discover"></li>
-                    </ul>
-                    <div class="row">
-                        <div class="col-sm-6">
-                            <Rock:MonthYearPicker ID="mypExpiration" runat="server" Label="Expiration Date" />
-                        </div>
-                        <div class="col-sm-6">
-                            <Rock:NumberBox ID="txtCVV" Label="Card Security Code" CssClass="input-width-xs" runat="server" MaxLength="4" />
-                        </div>
+        <asp:Panel ID="pnlPaymentInfo" runat="server" CssClass="well">
+
+            <asp:Literal ID="lPaymentInfoTitle" runat="server" />
+
+            <Rock:RockRadioButtonList ID="rblSavedCC" runat="server" CssClass="radio-list margin-b-lg" RepeatDirection="Vertical" DataValueField="Id" DataTextField="Name" />
+            
+            <div id="divNewCard" runat="server" class="radio-content">
+                <Rock:RockTextBox ID="txtCardFirstName" runat="server" Label="First Name on Card" Visible="false" ></Rock:RockTextBox>
+                <Rock:RockTextBox ID="txtCardLastName" runat="server" Label="Last Name on Card" Visible="false" ></Rock:RockTextBox>
+                <Rock:RockTextBox ID="txtCardName" runat="server" Label="Name on Card" Visible="false" ></Rock:RockTextBox>
+                <Rock:RockTextBox ID="txtCreditCard" runat="server" Label="Credit Card #" MaxLength="19" CssClass="credit-card" />
+                <ul class="card-logos list-unstyled">
+                    <li class="card-visa"></li>
+                    <li class="card-mastercard"></li>
+                    <li class="card-amex"></li>
+                    <li class="card-discover"></li>
+                </ul>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <Rock:MonthYearPicker ID="mypExpiration" runat="server" Label="Expiration Date" />
                     </div>
-                    <Rock:AddressControl ID="acBillingAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" ShowAddressLine2="false" />
+                    <div class="col-sm-6">
+                        <Rock:NumberBox ID="txtCVV" Label="Card Security Code" CssClass="input-width-xs" runat="server" MaxLength="4" />
+                    </div>
                 </div>
-
+                <Rock:AddressControl ID="acBillingAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" ShowAddressLine2="false" />
             </div>
 
         </asp:Panel>
@@ -204,50 +207,15 @@
         <div class="actions">
             <asp:LinkButton ID="lbSummaryPrev" runat="server" AccessKey="p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="lbSummaryPrev_Click" />
             <Rock:BootstrapButton ID="lbSummaryNext" runat="server" AccessKey="n" Text="Finish" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbSummaryNext_Click" />
-        </div>
-
-    </asp:Panel>
-
-    <asp:Panel ID="pnlStep2Payment" runat="server" Visible="false" >
-
-        <h1>Payment Information</h1>
-        
-        <asp:Panel ID="pnlStep2PaymentProgressBar" runat="server">
-            <div class="progress">
-                <div class="progress-bar" role="progressbar" aria-valuenow="<%=this.PercentComplete%>" aria-valuemin="0" aria-valuemax="100" style="width: <%=this.PercentComplete%>%;">
-                    <span class="sr-only"><%=this.PercentComplete%>% Complete</span>
-                </div>
-            </div>
-        </asp:Panel>
-
-        <div class="well">
-            <h4>Payment Method</h4>
-            <Rock:RockTextBox ID="txtStep2CreditCard" runat="server" Label="Credit Card #" MaxLength="19" CssClass="credit-card" Required="true" />
-            <ul class="card-logos list-unstyled">
-                <li class="card-visa"></li>
-                <li class="card-mastercard"></li>
-                <li class="card-amex"></li>
-                <li class="card-discover"></li>
-            </ul>
-            <div class="row">
-                <div class="col-sm-6">
-                    <Rock:MonthYearPicker ID="mypStep2Expiration" runat="server" Label="Expiration Date" Required="true" />
-                </div>
-                <div class="col-sm-6">
-                    <Rock:NumberBox ID="txtStep2CVV" Label="Card Security Code" CssClass="input-width-xs" runat="server" MaxLength="4" Required="true" />
-                </div>
-            </div>
-        </div>
-
-        <div class="actions">
             <asp:LinkButton ID="lbPaymentPrev" runat="server" AccessKey="p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="lbPaymentPrev_Click" />
-            <span id="aStep2Submit" Class="btn btn-primary pull-right">Next</span>
-            <asp:HiddenField ID="hfStep2Url" runat="server" />
-            <asp:HiddenField ID="hfStep2ReturnQueryString" runat="server" />
+            <asp:Label ID="aStep2Submit" runat="server" ClientIDMode="Static" CssClass="btn btn-primary pull-right" Text="Finish" />
         </div>
 
         <iframe id="iframeStep2" src="<%=this.Step2IFrameUrl%>" style="display:none"></iframe>
 
+        <asp:HiddenField ID="hfStep2AutoSubmit" runat="server" Value="false" />
+        <asp:HiddenField ID="hfStep2Url" runat="server" />
+        <asp:HiddenField ID="hfStep2ReturnQueryString" runat="server" />
         <span style="display:none" >
             <asp:LinkButton ID="lbStep2Return" runat="server" Text="Step 2 Return" OnClick="lbStep2Return_Click" CausesValidation="false" ></asp:LinkButton>
         </span>

@@ -357,6 +357,8 @@ namespace RockWeb.Blocks.Event
             // Reset warning/error messages
             nbMain.Visible = false;
 
+            hfStep2AutoSubmit.Value = "false";
+
             // register navigation event to enable support for the back button
             var sm = ScriptManager.GetCurrent( Page );
             //sm.EnableSecureHistoryState = false;
@@ -376,7 +378,6 @@ namespace RockWeb.Blocks.Event
                         if ( !RegistrationState.RegistrationId.HasValue && RegistrationInstanceState.MaxAttendees > 0 )
                         {
                             int registrants = RegistrationInstanceState.Registrations
-                                .Where( r => !r.IsTemporary )
                                 .Sum( r => r.Registrants.Count() );
 
                             instanceFull = registrants >= RegistrationInstanceState.MaxAttendees;
@@ -421,6 +422,9 @@ namespace RockWeb.Blocks.Event
             {
                 // Load values from controls into the state objects
                 ParseDynamicControls();
+
+                // Show or Hide the Credit card entry panel based on if a saved account exists and it's selected or not.
+                divNewCard.Style[HtmlTextWriterStyle.Display] = ( rblSavedCC.Items.Count == 0 || rblSavedCC.Items[rblSavedCC.Items.Count - 1].Selected ) ? "block" : "none";
             }
         }
 
@@ -692,21 +696,37 @@ namespace RockWeb.Blocks.Event
                 {
                     _saveNavigationHistory = true;
 
-                    var registrationId = SaveChanges();
-                    if ( registrationId.HasValue )
+                    if ( Using3StepGateway && RegistrationState.PaymentAmount > 0.0M )
                     {
-                        if ( Using3StepGateway && RegistrationState.PaymentAmount > 0.0M )
+                        string errorMessage = string.Empty;
+                        if ( ProcessStep1( out errorMessage ) )
                         {
-                            ShowPayment();
+                            if ( rblSavedCC.Items.Count > 0 && ( rblSavedCC.SelectedValueAsId() ?? 0 ) > 0 )
+                            {
+                                hfStep2AutoSubmit.Value = "true";
+                                ShowSummary(); // Stay on summary page so blank page does not appear when autopost occurs
+                            }
+                            else
+                            {
+                                ShowPayment();
+                            }
                         }
                         else
                         {
-                            ShowSuccess( registrationId.Value );
+                            throw new Exception( errorMessage );
                         }
                     }
                     else
                     {
-                        ShowSummary();
+                        var registrationId = SaveChanges();
+                        if ( registrationId.HasValue )
+                        {
+                            ShowSuccess( registrationId.Value );
+                        }
+                        else
+                        {
+                            ShowSummary();
+                        }
                     }
                 }
                 else
@@ -741,16 +761,18 @@ namespace RockWeb.Blocks.Event
 
         protected void lbStep2Return_Click( object sender, EventArgs e )
         {
-            if ( CurrentPanel == 3 )
+            if ( CurrentPanel == 2 || CurrentPanel == 3 )
             {
-                _saveNavigationHistory = true;
-                string resultQueryString = hfStep2ReturnQueryString.Value;
-                if ( RegistrationState.RegistrationId.HasValue && !string.IsNullOrWhiteSpace( resultQueryString ) )
+                int? registrationId = SaveChanges();
+                if ( registrationId.HasValue )
                 {
-                    int? registrationId = ProcessStep3( resultQueryString );
-                    if ( registrationId.HasValue )
+                    ShowSuccess( registrationId.Value );
+                }
+                else
+                {
+                    if ( CurrentPanel == 2 )
                     {
-                        ShowSuccess( registrationId.Value );
+                        ShowSummary();
                     }
                     else
                     {
@@ -858,6 +880,7 @@ namespace RockWeb.Blocks.Event
 
                         PersonAlias authorizedPersonAlias = null;
                         string referenceNumber = string.Empty;
+                        FinancialPaymentDetail paymentDetail = null;
                         int? currencyTypeValueId = ccCurrencyType.Id;
 
                         var transaction = new FinancialTransactionService( rockContext ).GetByTransactionCode( TransactionCode );
@@ -869,9 +892,10 @@ namespace RockWeb.Blocks.Event
                                 transaction.FinancialGateway.LoadAttributes( rockContext );
                             }
                             referenceNumber = gateway.GetReferenceNumber( transaction, out errorMessage );
+                            paymentDetail = transaction.FinancialPaymentDetail;
                         }
 
-                        if ( authorizedPersonAlias != null && authorizedPersonAlias.Person != null )
+                        if ( authorizedPersonAlias != null && authorizedPersonAlias.Person != null && paymentDetail != null )
                         {
                             if ( phCreateLogin.Visible )
                             {
@@ -905,8 +929,6 @@ namespace RockWeb.Blocks.Event
                                 }
                             }
 
-                            var paymentInfo = GetCCPaymentInfo( gateway );
-
                             if ( errorMessage.Any() )
                             {
                                 nbSaveAccount.Title = "Invalid Transaction";
@@ -925,7 +947,13 @@ namespace RockWeb.Blocks.Event
                                     savedAccount.TransactionCode = TransactionCode;
                                     savedAccount.FinancialGatewayId = RegistrationTemplate.FinancialGateway.Id;
                                     savedAccount.FinancialPaymentDetail = new FinancialPaymentDetail();
-                                    savedAccount.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, gateway, rockContext );
+                                    savedAccount.FinancialPaymentDetail.AccountNumberMasked = paymentDetail.AccountNumberMasked;
+                                    savedAccount.FinancialPaymentDetail.CurrencyTypeValueId = paymentDetail.CurrencyTypeValueId;
+                                    savedAccount.FinancialPaymentDetail.CreditCardTypeValueId = paymentDetail.CreditCardTypeValueId;
+                                    savedAccount.FinancialPaymentDetail.NameOnCardEncrypted = paymentDetail.NameOnCardEncrypted;
+                                    savedAccount.FinancialPaymentDetail.ExpirationMonthEncrypted = paymentDetail.ExpirationMonthEncrypted;
+                                    savedAccount.FinancialPaymentDetail.ExpirationYearEncrypted = paymentDetail.ExpirationYearEncrypted;
+                                    savedAccount.FinancialPaymentDetail.BillingLocationId = paymentDetail.BillingLocationId;
 
                                     var savedAccountService = new FinancialPersonSavedAccountService( rockContext );
                                     savedAccountService.Add( savedAccount );
@@ -1276,10 +1304,11 @@ namespace RockWeb.Blocks.Event
                     {
                         validationErrors.Add( "Credit Card Security Code is required" );
                     }
-                    if ( string.IsNullOrWhiteSpace( acBillingAddress.Street1 ) ||
+                    if ( acBillingAddress.Visible && (
+                        string.IsNullOrWhiteSpace( acBillingAddress.Street1 ) ||
                         string.IsNullOrWhiteSpace( acBillingAddress.City ) ||
                         string.IsNullOrWhiteSpace( acBillingAddress.State ) ||
-                        string.IsNullOrWhiteSpace( acBillingAddress.PostalCode ) )
+                        string.IsNullOrWhiteSpace( acBillingAddress.PostalCode ) ) )
                     {
                         validationErrors.Add( "Billing Address is required" );
                     }
@@ -1339,7 +1368,7 @@ namespace RockWeb.Blocks.Event
                             string errorMessage = string.Empty;
                             if ( Using3StepGateway )
                             {
-                                if ( !ProcessStep1( rockContext, registration, previousRegistrantIds, out errorMessage ) )
+                                if ( !ProcessStep3( rockContext, registration, hfStep2ReturnQueryString.Value, out errorMessage ) )
                                 {
                                     throw new Exception( errorMessage );
                                 }
@@ -1354,7 +1383,7 @@ namespace RockWeb.Blocks.Event
                         }
 
                         // If there is a valid registration, and nothing went wrong processing the payment, add registrants to group and send the notifications
-                        if ( registration != null && !registration.IsTemporary && !Using3StepGateway )
+                        if ( registration != null )
                         {
                             ProcessPostSave( registrationService, registration, previousRegistrantIds, rockContext );
                         }
@@ -1489,7 +1518,6 @@ namespace RockWeb.Blocks.Event
             {
                 newRegistration = true;
                 registration = new Registration();
-                registration.IsTemporary = Using3StepGateway;
                 registrationService.Add( registration );
                 registrationChanges.Add( "Created Registration" );
             }
@@ -1973,6 +2001,7 @@ namespace RockWeb.Blocks.Event
                     }
 
                     rockContext.SaveChanges();
+                    registrantInfo.Id = registrant.Id;
 
                     // Set any of the templat's registrant attributes
                     registrant.LoadAttributes();
@@ -2641,11 +2670,10 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// Processes the first step of a 3-step charge.
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="registration">The registration.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        private bool ProcessStep1( RockContext rockContext, Registration registration, List<int> previousRegistrantIds, out string errorMessage )
+        private bool ProcessStep1( out string errorMessage )
         {
             ThreeStepGatewayComponent gateway = null;
             if ( RegistrationTemplate != null && RegistrationTemplate.FinancialGateway != null )
@@ -2668,6 +2696,7 @@ namespace RockWeb.Blocks.Event
             PaymentInfo paymentInfo = null;
             if ( rblSavedCC.Items.Count > 0 && ( rblSavedCC.SelectedValueAsId() ?? 0 ) > 0 )
             {
+                var rockContext = new RockContext();
                 var savedAccount = new FinancialPersonSavedAccountService( rockContext ).Get( rblSavedCC.SelectedValueAsId().Value );
                 if ( savedAccount != null )
                 {
@@ -2692,8 +2721,7 @@ namespace RockWeb.Blocks.Event
 
             paymentInfo.Description = string.Format( "{0} ({1})", RegistrationInstanceState.Name, RegistrationInstanceState.Account.GlCode );
             paymentInfo.IPAddress = GetClientIpAddress();
-            paymentInfo.AdditionalParameters = gateway.GetRegistrationParameters( 
-                ResolveRockUrlIncludeRoot( "~/GatewayStep2Return.aspx" ), registration.Id, previousRegistrantIds );
+            paymentInfo.AdditionalParameters = gateway.GetStep1Parameters( ResolveRockUrlIncludeRoot( "~/GatewayStep2Return.aspx" ) );
 
             var result = gateway.ChargeStep1( RegistrationTemplate.FinancialGateway, paymentInfo, out errorMessage );
             if ( string.IsNullOrWhiteSpace( errorMessage ) && !string.IsNullOrWhiteSpace( result ) )
@@ -2707,9 +2735,12 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// Processes the third step of a 3-step charge.
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="registration">The registration.</param>
         /// <param name="resultQueryString">The query string result from step 2.</param>
+        /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        private int? ProcessStep3( string resultQueryString )
+        private bool ProcessStep3( RockContext rockContext, Registration registration, string resultQueryString, out string errorMessage )
         {
             ThreeStepGatewayComponent gateway = null;
             if ( RegistrationTemplate != null && RegistrationTemplate.FinancialGateway != null )
@@ -2719,50 +2750,18 @@ namespace RockWeb.Blocks.Event
 
             if ( gateway == null )
             {
-                ShowError( "Payment Error", "Invalid payment gateway" );
-                return null;
+                errorMessage = "There was a problem creating the payment gateway information";
+                return false;
             }
 
-            string errorMessage = string.Empty;
+            if ( !RegistrationInstanceState.AccountId.HasValue || RegistrationInstanceState.Account == null )
+            {
+                errorMessage = "There was a problem with the account configuration for this " + RegistrationTerm.ToLower();
+                return false;
+            }
+
             var transaction = gateway.ChargeStep3( RegistrationTemplate.FinancialGateway, resultQueryString, out errorMessage );
-            if ( transaction == null || !string.IsNullOrWhiteSpace( errorMessage ) )
-            {
-                ShowError( "Payment Error", errorMessage );
-                return null;
-            }
-
-            var rockContext = new RockContext();
-            var registrationService = new RegistrationService( rockContext );
-
-            Registration registration = null;
-            var previousRegistrantIds = new List<int>();
-
-            object customFieldValue = transaction.AdditionalLavaFields.GetValueOrNull( "merchant-defined-field-1" );
-            if ( customFieldValue != null )
-            {
-                registration = registrationService.Get( customFieldValue.ToString().AsInteger() );
-            }
-
-            if ( registration == null )
-            {
-                ShowError( "Payment Error", "Unknown Registration!" );
-                return null;
-            }
-
-            object customFieldValue2 = transaction.AdditionalLavaFields.GetValueOrNull( "merchant-defined-field-1" );
-            if ( customFieldValue2 != null )
-            {
-                previousRegistrantIds = customFieldValue2.ToString().SplitDelimitedValues().AsIntegerList();
-            }
-            if ( SaveTransaction( gateway, registration, transaction, null, rockContext ) )
-            {
-                registration.IsTemporary = false;
-                rockContext.SaveChanges();
-
-                ProcessPostSave( registrationService, registration, previousRegistrantIds, rockContext );
-            }
-
-            return registration.Id;
+            return SaveTransaction( gateway, registration, transaction, null, rockContext );
         }
 
         private CreditCardPaymentInfo GetCCPaymentInfo( GatewayComponent gateway )
@@ -2800,7 +2799,7 @@ namespace RockWeb.Blocks.Event
             lRegistrantTerm.Text =RegistrantTerm.Pluralize().ToLower();
 
             // If this is an existing registration, go directly to the summary
-            if ( RegistrationState != null && RegistrationState.RegistrationId.HasValue && !PageParameter( START_AT_BEGINNING ).AsBoolean() )
+            if ( !Page.IsPostBack && RegistrationState != null && RegistrationState.RegistrationId.HasValue && !PageParameter( START_AT_BEGINNING ).AsBoolean() )
             {
                 // check if template does not allow updating the saved registration, if so hide the back button on the summary screen
                 if ( !RegistrationTemplate.AllowExternalRegistrationUpdates )
@@ -2872,11 +2871,9 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void ShowSummary()
         {
-            lRegistrationTerm.Text = RegistrationTemplate.RegistrationTerm;
-
             decimal currentStep = ( FormCount * RegistrationState.RegistrantCount ) + 1;
             PercentComplete = ( currentStep / ProgressBarSteps ) * 100.0m;
-            pnlSummaryProgressBar.Visible = GetAttributeValue( "DisplayProgressBar" ).AsBoolean();
+            pnlSummaryAndPaymentProgressBar.Visible = GetAttributeValue( "DisplayProgressBar" ).AsBoolean();
 
             SetPanel( 2 );
         }
@@ -2888,9 +2885,41 @@ namespace RockWeb.Blocks.Event
         {
             decimal currentStep = ( FormCount * RegistrationState.RegistrantCount ) + 2;
             PercentComplete = ( currentStep / ProgressBarSteps ) * 100.0m;
-            pnlSummaryProgressBar.Visible = GetAttributeValue( "DisplayProgressBar" ).AsBoolean();
+            pnlSummaryAndPaymentProgressBar.Visible = GetAttributeValue( "DisplayProgressBar" ).AsBoolean();
 
             SetPanel( 3 );
+
+            if ( ( rblSavedCC.Items.Count == 0 || ( rblSavedCC.SelectedValueAsInt() ?? 0 ) == 0 ) &&
+                RegistrationTemplate != null && 
+                RegistrationTemplate.FinancialGateway != null )
+            {
+                var component = RegistrationTemplate.FinancialGateway.GetGatewayComponent();
+                if ( component != null )
+                {
+                    pnlPaymentInfo.Visible = true;
+                    rblSavedCC.Visible = false;
+                    divNewCard.Visible = true;
+                    divNewCard.Style[HtmlTextWriterStyle.Display] = "block";
+
+                    txtCardFirstName.Visible = component.PromptForNameOnCard( RegistrationTemplate.FinancialGateway ) && component.SplitNameOnCard;
+                    txtCardLastName.Visible = component.PromptForNameOnCard( RegistrationTemplate.FinancialGateway ) && component.SplitNameOnCard;
+                    txtCardName.Visible = component.PromptForNameOnCard( RegistrationTemplate.FinancialGateway ) && !component.SplitNameOnCard;
+
+                    mypExpiration.MinimumYear = RockDateTime.Now.Year;
+                    mypExpiration.MaximumYear = mypExpiration.MinimumYear + 15;
+
+                    acBillingAddress.Visible = component.PromptForBillingAddress( RegistrationTemplate.FinancialGateway );
+                }
+                else
+                {
+                    pnlPaymentInfo.Visible = false;
+                }
+            }
+            else
+            {
+                pnlPaymentInfo.Visible = false;
+            }
+
         }
 
         /// <summary>
@@ -2987,9 +3016,23 @@ namespace RockWeb.Blocks.Event
 
             pnlHowMany.Visible = CurrentPanel <= 0;
             pnlRegistrant.Visible = CurrentPanel == 1;
-            pnlSummary.Visible = CurrentPanel == 2;
-            pnlStep2Payment.Visible = CurrentPanel == 3;
+
+            pnlSummaryAndPayment.Visible = CurrentPanel == 2 || CurrentPanel == 3;
+
+            pnlRegistrarInfo.Visible = CurrentPanel == 2;
+            pnlRegistrantsReview.Visible = CurrentPanel == 2;
+            pnlCostAndFees.Visible = CurrentPanel == 2;
+
+            lbSummaryPrev.Visible = CurrentPanel == 2;
+            lbSummaryNext.Visible = CurrentPanel == 2;
+
+            lbPaymentPrev.Visible = CurrentPanel == 3;
+            aStep2Submit.Visible = currentPanel == 3;
+
             pnlSuccess.Visible = CurrentPanel == 4;
+
+            lSummaryAndPaymentTitle.Text = ( currentPanel == 2 && RegistrationTemplate != null ) ? "Review " + RegistrationTemplate.RegistrationTerm : "Payment Method";
+            lPaymentInfoTitle.Text = currentPanel == 2 ? "<h4>Payment Method</h4>" : "";
         }
 
         /// <summary>
@@ -3066,8 +3109,8 @@ namespace RockWeb.Blocks.Event
     $('.credit-card').creditCardTypeDetector({{ 'credit_card_logos': '.card-logos' }});
 
     // Toggle credit card display if saved card option is available
-    $('div.radio-content').prev('.form-group').find('input:radio').unbind('click').on('click', function () {{
-        var $content = $(this).parents('div.form-group:first').next('.radio-content')
+    $('div.radio-content').prev('div.radio-list').find('input:radio').unbind('click').on('click', function () {{
+        $content = $(this).parents('div.radio-list:first').next('.radio-content');
         var radioDisplay = $content.css('display');
         if ($(this).val() == 0 && radioDisplay == 'none') {{
             $content.slideToggle();
@@ -3095,6 +3138,7 @@ namespace RockWeb.Blocks.Event
                 $('#updateProgress').show();
                 var src = $('#{7}').val();
                 var $form = $('#iframeStep2').contents().find('#Step2Form');
+
                 $form.find('.cc-number').val( $('#{11}').val() );
                 var mm = $('#{12}_monthDropDownList').val();
                 var yy = $('#{12}_yearDropDownList_').val();
@@ -3102,6 +3146,26 @@ namespace RockWeb.Blocks.Event
                 yy = yy.length == 4 ? yy.substring(2,4) : yy;
                 $form.find('.cc-expiration').val( mm + yy );
                 $form.find('.cc-cvv').val( $('#{13}').val() );
+
+                $form.attr('action', src );
+                $form.submit();
+            }}
+        }}
+    }});
+
+    // Evaluates the current url whenever the iframe is loaded and if it includes a qrystring parameter
+    // The qry parameter value is saved to a hidden field and a post back is performed
+    $('#iframeStep2').on('load', function(e) {{
+        var location = this.contentWindow.location;
+        var qryString = this.contentWindow.location.search;
+        if ( qryString && qryString != '' ) {{ 
+            $('#{8}').val(qryString);
+            {9};
+        }} else {{
+            if ( $('#{14}').val() == 'true' ) {{
+                $('#updateProgress').show();
+                var src = $('#{7}').val();
+                var $form = $('#iframeStep2').contents().find('#Step2Form');
                 $form.attr('action', src );
                 $form.submit();
             }}
@@ -3116,36 +3180,40 @@ namespace RockWeb.Blocks.Event
         }}
     }});
 ",
-            nbAmountPaid.ClientID,      // {0}
-            hfTotalCost.ClientID,       // {1}
-            hfMinimumDue.ClientID,      // {2}
-            hfPreviouslyPaid.ClientID,  // {3}
-            lRemainingDue.ClientID,     // {4}
-            hfTriggerScroll.ClientID,   // {5}
+            nbAmountPaid.ClientID,          // {0}
+            hfTotalCost.ClientID,           // {1}
+            hfMinimumDue.ClientID,          // {2}
+            hfPreviouslyPaid.ClientID,      // {3}
+            lRemainingDue.ClientID,         // {4}
+            hfTriggerScroll.ClientID,       // {5}
             GlobalAttributesCache.Value( "CurrencySymbol" ), // {6}
-            hfStep2Url.ClientID,     // {7}
+            hfStep2Url.ClientID,            // {7}
             hfStep2ReturnQueryString.ClientID,   // {8}
             this.Page.ClientScript.GetPostBackEventReference( lbStep2Return, "" ), // {9}
-            this.BlockValidationGroup,  // {10}
-            txtStep2CreditCard.ClientID,  // {11}
-            mypStep2Expiration.ClientID,  // {12}
-            txtStep2CVV.ClientID          // {13}
+            this.BlockValidationGroup,      // {10}
+            txtCreditCard.ClientID,         // {11}
+            mypExpiration.ClientID,         // {12}
+            txtCVV.ClientID,                // {13}
+            hfStep2AutoSubmit.ClientID      // {14}
             );
 
             ScriptManager.RegisterStartupScript( Page, Page.GetType(), "registrationEntry", script, true );
 
-            string submitScript = string.Format( @"
+            if ( Using3StepGateway )
+            {
+                string submitScript = string.Format( @"
     $('#{0}').val('');
     $('#{1}_monthDropDownList').val('');
     $('#{1}_yearDropDownList_').val('');
     $('#{2}').val('');
 ",
-            txtStep2CreditCard.ClientID,  // {0}
-            mypStep2Expiration.ClientID,  // {1}
-            txtStep2CVV.ClientID          // {2}
-            );
+                txtCreditCard.ClientID,     // {0}
+                mypExpiration.ClientID,     // {1}
+                txtCVV.ClientID             // {2}
+                );
 
-            ScriptManager.RegisterOnSubmitStatement( Page, Page.GetType(), "clearCCFields", submitScript );
+                ScriptManager.RegisterOnSubmitStatement( Page, Page.GetType(), "clearCCFields", submitScript );
+            }
         }
 
         #endregion
@@ -4208,8 +4276,6 @@ namespace RockWeb.Blocks.Event
                     lRemainingDue.Visible = allowPartialPayment || RegistrationState.PreviousPaymentTotal != 0.0m;
                     lRemainingDue.Text = ( RegistrationState.DiscountedCost - ( RegistrationState.PreviousPaymentTotal + ( RegistrationState.PaymentAmount ?? 0.0m ) ) ).FormatAsCurrency();
 
-                    divPaymentInfo.Visible = balanceDue > 0;
-
                     // Set payment options based on gateway settings
                     if ( balanceDue > 0 && RegistrationTemplate.FinancialGateway != null )
                     {
@@ -4225,40 +4291,43 @@ namespace RockWeb.Blocks.Event
 
                             if ( rblSavedCC.Items.Count > 0 )
                             {
+                                pnlPaymentInfo.Visible = true;
+
                                 rblSavedCC.Items[0].Selected = true;
                                 rblSavedCC.Visible = true;
-                                divNewCard.Style[HtmlTextWriterStyle.Display] = "none";
-
-                                divPaymentInfo.Visible = true;
                             }
                             else
                             {
+                                pnlPaymentInfo.Visible = !Using3StepGateway;
                                 rblSavedCC.Visible = false;
-                                divNewCard.Style[HtmlTextWriterStyle.Display] = "block";
-
-                                divPaymentInfo.Visible = !Using3StepGateway;
                             }
 
-                            if ( Using3StepGateway )
-                                lPaymentInfoTitle.Text = "Payment Method";
-                            divNewCard.Visible = false;
-                            lbSummaryNext.Text = "Next";
-                        }
-                        else
-                        {
-                            lPaymentInfoTitle.Text = "Payment Information";
-                            divNewCard.Visible = true;
+                            divNewCard.Style[HtmlTextWriterStyle.Display] = ( rblSavedCC.Items.Count == 0 || rblSavedCC.Items[rblSavedCC.Items.Count - 1].Selected ) ? "block" : "none";
 
-                            txtCardFirstName.Visible = component.SplitNameOnCard;
-                            txtCardLastName.Visible = component.SplitNameOnCard;
-                            txtCardName.Visible = !component.SplitNameOnCard;
-                            mypExpiration.MinimumYear = RockDateTime.Now.Year;
-                            mypStep2Expiration.MinimumYear = RockDateTime.Now.Year;
+                            if ( Using3StepGateway )
+                            {
+                                divNewCard.Visible = false;
+                                lbSummaryNext.Text = "Next";
+                            }
+                            else
+                            {
+                                divNewCard.Visible = true;
+                                lbSummaryNext.Text = "Finish";
+
+                                txtCardFirstName.Visible = component.PromptForNameOnCard( RegistrationTemplate.FinancialGateway ) && component.SplitNameOnCard;
+                                txtCardLastName.Visible = component.PromptForNameOnCard( RegistrationTemplate.FinancialGateway ) && component.SplitNameOnCard;
+                                txtCardName.Visible = component.PromptForNameOnCard( RegistrationTemplate.FinancialGateway ) && !component.SplitNameOnCard;
+
+                                mypExpiration.MinimumYear = RockDateTime.Now.Year;
+                                mypExpiration.MaximumYear = mypExpiration.MinimumYear + 15;
+
+                                acBillingAddress.Visible = component.PromptForBillingAddress( RegistrationTemplate.FinancialGateway );
+                            }
                         }
                     }
                     else
                     {
-                        divPaymentInfo.Visible = false;
+                        pnlPaymentInfo.Visible = false;
                     }
                 }
                 else
@@ -4284,6 +4353,8 @@ namespace RockWeb.Blocks.Event
 
         private void BindSavedAccounts( GatewayComponent component )
         {
+            var currentValue = rblSavedCC.SelectedValue;
+
             rblSavedCC.Items.Clear();
 
             if ( CurrentPerson != null )
@@ -4313,6 +4384,7 @@ namespace RockWeb.Blocks.Event
                     if ( rblSavedCC.Items.Count > 0 )
                     {
                         rblSavedCC.Items.Add( new ListItem( "Use a different card", "0" ) );
+                        rblSavedCC.SetValue( currentValue );
                     }
                 }
             }
