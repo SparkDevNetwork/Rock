@@ -48,6 +48,8 @@ namespace RockWeb.Blocks.Finance
     [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE, "Transaction Types", "Optional list of transation types to limit the list to (if none are selected all types will be included).", false, true, "", "", 5 )]
     public partial class TransactionList : Rock.Web.UI.RockBlock, ISecondaryBlock, IPostBackEventHandler
     {
+        private bool _isExporting = false;
+
         #region Fields
 
         private bool _canEdit = false;
@@ -458,10 +460,10 @@ namespace RockWeb.Blocks.Finance
         /// Handles the GridRebind event of the gTransactions control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void gTransactions_GridRebind( object sender, EventArgs e )
+        /// <param name="e">The <see cref="GridRebindEventArgs"/> instance containing the event data.</param>
+        private void gTransactions_GridRebind( object sender, GridRebindEventArgs e )
         {
-            BindGrid();
+            BindGrid( e.IsExporting );
         }
 
         /// <summary>
@@ -817,7 +819,7 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Binds the grid.
         /// </summary>
-        private void BindGrid()
+        private void BindGrid( bool isExporting = false )
         {
             _currencyTypes = new Dictionary<int,string>();
             _creditCardTypes = new Dictionary<int,string>();
@@ -1029,8 +1031,12 @@ namespace RockWeb.Blocks.Finance
                 qry = qry.Include( a => a.Images );
             }
 
+            _isExporting = isExporting;
+
             gTransactions.SetLinqDataSource( qry.AsNoTracking() );
             gTransactions.DataBind();
+
+            _isExporting = false;
 
             if ( _batch == null &&
                 _scheduledTxn == null &&
@@ -1077,14 +1083,13 @@ namespace RockWeb.Blocks.Finance
                     .ToList();
                 if ( summary.Any() )
                 {
-                    if ( gTransactions.AllowPaging )
+                    if ( _isExporting )
                     {
-                        return "<small>" + summary.AsDelimited( "<br/>" ) + "</small>";
+                        return summary.AsDelimited( Environment.NewLine );
                     }
                     else
                     {
-                        // Allow paging is turned off when exporting to excel. In this case, do not add the html
-                        return summary.AsDelimited( Environment.NewLine );
+                        return "<small>" + summary.AsDelimited( "<br/>" ) + "</small>";
                     }
                 }
             }

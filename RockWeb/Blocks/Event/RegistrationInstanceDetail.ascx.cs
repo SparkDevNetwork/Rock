@@ -916,9 +916,9 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void gRegistrants_GridRebind( object sender, EventArgs e )
+        protected void gRegistrants_GridRebind( object sender, GridRebindEventArgs e )
         {
-            BindRegistrantsGrid();
+            BindRegistrantsGrid( e.IsExporting );
         }
 
         /// <summary>
@@ -1338,9 +1338,9 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void gGroupPlacements_GridRebind( object sender, EventArgs e )
+        protected void gGroupPlacements_GridRebind( object sender, GridRebindEventArgs e )
         {
-            BindGroupPlacementGrid();
+            BindGroupPlacementGrid( e.IsExporting );
         }
 
         /// <summary>
@@ -2013,7 +2013,7 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// Binds the registrants grid.
         /// </summary>
-        private void BindRegistrantsGrid()
+        private void BindRegistrantsGrid( bool isExporting = false )
         {
             int? instanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
             if ( instanceId.HasValue )
@@ -2337,10 +2337,10 @@ namespace RockWeb.Blocks.Event
                             {
                                 groupMemberIds.Add( groupMember.Id );
                                 GroupLinks.AddOrIgnore( groupMember.GroupId,
-                                    gRegistrants.AllowPaging ?
+                                    isExporting ? groupMember.Group.Name :
                                         string.Format( "<a href='{0}'>{1}</a>",
                                             LinkedPageUrl( "GroupDetailPage", new Dictionary<string, string> { { "GroupId", groupMember.GroupId.ToString() } } ),
-                                            groupMember.Group.Name ) : groupMember.Group.Name );
+                                            groupMember.Group.Name ) );
                             }
 
                             // If the campus column was selected to be displayed on grid, preload all the people's
@@ -2963,7 +2963,7 @@ namespace RockWeb.Blocks.Event
 
         #region Group Placement Tab
 
-        private void BindGroupPlacementGrid()
+        private void BindGroupPlacementGrid( bool isExporting = false )
         {
             int? groupId = gpGroupPlacementParentGroup.SelectedValueAsInt();
             int? instanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
@@ -3082,10 +3082,10 @@ namespace RockWeb.Blocks.Event
                             {
                                 groupMemberIds.Add( groupMember.Id );
                                 GroupLinks.AddOrIgnore( groupMember.GroupId,
-                                    gGroupPlacements.AllowPaging ?
+                                    isExporting ? groupMember.Group.Name :
                                         string.Format( "<a href='{0}'>{1}</a>",
                                             LinkedPageUrl( "GroupDetailPage", new Dictionary<string, string> { { "GroupId", groupMember.GroupId.ToString() } } ),
-                                            groupMember.Group.Name ) : groupMember.Group.Name );
+                                            groupMember.Group.Name ) );
                             }
 
                             // If the campus column was selected to be displayed on grid, preload all the people's

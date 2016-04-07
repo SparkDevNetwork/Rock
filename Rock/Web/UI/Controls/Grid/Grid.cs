@@ -496,6 +496,15 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a flag indicating databind is for an export
+        /// </summary>
+        public virtual bool IsExporting
+        {
+            get { return this.ViewState["IsExporting"] as bool? ?? false; }
+            private set { ViewState["IsExporting"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets a dictionary of objects that can be used independently of the actual objects that grid
         /// is bound to. This is helpful when binding to an anonymous type, but an actual known type is needed
         /// during row processing (i.e. RowDataBound events, or GetValue methods of custom grid fields)
@@ -1407,7 +1416,7 @@ namespace Rock.Web.UI.Controls
         {
             // disable paging if no specific keys where selected (or if no select option is shown)
             bool selectAll = !SelectedKeys.Any();
-            RebindGrid( e, selectAll );
+            RebindGrid( e, selectAll, true );
 
             // create default settings
             string filename = ExportFilename;
@@ -1498,7 +1507,7 @@ namespace Rock.Web.UI.Controls
                         }
                     }
 
-                    GridViewRowEventArgs args = new GridViewRowEventArgs( gridViewRow );
+                    var args = new RockGridViewRowEventArgs( gridViewRow, true );
                     gridViewRow.DataItem = dataItem;
                     this.OnRowDataBound( args );
                     columnCounter = 0;
@@ -1910,7 +1919,8 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         /// <param name="disablePaging">if set to <c>true</c> [disable paging].</param>
-        private void RebindGrid( EventArgs e, bool disablePaging )
+        /// <param name="isExporting">if set to <c>true</c> [is exporting].</param>
+        private void RebindGrid( EventArgs e, bool disablePaging, bool isExporting = false )
         {
             var origPaging = this.AllowPaging;
             if ( disablePaging )
@@ -1918,7 +1928,9 @@ namespace Rock.Web.UI.Controls
                 this.AllowPaging = false;
             }
 
-            OnGridRebind( e );
+            var eventArg = new GridRebindEventArgs( isExporting );
+            OnGridRebind( eventArg );
+
             this.AllowPaging = origPaging;
         }
 
@@ -2776,10 +2788,10 @@ namespace Rock.Web.UI.Controls
         public event GridRebindEventHandler GridRebind;
 
         /// <summary>
-        /// Raises the <see cref="E:GridRebind"/> event.
+        /// Raises the <see cref="E:GridRebind" /> event.
         /// </summary>
-        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        protected virtual void OnGridRebind( EventArgs e )
+        /// <param name="e">The <see cref="GridRebindEventArgs"/> instance containing the event data.</param>
+        protected virtual void OnGridRebind( GridRebindEventArgs e )
         {
             if ( GridRebind != null )
             {
@@ -2925,8 +2937,8 @@ namespace Rock.Web.UI.Controls
     /// Delegate used for raising the grid rebind event
     /// </summary>
     /// <param name="sender">The sender.</param>
-    /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-    public delegate void GridRebindEventHandler( object sender, EventArgs e );
+    /// <param name="e">The <see cref="GridRebindEventArgs"/> instance containing the event data.</param>
+    public delegate void GridRebindEventHandler( object sender, GridRebindEventArgs e );
 
     /// <summary>
     /// Delegate used for raising the grid items per page changed event
@@ -2956,6 +2968,61 @@ namespace Rock.Web.UI.Controls
         public NumericalEventArgs( int number )
         {
             Number = number;
+        }
+    }
+
+    /// <summary>
+    /// Event argument for rebind
+    /// </summary>
+    /// <seealso cref="System.EventArgs" />
+    public class GridRebindEventArgs : EventArgs
+    {
+        public bool IsExporting { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GridRebindEventArgs"/> class.
+        /// </summary>
+        public GridRebindEventArgs() : base()
+        {
+            IsExporting = false;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GridRebindEventArgs"/> class.
+        /// </summary>
+        /// <param name="isExporting">if set to <c>true</c> [is exporting].</param>
+        public GridRebindEventArgs( bool isExporting ) : base()
+        {
+            IsExporting = isExporting;
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="System.Web.UI.WebControls.GridViewRowEventArgs" />
+    public class RockGridViewRowEventArgs : GridViewRowEventArgs
+    {
+
+        public bool IsExporting { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockGridViewRowEventArgs"/> class.
+        /// </summary>
+        /// <param name="row">A <see cref="T:System.Web.UI.WebControls.GridViewRow" /> object that represents the row being created or data-bound.</param>
+        public RockGridViewRowEventArgs( GridViewRow row ) : base( row )
+        {
+            IsExporting = false;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockGridViewRowEventArgs"/> class.
+        /// </summary>
+        /// <param name="row">The row.</param>
+        /// <param name="isExporting">if set to <c>true</c> [is exporting].</param>
+        public RockGridViewRowEventArgs( GridViewRow row, bool isExporting ) : base( row)
+        {
+            IsExporting = isExporting;
         }
     }
 
