@@ -1933,18 +1933,43 @@ namespace RockWeb.Blocks.Event
                         qry = qry.Where( r => ids.Contains( r.Id ) );
                     }
 
-                    IOrderedQueryable<Registration> orderedQry = null;
                     SortProperty sortProperty = gRegistrations.SortProperty;
                     if ( sortProperty != null )
                     {
-                        orderedQry = qry.Sort( sortProperty );
+                        // If sorting by Total Cost or Balance Due, the database query needs to be run first without ordering,
+                        // and then ordering needs to be done in memory since TotalCost and BalanceDue are not databae fields.
+                        if ( sortProperty.Property == "TotalCost")
+                        {
+                            if ( sortProperty.Direction == SortDirection.Ascending )
+                            {
+                                gRegistrations.SetLinqDataSource( qry.ToList().OrderBy( r => r.TotalCost ).AsQueryable() );
+                            }
+                            else
+                            {
+                                gRegistrations.SetLinqDataSource( qry.ToList().OrderByDescending( r => r.TotalCost ).AsQueryable() );
+                            }
+                        }
+                        else if ( sortProperty.Property == "BalanceDue" )
+                        {
+                            if ( sortProperty.Direction == SortDirection.Ascending )
+                            {
+                                gRegistrations.SetLinqDataSource( qry.ToList().OrderBy( r => r.BalanceDue ).AsQueryable() );
+                            }
+                            else
+                            {
+                                gRegistrations.SetLinqDataSource( qry.ToList().OrderByDescending( r => r.BalanceDue ).AsQueryable() );
+                            }
+                        }
+                        else
+                        {
+                            gRegistrations.SetLinqDataSource( qry.Sort( sortProperty ) );
+                        }
                     }
                     else
                     {
-                        orderedQry = qry.OrderByDescending( r => r.CreatedDateTime );
+                        gRegistrations.SetLinqDataSource( qry.OrderByDescending( r => r.CreatedDateTime ) );
                     }
 
-                    gRegistrations.SetLinqDataSource( orderedQry );
 
                     // Get all the payments for any registrations being displayed on the current page.
                     // This is used in the RowDataBound event but queried now so that each row does
