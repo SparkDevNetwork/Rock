@@ -38,20 +38,11 @@ namespace Rock.Financial
         public abstract string Step2FormUrl { get; }
 
         /// <summary>
-        /// Gets the registration parameters that are passed to step 1
-        /// </summary>
-        /// <param name="redirectUrl">The URL that gateway should redirect back to after step 2.</param>
-        /// <param name="registrationId">The registration identifier.</param>
-        /// <param name="previousRegistrantIds">The previous registrant ids.</param>
-        /// <returns></returns>
-        public abstract Dictionary<string, string> GetRegistrationParameters( string redirectUrl, int registrationId, List<int> previousRegistrantIds );
-
-        /// <summary>
         /// Gets the financial transaction parameters that are passed to step 1
         /// </summary>
         /// <param name="redirectUrl">The redirect URL.</param>
         /// <returns></returns>
-        public abstract Dictionary<string, string> GetFinancialTransactionParameters( string redirectUrl );
+        public abstract Dictionary<string, string> GetStep1Parameters( string redirectUrl );
 
         /// <summary>
         /// Performs the first step of a three-step charge

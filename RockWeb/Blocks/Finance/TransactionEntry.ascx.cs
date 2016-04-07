@@ -590,14 +590,8 @@ namespace RockWeb.Blocks.Finance
                 if ( !string.IsNullOrWhiteSpace( txtSaveAccount.Text ) )
                 {
                     bool isACHTxn = hfPaymentTab.Value == "ACH";
-
-                    GatewayComponent gateway = null;
-                    FinancialGateway financialGateway = isACHTxn ? _achGateway : _ccGateway;
-
-                    if ( financialGateway != null )
-                    {
-                        gateway = financialGateway.GetGatewayComponent();
-                    }
+                    var financialGateway = isACHTxn ? _achGateway : _ccGateway;
+                    var gateway = isACHTxn ? _achGatewayComponent : _ccGatewayComponent;
 
                     if ( gateway != null )
                     {
@@ -887,42 +881,36 @@ namespace RockWeb.Blocks.Finance
 
                 // Find the saved accounts that are valid for the selected CC gateway
                 var ccSavedAccountIds = new List<int>();
-                if ( _ccGateway != null )
+                var ccCurrencyType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) );
+                if ( _ccGateway != null &&
+                    _ccGatewayComponent != null && 
+                    _ccGatewayComponent.SupportsSavedAccount( !oneTime ) && 
+                    _ccGatewayComponent.SupportsSavedAccount( ccCurrencyType ) )
                 {
-                    var ccCurrencyType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) );
-                    var ccGatewayComponent = _ccGateway.GetGatewayComponent();
-                    if ( ccGatewayComponent != null && 
-                        ccGatewayComponent.SupportsSavedAccount( !oneTime ) && 
-                        ccGatewayComponent.SupportsSavedAccount( ccCurrencyType ) )
-                    {
-                        ccSavedAccountIds = savedAccounts
-                            .Where( a =>
-                                a.FinancialGatewayId == _ccGateway.Id &&
-                                a.FinancialPaymentDetail != null &&
-                                a.FinancialPaymentDetail.CurrencyTypeValueId == ccCurrencyType.Id )
-                            .Select( a => a.Id )
-                            .ToList();
-                    }
+                    ccSavedAccountIds = savedAccounts
+                        .Where( a =>
+                            a.FinancialGatewayId == _ccGateway.Id &&
+                            a.FinancialPaymentDetail != null &&
+                            a.FinancialPaymentDetail.CurrencyTypeValueId == ccCurrencyType.Id )
+                        .Select( a => a.Id )
+                        .ToList();
                 }
 
                 // Find the saved accounts that are valid for the selected ACH gateway
                 var achSavedAccountIds = new List<int>();
-                if ( _achGateway != null )
+                var achCurrencyType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) );
+                if ( _achGateway != null &&
+                    _achGatewayComponent != null &&
+                    _achGatewayComponent.SupportsSavedAccount( !oneTime ) &&
+                    _achGatewayComponent.SupportsSavedAccount( achCurrencyType ) )
                 {
-                    var achCurrencyType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) );
-                    var achGatewayComponent = _ccGateway.GetGatewayComponent();
-                    if ( achGatewayComponent != null &&
-                        achGatewayComponent.SupportsSavedAccount( !oneTime ) &&
-                        achGatewayComponent.SupportsSavedAccount( achCurrencyType ) )
-                    {
-                        achSavedAccountIds = savedAccounts
-                            .Where( a =>
-                                a.FinancialGatewayId == _achGateway.Id &&
-                                a.FinancialPaymentDetail != null &&
-                                a.FinancialPaymentDetail.CurrencyTypeValueId == achCurrencyType.Id )
-                            .Select( a => a.Id )
-                            .ToList();
-                    }
+                    achSavedAccountIds = savedAccounts
+                        .Where( a =>
+                            a.FinancialGatewayId == _achGateway.Id &&
+                            a.FinancialPaymentDetail != null &&
+                            a.FinancialPaymentDetail.CurrencyTypeValueId == achCurrencyType.Id )
+                        .Select( a => a.Id )
+                        .ToList();
                 }
 
                 // Bind the accounts
@@ -1439,14 +1427,9 @@ namespace RockWeb.Blocks.Finance
         {
             var rockContext = new RockContext();
 
-            ThreeStepGatewayComponent gateway = null;
             bool isACHTxn = hfPaymentTab.Value == "ACH";
-
             var financialGateway = isACHTxn ? _achGateway : _ccGateway;
-            if ( financialGateway != null )
-            {
-                gateway = financialGateway.GetGatewayComponent() as ThreeStepGatewayComponent;
-            }
+            var gateway = ( isACHTxn ? _achGatewayComponent : _ccGatewayComponent ) as ThreeStepGatewayComponent;
 
             if ( gateway == null )
             {
@@ -1473,7 +1456,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             paymentInfo.IPAddress = GetClientIpAddress();
-            paymentInfo.AdditionalParameters = gateway.GetFinancialTransactionParameters( ResolveRockUrlIncludeRoot( "~/GatewayStep2Return.aspx" ) );
+            paymentInfo.AdditionalParameters = gateway.GetStep1Parameters( ResolveRockUrlIncludeRoot( "~/GatewayStep2Return.aspx" ) );
 
             string result = string.Empty;
 
@@ -1537,10 +1520,8 @@ namespace RockWeb.Blocks.Finance
         /// <returns></returns>
         private CreditCardPaymentInfo GetCCInfo()
         {
-            var ccGatewayComponent = _ccGateway.GetGatewayComponent();
-
             var cc = new CreditCardPaymentInfo( txtCreditCard.Text, txtCVV.Text, mypExpiration.SelectedDate ?? DateTime.MinValue );
-            cc.NameOnCard = ccGatewayComponent != null && ccGatewayComponent.SplitNameOnCard ? txtCardFirstName.Text : txtCardName.Text;
+            cc.NameOnCard = _ccGatewayComponent != null && _ccGatewayComponent.SplitNameOnCard ? txtCardFirstName.Text : txtCardName.Text;
             cc.LastNameOnCard = txtCardLastName.Text;
 
             if ( cbBillingAddress.Checked )
@@ -1638,14 +1619,9 @@ namespace RockWeb.Blocks.Finance
             var rockContext = new RockContext();
             if ( string.IsNullOrWhiteSpace( TransactionCode ) )
             {
-                GatewayComponent gateway = null;
                 bool isACHTxn = hfPaymentTab.Value == "ACH";
-
                 var financialGateway = isACHTxn ? _achGateway : _ccGateway;
-                if ( financialGateway != null )
-                {
-                    gateway = financialGateway.GetGatewayComponent();
-                }
+                var gateway = isACHTxn ? _achGatewayComponent : _ccGatewayComponent;
 
                 if ( gateway == null )
                 {
@@ -1716,14 +1692,9 @@ namespace RockWeb.Blocks.Finance
         {
             var rockContext = new RockContext();
 
-            ThreeStepGatewayComponent gateway = null;
             bool isACHTxn = hfPaymentTab.Value == "ACH";
-
             var financialGateway = isACHTxn ? _achGateway : _ccGateway;
-            if ( financialGateway != null )
-            {
-                gateway = financialGateway.GetGatewayComponent() as ThreeStepGatewayComponent;
-            }
+            var gateway = ( isACHTxn ? _achGatewayComponent : _ccGatewayComponent ) as ThreeStepGatewayComponent;
 
             if ( gateway == null )
             {

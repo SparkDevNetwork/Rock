@@ -71,7 +71,6 @@ namespace Rock.Jobs
 
                     foreach ( var registration in instance.Registrations
                         .Where( r =>
-                            !r.IsTemporary &&
                             r.ConfirmationEmail != null &&
                             r.ConfirmationEmail != "" ) )
                     {

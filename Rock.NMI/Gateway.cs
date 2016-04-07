@@ -129,29 +129,13 @@ namespace Rock.NMI
         {
             return !isRepeating;
         }
-
-        /// <summary>
-        /// Gets the registration parameters that are passed to step 1 
-        /// </summary>
-        /// <param name="redirectUrl">The URL that gateway should redirect back to after step 2.</param>
-        /// <param name="registrationId">The registration identifier.</param>
-        /// <param name="previousRegistrantIds">The previous registrant ids.</param>
-        /// <returns></returns>
-        public override Dictionary<string, string> GetRegistrationParameters( string redirectUrl, int registrationId, List<int> previousRegistrantIds )
-        {
-            var parameters = new Dictionary<string, string>();
-            parameters.Add( "redirect-url", redirectUrl );
-            parameters.Add( "merchant-defined-field-1", registrationId.ToString() );
-            parameters.Add( "merchant-defined-field-2", previousRegistrantIds.AsDelimited( "," ) );
-            return parameters;
-        }
-
+        
         /// <summary>
         /// Gets the financial transaction parameters that are passed to step 1
         /// </summary>
         /// <param name="redirectUrl">The redirect URL.</param>
         /// <returns></returns>
-        public override Dictionary<string, string> GetFinancialTransactionParameters( string redirectUrl )
+        public override Dictionary<string, string> GetStep1Parameters( string redirectUrl )
         {
             var parameters = new Dictionary<string, string>();
             parameters.Add( "redirect-url", redirectUrl );
