@@ -126,7 +126,8 @@ namespace RockWeb.Plugins.church_ccv.Promotions
 
                 foreach( var channel in channels )
                 {
-                    if ( channel.Value.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                    // JHM: 4-7 - WE want to allow them to request for ANY channel type.
+                    //if ( channel.Value.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {
                         ContentChannels.Add( channel.Value );
                     }
