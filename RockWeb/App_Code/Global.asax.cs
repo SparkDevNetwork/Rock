@@ -817,76 +817,128 @@ namespace RockWeb
 
             try
             {
-                string siteName = "Rock";
-                if ( siteId.HasValue )
-                {
-                    var site = SiteCache.Read( siteId.Value );
-                    if ( site != null )
-                    {
-                        siteName = site.Name;
-                    }
-                }
+                bool sendNotification = true;
 
-                // setup merge codes for email
-                var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
-                mergeObjects.Add( "ExceptionDetails", string.Format( "An error occurred{0} on the {1} site on page: <br>{2}<p>{3}</p>",
-                    person != null ? " for " + person.FullName : "", siteName, Context.Request.Url.OriginalString, FormatException( ex, "" ) ) );
-
-                try
-                {
-                    mergeObjects.Add( "Exception", Hash.FromAnonymousObject( ex ) );
-                }
-                catch
-                {
-                    // ignore
-                }
-
-                mergeObjects.Add( "Person", person );
-
-                // get email addresses to send to
                 var globalAttributesCache = GlobalAttributesCache.Read();
-                string emailAddressesList = globalAttributesCache.GetValue( "EmailExceptionsList" );
 
-                if ( !string.IsNullOrWhiteSpace( emailAddressesList ) )
+                string filterSettings = globalAttributesCache.GetValue( "EmailExceptionsFilter" );
+                if ( !string.IsNullOrWhiteSpace( filterSettings ) )
                 {
-                    string[] emailAddresses = emailAddressesList.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
-
-                    var recipients = new List<RecipientData>();
-                    foreach ( string emailAddress in emailAddresses )
+                    // Convert the EmailExceptionFilter global attribute to a dictionary
+                    var exceptionFilter = new Dictionary<string, string>();
+                    string[] nameValues = filterSettings.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+                    foreach ( string nameValue in nameValues )
                     {
-                        recipients.Add( new RecipientData( emailAddress, mergeObjects ) );
-                    }
-
-                    if ( recipients.Any() )
-                    {
-                        bool sendNotification = true;
-
-                        string filterSettings = globalAttributesCache.GetValue( "EmailExceptionsFilter" );
-                        var serverVarList = Context.Request.ServerVariables;
-
-                        if ( !string.IsNullOrWhiteSpace( filterSettings ) && serverVarList.Count > 0 )
+                        string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
                         {
-                            string[] nameValues = filterSettings.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-                            foreach ( string nameValue in nameValues )
+                            if ( nameAndValue.Length == 2 )
                             {
-                                string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
-                                {
-                                    if ( nameAndValue.Length == 2 )
-                                    {
-                                        var serverValue = serverVarList[nameAndValue[0]];
-                                        if ( serverValue != null && serverValue.ToUpper().Contains( nameAndValue[1].ToUpper().Trim() ) )
-                                        {
-                                            sendNotification = false;
-                                            break;
-                                        }
-                                    }
-                                }
+                                exceptionFilter.AddOrIgnore( nameAndValue[0], nameAndValue[1] );
                             }
                         }
+                    }
 
-                        if ( sendNotification )
+                    // Get the current request's list of server variables
+                    var serverVarList = Context.Request.ServerVariables;
+
+                    // Check if exception matches any item in dictionary, and if so, ignore this exception
+                    foreach ( var keyVal in exceptionFilter )
+                    {
+                        switch ( keyVal.Key.ToLower() )
                         {
-                            Email.Send( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid(), recipients, string.Empty, string.Empty, false );
+                            case "type":
+                                {
+                                    if ( ex.GetType().Name.ToLower().Contains( keyVal.Value.ToLower() ) )
+                                    {
+                                        sendNotification = false;
+                                    }
+                                    break;
+                                }
+                            case "source":
+                                {
+                                    if ( ex.Source.ToLower().Contains( keyVal.Value.ToLower() ) )
+                                    {
+                                        sendNotification = false;
+                                    }
+                                    break;
+                                }
+                            case "message":
+                                {
+                                    if ( ex.Message.ToLower().Contains( keyVal.Value.ToLower() ) )
+                                    {
+                                        sendNotification = false;
+                                    }
+                                    break;
+                                }
+                            case "stacktrace":
+                                {
+                                    if ( ex.StackTrace.ToLower().Contains( keyVal.Value.ToLower() ) )
+                                    {
+                                        sendNotification = false;
+                                    }
+                                    break;
+                                }
+                            default:
+                                {
+                                    var serverValue = serverVarList[keyVal.Key];
+                                    if ( serverValue != null && serverValue.ToUpper().Contains( keyVal.Value.ToUpper().Trim() ) )
+                                    {
+                                        sendNotification = false;
+                                    }
+                                    break;
+                                }
+                        }
+                        if ( !sendNotification )
+                        {
+                            break;
+                        }
+                    }
+                }
+
+                if ( sendNotification )
+                {
+                    // get email addresses to send to
+                    string emailAddressesList = globalAttributesCache.GetValue( "EmailExceptionsList" );
+                    if ( !string.IsNullOrWhiteSpace( emailAddressesList ) )
+                    {
+                        string[] emailAddresses = emailAddressesList.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+                        if ( emailAddresses.Length > 0 )
+                        {
+                            string siteName = "Rock";
+                            if ( siteId.HasValue )
+                            {
+                                var site = SiteCache.Read( siteId.Value );
+                                if ( site != null )
+                                {
+                                    siteName = site.Name;
+                                }
+                            }
+
+                            // setup merge codes for email
+                            var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
+                            mergeObjects.Add( "ExceptionDetails", string.Format( "An error occurred{0} on the {1} site on page: <br>{2}<p>{3}</p>",
+                                person != null ? " for " + person.FullName : "", siteName, Context.Request.Url.OriginalString, FormatException( ex, "" ) ) );
+
+                            try
+                            {
+                                mergeObjects.Add( "Exception", Hash.FromAnonymousObject( ex ) );
+                            }
+                            catch
+                            {
+                                // ignore
+                            }
+
+                            mergeObjects.Add( "Person", person );
+                            var recipients = new List<RecipientData>();
+                            foreach ( string emailAddress in emailAddresses )
+                            {
+                                recipients.Add( new RecipientData( emailAddress, mergeObjects ) );
+                            }
+
+                            if ( recipients.Any() )
+                            {
+                                Email.Send( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid(), recipients, string.Empty, string.Empty, false );
+                            }
                         }
                     }
                 }

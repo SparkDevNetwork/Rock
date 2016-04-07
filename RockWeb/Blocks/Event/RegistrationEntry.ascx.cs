@@ -2068,27 +2068,20 @@ namespace RockWeb.Blocks.Event
 
             catch ( Exception ex )
             {
-                try
+                using ( var newRockContext = new RockContext() )
                 {
-                    using ( var newRockContext = new RockContext() )
+                    if ( newRegistration )
                     {
-                        if ( newRegistration )
+                        var newRegistrationService = new RegistrationService( newRockContext );
+                        var savedRegistration = new RegistrationService( newRockContext ).Get( registration.Id );
+                        if ( savedRegistration != null )
                         {
-                            var newRegistrationService = new RegistrationService( newRockContext );
-                            var savedRegistration = new RegistrationService( newRockContext ).Get( registration.Id );
-                            if ( savedRegistration != null )
-                            {
-                                HistoryService.DeleteChanges( newRockContext, typeof( Registration ), savedRegistration.Id );
+                            HistoryService.DeleteChanges( newRockContext, typeof( Registration ), savedRegistration.Id );
 
-                                newRegistrationService.Delete( savedRegistration );
-                                newRockContext.SaveChanges();
-                            }
+                            newRegistrationService.Delete( savedRegistration );
+                            newRockContext.SaveChanges();
                         }
                     }
-                }
-                catch ( Exception ex1 )
-                {
-                    string test = ex1.Message;
                 }
 
                 throw ex;
