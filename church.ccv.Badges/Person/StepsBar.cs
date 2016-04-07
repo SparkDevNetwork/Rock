@@ -19,6 +19,7 @@ namespace church.ccv.Badges.Person
     [IntegerField("Baptism Event Id", "The event id to use for pulling upcoming baptisms.")]
     [LinkedPage( "Connection Group Registration Page", "The page to link to for registering for connection group." )]
     [IntegerField( "Connection GroupType Id", "The id of the group type to be used for determine the connection badge." )]
+    [LinkedPage( "Next Step Group Registration Page", "The page to link to for registering for a next step group." )]
     [LinkedPage("Group List Page", "The page to list all of the groups of a certain type")]
     [LinkedPage("Group Details Page", "The group details page.")]
     [IntegerField( "Serving GroupType Id", "The id of the group type to be used for determine the serve badge." )]
@@ -34,6 +35,7 @@ namespace church.ccv.Badges.Person
         {
             int baptismRegistrationPageId = GetPageIdFromLinkedPageAttribute( "BaptismRegistrationPage", badge);
             int connectionGroupRegistrationPageId = GetPageIdFromLinkedPageAttribute( "ConnectionGroupRegistrationPage", badge );
+            int nextStepGroupRegistrationPageId = GetPageIdFromLinkedPageAttribute( "NextStepGroupRegistrationPage", badge );
             int servingConnectionPageId = GetPageIdFromLinkedPageAttribute( "ServingConnectionPage", badge );
             int groupDetailsPageId = GetPageIdFromLinkedPageAttribute( "GroupDetailsPage", badge );
             int groupListPageId = GetPageIdFromLinkedPageAttribute( "GroupListPage", badge );
@@ -89,6 +91,7 @@ namespace church.ccv.Badges.Person
 
     var groupDetailPageId = '{8}';
     var groupListPageId = '{9}';
+    var nextStepGroupRegistrationPage = '{10}';
 
     $.ajax({{
         type: 'GET',
@@ -165,7 +168,8 @@ namespace church.ccv.Badges.Person
                 }}
             }}
 
-            var popoverContent = popoverContent + ""<p class='margin-b-none'><a href='/page/"" + connectionGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find Group</a></p>"";
+            var popoverContent = popoverContent + ""<p class='margin-b-none'><a href='/page/"" + connectionGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find NH Group</a></p>"";
+            var popoverContent = popoverContent + ""<p class='margin-b-none margin-t-sm'><a href='/page/"" + nextStepGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find NS Group</a></p>"";
 
                     $badge.find( '.badge-connect' ).removeClass( 'step-nottaken' );
 
@@ -380,7 +384,8 @@ var coachPopoverIsOpen = false;
                  GetAttributeValue( badge, "ConnectionGroupTypeId").AsInteger(), // 6
                  connectionGroupRegistrationPageId, // 7
                  groupDetailsPageId, // 8
-                 groupListPageId // 9
+                 groupListPageId, // 9
+                 nextStepGroupRegistrationPageId // 10
             ));
         }
 
