@@ -168,5 +168,16 @@ namespace Rock.Web.UI.Controls
             _rangeValidator.ValidationGroup = this.ValidationGroup;
             _rangeValidator.RenderControl( writer );
         }
+
+        /// <summary>
+        /// Renders the base control.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public override void RenderBaseControl( HtmlTextWriter writer )
+        {
+            this.Attributes["type"] = "number";
+
+            base.RenderBaseControl( writer );
+        }
     }
 }
