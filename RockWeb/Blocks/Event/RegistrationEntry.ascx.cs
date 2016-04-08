@@ -378,6 +378,7 @@ namespace RockWeb.Blocks.Event
                         if ( !RegistrationState.RegistrationId.HasValue && RegistrationInstanceState.MaxAttendees > 0 )
                         {
                             int registrants = RegistrationInstanceState.Registrations
+                                .Where( r => !r.IsTemporary )
                                 .Sum( r => r.Registrants.Count() );
 
                             instanceFull = registrants >= RegistrationInstanceState.MaxAttendees;
@@ -1383,7 +1384,7 @@ namespace RockWeb.Blocks.Event
                         }
 
                         // If there is a valid registration, and nothing went wrong processing the payment, add registrants to group and send the notifications
-                        if ( registration != null )
+                        if ( registration != null && !registration.IsTemporary )
                         {
                             ProcessPostSave( registrationService, registration, previousRegistrantIds, rockContext );
                         }

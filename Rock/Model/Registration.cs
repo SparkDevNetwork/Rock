@@ -129,7 +129,6 @@ namespace Rock.Model
         public int? GroupId { get; set; }
 
         /// <summary>
-        /// THIS FIELD IS NOT USED. WILL BE REMOVED IN NEXT MIGRATION ROLLUP
         /// Gets or sets a value indicating whether this instance is temporary.
         /// </summary>
         /// <value>
