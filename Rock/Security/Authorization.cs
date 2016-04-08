@@ -166,6 +166,7 @@ namespace Rock.Security
         /// </summary>
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
         public static void ReloadEntity( int entityTypeId, int entityId, RockContext rockContext = null )
         {
             var rockMemoryCache = RockMemoryCache.Default;
@@ -184,6 +185,7 @@ namespace Rock.Security
         /// </summary>
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
         internal static void RefreshEntity( int entityTypeId, int entityId, RockContext rockContext = null )
         {
             if ( !Load() )

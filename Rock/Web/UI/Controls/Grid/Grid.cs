@@ -2977,6 +2977,12 @@ namespace Rock.Web.UI.Controls
     /// <seealso cref="System.EventArgs" />
     public class GridRebindEventArgs : EventArgs
     {
+        /// <summary>
+        /// Gets a value indicating whether this instance is exporting.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is exporting; otherwise, <c>false</c>.
+        /// </value>
         public bool IsExporting { get; private set; }
 
         /// <summary>
@@ -3004,6 +3010,12 @@ namespace Rock.Web.UI.Controls
     public class RockGridViewRowEventArgs : GridViewRowEventArgs
     {
 
+        /// <summary>
+        /// Gets a value indicating whether this instance is exporting.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is exporting; otherwise, <c>false</c>.
+        /// </value>
         public bool IsExporting { get; private set; }
 
         /// <summary>
