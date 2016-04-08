@@ -265,9 +265,9 @@ namespace Rock.Model
                     {
                         value = attribute.FieldType.Field.FormatValue( null, value, attribute.QualifierValues, condensed );
                     }
-
-                    return value;
                 }
+
+                return value ?? string.Empty;
             }
 
             return null;
