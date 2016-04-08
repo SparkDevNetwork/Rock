@@ -30,6 +30,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 
 using church.ccv.Utility.SystemGuids;
+using church.ccv.Utility.Groups;
 
 namespace RockWeb.Plugins.church_ccv.Groups
 {
@@ -39,11 +40,25 @@ namespace RockWeb.Plugins.church_ccv.Groups
     [WorkflowTypeField( "OptOut Needs Next Steps Coach", "The workflow to use when opting out a person due to them needing a Next Steps Coach. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "", 1 )]
     [WorkflowTypeField( "OptOut Not Attending Group", "The workflow to use when opting out a person due to them not attending group. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "", 2 )]
     [WorkflowTypeField( "OptOut No Longer Attends Workflow", "The workflow to use when opting out a person due to them no longer attending CCV. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "", 3 )]
-    public partial class NHGroupMemberDetail : RockBlock, IDetailBlock
+    public partial class NHGroupMemberDetail : ToolboxGroupMemberDetail, IDetailBlock
     {
         #region Control Methods
 
         DefinedTypeCache OptOutReasonDefinedType { get; set; }
+
+        public override Literal MemberName { get { return lPersonName; } }
+        public override Literal GroupRole { get { return lGroupRole; } }
+
+        public override Rock.Web.UI.Controls.RockRadioButtonList ActivePendingStatus { get { return rblActivePendingStatus; } }
+        public override Rock.Web.UI.Controls.EmailBox EmailAddress { get { return ebEmailAddress; } }
+        public override Rock.Web.UI.Controls.PhoneNumberBox MobileNumber { get { return pnMobile; } }
+        public override CheckBox SMSEnabled { get { return cbSms; } }
+        public override Rock.Web.UI.Controls.RockDropDownList OptOutReason { get { return ddlOptOutReason; } }
+        public override Rock.Web.UI.Controls.DatePicker FollowUpDatePicker { get { return dpFollowUpDate; } }
+        public override Rock.Web.UI.Controls.RockTextBox ReassignReason { get { return null; } }
+        public override Rock.Web.UI.Controls.ImageEditor ProfilePicEditor { get { return imgPhoto; } }
+
+        public override Literal EmailReceipt { get { return lReceipt; } }
 
         protected override void OnInit( EventArgs e )
         {
@@ -59,9 +74,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-
-            nbErrorMessage.Text = string.Empty;
-
+            
             if ( !Page.IsPostBack )
             {
                 ShowDetail( PageParameter( "AdminPersonId" ).AsInteger(), PageParameter( "GroupMemberId" ).AsInteger(), null );
@@ -80,13 +93,10 @@ namespace RockWeb.Plugins.church_ccv.Groups
         protected void btnSave_Click( object sender, EventArgs e )
         {
             SaveGroupMember();
-
-            if ( cvGroupMember.IsValid )
-            {
-                Dictionary<string, string> qryString = new Dictionary<string, string>();
-                qryString["GroupId"] = hfGroupId.Value;
-                NavigateToParentPage( qryString );
-            }
+            
+            Dictionary<string, string> qryString = new Dictionary<string, string>();
+            qryString["GroupId"] = hfGroupId.Value;
+            NavigateToParentPage( qryString );
         }
 
         /// <summary>
@@ -97,75 +107,26 @@ namespace RockWeb.Plugins.church_ccv.Groups
             if ( Page.IsValid )
             {
                 var rockContext = new RockContext();
-
+                
+                // load the existing group member
                 GroupMemberService groupMemberService = new GroupMemberService( rockContext );
-                GroupMember groupMember;
 
                 int groupMemberId = int.Parse( hfGroupMemberId.Value );
+                GroupMember groupMember = groupMemberService.Get( groupMemberId );
 
-                // load existing group member
-                groupMember = groupMemberService.Get( groupMemberId );
+                // let the base save its stuff
+                base.SaveGroupMember( groupMember, rockContext );
+                
 
-                if( string.IsNullOrWhiteSpace( ddlOptOutReason.SelectedValue ) == true )
-                {
-                    groupMember.GroupMemberStatus = rblActivePendingStatus.SelectedValueAsEnum<GroupMemberStatus>();
-                }
-                else
-                {
-                    groupMember.GroupMemberStatus = GroupMemberStatus.Inactive;
-                }
+                // now we only need to save stuff specific to this toolbox
 
-                groupMember.LoadAttributes();
-                if ( string.IsNullOrWhiteSpace( ddlOptOutReason.SelectedValue ) == false )
-                {
-                    groupMember.SetAttributeValue( "OptOutReason", ddlOptOutReason.SelectedValue );
-                    if ( dpFollowUpDate.Visible && dpFollowUpDate.SelectedDate.HasValue )
-                    {
-                        groupMember.SetAttributeValue( "FollowUpDate", dpFollowUpDate.SelectedDate.Value.ToString( "o" ) );
-                    }
-                    else
-                    {
-                        groupMember.SetAttributeValue( "FollowUpDate", null );
-                    }
-                }
-                else
-                {
-                    groupMember.SetAttributeValue( "OptOutReason", null );
-                    groupMember.SetAttributeValue( "FollowUpDate", null );
-                }
-
-                if ( !Page.IsValid )
-                {
-                    return;
-                }
-
-                // see if there's a valid email address
-                if ( string.IsNullOrEmpty( ebEmailAddress.Text ) == true ||
-                    ebEmailAddress.Text.IsValidEmail() )
-                {
-                    groupMember.Person.Email = ebEmailAddress.Text;
-                }
-
-                // set their home and mobile phone
+                // set their home phone
                 var homeNumberType = Rock.Web.Cache.DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) );
-                var mobileNumberType = Rock.Web.Cache.DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
-
                 groupMember.Person.UpdatePhoneNumber( homeNumberType.Id, pnHome.CountryCode, pnHome.Text, null, null, rockContext );
-                groupMember.Person.UpdatePhoneNumber( mobileNumberType.Id, pnMobile.CountryCode, pnMobile.Text, null, null, rockContext );
 
                 // set their anniversary date
                 groupMember.Person.AnniversaryDate = dpAnniversaryDate.SelectedDate;
-
-                // if the groupMember IsValid is false, and the UI controls didn't report any errors, it is probably because the custom rules of GroupMember didn't pass.
-                // So, make sure a message is displayed in the validation summary
-                cvGroupMember.IsValid = groupMember.IsValid;
-
-                if ( !cvGroupMember.IsValid )
-                {
-                    cvGroupMember.ErrorMessage = groupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
-                    return;
-                }
-
+                
                 // using WrapTransaction because there are three Saves
                 rockContext.WrapTransaction( () =>
                 {
@@ -181,19 +142,19 @@ namespace RockWeb.Plugins.church_ccv.Groups
                 // now handle any opt-out specific behavior
                 switch ( ddlOptOutReason.SelectedValue )
                 {
-                    case church.ccv.Utility.SystemGuids.DefinedValue.NEIGHBORHOOD_NOT_ATTENDING_GROUP:
+                    case church.ccv.Utility.SystemGuids.DefinedValue.NEIGHBORHOOD_OPT_OUT_NOT_ATTENDING_GROUP:
                     {
                         StartWorkflow( "OptOutNotAttendingGroup", groupMember.Person, rockContext );
                         break;
                     }
 
-                    case church.ccv.Utility.SystemGuids.DefinedValue.NEIGHBORHOOD_NEEDS_NEXT_STEPS_COACH:
+                    case church.ccv.Utility.SystemGuids.DefinedValue.NEIGHBORHOOD_OPT_OUT_NEEDS_NEXT_STEPS_COACH:
                     {
                         StartWorkflow( "OptOutNeedsNextStepsCoach", groupMember.Person, rockContext );
                         break;
                     }
 
-                    case church.ccv.Utility.SystemGuids.DefinedValue.NEIGHBORHOOD_NO_LONGER_ATTENDING_CCV:
+                    case church.ccv.Utility.SystemGuids.DefinedValue.NEIGHBORHOOD_OPT_OUT_NO_LONGER_ATTENDING_CCV:
                     {
                         StartWorkflow( "OptOutNoLongerAttendsWorkflow", groupMember.Person, rockContext );
                         break;
@@ -252,9 +213,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
         public void ShowDetail( int adminPersonId, int groupMemberId, int? groupId )
         {
             var rockContext = new RockContext();
-
             Person adminPerson = new PersonService( rockContext ).Get( adminPersonId );
-
             GroupMember groupMember = new GroupMemberService( rockContext ).Get( groupMemberId );
 
             // make sure both exist, otherwise warn one is wrong.
@@ -274,88 +233,41 @@ namespace RockWeb.Plugins.church_ccv.Groups
                 }
 
                 pnlEditDetails.Visible = false;
-                return;
-            }
-
-            pnlEditDetails.Visible = true;
-
-            hfGroupId.Value = groupMember.GroupId.ToString();
-            hfGroupMemberId.Value = groupMember.Id.ToString();
-            hfAdminPersonId.Value = adminPerson.Id.ToString();
-
-            LoadDropDowns();
-
-            lPersonName.Text = groupMember.Person.ToString();
-            lGroupRole.Text = groupMember.GroupRole.ToString();
-            rblActivePendingStatus.SetValue( groupMember.GroupMemberStatus.ConvertToInt() );
-            groupMember.LoadAttributes();
-
-            var optOutReasonValue = groupMember.GetAttributeValue( "OptOutReason" );
-            if ( optOutReasonValue != null )
-            {
-                ddlOptOutReason.SetValue( optOutReasonValue );
             }
             else
             {
-                ddlOptOutReason.SetValue( string.Empty );
+                // call the base show detail (which is an overloaded, not overridden, version)
+                ShowDetail( adminPerson, groupMember, OptOutReasonDefinedType, rockContext );
+
+                pnlEditDetails.Visible = true;
+
+                hfGroupId.Value = groupMember.GroupId.ToString();
+                hfGroupMemberId.Value = groupMember.Id.ToString();
+                hfAdminPersonId.Value = adminPerson.Id.ToString();
+                
+                // get their home phone number
+                var homeNumberType = Rock.Web.Cache.DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) );
+                var homephone = groupMember.Person.PhoneNumbers.Where( p => p.NumberTypeValueId == homeNumberType.Id ).FirstOrDefault();
+                if ( homephone != null )
+                {
+                    pnHome.Text = homephone.NumberFormatted;
+                }
+                
+                // get their anniversary date
+                dpAnniversaryDate.SelectedDate = groupMember.Person.AnniversaryDate;
+                
+                // see if they're married so we can show / hide the anniversary picker
+                IsMarried = false;
+
+                Person spouse = new PersonService( rockContext ).GetSpouse( groupMember.Person );
+                if ( spouse != null )
+                {
+                    IsMarried = true;
+                }
+
+                SetControlVisibilities();
             }
-
-            // get their email
-            ebEmailAddress.Text = groupMember.Person.Email;
-
-
-            // get their home and mobile phone numbers
-            var homeNumberType = Rock.Web.Cache.DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) );
-            var mobileNumberType = Rock.Web.Cache.DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
-
-            var homephone = groupMember.Person.PhoneNumbers.Where( p => p.NumberTypeValueId == homeNumberType.Id ).FirstOrDefault();
-            if ( homephone != null )
-            {
-                pnHome.Text = homephone.NumberFormatted;
-            }
-
-            var mobilephone = groupMember.Person.PhoneNumbers.Where( p => p.NumberTypeValueId == mobileNumberType.Id ).FirstOrDefault();
-            if ( mobilephone != null )
-            {
-                pnMobile.Text = mobilephone.NumberFormatted;
-            }
-
-            // get their anniversary date
-            dpAnniversaryDate.SelectedDate = groupMember.Person.AnniversaryDate;
-
-            var followUpDate = groupMember.GetAttributeValue( "FollowUpDate" );
-
-            dpFollowUpDate.SelectedDate = followUpDate.AsDateTime();
-
-            // see if they're married so we can show / hide the anniversary picker
-            IsMarried = false;
-
-            Person spouse = new PersonService( rockContext ).GetSpouse( groupMember.Person );
-            if ( spouse != null )
-            {
-                IsMarried = true;
-            }
-
-            SetControlVisibilities();
         }
-
-        /// <summary>
-        /// Loads the drop downs.
-        /// </summary>
-        private void LoadDropDowns()
-        {
-            rblActivePendingStatus.Items.Clear();
-            rblActivePendingStatus.Items.Add( new ListItem( GroupMemberStatus.Active.ConvertToString(), GroupMemberStatus.Active.ConvertToInt().ToString() ) );
-            rblActivePendingStatus.Items.Add( new ListItem( GroupMemberStatus.Pending.ConvertToString(), GroupMemberStatus.Pending.ConvertToInt().ToString() ) );
-
-            foreach ( var definedValue in OptOutReasonDefinedType.DefinedValues )
-            {
-                ddlOptOutReason.Items.Add( new ListItem( definedValue.Value, definedValue.Guid.ToString( ).ToUpper( ) ) );
-            }
-            ddlOptOutReason.Items.Insert( 0, string.Empty );
-            ddlOptOutReason.SelectedIndex = 0;
-        }
-
         /// <summary>
         /// Handles the SelectedIndexChanged event of the ddlOptOutReason control.
         /// </summary>
@@ -372,41 +284,12 @@ namespace RockWeb.Plugins.church_ccv.Groups
         private void SetControlVisibilities()
         {
             // toggle the follow-up date on or off depending on the reason.
-            dpFollowUpDate.Visible = ddlOptOutReason.SelectedValue == church.ccv.Utility.SystemGuids.DefinedValue.NEIGHBORHOOD_FOLLOW_UP_LATER;
+            dpFollowUpDate.Visible = ddlOptOutReason.SelectedValue == church.ccv.Utility.SystemGuids.DefinedValue.NEIGHBORHOOD_OPT_OUT_FOLLOW_UP_LATER;
 
             // show the active / pending status picker if there's NO opt out reason.
             rblActivePendingStatus.Visible = ddlOptOutReason.SelectedValue == string.Empty;
             
             dpAnniversaryDate.Visible = IsMarried == true;
-        }
-
-        /// <summary>
-        /// Starts the workflow if one was defined in the block setting.
-        /// </summary>
-        /// <param name="person">The person.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void StartWorkflow( string workflowName, Person person, RockContext rockContext )
-        {
-            WorkflowType workflowType = null;
-            Guid? workflowTypeGuid = GetAttributeValue( workflowName ).AsGuidOrNull();
-            if ( workflowTypeGuid.HasValue )
-            {
-                var workflowTypeService = new WorkflowTypeService( rockContext );
-                workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
-                if ( workflowType != null )
-                {
-                    try
-                    {
-                        var workflow = Workflow.Activate( workflowType, person.FirstName );
-                        List<string> workflowErrors;
-                        new WorkflowService( rockContext ).Process( workflow, person, out workflowErrors );
-                    }
-                    catch ( Exception ex )
-                    {
-                        ExceptionLogService.LogException( ex, this.Context );
-                    }
-                }
-            }
         }
         #endregion
     }

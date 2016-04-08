@@ -17,5 +17,10 @@ namespace church.ccv.Utility.SystemGuids
         /// Defines the reason a coach needs to opt-out a neighborhood group member.
         /// </summary>
         public const string NEIGHBORHOOD_OPT_OUT_REASON = "8F93E901-82CF-4299-A6B4-5FC85DD296AC";
+
+        /// <summary>
+        /// Defines the reason a coach needs to opt-out a next-gen group member.
+        /// </summary>
+        public const string NEXT_GEN_OPT_OUT_REASON = "24B86D49-1F1D-4EB1-A344-F97A6E8F806C";
     }
 }
