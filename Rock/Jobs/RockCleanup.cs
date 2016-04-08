@@ -137,6 +137,15 @@ namespace Rock.Jobs
                 rockCleanupExceptions.Add( new Exception( "Exception in PersonCleanup", ex ) );
             }
 
+            try
+            {
+                databaseRowsDeleted += CleanUpTemporaryRegistrations();
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanUpTemporaryRegistrations", ex ) );
+            }
+
             context.Result = string.Format( "Rock Cleanup cleaned up {0} database rows", databaseRowsDeleted );
 
             if ( rockCleanupExceptions.Count > 0 )
@@ -221,6 +230,32 @@ namespace Rock.Jobs
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Cleans up temporary registrations.
+        /// </summary>
+        private int CleanUpTemporaryRegistrations()
+        {
+            var registrationRockContext = new Rock.Data.RockContext();
+            int totalRowsDeleted = 0;
+            // clean out any temporary registrations
+            RegistrationService registrationService = new RegistrationService( registrationRockContext );
+            foreach ( var registration in registrationService.Queryable().Where( bf => bf.IsTemporary == true ).ToList() )
+            {
+                if ( registration.ModifiedDateTime < RockDateTime.Now.AddHours( -1 ) )
+                {
+                    string errorMessage;
+                    if ( registrationService.CanDelete( registration, out errorMessage ) )
+                    {
+                        registrationService.Delete( registration );
+                        registrationRockContext.SaveChanges();
+                        totalRowsDeleted++;
+                    }
+                }
+            }
+
+            return totalRowsDeleted;
         }
 
         /// <summary>
