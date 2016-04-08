@@ -1083,23 +1083,29 @@ namespace RockWeb.Blocks.Groups
                 groups.ForEach( g => gGroups.ObjectList.Add( g.Id.ToString(), g ) );
 
                 // Bind the grid
-                gGroups.DataSource = groups.Select( g => new
+                gGroups.DataSource = groups.Select( g =>
                 {
-                    Id = g.Id,
-                    Name = g.Name,
-                    GroupTypeName = g.GroupType.Name,
-                    GroupOrder = g.Order,
-                    GroupTypeOrder = g.GroupType.Order,
-                    Description = g.Description,
-                    IsSystem = g.IsSystem,
-                    IsActive = g.IsActive,
-                    GroupRole = string.Empty,
-                    DateAdded = DateTime.MinValue,
-                    Schedule = g.Schedule,
-                    MemberCount = g.Members.Count(),
-                    AverageAge = Math.Round( g.Members.Select( m => m.Person ).Average( p => p.Age ) ?? 0.0D ),
-                    Distance = distances.Where( d => d.Key == g.Id )
-                        .Select( d => d.Value ).FirstOrDefault()
+                    var qryMembers = new GroupMemberService( rockContext ).Queryable().Where( a => a.GroupId == g.Id );
+                    var groupType = GroupTypeCache.Read( g.GroupTypeId );
+
+                    return new
+                    {
+                        Id = g.Id,
+                        Name = g.Name,
+                        GroupTypeName = groupType.Name,
+                        GroupOrder = g.Order,
+                        GroupTypeOrder = groupType.Order,
+                        Description = g.Description,
+                        IsSystem = g.IsSystem,
+                        IsActive = g.IsActive,
+                        GroupRole = string.Empty,
+                        DateAdded = DateTime.MinValue,
+                        Schedule = g.Schedule,
+                        MemberCount = qryMembers.Count(),
+                        AverageAge = Math.Round( qryMembers.Select( m => m.Person.BirthDate ).ToList().Select( a => Person.GetAge( a ) ).Average() ?? 0.0D ),
+                        Distance = distances.Where( d => d.Key == g.Id )
+                            .Select( d => d.Value ).FirstOrDefault()
+                    };
                 } ).ToList();
                 gGroups.DataBind();
             }
