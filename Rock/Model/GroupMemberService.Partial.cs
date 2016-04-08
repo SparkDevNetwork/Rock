@@ -279,7 +279,7 @@ namespace Rock.Model
             var groupRole = groupMember.GroupRole;
             if ( groupRole == null )
             {
-                groupRole = Queryable()
+                groupRole = Queryable( true )
                     .Where( m => m.Id == groupMember.Id )
                     .Select( m => m.GroupRole )
                     .FirstOrDefault();
@@ -319,7 +319,7 @@ namespace Rock.Model
                     if ( ownerPersonId.HasValue && ownerRoleId.HasValue )
                     {
                         // Find related person's group
-                        var inverseGroup = Queryable()
+                        var inverseGroup = Queryable( true )
                             .Where( m =>
                                 m.PersonId == groupMember.PersonId &&
                                 m.Group.GroupTypeId == groupRole.GroupTypeId &&
@@ -344,7 +344,7 @@ namespace Rock.Model
                             Guid inverseRoleGuid = Guid.Empty;
                             if ( Guid.TryParse( groupRole.GetAttributeValue( "InverseRelationship" ), out inverseRoleGuid ) )
                             {
-                                var inverseGroupMember = Queryable()
+                                var inverseGroupMember = Queryable( true )
                                     .Where( m =>
                                         m.PersonId == ownerPersonId &&
                                         m.GroupId == inverseGroup.Id &&
