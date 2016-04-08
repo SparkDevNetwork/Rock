@@ -11,6 +11,9 @@ using dotless.Core.configuration;
 
 namespace Rock.Web.UI
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class RockTheme
     {
         static private string _themeDirectory = HttpRuntime.AppDomainAppPath + "Themes";
