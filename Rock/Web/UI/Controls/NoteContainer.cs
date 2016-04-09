@@ -716,12 +716,12 @@ namespace Rock.Web.UI.Controls
 
                     if ( SortDirection == ListSortDirection.Descending )
                     {
-                        qry = qry.OrderByDescending( n => n.IsAlert )
+                        qry = qry.OrderByDescending( n => n.IsAlert == true )
                             .ThenByDescending( n => n.CreatedDateTime );
                     }
                     else
                     {
-                        qry = qry.OrderByDescending( n => n.IsAlert )
+                        qry = qry.OrderByDescending( n => n.IsAlert == true )
                             .ThenBy( n => n.CreatedDateTime );
                     }
 
