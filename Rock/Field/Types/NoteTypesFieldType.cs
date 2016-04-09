@@ -86,6 +86,7 @@ namespace Rock.Field.Types
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             int entityTypeId = 0;
+            string entityTypeName = string.Empty;
             string qualifierColumn = string.Empty;
             string qualifierValue = string.Empty;
 
@@ -93,7 +94,7 @@ namespace Rock.Field.Types
             {
                 if ( configurationValues.ContainsKey( ENTITY_TYPE_NAME_KEY ) )
                 {
-                    string entityTypeName = configurationValues[ENTITY_TYPE_NAME_KEY].Value;
+                    entityTypeName = configurationValues[ENTITY_TYPE_NAME_KEY].Value;
                     if ( !string.IsNullOrWhiteSpace( entityTypeName ) && entityTypeName != None.IdValue )
                     {
                         var entityType = EntityTypeCache.Read( entityTypeName );
@@ -119,20 +120,28 @@ namespace Rock.Field.Types
 
             using ( var rockContext = new RockContext() )
             {
-                var noteTypes = new NoteTypeService( rockContext ).Get( entityTypeId, qualifierColumn, qualifierValue ).ToList();
-                if ( noteTypes.Any() )
+                if ( string.IsNullOrWhiteSpace( entityTypeName ) )
                 {
-                    foreach ( var noteType in noteTypes )
+                    foreach ( var noteType in new NoteTypeService( rockContext )
+                        .Queryable()
+                        .OrderBy( n => n.EntityType.Name )
+                        .ThenBy( n => n.Name ) )
                     {
-                        ListItem listItem = new ListItem( noteType.Name, noteType.Guid.ToString().ToUpper() );
-                        editControl.Items.Add( listItem );
+                        editControl.Items.Add( new ListItem( string.Format( "{0}: {1}", noteType.EntityType.FriendlyName, noteType.Name ), noteType.Guid.ToString().ToUpper() ) );
                     }
-
-                    return editControl;
+                }
+                else
+                {
+                    foreach ( var noteType in new NoteTypeService( rockContext )
+                        .Get( entityTypeId, qualifierColumn, qualifierValue )
+                        .OrderBy( n => n.Name ) )
+                    {
+                        editControl.Items.Add( new ListItem( noteType.Name, noteType.Guid.ToString().ToUpper() ) );
+                    }
                 }
             }
 
-            return null;
+            return editControl;
         }
 
         /// <summary>
