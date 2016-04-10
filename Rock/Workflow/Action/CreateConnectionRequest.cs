@@ -143,6 +143,7 @@ namespace Rock.Workflow.Action
             connectionRequest.ConnectionStatusId = status.Id;
             connectionRequest.CampusId = campusId;
             connectionRequest.ConnectorPersonAliasId = opportunity.GetDefaultConnectorPersonAliasId( campusId.Value );
+            connectionRequest.Comments = comment;
 
             connectionRequestService.Add( connectionRequest );
             rockContext.SaveChanges();
