@@ -196,7 +196,7 @@
                         <Rock:MonthYearPicker ID="mypExpiration" runat="server" Label="Expiration Date" />
                     </div>
                     <div class="col-sm-6">
-                        <Rock:NumberBox ID="txtCVV" Label="Card Security Code" CssClass="input-width-xs" runat="server" MaxLength="4" />
+                        <Rock:RockTextBox ID="txtCVV" Label="Card Security Code" CssClass="input-width-xs" runat="server" MaxLength="4" />
                     </div>
                 </div>
                 <Rock:AddressControl ID="acBillingAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" ShowAddressLine2="false" />

@@ -123,7 +123,7 @@
                                                 <Rock:MonthYearPicker ID="mypExpiration" runat="server" Label="Expiration Date" />
                                             </div>
                                             <div class="col-md-6">
-                                                <Rock:NumberBox ID="txtCVV" Label="Card Security Code" CssClass="input-width-xs" runat="server" MaxLength="4" />
+                                                <Rock:RockTextBox ID="txtCVV" Label="Card Security Code" CssClass="input-width-xs" runat="server" MaxLength="4" />
                                             </div>
                                         </div>
                                         <Rock:RockCheckBox ID="cbBillingAddress" runat="server" Text="Enter a different billing address" CssClass="toggle-input" />
