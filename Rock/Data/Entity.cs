@@ -473,6 +473,17 @@ namespace Rock.Data
             return false;
 
         }
+
+        /// <summary>
+        /// Creates a transaction to launch a workflow for this entity.
+        /// </summary>
+        /// <param name="workflowTypeGuid">The workflow type unique identifier.</param>
+        public void LaunchWorkflow( Guid workflowTypeGuid )
+        {
+            var transaction = new Rock.Transactions.LaunchWorkflowTransaction<T>( workflowTypeGuid, Id );
+            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+        }
+
         #endregion
 
         #region Static Methods
