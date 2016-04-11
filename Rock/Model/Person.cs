@@ -1009,21 +1009,28 @@ namespace Rock.Model
             return null;
         }
 
+
         /// <summary>
-        /// Returns a formatted age in years, months, or days.
+        /// Formats the age with unit (year, month, day) suffix depending on the age of the individual. 
         /// </summary>
+        /// <param name="condensed">if set to <c>true</c> age in years is returned without a unit suffix.</param>
         /// <returns></returns>
-        public string FormatAge()
+        public string FormatAge( bool condensed = false)
         {
-            if (Age > 0)
+            var age = Age;
+            if (age != null && age > 0 )
             {
-                return Age + (Age == 1 ? " yr old " : " yrs old ");
+                if (condensed)
+                {
+                    return age.ToString();
+                }
+                return age  + (age == 1 ? " yr old " : " yrs old ");
             }
             var today = RockDateTime.Today;
             if (BirthMonth != null && BirthMonth < today.Month)
             {
                 int months = today.Month - BirthMonth.Value;
-                return months + (months == 1 ? " mnth old " : " mnths old ");
+                return months + (months == 1 ? " mo old " : " mos old ");
             }
             if (BirthDay != null)
             {
