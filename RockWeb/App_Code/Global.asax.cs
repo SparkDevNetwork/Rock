@@ -824,8 +824,9 @@ namespace RockWeb
                 string filterSettings = globalAttributesCache.GetValue( "EmailExceptionsFilter" );
                 if ( !string.IsNullOrWhiteSpace( filterSettings ) )
                 {
-                    // Convert the EmailExceptionFilter global attribute to a dictionary
-                    var exceptionFilter = new Dictionary<string, string>();
+                    // Get the current request's list of server variables
+                    var serverVarList = Context.Request.ServerVariables;
+
                     string[] nameValues = filterSettings.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
                     foreach ( string nameValue in nameValues )
                     {
@@ -833,61 +834,53 @@ namespace RockWeb
                         {
                             if ( nameAndValue.Length == 2 )
                             {
-                                exceptionFilter.AddOrIgnore( nameAndValue[0], nameAndValue[1] );
+                                switch ( nameAndValue[0].ToLower() )
+                                {
+                                    case "type":
+                                        {
+                                            if ( ex.GetType().Name.ToLower().Contains( nameAndValue[1].ToLower() ) )
+                                            {
+                                                sendNotification = false;
+                                            }
+                                            break;
+                                        }
+                                    case "source":
+                                        {
+                                            if ( ex.Source.ToLower().Contains( nameAndValue[1].ToLower() ) )
+                                            {
+                                                sendNotification = false;
+                                            }
+                                            break;
+                                        }
+                                    case "message":
+                                        {
+                                            if ( ex.Message.ToLower().Contains( nameAndValue[1].ToLower() ) )
+                                            {
+                                                sendNotification = false;
+                                            }
+                                            break;
+                                        }
+                                    case "stacktrace":
+                                        {
+                                            if ( ex.StackTrace.ToLower().Contains( nameAndValue[1].ToLower() ) )
+                                            {
+                                                sendNotification = false;
+                                            }
+                                            break;
+                                        }
+                                    default:
+                                        {
+                                            var serverValue = serverVarList[nameAndValue[0]];
+                                            if ( serverValue != null && serverValue.ToUpper().Contains( nameAndValue[1].ToUpper().Trim() ) )
+                                            {
+                                                sendNotification = false;
+                                            }
+                                            break;
+                                        }
+                                }
                             }
                         }
-                    }
 
-                    // Get the current request's list of server variables
-                    var serverVarList = Context.Request.ServerVariables;
-
-                    // Check if exception matches any item in dictionary, and if so, ignore this exception
-                    foreach ( var keyVal in exceptionFilter )
-                    {
-                        switch ( keyVal.Key.ToLower() )
-                        {
-                            case "type":
-                                {
-                                    if ( ex.GetType().Name.ToLower().Contains( keyVal.Value.ToLower() ) )
-                                    {
-                                        sendNotification = false;
-                                    }
-                                    break;
-                                }
-                            case "source":
-                                {
-                                    if ( ex.Source.ToLower().Contains( keyVal.Value.ToLower() ) )
-                                    {
-                                        sendNotification = false;
-                                    }
-                                    break;
-                                }
-                            case "message":
-                                {
-                                    if ( ex.Message.ToLower().Contains( keyVal.Value.ToLower() ) )
-                                    {
-                                        sendNotification = false;
-                                    }
-                                    break;
-                                }
-                            case "stacktrace":
-                                {
-                                    if ( ex.StackTrace.ToLower().Contains( keyVal.Value.ToLower() ) )
-                                    {
-                                        sendNotification = false;
-                                    }
-                                    break;
-                                }
-                            default:
-                                {
-                                    var serverValue = serverVarList[keyVal.Key];
-                                    if ( serverValue != null && serverValue.ToUpper().Contains( keyVal.Value.ToUpper().Trim() ) )
-                                    {
-                                        sendNotification = false;
-                                    }
-                                    break;
-                                }
-                        }
                         if ( !sendNotification )
                         {
                             break;
