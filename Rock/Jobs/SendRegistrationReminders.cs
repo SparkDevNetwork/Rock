@@ -77,8 +77,8 @@ namespace Rock.Jobs
                         mergeFields.Add( "RegistrationInstance", registration.RegistrationInstance );
                         mergeFields.Add( "Registration", registration );
 
-                        string from = template.ReminderFromName.ResolveMergeFields( mergeFields );
-                        string fromName = template.ReminderFromEmail.ResolveMergeFields( mergeFields );
+                        string from = template.ReminderFromEmail.ResolveMergeFields( mergeFields );
+                        string fromName = template.ReminderFromName.ResolveMergeFields( mergeFields );
                         string subject = template.ReminderSubject.ResolveMergeFields( mergeFields );
                         string message = template.ReminderEmailTemplate.ResolveMergeFields( mergeFields );
 
