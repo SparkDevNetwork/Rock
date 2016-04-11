@@ -1,6 +1,6 @@
 /*
      
-     Rock Advenure Kids Check-in Theme
+     Blue Crystal Check-in Theme
      Crafted by: Spark Development Network
 
  */
@@ -11,57 +11,12 @@
 
 @import "../../../Styles/FontAwesome/font-awesome.less";
 @import "../../../Styles/Bootstrap/bootstrap.less"; 
-@import "../../../Styles/_rock-core.less";
 @import "../../../Styles/_checkin-core.less";
 @import "../../../Styles/_modal.less";
 @import "../../../Styles/_helpers.less";
 
-//
-// Variables
-// --------------------------------------------------
-
-// Font Variables
-@font-family-base:     'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-@font-weight-light:     300;
-@font-weight-bold:      700;
-@font-weight-semibold:  600;
-
-@bg-color:      #4b5c65;
-@text-color:    #fff;
-
-@modal-body-bg: @bg-color;
-@modal-body-text-color: @text-color;
-@modal-header-bg: @bg-color;
-@modal-header-text-color: @text-color;
-@modal-footer-bg: @bg-color;
-@modal-footer-text-color: @text-color;
-
-@header-text-color:     #fff;
-@header-font-weight:    @font-weight-bold;
-
-@subheader-text-color:      #dcdcdc;
-@subheader-font-weight:     @font-weight-light;
-
-// Button Styles
-@btn-default-bg: #c4c5c6;
-@btn-default-color:     #626161;
-@btn-default-border:   #adaeaf;
-@checkin-button-text-weight:    @font-weight-bold;
-@checkin-button-alttext-weight: @font-weight-light;
-
-@btn-primary-color:    #fff;
-@btn-primary-border:   #18272d;
-@btn-primary-bg:    #23353d;
-
-@btn-disabled-color: @btn-primary-border;
-@btn-disabled-bg: darken(@btn-primary-bg, 20%);
-
-// scroll bar
-@scrollbar-bg: #000;
-@scrollbar-border: #adaeaf;
-
-// Fonts
-// -------------------------
+@import "_variables.less";
+@import "_variable-overrides.less";
 
 // regular (weight 'normal' aka 400)
 @font-face {
@@ -130,13 +85,13 @@
 // --------------------------------------------------
 
 html {
-    background: @bg-color url('../Assets/Images/background.jpg') top right no-repeat fixed;
+    background: @bg-color @background-image top right no-repeat fixed;
     background-size: cover;
     height: 100%;
 }
 
 body {
-    background: url('../Assets/Images/logo.png') right bottom no-repeat;
+    background:  @logo-image right bottom no-repeat;
     height: 100%;
     -ms-touch-action: manipulation !important;
     -ms-content-zooming: none; /* Disables zooming */
@@ -145,12 +100,14 @@ body {
 
 @media all and (-webkit-min-device-pixel-ratio: 1.5) {
   html {
-        background-image: url('../Assets/Images/background@2x.jpg');
-        background-size: 1348px 1024px;
+        background-image: @background-image-retina;
+        background-size: @background-image-retina-size;
     }
 
     body {
-        background-image: url('../Assets/Images/logo@2x.png');
-        background-size: 496px 504px;
+        background-image: @logo-image-retina;
+        background-size: @logo-image-retina-size;
     }
 }
+
+@import "_css-overrides.less";
