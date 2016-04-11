@@ -373,7 +373,7 @@ $('.js-panel-toggle').on('click', function (e) {
                                         RockTextBox textbox = new RockTextBox();
                                         textbox.Label = variableName;
                                         textbox.ID = variableKey;
-                                        textbox.CssClass = "input-width-xxl";
+                                        textbox.CssClass = "input-width-xl";
 
                                         // check if override of the variable exists
                                         if ( overrides.ContainsKey( variableKey ) )
