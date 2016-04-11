@@ -1671,8 +1671,8 @@ namespace RockWeb.Blocks.Finance
                         return false;
                     }
 
-                    paymentDetail = transaction.FinancialPaymentDetail.Clone( false );
                     SaveTransaction( financialGateway, gateway, person, paymentInfo, transaction, rockContext );
+                    paymentDetail = transaction.FinancialPaymentDetail.Clone( false );
                 }
 
                 ShowSuccess( gateway, person, paymentInfo, schedule, paymentDetail, rockContext );
