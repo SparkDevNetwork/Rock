@@ -59,6 +59,19 @@ namespace Rock.Rest
                     action = "DataView"
                 } );
 
+            // Add API route for Launching a Workflow
+            config.Routes.MapHttpRoute(
+                name: "LaunchWorkflowApi",
+                routeTemplate: "api/{controller}/LaunchWorkflow/{id}",
+                defaults: new
+                {
+                    action = "LaunchWorkflow"
+                },
+                constraints: new
+                {
+                    httpMethod = new HttpMethodConstraint( new string[] { "POST" } ),
+                } );
+
             // Add API route for DeleteAttributeValue
             config.Routes.MapHttpRoute(
                 name: "DeleteAttributeValueApi",
