@@ -224,53 +224,62 @@ namespace RockWeb.Plugins.church_ccv.Promotions
             // grab the item that was clicked
             PromotionRequest promoRequest = promoService.Get( e.RowKeyId );
 
-            // get the event item linked to the request
-            RockContext rockContext = new RockContext( );
-            EventItemOccurrenceService eventService = new EventItemOccurrenceService( rockContext );
-            var eventItem = eventService.Get( promoRequest.EventItemOccurrenceId );
-            
-            // figure out if this promo should be using single "Campus" or multiple "Campuses"
-            var campusObj = new CampusService( rockContext ).Get( ddlCampus.SelectedValue.AsInteger( ) );
-            
-            bool multiCampus = PromotionsUtil.IsContentChannelMultiCampus( promoRequest.ContentChannel.Id );
-
-            // the campus attribute type (multi or single), along with the event's campus,
-            // will determine how we setup the data
-            
-            // if it's multi-campus, and the event is an all-campus event
-            if ( multiCampus && eventItem.Campus == null )
+            // make sure it doesn't already exist, which could happen if they double-click by mistake.
+            IQueryable<PromotionOccurrence> promoOccurrQuery = new PromotionsService<PromotionOccurrence>( promoContext ).Queryable( );
+            var promoOccurr = promoOccurrQuery.Where( po => po.PromotionRequestId == promoRequest.Id ).SingleOrDefault( );
+            if( promoOccurr == null )
             {
-                // throw up the dialog so they can decide.
-                HandleMultiCampusPromotion( promoRequest );
-            }
-            else
-            {
-                // otherwise, it's either a single-campus event and a multi-campus promo type,
-                // or it's a single campus promo type.
-                string campusAttributeGuid = string.Empty;
-                string campusGuids = campusObj.Guid.ToString( );
+                // get the event item linked to the request
+                RockContext rockContext = new RockContext( );
+                EventItemOccurrenceService eventService = new EventItemOccurrenceService( rockContext );
+                var eventItem = eventService.Get( promoRequest.EventItemOccurrenceId );
+            
+                // figure out if this promo should be using single "Campus" or multiple "Campuses"
+                var campusObj = new CampusService( rockContext ).Get( ddlCampus.SelectedValue.AsInteger( ) );
+            
+                bool multiCampus = PromotionsUtil.IsContentChannelMultiCampus( promoRequest.ContentChannel.Id );
 
-                // the only difference will be the key
-                if( multiCampus )
+                // the campus attribute type (multi or single), along with the event's campus,
+                // will determine how we setup the data
+
+                // if it's multi-campus, and the event is an all-campus event
+                if ( multiCampus && eventItem.Campus == null )
                 {
-                    campusAttributeGuid = Rock.SystemGuid.FieldType.CAMPUSES;
+                    // throw up the dialog so they can decide.
+                    HandleMultiCampusPromotion( promoRequest );
                 }
                 else
                 {
-                    campusAttributeGuid = Rock.SystemGuid.FieldType.CAMPUS;
+                    // otherwise, it's either a single-campus event and a multi-campus promo type,
+                    // or it's a single campus promo type.
+                    string campusAttributeGuid = string.Empty;
+                    string campusGuids = campusObj.Guid.ToString();
+
+                    // the only difference will be the key
+                    if ( multiCampus )
+                    {
+                        campusAttributeGuid = Rock.SystemGuid.FieldType.CAMPUSES;
+                    }
+                    else
+                    {
+                        campusAttributeGuid = Rock.SystemGuid.FieldType.CAMPUS;
+                    }
+
+                    PromotionsUtil.CreatePromotionOccurrence( promoRequest.ContentChannel.Id,
+                                                              promoRequest.ContentChannel.ContentChannelTypeId,
+                                                              dpTargetPromoDate.SelectedDate.HasValue ? dpTargetPromoDate.SelectedDate.Value : DateTime.Now,
+                                                              CurrentPersonAliasId,
+                                                              eventItem.EventItem.Name,
+                                                              BuildPromoContent( eventItem ),
+                                                              campusAttributeGuid,
+                                                              campusGuids,
+                                                              promoRequest.Id );
+
+                    BindGrid();
                 }
-                
-                PromotionsUtil.CreatePromotionOccurrence( promoRequest.ContentChannel.Id, 
-                                                          promoRequest.ContentChannel.ContentChannelTypeId, 
-                                                          dpTargetPromoDate.SelectedDate.HasValue ? dpTargetPromoDate.SelectedDate.Value : DateTime.Now, 
-                                                          CurrentPersonAliasId, 
-                                                          eventItem.EventItem.Name,
-                                                          BuildPromoContent( eventItem ),
-                                                          campusAttributeGuid,
-                                                          campusGuids,
-                                                          promoRequest.Id );
-
-
+            }
+            else
+            {
                 BindGrid();
             }
         }
@@ -391,36 +400,42 @@ namespace RockWeb.Plugins.church_ccv.Promotions
             // grab the item that was clicked
             PromotionRequest promoRequest = promoService.Get( hfPromoRequestId.Value.AsInteger( ) );
 
-            // get the event item linked to the request
-            RockContext rockContext = new RockContext( );
-            EventItemOccurrenceService eventService = new EventItemOccurrenceService( rockContext );
-            var eventItem = eventService.Get( promoRequest.EventItemOccurrenceId );
-
-            string campusGuids = string.Empty;
-            foreach( RockCheckBox checkBox in mdCampusSelect.ControlsOfTypeRecursive<RockCheckBox>( ) )
+            // make sure it doesn't already exist, which could happen if they double-click by mistake.
+            IQueryable<PromotionOccurrence> promoOccurrQuery = new PromotionsService<PromotionOccurrence>( promoContext ).Queryable( );
+            var promoOccurr = promoOccurrQuery.Where( po => po.PromotionRequestId == promoRequest.Id ).SingleOrDefault( );
+            if( promoOccurr == null )
             {
-                // if its enabled AND checked, they clicked it.
-                if( checkBox.Enabled == true && checkBox.Checked == true )
+                // get the event item linked to the request
+                RockContext rockContext = new RockContext( );
+                EventItemOccurrenceService eventService = new EventItemOccurrenceService( rockContext );
+                var eventItem = eventService.Get( promoRequest.EventItemOccurrenceId );
+
+                string campusGuids = string.Empty;
+                foreach( RockCheckBox checkBox in mdCampusSelect.ControlsOfTypeRecursive<RockCheckBox>( ) )
                 {
-                    campusGuids += checkBox.ID + ",";
+                    // if its enabled AND checked, they clicked it.
+                    if( checkBox.Enabled == true && checkBox.Checked == true )
+                    {
+                        campusGuids += checkBox.ID + ",";
+                    }
                 }
+
+                // remove the trailing comma
+                campusGuids = campusGuids.Substring( 0, campusGuids.Length - 1 );
+
+                // create the combined promo occurrence
+                PromotionsUtil.CreatePromotionOccurrence( promoRequest.ContentChannel.Id, 
+                                                          promoRequest.ContentChannel.ContentChannelTypeId, 
+                                                          dpTargetPromoDate.SelectedDate.HasValue ? dpTargetPromoDate.SelectedDate.Value : DateTime.Now, 
+                                                          CurrentPersonAliasId, 
+                                                          eventItem.EventItem.Name,
+                                                          BuildPromoContent( eventItem ),
+                                                          Rock.SystemGuid.FieldType.CAMPUSES,
+                                                          campusGuids,
+                                                          promoRequest.Id );
             }
 
-            // remove the trailing comma
-            campusGuids = campusGuids.Substring( 0, campusGuids.Length - 1 );
-
-            // create the combined promo occurrence
-            PromotionsUtil.CreatePromotionOccurrence( promoRequest.ContentChannel.Id, 
-                                                      promoRequest.ContentChannel.ContentChannelTypeId, 
-                                                      dpTargetPromoDate.SelectedDate.HasValue ? dpTargetPromoDate.SelectedDate.Value : DateTime.Now, 
-                                                      CurrentPersonAliasId, 
-                                                      eventItem.EventItem.Name,
-                                                      BuildPromoContent( eventItem ),
-                                                      Rock.SystemGuid.FieldType.CAMPUSES,
-                                                      campusGuids,
-                                                      promoRequest.Id );
-
-            mdCampusSelect.Hide( );
+            mdCampusSelect.Hide();
             BindGrid( );
 
         }
