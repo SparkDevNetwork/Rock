@@ -28,10 +28,10 @@ using System.Reflection;
 namespace Rock.Transactions
 {
     /// <summary>
-    /// Writes any entity chnages that are configured to be tracked
+    /// Launches a workflow and optionally sets the name and attribute values
     /// </summary>
-    public class LaunchWorkflowTransaction<T> : ITransaction
-        where T : Rock.Data.Entity<T>, new()
+    /// <seealso cref="Rock.Transactions.ITransaction" />
+    public class LaunchWorkflowTransaction : ITransaction
     {
         /// <summary>
         /// Gets or sets the workflow type unique identifier.
@@ -39,15 +39,15 @@ namespace Rock.Transactions
         /// <value>
         /// The workflow type unique identifier.
         /// </value>
-        public Guid WorkflowTypeGuid { get; set; }
+        public Guid? WorkflowTypeGuid { get; set; }
 
         /// <summary>
-        /// Gets or sets the entity identifier.
+        /// Gets or sets the workflow type identifier.
         /// </summary>
         /// <value>
-        /// The entity identifier.
+        /// The workflow type identifier.
         /// </value>
-        public int? EntityId { get; set; }
+        public int? WorkflowTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the workflow.
@@ -58,47 +58,160 @@ namespace Rock.Transactions
         public string WorkflowName { get; set; }
 
         /// <summary>
+        /// Gets or sets the workflow attribute values.
+        /// </summary>
+        /// <value>
+        /// The workflow attribute values.
+        /// </value>
+        public Dictionary<string, string> WorkflowAttributeValues { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="LaunchWorkflowTransaction"/> class.
         /// </summary>
         /// <param name="workflowTypeGuid">The workflow type unique identifier.</param>
         public LaunchWorkflowTransaction( Guid workflowTypeGuid )
         {
             WorkflowTypeGuid = workflowTypeGuid;
+            WorkflowAttributeValues = new Dictionary<string, string>();
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LaunchWorkflowTransaction"/> class.
         /// </summary>
         /// <param name="workflowTypeGuid">The workflow type unique identifier.</param>
-        /// <param name="entityId">The entity identifier.</param>
-        public LaunchWorkflowTransaction( Guid workflowTypeGuid, int entityId ) : this( workflowTypeGuid )
+        /// <param name="workflowName">Name of the workflow.</param>
+        public LaunchWorkflowTransaction( Guid workflowTypeGuid, string workflowName ) : this( workflowTypeGuid )
         {
-            EntityId = entityId;
+            WorkflowName = workflowName;
         }
 
         /// <summary>
-        /// Execute method to write transaction to the database.
+        /// Initializes a new instance of the <see cref="LaunchWorkflowTransaction"/> class.
+        /// </summary>
+        /// <param name="workflowTypeId">The workflow type identifier.</param>
+        public LaunchWorkflowTransaction( int workflowTypeId )
+        {
+            WorkflowTypeId = workflowTypeId;
+            WorkflowAttributeValues = new Dictionary<string, string>();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LaunchWorkflowTransaction"/> class.
+        /// </summary>
+        /// <param name="workflowTypeId">The workflow type identifier.</param>
+        /// <param name="workflowName">Name of the workflow.</param>
+        public LaunchWorkflowTransaction( int workflowTypeId, string workflowName ) : this( workflowTypeId )
+        {
+            WorkflowName = workflowName;
+        }
+
+        /// <summary>
+        /// Executes this instance.
         /// </summary>
         public void Execute()
         {
-            T entity = GetEntity();
-
             using ( var rockContext = new RockContext() )
             {
                 var workflowTypeService = new WorkflowTypeService( rockContext );
-                var workflowType = workflowTypeService.Get( WorkflowTypeGuid );
+                WorkflowType workflowType = null;
+
+                if ( WorkflowTypeGuid.HasValue )
+                {
+                    workflowType = workflowTypeService.Get( WorkflowTypeGuid.Value );
+                }
+
+                if ( workflowType == null && WorkflowTypeId.HasValue )
+                {
+                    workflowType = workflowTypeService.Get( WorkflowTypeId.Value );
+                }
 
                 if ( workflowType != null )
                 {
                     var workflow = Rock.Model.Workflow.Activate( workflowType, WorkflowName );
 
+                    foreach( var keyVal in WorkflowAttributeValues )
+                    {
+                        workflow.SetAttributeValue( keyVal.Key, keyVal.Value );
+                    }
+
                     List<string> workflowErrors;
-                    new Rock.Model.WorkflowService( rockContext ).Process( workflow, entity, out workflowErrors );
+                    new Rock.Model.WorkflowService( rockContext ).Process( workflow, GetEntity(), out workflowErrors );
                 }
             }
         }
 
-        private T GetEntity()
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <returns></returns>
+        public virtual IEntity GetEntity()
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Writes any entity chnages that are configured to be tracked
+    /// </summary>
+    public class LaunchWorkflowTransaction<T> : LaunchWorkflowTransaction
+    where T : Rock.Data.Entity<T>, new()
+    {
+
+        /// <summary>
+        /// Gets or sets the entity identifier.
+        /// </summary>
+        /// <value>
+        /// The entity identifier.
+        /// </value>
+        public int? EntityId { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LaunchWorkflowTransaction{T}"/> class.
+        /// </summary>
+        /// <param name="workflowTypeGuid">The workflow type unique identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        public LaunchWorkflowTransaction( Guid workflowTypeGuid, int entityId ) : base( workflowTypeGuid )
+        {
+            EntityId = entityId;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LaunchWorkflowTransaction{T}"/> class.
+        /// </summary>
+        /// <param name="workflowTypeGuid">The workflow type unique identifier.</param>
+        /// <param name="workflowName">Name of the workflow.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        public LaunchWorkflowTransaction( Guid workflowTypeGuid, string workflowName, int entityId ) : base( workflowTypeGuid, workflowName )
+        {
+            EntityId = entityId;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LaunchWorkflowTransaction{T}"/> class.
+        /// </summary>
+        /// <param name="workflowTypeId">The workflow type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        public LaunchWorkflowTransaction( int workflowTypeId, int entityId ) : base( workflowTypeId )
+        {
+            EntityId = entityId;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LaunchWorkflowTransaction{T}"/> class.
+        /// </summary>
+        /// <param name="workflowTypeId">The workflow type identifier.</param>
+        /// <param name="workflowName">Name of the workflow.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        public LaunchWorkflowTransaction( int workflowTypeId, string workflowName, int entityId ) : base( workflowTypeId, workflowName )
+        {
+            EntityId = entityId;
+        }
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <returns></returns>
+        public override IEntity GetEntity()
         {
             T entity = null;
 
@@ -114,7 +227,6 @@ namespace Rock.Transactions
             }
 
             return entity;
-
         }
     }
 }
