@@ -191,6 +191,10 @@
     <Compile Include="Migrations\201604062309433_LessPages.Designer.cs">
       <DependentUpon>201604062309433_LessPages.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201604121843407_HistoryRelatedData.cs" />
+    <Compile Include="Migrations\201604121843407_HistoryRelatedData.Designer.cs">
+      <DependentUpon>201604121843407_HistoryRelatedData.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.cs" />
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.Designer.cs">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
@@ -2177,6 +2181,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201604062309433_LessPages.resx">
       <DependentUpon>201604062309433_LessPages.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201604121843407_HistoryRelatedData.resx">
+      <DependentUpon>201604121843407_HistoryRelatedData.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.resx">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
