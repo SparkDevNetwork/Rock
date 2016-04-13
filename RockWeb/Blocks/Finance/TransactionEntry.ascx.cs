@@ -1660,8 +1660,8 @@ namespace RockWeb.Blocks.Finance
                         return false;
                     }
 
-                    paymentDetail = scheduledTransaction.FinancialPaymentDetail.Clone( false );
                     SaveScheduledTransaction( financialGateway, gateway, person, paymentInfo, schedule, scheduledTransaction, rockContext );
+                    paymentDetail = scheduledTransaction.FinancialPaymentDetail.Clone( false );
                 }
                 else
                 {
