@@ -196,7 +196,39 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
-                _cancelLink.Visible= value;
+                _cancelLink.Visible = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [close link visible].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [close link visible]; otherwise, <c>false</c>.
+        /// </value>
+        public bool CloseLinkVisible
+        {
+            get
+            {
+                EnsureChildControls();
+                return _closeLink.Visible;
+            }
+            set
+            {
+                EnsureChildControls();
+                _closeLink.Visible = value;
+            }
+        }
+
+        /// <summary>
+        /// Header panel control
+        /// </summary>
+        public Panel Header
+        {
+            get
+            {
+                EnsureChildControls();
+                return _headerPanel;
             }
         }
 
@@ -217,6 +249,18 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 return _contentPanel;
+            }
+        }
+
+        /// <summary>
+        /// Footer panel control
+        /// </summary>
+        public Panel Footer
+        {
+            get
+            {
+                EnsureChildControls();
+                return _footerPanel;
             }
         }
 

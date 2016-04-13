@@ -197,16 +197,36 @@ namespace Rock.Model
         {
             if ( changes != null )
             {
-                History.EvaluateChange( changes, "Account Number", AccountNumberMasked, paymentInfo.MaskedNumber );
-                History.EvaluateChange( changes, "Currency Type", DefinedValueCache.GetName( CurrencyTypeValueId ),
-                    paymentInfo.CurrencyTypeValue != null ? paymentInfo.CurrencyTypeValue.Value : string.Empty );
-                History.EvaluateChange( changes, "Credit Card Type", DefinedValueCache.GetName( CreditCardTypeValueId ),
-                    paymentInfo.CreditCardTypeValue != null ? paymentInfo.CreditCardTypeValue.Value : string.Empty );
+                if ( !string.IsNullOrWhiteSpace( paymentInfo.MaskedNumber ) )
+                {
+                    History.EvaluateChange( changes, "Account Number", AccountNumberMasked, paymentInfo.MaskedNumber );
+                }
+
+                if ( paymentInfo.CurrencyTypeValue != null )
+                {
+                    History.EvaluateChange( changes, "Currency Type", DefinedValueCache.GetName( CurrencyTypeValueId ), paymentInfo.CurrencyTypeValue.Value );
+                }
+
+                if ( paymentInfo.CreditCardTypeValue != null )
+                {
+                    History.EvaluateChange( changes, "Credit Card Type", DefinedValueCache.GetName( CreditCardTypeValueId ), paymentInfo.CreditCardTypeValue.Value );
+                }
             }
 
-            AccountNumberMasked = paymentInfo.MaskedNumber;
-            CurrencyTypeValueId = paymentInfo.CurrencyTypeValue != null ? paymentInfo.CurrencyTypeValue.Id : (int?)null;
-            CreditCardTypeValueId = paymentInfo.CreditCardTypeValue != null ? paymentInfo.CreditCardTypeValue.Id : (int?)null;
+            if ( !string.IsNullOrWhiteSpace( paymentInfo.MaskedNumber ) )
+            {
+                AccountNumberMasked = paymentInfo.MaskedNumber;
+            }
+
+            if ( paymentInfo.CurrencyTypeValue != null )
+            {
+                CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
+            }
+
+            if ( paymentInfo.CreditCardTypeValue != null )
+            {
+                CreditCardTypeValueId = paymentInfo.CreditCardTypeValue.Id;
+            }
 
             if ( paymentInfo is CreditCardPaymentInfo )
             {

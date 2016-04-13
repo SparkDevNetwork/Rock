@@ -75,17 +75,13 @@ namespace Rock.Model
                     // Location Filter
                     if ( locationIds.Any() )
                     {
-                        qry = qry.Where( a =>
-                            a.LocationId.HasValue &&
-                            locationIds.Contains( a.LocationId.Value ) );
+                        qry = qry.Where( a => locationIds.Contains( a.LocationId ?? 0 ) );
                     }
 
                     // Schedule Filter
                     if ( scheduleIds.Any() )
                     {
-                        qry = qry.Where( a =>
-                            a.ScheduleId.HasValue &&
-                            scheduleIds.Contains( a.ScheduleId.Value ) );
+                        qry = qry.Where( a => scheduleIds.Contains( a.ScheduleId ?? 0 ) );
                     }
 
                     // Get the unique combination of location/schedule/date for the selected group

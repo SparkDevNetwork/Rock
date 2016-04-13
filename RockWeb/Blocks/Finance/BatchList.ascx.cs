@@ -363,9 +363,9 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void gBatchList_GridRebind( object sender, EventArgs e )
+        private void gBatchList_GridRebind( object sender, GridRebindEventArgs e )
         {
-            BindGrid();
+            BindGrid( e.IsExporting );
         }
 
         /// <summary>
@@ -505,8 +505,29 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Binds the grid.
         /// </summary>
-        private void BindGrid()
+        private void BindGrid( bool isExporting = false )
         {
+
+            var txnCountCol = gBatchList.ColumnsOfType<RockBoundField>().FirstOrDefault( c => c.DataField == "TransactionCount" );
+            if ( txnCountCol != null )
+            {
+                txnCountCol.HeaderText = isExporting ? "Transaction Count" :
+                    "<span class='hidden-print'>Transaction Count</span><span class='visible-print-inline'>Txns</span>";
+            }
+
+            var txnAmountCol = gBatchList.ColumnsOfType<CurrencyField>().FirstOrDefault( c => c.DataField == "TransactionAmount" );
+            if ( txnAmountCol != null )
+            {
+                txnAmountCol.HeaderText = isExporting ? "Transaction Amount" :
+                    "<span class='hidden-print'>Transaction Total</span><span class='visible-print-inline'>Txn Total</span>";
+            }
+
+            var accountsCol = gBatchList.ColumnsOfType<RockBoundField>().FirstOrDefault( c => c.HeaderText == "Accounts" );
+            if ( accountsCol != null )
+            {
+                accountsCol.DataField = isExporting ? "AccountSummaryText" : "AccountSummaryHtml";
+            }
+
             try
             {
                 var qry = GetQuery().AsNoTracking();
@@ -726,6 +747,16 @@ namespace RockWeb.Blocks.Finance
             }
 
             public string AccountSummaryText
+            {
+                get
+                {
+                    var summary = new List<string>();
+                    AccountSummaryList.ForEach( a => summary.Add( a.ToString() ) );
+                    return summary.AsDelimited( Environment.NewLine );
+                }
+            }
+
+            public string AccountSummaryHtml
             {
                 get
                 {

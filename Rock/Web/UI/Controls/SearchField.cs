@@ -24,6 +24,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Security;
 
 namespace Rock.Web.UI.Controls
 {
@@ -58,13 +59,22 @@ namespace Rock.Web.UI.Controls
             hfFilter.ID = this.ID + "_hSearchFilter";
 
             var searchExtensions = new Dictionary<string,Tuple<string, string>>();
-            foreach ( KeyValuePair<int, Lazy<Rock.Search.SearchComponent, Rock.Extension.IComponentData>> service in Rock.Search.SearchContainer.Instance.Components )
+
+            var rockPage = this.Page as RockPage;
+            if ( rockPage != null )
             {
-                if ( !service.Value.Value.AttributeValues.ContainsKey( "Active" ) || bool.Parse( service.Value.Value.AttributeValues["Active"].Value ) )
+                foreach ( KeyValuePair<int, Lazy<Rock.Search.SearchComponent, Rock.Extension.IComponentData>> service in Rock.Search.SearchContainer.Instance.Components )
                 {
-                    searchExtensions.Add( service.Key.ToString(), Tuple.Create<string, string>( service.Value.Value.SearchLabel, service.Value.Value.ResultUrl ) );
-                    if ( string.IsNullOrWhiteSpace( hfFilter.Value ) )
-                        hfFilter.Value = service.Key.ToString();
+                    var searchComponent = service.Value.Value;
+                    if ( searchComponent.IsAuthorized( Authorization.VIEW, rockPage.CurrentPerson ) )
+                    {
+                        if ( !searchComponent.AttributeValues.ContainsKey( "Active" ) || bool.Parse( searchComponent.AttributeValues["Active"].Value ) )
+                        {
+                            searchExtensions.Add( service.Key.ToString(), Tuple.Create<string, string>( searchComponent.SearchLabel, searchComponent.ResultUrl ) );
+                            if ( string.IsNullOrWhiteSpace( hfFilter.Value ) )
+                                hfFilter.Value = service.Key.ToString();
+                        }
+                    }
                 }
             }
 
