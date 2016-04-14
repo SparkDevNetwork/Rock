@@ -3015,7 +3015,10 @@ namespace RockWeb.Blocks.Event
 
             pnlRegistrarInfo.Visible = CurrentPanel == 2;
             pnlRegistrantsReview.Visible = CurrentPanel == 2;
-            pnlCostAndFees.Visible = CurrentPanel == 2;
+            if ( CurrentPanel != 2 )
+            {
+                pnlCostAndFees.Visible = false;
+            }
 
             lbSummaryPrev.Visible = CurrentPanel == 2;
             lbSummaryNext.Visible = CurrentPanel == 2;
@@ -4341,6 +4344,7 @@ namespace RockWeb.Blocks.Event
                     RegistrationState.TotalCost = 0.0m;
                     RegistrationState.DiscountedCost = 0.0m;
                     pnlCostAndFees.Visible = false;
+                    pnlPaymentInfo.Visible = false;
                 }
             }
         }
