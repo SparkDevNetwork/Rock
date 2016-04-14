@@ -4088,9 +4088,9 @@ namespace RockWeb.Blocks.Event
                     }
                     else
                     {
-                        tbYourFirstName.Text = string.Empty;
-                        tbYourLastName.Text = string.Empty;
-                        tbConfirmationEmail.Text = string.Empty;
+                        tbYourFirstName.Text = ( RegistrationState.Registrants.First().GetPersonFieldValue( RegistrationTemplate, RegistrationPersonFieldType.FirstName ) ?? "" ).ToString();
+                        tbYourLastName.Text = ( RegistrationState.Registrants.First().GetPersonFieldValue( RegistrationTemplate, RegistrationPersonFieldType.LastName ) ?? "" ).ToString();
+                        tbConfirmationEmail.Text = ( RegistrationState.Registrants.First().GetPersonFieldValue( RegistrationTemplate, RegistrationPersonFieldType.Email ) ?? "" ).ToString();
                     }
                 }
 
