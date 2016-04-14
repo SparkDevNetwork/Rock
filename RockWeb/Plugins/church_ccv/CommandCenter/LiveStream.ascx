@@ -32,7 +32,7 @@
             // the newest version of the httpstreaming plugin is unreliable when passing clip duration parameters.
             flowplayer('<%# Eval("[0]") %>', "/Plugins/church_ccv/CommandCenter/Assets/flowplayer.commercial-3.2.9.swf",
                 {
-                    key: '#$392ba7eb81984ddb47a',
+                    key: '#$84e16c60f53faa547a5',
                     plugins: {
                         controls: {
                             time: false,
