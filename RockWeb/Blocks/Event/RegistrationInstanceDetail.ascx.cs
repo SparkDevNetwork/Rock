@@ -129,6 +129,11 @@ namespace RockWeb.Blocks.Event
             gRegistrations.GridRebind += gRegistrations_GridRebind;
             gRegistrations.ShowConfirmDeleteDialog = false;
 
+            ddlInGroup.Items.Clear();
+            ddlInGroup.Items.Add( new ListItem());
+            ddlInGroup.Items.Add( new ListItem( "Yes", "Yes" ) );
+            ddlInGroup.Items.Add( new ListItem( "No", "No" ) );
+            
             fRegistrants.ApplyFilterClick += fRegistrants_ApplyFilterClick;
             gRegistrants.DataKeyNames = new string[] { "Id" };
             gRegistrants.Actions.ShowAdd = true;
@@ -730,6 +735,7 @@ namespace RockWeb.Blocks.Event
             fRegistrants.SaveUserPreference( "Date Range", drpRegistrantDateRange.DelimitedValues );
             fRegistrants.SaveUserPreference( "First Name", tbRegistrantFirstName.Text );
             fRegistrants.SaveUserPreference( "Last Name", tbRegistrantLastName.Text );
+            fRegistrants.SaveUserPreference( "In Group", ddlInGroup.SelectedValue );
 
             if ( RegistrantFields != null )
             {
@@ -901,6 +907,11 @@ namespace RockWeb.Blocks.Event
                         {
                             e.Value = string.Empty;
                         }
+                        break;
+                    }
+                case "In Group":
+                    {
+                        e.Value = e.Value;
                         break;
                     }
                 default:
@@ -2008,6 +2019,7 @@ namespace RockWeb.Blocks.Event
             drpRegistrantDateRange.DelimitedValues = fRegistrants.GetUserPreference( "Date Range" );
             tbRegistrantFirstName.Text = fRegistrants.GetUserPreference( "First Name" );
             tbRegistrantLastName.Text = fRegistrants.GetUserPreference( "Last Name" );
+            ddlInGroup.SetValue( fRegistrants.GetUserPreference( "In Group" ) );
         }
 
         /// <summary>
@@ -2057,6 +2069,15 @@ namespace RockWeb.Blocks.Event
                         string rlname = tbRegistrantLastName.Text;
                         qry = qry.Where( r =>
                             r.PersonAlias.Person.LastName.StartsWith( rlname ) );
+                    }
+
+                    if ( ddlInGroup.SelectedValue.AsBooleanOrNull() == true )
+                    {
+                        qry = qry.Where( r => r.GroupMemberId.HasValue );
+                    }
+                    else if ( ddlInGroup.SelectedValue.AsBooleanOrNull() == false )
+                    {
+                        qry = qry.Where( r => !r.GroupMemberId.HasValue );
                     }
 
                     bool preloadCampusValues = false;
