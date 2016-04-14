@@ -36,46 +36,7 @@ WITH people AS (
 		AND p.IsDeceased = @false
 		AND p.RecordStatusValueId = @rstActive
 		AND gm.GroupMemberStatus = @gmsActive
-), lastAttendance AS (
-	SELECT
-		cp.PersonId,
-		MAX(CONVERT(DATE, a.StartDateTime)) AS LastAttendanceDate
-	FROM
-		Attendance a
-		JOIN people cp ON cp.AliasId = a.PersonAliasId
-	WHERE
-		a.DidAttend = 1
-	GROUP BY
-		cp.PersonId
-), volunteerActivity AS (
-	SELECT
-		cp.PersonId,
-		MAX(CONVERT(DATE, a.StartDateTime)) AS LastAttendanceDate
-	FROM
-		Attendance a
-		JOIN people cp ON cp.AliasId = a.PersonAliasId
-		JOIN [Group] g ON a.GroupId = g.Id
-		JOIN GroupType gt ON gt.Id = g.GroupTypeId
-	WHERE
-		a.DidAttend = 1
-		AND gt.Name LIKE '%Volunteer'
-	GROUP BY
-		cp.PersonId
-), participantActivity AS (
-	SELECT
-		cp.PersonId,
-		MAX(CONVERT(DATE, a.StartDateTime)) AS LastAttendanceDate
-	FROM
-		Attendance a
-		JOIN people cp ON cp.AliasId = a.PersonAliasId
-		JOIN [Group] g ON a.GroupId = g.Id
-		JOIN GroupType gt ON gt.Id = g.GroupTypeId
-	WHERE
-		a.DidAttend = 1
-		AND gt.Name NOT LIKE '%Volunteer'
-	GROUP BY
-		cp.PersonId
-), givingActivity AS (
+), famGivingActivity AS (
 	SELECT
 		cp.FamilyId,
 		MAX(CONVERT(DATE, ft.TransactionDateTime)) AS LastGiftDate
@@ -84,7 +45,7 @@ WITH people AS (
 		JOIN people cp ON cp.AliasId = ft.AuthorizedPersonAliasId
 	GROUP BY
 		cp.FamilyId
-), kidspring AS (
+), famKidspring AS (
 	SELECT
 		cp.FamilyId,
 		MAX(CONVERT(DATE, a.StartDateTime)) AS LastAttendanceDate
@@ -97,7 +58,7 @@ WITH people AS (
 		gt.Name IN ('Elementary Attendee', 'Nursery Attendee', 'Preschool Attendee', 'Special Needs Attendee')
 	GROUP BY
 		cp.FamilyId
-), fuse AS (
+), famFuse AS (
 	SELECT
 		cp.FamilyId,
 		MAX(CONVERT(DATE, a.StartDateTime)) AS LastAttendanceDate
@@ -110,7 +71,7 @@ WITH people AS (
 		gt.Name IN ('Fuse Group', 'Fuse Attendee')
 	GROUP BY
 		cp.FamilyId
-), staff AS (
+), famStaff AS (
 	SELECT
 		cp.FamilyId,
 		1 AS IsStaff
@@ -124,12 +85,61 @@ WITH people AS (
 		AND gm.GroupMemberStatus = @gmsActive
 	GROUP BY
 		cp.FamilyId
+), adultsWithEmails AS (
+	SELECT
+		*
+	FROM
+		people p
+	WHERE
+		p.Email IS NOT NULL
+		AND LEN(LTRIM(RTRIM(p.Email))) > 0
+		AND (p.BirthDate IS NULL OR p.BirthDate <= DATEADD(YEAR, -18, GETDATE()))
+		AND p.FamilyRole = @gtrAdult
+), lastAttendance AS (
+	SELECT
+		cp.PersonId,
+		MAX(CONVERT(DATE, a.StartDateTime)) AS LastAttendanceDate
+	FROM
+		Attendance a
+		JOIN adultsWithEmails cp ON cp.AliasId = a.PersonAliasId
+	WHERE
+		a.DidAttend = 1
+	GROUP BY
+		cp.PersonId
+), volunteerActivity AS (
+	SELECT
+		cp.PersonId,
+		MAX(CONVERT(DATE, a.StartDateTime)) AS LastAttendanceDate
+	FROM
+		Attendance a
+		JOIN adultsWithEmails cp ON cp.AliasId = a.PersonAliasId
+		JOIN [Group] g ON a.GroupId = g.Id
+		JOIN GroupType gt ON gt.Id = g.GroupTypeId
+	WHERE
+		a.DidAttend = 1
+		AND gt.Name LIKE '%Volunteer'
+	GROUP BY
+		cp.PersonId
+), participantActivity AS (
+	SELECT
+		cp.PersonId,
+		MAX(CONVERT(DATE, a.StartDateTime)) AS LastAttendanceDate
+	FROM
+		Attendance a
+		JOIN adultsWithEmails cp ON cp.AliasId = a.PersonAliasId
+		JOIN [Group] g ON a.GroupId = g.Id
+		JOIN GroupType gt ON gt.Id = g.GroupTypeId
+	WHERE
+		a.DidAttend = 1
+		AND gt.Name NOT LIKE '%Volunteer'
+	GROUP BY
+		cp.PersonId
 ), care AS (
 	SELECT
 		p.PersonId,
 		MAX(CONVERT(DATE, n.CreatedDateTime)) AS CareDate
 	FROM
-		people p
+		adultsWithEmails p
 		JOIN Note n ON n.EntityId = p.PersonId
 		JOIN NoteType nt ON nt.Id = n.NoteTypeId
 	WHERE
@@ -142,7 +152,7 @@ WITH people AS (
 		p.PersonId,
 		MAX(CONVERT(DATE, av.ValueAsDateTime)) AS BaptismDate
 	FROM
-		people p
+		adultsWithEmails p
 		JOIN AttributeValue av ON p.PersonId = av.EntityId
 		JOIN Attribute a ON a.Id = av.AttributeId
 	WHERE
@@ -155,7 +165,7 @@ WITH people AS (
 		p.PersonId,
 		MAX(CONVERT(DATE, av.ValueAsDateTime)) AS SalvationDate
 	FROM
-		people p
+		adultsWithEmails p
 		JOIN AttributeValue av ON p.PersonId = av.EntityId
 		JOIN Attribute a ON a.Id = av.AttributeId
 	WHERE
@@ -169,7 +179,7 @@ WITH people AS (
 		MAX(CONVERT(DATE, a.StartDateTime)) AS LastAttendanceDate
 	FROM
 		Attendance a
-		JOIN people cp ON cp.AliasId = a.PersonAliasId
+		JOIN adultsWithEmails cp ON cp.AliasId = a.PersonAliasId
 		JOIN [Group] g ON a.GroupId = g.Id
 	WHERE
 		g.Name = 'VIP Room Attendee'
@@ -199,14 +209,14 @@ WITH people AS (
 				) AS value(v)
 		) as MostRecentActivity
 	FROM
-		people p
+		adultsWithEmails p
 		LEFT JOIN lastAttendance la ON la.PersonId = p.PersonId
 		LEFT JOIN volunteerActivity va ON va.PersonId = p.PersonId
 		LEFT JOIN participantActivity pa ON pa.PersonId = p.PersonId
-		LEFT JOIN givingActivity ga ON ga.FamilyId = p.FamilyId
-		LEFT JOIN fuse f ON f.FamilyId = p.FamilyId
-		LEFT JOIN kidspring k ON k.FamilyId = p.FamilyId
-		LEFT JOIN staff s ON p.FamilyId = s.FamilyId
+		LEFT JOIN famGivingActivity ga ON ga.FamilyId = p.FamilyId
+		LEFT JOIN famFuse f ON f.FamilyId = p.FamilyId
+		LEFT JOIN famKidspring k ON k.FamilyId = p.FamilyId
+		LEFT JOIN famStaff s ON p.FamilyId = s.FamilyId
 		LEFT JOIN care c ON c.PersonId = p.PersonId
 		LEFT JOIN baptism b ON b.PersonId = p.PersonId
 		LEFT JOIN salavation sal ON sal.PersonId = p.PersonId
@@ -236,23 +246,19 @@ SELECT
 	ISNULL(CONVERT(NVARCHAR(10), v.LastAttendanceDate), '') AS [Most Recent VIP Date],
 	CASE WHEN MAX(s.IsStaff) = 1 THEN '1' ELSE '' END AS [Is Staff]
 FROM
-	people p
+	adultsWithEmails p
 	LEFT JOIN lastAttendance la ON la.PersonId = p.PersonId
 	LEFT JOIN activityAggregate aa ON aa.PersonId = p.PersonId
 	LEFT JOIN volunteerActivity va ON va.PersonId = p.PersonId
 	LEFT JOIN participantActivity pa ON pa.PersonId = p.PersonId
-	LEFT JOIN givingActivity ga ON ga.FamilyId = p.FamilyId
-	LEFT JOIN fuse f ON f.FamilyId = p.FamilyId
-	LEFT JOIN kidspring k ON k.FamilyId = p.FamilyId
-	LEFT JOIN staff s ON s.FamilyId = p.FamilyId
+	LEFT JOIN famGivingActivity ga ON ga.FamilyId = p.FamilyId
+	LEFT JOIN famFuse f ON f.FamilyId = p.FamilyId
+	LEFT JOIN famKidspring k ON k.FamilyId = p.FamilyId
+	LEFT JOIN famStaff s ON s.FamilyId = p.FamilyId
 	LEFT JOIN care c ON c.PersonId = p.PersonId
 	LEFT JOIN vip v ON v.PersonId = p.PersonId
 WHERE
-	p.Email IS NOT NULL
-	AND LEN(LTRIM(RTRIM(p.Email))) > 0
-	AND (p.BirthDate IS NULL OR p.BirthDate <= DATEADD(YEAR, -18, GETDATE()))
-	AND p.FamilyRole = @gtrAdult
-	AND aa.MostRecentActivity > @minActivityDate
+	aa.MostRecentActivity > @minActivityDate
 GROUP BY
 	p.PersonId,
 	p.NickName,
