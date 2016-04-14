@@ -622,14 +622,13 @@ namespace RockWeb.Blocks.Groups
                         }
                     }
 
-                    string dataFieldExpression = attribute.Key;
-                    bool columnExists = gGroupMembers.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
+                    bool columnExists = gGroupMembers.Columns.OfType<AttributeField>().FirstOrDefault( a => a.AttributeId == attribute.Id ) != null;
                     if ( !columnExists )
                     {
                         AttributeField boundField = new AttributeField();
-                        boundField.DataField = dataFieldExpression;
+                        boundField.DataField = attribute.Key;
+                        boundField.AttributeId = attribute.Id;
                         boundField.HeaderText = attribute.Name;
-                        boundField.SortExpression = string.Empty;
 
                         var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
                         if ( attributeCache != null )
@@ -977,7 +976,7 @@ namespace RockWeb.Blocks.Groups
                     }
 
                     // Since we're not binding to actual group member list, but are using AttributeField columns,
-                    // we need to save the workflows into the grid's object list
+                    // we need to save the group members into the grid's object list
                     gGroupMembers.ObjectList = new Dictionary<string, object>();
                     groupMembersList.ForEach( m => gGroupMembers.ObjectList.Add( m.Id.ToString(), m ) );
                     gGroupMembers.EntityTypeId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid() ).Id;

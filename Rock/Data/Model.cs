@@ -191,6 +191,15 @@ namespace Rock.Data
         [RockClientInclude("If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true")]
         public virtual bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
+        /// <summary>
+        /// Gets or sets a field that can be used for custom sorting.
+        /// </summary>
+        /// <value>
+        /// The sort value.
+        /// </value>
+        [NotMapped]
+        public virtual object CustomSortValue { get; set; }
+
         #endregion
 
         #region Methods

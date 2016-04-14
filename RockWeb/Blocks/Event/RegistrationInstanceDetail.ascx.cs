@@ -2760,13 +2760,13 @@ namespace RockWeb.Blocks.Event
                         {
                             AttributeField boundField = new AttributeField();
                             boundField.DataField = dataFieldExpression;
+                            boundField.AttributeId = attribute.Id;
                             boundField.HeaderText = attribute.Name;
-                            boundField.SortExpression = string.Empty;
 
                             AttributeField boundField2 = new AttributeField();
                             boundField2.DataField = dataFieldExpression;
+                            boundField2.AttributeId = attribute.Id;
                             boundField2.HeaderText = attribute.Name;
-                            boundField2.SortExpression = string.Empty;
 
                             var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
                             if ( attributeCache != null )
