@@ -290,17 +290,20 @@ INCLUDE
     <script>
       var groupMap;
       Sys.Application.add_load(function(){
-        var mapHolder = document.getElementById('groupMap')
-        if (mapHolder) {
-          var mapPoint = [{
-            title: "{{ Group.Name }}",
-            lat: {{ groupgeo[0] }},
-            lng: {{ groupgeo[1] }}
-          }]
-          groupMap = new CCV.baseMap(mapHolder, mapPoint)
-          groupMap.useScrollZoom = false
-          groupMap.draw()
-        }
+        $(window).on('googleMapsIsLoaded', function(){
+          var mapHolder = document.getElementById('groupMap')
+          if (mapHolder) {
+            var mapPoint = [{
+              title: "{{ Group.Name }}",
+              lat: {{ groupgeo[0] }},
+              lng: {{ groupgeo[1] }}
+            }]
+            groupMap = new CCV.baseMap(mapHolder, mapPoint)
+            groupMap.useScrollZoom = false
+            groupMap.draw()
+          }
+        })
+        Rock.controls.util.loadGoogleMapsApi('https://maps.googleapis.com/maps/api/js?sensor=false')
       })
     </script>
   {% endif %}
