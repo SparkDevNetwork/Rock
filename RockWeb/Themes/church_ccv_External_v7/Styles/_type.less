@@ -33,9 +33,15 @@ h1, h2, h3, h4, h5, h6,
 }
 
 .text-large {
-  line-height: @line-height-base;
+  .text-aa();
+  line-height: floor((@font-size-large * 1.5));
   font-size: @font-size-large;
-  margin-bottom: 1em;
+  p, p& {
+    margin-bottom: (floor((@font-size-large * 1.5)) / 2);
+  }
+  @media @sm {
+    font-size: 1.2em;
+  }
 }
 
 .text-inverse {

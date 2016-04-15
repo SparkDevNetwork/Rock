@@ -1,0 +1,23 @@
+{% comment %}
+
+  {% assign detailPage = '/stories' %}
+  {% include '~~/Assets/Lava/StoryList.lava' %}
+
+{% endcomment %}
+
+{% assign detailPage = detailPage | Default: '/stories' %}
+
+<div class="container-md">
+  {% for item in Items %}
+    <a class="link-plain" href="{{ detailPage }}/{{ item.Slug }}"><h1 class="page-header">{{ item.Title }} <small>{{ item.StartDateTime | Date:'M/d/yyyy' }}</small></h1></a>
+    <div class="margin-b-md">
+      <a href="{{ item | Attribute: 'Image', 'Url' }}" class="lightbox">
+        <img src="{{ item | Attribute: 'Image', 'Url' }}&width=700" alt="{{ item.Title }}">
+      </a>
+    </div>
+    <p class="lead">{{ item.Summary }}</p>
+    <div class="text-large">
+      {{ item.Content }}
+    </div>
+  {% endfor %}
+</div>

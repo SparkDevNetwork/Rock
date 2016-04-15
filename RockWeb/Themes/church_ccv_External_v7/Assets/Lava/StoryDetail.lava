@@ -1,0 +1,11 @@
+{% comment %}
+
+  {% include '~~/Assets/Lava/StoryDetail.lava' %}
+
+{% endcomment %}
+
+{% assign item = Items | First %}
+{% capture pageTitle %}{{ item.Title }} - Stories | {{ 'Global' | Attribute:'OrganizationAbbreviation' }}{% endcapture %}
+{{ pageTitle | SetPageTitle }}
+
+{% include '~~/Assets/Lava/StoryList.lava' %}
