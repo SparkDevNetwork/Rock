@@ -520,7 +520,16 @@ namespace Rock.Field
                         }
                         else
                         {
-                            return string.Format( "{0} {1}", comparisonType.ConvertToString(), FormatFilterValueValue( configurationValues, filterValues[1] ) );
+                            var filterValueValue = FormatFilterValueValue( configurationValues, filterValues[1] );
+                            if ( ( comparisonType == ComparisonType.Contains || comparisonType == ComparisonType.DoesNotContain ) && string.IsNullOrEmpty( filterValueValue ) )
+                            {
+                                // if doing a 'Contains or NotContains', but the CompareValue is empty, there is nothing filtered, so just return String.Empty
+                                return string.Empty;
+                            }
+                            else
+                            {
+                                return string.Format( "{0} {1}", comparisonType.ConvertToString(), filterValueValue );
+                            }
                         }
                     }
                 }
