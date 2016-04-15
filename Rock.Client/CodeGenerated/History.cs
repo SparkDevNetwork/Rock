@@ -61,6 +61,9 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
+        public string RelatedData { get; set; }
+
+        /// <summary />
         public int? RelatedEntityId { get; set; }
 
         /// <summary />
@@ -113,6 +116,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.IsSystem = source.IsSystem;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.RelatedData = source.RelatedData;
             this.RelatedEntityId = source.RelatedEntityId;
             this.RelatedEntityTypeId = source.RelatedEntityTypeId;
             this.Summary = source.Summary;
