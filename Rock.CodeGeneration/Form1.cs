@@ -298,7 +298,7 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "// </auto-generated>" );
             sb.AppendLine( "//------------------------------------------------------------------------------" );
             sb.AppendLine( "// <copyright>" );
-            sb.AppendLine( "// Copyright 2013 by the Spark Development Network" );
+            sb.AppendLine( "// Copyright by the Spark Development Network" );
             sb.AppendLine( "//" );
             sb.AppendLine( "// Licensed under the Apache License, Version 2.0 (the \"License\");" );
             sb.AppendLine( "// you may not use this file except in compliance with the License." );
@@ -600,7 +600,7 @@ order by [parentTable], [columnName]
             sb.AppendLine( "// </auto-generated>" );
             sb.AppendLine( "//------------------------------------------------------------------------------" );
             sb.AppendLine( "// <copyright>" );
-            sb.AppendLine( "// Copyright 2013 by the Spark Development Network" );
+            sb.AppendLine( "// Copyright by the Spark Development Network" );
             sb.AppendLine( "//" );
             sb.AppendLine( "// Licensed under the Apache License, Version 2.0 (the \"License\");" );
             sb.AppendLine( "// you may not use this file except in compliance with the License." );
@@ -851,7 +851,7 @@ order by [parentTable], [columnName]
             sb.AppendLine( "// </auto-generated>" );
             sb.AppendLine( "//------------------------------------------------------------------------------" );
             sb.AppendLine( "// <copyright>" );
-            sb.AppendLine( "// Copyright 2013 by the Spark Development Network" );
+            sb.AppendLine( "// Copyright by the Spark Development Network" );
             sb.AppendLine( "//" );
             sb.AppendLine( "// Licensed under the Apache License, Version 2.0 (the \"License\");" );
             sb.AppendLine( "// you may not use this file except in compliance with the License." );
@@ -921,7 +921,7 @@ order by [parentTable], [columnName]
             sb.AppendLine( "// </auto-generated>" );
             sb.AppendLine( "//------------------------------------------------------------------------------" );
             sb.AppendLine( "// <copyright>" );
-            sb.AppendLine( "// Copyright 2013 by the Spark Development Network" );
+            sb.AppendLine( "// Copyright by the Spark Development Network" );
             sb.AppendLine( "//" );
             sb.AppendLine( "// Licensed under the Apache License, Version 2.0 (the \"License\");" );
             sb.AppendLine( "// you may not use this file except in compliance with the License." );
@@ -1024,7 +1024,7 @@ order by [parentTable], [columnName]
             sb.AppendLine( "// </auto-generated>" );
             sb.AppendLine( "//------------------------------------------------------------------------------" );
             sb.AppendLine( "// <copyright>" );
-            sb.AppendLine( "// Copyright 2013 by the Spark Development Network" );
+            sb.AppendLine( "// Copyright by the Spark Development Network" );
             sb.AppendLine( "//" );
             sb.AppendLine( "// Licensed under the Apache License, Version 2.0 (the \"License\");" );
             sb.AppendLine( "// you may not use this file except in compliance with the License." );
