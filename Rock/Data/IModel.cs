@@ -79,6 +79,14 @@ namespace Rock.Data
         PersonAlias ModifiedByPersonAlias { get; set; }
 
         /// <summary>
+        /// Gets or sets the custom sort value.
+        /// </summary>
+        /// <value>
+        /// The custom sort value.
+        /// </value>
+        object CustomSortValue { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the ModifiedByPersonAliasId value has already been 
         /// updated to reflect who/when model was updated. If this value is false (default) the framework will update 
         /// the value with the current user when the model is saved. Set this value to true if this automatic

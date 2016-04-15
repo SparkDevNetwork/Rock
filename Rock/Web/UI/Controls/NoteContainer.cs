@@ -676,7 +676,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
         }
-        
+
         /// <summary>
         /// Rebuilds the notes.
         /// </summary>
@@ -707,7 +707,7 @@ namespace Rock.Web.UI.Controls
             }
 
             _noteNew.EntityId = EntityId;
-            
+
             if ( ViewableNoteTypes != null && ViewableNoteTypes.Any() && EntityId.HasValue )
             {
                 using ( var rockContext = new RockContext() )
@@ -717,7 +717,7 @@ namespace Rock.Web.UI.Controls
                         .Where( n =>
                             viewableNoteTypeIds.Contains( n.NoteTypeId ) &&
                             n.EntityId == EntityId.Value );
-                    
+
                     if ( SortDirection == ListSortDirection.Descending )
                     {
                         qry = qry.OrderByDescending( n => n.IsAlert == true )
@@ -728,7 +728,7 @@ namespace Rock.Web.UI.Controls
                         qry = qry.OrderByDescending( n => n.IsAlert == true )
                             .ThenBy( n => n.CreatedDateTime );
                     }
-                    
+
                     var notes = qry.ToList();
 
                     NoteCount = notes.Count();

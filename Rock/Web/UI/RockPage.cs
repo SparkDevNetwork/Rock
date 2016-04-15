@@ -1310,7 +1310,14 @@ namespace Rock.Web.UI
                 }
 
                 phLoadStats.Controls.Add( new LiteralControl( string.Format(
-                    "<span>Page Load Time: {0:N2}s </span><span class='margin-l-lg'>Cache Hit Rate: {1:P2} </span>", tsDuration.TotalSeconds, hitPercent ) ) );
+                    "<span>Page Load Time: {0:N2}s </span><span class='margin-l-lg'>Cache Hit Rate: {1:P2} </span> <span class='margin-l-lg js-view-state-stats'></span>", tsDuration.TotalSeconds, hitPercent ) ) );
+
+                string script = @"
+Sys.Application.add_load(function () {
+    $('.js-view-state-stats').html('ViewState Size: ' + ($('#__VIEWSTATE').val().length / 1024).toFixed(0) + ' KB');
+});
+";
+                ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "rock-js-view-state-size", script, true );
             }
         }
 

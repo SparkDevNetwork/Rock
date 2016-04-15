@@ -54,7 +54,7 @@ namespace Rock.Web.UI.Controls
             if ( entityType != null )
             {
                 ItemId = entityType.Id.ToString();
-                ItemName = entityType.FriendlyName;
+                ItemName = ActionContainer.GetComponentName(entityType.Name);
 
                 var action = ActionContainer.GetComponent( entityType.Name );
                 if ( action != null )
@@ -91,7 +91,7 @@ namespace Rock.Web.UI.Controls
                 foreach( var entityType in theEntityTypes )
                 {
                     ids.Add( entityType.Id.ToString() );
-                    names.Add( entityType.FriendlyName );
+                    names.Add(ActionContainer.GetComponentName(entityType.Name));
 
                     var action = ActionContainer.GetComponent( entityType.Name );
                     if ( action != null )

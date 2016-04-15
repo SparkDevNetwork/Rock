@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -273,28 +274,40 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     qry = qry.OrderByDescending( t => t.CreatedDateTime );
                 }
 
+                var categoriesAllowed = new Dictionary<int, bool>();
+
                 // Combine history records that were saved at the same time
                 var histories = new List<History>();
                 foreach(var history in qry)
                 {
-                    var existingHistory = histories
-                        .Where( h => 
-                            h.CreatedByPersonAliasId == history.CreatedByPersonAliasId && 
-                            h.CreatedDateTime == history.CreatedDateTime &&
-                            h.EntityTypeId == history.EntityTypeId &&
-                            h.EntityId == history.EntityId &&
-                            h.CategoryId == history.CategoryId &&
-                            h.RelatedEntityTypeId == history.RelatedEntityTypeId &&
-                            h.RelatedEntityId == history.RelatedEntityId ).FirstOrDefault();
-                    if (existingHistory != null)
+                    // Make sure current person is allowed to view the category for the history item.
+                    if ( !categoriesAllowed.ContainsKey( history.CategoryId ) )
                     {
-                        existingHistory.Summary += "<br/>" + history.Summary;
+                        categoriesAllowed.Add( history.CategoryId, history.Category.IsAuthorized( Authorization.VIEW, CurrentPerson ) );
                     }
-                    else
+
+                    if ( categoriesAllowed[history.CategoryId] )
                     {
-                        histories.Add(history);
+                        var existingHistory = histories
+                            .Where( h =>
+                                h.CreatedByPersonAliasId == history.CreatedByPersonAliasId &&
+                                h.CreatedDateTime == history.CreatedDateTime &&
+                                h.EntityTypeId == history.EntityTypeId &&
+                                h.EntityId == history.EntityId &&
+                                h.CategoryId == history.CategoryId &&
+                                h.RelatedEntityTypeId == history.RelatedEntityTypeId &&
+                                h.RelatedEntityId == history.RelatedEntityId ).FirstOrDefault();
+                        if ( existingHistory != null )
+                        {
+                            existingHistory.Summary += "<br/>" + history.Summary;
+                        }
+                        else
+                        {
+                            histories.Add( history );
+                        }
                     }
                 }
+
 
                 gHistory.DataSource = histories.Select( h => new
                 {

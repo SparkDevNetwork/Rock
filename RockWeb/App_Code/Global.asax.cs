@@ -24,12 +24,15 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Caching;
 using System.Web.Http;
 using System.Web.Optimization;
 using System.Web.Routing;
+using dotless.Core;
+using dotless.Core.configuration;
 using DotLiquid;
 using Quartz;
 using Quartz.Impl;
@@ -41,7 +44,9 @@ using Rock.Jobs;
 using Rock.Model;
 using Rock.Plugin;
 using Rock.Transactions;
+using Rock.Utility;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace RockWeb
 {
@@ -273,6 +278,16 @@ namespace RockWeb
                 SetError66();
                 throw ( new Exception( "Error occurred during application startup", ex ) );
             }
+
+            
+            // compile less files
+            new Thread( () =>
+            {
+                Thread.CurrentThread.IsBackground = true;
+                RockTheme.CompileAll();
+                
+            } ).Start();
+            
         }
 
         /// <summary>
@@ -802,76 +817,121 @@ namespace RockWeb
 
             try
             {
-                string siteName = "Rock";
-                if ( siteId.HasValue )
-                {
-                    var site = SiteCache.Read( siteId.Value );
-                    if ( site != null )
-                    {
-                        siteName = site.Name;
-                    }
-                }
+                bool sendNotification = true;
 
-                // setup merge codes for email
-                var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
-                mergeObjects.Add( "ExceptionDetails", string.Format( "An error occurred{0} on the {1} site on page: <br>{2}<p>{3}</p>",
-                    person != null ? " for " + person.FullName : "", siteName, Context.Request.Url.OriginalString, FormatException( ex, "" ) ) );
-
-                try
-                {
-                    mergeObjects.Add( "Exception", Hash.FromAnonymousObject( ex ) );
-                }
-                catch
-                {
-                    // ignore
-                }
-
-                mergeObjects.Add( "Person", person );
-
-                // get email addresses to send to
                 var globalAttributesCache = GlobalAttributesCache.Read();
-                string emailAddressesList = globalAttributesCache.GetValue( "EmailExceptionsList" );
 
-                if ( !string.IsNullOrWhiteSpace( emailAddressesList ) )
+                string filterSettings = globalAttributesCache.GetValue( "EmailExceptionsFilter" );
+                if ( !string.IsNullOrWhiteSpace( filterSettings ) )
                 {
-                    string[] emailAddresses = emailAddressesList.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+                    // Get the current request's list of server variables
+                    var serverVarList = Context.Request.ServerVariables;
 
-                    var recipients = new List<RecipientData>();
-                    foreach ( string emailAddress in emailAddresses )
+                    string[] nameValues = filterSettings.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+                    foreach ( string nameValue in nameValues )
                     {
-                        recipients.Add( new RecipientData( emailAddress, mergeObjects ) );
-                    }
-
-                    if ( recipients.Any() )
-                    {
-                        bool sendNotification = true;
-
-                        string filterSettings = globalAttributesCache.GetValue( "EmailExceptionsFilter" );
-                        var serverVarList = Context.Request.ServerVariables;
-
-                        if ( !string.IsNullOrWhiteSpace( filterSettings ) && serverVarList.Count > 0 )
+                        string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
                         {
-                            string[] nameValues = filterSettings.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-                            foreach ( string nameValue in nameValues )
+                            if ( nameAndValue.Length == 2 )
                             {
-                                string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+                                switch ( nameAndValue[0].ToLower() )
                                 {
-                                    if ( nameAndValue.Length == 2 )
-                                    {
-                                        var serverValue = serverVarList[nameAndValue[0]];
-                                        if ( serverValue != null && serverValue.ToUpper().Contains( nameAndValue[1].ToUpper().Trim() ) )
+                                    case "type":
                                         {
-                                            sendNotification = false;
+                                            if ( ex.GetType().Name.ToLower().Contains( nameAndValue[1].ToLower() ) )
+                                            {
+                                                sendNotification = false;
+                                            }
                                             break;
                                         }
-                                    }
+                                    case "source":
+                                        {
+                                            if ( ex.Source.ToLower().Contains( nameAndValue[1].ToLower() ) )
+                                            {
+                                                sendNotification = false;
+                                            }
+                                            break;
+                                        }
+                                    case "message":
+                                        {
+                                            if ( ex.Message.ToLower().Contains( nameAndValue[1].ToLower() ) )
+                                            {
+                                                sendNotification = false;
+                                            }
+                                            break;
+                                        }
+                                    case "stacktrace":
+                                        {
+                                            if ( ex.StackTrace.ToLower().Contains( nameAndValue[1].ToLower() ) )
+                                            {
+                                                sendNotification = false;
+                                            }
+                                            break;
+                                        }
+                                    default:
+                                        {
+                                            var serverValue = serverVarList[nameAndValue[0]];
+                                            if ( serverValue != null && serverValue.ToUpper().Contains( nameAndValue[1].ToUpper().Trim() ) )
+                                            {
+                                                sendNotification = false;
+                                            }
+                                            break;
+                                        }
                                 }
                             }
                         }
 
-                        if ( sendNotification )
+                        if ( !sendNotification )
                         {
-                            Email.Send( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid(), recipients, string.Empty, string.Empty, false );
+                            break;
+                        }
+                    }
+                }
+
+                if ( sendNotification )
+                {
+                    // get email addresses to send to
+                    string emailAddressesList = globalAttributesCache.GetValue( "EmailExceptionsList" );
+                    if ( !string.IsNullOrWhiteSpace( emailAddressesList ) )
+                    {
+                        string[] emailAddresses = emailAddressesList.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+                        if ( emailAddresses.Length > 0 )
+                        {
+                            string siteName = "Rock";
+                            if ( siteId.HasValue )
+                            {
+                                var site = SiteCache.Read( siteId.Value );
+                                if ( site != null )
+                                {
+                                    siteName = site.Name;
+                                }
+                            }
+
+                            // setup merge codes for email
+                            var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
+                            mergeObjects.Add( "ExceptionDetails", string.Format( "An error occurred{0} on the {1} site on page: <br>{2}<p>{3}</p>",
+                                person != null ? " for " + person.FullName : "", siteName, Context.Request.Url.OriginalString, FormatException( ex, "" ) ) );
+
+                            try
+                            {
+                                mergeObjects.Add( "Exception", Hash.FromAnonymousObject( ex ) );
+                            }
+                            catch
+                            {
+                                // ignore
+                            }
+
+                            mergeObjects.Add( "Person", person );
+                            var recipients = new List<RecipientData>();
+                            foreach ( string emailAddress in emailAddresses )
+                            {
+                                recipients.Add( new RecipientData( emailAddress, mergeObjects ) );
+                            }
+
+                            if ( recipients.Any() )
+                            {
+                                Email.Send( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid(), recipients, string.Empty, string.Empty, false );
+                            }
                         }
                     }
                 }

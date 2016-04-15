@@ -240,6 +240,8 @@ namespace Rock.Jobs
             {
                 string[] groupTypeGuids = groupTypeList.Split( ',' );
 
+                var inactiveRecordValue = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
+
                 var groupTypeEntityTypeId = EntityTypeCache.Read( "Rock.Model.GroupType" ).Id;
 
                 foreach ( var groupTypeGuid in groupTypeGuids )
@@ -267,9 +269,11 @@ namespace Rock.Jobs
                                             .Where( m =>
                                                  m.Group.GroupTypeId == groupType.Id
                                                  && m.GroupMemberStatus == GroupMemberStatus.Active
+                                                 && m.Group.IsActive
+                                                 && m.Person.RecordStatusValueId == inactiveRecordValue.Id
                                              )
                                              .GroupBy( m => m.PersonId )
-                                             .Select( g => g.OrderByDescending( m => m.CreatedDateTime ).Select( m => new { m.PersonId, m.CreatedDateTime, PersonAliasId = m.Person.Aliases.Select( p => p.Id ).FirstOrDefault() } ).FirstOrDefault() )
+                                             .Select( g => g.OrderBy( m => m.CreatedDateTime ).Select( m => new { m.PersonId, m.CreatedDateTime, PersonAliasId = m.Person.Aliases.Select( p => p.Id ).FirstOrDefault() } ).FirstOrDefault() )
                                              .ToList();
 
                         var needsStartDate = groupMemberInfo.Where( m => !historyRecords.Any( h => h.EntityId == m.PersonId && h.Verb == "STARTED" ) );

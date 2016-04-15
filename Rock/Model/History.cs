@@ -124,17 +124,26 @@ namespace Rock.Model
         [DataMember]
         public int? RelatedEntityId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the related data.
+        /// </summary>
+        /// <value>
+        /// The related data.
+        /// </value>
+        [DataMember]
+        public string RelatedData { get; set; }
+        
         #endregion
 
         #region Virtual Properties
 
-        /// <summary>
-        /// Gets or sets the entity type this history is associated with
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Model.EntityType"/> of this history.
-        /// </value>
-        [DataMember]
+            /// <summary>
+            /// Gets or sets the entity type this history is associated with
+            /// </summary>
+            /// <value>
+            /// The <see cref="Rock.Model.EntityType"/> of this history.
+            /// </value>
+            [DataMember]
         public virtual EntityType EntityType { get; set; }
 
         /// <summary>

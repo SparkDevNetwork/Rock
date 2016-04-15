@@ -49,6 +49,10 @@
     <Reference Include="DocumentFormat.OpenXml">
       <HintPath>..\packages\DocumentFormat.OpenXml.2.5\lib\DocumentFormat.OpenXml.dll</HintPath>
     </Reference>
+    <Reference Include="dotless.Core, Version=1.5.2.0, Culture=neutral, PublicKeyToken=96b446c9e63eae34, processorArchitecture=MSIL">
+      <HintPath>..\packages\dotless.1.5.2\lib\dotless.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
@@ -70,7 +74,7 @@
     </Reference>
     <Reference Include="Humanizer, Version=1.37.7.0, Culture=neutral, PublicKeyToken=979442b78dfc278e, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\RockWeb\Bin\Humanizer.dll</HintPath>
+      <HintPath>..\libs\Humanizer.1.37.7\Humanizer.dll</HintPath>
     </Reference>
     <Reference Include="ImageResizer, Version=3.4.3.103, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -278,7 +282,7 @@
     <Compile Include="Field\Types\EnumFieldType.cs" />
     <Compile Include="Field\Types\RangeSliderFieldType.cs" />
     <Compile Include="Field\Types\MarkdownFieldType.cs" />
-    <Compile Include="Financial\NMIGateway.cs" />
+    <Compile Include="Financial\ThreeStepGatewayComponent.cs" />
     <Compile Include="Follow\Event\PersonFirstAttendedGroupType.cs" />
     <Compile Include="Follow\Event\PersonFirstJoinedGroupType.cs" />
     <Compile Include="Follow\Event\PersonBaptized.cs" />
@@ -486,6 +490,7 @@
     <Compile Include="PersonProfile\Badge\GeofencedByGroup.cs" />
     <Compile Include="PersonProfile\Badge\DISC.cs" />
     <Compile Include="PersonProfile\Badge\InGroupWithPurpose.cs" />
+    <Compile Include="Plugin\HotFixes\001_FixPhoneCountryCode.cs" />
     <Compile Include="Reporting\ComparisonHelper.cs" />
     <Compile Include="Reporting\DataFilter\NotInOtherDataViewFilter.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupLinkSelect.cs" />
@@ -544,6 +549,7 @@
     <Compile Include="Transactions\SaveCommunicationTransaction.cs" />
     <Compile Include="Transactions\SendPaymentReciepts.cs" />
     <Compile Include="Transactions\UpdatePaymentStatusTransaction.cs" />
+    <Compile Include="Transactions\LaunchWorkflowTransaction.cs" />
     <Compile Include="Transactions\WorkflowTriggerTransaction.cs" />
     <Compile Include="Utility\DebugHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\DecimalExtensions.cs" />
@@ -552,6 +558,7 @@
     <Compile Include="Utility\NotNullJsonConverter.cs" />
     <Compile Include="Utility\ExtensionMethods\CurrencyExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\ExceptionExtensions.cs" />
+    <Compile Include="Web\UI\RockTheme.cs" />
     <Compile Include="Utility\SettingsStringBase.cs" />
     <Compile Include="Web\Cache\AttributeValueCache.cs" />
     <Compile Include="Web\InternalContext.cs" />
@@ -560,6 +567,7 @@
     <Compile Include="Web\UI\Controls\WarningBlock.cs" />
     <Compile Include="Web\UI\Controls\Pickers\WorkflowActionTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ConnectionRequestPicker.cs" />
+    <Compile Include="Web\UI\Controls\ColorPicker.cs" />
     <Compile Include="Web\UI\Controls\RangeSlider.cs" />
     <Compile Include="Web\Utilities\RockUpdateHelper.cs" />
     <Compile Include="Web\Utilities\WebControlHelper.cs" />

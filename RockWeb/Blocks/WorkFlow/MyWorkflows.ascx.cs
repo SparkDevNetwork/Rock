@@ -371,7 +371,18 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( selectedWorkflowType != null && workflowTypeCounts.Keys.Contains( selectedWorkflowType.Id ) )
             {
-                gWorkflows.DataSource = workflows.Where( w => w.WorkflowTypeId == selectedWorkflowType.Id ).ToList();
+                var workflowQry = workflows.Where( w => w.WorkflowTypeId == selectedWorkflowType.Id ).AsQueryable();
+
+                var sortProperty = gWorkflows.SortProperty;
+                if ( sortProperty != null )
+                {
+                    gWorkflows.DataSource = workflowQry.Sort( sortProperty ).ToList();
+                }
+                else
+                {
+                    gWorkflows.DataSource = workflowQry.OrderByDescending( s => s.CreatedDateTime );
+                }
+
                 gWorkflows.DataBind();
                 gWorkflows.Visible = true;
 
@@ -432,8 +443,8 @@ namespace RockWeb.Blocks.WorkFlow
                     {
                         AttributeField boundField = new AttributeField();
                         boundField.DataField = dataFieldExpression;
+                        boundField.AttributeId = attribute.Id;
                         boundField.HeaderText = attribute.Name;
-                        boundField.SortExpression = string.Empty;
 
                         var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
                         if ( attributeCache != null )

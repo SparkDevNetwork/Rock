@@ -110,5 +110,16 @@ namespace Rock.Web.UI.Controls
             _regexValidator.ValidationGroup = this.ValidationGroup;
             _regexValidator.RenderControl( writer );
         }
+
+        /// <summary>
+        /// Renders the base control.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public override void RenderBaseControl( HtmlTextWriter writer )
+        {
+            this.Attributes["type"] = "email";
+
+            base.RenderBaseControl( writer );
+        }
     }
 }

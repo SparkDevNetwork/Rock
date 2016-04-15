@@ -5,7 +5,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 // <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -59,6 +59,12 @@ namespace Rock.Model
             }  
             
             // ignoring PageView,PageId 
+ 
+            if ( new Service<Site>( Context ).Queryable().Any( a => a.ChangePasswordPageId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, Site.FriendlyTypeName );
+                return false;
+            }  
  
             if ( new Service<Site>( Context ).Queryable().Any( a => a.CommunicationPageId == item.Id ) )
             {

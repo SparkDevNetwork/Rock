@@ -129,6 +129,11 @@ namespace RockWeb.Blocks.Event
             gRegistrations.GridRebind += gRegistrations_GridRebind;
             gRegistrations.ShowConfirmDeleteDialog = false;
 
+            ddlInGroup.Items.Clear();
+            ddlInGroup.Items.Add( new ListItem());
+            ddlInGroup.Items.Add( new ListItem( "Yes", "Yes" ) );
+            ddlInGroup.Items.Add( new ListItem( "No", "No" ) );
+            
             fRegistrants.ApplyFilterClick += fRegistrants_ApplyFilterClick;
             gRegistrants.DataKeyNames = new string[] { "Id" };
             gRegistrants.Actions.ShowAdd = true;
@@ -730,6 +735,7 @@ namespace RockWeb.Blocks.Event
             fRegistrants.SaveUserPreference( "Date Range", drpRegistrantDateRange.DelimitedValues );
             fRegistrants.SaveUserPreference( "First Name", tbRegistrantFirstName.Text );
             fRegistrants.SaveUserPreference( "Last Name", tbRegistrantLastName.Text );
+            fRegistrants.SaveUserPreference( "In Group", ddlInGroup.SelectedValue );
 
             if ( RegistrantFields != null )
             {
@@ -903,6 +909,11 @@ namespace RockWeb.Blocks.Event
                         }
                         break;
                     }
+                case "In Group":
+                    {
+                        e.Value = e.Value;
+                        break;
+                    }
                 default:
                     {
                         e.Value = string.Empty;
@@ -916,9 +927,9 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void gRegistrants_GridRebind( object sender, EventArgs e )
+        protected void gRegistrants_GridRebind( object sender, GridRebindEventArgs e )
         {
-            BindRegistrantsGrid();
+            BindRegistrantsGrid( e.IsExporting );
         }
 
         /// <summary>
@@ -1338,9 +1349,9 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void gGroupPlacements_GridRebind( object sender, EventArgs e )
+        protected void gGroupPlacements_GridRebind( object sender, GridRebindEventArgs e )
         {
-            BindGroupPlacementGrid();
+            BindGroupPlacementGrid( e.IsExporting );
         }
 
         /// <summary>
@@ -1933,18 +1944,43 @@ namespace RockWeb.Blocks.Event
                         qry = qry.Where( r => ids.Contains( r.Id ) );
                     }
 
-                    IOrderedQueryable<Registration> orderedQry = null;
                     SortProperty sortProperty = gRegistrations.SortProperty;
                     if ( sortProperty != null )
                     {
-                        orderedQry = qry.Sort( sortProperty );
+                        // If sorting by Total Cost or Balance Due, the database query needs to be run first without ordering,
+                        // and then ordering needs to be done in memory since TotalCost and BalanceDue are not databae fields.
+                        if ( sortProperty.Property == "TotalCost")
+                        {
+                            if ( sortProperty.Direction == SortDirection.Ascending )
+                            {
+                                gRegistrations.SetLinqDataSource( qry.ToList().OrderBy( r => r.TotalCost ).AsQueryable() );
+                            }
+                            else
+                            {
+                                gRegistrations.SetLinqDataSource( qry.ToList().OrderByDescending( r => r.TotalCost ).AsQueryable() );
+                            }
+                        }
+                        else if ( sortProperty.Property == "BalanceDue" )
+                        {
+                            if ( sortProperty.Direction == SortDirection.Ascending )
+                            {
+                                gRegistrations.SetLinqDataSource( qry.ToList().OrderBy( r => r.BalanceDue ).AsQueryable() );
+                            }
+                            else
+                            {
+                                gRegistrations.SetLinqDataSource( qry.ToList().OrderByDescending( r => r.BalanceDue ).AsQueryable() );
+                            }
+                        }
+                        else
+                        {
+                            gRegistrations.SetLinqDataSource( qry.Sort( sortProperty ) );
+                        }
                     }
                     else
                     {
-                        orderedQry = qry.OrderByDescending( r => r.CreatedDateTime );
+                        gRegistrations.SetLinqDataSource( qry.OrderByDescending( r => r.CreatedDateTime ) );
                     }
 
-                    gRegistrations.SetLinqDataSource( orderedQry );
 
                     // Get all the payments for any registrations being displayed on the current page.
                     // This is used in the RowDataBound event but queried now so that each row does
@@ -1983,12 +2019,13 @@ namespace RockWeb.Blocks.Event
             drpRegistrantDateRange.DelimitedValues = fRegistrants.GetUserPreference( "Date Range" );
             tbRegistrantFirstName.Text = fRegistrants.GetUserPreference( "First Name" );
             tbRegistrantLastName.Text = fRegistrants.GetUserPreference( "Last Name" );
+            ddlInGroup.SetValue( fRegistrants.GetUserPreference( "In Group" ) );
         }
 
         /// <summary>
         /// Binds the registrants grid.
         /// </summary>
-        private void BindRegistrantsGrid()
+        private void BindRegistrantsGrid( bool isExporting = false )
         {
             int? instanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
             if ( instanceId.HasValue )
@@ -2032,6 +2069,15 @@ namespace RockWeb.Blocks.Event
                         string rlname = tbRegistrantLastName.Text;
                         qry = qry.Where( r =>
                             r.PersonAlias.Person.LastName.StartsWith( rlname ) );
+                    }
+
+                    if ( ddlInGroup.SelectedValue.AsBooleanOrNull() == true )
+                    {
+                        qry = qry.Where( r => r.GroupMemberId.HasValue );
+                    }
+                    else if ( ddlInGroup.SelectedValue.AsBooleanOrNull() == false )
+                    {
+                        qry = qry.Where( r => !r.GroupMemberId.HasValue );
                     }
 
                     bool preloadCampusValues = false;
@@ -2312,10 +2358,10 @@ namespace RockWeb.Blocks.Event
                             {
                                 groupMemberIds.Add( groupMember.Id );
                                 GroupLinks.AddOrIgnore( groupMember.GroupId,
-                                    gRegistrants.AllowPaging ?
+                                    isExporting ? groupMember.Group.Name :
                                         string.Format( "<a href='{0}'>{1}</a>",
                                             LinkedPageUrl( "GroupDetailPage", new Dictionary<string, string> { { "GroupId", groupMember.GroupId.ToString() } } ),
-                                            groupMember.Group.Name ) : groupMember.Group.Name );
+                                            groupMember.Group.Name ) );
                             }
 
                             // If the campus column was selected to be displayed on grid, preload all the people's
@@ -2735,13 +2781,13 @@ namespace RockWeb.Blocks.Event
                         {
                             AttributeField boundField = new AttributeField();
                             boundField.DataField = dataFieldExpression;
+                            boundField.AttributeId = attribute.Id;
                             boundField.HeaderText = attribute.Name;
-                            boundField.SortExpression = string.Empty;
 
                             AttributeField boundField2 = new AttributeField();
                             boundField2.DataField = dataFieldExpression;
+                            boundField2.AttributeId = attribute.Id;
                             boundField2.HeaderText = attribute.Name;
-                            boundField2.SortExpression = string.Empty;
 
                             var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
                             if ( attributeCache != null )
@@ -2938,7 +2984,7 @@ namespace RockWeb.Blocks.Event
 
         #region Group Placement Tab
 
-        private void BindGroupPlacementGrid()
+        private void BindGroupPlacementGrid( bool isExporting = false )
         {
             int? groupId = gpGroupPlacementParentGroup.SelectedValueAsInt();
             int? instanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
@@ -3057,10 +3103,10 @@ namespace RockWeb.Blocks.Event
                             {
                                 groupMemberIds.Add( groupMember.Id );
                                 GroupLinks.AddOrIgnore( groupMember.GroupId,
-                                    gGroupPlacements.AllowPaging ?
+                                    isExporting ? groupMember.Group.Name :
                                         string.Format( "<a href='{0}'>{1}</a>",
                                             LinkedPageUrl( "GroupDetailPage", new Dictionary<string, string> { { "GroupId", groupMember.GroupId.ToString() } } ),
-                                            groupMember.Group.Name ) : groupMember.Group.Name );
+                                            groupMember.Group.Name ) );
                             }
 
                             // If the campus column was selected to be displayed on grid, preload all the people's

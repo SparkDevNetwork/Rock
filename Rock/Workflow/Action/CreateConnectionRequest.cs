@@ -47,6 +47,8 @@ namespace Rock.Workflow.Action
         new string[] { "Rock.Field.Types.CampusFieldType" } )]
     [WorkflowAttribute( "Connection Request Attribute", "An optional connection request attribute to store the request that is created.", false, "", "", 5, null,
         new string[] { "Rock.Field.Types.ConnectionRequestFieldType" } )]
+    [WorkflowAttribute("Connection Comment Attribute", "An optional attribute that contains the comment to use for the request.", false, "", "", 6, null,
+        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" })]
 
     public class CreateConnectionRequest : ActionComponent
     {
@@ -129,6 +131,9 @@ namespace Rock.Workflow.Action
                 }
             }
 
+            // Get the Comment
+            String comment = action.GetWorklowAttributeValue(GetAttributeValue(action, "ConnectionCommentAttribute").AsGuid());
+
             var connectionRequestService = new ConnectionRequestService( rockContext );
 
             var connectionRequest = new ConnectionRequest();
@@ -138,6 +143,7 @@ namespace Rock.Workflow.Action
             connectionRequest.ConnectionStatusId = status.Id;
             connectionRequest.CampusId = campusId;
             connectionRequest.ConnectorPersonAliasId = opportunity.GetDefaultConnectorPersonAliasId( campusId.Value );
+            connectionRequest.Comments = comment;
 
             connectionRequestService.Add( connectionRequest );
             rockContext.SaveChanges();
