@@ -14,7 +14,7 @@
             <div class="panel-body">
                 <div class="row col-sm-4">
                     <Rock:DatePicker ID="dpTargetPromoDate" runat="server" Label="Which Weekend?" />
-                    <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Which Campus?"/>
+                    <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Which Campus? (Leave blank to see them all)"/>
                     <Rock:RockDropDownList ID="ddlPromoType" runat="server" Label="What type of Promotions? (Leave blank to see them all)" />
                     <Rock:BootstrapButton ID="btnApply" runat="server" Text="Apply" OnClick="ApplyDates" CssClass="btn btn-primary" />
                 </div>
@@ -23,7 +23,7 @@
         <Rock:GridFilter ID="rPromotionsFilter" runat="server" >
             <Rock:RockTextBox ID="tbTitle" runat="server" Label="Title" />
         </Rock:GridFilter>
-        <Rock:Grid ID="gPromotionOccurrencesGrid" runat="server" OnRowSelected="PromotionOccurrencesGrid_RowSelected">
+        <Rock:Grid ID="gPromotionOccurrencesGrid" AllowSorting="true" runat="server" OnRowSelected="PromotionOccurrencesGrid_RowSelected">
             <Columns>
                 <Rock:RockBoundField DataField="Title" HeaderText="Title" SortExpression="Title" />
                 <Rock:RockBoundField DataField="EventDate" HeaderText="Event Date" SortExpression="EventDate" />

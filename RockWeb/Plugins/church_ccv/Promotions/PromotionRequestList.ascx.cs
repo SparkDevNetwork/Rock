@@ -217,18 +217,16 @@ namespace RockWeb.Plugins.church_ccv.Promotions
 
         protected void gPromotions_Approve( object sender, RowEventArgs e )
         {
-            // this is more like, "publish for this week"
-            PromotionsContext promoContext = new PromotionsContext( );
-            PromotionsService<PromotionRequest> promoService = new PromotionsService<PromotionRequest>( promoContext );
-
-            // grab the item that was clicked
-            PromotionRequest promoRequest = promoService.Get( e.RowKeyId );
-
-            // make sure it doesn't already exist, which could happen if they double-click by mistake.
-            IQueryable<PromotionOccurrence> promoOccurrQuery = new PromotionsService<PromotionOccurrence>( promoContext ).Queryable( );
-            var promoOccurr = promoOccurrQuery.Where( po => po.PromotionRequestId == promoRequest.Id ).SingleOrDefault( );
-            if( promoOccurr == null )
+            // require a promotion date be set
+            if( dpTargetPromoDate.SelectedDate.HasValue )
             {
+                // this is more like, "publish for this week"
+                PromotionsContext promoContext = new PromotionsContext( );
+                PromotionsService<PromotionRequest> promoService = new PromotionsService<PromotionRequest>( promoContext );
+
+                // grab the item that was clicked
+                PromotionRequest promoRequest = promoService.Get( e.RowKeyId );
+                
                 // get the event item linked to the request
                 RockContext rockContext = new RockContext( );
                 EventItemOccurrenceService eventService = new EventItemOccurrenceService( rockContext );
@@ -267,7 +265,7 @@ namespace RockWeb.Plugins.church_ccv.Promotions
 
                     PromotionsUtil.CreatePromotionOccurrence( promoRequest.ContentChannel.Id,
                                                               promoRequest.ContentChannel.ContentChannelTypeId,
-                                                              dpTargetPromoDate.SelectedDate.HasValue ? dpTargetPromoDate.SelectedDate.Value : DateTime.Now,
+                                                              dpTargetPromoDate.SelectedDate.Value,
                                                               CurrentPersonAliasId,
                                                               eventItem.EventItem.Name,
                                                               BuildPromoContent( eventItem ),
@@ -277,10 +275,6 @@ namespace RockWeb.Plugins.church_ccv.Promotions
 
                     BindGrid();
                 }
-            }
-            else
-            {
-                BindGrid();
             }
         }
         
@@ -356,8 +350,8 @@ namespace RockWeb.Plugins.church_ccv.Promotions
             lbCampusSelectEventInfo.Text = "Event Details: " + eventItem.EventItem.Name + ", " + campusString + ", " + nextEventTime;
             mdCampusSelect.Show( );
         }
-                
-        /*protected void OnBtnSeperateClicked( object sender, EventArgs e )
+
+        protected void mdCampusSelect_SaveClick( object sender, EventArgs e )
         {
             PromotionsContext promoContext = new PromotionsContext( );
             PromotionsService<PromotionRequest> promoService = new PromotionsService<PromotionRequest>( promoContext );
@@ -369,71 +363,33 @@ namespace RockWeb.Plugins.church_ccv.Promotions
             RockContext rockContext = new RockContext( );
             EventItemOccurrenceService eventService = new EventItemOccurrenceService( rockContext );
             var eventItem = eventService.Get( promoRequest.EventItemOccurrenceId );
-            
-            // create a new promotion occurrence for each item clicked
+
+            string campusGuids = string.Empty;
             foreach( RockCheckBox checkBox in mdCampusSelect.ControlsOfTypeRecursive<RockCheckBox>( ) )
             {
                 // if its enabled AND checked, they clicked it.
                 if( checkBox.Enabled == true && checkBox.Checked == true )
                 {
-                    PromotionsUtil.CreatePromotionOccurrence( promoRequest.ContentChannel.Id, 
-                                                          promoRequest.ContentChannel.ContentChannelTypeId, 
-                                                          dpTargetPromoDate.SelectedDate.HasValue ? dpTargetPromoDate.SelectedDate.Value : DateTime.Now, 
-                                                          CurrentPersonAliasId, 
-                                                          eventItem.EventItem.Name,
-                                                          BuildPromoContent( eventItem ),
-                                                          ContentChannelItemMultiCampusKey,
-                                                          checkBox.ID,
-                                                          promoRequest.Id );
+                    campusGuids += checkBox.ID + ",";
                 }
             }
 
-            mdCampusSelect.Hide( );
-            BindGrid( );
-        }*/
-
-        protected void mdCampusSelect_SaveClick( object sender, EventArgs e )
-        {
-            PromotionsContext promoContext = new PromotionsContext( );
-            PromotionsService<PromotionRequest> promoService = new PromotionsService<PromotionRequest>( promoContext );
-
-            // grab the item that was clicked
-            PromotionRequest promoRequest = promoService.Get( hfPromoRequestId.Value.AsInteger( ) );
-
-            // make sure it doesn't already exist, which could happen if they double-click by mistake.
-            IQueryable<PromotionOccurrence> promoOccurrQuery = new PromotionsService<PromotionOccurrence>( promoContext ).Queryable( );
-            var promoOccurr = promoOccurrQuery.Where( po => po.PromotionRequestId == promoRequest.Id ).SingleOrDefault( );
-            if( promoOccurr == null )
+            // remove the trailing comma (if there are any guids in the string)
+            if( campusGuids.Length > 0 )
             {
-                // get the event item linked to the request
-                RockContext rockContext = new RockContext( );
-                EventItemOccurrenceService eventService = new EventItemOccurrenceService( rockContext );
-                var eventItem = eventService.Get( promoRequest.EventItemOccurrenceId );
-
-                string campusGuids = string.Empty;
-                foreach( RockCheckBox checkBox in mdCampusSelect.ControlsOfTypeRecursive<RockCheckBox>( ) )
-                {
-                    // if its enabled AND checked, they clicked it.
-                    if( checkBox.Enabled == true && checkBox.Checked == true )
-                    {
-                        campusGuids += checkBox.ID + ",";
-                    }
-                }
-
-                // remove the trailing comma
                 campusGuids = campusGuids.Substring( 0, campusGuids.Length - 1 );
-
-                // create the combined promo occurrence
-                PromotionsUtil.CreatePromotionOccurrence( promoRequest.ContentChannel.Id, 
-                                                          promoRequest.ContentChannel.ContentChannelTypeId, 
-                                                          dpTargetPromoDate.SelectedDate.HasValue ? dpTargetPromoDate.SelectedDate.Value : DateTime.Now, 
-                                                          CurrentPersonAliasId, 
-                                                          eventItem.EventItem.Name,
-                                                          BuildPromoContent( eventItem ),
-                                                          Rock.SystemGuid.FieldType.CAMPUSES,
-                                                          campusGuids,
-                                                          promoRequest.Id );
             }
+
+            // create the combined promo occurrence
+            PromotionsUtil.CreatePromotionOccurrence( promoRequest.ContentChannel.Id, 
+                                                      promoRequest.ContentChannel.ContentChannelTypeId, 
+                                                      dpTargetPromoDate.SelectedDate.HasValue ? dpTargetPromoDate.SelectedDate.Value : DateTime.Now, 
+                                                      CurrentPersonAliasId, 
+                                                      eventItem.EventItem.Name,
+                                                      BuildPromoContent( eventItem ),
+                                                      Rock.SystemGuid.FieldType.CAMPUSES,
+                                                      campusGuids,
+                                                      promoRequest.Id );
 
             mdCampusSelect.Hide();
             BindGrid( );

@@ -67,6 +67,8 @@ namespace RockWeb.Plugins.church_ccv.Promotions
             {
                 ddlCampus.Items.Add( new ListItem( campus.Name, campus.Id.ToString().ToUpper() ) );
             }
+            ddlCampus.Items.Insert( 0, new ListItem( "", "" ) );
+
             ddlCampus.SelectedIndex = 0;
             
             InitPromotionsFilter( );
@@ -204,12 +206,12 @@ namespace RockWeb.Plugins.church_ccv.Promotions
 
         protected void PromotionOccurrencesGrid_AddClick( object sender, EventArgs e )
         {
-            // restore the date controls, so that if htey were changed before clicking 'apply', it reverts to what they've last APPLIED.
+            // restore the date controls, so that if they were changed before clicking 'apply', it reverts to what they've last APPLIED.
             RestoreDateControls( );
 
-            // require that a promotion type be set.
+            // require that a promotion type and campus be set
             ListItem promoItem = ddlPromoType.Items[ ddlPromoType.SelectedIndex ];
-            if( string.IsNullOrEmpty( promoItem.Value ) == false )
+            if( string.IsNullOrWhiteSpace( promoItem.Value ) == false && string.IsNullOrWhiteSpace( ddlCampus.SelectedValue ) == false )
             {
                 RockContext rockContext = new RockContext();
                 var contentChannel = new ContentChannelService( rockContext).Get( promoItem.Value.AsInteger( ) );
@@ -340,45 +342,47 @@ namespace RockWeb.Plugins.church_ccv.Promotions
 
 
                 // Here, want to only show Content Items whose campus matches our selection.
+                if( string.IsNullOrWhiteSpace( ddlCampus.SelectedValue ) == false )
+                {
+                    // First, look for Content Items with a Single Campus that DOES NOT match, OR IS BLANK. 
+                    // ( this would mean their campus doesn't match what is being filtered, so it shouldn't display)
+                    // IF THEY ARE MULTI-CAMPUS, they won't return in this query, which is a GOOD thing.
+                    Guid selectedCampusGuid = CampusCache.Read( ddlCampus.SelectedValue.AsInteger( ) ).Guid;
+                    var campusAttribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.FieldType.Guid == new Guid( Rock.SystemGuid.FieldType.CAMPUS ) ).ToList( );
 
-                // First, look for Content Items with a Single Campus that DOES NOT match, OR IS BLANK. 
-                // ( this would mean their campus doesn't match what is being filtered, so it shouldn't display)
-                // IF THEY ARE MULTI-CAMPUS, they won't return in this query, which is a GOOD thing.
-                Guid selectedCampusGuid = CampusCache.Read( ddlCampus.SelectedValue.AsInteger( ) ).Guid;
-                var campusAttribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.FieldType.Guid == new Guid( Rock.SystemGuid.FieldType.CAMPUS ) ).ToList( );
+                    var excludedPromotionOccurrenceIds = promoOccurrences.Join( campusAttribValList, 
+                                                                              po => po.ContentChannelItem.Id, ca=> ca.EntityId, ( po, ca ) => new { Promotion = po, Campus = ca }  
+                                                                              ).Where( po => string.IsNullOrWhiteSpace( po.Campus.Value ) == true || selectedCampusGuid != Guid.Parse( po.Campus.Value ) ).Select( po => po.Promotion.Id );
 
-                var excludedPromotionOccurrenceIds = promoOccurrences.Join( campusAttribValList, 
-                                                                          po => po.ContentChannelItem.Id, ca=> ca.EntityId, ( po, ca ) => new { Promotion = po, Campus = ca }  
-                                                                          ).Where( po => string.IsNullOrWhiteSpace( po.Campus.Value ) == true || selectedCampusGuid != Guid.Parse( po.Campus.Value ) ).Select( po => po.Promotion.Id );
-
-                promoOccurrences = promoOccurrences.Where( po => excludedPromotionOccurrenceIds.Contains( po.Id ) == false ).ToList( );
+                    promoOccurrences = promoOccurrences.Where( po => excludedPromotionOccurrenceIds.Contains( po.Id ) == false ).ToList( );
 
 
-                // build MULTI-campus content items that should be excluded
-                // For each item, we look at it's list of campus guids, and do a search for the selected campus guid IN it. If NOT found, we add it to our exclusion list.
-                // NOTE: We treat "all unchecked" as "all campuses". So if the campus list is blank, we'll never exclude it.
+                    // build MULTI-campus content items that should be excluded
+                    // For each item, we look at it's list of campus guids, and do a search for the selected campus guid IN it. If NOT found, we add it to our exclusion list.
+                    // NOTE: We treat "all unchecked" as "all campuses". So if the campus list is blank, we'll never exclude it.
 
-                // Like above, this works because items that are not multi-campus simply won't be returned in the query.
+                    // Like above, this works because items that are not multi-campus simply won't be returned in the query.
             
-                var campusesAttribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.FieldType.Guid == new Guid( Rock.SystemGuid.FieldType.CAMPUSES ) ).ToList( );
-                var excludedCampusesPromotionRequestIds = promoOccurrences.Join( campusesAttribValList, 
+                    var campusesAttribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.FieldType.Guid == new Guid( Rock.SystemGuid.FieldType.CAMPUSES ) ).ToList( );
+                    var excludedCampusesPromotionRequestIds = promoOccurrences.Join( campusesAttribValList, 
                                                                              
-                    po => po.ContentChannelItem.Id, ca=> ca.EntityId, ( po, ca ) => new { Promotion = po, Campuses = ca } )
+                        po => po.ContentChannelItem.Id, ca=> ca.EntityId, ( po, ca ) => new { Promotion = po, Campuses = ca } )
                 
-                    // Exclude the item IF it has at least one campus checked, and that campus is NOT what's selected.
-                    .Where( po => (string.IsNullOrWhiteSpace( po.Campuses.Value ) == false && po.Campuses.Value.Contains( selectedCampusGuid.ToString( ) ) == false) )
+                        // Exclude the item IF it has at least one campus checked, and that campus is NOT what's selected.
+                        .Where( po => (string.IsNullOrWhiteSpace( po.Campuses.Value ) == false && po.Campuses.Value.Contains( selectedCampusGuid.ToString( ) ) == false) )
                 
-                    // Take just the IDs
-                    .Select( po => po.Promotion.Id );
+                        // Take just the IDs
+                        .Select( po => po.Promotion.Id );
 
-                promoOccurrences = promoOccurrences.Where( po => excludedCampusesPromotionRequestIds.Contains( po.Id ) == false ).ToList( );
+                    promoOccurrences = promoOccurrences.Where( po => excludedCampusesPromotionRequestIds.Contains( po.Id ) == false ).ToList();
+                }
 
             
             
 
                 // Content Channel Type (Promo Type)
                 ListItem promoItem = ddlPromoType.Items[ ddlPromoType.SelectedIndex ];
-                if( string.IsNullOrEmpty( promoItem.Value ) == false )
+                if( string.IsNullOrWhiteSpace( promoItem.Value ) == false )
                 {
                     int filteredChannelId = promoItem.Value.AsInteger( );
                     promoOccurrences = promoOccurrences.Where( po => po.ContentChannelItem.ContentChannelId == filteredChannelId ).ToList( );
@@ -386,20 +390,28 @@ namespace RockWeb.Plugins.church_ccv.Promotions
 
                 // in the promo table, we just filtered out all promos with a date / content channel type we don't care about.
                 // That will implicitely filter out any event that only has content items out of that range.
-            
-                // Done Filtering
-                gPromotionOccurrencesGrid.DataSource = promoOccurrences.Select( i => new
-                {
-                    Id = i.Id,
-                    Guid = i.Guid,
-                    Title = i.ContentChannelItem.Title,
-                    Campus = GetCampus( i.ContentChannelItem ),
-                    PromoDate = GetPromoDate( i.ContentChannelItem ),
-                    EventDate = GetDate( eventService, i ),
-                    Priority = i.ContentChannelItem.Priority,
-                    PromoType = string.Format( "<span class='{0}'></span> {1}", i.ContentChannelItem.ContentChannel.IconCssClass, i.ContentChannelItem.ContentChannel.Name )
-                }).ToList( );
 
+                // Done Filtering
+                var dataSource = promoOccurrences.Select( i => new
+                    {
+                        Id = i.Id,
+                        Guid = i.Guid,
+                        Title = i.ContentChannelItem.Title,
+                        Campus = GetCampus( i.ContentChannelItem ),
+                        PromoDate = GetPromoDate( i.ContentChannelItem ),
+                        EventDate = GetDate( eventService, i ),
+                        Priority = i.ContentChannelItem.Priority,
+                        PromoType = string.Format( "<span class='{0}'></span> {1}", i.ContentChannelItem.ContentChannel.IconCssClass, i.ContentChannelItem.ContentChannel.Name )
+                    } ).ToList();
+
+                // add support for sorting columns
+                SortProperty sortProperty = gPromotionOccurrencesGrid.SortProperty;
+                if ( sortProperty != null )
+                {
+                    dataSource = dataSource.AsQueryable().Sort( sortProperty ).ToList();
+                }
+                
+                gPromotionOccurrencesGrid.DataSource = dataSource;
                 gPromotionOccurrencesGrid.DataBind( );
             }
         }
@@ -443,8 +455,8 @@ namespace RockWeb.Plugins.church_ccv.Promotions
                 // break the guids into a list
                 List<string> campusGuids = channelItem.AttributeValues[ multiCampusAttrib.Key ].Value.Split( new char[] {  ',' } ).ToList( );
 
-                // first, if this is for all campuses, just say all campuses.
-                if( campusGuids.Count == CampusCache.All( ).Count )
+                // first, if this is for all campuses, just say all campuses. We know that because either all campuses are selected, or there's one blank entry
+                if( campusGuids.Count == CampusCache.All( ).Count || (campusGuids.Count == 1 && string.IsNullOrWhiteSpace( campusGuids[ 0 ] ) == true) )
                 {
                     return "All Campuses";
                 }
