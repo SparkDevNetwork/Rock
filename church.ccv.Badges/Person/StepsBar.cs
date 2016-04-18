@@ -145,83 +145,83 @@ namespace church.ccv.Badges.Person
 
                         popoverContent = popoverContent + ""<li><a href='/page/"" + groupDetailPageId + ""?GroupId="" + group.GroupId + ""'>"" + group.GroupName + ""</a> <small>"" + group.Role + ""</small></li>"";
 
-                // only display 2
-                if ( index == 1 )
-                {{
-                    return false;
-                }}
-            }});
+                        // only display 2
+                        if ( index == 1 )
+                        {{
+                            return false;
+                        }}
+                    }});
 
-            var popoverContent = popoverContent + ""</ul>""
+                    var popoverContent = popoverContent + ""</ul>""
 
-                    // check for more than two groups
-            if ( data.ConnectionResult.Groups.length > 2 )
-            {{
-                var moreCount = data.ConnectionResult.Groups.length - 2;
+                            // check for more than two groups
+                    if ( data.ConnectionResult.Groups.length > 2 )
+                    {{
+                        var moreCount = data.ConnectionResult.Groups.length - 2;
 
-                if ( moreCount == 1 )
-                {{
-                    popoverContent = popoverContent + ""<p>and <a href='/page/"" + groupListPageId + ""?PersonId="" + '{2}' + ""&GroupTypeId="" + connectGroupTypeId + ""'> "" + moreCount + "" other</a></p>"";
-                }}
-                else {{
-                    popoverContent = popoverContent + ""<p>and <a href='/page/"" + groupListPageId + ""?PersonId="" + '{2}' + ""&GroupTypeId="" + connectGroupTypeId + ""'> "" + moreCount + "" others</a></p>"";
-                }}
-            }}
-
-            var popoverContent = popoverContent + ""<p class='margin-b-none'><a href='/page/"" + connectionGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find NH Group</a></p>"";
-            var popoverContent = popoverContent + ""<p class='margin-b-none margin-t-sm'><a href='/page/"" + nextStepGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find NS Group</a></p>"";
-
-                    $badge.find( '.badge-connect' ).removeClass( 'step-nottaken' );
-
-                    if (data.ConnectionResult.ConnectionStatus == 2) {{
-                        $badge.find('.badge-connect').addClass('step-partial');
+                        if ( moreCount == 1 )
+                        {{
+                            popoverContent = popoverContent + ""<p>and <a href='/page/"" + groupListPageId + ""?PersonId="" + '{2}' + ""&GroupTypeId="" + connectGroupTypeId + ""'> "" + moreCount + "" other</a></p>"";
+                        }}
+                        else {{
+                            popoverContent = popoverContent + ""<p>and <a href='/page/"" + groupListPageId + ""?PersonId="" + '{2}' + ""&GroupTypeId="" + connectGroupTypeId + ""'> "" + moreCount + "" others</a></p>"";
+                        }}
                     }}
 
-                    $badge.find( '.badge-connect' ).attr( 'data-toggle', 'popover' );
-                    $badge.find( '.badge-connect' ).attr( 'data-container', 'body' );
-                    $badge.find( '.badge-connect' ).attr( 'data-content', popoverContent );
+                    var popoverContent = popoverContent + ""<p class='margin-b-none'><a href='/page/"" + connectionGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find NH Group</a></p>"";
+                    var popoverContent = popoverContent + ""<p class='margin-b-none margin-t-sm'><a href='/page/"" + nextStepGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find NS Group</a></p>"";
 
-                    var connectSinceDate = new Date(data.ConnectionResult.ConnectedSince);
-                    var connectSinceDateFormatted = (connectSinceDate.getMonth() + 1) + '/' + connectSinceDate.getDate() + '/' + connectSinceDate.getFullYear();
+                            $badge.find( '.badge-connect' ).removeClass( 'step-nottaken' );
 
-                    $badge.find( '.badge-connect' ).attr( 'data-original-title', firstName + ' is in a connection group (eariest active group ' + connectSinceDateFormatted + ') &nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>' );
+                            if (data.ConnectionResult.ConnectionStatus == 2) {{
+                                $badge.find('.badge-connect').addClass('step-partial');
+                            }}
 
-            var connectPopoverIsOpen = false;
+                            $badge.find( '.badge-connect' ).attr( 'data-toggle', 'popover' );
+                            $badge.find( '.badge-connect' ).attr( 'data-container', 'body' );
+                            $badge.find( '.badge-connect' ).attr( 'data-content', popoverContent );
 
-                    $badge.find( '.badge-connect' ).popover({{
-                html: true,
-                        placement: 'top',
-                        trigger: 'manual'
-                      }});
+                            var connectSinceDate = new Date(data.ConnectionResult.ConnectedSince);
+                            var connectSinceDateFormatted = (connectSinceDate.getMonth() + 1) + '/' + connectSinceDate.getDate() + '/' + connectSinceDate.getFullYear();
 
-                    // disable the anchor tag
-                    $badge.find( '.badge-connect' ).on( ""click"", function( e ) {{
-                e.preventDefault();
-            }});
+                            $badge.find( '.badge-connect' ).attr( 'data-original-title', firstName + ' is in a connection group (eariest active group ' + connectSinceDateFormatted + ') &nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>' );
+
+                    var connectPopoverIsOpen = false;
+
+                            $badge.find( '.badge-connect' ).popover({{
+                        html: true,
+                                placement: 'top',
+                                trigger: 'manual'
+                              }});
+
+                            // disable the anchor tag
+                            $badge.find( '.badge-connect' ).on( ""click"", function( e ) {{
+                        e.preventDefault();
+                    }});
 
 
-                    // fancy pants to allow the tooltip and popover to work on the same control
-                    $badge.find( '.badge-connect' ).on( 'click', function() {{
-                if ( connectPopoverIsOpen )
-                {{
-                            $badge.find( '.badge-connect' ).popover( 'hide' );
-                            connectPopoverIsOpen = false;
-                            $badge.find( '.badge-connect' ).attr( 'data-original-title', firstName + ' is in a connection group &nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>' );
+                            // fancy pants to allow the tooltip and popover to work on the same control
+                            $badge.find( '.badge-connect' ).on( 'click', function() {{
+                        if ( connectPopoverIsOpen )
+                        {{
+                                    $badge.find( '.badge-connect' ).popover( 'hide' );
+                                    connectPopoverIsOpen = false;
+                                    $badge.find( '.badge-connect' ).attr( 'data-original-title', firstName + ' is in a connection group &nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>' );
+                        }}
+                        else {{
+                                    $badge.find( '.badge-connect' ).attr( 'data-original-title', '' );
+                                    $badge.find( '.badge-connect' ).popover( 'show' );
+                                    connectPopoverIsOpen = true;
+                                    $badge.find( '.badge-connect' ).tooltip( 'hide' );
+                        }}
+                    }});
                 }}
-                else {{
-                            $badge.find( '.badge-connect' ).attr( 'data-original-title', '' );
-                            $badge.find( '.badge-connect' ).popover( 'show' );
-                            connectPopoverIsOpen = true;
-                            $badge.find( '.badge-connect' ).tooltip( 'hide' );
-                }}
-            }});
-        }}
 
                 // tithing
                 if (data.IsTithing) {{
                     $badge.find('.badge-tithe').removeClass('step-nottaken');
                     $badge.find( '.badge-tithe' ).attr( 'data-original-title', firstName + ' is giving' );
-    }}
+                }}
 
                 // serving
                 if (data.ServingResult.IsServing) {{
@@ -235,16 +235,16 @@ namespace church.ccv.Badges.Person
                     }});
 
                     $.each( data.ServingResult.Groups, function (index, group)
-    {{
+                    {{
 
-        popoverContent = popoverContent + ""<li><a href='/page/"" + groupDetailPageId + ""?GroupId="" + group.GroupId + ""'>"" + group.GroupName + ""</a></li>"";
+                        popoverContent = popoverContent + ""<li><a href='/page/"" + groupDetailPageId + ""?GroupId="" + group.GroupId + ""'>"" + group.GroupName + ""</a></li>"";
 
-        // only display 2
-        if ( index == 1 )
-        {{
-            return false;
-        }}
-    }});
+                        // only display 2
+                        if ( index == 1 )
+                        {{
+                            return false;
+                        }}
+                    }});
 
                     var popoverContent = popoverContent + ""</ul>""
 
@@ -272,33 +272,31 @@ namespace church.ccv.Badges.Person
 
                     $badge.find('.badge-serve').attr('data-original-title', firstName + ' is serving (earliest active group ' + servingSinceDateFormatted + ')&nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>');
 
-var servingPopoverIsOpen = false;
+                    var servingPopoverIsOpen = false;
 
                     $badge.find('.badge-serve').popover({{
-    html: true,
+                        html: true,
                         placement: 'top',
                         trigger: 'manual'
                     }});
                     
                     // fancy pants to allow the tooltip and popover to work on the same control
                     $badge.find('.badge-serve').on('click', function ()
-{{
-    if ( servingPopoverIsOpen )
-    {{
-                            $badge.find( '.badge-serve' ).popover( 'hide' );
-        servingPopoverIsOpen = false;
-                            $badge.find('.badge-serve').attr('data-original-title', firstName + ' is serving (earliest active group ' + servingSinceDateFormatted + ')&nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>');
-    }}
-    else {{
-                            $badge.find( '.badge-serve' ).attr( 'data-original-title', '' );
-                            $badge.find( '.badge-serve' ).popover( 'show' );
-        servingPopoverIsOpen = true;
-                            $badge.find( '.badge-serve' ).tooltip( 'hide' );
-    }}
-}});
+                    {{
+                        if ( servingPopoverIsOpen )
+                        {{
+                                                $badge.find( '.badge-serve' ).popover( 'hide' );
+                            servingPopoverIsOpen = false;
+                                                $badge.find('.badge-serve').attr('data-original-title', firstName + ' is serving (earliest active group ' + servingSinceDateFormatted + ')&nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>');
+                        }}
+                        else {{
+                                                $badge.find( '.badge-serve' ).attr( 'data-original-title', '' );
+                                                $badge.find( '.badge-serve' ).popover( 'show' );
+                            servingPopoverIsOpen = true;
+                                                $badge.find( '.badge-serve' ).tooltip( 'hide' );
+                        }}
+                    }});
                 }}
-
-                
 
                 // sharing
                 // not implemented yet
@@ -310,16 +308,16 @@ var servingPopoverIsOpen = false;
                     var popoverContent = firstName + "" is in the following coaching groups: <ul styling='padding-left: 20px;'>"";
 
                     $.each( data.CoachingResult.Groups, function (index, group)
-{{
+                    {{
 
-    popoverContent = popoverContent + ""<li><a href='/page/"" + groupDetailPageId + ""?GroupId="" + group.GroupId + ""'>"" + group.GroupName + ""</a></li>"";
+                        popoverContent = popoverContent + ""<li><a href='/page/"" + groupDetailPageId + ""?GroupId="" + group.GroupId + ""'>"" + group.GroupName + ""</a></li>"";
 
-    // only display 2
-    if ( index == 1 )
-    {{
-        return false;
-    }}
-}});
+                        // only display 2
+                        if ( index == 1 )
+                        {{
+                            return false;
+                        }}
+                    }});
 
                     var popoverContent = popoverContent + ""</ul>"";
 
@@ -345,30 +343,30 @@ var servingPopoverIsOpen = false;
 
                     $badge.find('.badge-coach').attr('data-original-title', firstName + ' is in a coaching group (earliest active group  ' + coachingSinceDateFormatted + ') &nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>');
 
-var coachPopoverIsOpen = false;
+                    var coachPopoverIsOpen = false;
 
                     $badge.find('.badge-coach').popover({{
-    html: true,
+                        html: true,
                         placement: 'top',
                         trigger: 'manual'
                     }});
 
                     // fancy pants to allow the tooltip and popover to work on the same control
                     $badge.find('.badge-coach').on('click', function ()
-{{
-    if ( coachPopoverIsOpen )
-    {{
+                    {{
+                        if ( coachPopoverIsOpen )
+                        {{
                             $badge.find( '.badge-coach' ).popover( 'hide' );
                             coachPopoverIsOpen = false;
                             $badge.find('.badge-coach').attr('data-original-title', firstName + ' is in a coaching group (earliest active group  ' + coachingSinceDateFormatted + ') &nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>');
-    }}
-    else {{
+                        }}
+                        else {{
                             $badge.find( '.badge-coach' ).attr( 'data-original-title', '' );
                             $badge.find( '.badge-coach' ).popover( 'show' );
                             coachPopoverIsOpen = true;
                             $badge.find( '.badge-coach' ).tooltip( 'hide' );
-    }}
-}});
+                        }}
+                    }});
                 }}
             }}
         }},
