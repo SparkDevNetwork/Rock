@@ -44,18 +44,12 @@ namespace Rock.CodeGeneration
                 rockAssembly = typeof( Rock.Data.IEntity ).Assembly;
                 FileInfo fi = new FileInfo( ( new System.Uri( rockAssembly.CodeBase ) ).AbsolutePath );
                 lblAssemblyPath.Text = fi.FullName;
-                lblAssemblyDateTime.Text = fi.LastWriteTime.ToElapsedString();
-                toolTip1.SetToolTip( lblAssemblyDateTime, fi.LastWriteTime.ToString() );
-
-                
             }
 
             ofdAssembly.InitialDirectory = Path.GetDirectoryName( lblAssemblyPath.Text );
             ofdAssembly.Filter = "dll files (*.dll)|*.dll";
             ofdAssembly.FileName = "Rock.dll";
             ofdAssembly.RestoreDirectory = true;
-
-            
 
             if ( ofdAssembly.ShowDialog() == DialogResult.OK )
             {
@@ -65,16 +59,23 @@ namespace Rock.CodeGeneration
 
                 foreach ( var file in ofdAssembly.FileNames )
                 {
-                    lblAssemblyPath.Text = file;
-                    var assembly = Assembly.LoadFrom( file );
-
-                    foreach ( Type type in assembly.GetTypes().OfType<Type>().OrderBy( a => a.FullName ) )
+                    FileInfo fi = new FileInfo( file );
+                    if ( fi.Exists )
                     {
-                        if ( type.Namespace != null && !type.Namespace.StartsWith( "Rock.Data" ) && !type.IsAbstract && type.GetCustomAttribute<NotMappedAttribute>() == null )
+                        lblAssemblyPath.Text = file;
+                        lblAssemblyDateTime.Text = fi.LastWriteTime.ToElapsedString();
+                        toolTip1.SetToolTip( lblAssemblyDateTime, fi.LastWriteTime.ToString() );
+
+                        var assembly = Assembly.LoadFrom( file );
+
+                        foreach ( Type type in assembly.GetTypes().OfType<Type>().OrderBy( a => a.FullName ) )
                         {
-                            if ( typeof( Rock.Data.IEntity ).IsAssignableFrom( type ) || type.GetCustomAttribute( typeof( TableAttribute ) ) != null )
+                            if ( type.Namespace != null && !type.Namespace.StartsWith( "Rock.Data" ) && !type.IsAbstract && type.GetCustomAttribute<NotMappedAttribute>() == null )
                             {
-                                cblModels.Items.Add( type );
+                                if ( typeof( Rock.Data.IEntity ).IsAssignableFrom( type ) || type.GetCustomAttribute( typeof( TableAttribute ) ) != null )
+                                {
+                                    cblModels.Items.Add( type );
+                                }
                             }
                         }
                     }
