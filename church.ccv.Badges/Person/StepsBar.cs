@@ -154,7 +154,7 @@ namespace church.ccv.Badges.Person
 
                     var popoverContent = popoverContent + ""</ul>""
 
-                            // check for more than two groups
+                    // check for more than two groups
                     if ( data.ConnectionResult.Groups.length > 2 )
                     {{
                         var moreCount = data.ConnectionResult.Groups.length - 2;
@@ -171,48 +171,47 @@ namespace church.ccv.Badges.Person
                     var popoverContent = popoverContent + ""<p class='margin-b-none'><a href='/page/"" + connectionGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find NH Group</a></p>"";
                     var popoverContent = popoverContent + ""<p class='margin-b-none margin-t-sm'><a href='/page/"" + nextStepGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find NS Group</a></p>"";
 
-                            $badge.find( '.badge-connect' ).removeClass( 'step-nottaken' );
+                    $badge.find( '.badge-connect' ).removeClass( 'step-nottaken' );
 
-                            if (data.ConnectionResult.ConnectionStatus == 2) {{
-                                $badge.find('.badge-connect').addClass('step-partial');
-                            }}
+                    if (data.ConnectionResult.ConnectionStatus == 2) {{
+                        $badge.find('.badge-connect').addClass('step-partial');
+                    }}
 
-                            $badge.find( '.badge-connect' ).attr( 'data-toggle', 'popover' );
-                            $badge.find( '.badge-connect' ).attr( 'data-container', 'body' );
-                            $badge.find( '.badge-connect' ).attr( 'data-content', popoverContent );
+                    $badge.find( '.badge-connect' ).attr( 'data-toggle', 'popover' );
+                    $badge.find( '.badge-connect' ).attr( 'data-container', 'body' );
+                    $badge.find( '.badge-connect' ).attr( 'data-content', popoverContent );
 
-                            var connectSinceDate = new Date(data.ConnectionResult.ConnectedSince);
-                            var connectSinceDateFormatted = (connectSinceDate.getMonth() + 1) + '/' + connectSinceDate.getDate() + '/' + connectSinceDate.getFullYear();
+                    var connectSinceDate = new Date(data.ConnectionResult.ConnectedSince);
+                    var connectSinceDateFormatted = (connectSinceDate.getMonth() + 1) + '/' + connectSinceDate.getDate() + '/' + connectSinceDate.getFullYear();
 
-                            $badge.find( '.badge-connect' ).attr( 'data-original-title', firstName + ' is in a connection group (eariest active group ' + connectSinceDateFormatted + ') &nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>' );
+                    $badge.find( '.badge-connect' ).attr( 'data-original-title', firstName + ' is in a connection group (eariest active group ' + connectSinceDateFormatted + ') &nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>' );
 
                     var connectPopoverIsOpen = false;
 
-                            $badge.find( '.badge-connect' ).popover({{
+                    $badge.find( '.badge-connect' ).popover({{
                         html: true,
-                                placement: 'top',
-                                trigger: 'manual'
-                              }});
+                        placement: 'top',
+                        trigger: 'manual'
+                        }});
 
-                            // disable the anchor tag
-                            $badge.find( '.badge-connect' ).on( ""click"", function( e ) {{
+                    // disable the anchor tag
+                    $badge.find( '.badge-connect' ).on( ""click"", function( e ) {{
                         e.preventDefault();
                     }});
 
-
-                            // fancy pants to allow the tooltip and popover to work on the same control
-                            $badge.find( '.badge-connect' ).on( 'click', function() {{
+                    // fancy pants to allow the tooltip and popover to work on the same control
+                    $badge.find( '.badge-connect' ).on( 'click', function() {{
                         if ( connectPopoverIsOpen )
                         {{
-                                    $badge.find( '.badge-connect' ).popover( 'hide' );
-                                    connectPopoverIsOpen = false;
-                                    $badge.find( '.badge-connect' ).attr( 'data-original-title', firstName + ' is in a connection group &nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>' );
+                            $badge.find( '.badge-connect' ).popover( 'hide' );
+                            connectPopoverIsOpen = false;
+                            $badge.find( '.badge-connect' ).attr( 'data-original-title', firstName + ' is in a connection group &nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>' );
                         }}
                         else {{
-                                    $badge.find( '.badge-connect' ).attr( 'data-original-title', '' );
-                                    $badge.find( '.badge-connect' ).popover( 'show' );
-                                    connectPopoverIsOpen = true;
-                                    $badge.find( '.badge-connect' ).tooltip( 'hide' );
+                            $badge.find( '.badge-connect' ).attr( 'data-original-title', '' );
+                            $badge.find( '.badge-connect' ).popover( 'show' );
+                            connectPopoverIsOpen = true;
+                            $badge.find( '.badge-connect' ).tooltip( 'hide' );
                         }}
                     }});
                 }}
@@ -236,7 +235,6 @@ namespace church.ccv.Badges.Person
 
                     $.each( data.ServingResult.Groups, function (index, group)
                     {{
-
                         popoverContent = popoverContent + ""<li><a href='/page/"" + groupDetailPageId + ""?GroupId="" + group.GroupId + ""'>"" + group.GroupName + ""</a></li>"";
 
                         // only display 2
@@ -285,15 +283,15 @@ namespace church.ccv.Badges.Person
                     {{
                         if ( servingPopoverIsOpen )
                         {{
-                                                $badge.find( '.badge-serve' ).popover( 'hide' );
+                            $badge.find( '.badge-serve' ).popover( 'hide' );
                             servingPopoverIsOpen = false;
-                                                $badge.find('.badge-serve').attr('data-original-title', firstName + ' is serving (earliest active group ' + servingSinceDateFormatted + ')&nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>');
+                            $badge.find('.badge-serve').attr('data-original-title', firstName + ' is serving (earliest active group ' + servingSinceDateFormatted + ')&nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>');
                         }}
                         else {{
-                                                $badge.find( '.badge-serve' ).attr( 'data-original-title', '' );
-                                                $badge.find( '.badge-serve' ).popover( 'show' );
+                            $badge.find( '.badge-serve' ).attr( 'data-original-title', '' );
+                            $badge.find( '.badge-serve' ).popover( 'show' );
                             servingPopoverIsOpen = true;
-                                                $badge.find( '.badge-serve' ).tooltip( 'hide' );
+                            $badge.find( '.badge-serve' ).tooltip( 'hide' );
                         }}
                     }});
                 }}
@@ -309,7 +307,6 @@ namespace church.ccv.Badges.Person
 
                     $.each( data.CoachingResult.Groups, function (index, group)
                     {{
-
                         popoverContent = popoverContent + ""<li><a href='/page/"" + groupDetailPageId + ""?GroupId="" + group.GroupId + ""'>"" + group.GroupName + ""</a></li>"";
 
                         // only display 2
