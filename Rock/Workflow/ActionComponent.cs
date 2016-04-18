@@ -51,7 +51,12 @@ namespace Rock.Workflow
         /// </summary>
         public ActionComponent()
         {
-            // Override default constructor of Component that loads attributes (not needed for workflow actions, needs to be done by each action)
+            var type = this.GetType();
+            using ( var rockContext = new RockContext() )
+            {
+                int? actionTypeEntityTypeId = EntityTypeCache.Read( typeof( WorkflowActionType ) ).Id;
+                Rock.Attribute.Helper.UpdateAttributes( this.GetType(), actionTypeEntityTypeId, "EntityTypeId", Rock.Web.Cache.EntityTypeCache.GetId( type.FullName ).ToString(), rockContext );
+            }
         }
 
         /// <summary>

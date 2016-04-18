@@ -252,7 +252,7 @@ namespace RockWeb.Blocks.Security
                 var rockContext = new RockContext();
                 UserLogin userLogin = null;
                 var service = new UserLoginService( rockContext );
-                String newUserName = tbUserName.Text.Trim();
+                string newUserName = tbUserName.Text.Trim();
 
                 int userLoginId = int.Parse( hfIdValue.Value );
 
@@ -266,8 +266,18 @@ namespace RockWeb.Blocks.Security
                 {
                     if ( service.GetByUserName( newUserName ) != null )
                     {
+                        // keep looking until we find the next available one 
+                        int numericSuffix = 1;
+                        string nextAvailableUserName = newUserName + numericSuffix.ToString();
+                        while (service.GetByUserName(nextAvailableUserName) != null)
+                        {
+                            numericSuffix++;
+                            nextAvailableUserName = newUserName + numericSuffix.ToString();
+                        }
+                        
+                        nbErrorMessage.NotificationBoxType = NotificationBoxType.Warning;
                         nbErrorMessage.Title = "Invalid User Name";
-                        nbErrorMessage.Text = "The User Name you selected already exists.  Please select a different User Name.";
+                        nbErrorMessage.Text = "The User Name you selected already exists. Next available username: " + nextAvailableUserName;
                         nbErrorMessage.Visible = true;
                         return;
                     }
@@ -287,6 +297,7 @@ namespace RockWeb.Blocks.Security
                     }
                     else
                     {
+                        nbErrorMessage.NotificationBoxType = NotificationBoxType.Danger;
                         nbErrorMessage.Title = "Invalid Situation";
                         nbErrorMessage.Text = "No person selected, or the person you are editing has no person Id.";
                         nbErrorMessage.Visible = true;
@@ -320,6 +331,7 @@ namespace RockWeb.Blocks.Security
                                 }
                                 else
                                 {
+                                    nbErrorMessage.NotificationBoxType = NotificationBoxType.Danger;
                                     nbErrorMessage.Title = "Invalid Password";
                                     nbErrorMessage.Text = UserLoginService.FriendlyPasswordRules();
                                     nbErrorMessage.Visible = true;
@@ -328,6 +340,7 @@ namespace RockWeb.Blocks.Security
                             }
                             else
                             {
+                                nbErrorMessage.NotificationBoxType = NotificationBoxType.Danger;
                                 nbErrorMessage.Title = "Invalid Password";
                                 nbErrorMessage.Text = "Password and Confirmation do not match.";
                                 nbErrorMessage.Visible = true;

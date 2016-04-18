@@ -41,7 +41,6 @@ namespace RockWeb.Blocks.Prayer
     public partial class PrayerSession : RockBlock
     {
         #region Fields
-        private string _sessionKey = "Rock.PrayerRequestIDs";
         private bool _enableCommunityFlagging = false;
         private string _categoryGuidString = string.Empty;
         private int? _flagLimit = 1;

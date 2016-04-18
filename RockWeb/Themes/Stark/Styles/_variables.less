@@ -1,41 +1,63 @@
 
-// Theme Colors *open*
-@theme-1: #428bca; // bootstrap primary blue
-@theme-1-text: #fff;
+// Theme Colors *show in editor*
+@theme-1: #428bca; // bootstrap primary blue #color
+@theme-1-text: #fff; // #color
 //--
 @theme-2: @gray-darker; // admin bar
 @theme-2-text: lighten(@gray-darker, 70%);
 //--
-@theme-3: lighten(@theme-1, 20%); // header
-@theme-3-text: darken(@theme-3, 55%);
+@theme-3: lighten(@theme-1, 20%); // header #color
+@theme-3-text: darken(@theme-3, 55%); // #color
 //--
-@theme-4: lighten(@theme-1, 30%); // page title
-@theme-4-text: darken(@theme-4, 50%);
+@theme-4: lighten(@theme-1, 30%); // page title #color
+@theme-4-text: darken(@theme-4, 50%); // #color
 //--
-@theme-5: lighten(@theme-1, 40%); // badge bar
-@theme-5-text: darken(@theme-5, 45%);
+@theme-5: lighten(@theme-1, 40%); // badge bar #color
+@theme-5-text: darken(@theme-5, 45%); // #color
 //--
-@theme-6: lighten(@theme-1, 45%); // family bar
-@theme-6-text: darken(@theme-6, 40%);
+@theme-6: lighten(@theme-1, 45%); // family bar #color
+@theme-6-text: darken(@theme-6, 40%); // #color
 //--
-@theme-7: spin(@theme-1, -135); // accent color
-@theme-7-text: #fff;
+@theme-7: spin(@theme-1, -135); // accent color #color
+@theme-7-text: #fff; // #color
 //--
-@theme-8: @gray-light; // action buttons / type labels
-@theme-8-text: #fff;
+@theme-8: @gray-light; // action buttons / type labels #color
+@theme-8-text: #fff; // #color
+//--
+@body-bg:           #fff; // The background color of the page. #color
 
 
-// Text *open*
+// Text *show in editor*
 @text-color:             @gray-dark; // The default text color. #color
-@link-color:             @brand-primary; // The color for all links.
-@link-hover-color:       darken(@link-color, 15%); // The rollover color for all links.
-@text-muted:             @gray-light; // The muted color for text #color
-@text-selection-bg:      #afd074; // Text selection background color (used when people select text with the mouse).
-@text-selection-color:   #fff;    // Text selection text color (used when people select text with the mouse).
+@link-color:             @brand-primary; // The color for all links. #color
+@link-hover-color:       darken(@link-color, 15%); // The rollover color for all links. #color
+@text-muted:             @gray-light; // The muted color for text #color #color
+@text-selection-bg:      #afd074; // Text selection background color (used when people select text with the mouse). #color
+@text-selection-color:   #fff;    // Text selection text color (used when people select text with the mouse). #color
 @font-family-sans-serif: 'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif; // The base font to use for text. Be sure when defining this font that the various weights are configured.
 @font-size-base:          14px; // The default text size.
 @line-height-base:        1.428571429; // The default line height.
+//--
+@required-field-color: #eca9a7; // Color of the small dot that denotes required fields. #color
+@well-bg: darken(@body-bg, 5%);             // The backgroud color for wells. Wells are used to group like content. #color
+@help-color: #86b8cc;           // The color of the help icon used in Rock. #color
 
+// Bootstrap Colors *show in editor*
+
+//// Bootstrap Colors {The primary colors defined by the Bootstrap framework. [More Information](http://getbootstrap.com/customize/#colors)}
+@brand-primary:         @theme-1; // #color
+@brand-success:         #5cb85c; // #color
+@brand-info:            #5bc0de; // #color
+@brand-warning:         #f0ad4e; // #color
+@brand-danger:          #d9534f; // #color
+//--
+@gray-darker:            lighten(#000, 13.5%); // #color
+@gray-dark:              lighten(#000, 20%); // #color
+@gray:                   lighten(#000, 33.5%); // #color
+@gray-light:             lighten(#000, 46.7%); // #color
+@gray-lighter:           lighten(#000, 93.5%); // #color
+
+// Font Sizes
 //// Heading Sizes
 @font-size-h1:            floor(@font-size-base * 2.60); // ~36px
 @font-size-h2:            floor(@font-size-base * 2.15); // ~30px
@@ -44,24 +66,7 @@
 @font-size-h5:            @font-size-base;
 @font-size-h6:            ceil(@font-size-base * 0.85); // ~12px
 
-// Bootstrap Colors
-
-//// Bootstrap Colors {The primary colors defined by the Bootstrap framework. [More Information](http://getbootstrap.com/customize/#colors)}
-@brand-primary:         @theme-1;
-@brand-success:         #5cb85c;
-@brand-info:            #5bc0de;
-@brand-warning:         #f0ad4e;
-@brand-danger:          #d9534f;
-//--
-@gray-darker:            lighten(#000, 13.5%);
-@gray-dark:              lighten(#000, 20%);
-@gray:                   lighten(#000, 33.5%);
-@gray-light:             lighten(#000, 46.7%);
-@gray-lighter:           lighten(#000, 93.5%);
-
-// Page Areas *open*
-@body-bg:           #fff; // The background color of the page.
-
+// Page Areas
 //// Header
 @header-bg:         @theme-2; // The header background color.
 @header-text-color: @theme-2-text; // The header text color.
@@ -96,12 +101,10 @@
 @adminbar-bg: @theme-2;
 @adminbar-text-color: @theme-2-text;
 
-// Global Styles *open*
+// Global Styles 
 @border-radius-base: 4px;       // The global setting for rounding corners.
-@well-bg: #f5f5f5;             // The backgroud color for wells. Wells are used to group like content.
+
 @photo-border: @theme-3;   // Standard border color for photos.
-@help-color: #86b8cc;           // The color of the help icon used in Rock.
-@required-field-color: #eca9a7; // Color of the small dot that denotes required fields.
 @hr-border: lighten(@text-color, 40%);      // The color horizontal rule lines.
 //--
 @legend-color:                   @gray-dark; // Text color for html legend element. The legend element is not used much in the core blocks (provided here for theme developers.)

@@ -61,6 +61,42 @@ namespace Rock.Financial
         }
 
         /// <summary>
+        /// Gets a value indicating whether the gateway requires the name on card for CC processing
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <returns></returns>
+        /// <value>
+        ///   <c>true</c> if [name on card required]; otherwise, <c>false</c>.
+        /// </value>
+        public override bool PromptForNameOnCard( FinancialGateway financialGateway )
+        {
+            return false;
+        }
+
+        /// <summary>
+        /// Prompts the name of for bank account.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <returns></returns>
+        public override bool PromptForBankAccountName( FinancialGateway financialGateway )
+        {
+            return false;
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether [address required].
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <returns></returns>
+        /// <value>
+        ///   <c>true</c> if [address required]; otherwise, <c>false</c>.
+        /// </value>
+        public override bool PromptForBillingAddress( FinancialGateway financialGateway )
+        {
+            return false;
+        }
+
+        /// <summary>
         /// Charges the specified payment info.
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>
