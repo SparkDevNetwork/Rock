@@ -51,19 +51,10 @@
                             <Rock:Zone Name="PeoriaContact" runat="server" />
                         </div>
                     </div>
-                    <div class="module module-with-footer">
+                    <div class="module">
                         <div class="module-body">
                             <h3 class="module-title margin-b-lg">Avondale Campus</h3>
                             <Rock:Zone Name="AvondaleSports" runat="server" />
-                        </div>
-                        <div class="module-mid js-fieldstatus fieldstatus clearfix">
-                            <strong class="pull-left margin-r-sm">Field Status:</strong>
-                            <div class="pull-left">
-                                <Rock:Zone Name="AvondaleStatus" runat="server" />
-                            </div>
-                        </div>
-                        <div class="module-footer">
-                            <Rock:Zone Name="AvondaleContact" runat="server" />
                         </div>
                     </div>
                 </div>
@@ -197,3 +188,4 @@
        })
    </script>
 </asp:Content>
+
