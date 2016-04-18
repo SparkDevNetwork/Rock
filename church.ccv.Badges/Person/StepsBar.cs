@@ -137,9 +137,13 @@ namespace church.ccv.Badges.Person
 
                 // connect
                 if (data.ConnectionResult.ConnectionStatus != 1) {{
+                    $badge.find( '.badge-connect' ).removeClass( 'step-nottaken' );
+                }}
 
-                    // create content for popover
-                    var popoverContent = firstName + "" is in the following connection groups: <ul styling='padding-left: 20px;' > "";
+                // create content for popover
+                var popoverContent = firstName;
+                if (data.ConnectionResult.Groups.length > 0) {{
+                    popoverContent = popoverContent + "" is in the following connection groups: <ul styling='padding-left: 20px;' > "";
 
                     $.each( data.ConnectionResult.Groups, function( index, group ) {{
 
@@ -153,68 +157,71 @@ namespace church.ccv.Badges.Person
                     }});
 
                     var popoverContent = popoverContent + ""</ul>""
+                }} else {{
+                    popoverContent = popoverContent + "" is not in any connection groups."";
+                }}
 
-                    // check for more than two groups
-                    if ( data.ConnectionResult.Groups.length > 2 )
+                // check for more than two groups
+                if ( data.ConnectionResult.Groups.length > 2 )
+                {{
+                    var moreCount = data.ConnectionResult.Groups.length - 2;
+
+                    if ( moreCount == 1 )
                     {{
-                        var moreCount = data.ConnectionResult.Groups.length - 2;
-
-                        if ( moreCount == 1 )
-                        {{
-                            popoverContent = popoverContent + ""<p>and <a href='/page/"" + groupListPageId + ""?PersonId="" + '{2}' + ""&GroupTypeId="" + connectGroupTypeId + ""'> "" + moreCount + "" other</a></p>"";
-                        }}
-                        else {{
-                            popoverContent = popoverContent + ""<p>and <a href='/page/"" + groupListPageId + ""?PersonId="" + '{2}' + ""&GroupTypeId="" + connectGroupTypeId + ""'> "" + moreCount + "" others</a></p>"";
-                        }}
+                        popoverContent = popoverContent + ""<p>and <a href='/page/"" + groupListPageId + ""?PersonId="" + '{2}' + ""&GroupTypeId="" + connectGroupTypeId + ""'> "" + moreCount + "" other</a></p>"";
                     }}
-
-                    var popoverContent = popoverContent + ""<p class='margin-b-none'><a href='/page/"" + connectionGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find NH Group</a></p>"";
-                    var popoverContent = popoverContent + ""<p class='margin-b-none margin-t-sm'><a href='/page/"" + nextStepGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find NS Group</a></p>"";
-
-                    $badge.find( '.badge-connect' ).removeClass( 'step-nottaken' );
-
-                    if (data.ConnectionResult.ConnectionStatus == 2) {{
-                        $badge.find('.badge-connect').addClass('step-partial');
+                    else {{
+                        popoverContent = popoverContent + ""<p>and <a href='/page/"" + groupListPageId + ""?PersonId="" + '{2}' + ""&GroupTypeId="" + connectGroupTypeId + ""'> "" + moreCount + "" others</a></p>"";
                     }}
+                }}
 
-                    $badge.find( '.badge-connect' ).attr( 'data-toggle', 'popover' );
-                    $badge.find( '.badge-connect' ).attr( 'data-container', 'body' );
-                    $badge.find( '.badge-connect' ).attr( 'data-content', popoverContent );
+                var popoverContent = popoverContent + ""<p class='margin-b-none'><a href='/page/"" + connectionGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find NH Group</a></p>"";
+                var popoverContent = popoverContent + ""<p class='margin-b-none margin-t-sm'><a href='/page/"" + nextStepGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find NS Group</a></p>"";
 
+                if (data.ConnectionResult.ConnectionStatus == 2) {{
+                    $badge.find('.badge-connect').addClass('step-partial');
+                }}
+
+                $badge.find( '.badge-connect' ).attr( 'data-toggle', 'popover' );
+                $badge.find( '.badge-connect' ).attr( 'data-container', 'body' );
+                $badge.find( '.badge-connect' ).attr( 'data-content', popoverContent );
+                
+                if (data.ConnectionResult.ConnectionStatus != 1) {{                
                     var connectSinceDate = new Date(data.ConnectionResult.ConnectedSince);
                     var connectSinceDateFormatted = (connectSinceDate.getMonth() + 1) + '/' + connectSinceDate.getDate() + '/' + connectSinceDate.getFullYear();
 
                     $badge.find( '.badge-connect' ).attr( 'data-original-title', firstName + ' is in a connection group (eariest active group ' + connectSinceDateFormatted + ') &nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>' );
-
-                    var connectPopoverIsOpen = false;
-
-                    $badge.find( '.badge-connect' ).popover({{
-                        html: true,
-                        placement: 'top',
-                        trigger: 'manual'
-                        }});
-
-                    // disable the anchor tag
-                    $badge.find( '.badge-connect' ).on( ""click"", function( e ) {{
-                        e.preventDefault();
-                    }});
-
-                    // fancy pants to allow the tooltip and popover to work on the same control
-                    $badge.find( '.badge-connect' ).on( 'click', function() {{
-                        if ( connectPopoverIsOpen )
-                        {{
-                            $badge.find( '.badge-connect' ).popover( 'hide' );
-                            connectPopoverIsOpen = false;
-                            $badge.find( '.badge-connect' ).attr( 'data-original-title', firstName + ' is in a connection group &nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>' );
-                        }}
-                        else {{
-                            $badge.find( '.badge-connect' ).attr( 'data-original-title', '' );
-                            $badge.find( '.badge-connect' ).popover( 'show' );
-                            connectPopoverIsOpen = true;
-                            $badge.find( '.badge-connect' ).tooltip( 'hide' );
-                        }}
-                    }});
                 }}
+
+                var connectPopoverIsOpen = false;
+                var connectPopoverTitle = $badge.find( '.badge-connect' ).attr( 'data-original-title');
+
+                $badge.find( '.badge-connect' ).popover({{
+                    html: true,
+                    placement: 'top',
+                    trigger: 'manual'
+                }});
+
+                // disable the anchor tag
+                $badge.find( '.badge-connect' ).on( ""click"", function( e ) {{
+                    e.preventDefault();
+                }});
+
+                // fancy pants to allow the tooltip and popover to work on the same control
+                $badge.find( '.badge-connect' ).on( 'click', function() {{
+                    if ( connectPopoverIsOpen )
+                    {{
+                        $badge.find( '.badge-connect' ).popover( 'hide' );
+                        connectPopoverIsOpen = false;
+                        $badge.find( '.badge-connect' ).attr( 'data-original-title', connectPopoverTitle );
+                    }}
+                    else {{
+                        $badge.find( '.badge-connect' ).attr( 'data-original-title', '' );
+                        $badge.find( '.badge-connect' ).popover( 'show' );
+                        connectPopoverIsOpen = true;
+                        $badge.find( '.badge-connect' ).tooltip( 'hide' );
+                    }}
+                }});
 
                 // tithing
                 if (data.IsTithing) {{
