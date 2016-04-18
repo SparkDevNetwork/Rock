@@ -22,9 +22,12 @@ namespace ConsoleApplication5
                 if (crlfContents != contents)
                 {
                     File.WriteAllText( cssFile.FullName, crlfContents );
+                    Console.WriteLine( "Correcting CRLF in " + cssFile.FullName );
                 }
             }
 
+            Console.WriteLine( "Press any key to continue" );
+            Console.ReadLine();
         }
     }
 }
