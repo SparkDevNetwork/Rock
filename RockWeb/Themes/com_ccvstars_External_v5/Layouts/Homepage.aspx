@@ -53,7 +53,7 @@
                     </div>
                     <div class="module module-with-footer">
                         <div class="module-body">
-                            <h3 class="module-title margin-b-lg">East Valley Campus</h3>
+                            <h3 class="module-title margin-b-lg">Avondale Campus</h3>
                             <Rock:Zone Name="AvondaleSports" runat="server" />
                         </div>
                         <div class="module-mid js-fieldstatus fieldstatus clearfix">
