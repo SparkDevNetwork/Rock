@@ -299,7 +299,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of Groups that are children of this group.
         /// </value>
-        [DataMember]
+        [LavaInclude]
         public virtual ICollection<Group> Groups
         {
             get { return _groups ?? ( _groups = new Collection<Group>() ); }
