@@ -87,6 +87,8 @@ namespace RockWeb.Blocks.Core
         {
             base.OnLoad( e );
 
+            nbDuplicateDevice.Visible = false;
+
             if ( !Page.IsPostBack )
             {
                 ShowDetail( PageParameter( "DeviceId" ).AsInteger() );
@@ -122,7 +124,8 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            Device Device;
+            Device Device = null;
+
             var rockContext = new RockContext();
             var deviceService = new DeviceService( rockContext );
             var attributeService = new AttributeService( rockContext );
@@ -130,61 +133,77 @@ namespace RockWeb.Blocks.Core
 
             int DeviceId = int.Parse( hfDeviceId.Value );
 
-            if ( DeviceId == 0 )
-            {
-                Device = new Device();
-                deviceService.Add( Device );
-            }
-            else
+            if ( DeviceId != 0 )
             {
                 Device = deviceService.Get( DeviceId );
             }
 
-            Device.Name = tbName.Text;
-            Device.Description = tbDescription.Text;
-            Device.IPAddress = tbIpAddress.Text;
-            Device.DeviceTypeValueId = ddlDeviceType.SelectedValueAsInt().Value;
-            Device.PrintToOverride = (PrintTo)System.Enum.Parse( typeof( PrintTo ), ddlPrintTo.SelectedValue );
-            Device.PrinterDeviceId = ddlPrinter.SelectedValueAsInt();
-            Device.PrintFrom = (PrintFrom)System.Enum.Parse( typeof( PrintFrom ), ddlPrintFrom.SelectedValue );
-
-            if ( Device.Location == null )
+            if ( Device == null )
             {
-                Device.Location = new Location();
-            }
-            Device.Location.GeoPoint = geopPoint.SelectedValue;
-            Device.Location.GeoFence = geopFence.SelectedValue;
-
-            if ( !Device.IsValid || !Page.IsValid )
-            {
-                // Controls will render the error messages
-                return;
+                // Check for existing
+                var existingDevice = deviceService.Queryable()
+                    .Where( d => d.Name == tbName.Text )
+                    .FirstOrDefault();
+                if ( existingDevice != null )
+                {
+                    nbDuplicateDevice.Text = string.Format( "A device already exists with the name '{0}'. Please use a different device name.", existingDevice.Name );
+                    nbDuplicateDevice.Visible = true;
+                }
+                else
+                {
+                    Device = new Device();
+                    deviceService.Add( Device );
+                }
             }
 
-            // Remove any deleted locations
-            foreach ( var location in Device.Locations
-                .Where( l =>
-                    !Locations.Keys.Contains( l.Id ) )
-                .ToList() )
+            if ( Device != null )
             {
-                Device.Locations.Remove( location );
+                Device.Name = tbName.Text;
+                Device.Description = tbDescription.Text;
+                Device.IPAddress = tbIpAddress.Text;
+                Device.DeviceTypeValueId = ddlDeviceType.SelectedValueAsInt().Value;
+                Device.PrintToOverride = (PrintTo)System.Enum.Parse( typeof( PrintTo ), ddlPrintTo.SelectedValue );
+                Device.PrinterDeviceId = ddlPrinter.SelectedValueAsInt();
+                Device.PrintFrom = (PrintFrom)System.Enum.Parse( typeof( PrintFrom ), ddlPrintFrom.SelectedValue );
+
+                if ( Device.Location == null )
+                {
+                    Device.Location = new Location();
+                }
+                Device.Location.GeoPoint = geopPoint.SelectedValue;
+                Device.Location.GeoFence = geopFence.SelectedValue;
+
+                if ( !Device.IsValid || !Page.IsValid )
+                {
+                    // Controls will render the error messages
+                    return;
+                }
+
+                // Remove any deleted locations
+                foreach ( var location in Device.Locations
+                    .Where( l =>
+                        !Locations.Keys.Contains( l.Id ) )
+                    .ToList() )
+                {
+                    Device.Locations.Remove( location );
+                }
+
+                // Add any new locations
+                var existingLocationIDs = Device.Locations.Select( l => l.Id ).ToList();
+                foreach ( var location in locationService.Queryable()
+                    .Where( l =>
+                        Locations.Keys.Contains( l.Id ) &&
+                        !existingLocationIDs.Contains( l.Id ) ) )
+                {
+                    Device.Locations.Add( location );
+                }
+
+                rockContext.SaveChanges();
+
+                Rock.CheckIn.KioskDevice.Flush( Device.Id );
+
+                NavigateToParentPage();
             }
-
-            // Add any new locations
-            var existingLocationIDs = Device.Locations.Select( l => l.Id ).ToList();
-            foreach ( var location in locationService.Queryable()
-                .Where( l => 
-                    Locations.Keys.Contains( l.Id ) &&
-                    !existingLocationIDs.Contains( l.Id) ) )
-            {
-                Device.Locations.Add(location);
-            }
-
-            rockContext.SaveChanges();
-
-            Rock.CheckIn.KioskDevice.Flush( Device.Id );
-            
-            NavigateToParentPage();
         }
 
         /// <summary>
