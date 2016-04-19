@@ -1,0 +1,15 @@
+{% if InactiveGroupMembers != empty %}
+  <h4>Inactive Roster</h4>
+  {% for member in InactiveGroupMembers %}
+    {% assign loop = forloop.index | Modulo: 2 %}
+    {% if loop != 0 %}
+    <div class="row">
+    {% endif %}
+
+    {% include personTemplate %}
+
+    {% if loop == 0 or forloop.last %}
+    </div>
+    {% endif %}
+  {% endfor %}
+{% endif %}
