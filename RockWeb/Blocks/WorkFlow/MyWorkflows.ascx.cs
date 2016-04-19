@@ -380,7 +380,7 @@ namespace RockWeb.Blocks.WorkFlow
                 }
                 else
                 {
-                    gWorkflows.DataSource = workflowQry.OrderByDescending( s => s.CreatedDateTime );
+                    gWorkflows.DataSource = workflowQry.OrderByDescending( s => s.CreatedDateTime ).ToList();
                 }
 
                 gWorkflows.DataBind();
