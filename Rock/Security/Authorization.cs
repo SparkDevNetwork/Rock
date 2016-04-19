@@ -242,7 +242,7 @@ namespace Rock.Security
         /// <returns></returns>
         public static bool Authorized( ISecured entity, string action, SpecialRole specialRole )
         {
-            return ItemAuthorized( entity, action, specialRole, true ) ?? entity.IsAllowedByDefault( action );
+            return ItemAuthorized( entity, action, specialRole, true, true ) ?? entity.IsAllowedByDefault( action );
         }
 
         /// <summary>
@@ -270,7 +270,7 @@ namespace Rock.Security
         /// <returns></returns>
         public static bool Authorized( ISecured entity, string action, Rock.Model.Person person )
         {
-            return ItemAuthorized( entity, action, person, true ) ?? entity.IsAllowedByDefault( action );
+            return ItemAuthorized( entity, action, person, true, true ) ?? entity.IsAllowedByDefault( action );
         }
 
         /// <summary>
@@ -674,9 +674,10 @@ namespace Rock.Security
         /// <param name="entity">The entity.</param>
         /// <param name="action">The action.</param>
         /// <param name="specialRole">The special role.</param>
+        /// <param name="isRootEntity">if set to <c>true</c> [is root entity].</param>
         /// <param name="checkParentAuthority">if set to <c>true</c> [check parent authority].</param>
         /// <returns></returns>
-        private static bool? ItemAuthorized( ISecured entity, string action, SpecialRole specialRole, bool checkParentAuthority )
+        private static bool? ItemAuthorized( ISecured entity, string action, SpecialRole specialRole, bool isRootEntity, bool checkParentAuthority )
         {
             Load();
 
@@ -719,14 +720,14 @@ namespace Rock.Security
 
             if ( checkParentAuthority )
             {
-                if ( entity.ParentAuthorityPre != null )
+                if ( isRootEntity && entity.ParentAuthorityPre != null )
                 {
-                    parentAuthorized = ItemAuthorized( entity.ParentAuthorityPre, action, specialRole, false );
+                    parentAuthorized = ItemAuthorized( entity.ParentAuthorityPre, action, specialRole, false, false );
                 }
 
                 if ( !parentAuthorized.HasValue && entity.ParentAuthority != null )
                 {
-                    parentAuthorized = ItemAuthorized( entity.ParentAuthority, action, specialRole, true );
+                    parentAuthorized = ItemAuthorized( entity.ParentAuthority, action, specialRole, false, true );
                 }
             }
 
@@ -739,9 +740,10 @@ namespace Rock.Security
         /// <param name="entity">The entity.</param>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
+        /// <param name="isRootEntity">if set to <c>true</c> [is root entity].</param>
         /// <param name="checkParentAuthority">if set to <c>true</c> [check parent].</param>
         /// <returns></returns>
-        private static bool? ItemAuthorized( ISecured entity, string action, Rock.Model.Person person, bool checkParentAuthority )
+        private static bool? ItemAuthorized( ISecured entity, string action, Rock.Model.Person person, bool isRootEntity, bool checkParentAuthority )
         {
             Load();
 
@@ -850,14 +852,14 @@ namespace Rock.Security
 
             if ( checkParentAuthority )
             {
-                if ( entity.ParentAuthorityPre != null )
+                if ( isRootEntity && entity.ParentAuthorityPre != null )
                 {
-                    parentAuthorized = ItemAuthorized( entity.ParentAuthorityPre, action, person, false );
+                    parentAuthorized = ItemAuthorized( entity.ParentAuthorityPre, action, person, false, false );
                 }
 
                 if ( !parentAuthorized.HasValue && entity.ParentAuthority != null )
                 {
-                    parentAuthorized = ItemAuthorized( entity.ParentAuthority, action, person, true );
+                    parentAuthorized = ItemAuthorized( entity.ParentAuthority, action, person, false, true );
                 }
             }
 
