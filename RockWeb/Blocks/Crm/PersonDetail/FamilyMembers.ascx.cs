@@ -44,6 +44,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private RockContext _bindFamiliesRockContext = null;
 
         #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -287,18 +288,20 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         var familyGroupType = GroupTypeCache.GetFamilyGroupType();
                         if ( familyGroupType != null )
                         {
-                            var groupMember = new GroupMember();
-                            groupMember.PersonId = Person.Id;
-                            groupMember.GroupRoleId = familyGroupType.DefaultGroupRoleId.Value;
+                            var groupService = new GroupService( _bindFamiliesRockContext );
 
                             var family = new Group();
                             family.Name = Person.LastName;
                             family.GroupTypeId = familyGroupType.Id;
-                            family.Members.Add( groupMember );
 
-                            // use the _bindFamiliesRockContext that is created/disposed in BindFamilies()
-                            var groupService = new GroupService( _bindFamiliesRockContext );
                             groupService.Add( family );
+                            _bindFamiliesRockContext.SaveChanges();
+
+                            var groupMember = new GroupMember();
+                            groupMember.PersonId = Person.Id;
+                            groupMember.GroupRoleId = familyGroupType.DefaultGroupRoleId.Value;
+                            groupMember.GroupId = family.Id;
+                            family.Members.Add( groupMember );
                             _bindFamiliesRockContext.SaveChanges();
 
                             families.Add( groupService.Get( family.Id ) );
