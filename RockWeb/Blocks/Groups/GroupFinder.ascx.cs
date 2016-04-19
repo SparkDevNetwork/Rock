@@ -500,18 +500,23 @@ namespace RockWeb.Blocks.Groups
                 lTitle.Text = String.Format( "<h4 class='margin-t-none'>Groups for {0}</h4>", targetPerson.FullName );
                 acAddress.SetValues( targetPersonLocation );
                 acAddress.Visible = false;
+                phFilterControls.Visible = false;
                 btnSearch.Visible = false;
                 btnClear.Visible = false;
 
-                if ( targetPersonLocation.GeoPoint != null )
+                if ( targetPersonLocation != null && targetPersonLocation.GeoPoint != null )
                 {
                     lTitle.Text += String.Format( "<p>Search based on: {0}</p>", targetPersonLocation.ToString() );
 
                     ShowResults();
                 }
-                else
+                else if ( targetPersonLocation != null )
                 {
                     lTitle.Text += String.Format( "<p>The position of the address on file ({0}) could not be determined.</p>", targetPersonLocation.ToString() );
+                }
+                else
+                {
+                    lTitle.Text += String.Format( "<p>The person does not have an address on file.</p>" );
                 }
             }
             
@@ -535,6 +540,7 @@ namespace RockWeb.Blocks.Groups
                     acAddress.SetValues( CurrentPerson.GetHomeLocation() );
                 }
 
+                phFilterControls.Visible = true;
                 btnSearch.Visible = true;
             }
             else
@@ -545,12 +551,14 @@ namespace RockWeb.Blocks.Groups
                 string scheduleFilters = GetAttributeValue( "ScheduleFilters" );
                 if ( !string.IsNullOrWhiteSpace( scheduleFilters ) || AttributeFilters.Any() )
                 {
+                    phFilterControls.Visible = true;
                     btnSearch.Visible = true;
                 }
                 else
                 {
                     // Hide the search button and show the results immediately since there is 
                     // no filter criteria to be entered
+                    phFilterControls.Visible = false;
                     btnSearch.Visible = false;
                     pnlResults.Visible = true;
                 }
