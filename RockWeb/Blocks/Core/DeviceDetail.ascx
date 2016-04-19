@@ -23,6 +23,7 @@
                 <fieldset>
 
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+                    <Rock:NotificationBox ID="nbDuplicateDevice" runat="server" NotificationBoxType="Warning" Title="Sorry" Visible="false" />
 
                     <div class="row">
                         <div class="col-md-6">
