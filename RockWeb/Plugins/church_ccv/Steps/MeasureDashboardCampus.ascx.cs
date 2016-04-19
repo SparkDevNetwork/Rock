@@ -110,7 +110,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
 
                 if ( !IsUserAuthorized( Authorization.ADMINISTRATE ) )
                 {
-                    lStaticToggle.Text = "<span class='label label-info'>Active Adults</span>";
+                    lStaticToggle.Text = "<span class='label label-info'>Adults</span>";
                     tglCompareTo.Visible = false;
                 }
                 
