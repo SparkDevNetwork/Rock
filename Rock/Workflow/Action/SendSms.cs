@@ -34,7 +34,7 @@ namespace Rock.Workflow.Action
     [ActionCategory( "Communications" )]
     [Description( "Sends a SMS message. The recipient can either be a person or group attribute or a phone number entered in the 'To' field." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Send SMS" )]
+    [ExportMetadata( "ComponentName", "SMS Send" )]
 
     [DefinedValueField( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM, "From", "The phone number to send message from", true, false, "", "", 0 )]
     [WorkflowTextOrAttribute( "Recipient", "Attribute Value", "The phone number or an attribute that contains the person or phone number that message should be sent to. <span class='tip tip-lava'></span>", true, "", "", 1, "To",
