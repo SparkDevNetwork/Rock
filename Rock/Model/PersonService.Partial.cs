@@ -578,7 +578,7 @@ namespace Rock.Model
         {
             Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
 
-            return new GroupMemberService( (RockContext)this.Context ).Queryable()
+            return new GroupMemberService( (RockContext)this.Context ).Queryable( true )
                 .Where( m => m.PersonId == personId && m.Group.GroupType.Guid == familyGuid )
                 .Select( m => m.Group )
                 .Distinct();
@@ -753,7 +753,7 @@ namespace Rock.Model
 
             var groupMemberService = new GroupMemberService( (RockContext)this.Context );
 
-            var familyGroupIds = groupMemberService.Queryable()
+            var familyGroupIds = groupMemberService.Queryable( true )
                 .Where( m =>
                     m.PersonId == personId &&
                     m.Group.GroupTypeId == groupTypeFamilyId )
@@ -777,9 +777,10 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<GroupMember> GetFamilyMembers( Group family, int personId, bool includeSelf = false )
         {
-            return new GroupMemberService( (RockContext)this.Context ).Queryable( "GroupRole, Person" )
-                .Where( m => m.GroupId == family.Id )
-                .Where( m => includeSelf || m.PersonId != personId )
+            return new GroupMemberService( (RockContext)this.Context ).Queryable( "GroupRole, Person", true )
+                .Where( m => 
+                    m.GroupId == family.Id &&
+                    ( includeSelf || ( m.PersonId != personId && !m.Person.IsDeceased ) ) )
                 .OrderBy( m => m.GroupRole.Order )
                 .ThenBy( m => m.Person.BirthDate ?? DateTime.MinValue )
                 .ThenByDescending( m => m.Person.Gender )
@@ -1093,8 +1094,10 @@ namespace Rock.Model
         public GroupLocation GetFirstLocation( int personId, int locationTypeValueId )
         {
             Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
-            return new GroupMemberService( (RockContext)this.Context ).Queryable( "GroupLocations.Location" )
-                .Where( m => m.PersonId == personId && m.Group.GroupType.Guid == familyGuid )
+            return new GroupMemberService( (RockContext)this.Context ).Queryable( "GroupLocations.Location", true )
+                .Where( m => 
+                    m.PersonId == personId && 
+                    m.Group.GroupType.Guid == familyGuid )
                 .SelectMany( m => m.Group.GroupLocations )
                 .Where( gl => gl.GroupLocationTypeValueId == locationTypeValueId )
                 .FirstOrDefault();
@@ -1273,7 +1276,7 @@ namespace Rock.Model
 
             // get the geopoints for the family locations for the selected person
             return groupMemberService
-                .Queryable().AsNoTracking()
+                .Queryable( true ).AsNoTracking()
                 .Where( m =>
                     m.PersonId == personId &&
                     m.Group.GroupType.Guid.Equals( familyTypeGuid ) )
@@ -1502,7 +1505,7 @@ namespace Rock.Model
                 throw new Exception( "Person is not in the specified family" );
             }
 
-            var memberInOtherFamilies = groupMemberService.Queryable()
+            var memberInOtherFamilies = groupMemberService.Queryable( true )
                 .Where( m =>
                     m.PersonId == personId &&
                     m.Group.GroupTypeId == familyGroupTypeId &&
