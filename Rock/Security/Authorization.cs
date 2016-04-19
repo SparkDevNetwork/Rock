@@ -242,7 +242,7 @@ namespace Rock.Security
         /// <returns></returns>
         public static bool Authorized( ISecured entity, string action, SpecialRole specialRole )
         {
-            return ItemAuthorized( entity, action, specialRole ) ?? entity.IsAllowedByDefault( action );
+            return ItemAuthorized( entity, action, specialRole, true ) ?? entity.IsAllowedByDefault( action );
         }
 
         /// <summary>
@@ -270,7 +270,7 @@ namespace Rock.Security
         /// <returns></returns>
         public static bool Authorized( ISecured entity, string action, Rock.Model.Person person )
         {
-            return ItemAuthorized( entity, action, person ) ?? entity.IsAllowedByDefault( action );
+            return ItemAuthorized( entity, action, person, true ) ?? entity.IsAllowedByDefault( action );
         }
 
         /// <summary>
@@ -674,8 +674,9 @@ namespace Rock.Security
         /// <param name="entity">The entity.</param>
         /// <param name="action">The action.</param>
         /// <param name="specialRole">The special role.</param>
+        /// <param name="checkParentAuthority">if set to <c>true</c> [check parent authority].</param>
         /// <returns></returns>
-        private static bool? ItemAuthorized( ISecured entity, string action, SpecialRole specialRole )
+        private static bool? ItemAuthorized( ISecured entity, string action, SpecialRole specialRole, bool checkParentAuthority )
         {
             Load();
 
@@ -716,14 +717,17 @@ namespace Rock.Security
             // parent authority return the defualt authorization
             bool? parentAuthorized = null;
 
-            if ( entity.ParentAuthorityPre != null )
+            if ( checkParentAuthority )
             {
-                parentAuthorized = ItemAuthorized( entity.ParentAuthorityPre, action, specialRole );
-            }
+                if ( entity.ParentAuthorityPre != null )
+                {
+                    parentAuthorized = ItemAuthorized( entity.ParentAuthorityPre, action, specialRole, false );
+                }
 
-            if ( !parentAuthorized.HasValue && entity.ParentAuthority != null )
-            {
-                parentAuthorized = ItemAuthorized( entity.ParentAuthority, action, specialRole );
+                if ( !parentAuthorized.HasValue && entity.ParentAuthority != null )
+                {
+                    parentAuthorized = ItemAuthorized( entity.ParentAuthority, action, specialRole, true );
+                }
             }
 
             return parentAuthorized;
@@ -735,8 +739,9 @@ namespace Rock.Security
         /// <param name="entity">The entity.</param>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
+        /// <param name="checkParentAuthority">if set to <c>true</c> [check parent].</param>
         /// <returns></returns>
-        private static bool? ItemAuthorized( ISecured entity, string action, Rock.Model.Person person )
+        private static bool? ItemAuthorized( ISecured entity, string action, Rock.Model.Person person, bool checkParentAuthority )
         {
             Load();
 
@@ -843,14 +848,17 @@ namespace Rock.Security
             // parent authority return the defualt authorization
             bool? parentAuthorized = null;
 
-            if ( entity.ParentAuthorityPre != null )
+            if ( checkParentAuthority )
             {
-                parentAuthorized = entity.ParentAuthorityPre.IsAuthorized( action, person );
-            }
+                if ( entity.ParentAuthorityPre != null )
+                {
+                    parentAuthorized = ItemAuthorized( entity.ParentAuthorityPre, action, person, false );
+                }
 
-            if ( !parentAuthorized.HasValue && entity.ParentAuthority != null )
-            {
-                parentAuthorized = entity.ParentAuthority.IsAuthorized( action, person );
+                if ( !parentAuthorized.HasValue && entity.ParentAuthority != null )
+                {
+                    parentAuthorized = ItemAuthorized( entity.ParentAuthority, action, person, true );
+                }
             }
 
             return parentAuthorized;
