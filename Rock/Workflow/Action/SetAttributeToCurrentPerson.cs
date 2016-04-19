@@ -32,10 +32,10 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sets a person attribute equal to the currently logged in person.
     /// </summary>
-    [ActionCategory( "Set Workflow Attribute" )]
+    [ActionCategory( "Workflow Attributes" )]
     [Description( "Sets an attribute to the currently logged in person." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Set Attribute to Current Person" )]
+    [ExportMetadata( "ComponentName", "Attribute Set to Current Person" )]
 
     [WorkflowAttribute( "Person Attribute", "The attribute to set to the currently logged in person.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType" } )]

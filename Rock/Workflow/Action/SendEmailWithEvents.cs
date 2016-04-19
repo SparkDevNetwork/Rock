@@ -35,7 +35,7 @@ namespace Rock.Workflow.Action
     [ActionCategory( "Communications" )]
     [Description( "Sends an email and performs actions when the email is opened, clicked, or not opened within a certain time period. The recipient can either be a group, person or email address determined by the 'To Attribute' value, or an email address entered in the 'To' field." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Send Email With Events" )]
+    [ExportMetadata( "ComponentName", "Email Send with Events" )]
 
     [WorkflowTextOrAttribute( "From Email Address", "Attribute Value", "The email address or an attribute that contains the person or email address that email should be sent from (will default to organization email). <span class='tip tip-lava'></span>", false, "", "", 0, "From",
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType" } )]

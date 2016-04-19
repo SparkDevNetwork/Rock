@@ -34,7 +34,7 @@ namespace Rock.Workflow.Action
     [ActionCategory( "Workflow Control" )]
     [Description( "Deletes the current workflow instance." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Delete Workflow" )]
+    [ExportMetadata( "ComponentName", "Workflow Delete" )]
 
     public class DeleteWorkflow : ActionComponent
     {

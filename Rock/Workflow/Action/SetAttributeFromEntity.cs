@@ -31,10 +31,10 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sets an attribute value to the entity that workflow is being acted on (Action's entity parameter).
     /// </summary>
-    [ActionCategory( "Set Workflow Attribute" )]
+    [ActionCategory( "Workflow Attributes" )]
     [Description( "Sets an attribute value to the entity that workflow is being acted on (Action's entity parameter)." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Set Attribute From Entity" )]
+    [ExportMetadata( "ComponentName", "Attribute Set from Entity" )]
 
     [WorkflowAttribute( "Attribute", "The attribute to set the value of.", true, "", "", 1 )]
     [BooleanField( "Entity Is Required", "Should an error be returned if the entity is missing or not a valid entity type?", true, "", 2 )]

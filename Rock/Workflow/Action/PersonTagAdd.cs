@@ -31,7 +31,7 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Adds person to organization tag
     /// </summary>
-    [ActionCategory( "Tags" )]
+    [ActionCategory( "People" )]
     [Description( "Adds a person to an organization tag." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Person Tag Add" )]
