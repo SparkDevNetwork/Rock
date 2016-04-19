@@ -407,7 +407,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
             {
                 get
                 {
-                    if ( this.MeasureCompareValue.HasValue )
+                    if ( this.MeasureCompareValue.HasValue && this.MeasureCompareValue.Value > 0 )
                     {
                         return (this.MeasureValue * 100) / this.MeasureCompareValue.Value;
                     }
