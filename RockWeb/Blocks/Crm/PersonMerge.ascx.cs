@@ -134,8 +134,15 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         private void LoadViewDetails()
         {
-            if ( !Page.IsPostBack )
+            if ( Page.IsPostBack )
             {
+                nbMergeRequestSuccess.Visible = false;
+                nbMergeRequestAlreadySubmitted.Visible = false;
+            }
+            else
+            { 
+                nbNotAuthorized.Visible = true;
+
                 int? setId = PageParameter( "Set" ).AsIntegerOrNull();
                 if ( setId.HasValue )
                 {
@@ -149,9 +156,12 @@ namespace RockWeb.Blocks.Crm
                         var definedValuePurpose = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.ENTITY_SET_PURPOSE_PERSON_MERGE_REQUEST.AsGuid() );
                         if ( definedValuePurpose != null )
                         {
+                            nbNotAuthorized.Visible = false;
+                            tbEntitySetNote.Visible = true;
+                            btnSaveRequestNote.Visible = true;
+
                             if ( entitySet.EntitySetPurposeValueId != definedValuePurpose.Id && entitySet.ExpireDateTime != null )
                             {
-                                nbMergeRequestAlreadySubmitted.Visible = false;
                                 nbMergeRequestSuccess.Visible = true;
                                 entitySet.EntitySetPurposeValueId = definedValuePurpose.Id;
                                 entitySet.ExpireDateTime = null;
@@ -160,7 +170,6 @@ namespace RockWeb.Blocks.Crm
                             else
                             {
                                 nbMergeRequestAlreadySubmitted.Visible = true;
-                                nbMergeRequestSuccess.Visible = false;
                             }
                         }
                     }
