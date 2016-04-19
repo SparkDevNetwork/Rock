@@ -54,8 +54,12 @@ namespace Rock.Security
 
         /// <summary>
         /// An optional parent authority to check prior to checking main ParentAuthority.  
-        /// (i.e for Groups, the GroupType is a checked prior to the main parent
-        /// authority of parent group type, entity, globaldefault
+        /// i.e for Groups, the GroupType is a checked prior to the main parent
+        /// authority of parent group type, entity, globaldefault. 
+        /// 
+        /// NOTE: The ParentAuthorityPre is only checked for the root entity, for example 
+        /// if the entity specified by the Parentuthority value has a ParentAuthorityPre value,
+        /// that will not be checked.
         /// </summary>
         /// <value>
         /// The parent authority pre.
