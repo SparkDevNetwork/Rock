@@ -561,17 +561,7 @@ namespace RockWeb.Blocks.Finance
                 ddlConnectionStatus.SetValue( benevolenceRequest.ConnectionStatusValueId );
             }
 
-            string caseWorkerPersonAliasValue = benevolenceRequest.CaseWorkerPersonAliasId.ToString();
-            if ( !string.IsNullOrWhiteSpace( caseWorkerPersonAliasValue ) )
-            {
-                if ( !ddlCaseWorker.Items.OfType<ListItem>().Any( a => a.Value == caseWorkerPersonAliasValue ) )
-                {
-                    // if the current case worker is no longer part of the Case Worker Role, add them to the list
-                    ddlCaseWorker.Items.Add( new ListItem( benevolenceRequest.CaseWorkerPersonAlias.Person.FullName, caseWorkerPersonAliasValue ) );
-                }
-            }
-
-            ddlCaseWorker.SetValue( caseWorkerPersonAliasValue );
+            ddlCaseWorker.SetValue( benevolenceRequest.CaseWorkerPersonAliasId );
 
             BindGridFromViewState();
 
@@ -596,12 +586,23 @@ namespace RockWeb.Blocks.Finance
         {
             ddlRequestStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_REQUEST_STATUS ) ), false );
             ddlConnectionStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ), true );
+
             Guid groupGuid = GetAttributeValue( "CaseWorkerRole" ).AsGuid();
-            var listData = new GroupMemberService( new RockContext() ).Queryable( "Person, Group" )
+            var personList = new GroupMemberService( new RockContext() )
+                .Queryable( "Person, Group" )
                 .Where( gm => gm.Group.Guid == groupGuid )
                 .Select( gm => gm.Person )
                 .ToList();
-            ddlCaseWorker.DataSource = listData;
+
+            string caseWorkerPersonAliasValue = benevolenceRequest.CaseWorkerPersonAliasId.ToString();
+            if ( benevolenceRequest.CaseWorkerPersonAlias != null && 
+                benevolenceRequest.CaseWorkerPersonAlias.Person != null &&
+                !personList.Select( p => p.Id ).ToList().Contains( benevolenceRequest.CaseWorkerPersonAlias.Person.Id ) )
+            {
+                personList.Add( benevolenceRequest.CaseWorkerPersonAlias.Person );
+            }
+
+            ddlCaseWorker.DataSource = personList.OrderBy( p => p.NickName ).ThenBy( p => p.LastName ).ToList();
             ddlCaseWorker.DataTextField = "FullName";
             ddlCaseWorker.DataValueField = "PrimaryAliasId";
             ddlCaseWorker.DataBind();
