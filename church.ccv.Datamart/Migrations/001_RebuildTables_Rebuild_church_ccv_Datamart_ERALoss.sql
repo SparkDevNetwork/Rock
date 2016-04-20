@@ -13,7 +13,7 @@ CREATE TABLE [_church_ccv_Datamart_EraLoss](
 )
 )
 
-insert into [_church_ccv_Datamart_EraLoss]
+/*insert into [_church_ccv_Datamart_EraLoss]
 SELECT [FamilyId]
       ,[LossDate]
       ,[Processed]
@@ -24,7 +24,7 @@ SELECT [FamilyId]
   FROM [_church_ccv_ERALosses]
 
 
-drop table [_church_ccv_ERALosses]
+drop table [_church_ccv_ERALosses]*/
 
 
 CREATE NONCLUSTERED INDEX [IDX_FamilyId] ON [_church_ccv_Datamart_EraLoss]

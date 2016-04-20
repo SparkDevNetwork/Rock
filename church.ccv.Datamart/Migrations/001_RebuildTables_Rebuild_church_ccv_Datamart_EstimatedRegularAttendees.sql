@@ -19,7 +19,7 @@ CREATE TABLE [_church_ccv_Datamart_ERA](
 	[Id] ASC
 ))
 
-insert into [_church_ccv_Datamart_ERA]
+/*insert into [_church_ccv_Datamart_ERA]
 SELECT [WeekendDate]
       ,[FamilyId]
       ,[TimesAttendedLast16Weeks]
@@ -36,7 +36,7 @@ SELECT [WeekendDate]
       ,[ForeignId]
   FROM [_church_ccv_Datamart_EstimatedRegularAttendees]
 
-drop table [_church_ccv_Datamart_EstimatedRegularAttendees]
+drop table [_church_ccv_Datamart_EstimatedRegularAttendees]*/
 
 CREATE NONCLUSTERED INDEX [IDX_WeekendDateFamilyId] ON [dbo].[_church_ccv_Datamart_ERA]
 (

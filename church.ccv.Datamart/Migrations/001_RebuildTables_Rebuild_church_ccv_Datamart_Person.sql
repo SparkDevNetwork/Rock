@@ -1,5 +1,5 @@
-sp_rename '_church_ccv_Datamart_Person'
-    ,'_church_ccv_Datamart_Person_orig'
+/*sp_rename '_church_ccv_Datamart_Person'
+    ,'_church_ccv_Datamart_Person_orig'*/
 
 CREATE TABLE [_church_ccv_Datamart_Person](
 	[Id] [int] IDENTITY(1,1) NOT NULL,
@@ -75,7 +75,7 @@ CREATE TABLE [_church_ccv_Datamart_Person](
 )
 )
 
-insert into [_church_ccv_Datamart_Person]
+/*insert into [_church_ccv_Datamart_Person]
 SELECT
      [PersonId]		
     ,[FamilyId]
@@ -153,7 +153,7 @@ SELECT
     ,[ViewedCount]
 from [_church_ccv_Datamart_Person_orig]
 
-drop table [_church_ccv_Datamart_Person_orig]
+drop table [_church_ccv_Datamart_Person_orig]*/
 
 CREATE NONCLUSTERED INDEX [IDX_PersonId] ON [_church_ccv_Datamart_Person]
 (

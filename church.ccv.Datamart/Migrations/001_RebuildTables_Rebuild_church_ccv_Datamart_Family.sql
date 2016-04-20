@@ -1,5 +1,5 @@
-sp_rename '_church_ccv_Datamart_Family'
-    ,'_church_ccv_Datamart_Family_orig'
+/*sp_rename '_church_ccv_Datamart_Family'
+    ,'_church_ccv_Datamart_Family_orig'*/
 
 CREATE TABLE [_church_ccv_Datamart_Family](
     [Id] [int] IDENTITY(1,1) NOT NULL,
@@ -58,7 +58,7 @@ CREATE TABLE [_church_ccv_Datamart_Family](
 )
 )
 
-insert into [_church_ccv_Datamart_Family]
+/*insert into [_church_ccv_Datamart_Family]
 SELECT [FamilyId]
       ,[FamilyName]
       ,[HHPersonId]
@@ -110,7 +110,7 @@ SELECT [FamilyId]
       ,[ForeignId]
   FROM [_church_ccv_Datamart_Family_orig]
 
-  drop table [_church_ccv_Datamart_Family_orig]
+  drop table [_church_ccv_Datamart_Family_orig]*/
 
   CREATE NONCLUSTERED INDEX [IDX_FamilyId] ON [_church_ccv_Datamart_Family]
 (

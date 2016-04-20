@@ -30,7 +30,7 @@ CREATE TABLE [_church_ccv_Datamart_Neighborhood](
 )
 )
 
-insert into [_church_ccv_Datamart_Neighborhood]
+/*insert into [_church_ccv_Datamart_Neighborhood]
 SELECT [NeighborhoodId]
       ,[NeighborhoodName]
       ,[NeighborhoodLeaderName]
@@ -57,7 +57,7 @@ SELECT [NeighborhoodId]
       ,[ForeignId]
   FROM [_church_ccv_Datamart_Neighborhoods]
 
-drop table [_church_ccv_Datamart_Neighborhoods]
+drop table [_church_ccv_Datamart_Neighborhoods]*/
 
 CREATE NONCLUSTERED INDEX [IDX_NeighborhoodId] ON [_church_ccv_Datamart_Neighborhood]
 (
