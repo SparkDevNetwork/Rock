@@ -387,6 +387,7 @@ namespace RockWeb.Blocks.Crm
 
                         string key = "phone_" + phoneType.Id.ToString();
                         string newValue = GetNewStringValue( key, changes );
+                        bool phoneNumberDeleted = false;
 
                         if ( !oldValue.Equals( newValue, StringComparison.OrdinalIgnoreCase ) )
                         {
@@ -413,9 +414,22 @@ namespace RockWeb.Blocks.Crm
                                     // old value existed.. delete it
                                     primaryPerson.PhoneNumbers.Remove( phoneNumber );
                                     phoneNumberService.Delete( phoneNumber );
+                                    phoneNumberDeleted = true;
                                 }
                             }
                         }
+
+                        // check to see if IsMessagingEnabled is true for any of the merged people for this number/numbertype
+                        if ( phoneNumber != null && !phoneNumberDeleted && !phoneNumber.IsMessagingEnabled )
+                        {
+                            var personIds = MergeData.People.Select(a => a.Id).ToList();
+                            var isMessagingEnabled = phoneNumberService.Queryable().Where( a => personIds.Contains( a.PersonId ) && a.Number == phoneNumber.Number && a.NumberTypeValueId == phoneNumber.NumberTypeValueId ).Any( a => a.IsMessagingEnabled );
+                            if (isMessagingEnabled)
+                            {
+                                phoneNumber.IsMessagingEnabled = true;
+                            }
+                        }
+
                     }
 
                     // Save the new record
