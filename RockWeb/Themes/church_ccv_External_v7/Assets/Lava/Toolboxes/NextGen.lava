@@ -5,13 +5,35 @@
 
 {% if AllowedActions.View == true || AllowedActions.Edit == true || AllowedActions.Administrate == true %}
 
+  {% include '~~/Assets/Lava/Toolboxes/_default-vars.lava' %}
   {% include '~~/Assets/Lava/Toolboxes/_pre.lava' %}
 
   {% include '~~/Assets/Lava/Toolboxes/_header.lava' %}
 
-  {% include '~~/Assets/Lava/Toolboxes/_roster-pending.lava' %}
-  {% include '~~/Assets/Lava/Toolboxes/_roster-active.lava' %}
-  {% include '~~/Assets/Lava/Toolboxes/_roster-inactive.lava' %}
+  {% if CurrentPage.Path == LinkedPages.RosterPage %}
+    {% assign rosterPageIsCurrent = true %}
+  {% endif %}
+
+  {% if CurrentPage.Path == LinkedPages.ParentPage %}
+    {% assign parentPageIsCurrent = true %}
+  {% endif %}
+
+  <ul class="nav nav-tabs">
+    <li role="presentation"{% if rosterPageIsCurrent %} class="active"{% endif %}>
+      <a href="{{ LinkedPages.RosterPage }}?GroupId={{ Group.Id }}">Student Roster</a>
+    </li>
+    <li role="presentation"{% if parentPageIsCurrent %} class="active"{% endif %}>
+      <a href="{{ LinkedPages.ParentPage }}?GroupId={{ Group.Id }}">Parent Roster</a>
+    </li>
+  </ul>
+
+  {% if rosterPageIsCurrent %}
+    {% include '~~/Assets/Lava/Toolboxes/_roster-pending.lava' %}
+    {% include '~~/Assets/Lava/Toolboxes/_roster-active.lava' %}
+    {% include '~~/Assets/Lava/Toolboxes/_roster-inactive.lava' %}
+  {% elsif parentPageIsCurrent %}
+    {% include '~~/Assets/Lava/Toolboxes/_roster-parents.lava' %}
+  {% endif %}
 
   {% include '~~/Assets/Lava/Toolboxes/_footer-actions.lava' %}
 

@@ -1,0 +1,23 @@
+{% if RosterMembers != empty %}
+  <h4>Parent Roster <small>Active Students</small></h4>
+  {% for person in RosterMembers %}
+    <div class="well">
+
+      <h4>{{ person.Child.FullName }}</h4>
+
+      {% for member in person.Parents %}
+        {% assign loop = forloop.index | Modulo: 2 %}
+        {% if loop != 0 %}
+        <div class="row">
+        {% endif %}
+
+        {% include personTemplate %}
+
+        {% if loop == 0 or forloop.last %}
+        </div>
+        {% endif %}
+      {% endfor %}
+
+    </div>
+  {% endfor %}
+{% endif %}

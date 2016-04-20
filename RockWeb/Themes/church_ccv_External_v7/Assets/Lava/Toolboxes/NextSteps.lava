@@ -32,6 +32,7 @@
 
 {% if AllowedActions.View == true || AllowedActions.Edit == true || AllowedActions.Administrate == true %}
 
+  {% include '~~/Assets/Lava/Toolboxes/_default-vars.lava' %}
   {% include '~~/Assets/Lava/Toolboxes/_pre.lava' %}
 
   {% include '~~/Assets/Lava/Toolboxes/_header.lava' %}
