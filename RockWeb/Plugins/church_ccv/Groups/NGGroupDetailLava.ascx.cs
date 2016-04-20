@@ -77,7 +77,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
 
             // add our custom "parents" page, which will show the parents for the kids in the NG group.
             Dictionary<string, object> linkedPages = (Dictionary<string, object>)mergeFields["LinkedPages"];
-            linkedPages.Add( "ParentsPage", LinkedPageUrl("ParentsPage", null ) );
+            linkedPages.Add( "ParentPage", LinkedPageUrl("ParentPage", null ) );
 
 
             // prepare the roster, which contains kids and their parents
