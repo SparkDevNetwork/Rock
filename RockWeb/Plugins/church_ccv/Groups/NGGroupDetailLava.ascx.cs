@@ -61,20 +61,6 @@ namespace RockWeb.Plugins.church_ccv.Groups
         {
             string template = GetAttributeValue( "LavaTemplate" );
 
-            // show debug info
-            if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )
-            {
-                string postbackCommands = @"<h5>Available Postback Commands</h5>
-                                            <ul>
-                                                <li><strong>EditGroup:</strong> Shows a panel for modifing group info. Expects a group id. <code>{{ Group.Id | Postback:'EditGroup' }}</code></li>
-                                                <li><strong>AddGroupMember:</strong> Shows a panel for adding group info. Does not require input. <code>{{ '' | Postback:'AddGroupMember' }}</code></li>
-                                                <li><strong>SendCommunication:</strong> Sends a communication to all group members on behalf of the Current User. This will redirect them to the communication page where they can author their email. <code>{{ '' | Postback:'SendCommunication' }}</code></li>
-                                            </ul>";
-
-                DebugContent.Visible = true;
-                DebugContent.Text = mergeFields.lavaDebugInfo( null, string.Empty, postbackCommands );
-            }
-
             // add our custom "parents" page, which will show the parents for the kids in the NG group.
             Dictionary<string, object> linkedPages = (Dictionary<string, object>)mergeFields["LinkedPages"];
             linkedPages.Add( "ParentPage", LinkedPageUrl("ParentPage", null ) );
@@ -109,6 +95,20 @@ namespace RockWeb.Plugins.church_ccv.Groups
             }
             
             mergeFields.Add( "RosterMembers", rosterMembers );
+
+            // show debug info
+            if (enableDebug && IsUserAuthorized(Authorization.EDIT))
+            {
+                string postbackCommands = @"<h5>Available Postback Commands</h5>
+                                            <ul>
+                                                <li><strong>EditGroup:</strong> Shows a panel for modifing group info. Expects a group id. <code>{{ Group.Id | Postback:'EditGroup' }}</code></li>
+                                                <li><strong>AddGroupMember:</strong> Shows a panel for adding group info. Does not require input. <code>{{ '' | Postback:'AddGroupMember' }}</code></li>
+                                                <li><strong>SendCommunication:</strong> Sends a communication to all group members on behalf of the Current User. This will redirect them to the communication page where they can author their email. <code>{{ '' | Postback:'SendCommunication' }}</code></li>
+                                            </ul>";
+
+                DebugContent.Visible = true;
+                DebugContent.Text = mergeFields.lavaDebugInfo(null, string.Empty, postbackCommands);
+            }
             
             // now set the main HTML, including lava merge fields.
             MainViewContent.Text = template.ResolveMergeFields( mergeFields ).ResolveClientIds( MainPanel.ClientID );
