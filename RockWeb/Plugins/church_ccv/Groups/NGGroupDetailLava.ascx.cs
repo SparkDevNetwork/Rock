@@ -32,6 +32,89 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.church_ccv.Groups
 {
+    public class ChildWithParents_Lava : PersonService.ChildWithParents, Rock.Lava.ILiquidizable
+    {
+        /// <summary>
+        /// To the liquid.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public object ToLiquid()
+        {
+            return this;
+        }
+
+        /// <summary>
+        /// Gets the available keys (for debuging info).
+        /// </summary>
+        /// <value>
+        /// The available keys.
+        /// </value>
+        [Rock.Data.LavaIgnore]
+        public List<string> AvailableKeys
+        {
+            get
+            {
+                var availableKeys = new List<string> { "Child", "Parents" };
+                if ( this.Child != null )
+                {
+                    availableKeys.AddRange( this.Child.AvailableKeys );
+                }
+
+                if ( this.Parents != null )
+                {
+                    foreach ( Person parent in this.Parents )
+                    {
+                        availableKeys.AddRange( parent.AvailableKeys );
+                    }
+                }
+
+                return availableKeys;
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        [Rock.Data.LavaIgnore]
+        public object this[object key]
+        {
+           get
+            {
+               switch( key.ToStringSafe() )
+               {
+                   case "Child": return Child;
+                   case "Parents": return Parents;
+               }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the specified key contains key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public bool ContainsKey( object key )
+        {
+            var additionalKeys = new List<string> { "Child", "Parents" };
+            if ( additionalKeys.Contains( key.ToStringSafe() ) )
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
+
     /// <summary>
     /// Template block for developers to use to start a new block.
     /// </summary>
@@ -87,7 +170,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
                                                                             .Select( gm => gm.Person );
 
                 // now create a ChildWithParents object to store this
-                PersonService.ChildWithParents childWithParents = new PersonService.ChildWithParents( );
+                ChildWithParents_Lava childWithParents = new ChildWithParents_Lava( );
                 childWithParents.Parents = adultsInGroups.ToList( );
                 childWithParents.Child = member.Person;
 
