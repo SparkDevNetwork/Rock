@@ -20,4 +20,10 @@
     opacity: .4;
     color: #939393;
   }
+  .toolbox-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
 </style>

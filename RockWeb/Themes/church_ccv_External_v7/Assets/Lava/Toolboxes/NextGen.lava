@@ -8,6 +8,15 @@
   {% include '~~/Assets/Lava/Toolboxes/_default-vars.lava' %}
   {% include '~~/Assets/Lava/Toolboxes/_pre.lava' %}
 
+  {% capture customEmailButtons %}
+    <a onclick="{{ 'kids' | Postback:'SendCommunication' }}" class="btn btn-default btn-xs">
+      <i class="fa fa-envelope-o"></i> Email Students
+    </a>
+    <a onclick="{{ 'parents' | Postback:'SendCommunication' }}" class="btn btn-default btn-xs">
+      <i class="fa fa-envelope-o"></i> Email Parents
+    </a>
+  {% endcapture %}
+
   {% include '~~/Assets/Lava/Toolboxes/_header.lava' %}
 
   {% if CurrentPage.Path == LinkedPages.RosterPage %}
