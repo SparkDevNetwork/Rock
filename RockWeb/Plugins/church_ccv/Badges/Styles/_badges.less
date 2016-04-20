@@ -72,15 +72,15 @@
 
 .badge-group.badge-group-steps .badge {
   border-radius: 0;
-  padding: 6px 8px 4px;
+  padding: 12px 6px 4px;
   display: table-cell;
   border-style: solid;
   border-color: rgba(0, 0, 0, 0.2);
   border-width: 1px 0 1px 1px;
   color: #fff;
-  font-size: 28px;
+  font-size: 18px;
   line-height: 1;
-  width: 45px;
+  width: 16px;
   height: 43px;
 
   -webkit-transition: background 0.5s ease-in;
@@ -138,4 +138,41 @@
 
 .badge-group.badge-group-steps .badge.step-partial {
   opacity: .4;
+}
+
+// steps taken badge
+.personprofilebar-badge .badge.badge-stepstaken {
+
+    &:before {
+        font-family: FontAwesome;
+        content: "\f0c8";
+        color: #3c3c3c;
+        font-size: 45px;
+    }
+
+    color: #afafaf;
+    position: relative;
+
+    i {
+        position: absolute;
+        font-size: 20px;
+        right: 0;
+        left: 0;
+        top: 8px;
+    }
+
+    .steps-thisyear {
+        font-size: 18px;
+        position: absolute;
+        bottom: 7px;
+        left: 14px;
+    }
+
+    .steps-52weeks {
+        font-size: 12px;
+        position: absolute;
+        bottom: 7px;
+        right: 10px;
+        opacity: .8;
+    }
 }
