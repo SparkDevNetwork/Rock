@@ -15,3 +15,5 @@
 {% assign communicationPage = communicationPage | Default: "/page/491" %}
 {% assign videoPage = videoPage | Default: "/page/1005" %}
 {% assign memberDetailPage = memberDetailPage | Default: "/page/1024" %}
+{% if showBadgeBar != false %}{% assign showBadgeBar = true %}{% endif %}
+{% if linkToDetailPage != false %}{% assign linkToDetailPage = true %}{% endif %}

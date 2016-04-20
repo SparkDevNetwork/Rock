@@ -21,6 +21,3 @@
     color: #939393;
   }
 </style>
-
-<pre>{{ CurrentPage | ToJSON }}</pre>
-<pre>{{ LinkedPages | ToJSON }}</pre>

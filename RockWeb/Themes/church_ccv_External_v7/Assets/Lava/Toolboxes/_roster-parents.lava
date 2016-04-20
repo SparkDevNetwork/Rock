@@ -1,11 +1,14 @@
+{% assign showBadgeBar = false %}
+{% assign linkToDetailPage = false %}
+
 {% if RosterMembers != empty %}
   <h4>Parent Roster <small>Active Students</small></h4>
-  {% for person in RosterMembers %}
-    <div class="well">
+  {% for p in RosterMembers %}
+    <div class="well padding-v-sm">
 
-      <h4>{{ person.Child.FullName }}</h4>
+      <h5>{{ p.Child.FullName }}</h5>
 
-      {% for member in person.Parents %}
+      {% for member in p.Parents %}
         {% assign loop = forloop.index | Modulo: 2 %}
         {% if loop != 0 %}
         <div class="row">
