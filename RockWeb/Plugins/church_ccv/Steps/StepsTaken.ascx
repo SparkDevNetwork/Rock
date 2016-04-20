@@ -33,7 +33,7 @@
                             <Rock:DatePicker ID="dpSundayPicker" Label="Specific Date" runat="server" Help="Select a specific date you would like to report on. The system will select the Sunday Date for the date you select." />
                         </div>
                         <div class="col-md-4 text-right">
-                            <asp:LinkButton ID="lbSetDate" runat="server" CssClass="btn btn-primary btn-sm margin-t-lg" Text="Set Date" OnClick="lbSetDate_Click" />
+                            <asp:LinkButton ID="lbSetDate" runat="server" CssClass="btn btn-primary btn-sm margin-t-lg" Text="Set Date"  />
                         </div>
                     </div>
                 </div>
