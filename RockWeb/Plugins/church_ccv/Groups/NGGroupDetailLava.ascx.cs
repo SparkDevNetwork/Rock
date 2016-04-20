@@ -139,7 +139,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
         public override TextBox GroupName { get { return tbName; } }
         public override TextBox GroupDesc { get { return tbDescription; } }
         public override CheckBox IsActive { get { return cbIsActive; } }
-        
+    
         protected override void FinalizePresentView( Dictionary<string, object> mergeFields, bool enableDebug )
         {
             string template = GetAttributeValue( "LavaTemplate" );
@@ -150,33 +150,8 @@ namespace RockWeb.Plugins.church_ccv.Groups
 
 
             // prepare the roster, which contains kids and their parents
-            List<PersonService.ChildWithParents> rosterMembers = new List<PersonService.ChildWithParents>( );
+            List<ChildWithParents_Lava> rosterMembers = GetChildAndParents( );
                         
-            RockContext rockContext = new RockContext();
-            GroupMemberService groupMemberService = new GroupMemberService( rockContext );
-
-            Group group = new GroupService( rockContext ).Get( _groupId );
-
-            foreach( GroupMember member in group.Members )
-            {
-                // first, get all the groups this person is in as a child.
-                var groupsAsChild = groupMemberService.Queryable( ).Where( gm => gm.PersonId == member.Person.Id && 
-                                                                           gm.GroupRole.Guid == new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) )
-                                                                           .Select( gm => gm.Group.Id );
-
-                // now, get the adults of these groups
-                var adultsInGroups = groupMemberService.Queryable( ).Where( gm => gm.GroupRole.Guid == new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) && 
-                                                                            groupsAsChild.Contains( gm.GroupId ) )
-                                                                            .Select( gm => gm.Person );
-
-                // now create a ChildWithParents object to store this
-                ChildWithParents_Lava childWithParents = new ChildWithParents_Lava( );
-                childWithParents.Parents = adultsInGroups.ToList( );
-                childWithParents.Child = member.Person;
-
-                rosterMembers.Add( childWithParents );
-            }
-            
             mergeFields.Add( "RosterMembers", rosterMembers );
 
             // show debug info
@@ -196,14 +171,79 @@ namespace RockWeb.Plugins.church_ccv.Groups
             // now set the main HTML, including lava merge fields.
             MainViewContent.Text = template.ResolveMergeFields( mergeFields ).ResolveClientIds( MainPanel.ClientID );
         }
+
+        List<ChildWithParents_Lava> GetChildAndParents( )
+        {
+            List<ChildWithParents_Lava> childWithParentsList = new List<ChildWithParents_Lava>( );
+
+            RockContext rockContext = new RockContext();
+            GroupMemberService groupMemberService = new GroupMemberService( rockContext );
+
+            Group group = new GroupService( rockContext ).Get( _groupId );
+
+            foreach( GroupMember member in group.Members )
+            {
+                // first, get all the groups this person is in as a child.
+                var groupsAsChild = groupMemberService.Queryable( ).Where( gm => gm.PersonId == member.Person.Id && 
+                                                                           gm.GroupRole.Guid == new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) )
+                                                                           .Select( gm => gm.Group.Id );
+
+                // now, get the adults of these groups
+                var parentsInGroup = groupMemberService.Queryable( ).Where( gm => gm.GroupRole.Guid == new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) && 
+                                                                            groupsAsChild.Contains( gm.GroupId ) )
+                                                                            .Select( gm => gm.Person ).ToList( );
+
+                // now create a ChildWithParents object to store this
+                ChildWithParents_Lava childWithParents = new ChildWithParents_Lava( );
+                childWithParents.Parents = parentsInGroup;
+                childWithParents.Child = member.Person;
+
+                childWithParentsList.Add( childWithParents );
+            }
+
+            return childWithParentsList;
+        }
         
-        protected override void HandlePageAction( string action )
+        protected override void HandlePageAction( string action, string parameters )
         {
             switch ( action )
             {
                 case "AddGroupMember":    DisplayAddGroupMember( ); break;
                 case "EditGroup":         DisplayEditGroup( );      break;
-                case "SendCommunication": SendCommunication( );     break;
+
+                case "SendCommunication":
+                {
+                    List<int?> personAliasIds = new List<int?>( );
+                        
+                    if( parameters == "kids" )
+                    {
+                        personAliasIds = new GroupMemberService( new RockContext( ) ).Queryable()
+                                        .Where( m => m.GroupId == _groupId && m.GroupMemberStatus != GroupMemberStatus.Inactive )
+                                        .ToList()
+                                        .Select( m => m.Person.PrimaryAliasId )
+                                        .ToList();
+                    }
+                    else if( parameters == "parents" )
+                    {
+                        // re-obtain the list of parents
+                        List<ChildWithParents_Lava> rosterMembers = GetChildAndParents( );
+
+                        // now take each 'family', and put each parent's primary alias id into our list
+                        foreach( ChildWithParents_Lava childWithParent in rosterMembers )
+                        {
+                            foreach( Person parent in childWithParent.Parents )
+                            {
+                                personAliasIds.Add( parent.PrimaryAliasId );
+                            }
+                        }
+
+                        // take only unique items (in case there're siblings. Their parents would be in the list twice, once for each kid)
+                        personAliasIds = personAliasIds.Distinct( ).ToList( );
+                    }
+
+                    SendCommunication( personAliasIds );
+                    break;
+                }
             }
         }
         

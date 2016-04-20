@@ -77,13 +77,25 @@ namespace RockWeb.Plugins.church_ccv.Groups
             MainViewContent.Text = template.ResolveMergeFields( mergeFields ).ResolveClientIds( MainPanel.ClientID );
         }
 
-        protected override void HandlePageAction( string action )
+        protected override void HandlePageAction( string action, string parameters )
         {
             switch ( action )
             {
                 case "AddGroupMember":    DisplayAddGroupMember( ); break;
                 case "EditGroup":         DisplayEditGroup( );      break;
-                case "SendCommunication": SendCommunication( );     break;
+                
+                case "SendCommunication":
+                {
+                    var personAliasIds = new GroupMemberService( new RockContext( ) ).Queryable()
+                                    .Where( m => m.GroupId == _groupId && m.GroupMemberStatus != GroupMemberStatus.Inactive )
+                                    .ToList()
+                                    .Select( m => m.Person.PrimaryAliasId )
+                                    .ToList();
+
+                    SendCommunication( personAliasIds );
+
+                    break;
+                }
             }
         }
 

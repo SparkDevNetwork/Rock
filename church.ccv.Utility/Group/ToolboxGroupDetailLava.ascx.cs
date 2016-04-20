@@ -89,7 +89,7 @@ namespace church.ccv.Utility.Groups
 
         #region Base Control Methods
 
-        protected abstract void HandlePageAction( string action );
+        protected abstract void HandlePageAction( string action, string parameters );
         protected abstract void FinalizePresentView( Dictionary<string, object> mergeFields, bool enableDebug );
 
         /// <summary>
@@ -253,10 +253,10 @@ namespace church.ccv.Utility.Groups
                     string action = eventArgs[0];
                     string parameters = eventArgs[1];
 
-                    int argument = 0;
-                    int.TryParse( parameters, out argument );
+                    //int argument = 0;
+                    //int.TryParse( parameters, out argument );
 
-                    HandlePageAction( action );
+                    HandlePageAction( action, parameters );
                 }
             }
             else
@@ -401,7 +401,7 @@ namespace church.ccv.Utility.Groups
         /// <summary>
         /// Sends the communication.
         /// </summary>
-        protected void SendCommunication()
+        protected void SendCommunication( List<int?> primaryAliasIds )
         {
             // create communication
             if ( this.CurrentPerson != null && _groupId != -1 && !string.IsNullOrWhiteSpace( GetAttributeValue( "CommunicationPage" ) ) )
@@ -416,14 +416,8 @@ namespace church.ccv.Utility.Groups
 
                 service.Add( communication );
 
-                var personAliasIds = new GroupMemberService( rockContext ).Queryable()
-                                    .Where( m => m.GroupId == _groupId && m.GroupMemberStatus != GroupMemberStatus.Inactive )
-                                    .ToList()
-                                    .Select( m => m.Person.PrimaryAliasId )
-                                    .ToList();
-
                 // Get the primary aliases
-                foreach ( int personAlias in personAliasIds )
+                foreach ( int personAlias in primaryAliasIds )
                 {
                     var recipient = new Rock.Model.CommunicationRecipient();
                     recipient.PersonAliasId = personAlias;
