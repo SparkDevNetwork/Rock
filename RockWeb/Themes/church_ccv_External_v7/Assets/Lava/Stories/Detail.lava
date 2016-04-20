@@ -1,0 +1,24 @@
+{% comment %}
+
+  {% include '~~/Assets/Lava/Stories/Detail.lava' %}
+
+{% endcomment %}
+
+{% assign item = Items | First %}
+{% capture pageTitle %}{{ item.Title }} - Stories | {{ 'Global' | Attribute:'OrganizationAbbreviation' }}{% endcapture %}
+{{ pageTitle | SetPageTitle }}
+
+{% assign detailPage = detailPage | Default: '/stories' %}
+
+<header class="storythumb" style="background-image: url('{{ item | Attribute: 'Image', 'Url' }}&maxwidth=1140')">
+</header>
+
+<div class="container-md">
+  {% for item in Items %}
+    <h1 class="page-header">{{ item.Title }}</h1>
+    <p class="lead">{{ item.Summary }}</p>
+    <div class="text-large">
+      {{ item.Content }}
+    </div>
+  {% endfor %}
+</div>
