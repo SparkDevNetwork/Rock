@@ -78,7 +78,8 @@ public class Mailgun : IHttpHandler
             
             if ( !string.IsNullOrWhiteSpace( request.Form["communication_recipient_guid"] ) )
             {
-                Guid? communicationRecipientGuid = request.Form["communication_recipient_guid"].AsGuidOrNull();
+                // Split on comma if it exists to deal with MailGun issue 269764 (issue #1478)
+                Guid? communicationRecipientGuid = request.Form["communication_recipient_guid"].Split( ',' )[0].AsGuidOrNull();
                 if ( communicationRecipientGuid.HasValue )
                 {
                     var communicationRecipientService = new CommunicationRecipientService( rockContext );
