@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
@@ -329,7 +330,7 @@ function() {
                 int groupTypeId = 0;
 
                 Guid groupTypeGuid = selectionValues[0].AsGuid();
-                var groupType = new GroupTypeService( (RockContext)serviceInstance.Context ).Get( groupTypeGuid );
+                var groupType = GroupTypeCache.Read( groupTypeGuid );
                 if ( groupType != null )
                 {
                     groupTypeId = groupType.Id;
@@ -340,7 +341,8 @@ function() {
                 var groupRoleGuids = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( n => n.AsGuid() ).ToList();
                 if ( groupRoleGuids.Count() > 0 )
                 {
-                    groupMemberServiceQry = groupMemberServiceQry.Where( xx => groupRoleGuids.Contains( xx.GroupRole.Guid ) );
+                    var groupRoleIds = new GroupTypeRoleService( (RockContext)serviceInstance.Context ).Queryable().Where( a => groupRoleGuids.Contains( a.Guid ) ).Select( a => a.Id ).ToList();
+                    groupMemberServiceQry = groupMemberServiceQry.Where( xx => groupRoleIds.Contains( xx.GroupRoleId ) );
                 }
 
                 GroupMemberStatus? groupMemberStatus = null;
