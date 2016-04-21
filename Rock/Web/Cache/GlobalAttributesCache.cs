@@ -605,6 +605,20 @@ namespace Rock.Web.Cache
             }
         }
 
+        /// <summary>
+        /// Gets the lava support level.
+        /// </summary>
+        /// <value>
+        /// The lava support level.
+        /// </value>
+        public Rock.Lava.LavaSupportLevel LavaSupportLevel
+        {
+            get
+            {
+                return GetValue( "core.LavaSupportLevel" ).ConvertToEnumOrNull<Rock.Lava.LavaSupportLevel>() ?? Rock.Lava.LavaSupportLevel.Legacy;
+            }
+        }
+
         #endregion
     }
 }

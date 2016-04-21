@@ -505,6 +505,14 @@ namespace Rock
                     return content ?? string.Empty;
                 }
 
+                if ( GlobalAttributesCache.Read().LavaSupportLevel == Lava.LavaSupportLevel.LegacyWithWarning && mergeObjects.ContainsKey( "GlobalAttribute" ) )
+                {
+                    if ( hasLegacyGlobalAttributeLavaMergeFields.IsMatch( content ) )
+                    {
+                        Rock.Model.ExceptionLogService.LogException( new Rock.Lava.LegacyLavaSyntaxDetectedException( "GlobalAttribute", "" ), System.Web.HttpContext.Current );
+                    }
+                }
+
                 Template template = Template.Parse( content );
                 
                 if ( encodeStrings )
@@ -550,6 +558,11 @@ namespace Rock
         /// Compiled RegEx for detecting if a string has Lava merge fields
         /// </summary>
         private static Regex hasLavaMergeFields = new Regex( @".*\{.+\}.*", RegexOptions.Compiled );
+
+        /// <summary>
+        /// Compiled RegEx for detecting if a string uses the Legacy "GlobalAttribute." syntax
+        /// </summary>
+        private static Regex hasLegacyGlobalAttributeLavaMergeFields = new Regex( @".*\{.+GlobalAttribute.+\}.*", RegexOptions.Compiled );
 
         /// <summary>
         /// Determines whether the string potentially has merge fields in it.
