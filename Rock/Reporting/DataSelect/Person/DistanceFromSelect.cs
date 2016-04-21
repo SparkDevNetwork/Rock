@@ -135,23 +135,14 @@ namespace Rock.Reporting.DataSelect.Person
             string[] selectionValues = selection.Split( '|' );
 
             Location selectedLocation = null;
-            int? locationTypeValueId = null;
+            Guid? locationTypeValidGuid = null;
             if ( selectionValues.Count() >= 2 )
             {
                 // the selected Location 
                 selectedLocation = new LocationService( context ).Get( selectionValues[0].AsGuid() );
 
                 // which address type (home, work, previous) to use as the person's location
-                var locationTypeValueGuid = selectionValues[1].AsGuidOrNull();
-                if (locationTypeValueGuid.HasValue)
-                {
-                    var locationTypeValue = DefinedValueCache.Read( locationTypeValueGuid.Value );
-                    if ( locationTypeValue != null )
-                    {
-                        locationTypeValueId = locationTypeValue.Id;
-                    }
-                }
-                
+                locationTypeValidGuid = selectionValues[1].AsGuidOrNull();
             }
 
             Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
@@ -168,7 +159,7 @@ namespace Rock.Reporting.DataSelect.Person
                         groupMemberQuery
                         .Where( m => m.Group.GroupTypeId == familyGroupTypeId && m.PersonId == p.Id )
                         .SelectMany( m => m.Group.GroupLocations )
-                        .Where( gl => gl.GroupLocationTypeValueId == locationTypeValueId )
+                        .Where( gl => gl.GroupLocationTypeValue.Guid == locationTypeValidGuid )
                         .Where( gl => gl.Location.GeoPoint != null )
                         .Select( s => DbFunctions.Truncate(s.Location.GeoPoint.Distance( selectedLocation.GeoPoint ) * Location.MilesPerMeter, 2) )
                         .FirstOrDefault() );

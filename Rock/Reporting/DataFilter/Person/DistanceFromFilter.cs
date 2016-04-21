@@ -222,11 +222,10 @@ function() {
                 double meters = miles * Location.MetersPerMile;
 
                 GroupMemberService groupMemberService = new GroupMemberService( rockContext );
-                var groupTypeFamilyId = GroupTypeCache.GetFamilyGroupType().Id;
 
                 // limit to Family's Home Addresses that have are a real location (not a PO Box)
                 var groupMemberServiceQry = groupMemberService.Queryable()
-                    .Where( xx => xx.Group.GroupTypeId == groupTypeFamilyId );
+                    .Where( xx => xx.Group.GroupType.Guid == new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) );
 
                 int groupLocationTypeHomeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() ).Id;
 
@@ -236,8 +235,7 @@ function() {
                         xx.Group.GroupLocations.Any( l => 
                             l.GroupLocationTypeValue.Id == groupLocationTypeHomeId 
                             && l.IsMappedLocation 
-                            && selectedLocationGeoPoint.Buffer(meters).Intersects( l.Location.GeoPoint ) 
-                            ));
+                            && l.Location.GeoPoint.Distance( selectedLocationGeoPoint ) <= meters ) );
 
                 var qry = new PersonService( rockContext ).Queryable()
                     .Where( p => groupMemberServiceQry.Any( xx => xx.PersonId == p.Id ) );
