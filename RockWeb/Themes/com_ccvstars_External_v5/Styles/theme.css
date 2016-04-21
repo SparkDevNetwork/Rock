@@ -6367,7 +6367,7 @@ h2 {
 .icon-twitter:before {
   content: "\e006";
 }
-.sports:before {
+.sports {
   font-family: 'STARS-Icon-Font-v1';
   content: attr(data-icon);
   speak: none;
@@ -6379,6 +6379,11 @@ h2 {
   font-style: normal;
   display: inline-block;
   width: 1.25em;
+}
+.fa-to-sports {
+  width: 1.25em;
+  margin-left: .1em;
+  margin-right: -0.1em;
 }
 .sports.soccer:before {
   content: "\e000";
