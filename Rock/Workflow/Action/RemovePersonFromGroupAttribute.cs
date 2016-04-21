@@ -31,10 +31,10 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sets an attribute's value to the selected person 
     /// </summary>
-    [ActionCategory( "Group Update" )]
+    [ActionCategory( "Groups" )]
     [Description( "Removes a person from a group using a workflow attribute." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Remove Person from a Group using Workflow Attribute" )]
+    [ExportMetadata( "ComponentName", "Group Member Remove from  Group Using Attribute" )]
 
     [WorkflowAttribute( "Person", "Workflow attribute that contains the person to remove from the group.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.PersonFieldType" } )]

@@ -30,7 +30,8 @@
                         <asp:LinkButton ID="lbLinkageEventItemOccurrenceRemove" runat="server" CssClass="btn btn-danger btn-xs margin-b-md" Visible="false" OnClick="lbLinkageEventItemOccurrenceRemove_Click"><i class="fa fa-times"></i> Remove</asp:LinkButton>
                     </div>
                     <div class="col-md-6">
-                        <Rock:GroupPicker ID="gpLinkageGroup" runat="server" Label="Group" ValidationGroup="Linkage" />
+                        <Rock:NotificationBox ID="nbGroupTypeWarning" runat="server" NotificationBoxType="Warning" Text="Warning: The group type of the selected group is different than the group type of the registration template. This could prevent registrants from getting added to the group." />
+                        <Rock:GroupPicker ID="gpLinkageGroup" runat="server" Label="Group" ValidationGroup="Linkage" OnSelectItem="gpLinkageGroup_SelectItem" />
                     </div>
                 </div>
 

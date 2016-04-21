@@ -16,13 +16,16 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Web;
 using System.Web.UI.WebControls;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock
 {
@@ -325,6 +328,52 @@ namespace Rock
         /// <returns></returns>
         public static IOrderedQueryable<T> Sort<T>( this IQueryable<T> source, Rock.Web.UI.Controls.SortProperty sortProperty )
         {
+            if ( sortProperty.Property.StartsWith( "attribute:" ) )
+            {
+                var itemType = typeof( T );
+                var attributeCache = AttributeCache.Read( sortProperty.Property.Substring( 10 ).AsInteger() );
+                if ( attributeCache != null && typeof( IModel ).IsAssignableFrom( typeof( T ) ) )
+                {
+                    var entityIds = new List<int>();
+
+                    var models = new List<IModel>();
+                    source.ToList().ForEach( i => models.Add( i as IModel ) );
+                    var ids = models.Select( m => m.Id ).ToList();
+
+                    var field = attributeCache.FieldType.Field;
+
+                    using ( var rockContext = new RockContext() )
+                    {
+                        foreach ( var attributeValue in new AttributeValueService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( v =>
+                                v.AttributeId == attributeCache.Id &&
+                                v.EntityId.HasValue &&
+                                ids.Contains( v.EntityId.Value ) )
+                            .ToList() )
+                        {
+                            var model = models.FirstOrDefault( m => m.Id == attributeValue.EntityId.Value );
+                            if ( model != null )
+                            {
+                                model.CustomSortValue = field.SortValue( null, attributeValue.Value, attributeCache.QualifierValues );
+                            }
+                        }
+                    }
+
+                    var result = new List<T>();
+                    if ( sortProperty.Direction == SortDirection.Ascending )
+                    {
+                        models.OrderBy( m => m.CustomSortValue ).ToList().ForEach( m => result.Add( (T)m ) );
+                    }
+                    else
+                    {
+                        models.OrderByDescending( m => m.CustomSortValue ).ToList().ForEach( m => result.Add( (T)m ) );
+                    }
+
+                    return result.AsQueryable().OrderBy( r => 0 );
+                }
+            }
+
             string[] columns = sortProperty.Property.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
 
             IOrderedQueryable<T> qry = null;
@@ -351,6 +400,7 @@ namespace Rock
             }
 
             return qry;
+            
         }
 
         /// <summary>

@@ -427,6 +427,7 @@ namespace RockWeb.Blocks.Groups
             groupType.ShowConnectionStatus = cbShowConnectionStatus.Checked;
             groupType.IconCssClass = tbIconCssClass.Text;
             groupType.TakesAttendance = cbTakesAttendance.Checked;
+            groupType.AttendanceCountsAsWeekendService = cbWeekendService.Checked;
             groupType.SendAttendanceReminder = cbSendAttendanceReminder.Checked;
             groupType.AttendanceRule = ddlAttendanceRule.SelectedValueAsEnum<AttendanceRule>();
             groupType.AttendancePrintTo = ddlPrintTo.SelectedValueAsEnum<PrintTo>();
@@ -721,6 +722,7 @@ namespace RockWeb.Blocks.Groups
 
             // Check In
             cbTakesAttendance.Checked = groupType.TakesAttendance;
+            cbWeekendService.Checked = groupType.AttendanceCountsAsWeekendService;
             cbSendAttendanceReminder.Checked = groupType.SendAttendanceReminder;
             ddlAttendanceRule.SetValue( (int)groupType.AttendanceRule );
             ddlPrintTo.SetValue( (int)groupType.AttendancePrintTo );

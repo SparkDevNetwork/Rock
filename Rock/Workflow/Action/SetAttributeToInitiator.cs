@@ -32,10 +32,10 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sets an attribute equal to the person who created workflow (if known).
     /// </summary>
-    [ActionCategory( "Set Workflow Attribute" )]
+    [ActionCategory( "Workflow Attributes" )]
     [Description( "Sets an attribute to the person who created the workflow (if known)." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Set Attribute to Initiator" )]
+    [ExportMetadata( "ComponentName", "Attribute Set to Initiator" )]
 
     [WorkflowAttribute( "Person Attribute", "The attribute to set to the initiator.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType" } )]

@@ -146,10 +146,12 @@ namespace Rock.Reporting.DataSelect.Person
             var personSpouseQuery = new PersonService( context ).Queryable()
                 .Select( p => familyGroupMembers.Where( s => s.PersonId == p.Id && s.Person.MaritalStatusValueId == marriedDefinedValueId && s.GroupRole.Guid == adultGuid )
                     .SelectMany( m => m.Group.Members )
-                    .Where( fm => fm.PersonId != p.Id )
-                    .Where( m => m.GroupRole.Guid == adultGuid )
-                    .Where( m => m.Person.Gender != p.Gender )
-                    .Where( m => m.Person.MaritalStatusValueId == marriedDefinedValueId )
+                    .Where( m => 
+                        m.PersonId != p.Id &&
+                        m.GroupRole.Guid == adultGuid &&
+                        m.Person.Gender != p.Gender &&
+                        m.Person.MaritalStatusValueId == marriedDefinedValueId &&
+                        !m.Person.IsDeceased )
                     .Select( m => m.Person.NickName ).FirstOrDefault() );
 
             var selectSpouseExpression = SelectExpressionExtractor.Extract( personSpouseQuery, entityIdProperty, "p" );

@@ -517,8 +517,8 @@ namespace RockWeb.Blocks.WorkFlow
                     {
                         AttributeField boundField = new AttributeField();
                         boundField.DataField = dataFieldExpression;
+                        boundField.AttributeId = attribute.Id;
                         boundField.HeaderText = attribute.Name;
-                        boundField.SortExpression = string.Empty;
                         boundField.Condensed = false;
 
                         var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
@@ -725,7 +725,7 @@ namespace RockWeb.Blocks.WorkFlow
                     {
                         w.Id,
                         w.Name,
-                        Initiator = w.InitiatorPersonAlias.Person,
+                        Initiator = w.InitiatorPersonAlias != null ? w.InitiatorPersonAlias.Person : null,
                         Activities = w.Activities.Where( a => a.ActivatedDateTime.HasValue && !a.CompletedDateTime.HasValue ).OrderBy( a => a.ActivityType.Order ).Select( a => a.ActivityType.Name ),
                         w.CreatedDateTime,
                         Status = w.Status,
