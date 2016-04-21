@@ -27,6 +27,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -35,10 +36,10 @@ namespace church.ccv.Reporting.DataFilter.ContentChannelItem
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Filters Content Channels to show content channels have any of the same categories as the one(s) specified by the current route" )]
+    [Description( "Filters Content Channel Items to show ones that have any of the Categories specified in the route" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Content Channel Filter" )]
-    public class ContentChannelRelatedContentChannels : DataFilterComponent
+    [ExportMetadata( "ComponentName", "Content Channel Item Categories From Route Filter" )]
+    public class ItemsFromCategoriesRoute : DataFilterComponent
     {
         #region Properties
 
@@ -78,7 +79,7 @@ namespace church.ccv.Reporting.DataFilter.ContentChannelItem
         /// </value>
         public override string GetTitle( Type entityType )
         {
-            return "Related Content Channels from Route";
+            return "Content Channel Items from Categories in Route";
         }
 
         /// <summary>
@@ -118,9 +119,30 @@ namespace church.ccv.Reporting.DataFilter.ContentChannelItem
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
             Literal lDescription = new Literal();
-            lDescription.Text = "This filter has no settings. It will look at the current route and return content channel items of the same content channel type that have the similar values for the Categories attribute value";
+            lDescription.Text =
+@"<p>This filter will look at the current route <pre>/SomePage/{Categories}</pre> and for the comma-delimited categories to filter by.</p>
+<p>Note: Requires the Route to have a Url Template that includes {Categories} and that the Categories are DefinedValues. For example, /LifeStories/{Categories}.</p>
+<p>Then to filter by categories, the url would look something like  /LifeStories/Faith,Neighbors,Inspiration</p>
+";
 
-            return new Control[] { lDescription };
+            filterControl.Controls.Add( lDescription );
+            var definedTypePicker = new RockDropDownList { ID = filterControl.ID + "_definedTypePicker" };
+            definedTypePicker.Label = "Defined Type for Categories";
+            definedTypePicker.Required = true;
+            definedTypePicker.Items.Add( new ListItem() );
+
+            var definedTypes = new DefinedTypeService( new RockContext() ).Queryable().OrderBy( d => d.Name );
+            if ( definedTypes.Any() )
+            {
+                foreach ( var definedType in definedTypes )
+                {
+                    definedTypePicker.Items.Add( new ListItem( definedType.Name, definedType.Guid.ToString().ToUpper() ) );
+                }
+            }
+
+            filterControl.Controls.Add( definedTypePicker );
+
+            return new Control[] { lDescription, definedTypePicker };
         }
 
         /// <summary>
@@ -143,7 +165,8 @@ namespace church.ccv.Reporting.DataFilter.ContentChannelItem
         /// <returns></returns>
         public override string GetSelection( Type entityType, Control[] controls )
         {
-            return string.Empty;
+            var definedTypePicker = controls[1] as RockDropDownList;
+            return definedTypePicker.SelectedValue;
         }
 
         /// <summary>
@@ -154,7 +177,8 @@ namespace church.ccv.Reporting.DataFilter.ContentChannelItem
         /// <param name="selection">The selection.</param>
         public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
-            // intentionally blank
+            var definedTypePicker = controls[1] as RockDropDownList;
+            definedTypePicker.SetValue( selection.AsGuidOrNull() );
         }
 
         /// <summary>
@@ -171,37 +195,18 @@ namespace church.ccv.Reporting.DataFilter.ContentChannelItem
             var currentRockPage = HttpContext.Current.Handler as RockPage;
             if ( currentRockPage != null )
             {
-                // figure what content channel(s) are specified for the current page.  Note: This assumes that the main content channel for the page using Route Filtering
-                var pageParams = currentRockPage.PageParameters();
-                List<int> currentContentChannelItemIds = new List<int>();
+                var definedType = DefinedTypeCache.Read( selection.AsGuid() );
+                int definedTypeId = definedType != null ? definedType.Id : 0;
+
+                var categoryNames = ( currentRockPage.PageParameter( "Categories" ) ?? string.Empty ).SplitDelimitedValues();
+
+                var categoriesDefinedValueGuidList = new DefinedValueService( rockContext ).Queryable().Where( a => a.DefinedTypeId == definedTypeId && categoryNames.Contains( a.Value ) ).Select( a => a.Guid ).ToList();
+
                 int entityTypeId = Rock.Web.Cache.EntityTypeCache.Read<Rock.Model.ContentChannelItem>().Id;
-                foreach ( var pageParam in pageParams )
-                {
-                    var attributeKey = pageParam.Key;
-                    var attributeValue = pageParam.Value.ToString();
-                    var contentChannelItemIdsForParam = new AttributeValueService( rockContext ).Queryable()
-                        .Where( a => a.Attribute.Key == attributeKey )
-                        .Where( a => a.Attribute.EntityTypeId == entityTypeId )
-                        .Where( a => a.Value == attributeValue )
-                        .Where( a => a.EntityId.HasValue )
-                        .Select( a => a.EntityId.Value ).ToList();
 
-                    currentContentChannelItemIds.AddRange( contentChannelItemIdsForParam );
-                }
-
-                // get the list of categories for the current content channel(s) on the page.  Note: Assumes ContentChannelItem has an AttributeKey of "Categories"
-                var currentChannelItemsList = new ContentChannelItemService( rockContext ).Queryable().Where( a => currentContentChannelItemIds.Contains( a.Id ) ).ToList();
-                var currentCategoryGuidList = new List<Guid>();
-                foreach ( var currentContentChannelItem in currentChannelItemsList )
-                {
-                    currentContentChannelItem.LoadAttributes();
-                    var categories = ( currentContentChannelItem.GetAttributeValue( "Categories" ) ?? string.Empty ).SplitDelimitedValues().AsGuidList();
-                    currentCategoryGuidList.AddRange( categories );
-                }
-
-                // now, get all the content channel item ids that include any of the categories from the current content channel(s) on the page
-                List<int> relatedOtherContentChannelItemIds = new List<int>();
-                foreach ( var categoryGuid in currentCategoryGuidList.Select( a => a.ToString() ) )
+                // get all the content channel item ids that include any of the categories from the current content channel(s) on the page
+                List<int> contentChannelItemIds = new List<int>();
+                foreach ( var categoryGuid in categoriesDefinedValueGuidList.Select( a => a.ToString() ) )
                 {
                     var relatedContentChannelItemIdsForCategory = new AttributeValueService( rockContext ).Queryable()
                             .Where( a => a.Attribute.Key == "Categories" )
@@ -210,12 +215,12 @@ namespace church.ccv.Reporting.DataFilter.ContentChannelItem
                             .Where( a => a.Value.Contains( categoryGuid ) )
                             .Select( a => a.EntityId.Value ).ToList();
 
-                    relatedOtherContentChannelItemIds.AddRange( relatedContentChannelItemIdsForCategory );
+                    contentChannelItemIds.AddRange( relatedContentChannelItemIdsForCategory );
                 }
 
                 // now that we have ids for the related ContentChannelItem
                 var qry = new ContentChannelItemService( (RockContext)serviceInstance.Context ).Queryable()
-                                .Where( p => relatedOtherContentChannelItemIds.Contains( p.Id ) && !currentContentChannelItemIds.Contains( p.Id ) );
+                                .Where( p => contentChannelItemIds.Contains( p.Id ) );
 
                 Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.ContentChannelItem>( qry, parameterExpression, "p" );
 
