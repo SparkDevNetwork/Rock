@@ -81,6 +81,7 @@
     <Compile Include="Reporting\DataFilter\Person\DatamartCampusesFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\DatamartCampusFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\DatamartInNeighborhoodGroup.cs" />
+    <Compile Include="Reporting\DataFilter\Person\DatamartIsAdult.cs" />
     <Compile Include="Reporting\DataFilter\Person\DatamartIsEraFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\NeighborhoodFilter.cs" />
     <Compile Include="Reporting\DataSelect\Group\DatamartNeighborhoodFieldSelect.cs" />
