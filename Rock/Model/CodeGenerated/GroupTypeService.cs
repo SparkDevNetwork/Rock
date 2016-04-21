@@ -118,6 +118,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AllowedScheduleTypes = source.AllowedScheduleTypes;
             target.AllowMultipleLocations = source.AllowMultipleLocations;
+            target.AttendanceCountsAsWeekendService = source.AttendanceCountsAsWeekendService;
             target.AttendancePrintTo = source.AttendancePrintTo;
             target.AttendanceRule = source.AttendanceRule;
             target.DefaultGroupRoleId = source.DefaultGroupRoleId;

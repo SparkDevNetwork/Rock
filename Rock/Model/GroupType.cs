@@ -167,6 +167,15 @@ namespace Rock.Model
         public bool TakesAttendance { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [attendance counts as weekend service].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [attendance counts as weekend service]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AttendanceCountsAsWeekendService { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating if an attendance reminder should be sent to group leaders.
         /// </summary>
         /// <value>
