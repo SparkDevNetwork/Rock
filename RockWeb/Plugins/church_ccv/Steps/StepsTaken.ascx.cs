@@ -31,8 +31,12 @@ using Rock.Attribute;
 
 using church.ccv.Steps;
 using church.ccv.Steps.Model;
+using church.ccv.Datamart;
 using System.Drawing;
 using System.Data.Entity;
+using church.ccv.Datamart.Model;
+using Rock.Chart;
+using Newtonsoft.Json;
 
 namespace RockWeb.Plugins.church_ccv.Steps
 {
@@ -47,7 +51,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
     {
         #region Fields
 
-
+        const string ATTRIBUTE_GLOBAL_TITHE_THRESHOLD = "TitheThreshold";
 
         #endregion
 
@@ -58,7 +62,16 @@ namespace RockWeb.Plugins.church_ccv.Steps
         /// <value>
         /// The active tab.
         /// </value>
-        protected string ActiveTab { get; set; }
+        protected string ActiveTab {
+            get
+            {
+                return ViewState["ActiveTab"].ToString();
+            }
+            set
+            {
+                ViewState["ActiveTab"] = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the date range.
@@ -88,6 +101,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
             gfStepDetails.ApplyFilterClick += GfStepDetails_ApplyFilterClick;
             gfStepDetails.DisplayFilterValue += GfStepDetails_DisplayFilterValue;
             gStepDetails.GridRebind += GStepDetails_GridRebind;
+            gStepDetails.PersonIdField = "PersonId";
         }
 
         /// <summary>
@@ -111,7 +125,11 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 LoadCampuses();
                 LoadStepTypes();
             }
+
+            ShowCampus();
         }
+
+        
 
         #endregion
 
@@ -137,6 +155,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
         protected void lbSetDateRange_Click( object sender, EventArgs e )
         {
             SetDateLabel();
+            ShowTab();
         }
 
         /// <summary>
@@ -207,6 +226,76 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     }
 
                     break;
+            }
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the cpCampusCampus control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cpCampusCampus_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            ShowCampus();
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptCampusMeasures control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptCampusMeasures_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            {
+                var item = e.Item.DataItem as StepMeasure;
+
+                LineChart lcChart = (LineChart)e.Item.FindControl( "lcCampusMeasure" );
+                Literal lChartValue = (Literal)e.Item.FindControl( "lChartValue" );
+
+                if ( !item.IsTbd )
+                {
+                    var campusId = cpCampusCampus.SelectedValue.AsIntegerOrNull();
+
+                    var chartData = GetChartData( DateRange, measureId: item.Id, campusId: campusId ).ToList();
+
+                    if ( chartData.Count() > 0 )
+                    {
+                        var jsonSetting = new JsonSerializerSettings
+                        {
+                            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                            ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
+                        };
+                        string chartDataJson = JsonConvert.SerializeObject( chartData, Formatting.None, jsonSetting );
+
+                        lcChart.Options.SetChartStyle( new Guid( "2ABB2EA0-B551-476C-8F6B-478CD08C2227" ) ); // default rock style that we'll then heavily tweak
+                        lcChart.Visible = true;
+                        lcChart.ChartData = chartDataJson;
+                        lcChart.Options.legend.show = false;
+                        lcChart.Options.series.lines.lineWidth = 4;
+                        lcChart.Options.xaxis.show = false;
+                        lcChart.Options.yaxis.show = false;
+
+                        Color measureColor = ColorTranslator.FromHtml( item.Color );
+                        Color measureColorLight = measureColor.ChangeColorBrightness( 0.8f );
+
+                        lcChart.Options.colors = new string[] { measureColor.ToHtml(), measureColorLight.ToHtml() };
+                        lcChart.Options.series.lines.fill = 0;
+                        lcChart.Options.grid.show = false;
+                        lcChart.Options.series.shadowSize = 0;
+                        //lcTest.Options.series.lines.fillColor = "#0f0f0fff";
+                    }
+                    else
+                    {
+                        lcChart.Visible = false;
+                    }
+
+                    lChartValue.Text = chartData.Where( d => d.SeriesId == "CurrentYear" ).Sum( d => d.YValue ).ToString();
+                } else
+                {
+                    lcChart.Visible = false;
+                    lChartValue.Text = "TBD";
+                }
             }
         }
         #endregion
@@ -306,7 +395,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     {
                         liCampus.AddCssClass( "active" );
                         pnlCampus.Visible = true;
-                        //BindRegistrationsGrid();
+                        ShowCampus();
                         break;
                     }
             }
@@ -318,8 +407,35 @@ namespace RockWeb.Plugins.church_ccv.Steps
         private void LoadCampuses()
         {
             cpDetailCampus.Campuses = CampusCache.All();
+            cpCampusCampus.Campuses = CampusCache.All();
         }
 
+        /// <summary>
+        /// Shows the campus.
+        /// </summary>
+        private void ShowCampus(int? campusId = null)
+        {
+            RockContext rockContext = new RockContext();
+
+            if ( cpDetailCampus.SelectedCampusId == null )
+            {
+                lCampusCampus.Text = "All Campuses ";
+            }
+            else
+            {
+                campusId = cpCampusCampus.SelectedItem.Value.AsInteger();
+                lCampusCampus.Text = string.Format( "{0} Campus", cpCampusCampus.SelectedItem.Text );
+            }
+
+            var measures = new StepMeasureService( rockContext ).Queryable().AsNoTracking().Where( m => m.IsActive ).ToList();
+            rptCampusMeasures.DataSource = measures;
+            rptCampusMeasures.DataBind();
+        }
+
+        /// <summary>
+        /// Shows the step details.
+        /// </summary>
+        /// <param name="campusId">The campus identifier.</param>
         private void ShowStepDetails(int? campusId = null )
         {
             if ( cpDetailCampus.SelectedCampusId == null )
@@ -359,25 +475,144 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     query = query.Where( s => s.StepMeasureId == measureId );
                 }
 
-                var results = query.Select( s =>
+                // join to datamart
+                decimal titheThreshold = GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_TITHE_THRESHOLD ).AsDecimal();
+
+                var datamartQry = new DatamartPersonService( rockContext ).Queryable().AsNoTracking();
+
+                var joinedQuery = query.GroupJoin(
+                        datamartQry,
+                        s => s.PersonAlias.PersonId,
+                        d => d.PersonId,
+                        ( s, d ) => new { s, d }
+                    )
+                    .SelectMany( x => x.d.DefaultIfEmpty(), ( g, u ) => new { Step = g.s, Datamart = u } );
+
+                var results = joinedQuery.Select( s =>
                                 new {
-                                    s.Id,
-                                    s.DateTaken,
-                                    StepMeasureTitle = s.StepMeasure.Title,
-                                    s.StepMeasureId,
-                                    s.SundayDate,
-                                    s.PersonAlias.PersonId,
-                                    FirstName = s.PersonAlias.Person.FirstName,
-                                    NickName = s.PersonAlias.Person.NickName,
-                                    LastName = s.PersonAlias.Person.LastName,
-                                    FullName = s.PersonAlias.Person.LastName + ", " + s.PersonAlias.Person.NickName,
-                                    Campus = s.Campus.Name
+                                    Id = s.Step.Id,
+                                    DateTaken = s.Step.DateTaken,
+                                    StepMeasureTitle = s.Step.StepMeasure.Title,
+                                    StepMeasureId = s.Step.StepMeasureId,
+                                    SundayDate = s.Step.SundayDate,
+                                    PersonId = s.Step.PersonAlias.PersonId,
+                                    FirstName = s.Step.PersonAlias.Person.FirstName,
+                                    NickName = s.Step.PersonAlias.Person.NickName,
+                                    LastName = s.Step.PersonAlias.Person.LastName,
+                                    FullName = s.Step.PersonAlias.Person.LastName + ", " + s.Step.PersonAlias.Person.NickName,
+                                    Campus = s.Step.Campus.Name,
+                                    Address = s.Datamart.Address,
+                                    State = s.Datamart.State, 
+                                    City = s.Datamart.City,
+                                    PostalCode = s.Datamart.PostalCode,
+                                    Email = s.Datamart.Email,
+                                    ConnectionStatus = s.Datamart.ConnectionStatusName,
+                                    FamilyRole = s.Datamart.FamilyRole,
+                                    FirstVisitDate = s.Datamart.FirstVisitDate, 
+                                    BaptismDate = s.Datamart.BaptismDate, 
+                                    StartingPointDate = s.Datamart.StartingPointDate, 
+                                    InNeighborhoodGroup = s.Datamart.InNeighborhoodGroup, 
+                                    IsServing = s.Datamart.IsServing,
+                                    IsEra = s.Datamart.IsEra,
+                                    IsCoaching = s.Datamart.IsCoaching,
+                                    IsGiving = (s.Datamart.GivingLast12Months != null) ? (s.Datamart.GivingLast12Months.Value > titheThreshold) : false
                                 }
                 );
 
                 gStepDetails.SetLinqDataSource( results.OrderBy(s => s.DateTaken) );
                 gStepDetails.DataBind();
             }
+        }
+
+        /// <summary>
+        /// Gets the chart data.
+        /// </summary>
+        /// <param name="dateRange">The date range.</param>
+        /// <param name="measureId">The measure identifier.</param>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <param name="pastorId">The pastor identifier.</param>
+        /// <returns></returns>
+        private IEnumerable<IChartData> GetChartData(DateRange dateRange, RockContext rockContext = null, int? measureId = null, int? campusId = null, int? pastorId = null )
+        {
+            if (rockContext == null )
+            {
+                rockContext = new RockContext();
+            }
+
+            bool showPreviousYear = false;
+            
+            if (dateRange.Start.HasValue && dateRange.End.HasValue )
+            {
+                showPreviousYear = true;
+            }
+
+            var currentData = new StepTakenService( rockContext ).Queryable();
+            var previousYearData = new StepTakenService( rockContext ).Queryable();
+
+            if ( dateRange.Start.HasValue )
+            {
+                currentData = currentData.Where( s => s.DateTaken >= dateRange.Start );
+                var previousYearDate = dateRange.Start.Value.AddYears( -1 );
+                previousYearData = previousYearData.Where( s => s.DateTaken >= previousYearDate );
+            }
+
+            if ( dateRange.End.HasValue )
+            {
+                currentData = currentData.Where( s => s.DateTaken <= dateRange.End );
+                var previousYearDate = dateRange.End.Value.AddYears( -1 );
+                previousYearData = previousYearData.Where( s => s.DateTaken <= previousYearDate );
+            }
+
+            if ( measureId.HasValue )
+            {
+                currentData = currentData.Where( s => s.StepMeasureId == measureId.Value );
+                previousYearData = previousYearData.Where( s => s.StepMeasureId == measureId.Value );
+            }
+
+            if ( campusId.HasValue )
+            {
+                currentData = currentData.Where( s => s.CampusId == campusId );
+                previousYearData = previousYearData.Where( s => s.CampusId == campusId );
+            }
+
+            // todo figure out pastorid...
+
+            var returnData = currentData.GroupBy( s => s.SundayDate )
+                            .Select( g => new
+                            {
+                                DateKey = g.Key.Value,
+                                Count = g.Count()
+                            } )
+                            .ToList()
+                            .Select( c => new SummaryData
+                            {
+                                DateTimeStamp = c.DateKey.ToJavascriptMilliseconds(),
+                                DateTime = c.DateKey,
+                                SeriesId = "CurrentYear",
+                                YValue = c.Count
+                            } );
+
+            if ( showPreviousYear )
+            {
+                var previousYearReturnData = previousYearData.GroupBy( s => s.SundayDate )
+                            .Select( g => new
+                            {
+                                DateKey = g.Key.Value,
+                                Count = g.Count()
+                            } )
+                            .ToList()
+                            .Select( c => new SummaryData
+                            {
+                                DateTimeStamp = c.DateKey.ToJavascriptMilliseconds(),
+                                DateTime = c.DateKey,
+                                SeriesId = "PreviousYear",
+                                YValue = c.Count
+                            } );
+
+                returnData.Union( previousYearReturnData );
+            }
+
+            return returnData;
         }
         #endregion
     }

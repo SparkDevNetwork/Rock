@@ -12,6 +12,38 @@
 
 </script>
 
+<style>
+    .measurechart {
+        position: relative;
+        height: 200px;
+        margin-bottom: 24px;
+    }
+    .measurechart-legend {
+        position: absolute;
+        top: 2px;
+        left: 4px;
+    }
+
+    .measurechart-legend h1 {
+        margin: 0 0 4px 0;
+        font-size: 18px;
+    }
+
+    .measurechart-legend-value {
+        margin-top: -14px;
+    }
+
+    .measurechart-legend-value span {
+        font-size: 42px;
+        font-weight: 900;
+    }
+
+    .measurechart-legend-value i {
+        font-size: 38px;
+        margin-left: -6px;
+    }
+</style>
+
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
@@ -51,7 +83,36 @@
                 </ul>
 
                 <asp:Panel ID="pnlCampus" runat="server">
-                    <h4>Not Implemented</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h2><asp:Literal ID="lCampusCampus" runat="server" Text="All Campuses" /></h2>
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:CampusPicker ID="cpCampusCampus" runat="server" OnSelectedIndexChanged="cpCampusCampus_SelectedIndexChanged" AutoPostBack="true" />
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <asp:Repeater ID="rptCampusMeasures" runat="server" OnItemDataBound="rptCampusMeasures_ItemDataBound">
+                            <ItemTemplate>
+
+                                <div class="col-md-6">
+                                    <div class="measurechart" style="border: 3px solid <%# Eval("Color") %>; color: <%# Eval("Color") %>;">
+                                        <div class="measurechart-legend">
+                                            <h1><%# Eval("Title") %></h1>
+                                            <div class="measurechart-legend-value"><span><asp:Literal ID="lChartValue" runat="server" /></span> <i class="fa fa-fw <%# Eval("IconCssClass") %>"></i></div>
+                                        </div>
+                                        <Rock:LineChart ID="lcCampusMeasure" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="200px" />
+                                    </div>
+                                </div>
+
+                            </ItemTemplate>
+                        </asp:Repeater>
+                    </div>
+                        
+
+
+                    
                 </asp:Panel>
 
                 <asp:Panel ID="pnlPastor" runat="server" Visible="false">
@@ -82,6 +143,7 @@
                                 <asp:BoundField DataField="StepMeasureTitle" HeaderText="Step" />
                                 <asp:BoundField DataField="FullName" HeaderText="Name" />
                                 <asp:BoundField DataField="Campus" HeaderText="Campus" />
+                                <asp:BoundField DataField="Address" HeaderText="Address" />
                             </Columns>
                         </Rock:Grid>
                     </div>

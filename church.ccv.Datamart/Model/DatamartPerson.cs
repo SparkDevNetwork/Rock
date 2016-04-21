@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.Spatial;
 using System.Runtime.Serialization;
+using Rock;
 
 namespace church.ccv.Datamart.Model
 {
@@ -344,7 +345,7 @@ namespace church.ccv.Datamart.Model
         /// <c>true</c> if this instance is coaching; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsCoaching { get; set; }
+        public bool? IsCoaching { get; set; }
 
         /// <summary>
         /// Gets or sets the serving areas.
