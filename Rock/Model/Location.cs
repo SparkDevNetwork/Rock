@@ -226,7 +226,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the result code that was returned by the address standardization service. If an address standardization has not been attempted for this location, 
         /// this value will be null.
         /// </value>
-        [MaxLength( 50 )]
+        [MaxLength( 200 )]
         [DataMember]
         public string StandardizeAttemptedResult { get; set; }
 
@@ -268,7 +268,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the result code returned by the geocoding service from the most recent geocoding attempt. If geocoding has not been attempted for this location,
         /// the value will be null.
         /// </value>
-        [MaxLength( 50 )]
+        [MaxLength( 200 )]
         [DataMember]
         public string GeocodeAttemptedResult { get; set; }
 

@@ -41,6 +41,9 @@ namespace Rock.Client
         public bool AllowMultipleLocations { get; set; }
 
         /// <summary />
+        public bool AttendanceCountsAsWeekendService { get; set; }
+
+        /// <summary />
         public Rock.Client.Enums.PrintTo AttendancePrintTo { get; set; }
 
         /// <summary />
@@ -146,6 +149,7 @@ namespace Rock.Client
             this.Id = source.Id;
             this.AllowedScheduleTypes = source.AllowedScheduleTypes;
             this.AllowMultipleLocations = source.AllowMultipleLocations;
+            this.AttendanceCountsAsWeekendService = source.AttendanceCountsAsWeekendService;
             this.AttendancePrintTo = source.AttendancePrintTo;
             this.AttendanceRule = source.AttendanceRule;
             this.DefaultGroupRoleId = source.DefaultGroupRoleId;
