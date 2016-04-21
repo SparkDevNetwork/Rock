@@ -894,6 +894,14 @@ function (val, axis) {
         /// The pie.
         /// </value>
         public Pie pie { get; set; }
+
+        /// <summary>
+        /// Gets or sets the size of the shadow.
+        /// </summary>
+        /// <value>
+        /// The size of the shadow.
+        /// </value>
+        public int? shadowSize { get; set; }
     }
 
     /// <summary>
