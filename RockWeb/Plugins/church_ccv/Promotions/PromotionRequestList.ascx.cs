@@ -443,6 +443,9 @@ namespace RockWeb.Plugins.church_ccv.Promotions
                 // get the all promotion requests
                 PromotionsContext promoContext = new PromotionsContext();
                 PromotionsService<PromotionRequest> promoService = new PromotionsService<PromotionRequest>( promoContext );
+                
+                // get all active requests. (If a request is active, but its Event Item Occurrence was deleted, we won't end up showing it, because
+                // the lazy load of EventOccurrence will fail, so that's a good thing.)
                 var promoRequestQuery = promoService.Queryable().Where( pr => pr.IsActive == true );
 
                 // Now, we need to REMOVE any request where:
@@ -535,7 +538,7 @@ namespace RockWeb.Plugins.church_ccv.Promotions
                 // if it's not in either campus exclusion list, it may stay.
                 promoRequestQuery = promoRequestQuery.Where( pr => excludedCampusesPromotionRequestIds.Contains( pr.Id ) == false );
                 /////////////////////
-
+                
                 // Apply Working Campus
                 int selectedCampusId = ddlCampus.SelectedValue.AsInteger( );
                 promoRequestQuery = promoRequestQuery.Where( a => a.EventItemOccurrence.CampusId == null || (a.EventItemOccurrence.CampusId.HasValue && selectedCampusId == a.EventItemOccurrence.CampusId.Value ) );
