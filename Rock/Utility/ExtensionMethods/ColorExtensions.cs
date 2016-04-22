@@ -25,16 +25,6 @@ namespace Rock
     public static partial class ExtensionMethods
     {
         /// <summary>
-        /// Returns the number of digits following the decimal place. 5.68 would return 2. 17.9998 would return 4.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public static int GetDecimalPrecision( this decimal value )
-        {
-            return BitConverter.GetBytes( decimal.GetBits( value )[3] )[2];
-        }
-
-        /// <summary>
         /// Changes the color brightness.
         /// </summary>
         /// <param name="color">The color.</param>
