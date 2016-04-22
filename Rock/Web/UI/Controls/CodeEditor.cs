@@ -22,7 +22,6 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Rock;
 
 namespace Rock.Web.UI.Controls
 {
@@ -87,6 +86,7 @@ namespace Rock.Web.UI.Controls
             {
                 return HelpBlock != null ? HelpBlock.Text : string.Empty;
             }
+
             set
             {
                 if ( HelpBlock != null )
@@ -114,6 +114,7 @@ namespace Rock.Web.UI.Controls
             {
                 return WarningBlock != null ? WarningBlock.Text : string.Empty;
             }
+
             set
             {
                 if ( WarningBlock != null )
@@ -153,6 +154,7 @@ namespace Rock.Web.UI.Controls
             {
                 return RequiredFieldValidator != null ? RequiredFieldValidator.ErrorMessage : string.Empty;
             }
+
             set
             {
                 if ( RequiredFieldValidator != null )
@@ -210,10 +212,11 @@ namespace Rock.Web.UI.Controls
             {
                 return base.ValidationGroup;
             }
+
             set
             {
                 base.ValidationGroup = value;
-                
+
                 EnsureChildControls();
 
                 if ( RequiredFieldValidator != null )
@@ -249,8 +252,21 @@ namespace Rock.Web.UI.Controls
         ]
         public string EditorHeight
         {
-            get { return ViewState["EditorHeight"] as string ?? "200"; }
-            set { ViewState["EditorHeight"] = value; }
+            get
+            {
+                var height = ViewState["EditorHeight"] as string;
+                if ( string.IsNullOrWhiteSpace( height ) )
+                {
+                    height = "200";
+                }
+
+                return height;
+            }
+
+            set
+            {
+                ViewState["EditorHeight"] = value;
+            }
         }
 
         /// <summary>
@@ -351,6 +367,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 return _mfpMergeFields.MergeFields;
             }
+
             set
             {
                 EnsureChildControls();
@@ -411,12 +428,11 @@ namespace Rock.Web.UI.Controls
             base.OnInit( e );
             this.TextMode = TextBoxMode.MultiLine;
 
-            if (this.Visible && !ScriptManager.GetCurrent(this.Page).IsInAsyncPostBack)
+            if ( this.Visible && !ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
             {
                 // if the codeeditor is .Visible and this isn't an Async, add ace.js to the page (If the codeeditor is made visible during an Async Post, RenderBaseControl will take care of adding ace.js)
                 RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/ace/ace.js" ) );
             }
-
         }
 
         /// <summary>
@@ -432,7 +448,6 @@ namespace Rock.Web.UI.Controls
             _mfpMergeFields.ID = string.Format( "mfpMergeFields_{0}", this.ID );
             _mfpMergeFields.SelectItem += MergeFields_SelectItem;
             Controls.Add( _mfpMergeFields );
-
         }
 
         /// <summary>
@@ -454,7 +469,7 @@ namespace Rock.Web.UI.Controls
         public void RenderBaseControl( HtmlTextWriter writer )
         {
             int editorHeight = EditorHeight.AsIntegerOrNull() ?? 200;
-            
+
             // Add merge field help
             if ( MergeFields.Any() )
             {
@@ -510,7 +525,6 @@ namespace Rock.Web.UI.Controls
             ScriptManager.RegisterStartupScript( this, this.GetType(), "codeeditor_" + this.ClientID, script, true );
 
             base.RenderControl( writer );
-
         }
 
         /// <summary>
@@ -525,9 +539,10 @@ namespace Rock.Web.UI.Controls
         {
             if ( base.LoadPostData( postDataKey, postCollection ) )
             {
-                base.Text = HttpUtility.HtmlDecode( base.Text );
+                this.Text = HttpUtility.HtmlDecode( this.Text );
                 return true;
             }
+
             return false;
         }
 
@@ -558,7 +573,12 @@ namespace Rock.Web.UI.Controls
 
         #region Events
 
-        void MergeFields_SelectItem( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the SelectItem event of the MergeFields control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        public void MergeFields_SelectItem( object sender, EventArgs e )
         {
             EnsureChildControls();
             this.Text += _mfpMergeFields.SelectedMergeField;
@@ -577,15 +597,17 @@ namespace Rock.Web.UI.Controls
         /// text
         /// </summary>
         Text = 0,
+
         /// <summary>
         /// CSS
         /// </summary>
         Css = 1,
+
         /// <summary>
         /// HTML
         /// </summary>
         Html = 2,
-        
+
         /// <summary>
         /// The lava
         /// </summary>
@@ -636,118 +658,147 @@ namespace Rock.Web.UI.Controls
         /// rock
         /// </summary>
         Rock = 0,
+
         /// <summary>
         /// chrome
         /// </summary>
         Chrome = 1,
+
         /// <summary>
         /// crimson editor
         /// </summary>
         CrimsonEditor = 2,
+
         /// <summary>
         /// dawn
         /// </summary>
         Dawn = 3,
+
         /// <summary>
         /// dreamweaver
         /// </summary>
         Dreamweaver = 4,
+
         /// <summary>
         /// eclipse
         /// </summary>
         Eclipse = 5,
+
         /// <summary>
         /// solarized light
         /// </summary>
         SolarizedLight = 6,
+
         /// <summary>
         /// textmate
         /// </summary>
         Textmate = 7,
+
         /// <summary>
         /// tomorrow
         /// </summary>
         Tomorrow = 8,
+
         /// <summary>
         /// xcode
         /// </summary>
         Xcode = 9,
+
         /// <summary>
         /// github
         /// </summary>
         Github = 10,
+
         /// <summary>
         /// ambiance dark
         /// </summary>
         AmbianceDark = 11,
+
         /// <summary>
         /// chaos dark
         /// </summary>
         ChaosDark = 12,
+
         /// <summary>
         /// clouds midnight dark
         /// </summary>
         CloudsMidnightDark = 13,
+
         /// <summary>
         /// cobalt dark
         /// </summary>
         CobaltDark = 14,
+
         /// <summary>
         /// idle fingers dark
         /// </summary>
         IdleFingersDark = 15,
+
         /// <summary>
         /// kr theme dark
         /// </summary>
         krThemeDark = 16,
+
         /// <summary>
         /// merbivore dark
         /// </summary>
         MerbivoreDark = 17,
+
         /// <summary>
         /// merbivore soft dark
         /// </summary>
         MerbivoreSoftDark = 18,
+
         /// <summary>
         /// mono industrial dark
         /// </summary>
         MonoIndustrialDark = 19,
+
         /// <summary>
         /// monokai dark
         /// </summary>
         MonokaiDark = 20,
+
         /// <summary>
         /// pastel on dark
         /// </summary>
         PastelOnDark = 21,
+
         /// <summary>
         /// solarized dark
         /// </summary>
         SolarizedDark = 22,
+
         /// <summary>
         /// terminal dark
         /// </summary>
         TerminalDark = 23,
+
         /// <summary>
         /// tomorrow night dark
         /// </summary>
         TomorrowNightDark = 24,
+
         /// <summary>
         /// tomorrow night blue dark
         /// </summary>
         TomorrowNightBlueDark = 25,
+
         /// <summary>
         /// tomorrow night bright dark
         /// </summary>
         TomorrowNightBrightDark = 26,
+
         /// <summary>
         /// tomorrow night eighties dark
         /// </summary>
         TomorrowNightEightiesDark = 27,
+
         /// <summary>
         /// twilight dark
         /// </summary>
         TwilightDark = 28,
+
         /// <summary>
         /// vibrant ink dark
         /// </summary>
