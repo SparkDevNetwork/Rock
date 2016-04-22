@@ -62,8 +62,8 @@ namespace RockWeb.Blocks.Communication
         {
             base.OnInit( e );
 
-            var mergeObjects = GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            LoadDropdowns( mergeObjects );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+            LoadDropdowns( mergeFields );
 
             var key = PageParameter( "Person" );
             if ( !string.IsNullOrWhiteSpace( key ) )
@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.Communication
             if (_person != null)
             {
                 nbMessage.NotificationBoxType = NotificationBoxType.Success;
-                nbMessage.Text = GetAttributeValue( "SuccessText" ).ResolveMergeFields( mergeObjects );
+                nbMessage.Text = GetAttributeValue( "SuccessText" ).ResolveMergeFields( mergeFields );
             }
             else
             {

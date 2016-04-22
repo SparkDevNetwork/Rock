@@ -306,35 +306,10 @@ function labelFormatter(label, series) {
         /// <returns></returns>
         private Dictionary<string, object> GetDynamicDataMergeFields()
         {
-            var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            if ( CurrentPerson != null )
-            {
-                mergeFields.Add( "CurrentPerson", CurrentPerson );
-            }
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
             mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
-            mergeFields.Add( "Campuses", CampusCache.All() );
-            mergeFields.Add( "PageParameter", PageParameters() );
-            mergeFields.Add( "CurrentPage", this.PageCache );
-
-            var contextObjects = new Dictionary<string, object>();
-            foreach ( var contextEntityType in RockPage.GetContextEntityTypes() )
-            {
-                var contextEntity = RockPage.GetCurrentContext( contextEntityType );
-                if ( contextEntity != null && contextEntity is DotLiquid.ILiquidizable )
-                {
-                    var type = Type.GetType( contextEntityType.AssemblyName ?? contextEntityType.Name );
-                    if ( type != null )
-                    {
-                        contextObjects.Add( type.Name, contextEntity );
-                    }
-                }
-            }
-
-            if ( contextObjects.Any() )
-            {
-                mergeFields.Add( "Context", contextObjects );
-            }
+            mergeFields.AddOrReplace( "CurrentPage", this.PageCache );
 
             return mergeFields;
         }

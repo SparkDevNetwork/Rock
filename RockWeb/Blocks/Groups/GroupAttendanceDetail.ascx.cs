@@ -364,9 +364,8 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            var globalMergeFields = GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
-            globalMergeFields.Add( "CurrentPerson", this.CurrentPerson );
-            globalMergeFields.Add( "Group", this._group );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+            mergeFields.Add( "Group", this._group );
 
             var mergeTemplate = new MergeTemplateService( rockContext ).Get( this.GetAttributeValue( "AttendanceRosterTemplate" ).AsGuid() );
             
@@ -391,7 +390,7 @@ namespace RockWeb.Blocks.Groups
 
             var mergeObjectList = mergeObjectsDictionary.Select( a => a.Value ).ToList();
 
-            outputBinaryFileDoc = mergeTemplateType.CreateDocument( mergeTemplate, mergeObjectList, globalMergeFields );
+            outputBinaryFileDoc = mergeTemplateType.CreateDocument( mergeTemplate, mergeObjectList, mergeFields );
 
             // set the name of the output doc
             outputBinaryFileDoc = new BinaryFileService( rockContext ).Get( outputBinaryFileDoc.Id );

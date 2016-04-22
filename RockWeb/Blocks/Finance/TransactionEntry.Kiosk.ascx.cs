@@ -791,7 +791,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             // setup lava
-            var mergeFields = new Dictionary<string, object>();
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
             mergeFields.Add( "Person", givingUnit );
 
@@ -839,9 +839,6 @@ namespace RockWeb.Blocks.Finance
             mergeFields.Add( "TransactionCode", _transactionCode );
 
             mergeFields.Add( "Amounts", accountAmounts );
-
-            var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
 
             return mergeFields;
         }

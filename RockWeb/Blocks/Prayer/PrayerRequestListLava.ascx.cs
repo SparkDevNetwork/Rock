@@ -121,11 +121,8 @@ namespace RockWeb.Blocks.Prayer
         /// </summary>
         protected void LoadContent()
         {
-            var mergeFields = new Dictionary<string, object>();
-            mergeFields.Add( "CurrentPerson", CurrentPerson );
-            var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
-
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+            
             RockContext rockContext = new RockContext();
 
             var prayerRequestService = new PrayerRequestService( rockContext );

@@ -146,14 +146,10 @@ namespace RockWeb.Blocks.Core
             }
 
             // set display output
-            var mergeFields = new Dictionary<string, object>();
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "ClientIp", deviceIp );
             mergeFields.Add( "Device", device );
             mergeFields.Add( "Campus", campus );
-            mergeFields.Add( "CurrentPerson", CurrentPerson );
-
-            var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
 
             lOutput.Text = GetAttributeValue( "DisplayLava" ).ResolveMergeFields( mergeFields );
 
