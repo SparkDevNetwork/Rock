@@ -482,14 +482,10 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( setValues )
             {
-                var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                 mergeFields.Add( "Action", _action );
                 mergeFields.Add( "Activity", _activity );
                 mergeFields.Add( "Workflow", _workflow );
-                if ( CurrentPerson != null )
-                {
-                    mergeFields.Add( "CurrentPerson", CurrentPerson );
-                }
 
                 lheadingText.Text = form.Header.ResolveMergeFields( mergeFields );
                 lFootingText.Text = form.Footer.ResolveMergeFields( mergeFields );
@@ -677,15 +673,10 @@ namespace RockWeb.Blocks.WorkFlow
                 _activity != null &&
                 _action != null )
             {
-
-                var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                 mergeFields.Add( "Action", _action );
                 mergeFields.Add( "Activity", _activity );
                 mergeFields.Add( "Workflow", _workflow );
-                if ( CurrentPerson != null )
-                {
-                    mergeFields.Add( "CurrentPerson", CurrentPerson );
-                } 
                 
                 Guid activityTypeGuid = Guid.Empty;
                 string responseText = "Your information has been submitted successfully.";

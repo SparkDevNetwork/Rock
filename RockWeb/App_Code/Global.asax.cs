@@ -908,24 +908,24 @@ namespace RockWeb
                             }
 
                             // setup merge codes for email
-                            var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
-                            mergeObjects.Add( "ExceptionDetails", string.Format( "An error occurred{0} on the {1} site on page: <br>{2}<p>{3}</p>",
+                            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+                            mergeFields.Add( "ExceptionDetails", string.Format( "An error occurred{0} on the {1} site on page: <br>{2}<p>{3}</p>",
                                 person != null ? " for " + person.FullName : "", siteName, Context.Request.Url.OriginalString, FormatException( ex, "" ) ) );
 
                             try
                             {
-                                mergeObjects.Add( "Exception", Hash.FromAnonymousObject( ex ) );
+                                mergeFields.Add( "Exception", Hash.FromAnonymousObject( ex ) );
                             }
                             catch
                             {
                                 // ignore
                             }
 
-                            mergeObjects.Add( "Person", person );
+                            mergeFields.Add( "Person", person );
                             var recipients = new List<RecipientData>();
                             foreach ( string emailAddress in emailAddresses )
                             {
-                                recipients.Add( new RecipientData( emailAddress, mergeObjects ) );
+                                recipients.Add( new RecipientData( emailAddress, mergeFields ) );
                             }
 
                             if ( recipients.Any() )

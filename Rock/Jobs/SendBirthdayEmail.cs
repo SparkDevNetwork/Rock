@@ -108,11 +108,8 @@ namespace Rock.Jobs
             var personList = personQry.AsNoTracking().ToList();
             foreach ( var person in personList )
             {
-                var mergeFields = new Dictionary<string, object>();
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                 mergeFields.Add( "Person", person );
-
-                var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
-                globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
 
                 recipients.Add( new RecipientData( person.Email, mergeFields ) );
             }

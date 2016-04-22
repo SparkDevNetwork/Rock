@@ -104,10 +104,7 @@ namespace Rock.Web.UI
 
                 if ( preHtml.HasMergeFields() || postHtml.HasMergeFields() )
                 {
-                    var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( _rockBlock.CurrentPerson );
-                    mergeFields.Add( "CurrentPerson", _rockBlock.CurrentPerson );
-                    mergeFields.Add( "Campuses", CampusCache.All() );
-                    mergeFields.Add( "PageParameter", _rockBlock.PageParameters() );
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( _rockBlock.RockPage );
 
                     var contextObjects = new Dictionary<string, object>();
                     foreach ( var contextEntityType in _rockBlock.RockPage.GetContextEntityTypes() )

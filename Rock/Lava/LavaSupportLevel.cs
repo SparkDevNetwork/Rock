@@ -14,20 +14,30 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rock.Lava
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public enum LavaSupportLevel
     {
+        /// <summary>
+        /// Loads GlobalAttributes as a MergeField and supports the old .AttributeKey syntax
+        /// Slower, but supports the old syntax
+        /// </summary>
         Legacy,
-        
+
+        /// <summary>
+        /// Loads GlobalAttributes as a MergeField and supports the old .AttributeKey syntax, but will log an exception when it detects that the old syntax is used
+        /// Slower than NoLegacy, but will help you find any old legacy syntax that you need to clean up
+        /// </summary>
         LegacyWithWarning,
-        
+
+        /// <summary>
+        /// Does not load the old GlobalAttributes MergeField and does not support the old .AttributeKey syntax and does not try to detect the old syntax. 
+        /// Best Performance
+        /// </summary>
         NoLegacy
     }
 }
