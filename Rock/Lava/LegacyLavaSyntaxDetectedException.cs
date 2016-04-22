@@ -22,8 +22,17 @@ using System.Threading.Tasks;
 
 namespace Rock.Lava
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="System.Exception" />
     public class LegacyLavaSyntaxDetectedException : Exception
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LegacyLavaSyntaxDetectedException"/> class.
+        /// </summary>
+        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="fieldName">Name of the field.</param>
         public LegacyLavaSyntaxDetectedException( string entityTypeName, string fieldName )
             : base( string.Format( "Warning: Legacy Lava Syntax Detected: {0}.{1}", entityTypeName, fieldName ) )
         {

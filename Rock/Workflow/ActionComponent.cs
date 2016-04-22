@@ -196,19 +196,10 @@ namespace Rock.Workflow
         /// <returns></returns>
         protected Dictionary<string, object> GetMergeFields( WorkflowAction action )
         {
-            var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
+            var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null );
             mergeFields.Add( "Action", action );
             mergeFields.Add( "Activity", action.Activity );
             mergeFields.Add( "Workflow", action.Activity.Workflow );
-
-            if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
-            {
-                var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
-                if (currentPerson != null)
-                {
-                    mergeFields.Add( "CurrentPerson", currentPerson );
-                }
-            }
 
             return mergeFields;
         }

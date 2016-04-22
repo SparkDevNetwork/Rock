@@ -632,7 +632,7 @@ namespace RockWeb.Blocks.Groups
                     group.Members = group.Members.OrderBy( m => m.Person.LastName ).ThenBy( m => m.Person.FirstName ).ToList();
                 }
 
-                var mergeFields = new Dictionary<string, object>();
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                 mergeFields.Add( "Group", group );
 
                 // add linked pages
@@ -649,11 +649,6 @@ namespace RockWeb.Blocks.Groups
                 securityActions.Add( "Edit", group != null && group.IsAuthorized( Authorization.EDIT, CurrentPerson ) );
                 securityActions.Add( "Administrate", group != null && group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) );
                 mergeFields.Add( "AllowedActions", securityActions );
-
-                mergeFields.Add( "CurrentPerson", CurrentPerson );
-
-                var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-                globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
 
                 Dictionary<string, object> currentPageProperties = new Dictionary<string, object>();
                 currentPageProperties.Add( "Id", RockPage.PageId );
