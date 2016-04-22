@@ -71,15 +71,15 @@ You can view an online version of this email here:
             StringBuilder sbContent = new StringBuilder();
 
             var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
-            var mergeValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
 
             // Requery the Communication object
             communication = new CommunicationService( rockContext ).Get( communication.Id );
-            mergeValues.Add( "Communication", communication );
+            mergeFields.Add( "Communication", communication );
 
             if ( person != null )
             {
-                mergeValues.Add( "Person", person );
+                mergeFields.Add( "Person", person );
 
                 var recipient = new CommunicationRecipientService( rockContext ).Queryable().Where( a => a.CommunicationId == communication.Id ).Where( r => r.PersonAlias != null && r.PersonAlias.PersonId == person.Id ).FirstOrDefault();
                 if ( recipient != null )
@@ -87,9 +87,9 @@ You can view an online version of this email here:
                     // Add any additional merge fields created through a report
                     foreach ( var mergeField in recipient.AdditionalMergeValues )
                     {
-                        if ( !mergeValues.ContainsKey( mergeField.Key ) )
+                        if ( !mergeFields.ContainsKey( mergeField.Key ) )
                         {
-                            mergeValues.Add( mergeField.Key, mergeField.Value );
+                            mergeFields.Add( mergeField.Key, mergeField.Value );
                         }
                     }
                 }
@@ -97,7 +97,7 @@ You can view an online version of this email here:
 
             // Body
             string htmlContent = communication.GetMediumDataValue( "HtmlMessage" );
-            sbContent.Append( Email.ProcessHtmlBody( communication, globalAttributes, mergeValues ) );
+            sbContent.Append( Email.ProcessHtmlBody( communication, globalAttributes, mergeFields ) );
 
             // Attachments
             StringBuilder sbAttachments = new StringBuilder();

@@ -223,10 +223,9 @@ namespace RockWeb.Blocks.Cms
 
         private void ShowForm()
         {
-            var mergeObjects = GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            mergeObjects.Add( "CurrentPerson", CurrentPerson );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
-            lEmailForm.Text = GetAttributeValue( "HTMLForm" ).ResolveMergeFields( mergeObjects );
+            lEmailForm.Text = GetAttributeValue( "HTMLForm" ).ResolveMergeFields( mergeFields );
         }
 
         private void SendEmail()
@@ -253,8 +252,7 @@ namespace RockWeb.Blocks.Cms
             if ( !isBot )
             {
                 // create merge objects
-                var mergeFields = GlobalAttributesCache.GetMergeFields( CurrentPerson );
-                mergeFields.Add( "CurrentPerson", CurrentPerson );
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
                 // create merge object for fields
                 Regex rgxRockControls = new Regex( @"^ctl\d*\$.*" );

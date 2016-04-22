@@ -60,7 +60,9 @@ namespace Rock
             if ( !( lavaObject is IDictionary<string, object> ) || !( (IDictionary<string, object>)lavaObject ).Keys.Contains( "GlobalAttribute" ) )
             {
                 var globalAttributes = new Dictionary<string, object>();
-                globalAttributes.Add( "GlobalAttribute", Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null ) );
+
+                // Lava Help Text does special stuff for GlobalAttribute, but it still needs the list of possible Global Attribute MergeFields to generate the help text
+                globalAttributes.Add( "GlobalAttribute", GlobalAttributesCache.GetLegacyMergeFields( null ) );
                 lavaDebugPanel.Append( formatLavaDebugInfo( globalAttributes.LiquidizeChildren( 0, rockContext ) ) );
             }
 
@@ -505,6 +507,14 @@ namespace Rock
                     return content ?? string.Empty;
                 }
 
+                if ( GlobalAttributesCache.Read().LavaSupportLevel == Lava.LavaSupportLevel.LegacyWithWarning && mergeObjects.ContainsKey( "GlobalAttribute" ) )
+                {
+                    if ( hasLegacyGlobalAttributeLavaMergeFields.IsMatch( content ) )
+                    {
+                        Rock.Model.ExceptionLogService.LogException( new Rock.Lava.LegacyLavaSyntaxDetectedException( "GlobalAttribute", "" ), System.Web.HttpContext.Current );
+                    }
+                }
+
                 Template template = Template.Parse( content );
                 
                 if ( encodeStrings )
@@ -550,6 +560,11 @@ namespace Rock
         /// Compiled RegEx for detecting if a string has Lava merge fields
         /// </summary>
         private static Regex hasLavaMergeFields = new Regex( @".*\{.+\}.*", RegexOptions.Compiled );
+
+        /// <summary>
+        /// Compiled RegEx for detecting if a string uses the Legacy "GlobalAttribute." syntax
+        /// </summary>
+        private static Regex hasLegacyGlobalAttributeLavaMergeFields = new Regex( @".*\{.+GlobalAttribute.+\}.*", RegexOptions.Compiled );
 
         /// <summary>
         /// Determines whether the string potentially has merge fields in it.

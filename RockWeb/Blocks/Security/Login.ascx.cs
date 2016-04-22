@@ -190,12 +190,12 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
                                 LoginUser( tbUserName.Text, returnUrl, cbRememberMe.Checked );
                             }
                             else
-                            { 
-                                var globalMergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields(null);
+                            {
+                                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
                                 if ( userLogin.IsLockedOut ?? false )
                                 {
-                                    lLockedOutCaption.Text = GetAttributeValue( "LockedOutCaption" ).ResolveMergeFields( globalMergeFields );
+                                    lLockedOutCaption.Text = GetAttributeValue( "LockedOutCaption" ).ResolveMergeFields( mergeFields );
 
                                     pnlLogin.Visible = false;
                                     pnlLockedOut.Visible = true;
@@ -204,7 +204,7 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
                                 {
                                     SendConfirmation( userLogin );
 
-                                    lConfirmCaption.Text = GetAttributeValue( "ConfirmCaption" ).ResolveMergeFields( globalMergeFields );
+                                    lConfirmCaption.Text = GetAttributeValue( "ConfirmCaption" ).ResolveMergeFields( mergeFields );
 
                                     pnlLogin.Visible = false;
                                     pnlConfirmation.Visible = true;
@@ -379,15 +379,15 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
                 url = ResolveRockUrl( "~/ConfirmAccount" );
             }
 
-            var mergeObjects = GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+            mergeFields.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
 
             var personDictionary = userLogin.Person.ToLiquid() as Dictionary<string, object>;
-            mergeObjects.Add( "Person", personDictionary );
-            mergeObjects.Add( "User", userLogin );
+            mergeFields.Add( "Person", personDictionary );
+            mergeFields.Add( "User", userLogin );
 
             var recipients = new List<RecipientData>();
-            recipients.Add( new RecipientData( userLogin.Person.Email, mergeObjects ) );
+            recipients.Add( new RecipientData( userLogin.Person.Email, mergeFields ) );
 
             Email.Send( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ), false );
         }

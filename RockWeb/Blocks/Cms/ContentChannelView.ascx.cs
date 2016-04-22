@@ -436,7 +436,7 @@ $(document).ready(function() {
             pagination.UrlTemplate = pageRef.BuildUrl();
             var currentPageContent = pagination.GetCurrentPageItems( content );
 
-            var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
+            var commonMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
             // Merge content and attribute fields if block is configured to do so.
             if ( GetAttributeValue( "MergeContent" ).AsBoolean() )
@@ -448,7 +448,7 @@ $(document).ready(function() {
                     itemMergeFields.Add( "Person", CurrentPerson );
                     itemMergeFields.Add( "CurrentPerson", CurrentPerson );
                 }
-                globalAttributeFields.ToList().ForEach( d => itemMergeFields.Add( d.Key, d.Value ) );
+                commonMergeFields.ToList().ForEach( d => itemMergeFields.Add( d.Key, d.Value ) );
 
                 foreach ( var item in currentPageContent )
                 {
@@ -461,26 +461,10 @@ $(document).ready(function() {
                 }
             }
 
-            // add context to merge fields
-            var contextEntityTypes = RockPage.GetContextEntityTypes();
-
-            var contextObjects = new Dictionary<string, object>();
-            foreach ( var conextEntityType in contextEntityTypes )
-            {
-                var contextObject = RockPage.GetCurrentContext( conextEntityType );
-                contextObjects.Add( conextEntityType.FriendlyName, contextObject );
-            }
-            
-
-            var mergeFields = new  Dictionary<string, object>();
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "Pagination", pagination );
             mergeFields.Add( "LinkedPages", linkedPages );
             mergeFields.Add( "Items", currentPageContent );
-            mergeFields.Add( "Campuses", CampusCache.All() );
-            mergeFields.Add( "CurrentPerson", CurrentPerson );
-            mergeFields.Add( "Context", contextObjects );
-
-            globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
             mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
 
             // enable showing debug info
@@ -501,7 +485,7 @@ $(document).ready(function() {
             }
 
             // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
-            mergeFields.Add( "Person", CurrentPerson );
+            mergeFields.AddOrIgnore( "Person", CurrentPerson );
 
             // set page title
             if ( GetAttributeValue( "SetPageTitle" ).AsBoolean() && content.Count > 0 )
