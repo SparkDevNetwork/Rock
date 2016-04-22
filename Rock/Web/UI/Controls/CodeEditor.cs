@@ -254,7 +254,13 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return ViewState["EditorHeight"] as string ?? "200";
+                var height = ViewState["EditorHeight"] as string;
+                if ( string.IsNullOrWhiteSpace( height ) )
+                {
+                    height = "200";
+                }
+
+                return height;
             }
 
             set
