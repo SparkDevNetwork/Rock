@@ -76,9 +76,19 @@
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-bar-chart"></i> Measure Dashboard</h1>
                 <div class="pull-right">
-                    <Rock:Toggle ID="tglCompareTo" CssClass="margin-r-sm pull-left"  runat="server" OnText="Adults" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" OffText="Weekend Attendance" AutoPostBack="true" OnCheckedChanged="tglCompareTo_CheckedChanged" Checked="true" />
-                    <asp:Label ID="lStaticToggle" runat="server" />
-                    <Rock:HighlightLabel ID="hlDate" CssClass="js-settings-toggle cursor-pointer" runat="server" />
+
+                    <asp:Panel ID="pnlStatus" runat="server">
+                        <div class="toggle-container">
+                            <div class="btn-group btn-toggle margin-r-sm">
+                                <Rock:BootstrapButton ID="bsAdults" runat="server" CssClass="btn btn-default btn-xs" AccessKey="s" OnClick="bbtnView_Click" Text="Adults" />
+                                <Rock:BootstrapButton ID="bsStudents" runat="server" CssClass="btn btn-default btn-xs" AccessKey="s" OnClick="bbtnView_Click" Text="Students" />
+                                <Rock:BootstrapButton ID="bsWeekendAttendance" runat="server" CssClass="btn btn-default btn-xs" AccessKey="s" OnClick="bbtnView_Click" Text="Weekend Attendance" />
+                            </div>
+                            <Rock:HighlightLabel ID="hlDate" CssClass="js-settings-toggle cursor-pointer" runat="server" />
+                        </div>
+                    </asp:Panel>
+                    
+                    
                 </div>
             </div>
             <div class="panel-body">
@@ -110,7 +120,7 @@
                     <div class="row">
                         <asp:Repeater ID="rptCampusMeasures" runat="server">
                             <ItemTemplate>
-                                <a href="?MeasureId=<%# Eval("MeasureId") %>&CompareTo=<%=tglCompareTo.Checked %><%# MeasureDate != null ? "&Date=" + MeasureDate.Value.ToShortDateString() : "" %>">
+                                <a href="?MeasureId=<%# Eval("MeasureId") %>&CompareTo=<%=DashboardViewState != DashboardView.WeekendAttendance%><%# MeasureDate != null ? "&Date=" + MeasureDate.Value.ToShortDateString() : "" %>">
                                     <div class="col-md-6 measure">
                                         <div class="measure-icon hidden-sm hidden-xs">
                                             <i class="fa fa-fw <%# Eval("IconCssClass") %>" style="color: <%# Eval("MeasureColor") %>;"></i>

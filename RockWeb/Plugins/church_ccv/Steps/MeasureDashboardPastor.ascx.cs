@@ -218,7 +218,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                                 IconCssClass = m.StepMeasure.IconCssClass,
                                 IsTbd = m.StepMeasure.IsTbd,
                                 MeasureValue = m.Value,
-                                MeasureCompareValue = m.ActiveAdults,
+                                MeasureCompareValue = m.ActiveAdults != null ? m.ActiveAdults : m.ActiveStudents,
                                 PastorId = m.PastorPersonAliasId,
                                 MeasureColor = m.StepMeasure.Color
                             } )
@@ -276,7 +276,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                                 IconCssClass = m.StepMeasure.IconCssClass,
                                 IsTbd = m.StepMeasure.IsTbd,
                                 MeasureValue = m.Value,
-                                MeasureCompareValue = m.ActiveAdults,
+                                MeasureCompareValue = m.ActiveAdults != null ? m.ActiveAdults : m.ActiveStudents,
                                 PastorId = m.PastorPersonAliasId,
                                 MeasureColor = m.StepMeasure.Color,
                                 PastorFirstName = m.PastorPersonAlias.Person.NickName,

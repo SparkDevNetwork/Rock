@@ -86,6 +86,15 @@ namespace church.ccv.Steps.Model
         public int? ActiveAdults { get; set; }
 
         /// <summary>
+        /// Gets or sets the active students
+        /// </summary>
+        /// <value>
+        /// The active students
+        /// </value>
+        [DataMember]
+        public int? ActiveStudents { get; set; }
+
+        /// <summary>
         /// Gets or sets the note.
         /// </summary>
         /// <value>
