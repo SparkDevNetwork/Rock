@@ -144,11 +144,11 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 if ( !string.IsNullOrWhiteSpace( Request["CompareTo"] ) )
                 {
                     // select the weekend attendance button
-                    ToggleView( DashboardView.WeekendAttendance );
+                    ToggleViewButton( DashboardView.WeekendAttendance );
                 }
                 else
                 {
-                    ToggleView( DashboardView.Adults );
+                    ToggleViewButton( DashboardView.Adults );
                 }
             }
         }
@@ -455,25 +455,41 @@ namespace RockWeb.Plugins.church_ccv.Steps
             {
                 case "bsAdults":
                 {
-                    ToggleView( DashboardView.Adults );
+                    ToggleViewButton( DashboardView.Adults );
+                    DashboardViewState = DashboardView.Adults;
                     break;
                 }
 
                 case "bsStudents":
                 {
-                    ToggleView( DashboardView.Students );
+                    ToggleViewButton( DashboardView.Students );
+                    DashboardViewState = DashboardView.Students;
                     break;
                 }
 
                 case "bsWeekendAttendance":
                 {
-                    ToggleView( DashboardView.WeekendAttendance );
+                    ToggleViewButton( DashboardView.WeekendAttendance );
+                    DashboardViewState = DashboardView.WeekendAttendance;
                     break;
                 }
             }
+
+            MeasureDate = Request["Date"].AsDateTime();
+
+            // If there's no "MeasureId", they want to see the campus overview with all stats
+            if ( string.IsNullOrWhiteSpace( Request["MeasureId"] ))
+            {
+                LoadCampusItems(MeasureDate);
+            }
+            else
+            {
+                // otherwise, display it for a particular measurement (Baptisms, Giving, etc.)
+                LoadMeasureItems(MeasureDate);
+            }
         }
 
-        protected void ToggleView( DashboardView viewState )
+        protected void ToggleViewButton( DashboardView viewState )
         {
             // default all buttons to off
             bsAdults.CssClass = ToggleButtonOffCSSClass;
@@ -486,34 +502,20 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 case DashboardView.Adults:
                 {
                     bsAdults.CssClass = ToggleButtonOnCSSClass;
-                    DashboardViewState = DashboardView.Adults;
                     break;
                 }
 
                 case DashboardView.Students:
                 {
-                    bsStudents.CssClass = ToggleButtonOnCSSClass;
-                    DashboardViewState = DashboardView.Students;
+                    bsStudents.CssClass = ToggleButtonOnCSSClass;   
                     break;
                 }
 
                 case DashboardView.WeekendAttendance:
                 {
                     bsWeekendAttendance.CssClass = ToggleButtonOnCSSClass;
-                    DashboardViewState = DashboardView.WeekendAttendance;
                     break;
                 }
-            }
-
-            // If there's no "MeasureId", they want to see the campus overview with all stats
-            if ( string.IsNullOrWhiteSpace( Request["MeasureId"] ))
-            {
-                LoadCampusItems();
-            }
-            else
-            {
-                // otherwise, display it for a particular measurement (Baptisms, Giving, etc.)
-                LoadMeasureItems();
             }
         }
 
