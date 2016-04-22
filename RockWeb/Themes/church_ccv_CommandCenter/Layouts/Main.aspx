@@ -5,10 +5,13 @@
 <header>
     <div class="container">
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <Rock:Zone Name="HeaderLeft" runat="server" />
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
+                <Rock:Zone Name="HeaderMiddle" runat="server" />
+            </div>
+            <div class="col-md-4">
                 <Rock:Zone Name="HeaderRight" runat="server" />
             </div>
         </div>
@@ -43,16 +46,5 @@
     </div>
 </main>
     
-    
-<footer>
-    <div class="container">		
-	    <div class="pull-left">
-            <Rock:Zone Name="FooterLeft" runat="server" />
-        </div>
-        <div class="pull-right">
-            <Rock:Zone Name="FooterRight" runat="server" />
-        </div>
-    </div>
-</footer>		
 </asp:Content>
 

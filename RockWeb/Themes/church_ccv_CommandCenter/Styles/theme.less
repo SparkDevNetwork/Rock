@@ -21,25 +21,12 @@
 // 1. HTML Overrides
 // -------------------------
 
-@font-face {
-    font-family: 'DINWeb';
-    src: url('../Assets/Fonts/DINWeb-CondLight.eot');
-    src: url('../Assets/Fonts/DINWeb-CondLight.eot?#iefix') format('embedded-opentype'),
-         url('../Assets/Fonts/DINWeb-CondLight.woff') format('woff'),
-         url('../Assets/Fonts/DINWeb-CondLight.ttf') format('truetype');
-    font-weight: 300;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'DINWeb';
-    src: url('../Assets/Fonts/DINWeb-CondBold.eot');
-    src: url('../Assets/Fonts/DINWeb-CondBold.eot?#iefix') format('embedded-opentype'),
-         url('../Assets/Fonts/DINWeb-CondBold.woff') format('woff'),
-         url('../Assets/Fonts/DINWeb-CondBold.ttf') format('truetype');
-    font-weight: 700;
-    font-style: normal;
-}
+@import "_din";
+.din-light();
+.din-regular-italic();
+.din-regular();
+.din-bold();
+.din-black();
 
 main {
     display:block;
@@ -53,7 +40,7 @@ body {
 }
 
 h1, h2, h3 {
-    font-family: DINWeb, Helvetica, Arial, sans-serif;
+    font-family: DINWebCondensed, Helvetica, Arial, sans-serif;
 }
 
 h1 {
@@ -61,6 +48,7 @@ h1 {
 	text-transform: uppercase;
     text-align: center;
     font-weight: @font-weight-bold;
+    margin: 5px 0px;
 
     .light {
         font-weight: @font-weight-light;
@@ -120,9 +108,8 @@ header {
 }
 
 .header-logo {
-    position: absolute;
-    left: -15px;
-    top: 10px;
+    width: 250px;
+    margin-top: 5px;
 }
 
 footer {
