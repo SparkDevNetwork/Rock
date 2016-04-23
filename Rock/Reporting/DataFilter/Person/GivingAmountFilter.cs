@@ -339,7 +339,8 @@ function() {
 
             if ( endDate.HasValue )
             {
-                financialTransactionQry = financialTransactionQry.Where( xx => xx.TransactionDateTime < endDate.Value );
+                var filterEndDate = endDate.Value.Date.AddDays( 1 );
+                financialTransactionQry = financialTransactionQry.Where( xx => xx.TransactionDateTime < filterEndDate );
             }
 
             bool limitToAccounts = accountIdList.Any();
