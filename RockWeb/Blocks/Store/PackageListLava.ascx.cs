@@ -137,16 +137,12 @@ namespace RockWeb.Blocks.Store
             PackageService packageService = new PackageService();
             var packages = packageService.GetAllPackages( categoryId );
 
-            var mergeFields = new Dictionary<string, object>();
-            mergeFields.Add( "CurrentPerson", CurrentPerson );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
             // add link to detail page
             Dictionary<string, object> linkedPages = new Dictionary<string, object>();
             linkedPages.Add( "DetailPage", LinkedPageUrl( "DetailPage", null ) );
             mergeFields.Add( "LinkedPages", linkedPages );
-
-            var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
 
             mergeFields.Add( "Packages", packages );
 
