@@ -280,7 +280,8 @@ namespace Rock.Reporting.DataSelect.Person
 
             if ( endDate.HasValue )
             {
-                financialTransactionQry = financialTransactionQry.Where( xx => xx.Transaction.TransactionDateTime < endDate.Value );
+                var filterEndDate = endDate.Value.Date.AddDays( 1 );
+                financialTransactionQry = financialTransactionQry.Where( xx => xx.Transaction.TransactionDateTime < filterEndDate );
             }
 
             bool limitToAccounts = accountIdList.Any();
