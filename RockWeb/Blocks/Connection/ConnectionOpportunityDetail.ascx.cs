@@ -303,6 +303,7 @@ namespace RockWeb.Blocks.Connection
                 ConnectionOpportunityService connectionOpportunityService = new ConnectionOpportunityService( rockContext );
                 EventCalendarItemService eventCalendarItemService = new EventCalendarItemService( rockContext );
                 ConnectionWorkflowService connectionWorkflowService = new ConnectionWorkflowService( rockContext );
+                ConnectionRequestWorkflowService connectionRequestWorkflowService = new ConnectionRequestWorkflowService( rockContext );
                 ConnectionOpportunityConnectorGroupService connectionOpportunityConnectorGroupsService = new ConnectionOpportunityConnectorGroupService( rockContext );
                 ConnectionOpportunityCampusService connectionOpportunityCampusService = new ConnectionOpportunityCampusService( rockContext );
                 ConnectionOpportunityGroupService connectionOpportunityGroupService = new ConnectionOpportunityGroupService( rockContext );
@@ -348,10 +349,16 @@ namespace RockWeb.Blocks.Connection
 
                 // remove any workflows that removed in the UI
                 var uiWorkflows = WorkflowsState.Where( w => w.ConnectionTypeId == null ).Select( l => l.Guid );
-                foreach ( var connectionOpportunityWorkflow in connectionOpportunity.ConnectionWorkflows.Where( l => !uiWorkflows.Contains( l.Guid ) ).ToList() )
+                foreach ( var connectionWorkflow in connectionOpportunity.ConnectionWorkflows.Where( l => !uiWorkflows.Contains( l.Guid ) ).ToList() )
                 {
-                    connectionOpportunity.ConnectionWorkflows.Remove( connectionOpportunityWorkflow );
-                    connectionWorkflowService.Delete( connectionOpportunityWorkflow );
+                    foreach( var requestWorkflow in connectionRequestWorkflowService.Queryable()
+                        .Where( w => w.ConnectionWorkflowId == connectionWorkflow.Id ) )
+                    {
+                        connectionRequestWorkflowService.Delete( requestWorkflow );
+                    }
+
+                    connectionOpportunity.ConnectionWorkflows.Remove( connectionWorkflow );
+                    connectionWorkflowService.Delete( connectionWorkflow );
                 }
 
                 // Add or Update workflows from the UI
