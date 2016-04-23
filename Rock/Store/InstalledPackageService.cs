@@ -73,7 +73,12 @@ namespace Rock.Store
         {
             var installedPackages = GetInstalledPackages();
 
-            return installedPackages.Where( p => p.PackageId == packageId ).FirstOrDefault();
+            if ( installedPackages != null )
+            {
+                return installedPackages.Where( p => p.PackageId == packageId ).FirstOrDefault();
+            }
+
+            return null;
         }
 
 
