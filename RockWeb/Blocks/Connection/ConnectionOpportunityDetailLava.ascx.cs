@@ -143,12 +143,11 @@ namespace RockWeb.Blocks.Connection
                 }
                 var opportunity = qry.FirstOrDefault();
 
-                var mergeFields = new Dictionary<string, object>();
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                 Dictionary<string, object> linkedPages = new Dictionary<string, object>();
                 linkedPages.Add( "SignupPage", LinkedPageUrl( "SignupPage", null ) );
                 mergeFields.Add( "LinkedPages", linkedPages );
 
-                mergeFields.Add( "CurrentPerson", CurrentPerson );
                 mergeFields.Add( "CampusContext", RockPage.GetCurrentContext( EntityTypeCache.Read( "Rock.Model.Campus" ) ) as Campus );
 
                 // run opportunity summary and details through lava
@@ -158,10 +157,6 @@ namespace RockWeb.Blocks.Connection
                 mergeFields.Add( "Opportunity", opportunity );
 
                 // add linked pages
-                
-
-                var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-                globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
 
                 lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 

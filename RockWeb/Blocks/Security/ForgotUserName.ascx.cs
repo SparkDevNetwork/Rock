@@ -86,8 +86,8 @@ namespace RockWeb.Blocks.Security
                 url = ResolveRockUrl( "~/ConfirmAccount" );
             }
 
-            var mergeObjects = GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+            mergeFields.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
             var results = new List<IDictionary<string, object>>();
 
             var rockContext = new RockContext();
@@ -124,9 +124,9 @@ namespace RockWeb.Blocks.Security
 
             if ( results.Count > 0 && hasAccountWithPasswordResetAbility )
             {
-                mergeObjects.Add( "Results", results.ToArray() );
+                mergeFields.Add( "Results", results.ToArray() );
                 var recipients = new List<RecipientData>();
-                recipients.Add( new RecipientData( tbEmail.Text, mergeObjects ) );
+                recipients.Add( new RecipientData( tbEmail.Text, mergeFields ) );
 
                 Email.Send( GetAttributeValue( "EmailTemplate" ).AsGuid(), recipients, ResolveRockUrlIncludeRoot( "~/" ), ResolveRockUrlIncludeRoot( "~~/" ), false );
 

@@ -130,7 +130,7 @@ namespace RockWeb.Blocks.Finance
                         .ToList();
                 }
 
-                var mergeObjects = GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                 var financialAccounts = new FinancialAccountService( rockContext ).Queryable().Select( a => new { a.Id, a.Name } ).ToDictionary( k => k.Id, v => v.Name );
 
                 var yearsMergeObjects = new List<Dictionary<string, object>>();
@@ -153,17 +153,17 @@ namespace RockWeb.Blocks.Finance
                     yearsMergeObjects.Add( yearDictionary );
                 }
 
-                mergeObjects.Add( "Rows", yearsMergeObjects );
+                mergeFields.Add( "Rows", yearsMergeObjects );
 
                 lLavaOutput.Text = string.Empty;
                 if ( GetAttributeValue( "EnableDebug" ).AsBooleanOrNull().GetValueOrDefault( false ) )
                 {
-                    lLavaOutput.Text = mergeObjects.lavaDebugInfo( rockContext );
+                    lLavaOutput.Text = mergeFields.lavaDebugInfo( rockContext );
                 }
 
                 string template = GetAttributeValue( "LavaTemplate" );
 
-                lLavaOutput.Text += template.ResolveMergeFields( mergeObjects ).ResolveClientIds( upnlContent.ClientID );
+                lLavaOutput.Text += template.ResolveMergeFields( mergeFields ).ResolveClientIds( upnlContent.ClientID );
             }
         }
 
