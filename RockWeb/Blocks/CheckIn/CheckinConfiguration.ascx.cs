@@ -825,11 +825,11 @@ namespace RockWeb.Blocks.CheckIn
                 groupTypeUIList.Add( groupType );
             }
 
-            var groupTypeDBList = new List<GroupType>();
+            var groupTypesToClear = new List<int>();
 
             var groupTypesToDelete = new List<GroupType>();
             var groupsToDelete = new List<Group>();
-
+            
             var groupTypesToAddUpdate = new List<GroupType>();
             var groupsToAddUpdate = new List<Group>();
 
@@ -848,6 +848,7 @@ namespace RockWeb.Blocks.CheckIn
                 groupsToDelete.Reverse();
                 foreach ( var groupToDelete in groupsToDelete )
                 {
+                    groupTypesToClear.Add( groupToDelete.Id );
                     groupService.Delete( groupToDelete );
                 }
 
@@ -907,6 +908,8 @@ namespace RockWeb.Blocks.CheckIn
                     }
 
                     rockContext.SaveChanges();
+
+                    groupTypesToClear.Add( groupTypeDB.Id );
 
                     groupTypeDB.SaveAttributeValues( rockContext );
 
@@ -1022,8 +1025,9 @@ namespace RockWeb.Blocks.CheckIn
                     groupDB.SaveAttributeValues();
                 }
 
-                /* now that we have all the grouptypes saved, now lets go back and save them again with the current UI ChildGroupTypes */
+                groupTypesToClear.Add( parentGroupTypeDB.Id );
 
+                /* now that we have all the grouptypes saved, now lets go back and save them again with the current UI ChildGroupTypes */
                 // save main parentGroupType with current UI ChildGroupTypes
                 parentGroupTypeDB.ChildGroupTypes = new List<GroupType>();
                 parentGroupTypeDB.ChildGroupTypes.Clear();
@@ -1051,11 +1055,15 @@ namespace RockWeb.Blocks.CheckIn
 
                 rockContext.SaveChanges();
 
-                AttributeCache.FlushEntityAttributes();
-
-                Rock.CheckIn.KioskDevice.FlushAll();
-
             } );
+
+            foreach( int id in groupTypesToClear )
+            {
+                GroupTypeCache.Flush( id );
+            }
+
+            AttributeCache.FlushEntityAttributes();
+            Rock.CheckIn.KioskDevice.FlushAll();
 
             if ( !hasValidationErrors )
             {
