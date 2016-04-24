@@ -62,6 +62,9 @@ namespace Rock.Client
         public bool? IsOnLine { get; set; }
 
         /// <summary />
+        public bool? IsPasswordChangeRequired { get; set; }
+
+        /// <summary />
         public DateTime? LastActivityDateTime { get; set; }
 
         /// <summary />
@@ -132,6 +135,7 @@ namespace Rock.Client
             this.IsConfirmed = source.IsConfirmed;
             this.IsLockedOut = source.IsLockedOut;
             this.IsOnLine = source.IsOnLine;
+            this.IsPasswordChangeRequired = source.IsPasswordChangeRequired;
             this.LastActivityDateTime = source.LastActivityDateTime;
             this.LastLockedOutDateTime = source.LastLockedOutDateTime;
             this.LastLoginDateTime = source.LastLoginDateTime;

@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -493,6 +493,15 @@ namespace Rock.Web.UI.Controls
         {
             get { return ViewState["CurrentPageRows"] as int? ?? 0; }
             set { ViewState["CurrentPageRows"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a flag indicating databind is for an export
+        /// </summary>
+        public virtual bool IsExporting
+        {
+            get { return this.ViewState["IsExporting"] as bool? ?? false; }
+            private set { ViewState["IsExporting"] = value; }
         }
 
         /// <summary>
@@ -1068,31 +1077,42 @@ namespace Rock.Web.UI.Controls
         {
             base.OnRowDataBound( e );
 
-            if ( e.Row.RowType == DataControlRowType.Header && this.AllowSorting )
+            if ( e.Row.RowType == DataControlRowType.Header)
             {
-                string asc = SortDirection.Ascending.ToString();
-                string desc = SortDirection.Descending.ToString();
-
-                // Remove the sort css classes and add the data priority
+                //add data priority
                 for ( int i = 0; i < e.Row.Cells.Count; i++ )
                 {
                     var cell = e.Row.Cells[i];
-                    cell.RemoveCssClass( asc );
-                    cell.RemoveCssClass( desc );
                     cell.Attributes.Add( "data-priority", _columnDataPriorities[i] );
                 }
 
-                // Add the new sort css class
-                SortProperty sortProperty = this.SortProperty;
-                if ( sortProperty != null )
+                if ( this.AllowSorting )
                 {
-                    foreach ( var column in this.Columns )
+
+                    string asc = SortDirection.Ascending.ToString();
+                    string desc = SortDirection.Descending.ToString();
+
+                    // Remove the sort css classes
+                    for ( int i = 0; i < e.Row.Cells.Count; i++ )
                     {
-                        var dcf = column as DataControlField;
-                        if ( dcf != null && dcf.SortExpression == this.SortProperty.Property )
+                        var cell = e.Row.Cells[i];
+                        cell.RemoveCssClass( asc );
+                        cell.RemoveCssClass( desc );
+                    }
+
+
+                    // Add the new sort css class
+                    SortProperty sortProperty = this.SortProperty;
+                    if ( sortProperty != null )
+                    {
+                        foreach ( var column in this.Columns )
                         {
-                            e.Row.Cells[this.Columns.IndexOf( dcf )].AddCssClass( sortProperty.Direction.ToString().ToLower() );
-                            break;
+                            var dcf = column as DataControlField;
+                            if ( dcf != null && dcf.SortExpression == this.SortProperty.Property )
+                            {
+                                e.Row.Cells[this.Columns.IndexOf( dcf )].AddCssClass( sortProperty.Direction.ToString().ToLower() );
+                                break;
+                            }
                         }
                     }
                 }
@@ -1396,7 +1416,7 @@ namespace Rock.Web.UI.Controls
         {
             // disable paging if no specific keys where selected (or if no select option is shown)
             bool selectAll = !SelectedKeys.Any();
-            RebindGrid( e, selectAll );
+            RebindGrid( e, selectAll, true );
 
             // create default settings
             string filename = ExportFilename;
@@ -1487,7 +1507,7 @@ namespace Rock.Web.UI.Controls
                         }
                     }
 
-                    GridViewRowEventArgs args = new GridViewRowEventArgs( gridViewRow );
+                    var args = new RockGridViewRowEventArgs( gridViewRow, true );
                     gridViewRow.DataItem = dataItem;
                     this.OnRowDataBound( args );
                     columnCounter = 0;
@@ -1899,7 +1919,8 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         /// <param name="disablePaging">if set to <c>true</c> [disable paging].</param>
-        private void RebindGrid( EventArgs e, bool disablePaging )
+        /// <param name="isExporting">if set to <c>true</c> [is exporting].</param>
+        private void RebindGrid( EventArgs e, bool disablePaging, bool isExporting = false )
         {
             var origPaging = this.AllowPaging;
             if ( disablePaging )
@@ -1907,7 +1928,9 @@ namespace Rock.Web.UI.Controls
                 this.AllowPaging = false;
             }
 
-            OnGridRebind( e );
+            var eventArg = new GridRebindEventArgs( isExporting );
+            OnGridRebind( eventArg );
+
             this.AllowPaging = origPaging;
         }
 
@@ -2765,10 +2788,10 @@ namespace Rock.Web.UI.Controls
         public event GridRebindEventHandler GridRebind;
 
         /// <summary>
-        /// Raises the <see cref="E:GridRebind"/> event.
+        /// Raises the <see cref="E:GridRebind" /> event.
         /// </summary>
-        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        protected virtual void OnGridRebind( EventArgs e )
+        /// <param name="e">The <see cref="GridRebindEventArgs"/> instance containing the event data.</param>
+        protected virtual void OnGridRebind( GridRebindEventArgs e )
         {
             if ( GridRebind != null )
             {
@@ -2914,8 +2937,8 @@ namespace Rock.Web.UI.Controls
     /// Delegate used for raising the grid rebind event
     /// </summary>
     /// <param name="sender">The sender.</param>
-    /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-    public delegate void GridRebindEventHandler( object sender, EventArgs e );
+    /// <param name="e">The <see cref="GridRebindEventArgs"/> instance containing the event data.</param>
+    public delegate void GridRebindEventHandler( object sender, GridRebindEventArgs e );
 
     /// <summary>
     /// Delegate used for raising the grid items per page changed event
@@ -2945,6 +2968,73 @@ namespace Rock.Web.UI.Controls
         public NumericalEventArgs( int number )
         {
             Number = number;
+        }
+    }
+
+    /// <summary>
+    /// Event argument for rebind
+    /// </summary>
+    /// <seealso cref="System.EventArgs" />
+    public class GridRebindEventArgs : EventArgs
+    {
+        /// <summary>
+        /// Gets a value indicating whether this instance is exporting.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is exporting; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsExporting { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GridRebindEventArgs"/> class.
+        /// </summary>
+        public GridRebindEventArgs() : base()
+        {
+            IsExporting = false;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GridRebindEventArgs"/> class.
+        /// </summary>
+        /// <param name="isExporting">if set to <c>true</c> [is exporting].</param>
+        public GridRebindEventArgs( bool isExporting ) : base()
+        {
+            IsExporting = isExporting;
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="System.Web.UI.WebControls.GridViewRowEventArgs" />
+    public class RockGridViewRowEventArgs : GridViewRowEventArgs
+    {
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is exporting.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is exporting; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsExporting { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockGridViewRowEventArgs"/> class.
+        /// </summary>
+        /// <param name="row">A <see cref="T:System.Web.UI.WebControls.GridViewRow" /> object that represents the row being created or data-bound.</param>
+        public RockGridViewRowEventArgs( GridViewRow row ) : base( row )
+        {
+            IsExporting = false;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockGridViewRowEventArgs"/> class.
+        /// </summary>
+        /// <param name="row">The row.</param>
+        /// <param name="isExporting">if set to <c>true</c> [is exporting].</param>
+        public RockGridViewRowEventArgs( GridViewRow row, bool isExporting ) : base( row)
+        {
+            IsExporting = isExporting;
         }
     }
 

@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -199,6 +199,36 @@ namespace Rock.Web.Cache
         /// The 404 page id.
         /// </value>
         public int? PageNotFoundPageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the change password page identifier.
+        /// </summary>
+        /// <value>
+        /// The change password page identifier.
+        /// </value>
+        public int? ChangePasswordPageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the change password page route identifier.
+        /// </summary>
+        /// <value>
+        /// The change password page route identifier.
+        /// </value>
+        public int? ChangePasswordPageRouteId { get; set; }
+
+        /// <summary>
+        /// Gets the change password page reference.
+        /// </summary>
+        /// <value>
+        /// The change password page reference.
+        /// </value>
+        public PageReference ChangePasswordPageReference
+        {
+            get
+            {
+                return new Rock.Web.PageReference( ChangePasswordPageId ?? 0, ChangePasswordPageRouteId ?? 0 );
+            }
+        }
 
         /// <summary>
         /// Gets or sets the 404 page route unique identifier.
@@ -456,6 +486,7 @@ namespace Rock.Web.Cache
                 this.PageViewRetentionPeriodDays = site.PageViewRetentionPeriodDays;
                 this.PageHeaderContent = site.PageHeaderContent;
                 this.AllowIndexing = site.AllowIndexing;
+                this.ChangePasswordPageId = site.ChangePasswordPageId;
 
                 foreach ( var domain in site.SiteDomains.Select( d => d.Domain ).ToList() )
                 {
@@ -500,6 +531,35 @@ namespace Rock.Web.Cache
                 parms.Add( "returnurl", context.Request.QueryString["returnUrl"] ?? context.Server.UrlEncode( context.Request.RawUrl ) );
                 pageReference.Parameters = parms;
             }
+
+            context.Response.Redirect( pageReference.BuildUrl(), false );
+            context.ApplicationInstance.CompleteRequest();
+        }
+
+        /// <summary>
+        /// Redirects to change password page.
+        /// </summary>
+        /// <param name="isChangePasswordRequired">if set to <c>true</c> [is change password required].</param>
+        /// <param name="includeReturnUrl">if set to <c>true</c> [include return URL].</param>
+        public void RedirectToChangePasswordPage( bool isChangePasswordRequired, bool includeReturnUrl )
+        {
+            var context = HttpContext.Current;
+
+            var pageReference = ChangePasswordPageReference;
+
+            var parms = new Dictionary<string, string>();
+
+            if ( isChangePasswordRequired )
+            {
+                parms.Add( "ChangeRequired", "True" ); 
+            }
+
+            if ( includeReturnUrl )
+            {
+                parms.Add( "ReturnUrl", context.Request.QueryString["returnUrl"] ?? context.Server.UrlEncode( context.Request.RawUrl ) );
+            }
+
+            pageReference.Parameters = parms;
 
             context.Response.Redirect( pageReference.BuildUrl(), false );
             context.ApplicationInstance.CompleteRequest();

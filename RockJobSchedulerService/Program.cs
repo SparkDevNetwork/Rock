@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.ServiceProcess;
+using Rock.Web.Cache;
 
 namespace RockJobSchedulerService
 {
@@ -32,6 +33,8 @@ namespace RockJobSchedulerService
 
             string serviceFolder = Path.GetDirectoryName( System.Reflection.Assembly.GetExecutingAssembly().Location );
             SqlServerTypes.Utilities.LoadNativeAssemblies( serviceFolder );
+            System.Diagnostics.Debugger.Launch();
+            RockMemoryCache.Clear();
 
             // set the current directory to the same as the current exe so that we can find the web.connectionstrings.config
             Directory.SetCurrentDirectory( serviceFolder );

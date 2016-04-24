@@ -312,7 +312,7 @@
                             </Columns>
                         </Rock:Grid>
                         <div class="actions">
-                            <asp:LinkButton ID="lbPlaceInGroup" runat="server" OnClick="lbPlaceInGroup_Click" Text="Place" CssClass="btn btn-primary btn-sm" />
+                            <asp:LinkButton ID="lbPlaceInGroup" runat="server" OnClick="lbPlaceInGroup_Click" Text="Place" CssClass="btn btn-primary" />
                         </div>
                     </div>
                 </asp:Panel>

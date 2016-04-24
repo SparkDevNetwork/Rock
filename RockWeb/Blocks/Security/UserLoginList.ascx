@@ -44,6 +44,7 @@
                             <Rock:DateField DataField="LastLoginDateTime" HeaderText="Last Login" SortExpression="LastLoginDateTime" />
                             <Rock:BoolField DataField="IsConfirmed" HeaderText="Confirmed" SortExpression="IsConfirmed" />
                             <Rock:BoolField DataField="IsLockedOut" HeaderText="Locked Out" SortExpression="IsLockedOut" />
+                            <Rock:BoolField DataField="IsPasswordChangeRequired" HeaderText="Password Change Required" SortExpression="IsPasswordChangeRequired" />
                             <Rock:DeleteField OnClick="gUserLogins_Delete" />
                         </Columns>
                     </Rock:Grid>
@@ -74,11 +75,12 @@
                         <Rock:DataTextBox ID="tbUserName" runat="server" SourceTypeName="Rock.Model.UserLogin, Rock" PropertyName="UserName" ValidationGroup="Login" />
                         <Rock:RockCheckBox ID="cbIsConfirmed" runat="server" Label="Confirmed" Text="Yes" Help="Has the user confirmed this login?" />
                         <Rock:RockCheckBox ID="cbIsLockedOut" runat="server" Label="Locked Out" Text="Yes" Help="Has the user been locked out of using this login?" />
+                        <Rock:RockCheckBox ID="cbIsRequirePasswordChange" runat="server" Label="Require Password Change" Text="Yes" Help="Require the user to change the password on next login." Visible="false" />
                     </div>
                     <div class="col-md-6">
                         <Rock:ComponentPicker ID="compProvider" runat="server" Label="Authentication Provider" ContainerType="Rock.Security.AuthenticationContainer, Rock" Required="true" AutoPostBack="true" ValidationGroup="Login" />
-                        <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" TextMode="Password" Enabled="false"></Rock:RockTextBox>
-                        <Rock:RockTextBox ID="tbPasswordConfirm" runat="server" Label="Confirm" TextMode="Password" Enabled="false"></Rock:RockTextBox>
+                        <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" ValidateRequestMode="Disabled" TextMode="Password" Enabled="false"></Rock:RockTextBox>
+                        <Rock:RockTextBox ID="tbPasswordConfirm" runat="server" Label="Confirm" ValidateRequestMode="Disabled" TextMode="Password" Enabled="false"></Rock:RockTextBox>
                     </div>
                 </div>
 

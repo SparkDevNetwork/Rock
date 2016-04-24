@@ -92,6 +92,7 @@ namespace Rock.Model
             target.AllowExternalRegistrationUpdates = source.AllowExternalRegistrationUpdates;
             target.AllowGroupPlacement = source.AllowGroupPlacement;
             target.AllowMultipleRegistrants = source.AllowMultipleRegistrants;
+            target.BatchNamePrefix = source.BatchNamePrefix;
             target.CategoryId = source.CategoryId;
             target.ConfirmationEmailTemplate = source.ConfirmationEmailTemplate;
             target.ConfirmationFromEmail = source.ConfirmationFromEmail;

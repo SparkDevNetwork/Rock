@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,8 +19,6 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
-
-using DotLiquid;
 
 using Rock.Data;
 using Rock.Financial;
@@ -79,7 +77,7 @@ namespace Rock.Model
         public FinancialScheduledTransaction GetByScheduleId( string scheduleId )
         {
             return Queryable( "ScheduledTransactionDetails,AuthorizedPersonAlias.Person" )
-                .Where( t => t.GatewayScheduleId == scheduleId )
+                .Where( t => t.GatewayScheduleId == scheduleId.Trim() )
                 .FirstOrDefault();
         }
 
@@ -240,9 +238,10 @@ namespace Rock.Model
             int totalAlreadyDownloaded = 0;
             int totalNoScheduledTransaction = 0;
             int totalAdded = 0;
+            int totalReversals = 0;
 
             var batches = new List<FinancialBatch>();
-            var batchSummary = new Dictionary<Guid, List<Payment>>();
+            var batchSummary = new Dictionary<Guid, List<Decimal>>();
             var initialControlAmounts = new Dictionary<Guid, decimal>();
 
             var txnPersonNames = new Dictionary<Guid, string>();
@@ -278,11 +277,20 @@ namespace Rock.Model
                 {
                     totalPayments++;
 
-                    // Only consider transactions that have not already been added
-                    if ( !txnService.Queryable().AsNoTracking().Any( p => p.TransactionCode.Equals( payment.TransactionCode ) ) )
+                    var scheduledTransaction = scheduledTxnService.GetByScheduleId( payment.GatewayScheduleId );
+                    if ( scheduledTransaction != null )
                     {
-                        var scheduledTransaction = scheduledTxnService.GetByScheduleId( payment.GatewayScheduleId );
-                        if ( scheduledTransaction != null )
+                        // Find existing payments with same transaction code
+                        var txns = txnService
+                            .Queryable( "TransactionDetails" )
+                            .Where( t => t.TransactionCode == payment.TransactionCode )
+                            .ToList();
+
+                        // Calculate whether a transaction needs to be added
+                        var txnAmount = CalculateTransactionAmount( payment, txns );
+
+                        // Only consider transactions that have not already been added
+                        if ( txnAmount != 0.0M )
                         {
                             scheduledTransactionIds.Add( scheduledTransaction.Id );
 
@@ -294,11 +302,18 @@ namespace Rock.Model
                             transaction.Guid = Guid.NewGuid();
                             transaction.TransactionCode = payment.TransactionCode;
                             transaction.TransactionDateTime = payment.TransactionDateTime;
+                            transaction.Status = payment.Status;
+                            transaction.StatusMessage = payment.StatusMessage;
                             transaction.ScheduledTransactionId = scheduledTransaction.Id;
                             transaction.AuthorizedPersonAliasId = scheduledTransaction.AuthorizedPersonAliasId;
                             txnPersonNames.Add( transaction.Guid, scheduledTransaction.AuthorizedPersonAlias.Person.FullName );
                             transaction.FinancialGatewayId = gateway.Id;
                             transaction.TransactionTypeValueId = contributionTxnType.Id;
+
+                            if ( txnAmount < 0.0M )
+                            {
+                                transaction.Summary = "Reversal for previous transaction that failed during processing." + Environment.NewLine;
+                            }
 
                             var currencyTypeValue = payment.CurrencyTypeValue;
                             var creditCardTypevalue = payment.CreditCardTypeValue;
@@ -332,7 +347,7 @@ namespace Rock.Model
                             }
 
                             // Try to allocate the amount of the transaction based on the current scheduled transaction accounts
-                            decimal remainingAmount = payment.Amount;
+                            decimal remainingAmount = Math.Abs( txnAmount );
                             foreach ( var detail in scheduledTransaction.ScheduledTransactionDetails.Where( d => d.Amount != 0.0M ) )
                             {
                                 var transactionDetail = new FinancialTransactionDetail();
@@ -349,7 +364,7 @@ namespace Rock.Model
                                 {
                                     // If the configured amount is greater than the remaining amount, only allocate
                                     // the remaining amount
-                                    transaction.Summary = "Note: Downloaded transaction amount was less than the configured allocation amounts for the Scheduled Transaction.";
+                                    transaction.Summary += "Note: Downloaded transaction amount was less than the configured allocation amounts for the Scheduled Transaction.";
                                     transactionDetail.Amount = remainingAmount;
                                     transactionDetail.Summary = "Note: The downloaded amount was not enough to apply the configured amount to this account.";
                                     remainingAmount = 0.0M;
@@ -368,7 +383,7 @@ namespace Rock.Model
                             // to the account that was configured for the most amount
                             if ( remainingAmount > 0.0M )
                             {
-                                transaction.Summary = "Note: Downloaded transaction amount was greater than the configured allocation amounts for the Scheduled Transaction.";
+                                transaction.Summary += "Note: Downloaded transaction amount was greater than the configured allocation amounts for the Scheduled Transaction.";
                                 var transactionDetail = transaction.TransactionDetails
                                     .OrderByDescending( d => d.Amount )
                                     .First();
@@ -381,6 +396,15 @@ namespace Rock.Model
                                 {
                                     transactionDetail.Amount += remainingAmount;
                                     transactionDetail.Summary = "Note: Extra amount was applied to this account.";
+                                }
+                            }
+
+                            // If the amount to apply was negative, update all details to be negative (absolute value was used when allocating to accounts)
+                            if ( txnAmount < 0 )
+                            {
+                                foreach ( var txnDetail in transaction.TransactionDetails )
+                                {
+                                    txnDetail.Amount = 0 - txnDetail.Amount;
                                 }
                             }
 
@@ -410,20 +434,27 @@ namespace Rock.Model
                             // Add summary
                             if ( !batchSummary.ContainsKey( batch.Guid ) )
                             {
-                                batchSummary.Add( batch.Guid, new List<Payment>() );
+                                batchSummary.Add( batch.Guid, new List<Decimal>() );
                             }
-                            batchSummary[batch.Guid].Add( payment );
+                            batchSummary[batch.Guid].Add( txnAmount );
 
-                            totalAdded++;
+                            if ( txnAmount > 0 )
+                            {
+                                totalAdded++;
+                            }
+                            else
+                            {
+                                totalReversals++;
+                            }
                         }
                         else
                         {
-                            totalNoScheduledTransaction++;
+                            totalAlreadyDownloaded++;
                         }
                     }
                     else
                     {
-                        totalAlreadyDownloaded++;
+                        totalNoScheduledTransaction++;
                     }
                 }
 
@@ -440,7 +471,6 @@ namespace Rock.Model
                     var sendPaymentRecieptsTxn = new Rock.Transactions.SendPaymentReciepts( recieptEmail.Value, newTransactionIds );
                     Rock.Transactions.RockQueue.TransactionQueue.Enqueue( sendPaymentRecieptsTxn );
                 }
-
             }
              
             StringBuilder sb = new StringBuilder();
@@ -463,6 +493,12 @@ namespace Rock.Model
             sb.AppendFormat( "<li>{0} {1} successfully added.</li>", totalAdded.ToString( "N0" ),
                 ( totalAdded == 1 ? "payment was" : "payments were" ) );
 
+            if ( totalReversals > 0 )
+            {
+                sb.AppendFormat( "<li>{0} {1} added as a reversal to a previous transaction.</li>", totalReversals.ToString( "N0" ),
+                    ( totalReversals == 1 ? "payment was" : "payments were" ) );
+            }
+
             foreach ( var batchItem in batchSummary )
             {
                 int items = batchItem.Value.Count;
@@ -478,7 +514,7 @@ namespace Rock.Model
                         batchName = string.Format( "<a href='{0}'>{1}</a>", string.Format( batchUrlFormat, batch.Id ), batchName );
                     }
 
-                    decimal sum = batchItem.Value.Select( p => p.Amount ).Sum();
+                    decimal sum = batchItem.Value.Sum();
 
 
                     string summaryformat = items == 1 ?
@@ -492,5 +528,45 @@ namespace Rock.Model
             return sb.ToString();
         }
 
+        private static decimal CalculateTransactionAmount( Payment payment, List<FinancialTransaction> transactions )
+        {
+            decimal rockAmount = 0.0M;
+            decimal processedAmount = payment.IsFailure ? 0.0M : payment.Amount;
+
+            if ( transactions != null && transactions.Any() )
+            {
+                rockAmount = transactions.Sum( t => t.TotalAmount );
+            }
+
+            return processedAmount - rockAmount;
+        }
+
+        private void LaunchWorkflow( WorkflowType workflowType, FinancialTransaction transaction )
+        {
+            if ( workflowType != null )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    string workflowName = transaction.TransactionCode;
+                    if ( transaction.AuthorizedPersonAliasId != null )
+                    {
+                        var person = new PersonAliasService( rockContext ).GetPerson( transaction.AuthorizedPersonAliasId.Value );
+                        if ( person != null )
+                        {
+                            workflowName = person.FullName;
+                        }
+                    }
+
+                    var workflowService = new WorkflowService( rockContext );
+                    var workflow = Rock.Model.Workflow.Activate( workflowType, workflowName, rockContext );
+                    if ( workflow != null )
+                    {
+                        List<string> workflowErrors;
+                        workflowService.Process( workflow, transaction, out workflowErrors );
+                    }
+                }
+            }
+        }
     }
+
 }

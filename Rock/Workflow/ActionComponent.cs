@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -51,7 +51,12 @@ namespace Rock.Workflow
         /// </summary>
         public ActionComponent()
         {
-            // Override default constructor of Component that loads attributes (not needed for workflow actions, needs to be done by each action)
+            var type = this.GetType();
+            using ( var rockContext = new RockContext() )
+            {
+                int? actionTypeEntityTypeId = EntityTypeCache.Read( typeof( WorkflowActionType ) ).Id;
+                Rock.Attribute.Helper.UpdateAttributes( this.GetType(), actionTypeEntityTypeId, "EntityTypeId", Rock.Web.Cache.EntityTypeCache.GetId( type.FullName ).ToString(), rockContext );
+            }
         }
 
         /// <summary>

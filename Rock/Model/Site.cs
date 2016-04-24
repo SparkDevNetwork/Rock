@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -122,6 +122,24 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? LoginPageRouteId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the change password page identifier.
+        /// </summary>
+        /// <value>
+        /// The change password page identifier.
+        /// </value>
+        [DataMember]
+        public int? ChangePasswordPageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the change password page route identifier.
+        /// </summary>
+        /// <value>
+        /// The change password page route identifier.
+        /// </value>
+        [DataMember]
+        public int? ChangePasswordPageRouteId { get; set; }
 
         /// <summary>
         /// Gets or sets the Id of the Site's registration <see cref="Rock.Model.Page"/>
@@ -359,6 +377,23 @@ namespace Rock.Model
         public virtual PageRoute LoginPageRoute { get; set; }
 
         /// <summary>
+        /// Gets or sets the change password page.
+        /// </summary>
+        /// <value>
+        /// The change password page.
+        /// </value>
+        public virtual Page ChangePasswordPage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the change password page route.
+        /// </summary>
+        /// <value>
+        /// The change password page route.
+        /// </value>
+        [DataMember]
+        public virtual PageRoute ChangePasswordPageRoute { get; set; }
+
+        /// <summary>
         /// Gets or sets the registration <see cref="Rock.Model.Page"/> page for the site.
         /// </summary>
         /// <value>
@@ -471,6 +506,8 @@ namespace Rock.Model
             this.HasOptional( p => p.DefaultPageRoute ).WithMany().HasForeignKey( p => p.DefaultPageRouteId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.LoginPage ).WithMany().HasForeignKey( p => p.LoginPageId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.LoginPageRoute ).WithMany().HasForeignKey( p => p.LoginPageRouteId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ChangePasswordPage ).WithMany().HasForeignKey( p => p.ChangePasswordPageId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ChangePasswordPageRoute ).WithMany().HasForeignKey( p => p.ChangePasswordPageRouteId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RegistrationPage ).WithMany().HasForeignKey( p => p.RegistrationPageId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RegistrationPageRoute ).WithMany().HasForeignKey( p => p.RegistrationPageRouteId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.PageNotFoundPage ).WithMany().HasForeignKey( p => p.PageNotFoundPageId ).WillCascadeOnDelete( false );

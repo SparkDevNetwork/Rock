@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -138,10 +138,16 @@ namespace Rock.Web.UI.Adapters
                 {
                     bool renderRockLabel = !string.IsNullOrEmpty( rockCb.Label );
                     bool renderRockHelp = rockCb.HelpBlock != null && !string.IsNullOrWhiteSpace( rockCb.Help );
+                    bool renderRockWarning = rockCb.WarningBlock != null && !string.IsNullOrWhiteSpace( rockCb.Warning );
 
                     if ( !renderRockLabel && renderRockHelp )
                     {
                         rockCb.HelpBlock.RenderControl( writer );
+                    }
+
+                    if ( !renderRockLabel && renderRockWarning )
+                    {
+                        rockCb.WarningBlock.RenderControl( writer );
                     }
                 }
 

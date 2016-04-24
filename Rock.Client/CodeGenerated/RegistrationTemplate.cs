@@ -47,6 +47,9 @@ namespace Rock.Client
         public bool AllowMultipleRegistrants { get; set; }
 
         /// <summary />
+        public string BatchNamePrefix { get; set; }
+
+        /// <summary />
         public int? CategoryId { get; set; }
 
         /// <summary />
@@ -196,6 +199,7 @@ namespace Rock.Client
             this.AllowExternalRegistrationUpdates = source.AllowExternalRegistrationUpdates;
             this.AllowGroupPlacement = source.AllowGroupPlacement;
             this.AllowMultipleRegistrants = source.AllowMultipleRegistrants;
+            this.BatchNamePrefix = source.BatchNamePrefix;
             this.CategoryId = source.CategoryId;
             this.ConfirmationEmailTemplate = source.ConfirmationEmailTemplate;
             this.ConfirmationFromEmail = source.ConfirmationFromEmail;

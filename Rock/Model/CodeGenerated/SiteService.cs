@@ -90,6 +90,8 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AllowedFrameDomains = source.AllowedFrameDomains;
             target.AllowIndexing = source.AllowIndexing;
+            target.ChangePasswordPageId = source.ChangePasswordPageId;
+            target.ChangePasswordPageRouteId = source.ChangePasswordPageRouteId;
             target.CommunicationPageId = source.CommunicationPageId;
             target.CommunicationPageRouteId = source.CommunicationPageRouteId;
             target.DefaultPageId = source.DefaultPageId;

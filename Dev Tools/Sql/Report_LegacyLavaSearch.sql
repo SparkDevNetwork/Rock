@@ -1,42 +1,45 @@
-select * from HtmlContent where Content like '%GlobalAttribute.%'
+SELECT *
+FROM HtmlContent
+WHERE Content LIKE '%GlobalAttribute.%'
 
+SELECT *
+FROM AttributeValue
+WHERE Value LIKE '%GlobalAttribute.%'
 
+SELECT *
+FROM Attribute
+WHERE DefaultValue LIKE '%GlobalAttribute.%'
 
-select * from AttributeValue where Value like '%GlobalAttribute.%'
-select * from Attribute where DefaultValue like '%GlobalAttribute.%'
+SELECT *
+FROM CommunicationTemplate
+WHERE MediumDataJson LIKE '%GlobalAttribute.%'
+    OR [Subject] LIKE '%GlobalAttribute.%'
 
+SELECT *
+FROM SystemEmail
+WHERE Title LIKE '%GlobalAttribute.%'
+    OR [From] LIKE '%GlobalAttribute.%'
+    OR [To] LIKE '%GlobalAttribute.%'
+    OR [Cc] LIKE '%GlobalAttribute.%'
+    OR [Bcc] LIKE '%GlobalAttribute.%'
+    OR [Subject] LIKE '%GlobalAttribute.%'
+    OR [Body] LIKE '%GlobalAttribute.%'
 
+SELECT *
+FROM WorkflowActionFormAttribute
+WHERE PreHtml LIKE '%GlobalAttribute.%'
+    OR PostHtml LIKE '%GlobalAttribute.%'
 
+SELECT *
+FROM WorkflowActionForm
+WHERE Header LIKE '%GlobalAttribute.%'
+    OR Footer LIKE '%GlobalAttribute.%'
 
-select * from CommunicationTemplate  where MediumDataJson like '%GlobalAttribute.%' or [Subject] like '%GlobalAttribute.%'
+SELECT *
+FROM RegistrationTemplateFormField
+WHERE PreText LIKE '%GlobalAttribute.%'
+    OR PostText LIKE '%GlobalAttribute.%'
 
-
-select * from SystemEmail  where 
-Title like '%GlobalAttribute.%' 
-or [From] like '%GlobalAttribute.%'
-or [To] like '%GlobalAttribute.%'
-or [Cc] like '%GlobalAttribute.%'
-or [Bcc] like '%GlobalAttribute.%'
-or [Subject] like '%GlobalAttribute.%'
-or [Body] like '%GlobalAttribute.%'
-
-
-select * from WorkflowActionFormAttribute where
-PreHtml like '%GlobalAttribute.%' 
-or PostHtml like '%GlobalAttribute.%'
-
-select * from WorkflowActionForm where
-Header like '%GlobalAttribute.%' 
-or Footer like '%GlobalAttribute.%'
-
-select * from RegistrationTemplateFormField where
-PreText like '%GlobalAttribute.%' 
-or PostText like '%GlobalAttribute.%'
-
-
-select * from ReportField where
-Selection like '%GlobalAttribute.%' 
-
-
-
-
+SELECT *
+FROM ReportField
+WHERE Selection LIKE '%GlobalAttribute.%'
