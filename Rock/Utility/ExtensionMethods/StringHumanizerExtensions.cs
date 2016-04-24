@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -37,7 +37,16 @@ namespace Rock
                 string trimmed = text.Trim();
                 if ( trimmed == trimmed.ToLower() || trimmed == trimmed.ToUpper() )
                 {
-                    return trimmed.Transform( To.TitleCase );
+                    if ( trimmed == trimmed.ToUpper() )
+                    {
+                        // if all uppercase, do a ToLower first so that Humanizer doesn't assume it is an acronym 
+                        // see https://github.com/Humanizr/Humanizer/issues/452
+                        return trimmed.ToLower().Transform( To.TitleCase );
+                    }
+                    else
+                    {
+                        return trimmed.Transform( To.TitleCase );
+                    }
                 }
             }
 

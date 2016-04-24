@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -109,6 +109,17 @@ namespace Rock.Web.UI.Controls
 
             _regexValidator.ValidationGroup = this.ValidationGroup;
             _regexValidator.RenderControl( writer );
+        }
+
+        /// <summary>
+        /// Renders the base control.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public override void RenderBaseControl( HtmlTextWriter writer )
+        {
+            this.Attributes["type"] = "email";
+
+            base.RenderBaseControl( writer );
         }
     }
 }

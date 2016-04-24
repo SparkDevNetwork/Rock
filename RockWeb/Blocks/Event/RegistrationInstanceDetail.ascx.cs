@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -916,9 +916,9 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void gRegistrants_GridRebind( object sender, EventArgs e )
+        protected void gRegistrants_GridRebind( object sender, GridRebindEventArgs e )
         {
-            BindRegistrantsGrid();
+            BindRegistrantsGrid( e.IsExporting );
         }
 
         /// <summary>
@@ -1338,9 +1338,9 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void gGroupPlacements_GridRebind( object sender, EventArgs e )
+        protected void gGroupPlacements_GridRebind( object sender, GridRebindEventArgs e )
         {
-            BindGroupPlacementGrid();
+            BindGroupPlacementGrid( e.IsExporting );
         }
 
         /// <summary>
@@ -1933,18 +1933,43 @@ namespace RockWeb.Blocks.Event
                         qry = qry.Where( r => ids.Contains( r.Id ) );
                     }
 
-                    IOrderedQueryable<Registration> orderedQry = null;
                     SortProperty sortProperty = gRegistrations.SortProperty;
                     if ( sortProperty != null )
                     {
-                        orderedQry = qry.Sort( sortProperty );
+                        // If sorting by Total Cost or Balance Due, the database query needs to be run first without ordering,
+                        // and then ordering needs to be done in memory since TotalCost and BalanceDue are not databae fields.
+                        if ( sortProperty.Property == "TotalCost")
+                        {
+                            if ( sortProperty.Direction == SortDirection.Ascending )
+                            {
+                                gRegistrations.SetLinqDataSource( qry.ToList().OrderBy( r => r.TotalCost ).AsQueryable() );
+                            }
+                            else
+                            {
+                                gRegistrations.SetLinqDataSource( qry.ToList().OrderByDescending( r => r.TotalCost ).AsQueryable() );
+                            }
+                        }
+                        else if ( sortProperty.Property == "BalanceDue" )
+                        {
+                            if ( sortProperty.Direction == SortDirection.Ascending )
+                            {
+                                gRegistrations.SetLinqDataSource( qry.ToList().OrderBy( r => r.BalanceDue ).AsQueryable() );
+                            }
+                            else
+                            {
+                                gRegistrations.SetLinqDataSource( qry.ToList().OrderByDescending( r => r.BalanceDue ).AsQueryable() );
+                            }
+                        }
+                        else
+                        {
+                            gRegistrations.SetLinqDataSource( qry.Sort( sortProperty ) );
+                        }
                     }
                     else
                     {
-                        orderedQry = qry.OrderByDescending( r => r.CreatedDateTime );
+                        gRegistrations.SetLinqDataSource( qry.OrderByDescending( r => r.CreatedDateTime ) );
                     }
 
-                    gRegistrations.SetLinqDataSource( orderedQry );
 
                     // Get all the payments for any registrations being displayed on the current page.
                     // This is used in the RowDataBound event but queried now so that each row does
@@ -1988,7 +2013,7 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// Binds the registrants grid.
         /// </summary>
-        private void BindRegistrantsGrid()
+        private void BindRegistrantsGrid( bool isExporting = false )
         {
             int? instanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
             if ( instanceId.HasValue )
@@ -2277,6 +2302,9 @@ namespace RockWeb.Blocks.Event
                             .ThenBy( r => r.PersonAlias.Person.NickName );
                     }
 
+                    // increase the timeout just in case. A complex filter on the grid might slow things down
+                    rockContext.Database.CommandTimeout = 180;
+
                     // Set the grids LinqDataSource which will run query and set results for current page
                     gRegistrants.SetLinqDataSource<RegistrationRegistrant>( orderedQry );
 
@@ -2309,10 +2337,10 @@ namespace RockWeb.Blocks.Event
                             {
                                 groupMemberIds.Add( groupMember.Id );
                                 GroupLinks.AddOrIgnore( groupMember.GroupId,
-                                    gRegistrants.AllowPaging ?
+                                    isExporting ? groupMember.Group.Name :
                                         string.Format( "<a href='{0}'>{1}</a>",
                                             LinkedPageUrl( "GroupDetailPage", new Dictionary<string, string> { { "GroupId", groupMember.GroupId.ToString() } } ),
-                                            groupMember.Group.Name ) : groupMember.Group.Name );
+                                            groupMember.Group.Name ) );
                             }
 
                             // If the campus column was selected to be displayed on grid, preload all the people's
@@ -2935,7 +2963,7 @@ namespace RockWeb.Blocks.Event
 
         #region Group Placement Tab
 
-        private void BindGroupPlacementGrid()
+        private void BindGroupPlacementGrid( bool isExporting = false )
         {
             int? groupId = gpGroupPlacementParentGroup.SelectedValueAsInt();
             int? instanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
@@ -3054,10 +3082,10 @@ namespace RockWeb.Blocks.Event
                             {
                                 groupMemberIds.Add( groupMember.Id );
                                 GroupLinks.AddOrIgnore( groupMember.GroupId,
-                                    gGroupPlacements.AllowPaging ?
+                                    isExporting ? groupMember.Group.Name :
                                         string.Format( "<a href='{0}'>{1}</a>",
                                             LinkedPageUrl( "GroupDetailPage", new Dictionary<string, string> { { "GroupId", groupMember.GroupId.ToString() } } ),
-                                            groupMember.Group.Name ) : groupMember.Group.Name );
+                                            groupMember.Group.Name ) );
                             }
 
                             // If the campus column was selected to be displayed on grid, preload all the people's
