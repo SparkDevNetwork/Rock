@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -61,7 +61,6 @@ namespace Rock.Storage.Provider
                     }
                 }
             }
-
         }
 
         /// <summary>
@@ -119,7 +118,9 @@ namespace Rock.Storage.Provider
             {
                 return string.Empty;
             }
-            return System.Web.Hosting.HostingEnvironment.MapPath( relativePath );
+
+            // allows a fallback for non-IIS environments
+            return System.Web.Hosting.HostingEnvironment.MapPath( relativePath ) ?? relativePath;
         }
 
         /// <summary>
@@ -127,7 +128,7 @@ namespace Rock.Storage.Provider
         /// </summary>
         /// <param name="binaryFile">The binary file.</param>
         /// <returns></returns>
-        private string GetRelativePath ( BinaryFile binaryFile )
+        private string GetRelativePath( BinaryFile binaryFile )
         {
             if ( binaryFile != null && !string.IsNullOrWhiteSpace( binaryFile.FileName ) )
             {
@@ -158,6 +159,5 @@ namespace Rock.Storage.Provider
 
             return string.Empty;
         }
-
     }
 }

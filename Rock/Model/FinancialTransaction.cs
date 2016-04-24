@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -204,6 +204,26 @@ namespace Rock.Model
         public DateTime? ProcessedDateTime { get; set; }
 
         /// <summary>
+        /// Gets the status of the transaction provided by the payment gateway (i.e. Pending, Complete, Failed)
+        /// </summary>
+        /// <value>
+        /// The status.
+        /// </value>
+        [DataMember]
+        [MaxLength( 50 )]
+        public string Status { get; set; }
+
+        /// <summary>
+        /// Gets or sets the status message.
+        /// </summary>
+        /// <value>
+        /// The status message.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string StatusMessage { get; set; }
+
+        /// <summary>
         /// Gets or sets the sunday date.
         /// </summary>
         /// <value>
@@ -345,6 +365,7 @@ namespace Rock.Model
         /// <value>
         /// The total amount.
         /// </value>
+        [LavaInclude]
         [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
         public virtual decimal TotalAmount
         {

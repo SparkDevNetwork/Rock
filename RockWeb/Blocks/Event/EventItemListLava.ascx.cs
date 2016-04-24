@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Event
     [Description( "Renders calendar items using Lava." )]
 
     [EventCalendarField( "Event Calendar", "The event calendar to be displayed", true, "1", order: 0 )]
-    [CampusesField( "Campuses", "List of which campuses to show occurrences for. This setting will be ignored in the 'Use Campus Context' is enabled.", order: 1 )]
+    [CampusesField( "Campuses", "List of which campuses to show occurrences for. This setting will be ignored in the 'Use Campus Context' is enabled.", required: false, order: 1 )]
     [BooleanField( "Use Campus Context", "Determine if the campus should be read from the campus context of the page.", order: 2 )]
     [LinkedPage( "Details Page", "Detail page for events", order: 3 )]
     [SlidingDateRangeField( "Date Range", "Optional date range to filter the items on. (defaults to next 1000 days)", false, order: 4 )]

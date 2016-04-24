@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -86,7 +86,7 @@ namespace Rock.Security
             {
                 List<AuthEntityRule> authEntityRules = new List<AuthEntityRule>();
 
-                var securityGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid());
+                var securityGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
                 int securityGroupTypeId = securityGroupType != null ? securityGroupType.Id : 0;
 
                 // query the database for all of the entity auth rules
@@ -94,7 +94,7 @@ namespace Rock.Security
                 {
                     foreach ( var auth in new AuthService( rockContext )
                         .Queryable().AsNoTracking()
-                        .Where( t => 
+                        .Where( t =>
                             t.Group == null ||
                             ( t.Group.IsActive && ( t.Group.IsSecurityRole || t.Group.GroupTypeId == securityGroupTypeId ) ) )
                         .OrderBy( A => A.EntityTypeId )
@@ -110,7 +110,7 @@ namespace Rock.Security
                             a.AllowOrDeny,
                             a.SpecialRole,
                             a.PersonAliasId,
-                            PersonId = a.PersonAlias != null ? a.PersonAlias.PersonId : (int?)null,
+                            PersonId = a.PersonAlias != null ? a.PersonAlias.PersonId : ( int? ) null,
                             a.GroupId,
                             a.Order
                         } ) )
@@ -162,12 +162,125 @@ namespace Rock.Security
         }
 
         /// <summary>
+        /// Reloads the entity.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        public static void ReloadEntity( int entityTypeId, int entityId, RockContext rockContext = null )
+        {
+            var rockMemoryCache = RockMemoryCache.Default;
+            if ( rockMemoryCache.IsRedisClusterEnabled && rockMemoryCache.IsRedisConnected )
+            {
+                rockMemoryCache.SendRedisCommand( string.Format( "REFRESH_AUTH_ENTITY,{0},{1}", entityTypeId, entityId ) );
+            }
+            else
+            {
+                RefreshEntity( entityTypeId, entityId, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Reloads the entity.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        internal static void RefreshEntity( int entityTypeId, int entityId, RockContext rockContext = null )
+        {
+            if ( !Load() )
+            {
+                lock ( _lock )
+                {
+                    if ( _authorizations != null && _authorizations.ContainsKey( entityTypeId ) )
+                    {
+                        var entityAuths = _authorizations[entityTypeId];
+                        if ( entityAuths.ContainsKey( entityId ) )
+                        {
+                            entityAuths[entityId] = new Dictionary<string, List<AuthRule>>();
+                        }
+                    }
+                }
+
+                // Query database for the authorizations related to this entitytype, entity, and action
+                List<Auth> auths;
+
+                if ( rockContext != null )
+                {
+                    auths = LoadAuths( entityTypeId, entityId, rockContext );
+                }
+                else
+                {
+                    using ( rockContext = new RockContext() )
+                    {
+                        auths = LoadAuths( entityTypeId, entityId, rockContext );
+                    }
+                }
+
+                var actions = auths.Select( a => a.Action ).Distinct().ToList();
+                foreach ( string action in actions )
+                {
+                    var newAuthRules = new List<AuthRule>();
+
+                    foreach ( Auth auth in auths.Where( a => a.Action == action ) )
+                    {
+                        newAuthRules.Add( new AuthRule( auth ) );
+                    }
+                    ResetAction( entityTypeId, entityId, action, newAuthRules );
+                }
+
+            }
+        }
+
+        /// <summary>
+        /// Loads the authorizations
+        /// </summary>
+        /// <param name="entityTypeId">The Entity Type Id</param>
+        /// <param name="entityId">The Entity Id</param>
+        /// <param name="rockContext">The RockContext to use</param>
+        /// <returns></returns>
+        private static List<Auth> LoadAuths( int entityTypeId, int entityId, RockContext rockContext )
+        {
+            var securityGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid(), rockContext );
+            int securityGroupTypeId = securityGroupType != null ? securityGroupType.Id : 0;
+
+            return new AuthService( rockContext )
+                .Get( entityTypeId, entityId )
+                .AsNoTracking()
+                .Where( t =>
+                    t.Group == null ||
+                    ( t.Group.IsActive && ( t.Group.IsSecurityRole || t.Group.GroupTypeId == securityGroupTypeId ) )
+                )
+                .OrderBy( a => a.Order )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Reloads the action.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="action">The action.</param>
+        public static void ReloadAction( int entityTypeId, int entityId, string action )
+        {
+            var rockMemoryCache = RockMemoryCache.Default;
+            if ( rockMemoryCache.IsRedisClusterEnabled && rockMemoryCache.IsRedisConnected )
+            {
+                rockMemoryCache.SendRedisCommand( string.Format( "REFRESH_AUTH_ACTION,{0},{1},{2}", entityTypeId, entityId, action ) );
+            }
+            else
+            {
+                RefreshAction( entityTypeId, entityId, action );
+            }
+        }
+
+        /// <summary>
         /// Reloads the authorizations for the specified entity and action.
         /// </summary>
         /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityId">The entity id.</param>
         /// <param name="action">The action.</param>
-        public static void ReloadAction( int entityTypeId, int entityId, string action )
+        internal static void RefreshAction( int entityTypeId, int entityId, string action )
         {
             // if the authorizations have already been loaded, update just the selected action
             if ( !Load() )
@@ -192,7 +305,7 @@ namespace Rock.Security
                     }
                 }
 
-                ResetAction( entityTypeId, entityId, action, newAuthRules);
+                ResetAction( entityTypeId, entityId, action, newAuthRules );
             }
         }
 
@@ -205,13 +318,33 @@ namespace Rock.Security
         /// <param name="rockContext">The rock context.</param>
         public static void ReloadAction( int entityTypeId, int entityId, string action, RockContext rockContext )
         {
+            var rockMemoryCache = RockMemoryCache.Default;
+            if ( rockMemoryCache.IsRedisClusterEnabled && rockMemoryCache.IsRedisConnected )
+            {
+                rockMemoryCache.SendRedisCommand( string.Format( "REFRESH_AUTH_ACTION,{0},{1},{2}", entityTypeId, entityId, action ) );
+            }
+            else
+            {
+                RefreshAction( entityTypeId, entityId, action, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Reloads the action.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="rockContext">The rock context.</param>
+        public static void RefreshAction( int entityTypeId, int entityId, string action, RockContext rockContext )
+        {
             // if the authorizations have already been loaded, update just the selected action
             if ( !Load() )
             {
+                var newAuthRules = new List<AuthRule>();
+
                 var securityGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid(), rockContext );
                 int securityGroupTypeId = securityGroupType != null ? securityGroupType.Id : 0;
-
-                var newAuthRules = new List<AuthRule>();
 
                 // Query database for the authorizations related to this entitytype, entity, and action
                 foreach ( Auth auth in new AuthService( rockContext )
@@ -369,7 +502,7 @@ namespace Rock.Security
                 }
             }
         }
-        
+
         /// <summary>
         /// Updates authorization rules for the entity so that the current person is allowed to perform the specified action.
         /// </summary>
@@ -488,9 +621,8 @@ namespace Rock.Security
             rockContext.SaveChanges();
 
             // Copy target auths to source auths
-            var newActions = new Dictionary<string, List<AuthRule>>();
             int order = 0;
-            foreach( Auth sourceAuth in authService.Get( sourceEntityTypeId, sourceEntity.Id ).ToList() )
+            foreach ( Auth sourceAuth in authService.Get( sourceEntityTypeId, sourceEntity.Id ).ToList() )
             {
                 if ( ( string.IsNullOrWhiteSpace( action ) || sourceAuth.Action.Equals( action, StringComparison.OrdinalIgnoreCase ) ) &&
                     targetEntity.SupportedActions.ContainsKey( sourceAuth.Action ) )
@@ -507,28 +639,10 @@ namespace Rock.Security
 
                     authService.Add( auth );
                     rockContext.SaveChanges();
-
-                    newActions.AddOrIgnore( auth.Action, new List<AuthRule>() );
-                    newActions[auth.Action].Add( new AuthRule( auth ) );
                 }
             }
 
-            lock ( _lock )
-            {
-                if ( _authorizations != null )
-                {
-                    _authorizations.AddOrIgnore( targetEntityTypeId, new Dictionary<int, Dictionary<string, List<AuthRule>>>() );
-                    var entityType = _authorizations[targetEntityTypeId];
-
-                    entityType.AddOrReplace( targetEntity.Id, new Dictionary<string, List<AuthRule>>() );
-                    var entity = entityType[targetEntity.Id];
-
-                    foreach ( var newAction in newActions )
-                    {
-                        entity.Add( newAction.Key, newAction.Value );
-                    }
-                }
-            }
+            ReloadEntity( targetEntityTypeId, targetEntity.Id, rockContext );
 
         }
 
@@ -548,6 +662,22 @@ namespace Rock.Security
         /// Clear the static Authorizations object
         /// </summary>
         public static void Flush()
+        {
+            var rockMemoryCache = RockMemoryCache.Default;
+            if ( rockMemoryCache.IsRedisClusterEnabled && rockMemoryCache.IsRedisConnected )
+            {
+                rockMemoryCache.SendRedisCommand( "FLUSH_AUTH" );
+            }
+            else
+            {
+                FlushAuth();
+            }
+        }
+
+        /// <summary>
+        /// Clear the static Authorizations object
+        /// </summary>
+        internal static void FlushAuth()
         {
             lock ( _lock )
             {
@@ -727,7 +857,7 @@ namespace Rock.Security
                     _authorizations[entityTypeId].Keys.Contains( entity.Id ) &&
                     _authorizations[entityTypeId][entity.Id].Keys.Contains( action ) )
                 {
-                    Guid? personGuid = person != null ? person.Guid : (Guid?)null;
+                    Guid? personGuid = person != null ? person.Guid : ( Guid? ) null;
 
                     foreach ( AuthRule authRule in _authorizations[entityTypeId][entity.Id][action] )
                     {
@@ -931,8 +1061,8 @@ namespace Rock.Security
         /// <param name="group">The group.</param>
         /// <param name="specialRole">The special role.</param>
         /// <param name="rockContext">The rock context.</param>
-        private static void MyAllow( ISecured entity, string action, 
-            Person person = null, Group group = null, SpecialRole specialRole = SpecialRole.None, 
+        private static void MyAllow( ISecured entity, string action,
+            Person person = null, Group group = null, SpecialRole specialRole = SpecialRole.None,
             RockContext rockContext = null )
         {
             rockContext = rockContext ?? new RockContext();
@@ -1204,7 +1334,8 @@ namespace Rock.Security
                                     if ( group != null )
                                     {
                                         return string.Format( "<span class='text-muted'>GROUP - {0} <small>(No longer a valid active role)</small></span>",
-                                            group.Name ); ;
+                                            group.Name );
+                                        ;
                                     }
                                 }
                             }
@@ -1249,7 +1380,7 @@ namespace Rock.Security
             EntityId = auth.EntityId;
             AllowOrDeny = auth.AllowOrDeny == "A" ? 'A' : 'D';
             SpecialRole = auth.SpecialRole;
-            PersonId = auth.PersonAlias != null ? auth.PersonAlias.PersonId : (int?)null;
+            PersonId = auth.PersonAlias != null ? auth.PersonAlias.PersonId : ( int? ) null;
             PersonAliasId = auth.PersonAliasId;
             GroupId = auth.GroupId;
             Order = auth.Order;

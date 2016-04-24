@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -265,9 +265,9 @@ namespace Rock.Model
                     {
                         value = attribute.FieldType.Field.FormatValue( null, value, attribute.QualifierValues, condensed );
                     }
-
-                    return value;
                 }
+
+                return value ?? string.Empty;
             }
 
             return null;
