@@ -88,7 +88,7 @@ namespace RockWeb.Blocks.CheckIn
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             gChartAttendance.GridRebind += gChartAttendance_GridRebind;
-            gAttendeesAttendance.GridRebind += GAttendeesAttendance_GridRebind;
+            gAttendeesAttendance.GridRebind += gAttendeesAttendance_GridRebind;
 
             gAttendeesAttendance.EntityTypeId = EntityTypeCache.Read<Rock.Model.Person>().Id;
 
@@ -98,26 +98,6 @@ namespace RockWeb.Blocks.CheckIn
 
             // show / hide the checkin details page
             btnCheckinDetails.Visible = !string.IsNullOrWhiteSpace( GetAttributeValue( "Check-inDetailPage" ) );
-        }
-
-        /// <summary>
-        /// Handles the GridRebind event of the GAttendeesAttendance control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="GridRebindEventArgs"/> instance containing the event data.</param>
-        private void GAttendeesAttendance_GridRebind( object sender, GridRebindEventArgs e )
-        {
-            BindAttendeesGrid( e.IsExporting );
-        }
-
-        /// <summary>
-        /// Handles the GridRebind event of the gAttendance control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void gChartAttendance_GridRebind( object sender, EventArgs e )
-        {
-            BindChartAttendanceGrid();
         }
 
         /// <summary>
@@ -196,6 +176,26 @@ namespace RockWeb.Blocks.CheckIn
             {
                 LoadChartAndGrids();
             }
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the GAttendeesAttendance control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridRebindEventArgs"/> instance containing the event data.</param>
+        protected void gAttendeesAttendance_GridRebind( object sender, GridRebindEventArgs e )
+        {
+            BindAttendeesGrid( e.IsExporting );
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gAttendance control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gChartAttendance_GridRebind( object sender, EventArgs e )
+        {
+            BindChartAttendanceGrid();
         }
 
         #endregion
