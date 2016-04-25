@@ -32,7 +32,7 @@ namespace Rock.Workflow.Action
     [ActionCategory( "Workflow Control" )]
     [Description( "Adds a note to the workflow." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Add Workflow Note" )]
+    [ExportMetadata( "ComponentName", "Workflow Add Note" )]
     [MemoField( "Note", "The note to add <span class='tip tip-lava'></span>", true, "", "", 0 )]
     [NoteTypeField( "Note Type", "The type of note to add.", false, "Rock.Model.Workflow", "", "", true, Rock.SystemGuid.NoteType.WORKFLOW_NOTE, "", 1 )]
     [BooleanField( "Is Alert", "Should this note be flagged as an alert", false, "", 2 )]

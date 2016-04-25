@@ -388,37 +388,15 @@ namespace RockWeb.Blocks.Reporting
         /// <returns></returns>
         private Dictionary<string, object> GetDynamicDataMergeFields()
         {
-            var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             if ( CurrentPerson != null )
             {
                 // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
                 mergeFields.Add( "Person", CurrentPerson );
-                mergeFields.Add( "CurrentPerson", CurrentPerson );
             }
 
             mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
-            mergeFields.Add( "Campuses", CampusCache.All() );
-            mergeFields.Add( "PageParameter", PageParameters() );
             mergeFields.Add( "CurrentPage", this.PageCache );
-
-            var contextObjects = new Dictionary<string, object>();
-            foreach ( var contextEntityType in RockPage.GetContextEntityTypes() )
-            {
-                var contextEntity = RockPage.GetCurrentContext( contextEntityType );
-                if ( contextEntity != null && contextEntity is DotLiquid.ILiquidizable )
-                {
-                    var type = Type.GetType( contextEntityType.AssemblyName ?? contextEntityType.Name );
-                    if ( type != null )
-                    {
-                        contextObjects.Add( type.Name, contextEntity );
-                    }
-                }
-            }
-
-            if ( contextObjects.Any() )
-            {
-                mergeFields.Add( "Context", contextObjects );
-            }
 
             return mergeFields;
         }

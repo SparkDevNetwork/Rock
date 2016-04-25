@@ -32,10 +32,10 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sets an attribute's value to the selected person 
     /// </summary>
-    [ActionCategory( "Group Update" )]
+    [ActionCategory( "Groups" )]
     [Description( "Sets a group member attribute." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Set Group Member Attribute" )]
+    [ExportMetadata( "ComponentName", "Group Member Attribute Set" )]
 
     [WorkflowAttribute("Group", "The attribute containing the group to get the leader for.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.GroupFieldType" })]

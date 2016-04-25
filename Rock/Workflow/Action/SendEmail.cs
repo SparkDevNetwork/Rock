@@ -34,7 +34,7 @@ namespace Rock.Workflow.Action
     [ActionCategory( "Communications" )]
     [Description( "Sends an email. The recipient can either be a group, person or email address determined by the 'To Attribute' value, or an email address entered in the 'To' field. Only people with an active email address without the 'Do Not Email' preference are included. If attribute is a group, only members with an <em>Active</em> member status are included." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Send Email" )]
+    [ExportMetadata( "ComponentName", "Email Send" )]
 
     [WorkflowTextOrAttribute( "From Email Address", "Attribute Value", "The email address or an attribute that contains the person or email address that email should be sent from (will default to organization email). <span class='tip tip-lava'></span>", false, "", "", 0, "From",
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType", "Rock.Field.Types.PersonFieldType" } )]

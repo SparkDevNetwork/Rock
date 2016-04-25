@@ -3,7 +3,7 @@
   {% for item in Items -%}
 
     <div class="announcement">
-      <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">{{ item.Image }}</a>
+      <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">{{ item | Attribute:'Image' }}</a>
     </div>
 
     {% capture breakNow %}{{ forloop.index | Modulo:3 }}{% endcapture %}

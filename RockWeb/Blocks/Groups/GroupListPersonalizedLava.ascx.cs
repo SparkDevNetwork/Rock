@@ -110,11 +110,9 @@ namespace RockWeb.Blocks.Groups
 
             var groups = qry.Select( m => new GroupInvolvementSummary  { Group = m.Group, Role = m.GroupRole.Name, IsLeader = m.GroupRole.IsLeader, GroupType = m.Group.GroupType.Name } ).ToList();
 
-            var mergeFields = new Dictionary<string, object>();
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "Groups", groups );
             mergeFields.Add( "CurrentPerson", CurrentPerson );
-            var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
 
             Dictionary<string, object> linkedPages = new Dictionary<string, object>();
             linkedPages.Add( "DetailPage", LinkedPageUrl( "DetailPage", null ) );
