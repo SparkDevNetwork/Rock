@@ -98,7 +98,7 @@
                                 <div class="row">
                                     <asp:Repeater ID="rptLatestVersionRatings" runat="server">
                                         <ItemTemplate>
-                                            <div class="col-md-6 margin-b-lg">
+                                            <div class="col-md-12 margin-b-lg">
                                                     <div style="width: 65px; float: left;">
                                                         <img src='<%# PersonPhotoUrl( Eval( "PersonAlias.Person.PhotoUrl" ).ToString() ) %>&width=50' class="img-circle" />
                                                     </div>
@@ -106,7 +106,7 @@
                                                         <div class='rating rating-<%# Eval("Rating")%> pull-left margin-r-sm'></div>
                                                         <strong><%# Eval("PersonAlias.Person.FullName")%></strong>
                                                         <p class="margin-b-lg">
-                                                            <%# Eval("Review")%>
+                                                            <%# FormatReviewText(Eval("Review").ToString())%>
                                                         </p>
                                                     </div>
                                             </div>
