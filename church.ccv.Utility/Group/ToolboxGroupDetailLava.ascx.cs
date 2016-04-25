@@ -272,7 +272,7 @@ namespace church.ccv.Utility.Groups
         {
             if ( _groupId > 0 )
             {
-                Dictionary<string, object> mergeFields = new Dictionary<string, object>();
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                 bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
 
                 RockContext rockContext = new RockContext();
@@ -318,15 +318,10 @@ namespace church.ccv.Utility.Groups
                 securityActions.Add( "Administrate", group != null && group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) );
                 mergeFields.Add( "AllowedActions", securityActions );
 
-                mergeFields.Add( "CurrentPerson", CurrentPerson );
-
-                var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-                globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
-
                 Dictionary<string, object> currentPageProperties = new Dictionary<string, object>();
                 currentPageProperties.Add( "Id", RockPage.PageId );
                 currentPageProperties.Add( "Path", Request.Path );
-                mergeFields.Add( "CurrentPage", currentPageProperties );
+                mergeFields.AddOrIgnore( "CurrentPage", currentPageProperties );
 
                 // let the derived class add in anything it needs, and render the actual content
                 FinalizePresentView( mergeFields, enableDebug );

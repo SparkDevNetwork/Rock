@@ -101,14 +101,11 @@ namespace church.ccv.Utility
                     {
                         var recipients = new List<string>();
 
-                        var mergeFields = new Dictionary<string, object>();
+                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                         mergeFields.Add( "Person", headOfHouse );
                         mergeFields.Add( "Pastor", neighborhoodPastor );
                         mergeFields.Add( "Campus", campus );
                         mergeFields.Add( "CampusPastor", campusPastor );
-
-                        var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
-                        globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
 
                         recipients.Add( headOfHouse.Email );
 

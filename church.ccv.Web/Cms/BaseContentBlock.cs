@@ -19,8 +19,8 @@ namespace church.ccv.Web.Cms
 
     [CustomCheckboxListField(
         "Include MergeFields",
-        "Select the Merge Fields that this block needs. Selecting only what you need can improve performance. Note that GlobalAttributes is only needed if you use the old v1 syntax.",
-        "GlobalAttributes,DeviceFamily,OSFamily,Context,CurrentPerson,PageParameter,Campuses",
+        "Select the Merge Fields that this block needs. Selecting only what you need can improve performance.",
+        "DeviceFamily,OSFamily,Context,CurrentPerson,PageParameter,Campuses",
         false,
         "DeviceFamily,OSFamily,Context,CurrentPerson,PageParameter,Campuses",
         order: 107 )]
@@ -142,67 +142,18 @@ namespace church.ccv.Web.Cms
         /// <returns></returns>
         public virtual Dictionary<string, object> GetContentMergeFields()
         {
-            Dictionary<string, object> mergeFields;
+            var options = new Rock.Lava.CommonMergeFieldsOptions();
+            
             var includeMergeFields = this.GetAttributeValue( "IncludeMergeFields" ).SplitDelimitedValues().ToList();
-            if ( includeMergeFields.Contains( "GlobalAttributes" ) )
-            {
-                mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            }
-            else
-            {
-                mergeFields = new Dictionary<string, object>();
-            }
+            options.GetPageContext = includeMergeFields.Contains( "Context" );
+            options.GetPageParameters = includeMergeFields.Contains( "PageParameter" );
+            options.GetDeviceFamily = includeMergeFields.Contains( "DeviceFamily" );
+            options.GetOSFamily = includeMergeFields.Contains( "OSFamily" );
+            options.GetCurrentPerson = includeMergeFields.Contains( "CurrentPerson" );
+            options.GetCampuses = includeMergeFields.Contains( "Campuses" );
 
-            if ( includeMergeFields.Contains( "Context" ) )
-            {
-                var contextObjects = new Dictionary<string, object>();
-                foreach ( var contextEntityType in RockPage.GetContextEntityTypes() )
-                {
-                    var contextEntity = RockPage.GetCurrentContext( contextEntityType );
-                    if ( contextEntity != null && contextEntity is DotLiquid.ILiquidizable )
-                    {
-                        var type = Type.GetType( contextEntityType.AssemblyName ?? contextEntityType.Name );
-                        if ( type != null )
-                        {
-                            contextObjects.Add( type.Name, contextEntity );
-                        }
-                    }
-                }
-
-                if ( contextObjects.Any() )
-                {
-                    mergeFields.Add( "Context", contextObjects );
-                }
-            }
-
-            if ( includeMergeFields.Contains( "PageParameter" ) )
-            {
-                mergeFields.Add( "PageParameter", PageParameters() );
-            }
-
-            if ( includeMergeFields.Contains( "DeviceFamily" ) || includeMergeFields.Contains( "OSFamily" ) )
-            {
-                if ( !string.IsNullOrEmpty( this.Request.UserAgent ) )
-                {
-                    Parser uaParser = Parser.GetDefault();
-                    ClientInfo client = uaParser.Parse( this.Request.UserAgent );
-                    mergeFields.Add( "DeviceFamily", client.Device.Family );
-                    mergeFields.Add( "OSFamily", client.OS.Family.ToLower() );
-                }
-            }
-
-            if ( includeMergeFields.Contains( "CurrentPerson" ) )
-            {
-                if ( CurrentPerson != null )
-                {
-                    mergeFields.Add( "CurrentPerson", CurrentPerson );
-                }
-            }
-
-            if ( includeMergeFields.Contains( "Campuses" ) )
-            {
-                mergeFields.Add( "Campuses", CampusCache.All() );
-            }
+            Dictionary<string, object> mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, options );
+            
 
             return mergeFields;
         }

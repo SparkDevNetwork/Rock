@@ -50,14 +50,14 @@ namespace church.ccv.Hr.Model
 
             if ( approvedEmailTemplateGuid.HasValue )
             {
-                var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
-                mergeObjects.Add( "TimeCardPayPeriod", timeCard.TimeCardPayPeriod.ToString() );
-                mergeObjects.Add( "TimeCard", timeCard );
-                mergeObjects.Add( "Person", timeCard.PersonAlias.Person );
-                mergeObjects.Add( "ApprovedByPerson", rockPage.CurrentPerson );
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+                mergeFields.Add( "TimeCardPayPeriod", timeCard.TimeCardPayPeriod.ToString() );
+                mergeFields.Add( "TimeCard", timeCard );
+                mergeFields.Add( "Person", timeCard.PersonAlias.Person );
+                mergeFields.Add( "ApprovedByPerson", rockPage.CurrentPerson );
 
                 var recipients = new List<RecipientData>();
-                recipients.Add( new RecipientData( timeCard.PersonAlias.Person.Email, mergeObjects ) );
+                recipients.Add( new RecipientData( timeCard.PersonAlias.Person.Email, mergeFields ) );
                 Email.Send( approvedEmailTemplateGuid.Value, recipients, rockPage.ResolveRockUrl( "~/" ), rockPage.ResolveRockUrl( "~~/" ) );
             }
 
