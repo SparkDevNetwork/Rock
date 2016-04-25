@@ -22,8 +22,9 @@
             <li>{{ phone.NumberFormatted }} <small>({{ phone.NumberTypeValue.Value }})</small></li>
           {% endif %}
         {% endfor %}
-        {% if person.FirstVisit %}
-          <li><small>First visited on {{ person.FirstVisit }}</small></li>
+		{% assign personFirstVisit = person | Attribute:'FirstVisit' %}
+        {% if personFirstVisit %}
+          <li><small>First visited on {{ personFirstVisit }}</small></li>
         {% endif %}
       </ul>
     </div>
