@@ -771,10 +771,10 @@ namespace Rock.Model
                 .Select( m => m.GroupId )
                 .Distinct();
 
-            return groupMemberService.Queryable( "Person,GroupRole" )
+            return groupMemberService.Queryable( "Person,GroupRole", true )
                 .Where( m =>
                     familyGroupIds.Contains( m.GroupId ) &&
-                    ( includeSelf || m.PersonId != personId ) );
+                    ( includeSelf || ( m.PersonId != personId && !m.Person.IsDeceased ) ) );
         }
 
         /// <summary>
