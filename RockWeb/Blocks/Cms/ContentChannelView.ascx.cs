@@ -446,8 +446,8 @@ $(document).ready(function() {
                 {
                     // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
                     itemMergeFields.Add( "Person", CurrentPerson );
-                    itemMergeFields.Add( "CurrentPerson", CurrentPerson );
                 }
+
                 commonMergeFields.ToList().ForEach( d => itemMergeFields.Add( d.Key, d.Value ) );
 
                 foreach ( var item in currentPageContent )
