@@ -47,7 +47,18 @@ namespace church.ccv.Badges.Person
                                         badge.find('.steps-52weeks').html( ' / ' + data.StepsIn52Weeks);
                                         
                                         if ( data.StepsThisYear != 0 || data.StepsIn52Weeks != 0) {{
-                                            badge.attr('data-original-title', '{2} has taken ' + data.StepsThisYear + ' steps in {3} and ' + data.StepsIn52Weeks + ' steps in the last 52 wks');
+                                            var thisYearLabel = 'steps';
+                                            var twelveMonthsLabel = 'steps';
+
+                                            if (data.StepsThisYear == 1) {{
+                                                thisYearLabel = 'step';
+                                            }}
+
+                                            if (data.StepsIn52Weeks == 1) {{
+                                                twelveMonthsLabel = 'step';
+                                            }}
+
+                                            badge.attr('data-original-title', '{2} has taken ' + data.StepsThisYear + ' ' + thisYearLabel  + ' in {3} and ' + data.StepsIn52Weeks + ' ' + twelveMonthsLabel + ' in the last 12 months');
                                         }}
                                     }}
                                 }},
