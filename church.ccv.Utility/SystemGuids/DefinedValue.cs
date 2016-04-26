@@ -66,26 +66,26 @@ namespace church.ccv.Utility.SystemGuids
         /// <summary>
         /// Coach wants to follow up with the group member at a later date
         /// </summary>
-        public const string NEXT_GEN_OPT_OUT_FOLLOW_UP_LATER = "F49B30D0-33FF-4ECF-A3D7-DE24F1E3CA68";
+        public const string NEXT_GEN_OPT_OUT_FOLLOW_UP_LATER = "3B3F87C2-D8CB-4A00-915E-CA2578D3CFF0";
         
         /// <summary>
         /// Coach needs this person reassigned for some reason
         /// </summary>
-        public const string NEXT_GEN_OPT_OUT_REASSIGN_TO_NEW_COACH = "C78D0095-343C-4F0E-A05B-6F7BCC7AEF8B";
+        public const string NEXT_GEN_OPT_OUT_REASSIGN_TO_NEW_COACH = "00BC58C9-BC8A-457D-9B02-1A8EAC62107D";
                 
         /// <summary>
         /// Member is no longer attending group
         /// </summary>
-        public const string NEXT_GEN_OPT_OUT_NOT_ATTENDING_GROUP = "7F83CC51-2428-4543-8005-C390EEDF4ABC";
+        public const string NEXT_GEN_OPT_OUT_NOT_ATTENDING_GROUP = "A39A843E-CFC5-45D1-AD1B-60CB642FDC3C";
 
         /// <summary>
         /// Member no longer attends CCV
         /// </summary>
-        public const string NEXT_GEN_OPT_OUT_NO_LONGER_ATTENDING_CCV = "4C50A71B-ABB3-4FD9-8291-46036BA1559E";
+        public const string NEXT_GEN_OPT_OUT_NO_LONGER_ATTENDING_CCV = "DA67D75D-0F6E-4AF7-A2F5-A5952182DDEF";
 
         /// <summary>
         /// Member changed schools
         /// </summary>
-        public const string NEXT_GEN_OPT_OUT_MOVED_SCHOOLS  = "E62445C5-82AA-4FDE-8035-9D8C6EAE1EC2";
+        public const string NEXT_GEN_OPT_OUT_MOVED_SCHOOLS  = "878D7CE4-22A2-4833-B36A-792A5C731938";
     }
 }
