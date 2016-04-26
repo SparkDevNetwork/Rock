@@ -29,9 +29,9 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            AddColumn("dbo.Location", "Barcode", c => c.String(maxLength: 40));
-            AddColumn("dbo.Location", "SoftRoomThreshold", c => c.Int());
-            AddColumn("dbo.Location", "FirmRoomThreshold", c => c.Int());
+            AddColumn( "dbo.Location", "Barcode", c => c.String( maxLength: 40 ) );
+            AddColumn( "dbo.Location", "SoftRoomThreshold", c => c.Int() );
+            AddColumn( "dbo.Location", "FirmRoomThreshold", c => c.Int() );
 
             RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.GroupType", "7525C4CB-EE6B-41D4-9B64-A08048D5A5C0", "GroupTypePurposeValueId", "", "Check-in Type", "", 0, "Individual", "90C34D24-7CFB-4A52-B39C-DFF05A40997C", "core_checkin_CheckInType" );
             RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.GroupType", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "GroupTypePurposeValueId", "", "Enable Manager Option", "", 0, "True", "5BF4C3CD-052F-4A21-B677-21811C5ABEDD", "core_checkin_EnableManagerOption" );
@@ -94,7 +94,27 @@ namespace Rock.Migrations
             // Attrib Value for Block:Check-in Type Detail, Attribute:Schedule Page Page: Check-in Type, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "71C3B7F8-E35B-498A-B03E-3C547794C881", "2819D6CE-C8BF-4E7A-88DF-7F1E4E322AFC", @"a286d16b-fddf-4d89-b98f-d51188b611e6" );
 
+            // Migration Rollups
+            Sql( MigrationSQL._201604251529438_UpdateLegacyLava );
 
+            // add new global attribute to determine Lava Support Level
+            RockMigrationHelper.AddGlobalAttribute( SystemGuid.FieldType.SINGLE_SELECT, "", "", "Lava Support Level", 
+@"Legacy - Old Lava syntax will still be supported without any warnings
+LegacyWithWarning - Old Lava syntax will be supported, but a warning will be logged to the exceptions log to help identify lava that needs to be updated
+NoLegacy - Old Lava syntax will be ignored and not loaded. (Best Performance)",
+                0, "Legacy", "C8E30F2B-7476-4B02-86D4-3E5057F03FD5", "core.LavaSupportLevel" );
+
+            Sql( @"  
+    DECLARE @LavaSupportLevelAttributeId int = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = 'C8E30F2B-7476-4B02-86D4-3E5057F03FD5')
+    INSERT INTO [AttributeQualifier] 
+     ([IsSystem], [AttributeId], [Key], [Value], [Guid])
+     VALUES
+      (0, @LavaSupportLevelAttributeId, 'fieldtype', 'ddl', newid())
+    INSERT INTO [AttributeQualifier] 
+     ([IsSystem], [AttributeId], [Key], [Value], [Guid])
+     VALUES
+      (0, @LavaSupportLevelAttributeId, 'values', 'Legacy, LegacyWithWarning, NoLegacy', newid())
+" );
         }
 
         /// <summary>

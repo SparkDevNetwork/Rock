@@ -1412,5 +1412,21 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201604251529438_CheckinEnhancement", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @GroupTypeEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = &apos;Rock.Model.GroupType&apos; )
+        ///DECLARE @CheckInTemplatePurposeId int = ( SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = &apos;4A406CB0-495B-4795-B788-52BDFDE00B01&apos; )
+        ///IF @GroupTypeEntityTypeId IS NOT NULL AND @CheckInTemplatePurposeId IS NOT NULL
+        ///BEGIN
+        ///
+        ///    UPDATE [Attribute] SET [EntityTypeQualifierValue] = CAST( @CheckInTemplatePurposeId AS varchar) 
+        ///    WHERE [EntityTypeId] = @GroupTypeEntityTypeId
+        ///    AND [EntityT [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201604251529438_UpdateLegacyLava {
+            get {
+                return ResourceManager.GetString("_201604251529438_UpdateLegacyLava", resourceCulture);
+            }
+        }
     }
 }
