@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -223,6 +223,19 @@ namespace Rock.Model
                 if ( !this.DateTimeAdded.HasValue )
                 {
                     this.DateTimeAdded = RockDateTime.Now;
+                }
+            }
+            else if ( state == System.Data.Entity.EntityState.Modified )
+            {
+                var changeEntry = dbContext.ChangeTracker.Entries<GroupMember>().Where( a => a.Entity == this ).FirstOrDefault();
+                if ( changeEntry != null )
+                {
+                    var origGroupMemberStatus = (GroupMemberStatus)changeEntry.OriginalValues["GroupMemberStatus"];
+                    if ( origGroupMemberStatus != this.GroupMemberStatus )
+                    {
+                        action = string.Format( "Group member status changed from {0} to {1}", origGroupMemberStatus.ToString(), this.GroupMemberStatus.ToString() );
+                        verb = "UPDATE";
+                    }
                 }
             }
             else if ( state == System.Data.Entity.EntityState.Deleted )

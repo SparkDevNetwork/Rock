@@ -1,5 +1,5 @@
-// <copyright>
-// Copyright 2013 by the Spark Development Network
+ï»¿// <copyright>
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -663,6 +663,16 @@ namespace Rock.Web.UI
                     slDebugTimings.AppendFormat( "GetCurrentPerson [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
                     stopwatchInitEvents.Restart();
                 }
+
+                // check that they aren't required to change their password
+                if ( user.IsPasswordChangeRequired == true && Site.ChangePasswordPageReference != null )
+                {
+                    // don't redirect if this is the change password page
+                    if ( Site.ChangePasswordPageReference.PageId != this.PageId )
+                    {
+                        Site.RedirectToChangePasswordPage( true, true );
+                    }
+                }
             }
 
             // If a PageInstance exists
@@ -1300,7 +1310,14 @@ namespace Rock.Web.UI
                 }
 
                 phLoadStats.Controls.Add( new LiteralControl( string.Format(
-                    "<span>Page Load Time: {0:N2}s </span><span class='margin-l-lg'>Cache Hit Rate: {1:P2} </span>", tsDuration.TotalSeconds, hitPercent ) ) );
+                    "<span>Page Load Time: {0:N2}s </span><span class='margin-l-lg'>Cache Hit Rate: {1:P2} </span> <span class='margin-l-lg js-view-state-stats'></span>", tsDuration.TotalSeconds, hitPercent ) ) );
+
+                string script = @"
+Sys.Application.add_load(function () {
+    $('.js-view-state-stats').html('ViewState Size: ' + ($('#__VIEWSTATE').val().length / 1024).toFixed(0) + ' KB');
+});
+";
+                ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "rock-js-view-state-size", script, true );
             }
         }
 
@@ -1520,7 +1537,12 @@ namespace Rock.Web.UI
         public string ResolveRockUrlIncludeRoot( string url )
         {
             string virtualPath = this.ResolveRockUrl( url );
-            return string.Format( "{0}://{1}{2}", Context.Request.Url.Scheme, Context.Request.Url.Authority, virtualPath );
+            if ( Context.Request != null && Context.Request.Url != null )
+            {
+                return string.Format( "{0}://{1}{2}", Context.Request.Url.Scheme, Context.Request.Url.Authority, virtualPath );
+            }
+
+            return GlobalAttributesCache.Read().GetValue("PublicApplicationRoot").EnsureTrailingForwardslash() + virtualPath.RemoveLeadingForwardslash();
         }
 
         /// <summary>
@@ -2267,7 +2289,7 @@ namespace Rock.Web.UI
                 if ( AddScriptTags )
                 {
                     l.Text = string.Format( @"
-    <script type=""text/javascript"">       
+    <script type=""text/javascript""> 
 {0}
     </script>
 

@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -58,6 +58,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [BooleanField("SMS", "SMS is enabled by default", "SMS is not enabled by default", "Should SMS be enabled for cell phone numbers by default?", false, "", 9)]
     [AttributeCategoryField( "Attribute Categories", "The Person Attribute Categories to display attributes from", true, "Rock.Model.Person", false, "", "", 10 )]
     [BooleanField( "Show Inactive Campuses", "Determines if inactive campuses should be shown.", true, order: 9 )]
+    [BooleanField("Enable Common Last Name", "Autofills the last name field when adding a new group member with the last name of the first group member.", true, order: 11)]
     public partial class AddGroup : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -876,6 +877,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             groupMember.GroupMemberStatus = GroupMemberStatus.Active;
             groupMember.GroupRoleId = defaultRoleId;
             groupMember.Person = person;
+
+            if (GetAttributeValue( "EnableCommonLastName" ).AsBoolean() )
+            {
+                if (GroupMembers.Count > 0 )
+                {
+                    person.LastName = GroupMembers.FirstOrDefault().Person.LastName;
+                }
+            }
 
             GroupMembers.Add( groupMember );
         }

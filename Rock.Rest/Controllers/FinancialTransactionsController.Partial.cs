@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ using System.Web.Http;
 using System.Web.Http.OData;
 using Rock;
 using Rock.Data;
+using Rock.Financial;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;
@@ -315,6 +316,38 @@ namespace Rock.Rest.Controllers
 
             return dataSet;
         }
+
+        //[HttpGet]
+        //[System.Web.Http.Route( "api/FinancialTransactions/ChargeStep3/{GatewayId}/{TokenId}" )]
+        //public FinancialTransaction ChargeStep3( int gatewayId, string tokenId )
+        //{
+        //    SetProxyCreation( true );
+        //    var rockContext = (RockContext)Service.Context;
+        //    var financialGateway = new FinancialGatewayService( rockContext ).Get( gatewayId );
+        //    if ( financialGateway == null )
+        //    {
+        //        throw new HttpResponseException( Request.CreateErrorResponse( HttpStatusCode.NotFound, "Gateway does not exist!" ) );
+        //    }
+
+        //    var gateway = financialGateway.GetGatewayComponent();
+        //    if ( gateway == null )
+        //    {
+        //        throw new HttpResponseException( Request.CreateErrorResponse( HttpStatusCode.NotFound, "Gateway component could not be loaded!" ) );
+        //    }
+
+        //    var paymentInfo = new PaymentInfo();
+        //    paymentInfo.AdditionalParameters.Add( "token-id", tokenId );
+
+        //    string errorMessage = string.Empty;
+
+        //    var transaction = gateway.ChargeStep3( financialGateway, paymentInfo, out errorMessage );
+        //    if ( transaction == null || !string.IsNullOrWhiteSpace( errorMessage ) )
+        //    {
+        //        throw new HttpResponseException( Request.CreateErrorResponse( HttpStatusCode.BadRequest, errorMessage ) );
+        //    }
+
+        //    return transaction;
+        //}
 
         /// <summary>
         /// Gets transactions by people with the supplied givingId.

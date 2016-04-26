@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -293,9 +293,14 @@ namespace RockWeb.Blocks.Finance
                     detailsLeft.Add( "Currency Type", currencyType );
                 }
 
+                GatewayComponent gateway = null;
                 if ( txn.FinancialGateway != null )
                 {
-                    detailsLeft.Add( "Payment Gateway", Rock.Financial.GatewayContainer.GetComponentName( txn.FinancialGateway.Name ) );
+                    gateway = txn.FinancialGateway.GetGatewayComponent();
+                    if ( gateway != null )
+                    {
+                        detailsLeft.Add( "Payment Gateway", GatewayContainer.GetComponentName( gateway.TypeName ) );
+                    }
                 }
 
                 detailsLeft
@@ -327,8 +332,11 @@ namespace RockWeb.Blocks.Finance
                         .ToList();
                     rptrNotes.DataBind();
                 }
+
+                lbRefresh.Visible = gateway != null && gateway.GetScheduledPaymentStatusSupported;
+                lbUpdate.Visible = gateway != null && gateway.UpdateScheduledPaymentSupported;
                 lbCancelSchedule.Visible = txn.IsActive;
-                lbReactivateSchedule.Visible = !txn.IsActive;
+                lbReactivateSchedule.Visible = !txn.IsActive && gateway != null && gateway.ReactivateScheduledPaymentSupported;
             }
         }
 

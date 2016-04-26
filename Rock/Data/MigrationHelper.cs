@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -805,25 +805,43 @@ namespace Rock.Data
             }
 
             sql.AppendFormat( @"
-                IF EXISTS (
-                    SELECT [Id]
-                    FROM [Category]
-                    WHERE [Guid] = '{3}' )
-                BEGIN
-                    UPDATE [Category] SET
-                        [EntityTypeId] = @EntityTypeId,
-                        [Name] = '{0}',
-                        [IconCssClass] = '{1}',
-                        [Description] = '{2}',
-                        [Order] = {4},
-                        [ParentCategoryId] = @ParentCategoryId
-                    WHERE [Guid] = '{3}'
-                END
-                ELSE
-                BEGIN
-                    INSERT INTO [Category] ( [IsSystem],[EntityTypeId],[Name],[IconCssClass],[Description],[Order],[Guid],[ParentCategoryId] )
-                    VALUES( 1,@EntityTypeId,'{0}','{1}','{2}',{4},'{3}',@ParentCategoryId )
-                END
+                    DECLARE @CategoryId int = ( 
+                        SELECT TOP 1 [Id] 
+                        FROM [Category] 
+                        WHERE [EntityTypeId] = @EntityTypeId
+                        AND [Name] = '{0}'
+                        AND [ParentCategoryId] = @ParentCategoryId
+                    )
+
+                    IF @CategoryId IS NOT NULL 
+                    BEGIN
+                        UPDATE [Category] SET [Guid] = '{3}'
+                        WHERE [Id] = @CategoryId
+                    END
+                    ELSE
+                    BEGIN
+
+                        IF EXISTS (
+                            SELECT [Id]
+                            FROM [Category]
+                            WHERE [Guid] = '{3}' )
+                        BEGIN
+                            UPDATE [Category] SET
+                                [EntityTypeId] = @EntityTypeId,
+                                [Name] = '{0}',
+                                [IconCssClass] = '{1}',
+                                [Description] = '{2}',
+                                [Order] = {4},
+                                [ParentCategoryId] = @ParentCategoryId
+                            WHERE [Guid] = '{3}'
+                        END
+                        ELSE
+                        BEGIN
+                            INSERT INTO [Category] ( [IsSystem],[EntityTypeId],[Name],[IconCssClass],[Description],[Order],[Guid],[ParentCategoryId] )
+                            VALUES( 1,@EntityTypeId,'{0}','{1}','{2}',{4},'{3}',@ParentCategoryId )
+                        END
+
+                    END
 ",
                     name,
                     iconCssClass,
@@ -1554,6 +1572,48 @@ namespace Rock.Data
                         [Key] = '{1}',
                         [Value] = '{2}'
                     WHERE [Guid] = '{3}'
+                END
+",
+                    attributeGuid, // {0}
+                    key, // {1}
+                    value, // {2}
+                    guid ) // {3}
+            );
+        }
+
+        /// <summary>
+        /// Updates the attribute qualifier.
+        /// </summary>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void UpdateAttributeQualifier( string attributeGuid, string key, string value, string guid )
+        {
+            Migration.Sql( string.Format( @"
+
+                DECLARE @AttributeId int
+                SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{0}')
+
+                IF NOT EXISTS(
+                    SELECT * 
+                    FROM [AttributeQualifier] 
+                    WHERE [AttributeId] = @AttributeId 
+                    AND [Key] = '{1}' 
+                )
+                BEGIN
+                    INSERT INTO [AttributeQualifier] (
+                        [IsSystem],[AttributeId],[Key],[Value],[Guid])
+                    VALUES(
+                        1,@AttributeId,'{1}','{2}','{3}')
+                END
+                ELSE
+                BEGIN
+                    UPDATE [AttributeQualifier] SET
+                        [Value] = '{2}',
+                        [Guid] = '{3}'
+                    WHERE [AttributeId] = @AttributeId 
+                    AND [Key] = '{1}' 
                 END
 ",
                     attributeGuid, // {0}
@@ -4076,38 +4136,43 @@ END
                 DECLARE @FieldTypeId int = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{1}')
                 DECLARE @EntityTypeId int = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Workflow')
 
-                IF EXISTS (
-                    SELECT [Id]
-                    FROM [Attribute]
-                    WHERE [EntityTypeId] = @EntityTypeId
-                    AND [EntityTypeQualifierColumn] = 'WorkflowTypeId'
-                    AND [EntityTypeQualifierValue] = CAST(@WorkflowTypeId as varchar)
-                    AND [Key] = '{2}' )
+                IF @WorkflowTypeId IS NOT NULL AND @FieldTypeId IS NOT NULL AND @EntityTypeId IS NOT NULL
                 BEGIN
-                    UPDATE [Attribute] SET
-                        [FieldTypeId] = @FieldTypeId,
-                        [Name] = '{3}',
-                        [Description] = '{4}',
-                        [Order] = {5},
-                        [DefaultValue] = '{6}',
-                        [Guid] = '{7}'
-                    WHERE [EntityTypeId] = @EntityTypeId
-                    AND [EntityTypeQualifierColumn] = 'WorkflowTypeId'
-                    AND [EntityTypeQualifierValue] = CAST(@WorkflowTypeId as varchar)
-                    AND [Key] = '{2}'
-                END
-                ELSE
-                BEGIN
-                    INSERT INTO [Attribute] (
-                        [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
-                        [Key],[Name],[Description],
-                        [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
-                        [Guid])
-                    VALUES(
-                        1,@FieldTypeId, @EntityTypeId,'WorkflowTypeId',CAST(@WorkflowTypeId as varchar),
-                        '{2}','{3}','{4}',
-                        {5},0,'{6}',0,0,
-                        '{7}')
+
+                    IF EXISTS (
+                        SELECT [Id]
+                        FROM [Attribute]
+                        WHERE [EntityTypeId] = @EntityTypeId
+                        AND [EntityTypeQualifierColumn] = 'WorkflowTypeId'
+                        AND [EntityTypeQualifierValue] = CAST(@WorkflowTypeId as varchar)
+                        AND [Key] = '{2}' )
+                    BEGIN
+                        UPDATE [Attribute] SET
+                            [FieldTypeId] = @FieldTypeId,
+                            [Name] = '{3}',
+                            [Description] = '{4}',
+                            [Order] = {5},
+                            [DefaultValue] = '{6}',
+                            [Guid] = '{7}'
+                        WHERE [EntityTypeId] = @EntityTypeId
+                        AND [EntityTypeQualifierColumn] = 'WorkflowTypeId'
+                        AND [EntityTypeQualifierValue] = CAST(@WorkflowTypeId as varchar)
+                        AND [Key] = '{2}'
+                    END
+                    ELSE
+                    BEGIN
+                        INSERT INTO [Attribute] (
+                            [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
+                            [Key],[Name],[Description],
+                            [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
+                            [Guid])
+                        VALUES(
+                            1,@FieldTypeId, @EntityTypeId,'WorkflowTypeId',CAST(@WorkflowTypeId as varchar),
+                            '{2}','{3}','{4}',
+                            {5},0,'{6}',0,0,
+                            '{7}')
+                    END
+
                 END
 ",
                     workflowTypeGuid,
@@ -4138,21 +4203,26 @@ END
 
                 DECLARE @WorkflowTypeId int = (SELECT [Id] FROM [WorkflowType] WHERE [Guid] = '{0}')
 
-                IF EXISTS ( SELECT [Id] FROM [WorkflowActivityType] WHERE [Guid] =  '{6}' )
+                IF @WorkflowTypeId IS NOT NULL 
                 BEGIN
-                    UPDATE [WorkflowActivityType] SET
-                        [WorkflowTypeId] = @WorkflowTypeId,
-                        [IsActive] = {1},
-                        [Name] = '{2}',
-                        [Description] = '{3}',
-                        [IsActivatedWithWorkflow] = {4},
-                        [Order] = {5}
-                    WHERE [Guid] = '{6}'
-                END
-                ELSE
-                BEGIN
-                    INSERT INTO [WorkflowActivityType] ( [WorkflowTypeId], [IsActive], [Name], [Description], [IsActivatedWithWorkflow], [Order], [Guid] )
-                    VALUES( @WorkflowTypeId, {1}, '{2}', '{3}', {4}, {5}, '{6}' )
+
+                    IF EXISTS ( SELECT [Id] FROM [WorkflowActivityType] WHERE [Guid] =  '{6}' )
+                    BEGIN
+                        UPDATE [WorkflowActivityType] SET
+                            [WorkflowTypeId] = @WorkflowTypeId,
+                            [IsActive] = {1},
+                            [Name] = '{2}',
+                            [Description] = '{3}',
+                            [IsActivatedWithWorkflow] = {4},
+                            [Order] = {5}
+                        WHERE [Guid] = '{6}'
+                    END
+                    ELSE
+                    BEGIN
+                        INSERT INTO [WorkflowActivityType] ( [WorkflowTypeId], [IsActive], [Name], [Description], [IsActivatedWithWorkflow], [Order], [Guid] )
+                        VALUES( @WorkflowTypeId, {1}, '{2}', '{3}', {4}, {5}, '{6}' )
+                    END
+
                 END
 ",
                     WorkflowTypeGuid,
@@ -4184,37 +4254,42 @@ END
                 DECLARE @FieldTypeId int = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{1}')
                 DECLARE @EntityTypeId int = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.WorkflowActivity')
 
-                IF EXISTS (
-                    SELECT [Id]
-                    FROM [Attribute]
-                    WHERE [EntityTypeId] = @EntityTypeId
-                    AND [EntityTypeQualifierColumn] = 'ActivityTypeId'
-                    AND [EntityTypeQualifierValue] = CAST(@WorkflowActivityTypeId as varchar)
-                    AND [Key] = '{2}' )
+                IF @WorkflowActivityTypeId IS NOT NULL AND @FieldTypeId IS NOT NULL AND @EntityTypeId IS NOT NULL
                 BEGIN
-                    UPDATE [Attribute] SET
-                        [Name] = '{3}',
-                        [Description] = '{4}',
-                        [Order] = {5},
-                        [DefaultValue] = '{6}',
-                        [Guid] = '{7}'
-                    WHERE [EntityTypeId] = @EntityTypeId
-                    AND [EntityTypeQualifierColumn] = 'ActivityTypeId'
-                    AND [EntityTypeQualifierValue] = CAST(@WorkflowActivityTypeId as varchar)
-                    AND [Key] = '{2}'
-                END
-                ELSE
-                BEGIN
-                    INSERT INTO [Attribute] (
-                        [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
-                        [Key],[Name],[Description],
-                        [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
-                        [Guid])
-                    VALUES(
-                        1,@FieldTypeId, @EntityTypeId,'ActivityTypeId',CAST(@WorkflowActivityTypeId as varchar),
-                        '{2}','{3}','{4}',
-                        {5},0,'{6}',0,0,
-                        '{7}')
+
+                    IF EXISTS (
+                        SELECT [Id]
+                        FROM [Attribute]
+                        WHERE [EntityTypeId] = @EntityTypeId
+                        AND [EntityTypeQualifierColumn] = 'ActivityTypeId'
+                        AND [EntityTypeQualifierValue] = CAST(@WorkflowActivityTypeId as varchar)
+                        AND [Key] = '{2}' )
+                    BEGIN
+                        UPDATE [Attribute] SET
+                            [Name] = '{3}',
+                            [Description] = '{4}',
+                            [Order] = {5},
+                            [DefaultValue] = '{6}',
+                            [Guid] = '{7}'
+                        WHERE [EntityTypeId] = @EntityTypeId
+                        AND [EntityTypeQualifierColumn] = 'ActivityTypeId'
+                        AND [EntityTypeQualifierValue] = CAST(@WorkflowActivityTypeId as varchar)
+                        AND [Key] = '{2}'
+                    END
+                    ELSE
+                    BEGIN
+                        INSERT INTO [Attribute] (
+                            [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
+                            [Key],[Name],[Description],
+                            [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
+                            [Guid])
+                        VALUES(
+                            1,@FieldTypeId, @EntityTypeId,'ActivityTypeId',CAST(@WorkflowActivityTypeId as varchar),
+                            '{2}','{3}','{4}',
+                            {5},0,'{6}',0,0,
+                            '{7}')
+                    END
+
                 END
 ",
                     workflowActivityTypeGuid,
@@ -4291,22 +4366,27 @@ END
                 DECLARE @ActionFormId int = (SELECT [Id] FROM [WorkflowActionForm] WHERE [Guid] = '{0}')
                 DECLARE @AttributeId int = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{1}')
 
-                IF EXISTS ( SELECT [Id] FROM [WorkflowActionFormAttribute] WHERE [Guid] =  '{6}' )
+                IF @ActionFormId IS NOT NULL AND @AttributeId IS NOT NULL
                 BEGIN
-                    UPDATE [WorkflowActionFormAttribute] SET
-                        [WorkflowActionFormId] = @ActionFormId,
-                        [AttributeId] = @AttributeId,
-                        [Order] = {2},
-                        [IsVisible] = {3},
-                        [IsReadOnly] = {4},
-                        [IsRequired] = {5}
-                    WHERE [Guid] = '{6}'
-                END
-                ELSE
-                BEGIN
-                    INSERT INTO [WorkflowActionFormAttribute] (
-                        [WorkflowActionFormId], [AttributeId], [Order], [IsVisible], [IsReadOnly], [IsRequired], [Guid] )
-                    VALUES( @ActionFormId, @AttributeId, {2}, {3}, {4}, {5}, '{6}' )
+
+                    IF EXISTS ( SELECT [Id] FROM [WorkflowActionFormAttribute] WHERE [Guid] =  '{6}' )
+                    BEGIN
+                        UPDATE [WorkflowActionFormAttribute] SET
+                            [WorkflowActionFormId] = @ActionFormId,
+                            [AttributeId] = @AttributeId,
+                            [Order] = {2},
+                            [IsVisible] = {3},
+                            [IsReadOnly] = {4},
+                            [IsRequired] = {5}
+                        WHERE [Guid] = '{6}'
+                    END
+                    ELSE
+                    BEGIN
+                        INSERT INTO [WorkflowActionFormAttribute] (
+                            [WorkflowActionFormId], [AttributeId], [Order], [IsVisible], [IsReadOnly], [IsRequired], [Guid] )
+                        VALUES( @ActionFormId, @AttributeId, {2}, {3}, {4}, {5}, '{6}' )
+                    END
+
                 END
 ",
                     actionFormGuid,
@@ -4398,19 +4478,24 @@ END
                 DECLARE @ActionTypeId int = (SELECT [Id] FROM [WorkflowActionType] WHERE [Guid] = '{0}')
                 DECLARE @AttributeId int = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{1}')
 
-                -- Delete existing attribute value
-                DELETE [AttributeValue]
-                WHERE [AttributeId] = @AttributeId
-                AND [EntityId] = @ActionTypeId
+                IF @ActionTypeId IS NOT NULL AND @AttributeId IS NOT NULL
+                BEGIN
 
-                INSERT INTO [AttributeValue] (
-                    [IsSystem],[AttributeId],[EntityId],
-                    [Value],
-                    [Guid])
-                VALUES(
-                    1,@AttributeId,@ActionTypeId,
-                    '{2}',
-                    NEWID())
+                    -- Delete existing attribute value
+                    DELETE [AttributeValue]
+                    WHERE [AttributeId] = @AttributeId
+                    AND [EntityId] = @ActionTypeId
+
+                    INSERT INTO [AttributeValue] (
+                        [IsSystem],[AttributeId],[EntityId],
+                        [Value],
+                        [Guid])
+                    VALUES(
+                        1,@AttributeId,@ActionTypeId,
+                        '{2}',
+                        NEWID())
+
+                END
 ",
                     actionTypeGuid,
                     attributeGuid,
@@ -4434,37 +4519,42 @@ END
                 DECLARE @ActionTypeId int = (SELECT [Id] FROM [WorkflowActionType] WHERE [Guid] = '{0}')
                 DECLARE @AttributeId int = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{1}')
 
-                -- Delete existing attribute value
-                DELETE [AttributeValue]
-                WHERE [AttributeId] = @AttributeId
-                AND [EntityId] = @ActionTypeId
-
-                IF NOT EXISTS ( SELECT [Id] FROM [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @ActionTypeId )
+                IF @ACtionTypeId IS NOT NULL AND @AttributeId IS NOT NULL
                 BEGIN
-                    IF '{2}' = '' OR EXISTS ( SELECT [Id] FROM [PersonAlias] WHERE [Guid] = '{2}' )
+
+                    -- Delete existing attribute value
+                    DELETE [AttributeValue]
+                    WHERE [AttributeId] = @AttributeId
+                    AND [EntityId] = @ActionTypeId
+
+                    IF NOT EXISTS ( SELECT [Id] FROM [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @ActionTypeId )
                     BEGIN
-                        INSERT INTO [AttributeValue] (
-                            [IsSystem],[AttributeId],[EntityId],
-                            [Value],
-                            [Guid])
-                        VALUES(
-                            1,@AttributeId,@ActionTypeId,
-                            '{2}',
-                            NEWID())
+                        IF '{2}' = '' OR EXISTS ( SELECT [Id] FROM [PersonAlias] WHERE [Guid] = '{2}' )
+                        BEGIN
+                            INSERT INTO [AttributeValue] (
+                                [IsSystem],[AttributeId],[EntityId],
+                                [Value],
+                                [Guid])
+                            VALUES(
+                                1,@AttributeId,@ActionTypeId,
+                                '{2}',
+                                NEWID())
+                        END
+                        ELSE
+                        BEGIN
+                            INSERT INTO [AttributeValue] (
+                                [IsSystem],[AttributeId],[EntityId],
+                                [Value],
+                                [Guid])
+                            SELECT TOP 1
+                                1,@AttributeId,@ActionTypeId,
+                                CONVERT(nvarchar(50), [Guid]),
+                                NEWID()
+                            FROM [PersonAlias]
+                            ORDER BY [Id]
+                        END
                     END
-                    ELSE
-                    BEGIN
-                        INSERT INTO [AttributeValue] (
-                            [IsSystem],[AttributeId],[EntityId],
-                            [Value],
-                            [Guid])
-                        SELECT TOP 1
-                            1,@AttributeId,@ActionTypeId,
-                            CONVERT(nvarchar(50), [Guid]),
-                            NEWID()
-                        FROM [PersonAlias]
-                        ORDER BY [Id]
-                    END
+
                 END
 ",
                     actionTypeGuid,
