@@ -417,13 +417,13 @@ namespace Rock
         {
             if ( NoneAsNull )
             {
-                if ( listControl.SelectedValue.Equals( Rock.Constants.None.Id.ToString() ) )
+                if ( listControl == null || listControl.SelectedValue.Equals( Rock.Constants.None.Id.ToString() ) )
                 {
                     return null;
                 }
             }
 
-            if ( string.IsNullOrWhiteSpace( listControl.SelectedValue ) )
+            if ( listControl == null || string.IsNullOrWhiteSpace( listControl.SelectedValue ) )
             {
                 return null;
             }
@@ -537,10 +537,9 @@ namespace Rock
         /// <returns></returns>
         public static int ValueAsInt( this HiddenField hiddenField )
         {
-            int intValue = 0;
-            if ( int.TryParse( hiddenField.Value, out intValue ) )
+            if ( hiddenField != null )
             {
-                return intValue;
+                return hiddenField.Value.AsInteger();
             }
 
             return 0;

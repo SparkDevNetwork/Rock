@@ -37,6 +37,56 @@ namespace Rock.CheckIn
         public int DeviceId { get; set; }
 
         /// <summary>
+        /// Gets or sets the checkin type identifier.
+        /// </summary>
+        /// <value>
+        /// The checkin type identifier.
+        /// </value>
+        [DataMember]
+        public int? CheckinTypeId
+        {
+            get { return _checkinTypeId; }
+            set
+            {
+                _checkinTypeId = value;
+                _checkinType = null;
+            }
+        }
+        private int? _checkinTypeId;
+
+        /// <summary>
+        /// Gets the type of the current check in.
+        /// </summary>
+        /// <value>
+        /// The type of the current check in.
+        /// </value>
+        public CheckinType CheckInType
+        {
+            get
+            {
+                if ( _checkinType != null )
+                {
+                    return _checkinType;
+                }
+
+                if ( CheckinTypeId.HasValue )
+                {
+                    _checkinType = new CheckinType( CheckinTypeId.Value );
+                    return _checkinType;
+                }
+
+                return null;
+            }
+
+            set
+            {
+                _checkinType = value;
+            }
+        }
+
+        private CheckinType _checkinType;
+
+        /// <summary>
         /// Gets or sets a value indicating whether [manager logged in].
         /// </summary>
         /// <value>
@@ -82,9 +132,10 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="deviceId">The device id.</param>
         /// <param name="configuredGroupTypes">The configured group types.</param>
-        public CheckInState( int deviceId, List<int> configuredGroupTypes )
+        public CheckInState( int deviceId, int? checkinTypeId, List<int> configuredGroupTypes )
         {
             DeviceId = deviceId;
+            CheckinTypeId = checkinTypeId;
             ConfiguredGroupTypes = configuredGroupTypes;
             CheckIn = new CheckInStatus();
         }
