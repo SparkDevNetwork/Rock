@@ -2,6 +2,8 @@
   {% include '~~/Assets/Lava/Toolboxes/NextGen.lava' %}
 {% endcomment %}
 
+{% assign memberDetailPage = memberDetailPage | Default: "/page/1166" %}
+
 
 {% if AllowedActions.View == true || AllowedActions.Edit == true || AllowedActions.Administrate == true %}
 
