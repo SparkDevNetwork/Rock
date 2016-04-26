@@ -1033,54 +1033,61 @@ namespace RockWeb.Blocks.Event
                     .Where( r => r.Id == registrationId.Value )
                     .FirstOrDefault();
 
-                if ( registration != null  && CurrentPersonId.HasValue )
+                if ( registration == null )
                 {
-                    if ( ( registration.PersonAlias != null && registration.PersonAlias.PersonId == CurrentPersonId.Value ) ||
-                        ( registration.CreatedByPersonAlias != null && registration.CreatedByPersonAlias.PersonId == CurrentPersonId.Value ) )
-                    {
-                        RegistrationInstanceState = registration.RegistrationInstance;
-                        RegistrationState = new RegistrationInfo( registration, rockContext );
-                        RegistrationState.PreviousPaymentTotal = registrationService.GetTotalPayments( registration.Id );
-                    }
-                    else
-                    {
-                        ShowError( "Sorry", "You are not allowed to view or edit the selected registration since you are not the one who created the registration." );
-                        return false;
-                    }
+                    ShowError( "Error", "Registration not found" );
+                    return false;
+                }
 
-                    // set the max number of steps in the progress bar
-                    numHowMany.Value = registration.Registrants.Count();
-                    this.ProgressBarSteps = numHowMany.Value * FormCount + 2;
-
-                    // set group id
-                    if ( groupId.HasValue )
-                    {
-                        GroupId = groupId;
-                    }
-                    else if ( !string.IsNullOrWhiteSpace( registrationSlug ) )
-                    {
-                        var dateTime = RockDateTime.Now;
-                        var linkage = new EventItemOccurrenceGroupMapService( rockContext )
-                            .Queryable().AsNoTracking()
-                            .Where( l =>
-                                l.UrlSlug == registrationSlug &&
-                                l.RegistrationInstance != null &&
-                                l.RegistrationInstance.IsActive &&
-                                l.RegistrationInstance.RegistrationTemplate != null &&
-                                l.RegistrationInstance.RegistrationTemplate.IsActive &&
-                                (!l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime) &&
-                                (!l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime) )
-                            .FirstOrDefault();
-                        if ( linkage != null )
-                        {
-                            GroupId = linkage.GroupId;
-                        }
-                    }
+                if ( CurrentPersonId == null )
+                {
+                    ShowWarning( "Please log in", "You must be logged in to access this registration." );
+                    return false;
+                }
+                
+                // Only allow the person that was logged in when this registration was created. 
+                // If the logged in person, registered on someone elses behalf (for example, husband logged in, but entered wife's name as the Registrar), 
+                // also allow that person to access the regisratiuon
+                if ( ( registration.PersonAlias != null && registration.PersonAlias.PersonId == CurrentPersonId.Value ) ||
+                    ( registration.CreatedByPersonAlias != null && registration.CreatedByPersonAlias.PersonId == CurrentPersonId.Value ) )
+                {
+                    RegistrationInstanceState = registration.RegistrationInstance;
+                    RegistrationState = new RegistrationInfo( registration, rockContext );
+                    RegistrationState.PreviousPaymentTotal = registrationService.GetTotalPayments( registration.Id );
                 }
                 else
                 {
-                    ShowError( "Sorry", "You are not allowed to view or edit the selected registration since you are not the one who created the registration." );
+                    ShowWarning( "Sorry", "You are not allowed to view or edit the selected registration since you are not the one who created the registration." );
                     return false;
+                }
+
+                // set the max number of steps in the progress bar
+                numHowMany.Value = registration.Registrants.Count();
+                this.ProgressBarSteps = numHowMany.Value * FormCount + 2;
+
+                // set group id
+                if ( groupId.HasValue )
+                {
+                    GroupId = groupId;
+                }
+                else if ( !string.IsNullOrWhiteSpace( registrationSlug ) )
+                {
+                    var dateTime = RockDateTime.Now;
+                    var linkage = new EventItemOccurrenceGroupMapService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( l =>
+                            l.UrlSlug == registrationSlug &&
+                            l.RegistrationInstance != null &&
+                            l.RegistrationInstance.IsActive &&
+                            l.RegistrationInstance.RegistrationTemplate != null &&
+                            l.RegistrationInstance.RegistrationTemplate.IsActive &&
+                            (!l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime) &&
+                            (!l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime) )
+                        .FirstOrDefault();
+                    if ( linkage != null )
+                    {
+                        GroupId = linkage.GroupId;
+                    }
                 }
             }
 
