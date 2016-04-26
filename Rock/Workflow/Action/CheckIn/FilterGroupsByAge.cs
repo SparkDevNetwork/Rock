@@ -33,8 +33,8 @@ namespace Rock.Workflow.Action.CheckIn
     [Description( "Removes (or excludes) the groups for each selected family member that are not specific to their age." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Groups By Age" )]
+
     [BooleanField( "Remove", "Select 'Yes' if groups should be be removed.  Select 'No' if they should just be marked as excluded.", true, "", 0 )]
-    [BooleanField( "Age Required", "Select 'Yes' if groups with an age filter should be removed/excluded when person does not have an age.", true, "", 1 )]
     [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Group Age Range Attribute", "Select the attribute used to define the age range of the group", true, false, "43511B8F-71D9-423A-85BF-D1CD08C1998E", order: 2 )]
     public class FilterGroupsByAge : CheckInActionComponent
     {
@@ -59,7 +59,7 @@ namespace Rock.Workflow.Action.CheckIn
             if ( family != null )
             {
                 var remove = GetAttributeValue( action, "Remove" ).AsBoolean();
-                bool ageRequired = GetAttributeValue( action, "AgeRequired" ).AsBoolean( true );
+                bool ageRequired = checkInState.CheckInType == null || checkInState.CheckInType.AgeRequired;
 
                 // get the admin-selected attribute key instead of using a hardcoded key
                 var ageRangeAttributeKey = string.Empty;
