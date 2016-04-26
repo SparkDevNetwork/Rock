@@ -1806,6 +1806,8 @@ namespace RockWeb.Blocks.Event
             {
                 btnEdit.Visible = true;
                 btnDelete.Visible = true;
+
+                btnCopy.ToolTip = "Copy " + registrationTemplate.Name;
                 btnCopy.Visible = true;
 
                 btnSecurity.Title = "Secure " + registrationTemplate.Name;
