@@ -32,14 +32,13 @@ h1, h2, h3, h4, h5, h6,
   padding-bottom: .25em;
 }
 
-.text-large {
+.text-responsive {
   .text-aa();
-  line-height: floor((@font-size-large * 1.5));
-  font-size: @font-size-large;
+  line-height: 1.5;
   p, p& {
-    margin-bottom: (floor((@font-size-large * 1.5)) / 2);
+    margin-bottom: 1em;
   }
-  @media @sm {
+  @media @xs{
     font-size: 1.2em;
   }
 }

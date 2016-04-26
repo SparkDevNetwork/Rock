@@ -17,7 +17,7 @@
   {% for item in Items %}
     <h1 class="page-header">{{ item.Title }}</h1>
     <p class="lead">{{ item.Summary }}</p>
-    <div class="text-large">
+    <div class="text-responsive">
       {{ item.Content }}
     </div>
   {% endfor %}
