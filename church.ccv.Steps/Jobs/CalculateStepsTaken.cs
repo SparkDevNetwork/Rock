@@ -560,6 +560,8 @@ namespace church.ccv.Steps
 
                                 stepTakenService.Add( step );
                                 updateContext.SaveChanges();
+
+                                stepCounter++;
                             }
                         }
                     }
