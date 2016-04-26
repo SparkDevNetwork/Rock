@@ -14,6 +14,7 @@
     font-size: 10px;
     width: 15px;
     height: 15px;
+    padding: 6px;
   }
   .badge-group.badge-group-steps .badge.step-nottaken {
     background-color: inherit;
