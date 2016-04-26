@@ -16,6 +16,7 @@
 //
 using System.Data.Entity;
 using System.Linq;
+using System.Web;
 using System.Web.UI.WebControls;
 
 using Rock.Data;
@@ -80,8 +81,9 @@ namespace Rock.Web.UI.Controls
                         .Include( "DataViewFilter" )
                         .AsNoTracking() )
                     {
-                        if ( dataView.IsAuthorized( Authorization.VIEW, this.RockBlock().CurrentPerson ) &&
-                            dataView.DataViewFilter.IsAuthorized( Authorization.VIEW, this.RockBlock().CurrentPerson, allEntityFilters ) )
+                        var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
+                        if ( dataView.IsAuthorized( Authorization.VIEW, currentPerson ) &&
+                            dataView.DataViewFilter.IsAuthorized( Authorization.VIEW, currentPerson, allEntityFilters ) )
                         {
                             this.Items.Add( new ListItem( dataView.Name, dataView.Id.ToString() ) );
                         }
