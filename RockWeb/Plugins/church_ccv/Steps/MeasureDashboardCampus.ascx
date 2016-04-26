@@ -105,6 +105,7 @@
                         </div>
                     </div>
                 </div>
+
                 <asp:Panel ID="pnlCampus" runat="server">
                     <div class="row">
                         <div class="col-md-8">
@@ -120,7 +121,7 @@
                     <div class="row">
                         <asp:Repeater ID="rptCampusMeasures" runat="server">
                             <ItemTemplate>
-                                <a href="?MeasureId=<%# Eval("MeasureId") %>&CompareTo=<%=DashboardViewState != DashboardView.WeekendAttendance%><%# MeasureDate != null ? "&Date=" + MeasureDate.Value.ToShortDateString() : "" %>">
+                                <a href="?MeasureId=<%# Eval("MeasureId") %>&CompareTo=<%=DashboardViewState != DashboardView.WeekendAttendance%><%# MeasureDate != null ? "&Date=" + MeasureDate.Value.ToShortDateString() : "" %><%# "&Viewing=" + DashboardViewState.ToString( ) %>">
                                     <div class="col-md-6 measure">
                                         <div class="measure-icon hidden-sm hidden-xs">
                                             <i class="fa fa-fw <%# Eval("IconCssClass") %>" style="color: <%# Eval("MeasureColor") %>;"></i>

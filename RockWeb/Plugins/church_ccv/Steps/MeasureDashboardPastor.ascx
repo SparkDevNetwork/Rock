@@ -100,16 +100,7 @@
                     </div>
 
                     <Rock:NotificationBox ID="nbMessages" runat="server" />
-
-                    <div class="row visible-md visible-lg">
-                        <div class="col-sm-6">
-                            <h3 class="page-header">Adults</h3>
-                        </div>
-                        <div class="col-sm-6">
-                            <h3 class="page-header">Students</h3>
-                        </div>
-                    </div>
-
+                    
                     <div class="row">
                         <asp:Repeater ID="rptCampusMeasures" runat="server">
                             <ItemTemplate>

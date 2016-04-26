@@ -853,16 +853,16 @@ namespace church.ccv.Steps
                     measureValueAdults.ActiveAdults = pastor.AdultCount;
 
                     stepMeasureValueService.Add( measureValueAdults );
-
-
-                    StepMeasureValue measureValueStudents = new StepMeasureValue();
+                    
+                    // For now, don't save pastor student values. They want this changed from pastors to ministry leaders.
+                    /*StepMeasureValue measureValueStudents = new StepMeasureValue();
                     measureValueStudents.StepMeasureId = measureId;
                     measureValueStudents.SundayDate = sundayDate;
                     measureValueStudents.Value = pastor.StudentMeasureValue.HasValue ? pastor.StudentMeasureValue.Value : 0;
                     measureValueStudents.PastorPersonAliasId = pastor.PastorPersonAliasId;
                     measureValueStudents.ActiveStudents= pastor.StudentCount;
 
-                    stepMeasureValueService.Add( measureValueStudents );
+                    stepMeasureValueService.Add( measureValueStudents );*/
                 }
                 rockContext.SaveChanges();
             }

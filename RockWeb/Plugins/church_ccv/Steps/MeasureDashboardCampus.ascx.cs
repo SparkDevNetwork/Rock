@@ -86,7 +86,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
         }
-
+        
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -105,26 +105,11 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 {
                     _compareColor = GetAttributeValue( "ComparisonLineColor" );
                 }
-
-                if ( string.IsNullOrWhiteSpace(Request["MeasureId"]) )
-                {
-                    pnlCampus.Visible = true;
-                    pnlMeasure.Visible = false;
-                    LoadCampusItems( MeasureDate );
-                }
-                else
-                {
-                    pnlCampus.Visible = false;
-                    pnlMeasure.Visible = true;
-                    LoadMeasureItems( MeasureDate );
-                }
-
+                
                 // if not an administrator, hide the weekend attendance button
                 if ( !IsUserAuthorized( Authorization.ADMINISTRATE ) )
                 {
                     bsWeekendAttendance.Visible = false;
-                    //lStaticToggle.Text = "<span class='label label-info'>Adults</span>";
-                    //tglCompareTo.Visible = false;
                 }
 
                 if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "ComparisonLabel" ) ) )
@@ -140,15 +125,16 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 }
 
                 ddlSundayDates.Items.Insert( 0, "" );
-                
-                if ( !string.IsNullOrWhiteSpace( Request["CompareTo"] ) )
+
+                // set the correct render state
+                DashboardView dbViewState;
+                if( Enum.TryParse<DashboardView>( Request["Viewing"], out dbViewState ) )
                 {
-                    // select the weekend attendance button
-                    ToggleViewButton( DashboardView.WeekendAttendance );
+                    SetDashboardView( dbViewState );
                 }
                 else
                 {
-                    ToggleViewButton( DashboardView.Adults );
+                    SetDashboardView( DashboardView.Adults );
                 }
             }
         }
@@ -187,14 +173,13 @@ namespace RockWeb.Plugins.church_ccv.Steps
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnBackToCampus_Click( object sender, EventArgs e )
         {
-
             if ( !string.IsNullOrWhiteSpace( Request["CompareTo"] ) )
             {
-                Response.Redirect( Request.Url.LocalPath + "?CompareTo=" + Request["CompareTo"].ToString() );
+                Response.Redirect( Request.Url.LocalPath + "?CompareTo=" + Request["CompareTo"].ToString() + "&Viewing=" + DashboardViewState.ToString( ) );
             }
             else
             {
-                Response.Redirect( Request.Url.LocalPath );
+                Response.Redirect( Request.Url.LocalPath + "?Viewing=" + DashboardViewState.ToString( ) );
             }
             
         }
@@ -219,7 +204,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
 
             if ( !string.IsNullOrWhiteSpace( date ) )
             {
-                Response.Redirect( Request.Url.LocalPath + "?Date=" + date );
+                Response.Redirect( Request.Url.LocalPath + "?Date=" + date + "&Viewing=" + DashboardViewState.ToString( ) );
             }
         }
 
@@ -448,48 +433,61 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 }
             }
         }
-
+        
         protected void bbtnView_Click( object sender, EventArgs e )
         {
             switch( (sender as BootstrapButton).ID )
             {
                 case "bsAdults":
                 {
-                    ToggleViewButton( DashboardView.Adults );
-                    DashboardViewState = DashboardView.Adults;
+                    SetDashboardView( DashboardView.Adults );
                     break;
                 }
 
                 case "bsStudents":
                 {
-                    ToggleViewButton( DashboardView.Students );
-                    DashboardViewState = DashboardView.Students;
+                    SetDashboardView( DashboardView.Students );
                     break;
                 }
 
                 case "bsWeekendAttendance":
                 {
-                    ToggleViewButton( DashboardView.WeekendAttendance );
-                    DashboardViewState = DashboardView.WeekendAttendance;
+                    SetDashboardView( DashboardView.WeekendAttendance );
                     break;
                 }
             }
+        }
 
+        private void SetDashboardView( DashboardView viewState )
+        {
+            // set the state that should render
+            DashboardViewState = viewState;
+
+            // update the view button
+            ToggleViewButton( DashboardViewState );
+
+            // set and render the page
             MeasureDate = Request["Date"].AsDateTime();
 
             // If there's no "MeasureId", they want to see the campus overview with all stats
             if ( string.IsNullOrWhiteSpace( Request["MeasureId"] ))
             {
+                pnlCampus.Visible = true;
+                pnlMeasure.Visible = false;
+
                 LoadCampusItems(MeasureDate);
             }
             else
             {
                 // otherwise, display it for a particular measurement (Baptisms, Giving, etc.)
+                pnlCampus.Visible = false;
+                pnlMeasure.Visible = true;
+                
                 LoadMeasureItems(MeasureDate);
             }
         }
 
-        protected void ToggleViewButton( DashboardView viewState )
+        private void ToggleViewButton( DashboardView viewState )
         {
             // default all buttons to off
             bsAdults.CssClass = ToggleButtonOffCSSClass;

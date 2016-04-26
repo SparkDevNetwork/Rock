@@ -208,6 +208,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                                     m.SundayDate == measureDate
                                     && m.StepMeasure.IsActive == true 
                                     && m.CampusId == null
+                                    && m.ActiveAdults != null
                                     && m.PastorPersonAliasId == selectedPastorId )
                             .OrderBy( m => m.StepMeasure.Order )
                             .Select( m => new MeasureSummary
@@ -218,7 +219,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                                 IconCssClass = m.StepMeasure.IconCssClass,
                                 IsTbd = m.StepMeasure.IsTbd,
                                 MeasureValue = m.Value,
-                                MeasureCompareValue = m.ActiveAdults != null ? m.ActiveAdults : m.ActiveStudents,
+                                MeasureCompareValue = m.ActiveAdults,
                                 PastorId = m.PastorPersonAliasId,
                                 MeasureColor = m.StepMeasure.Color
                             } )
@@ -276,7 +277,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                                 IconCssClass = m.StepMeasure.IconCssClass,
                                 IsTbd = m.StepMeasure.IsTbd,
                                 MeasureValue = m.Value,
-                                MeasureCompareValue = m.ActiveAdults != null ? m.ActiveAdults : m.ActiveStudents,
+                                MeasureCompareValue = m.ActiveAdults,
                                 PastorId = m.PastorPersonAliasId,
                                 MeasureColor = m.StepMeasure.Color,
                                 PastorFirstName = m.PastorPersonAlias.Person.NickName,
