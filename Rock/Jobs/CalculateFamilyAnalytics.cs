@@ -270,7 +270,7 @@ namespace Rock.Jobs
                                                  m.Group.GroupTypeId == groupType.Id
                                                  && m.GroupMemberStatus == GroupMemberStatus.Active
                                                  && m.Group.IsActive
-                                                 && m.Person.RecordStatusValueId != inactiveRecordValue.Id
+                                                 //&& m.Person.RecordStatusValueId != inactiveRecordValue.Id
                                              )
                                              .GroupBy( m => m.PersonId )
                                              .Select( g => g.OrderBy( m => m.CreatedDateTime ).Select( m => new { m.PersonId, m.CreatedDateTime, PersonAliasId = m.Person.Aliases.Select( p => p.Id ).FirstOrDefault() } ).FirstOrDefault() )
