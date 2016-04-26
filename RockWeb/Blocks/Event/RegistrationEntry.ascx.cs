@@ -3168,14 +3168,6 @@ namespace RockWeb.Blocks.Event
             }}
         }}
     }});
-
-    $('#iframeStep2').on('load', function(e) {{
-        var qryString = this.contentWindow.location.search;
-        if ( qryString && qryString != '' ) {{ 
-            $('#{8}').val(qryString);
-            {9};
-        }}
-    }});
 ",
             nbAmountPaid.ClientID,          // {0}
             hfTotalCost.ClientID,           // {1}
