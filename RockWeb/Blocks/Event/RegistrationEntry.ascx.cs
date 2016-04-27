@@ -3152,6 +3152,11 @@ namespace RockWeb.Blocks.Event
                 $form.find('.cc-expiration').val( mm + yy );
                 $form.find('.cc-cvv').val( $('#{13}').val() );
 
+                $form.find('.billing-address1').val( $('#{15}_tbStreet1').val() );
+                $form.find('.billing-city').val( $('#{15}_tbCity').val() );
+                $form.find('.billing-state').val( $('#{15}_ddlState').val() );
+                $form.find('.billing-postal').val( $('#{15}_tbPostalCode').val() );
+
                 $form.attr('action', src );
                 $form.submit();
             }}
@@ -3163,7 +3168,7 @@ namespace RockWeb.Blocks.Event
     $('#iframeStep2').on('load', function(e) {{
         var location = this.contentWindow.location;
         var qryString = this.contentWindow.location.search;
-        if ( qryString && qryString != '' ) {{ 
+        if ( qryString && qryString != '' && qryString.startsWith('?token-id') ) {{ 
             $('#{8}').val(qryString);
             {9};
         }} else {{
@@ -3191,7 +3196,8 @@ namespace RockWeb.Blocks.Event
             txtCreditCard.ClientID,         // {11}
             mypExpiration.ClientID,         // {12}
             txtCVV.ClientID,                // {13}
-            hfStep2AutoSubmit.ClientID      // {14}
+            hfStep2AutoSubmit.ClientID,     // {14}
+            acBillingAddress.ClientID       // {15}
             );
 
             ScriptManager.RegisterStartupScript( Page, Page.GetType(), "registrationEntry", script, true );
