@@ -46,7 +46,21 @@ namespace Rock.Store
         /// <value>
         /// The required rock version.
         /// </value>
-        public RockSemanticVersion RequiredRockVersion { get; set; }
+        public RockSemanticVersion RequiredRockSemanticVersion
+        {
+            get
+            {
+                return RockSemanticVersion.Parse( this.RequiredRockVersion );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the required Rock version. 
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> required Rock version.
+        /// </value>
+        public string RequiredRockVersion { get; set; }
 
         /// <summary>
         /// Gets or sets the URL of the Install Package. 
