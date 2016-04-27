@@ -557,7 +557,20 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 lAdultsCampus.Text = string.Format( "{0} Campus", cpAdultsCampus.SelectedItem.Text );
             }
 
-            lAdultSteps.Text = GetAdultsCount( DateRange, rockContext, cpAdultsCampus.SelectedValue.AsIntegerOrNull() ).ToString();
+            var adultCountResult = GetAdultsCount( DateRange, rockContext, cpAdultsCampus.SelectedValue.AsIntegerOrNull() );
+
+            int uniqueAdults = adultCountResult.UniqueAdults;
+            int totalSteps = adultCountResult.TotalSteps;
+            double averageSteps = 0;
+
+            if (uniqueAdults != 0 )
+            {
+                averageSteps = (double)totalSteps / (double)uniqueAdults;
+            }
+
+            lAdultUniqueAdults.Text = uniqueAdults.ToString();
+            lAdultsTotalSteps.Text = totalSteps.ToString();
+            lAdultsAvergeSteps.Text = averageSteps != 0 ? Math.Round( averageSteps, 1).ToString() : "NA";
         }
 
         /// <summary>
@@ -809,8 +822,17 @@ namespace RockWeb.Plugins.church_ccv.Steps
             return returnData;
         }
 
-        private int GetAdultsCount( DateRange dateRange, RockContext rockContext = null, int? campusId = null )
+        /// <summary>
+        /// Gets the adults count.
+        /// </summary>
+        /// <param name="dateRange">The date range.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <returns></returns>
+        private AdultCountResult GetAdultsCount( DateRange dateRange, RockContext rockContext = null, int? campusId = null )
         {
+            AdultCountResult result = new AdultCountResult();
+
             if ( rockContext == null )
             {
                 rockContext = new RockContext();
@@ -833,8 +855,43 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 currentData = currentData.Where( s => s.CampusId == campusId );
             }
 
-            return currentData.Select( s => s.PersonAlias.PersonId ).Distinct().Count();
+            // join to datamart to get family status 
+            var datamartQry = new DatamartPersonService( rockContext ).Queryable().AsNoTracking();
+
+            var joinedQuery = currentData.GroupJoin(
+                    datamartQry,
+                    s => s.PersonAlias.PersonId,
+                    d => d.PersonId,
+                    ( s, d ) => new { s, d }
+                )
+                .SelectMany( x => x.d.DefaultIfEmpty(), ( g, u ) => new { Step = g.s, Datamart = u } );
+
+            result.UniqueAdults = joinedQuery.Where( j => j.Datamart.FamilyRole == "Adult" ).Select( j => j.Datamart.PersonId ).Distinct().Count();
+            result.TotalSteps = joinedQuery.Where(j => j.Datamart.FamilyRole == "Adult").Count();
+
+            return result;
         }
         #endregion
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class AdultCountResult
+    {
+        /// <summary>
+        /// Gets or sets the unique adults.
+        /// </summary>
+        /// <value>
+        /// The unique adults.
+        /// </value>
+        public int UniqueAdults { get; set; }
+        /// <summary>
+        /// Gets or sets the total steps.
+        /// </summary>
+        /// <value>
+        /// The total steps.
+        /// </value>
+        public int TotalSteps { get; set; }
     }
 }

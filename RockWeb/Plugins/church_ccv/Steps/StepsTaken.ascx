@@ -50,6 +50,23 @@
         height: 120px;
         width: 100%;
     }
+
+    .adultmetric-cell {
+        border: 3px solid #6a6a6a;
+        margin: 12px;
+        padding: 12px;
+    }
+
+    .adultmetric-cell h1 {
+        margin: 0 0 4px 0;
+        font-size: 18px;
+    }
+
+    .adultmetric-value {
+        font-size: 42px;
+        font-weight: 900;
+        margin-top: -12px;
+    }
 </style>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
@@ -160,11 +177,28 @@
                         <div class="col-md-6">
                             <Rock:CampusPicker ID="cpAdultsCampus" runat="server" OnSelectedIndexChanged="cpAdultsCampus_SelectedIndexChanged" AutoPostBack="true" />
                         </div>
-
-                        <asp:Literal ID="lAdultSteps" runat="server" />
                     </div>
 
-
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="adultmetric-cell">
+                                <h1>Unique Adults Who Took A Step</h1>
+                                <div class="adultmetric-value"><asp:Literal ID="lAdultUniqueAdults" runat="server" /> <i class="fa fa-user"></i></div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="adultmetric-cell">
+                                <h1>Total Number of Steps Taken</h1>
+                                <div class="adultmetric-value"><asp:Literal ID="lAdultsTotalSteps" runat="server" /> <i class="fa fa-road"></i></div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="adultmetric-cell">
+                                <h1>Average Steps Per Person</h1>
+                                <div class="adultmetric-value"><asp:Literal ID="lAdultsAvergeSteps" runat="server" /> <i class="fa fa-calculator"></i></div>
+                            </div>
+                        </div>
+                    </div>
                 </asp:Panel>
 
                 <asp:Panel ID="pnlStepDetails" runat="server" Visible="false">
