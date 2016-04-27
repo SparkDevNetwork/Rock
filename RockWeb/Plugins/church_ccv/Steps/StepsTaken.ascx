@@ -31,6 +31,7 @@
 
     .measurechart-legend-value {
         margin-top: -14px;
+        letter-spacing: -2px;
     }
 
     .measurechart-legend-value span {
@@ -41,6 +42,13 @@
     .measurechart-legend-value i {
         font-size: 38px;
         margin-left: -6px;
+    }
+
+    .chartwrapper {
+        position:absolute;
+        bottom: 0;
+        height: 120px;
+        width: 100%;
     }
 </style>
 
@@ -102,25 +110,61 @@
                                             <h1><%# Eval("Title") %></h1>
                                             <div class="measurechart-legend-value"><span><asp:Literal ID="lChartValue" runat="server" /></span> <i class="fa fa-fw <%# Eval("IconCssClass") %>"></i></div>
                                         </div>
-                                        <Rock:LineChart ID="lcCampusMeasure" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="200px" />
+                                        <div class="chartwrapper">
+                                            <Rock:LineChart ID="lcMeasure" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="120px" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </ItemTemplate>
+                        </asp:Repeater>
+                    </div> 
+                </asp:Panel>
+
+                <asp:Panel ID="pnlPastor" runat="server" Visible="false">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h2><asp:Literal ID="lPastorPastor" runat="server" Text="All Pastors" /></h2>
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:RockDropDownList ID="ddlPastor" Label="Pastor" runat="server" OnSelectedIndexChanged="ddlPastor_SelectedIndexChanged" AutoPostBack="true" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <asp:Repeater ID="rptPastorMeasures" runat="server" OnItemDataBound="rptPastorMeasures_ItemDataBound">
+                            <ItemTemplate>
+
+                                <div class="col-md-6">
+                                    <div class="measurechart" style="border: 3px solid <%# Eval("Color") %>; color: <%# Eval("Color") %>;">
+                                        <div class="measurechart-legend">
+                                            <h1><%# Eval("Title") %></h1>
+                                            <div class="measurechart-legend-value"><span><asp:Literal ID="lChartValue" runat="server" /></span> <i class="fa fa-fw <%# Eval("IconCssClass") %>"></i></div>
+                                        </div>
+                                        <div class="chartwrapper">
+                                            <Rock:LineChart ID="lcMeasure" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="120px" />
+                                        </div>
                                     </div>
                                 </div>
 
                             </ItemTemplate>
                         </asp:Repeater>
                     </div>
-                        
-
-
-                    
-                </asp:Panel>
-
-                <asp:Panel ID="pnlPastor" runat="server" Visible="false">
-                    <h4>Not Implemented</h4>
                 </asp:Panel>
 
                 <asp:Panel ID="pnlAdults" runat="server" Visible="false">
-                    <h4>Not Implemented</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h2><asp:Literal ID="lAdultsCampus" runat="server" Text="All Campuses" /></h2>
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:CampusPicker ID="cpAdultsCampus" runat="server" OnSelectedIndexChanged="cpAdultsCampus_SelectedIndexChanged" AutoPostBack="true" />
+                        </div>
+
+                        <asp:Literal ID="lAdultSteps" runat="server" />
+                    </div>
+
+
                 </asp:Panel>
 
                 <asp:Panel ID="pnlStepDetails" runat="server" Visible="false">
