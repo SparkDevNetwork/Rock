@@ -65,7 +65,7 @@ namespace Rock.NMI
         {
             get
             {
-                return "~/NMIGatewayStep2.html";
+                return string.Format( "~/NMIGatewayStep2.html?timestamp={0}", RockDateTime.Now.Ticks );
             }
         }
 

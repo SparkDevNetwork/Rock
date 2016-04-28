@@ -2188,7 +2188,14 @@ namespace RockWeb.Blocks.Finance
                 $('#updateProgress').show();
                 var src = $('#{4}').val();
                 var $form = $('#iframeStep2').contents().find('#Step2Form');
-                
+
+                if ( $('#{16}').is(':visible') && $('#{16}').prop('checked') ) {{
+                    $form.find('.billing-address1').val( $('#{17}_tbStreet1').val() );
+                    $form.find('.billing-city').val( $('#{17}_tbCity').val() );
+                    $form.find('.billing-state').val( $('#{17}_ddlState').val() );
+                    $form.find('.billing-postal').val( $('#{17}_tbPostalCode').val() );
+                }}
+        
                 if ( $('#{1}').val() == 'CreditCard' ) {{
                     $form.find('.cc-number').val( $('#{8}').val() );
                     var mm = $('#{9}_monthDropDownList').val();
@@ -2216,7 +2223,7 @@ namespace RockWeb.Blocks.Finance
     $('#iframeStep2').on('load', function(e) {{
         var location = this.contentWindow.location;
         var qryString = this.contentWindow.location.search;
-        if ( qryString && qryString != '' ) {{ 
+        if ( qryString && qryString != '' && qryString.startsWith('?token-id') ) {{ 
             $('#{5}').val(qryString);
             {6};
         }} else {{
@@ -2248,7 +2255,9 @@ namespace RockWeb.Blocks.Finance
                 txtAccountNumber.ClientID,      // {12}
                 txtRoutingNumber.ClientID,      // {13}
                 rblAccountType.ClientID,        // {14}
-                hfStep2AutoSubmit.ClientID      // {15}
+                hfStep2AutoSubmit.ClientID,     // {15}
+                cbBillingAddress.ClientID,      // {16}
+                acBillingAddress.ClientID       // {17}
             ); 
 
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );
