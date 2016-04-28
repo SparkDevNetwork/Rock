@@ -94,7 +94,6 @@
                 };
 
                 $('section.checkin-item').click(function () {
-                    debugger;
                     if (!isDirty()) {
                         var $li = $(this).closest('li');
                         if ($(this).hasClass('checkin-area')) {
