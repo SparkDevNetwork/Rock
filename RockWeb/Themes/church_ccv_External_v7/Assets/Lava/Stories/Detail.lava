@@ -10,15 +10,20 @@
 
 {% assign detailPage = detailPage | Default: '/stories' %}
 
-<header class="storythumb" style="background-image: url('{{ item | Attribute: 'Image', 'Url' }}&maxwidth=1140')">
+<header class="storythumb" style="background-image: url('{{ item | Attribute: 'Image', 'Url' }}&maxwidth=1140'); background-position: {{ item | Attribute: 'ImageFocalPoint', 'RawValue' }};">
 </header>
 
 <div class="container-md">
   {% for item in Items %}
+    {% capture image2 %}
+      <a class="lightbox" href="{{ item | Attribute: 'Image2', 'Url' }}">
+        <img src="{{ item | Attribute: 'Image2', 'Url' }}&maxwidth=700" />
+      </a>
+    {% endcapture %}
     <h1 class="page-header">{{ item.Title }}</h1>
-    <p class="lead">{{ item.Summary }}</p>
     <div class="text-responsive">
-      {{ item.Content }}
+      <p class="lead">{{ item.Summary }}</p>
+      {{ item.Content | Replace: '[[Image2]]', image2 }}
     </div>
   {% endfor %}
 </div>
