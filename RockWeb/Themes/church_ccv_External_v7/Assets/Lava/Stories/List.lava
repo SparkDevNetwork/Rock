@@ -5,7 +5,7 @@
 
 {% endcomment %}
 
-{% assign detailPage = detailPage | Default: '/stories' %}
+{% assign detailPage = detailPage | Default: '/stories/story' %}
 
 {% assign firstItem = Items[0] %}
 

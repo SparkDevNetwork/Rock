@@ -8,7 +8,7 @@
 {% capture pageTitle %}{{ item.Title }} - Stories | {{ 'Global' | Attribute:'OrganizationAbbreviation' }}{% endcapture %}
 {{ pageTitle | SetPageTitle }}
 
-{% assign detailPage = detailPage | Default: '/stories' %}
+{% assign detailPage = detailPage | Default: '/stories/story' %}
 
 <header class="storythumb" style="background-image: url('{{ item | Attribute: 'Image', 'Url' }}&maxwidth=1140'); background-position: {{ item | Attribute: 'ImageFocalPoint', 'RawValue' }};">
 </header>
@@ -20,7 +20,9 @@
         <img src="{{ item | Attribute: 'Image2', 'Url' }}&maxwidth=700" />
       </a>
     {% endcapture %}
-    <h1 class="page-header">{{ item.Title }}</h1>
+    <a href="{{ detailPage }}/{{ item.ShortUrl }}" class="link-plain">
+      <h1 class="page-header">{{ item.Title }}</h1>
+    </a>
     <div class="text-responsive">
       <p class="lead">{{ item.Summary }}</p>
       {{ item.Content | Replace: '[[Image2]]', image2 }}
