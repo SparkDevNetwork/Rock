@@ -166,14 +166,14 @@
                                         </ItemTemplate>
                                     </Rock:RockTemplateField>
                                     <Rock:DateTimeField DataField="CreatedDateTime" HeaderText="When" SortExpression="CreatedDateTime" />
-                                    <Rock:RockTemplateField HeaderText="Total Cost" ItemStyle-HorizontalAlign="Right" SortExpression="TotalCost">
-                                        <ItemTemplate>
-                                            <asp:Label ID="lCost" runat="server" CssClass="label label-info"></asp:Label>
-                                        </ItemTemplate>
-                                    </Rock:RockTemplateField>
                                     <Rock:RockTemplateField HeaderText="Discount Code" ItemStyle-HorizontalAlign="Center" SortExpression="DiscountCode" Visible="false">
                                         <ItemTemplate>
                                             <asp:Label ID="lDiscount" runat="server" CssClass="label" />
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateField>
+                                    <Rock:RockTemplateField HeaderText="Total Cost" ItemStyle-HorizontalAlign="Right" SortExpression="TotalCost">
+                                        <ItemTemplate>
+                                            <asp:Label ID="lCost" runat="server" CssClass="label label-info"></asp:Label>
                                         </ItemTemplate>
                                     </Rock:RockTemplateField>
                                     <Rock:RockTemplateField HeaderText="Balance Due" ItemStyle-HorizontalAlign="Right" SortExpression="BalanceDue">
