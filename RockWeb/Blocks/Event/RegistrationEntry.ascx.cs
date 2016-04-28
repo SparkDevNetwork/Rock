@@ -3144,6 +3144,10 @@ namespace RockWeb.Blocks.Event
                 var src = $('#{7}').val();
                 var $form = $('#iframeStep2').contents().find('#Step2Form');
 
+                $form.find('.cc-first-name').val( $('#{16}').val() );
+                $form.find('.cc-last-name').val( $('#{17}').val() );
+                $form.find('.cc-full-name').val( $('#{18}').val() );
+
                 $form.find('.cc-number').val( $('#{11}').val() );
                 var mm = $('#{12}_monthDropDownList').val();
                 var yy = $('#{12}_yearDropDownList_').val();
@@ -3197,7 +3201,10 @@ namespace RockWeb.Blocks.Event
             mypExpiration.ClientID,         // {12}
             txtCVV.ClientID,                // {13}
             hfStep2AutoSubmit.ClientID,     // {14}
-            acBillingAddress.ClientID       // {15}
+            acBillingAddress.ClientID,      // {15}
+            txtCardFirstName.ClientID,      // {16}
+            txtCardLastName.ClientID,       // {17}
+            txtCardName.ClientID            // {18}
             );
 
             ScriptManager.RegisterStartupScript( Page, Page.GetType(), "registrationEntry", script, true );
