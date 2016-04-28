@@ -210,7 +210,7 @@ namespace RockWeb.Blocks.Reporting
             foreach ( var panelWidget in phReportFields.ControlsOfTypeRecursive<PanelWidget>() )
             {
                 Guid reportFieldGuid = panelWidget.ID.Replace( "reportFieldWidget_", string.Empty ).AsGuid();
-                if ( SelectedFieldTypeSupportsSorting( panelWidget ); )
+                if ( SelectedFieldTypeSupportsSorting( panelWidget ) )
                 {
                     kvSortFields.CustomKeys.Add( reportFieldGuid.ToString(), panelWidget.Title );
                 }
