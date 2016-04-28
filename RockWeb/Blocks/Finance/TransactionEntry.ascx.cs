@@ -2197,6 +2197,9 @@ namespace RockWeb.Blocks.Finance
                 }}
         
                 if ( $('#{1}').val() == 'CreditCard' ) {{
+                    $form.find('.cc-first-name').val( $('#{18}').val() );
+                    $form.find('.cc-last-name').val( $('#{19}').val() );
+                    $form.find('.cc-full-name').val( $('#{20}').val() );
                     $form.find('.cc-number').val( $('#{8}').val() );
                     var mm = $('#{9}_monthDropDownList').val();
                     var yy = $('#{9}_yearDropDownList_').val();
@@ -2257,7 +2260,10 @@ namespace RockWeb.Blocks.Finance
                 rblAccountType.ClientID,        // {14}
                 hfStep2AutoSubmit.ClientID,     // {15}
                 cbBillingAddress.ClientID,      // {16}
-                acBillingAddress.ClientID       // {17}
+                acBillingAddress.ClientID,      // {17}
+                txtCardFirstName.ClientID,      // {18}
+                txtCardLastName.ClientID,       // {19}
+                txtCardName.ClientID            // {20}
             ); 
 
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );
