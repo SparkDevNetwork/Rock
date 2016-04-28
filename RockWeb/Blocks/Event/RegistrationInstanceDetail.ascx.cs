@@ -50,6 +50,7 @@ namespace RockWeb.Blocks.Event
     [LinkedPage( "Content Item Page", "The page for viewing details about a content channel item", true, "", "", 5 )]
     [LinkedPage( "Transaction Detail Page", "The page for viewing details about a payment", true, "", "", 6 )]
     [LinkedPage( "Payment Reminder Page", "The page for manually sending payment reminders.", false, "", "", 7 )]
+    [BooleanField( "Display Discount Codes", "Display the discount code used with a payment", false, "", 8 )]
     public partial class RegistrationInstanceDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         #region Fields
@@ -616,6 +617,14 @@ namespace RockWeb.Blocks.Event
                 {
                     lCost.Visible = _instanceHasCost || discountedCost > 0.0M;
                     lCost.Text = discountedCost.FormatAsCurrency();
+                }
+
+                var discountCode = registration.DiscountCode;
+                var lDiscount = e.Row.FindControl( "lDiscount" ) as Label;
+                if ( lDiscount != null )
+                {
+                    lDiscount.Visible = _instanceHasCost && !string.IsNullOrEmpty( discountCode );
+                    lDiscount.Text = discountCode;
                 }
 
                 var lBalance = e.Row.FindControl( "lBalance" ) as Label;
@@ -2005,6 +2014,12 @@ namespace RockWeb.Blocks.Event
                                 d.EntityTypeId.Value == registrationEntityType.Id &&
                                 registrationIds.Contains( d.EntityId.Value ) )
                             .ToList();
+                    }
+
+                    var discountCodeHeader = gRegistrations.Columns.GetColumnByHeaderText( "Discount Code" );
+                    if ( discountCodeHeader != null )
+                    {
+                        discountCodeHeader.Visible = GetAttributeValue( "DisplayDiscountCodes" ).AsBoolean();
                     }
 
                     gRegistrations.DataBind();
