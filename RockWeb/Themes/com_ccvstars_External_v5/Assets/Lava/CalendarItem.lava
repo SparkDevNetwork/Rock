@@ -39,6 +39,10 @@
 				</p>
 			{% endif %}
 
+      {%assign hideSchedule = EventItemOccurrence.EventItem.EventCalendarItems | First | Attribute:'HideSchedule' %}
+      
+      {%if hideSchedule != 'Yes' %}
+
             {% assign scheduledDates = EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal:'all' %}
             <strong>Date / Time</strong>
             <ul class="list-unstyled">
@@ -48,6 +52,8 @@
                 </li>
                 {% endfor %}
             </ul>
+      
+      {% endif %}
 
 			{% if EventItemOccurrence.Note != '' %}
 				<strong>Note</strong><br />
