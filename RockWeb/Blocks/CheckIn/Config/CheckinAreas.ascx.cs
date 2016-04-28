@@ -996,7 +996,6 @@ namespace RockWeb.Blocks.CheckIn.Config
     }});
 
     function isDirty() {{
-        debugger;
         if ( $('#{0}').val() == 'true' ) {{
             if ( confirm('You have not saved your changes. Are you sure you want to continue?') ) {{
                 return false;
