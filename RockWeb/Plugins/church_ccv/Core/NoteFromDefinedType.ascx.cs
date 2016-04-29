@@ -84,11 +84,7 @@ namespace RockWeb.Plugins.church_ccv.Core
         /// </summary>
         private void LoadDropDowns()
         {
-            var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            if ( CurrentPerson != null )
-            {
-                mergeFields.Add( "CurrentPerson", CurrentPerson );
-            }
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
             var contextEntity = this.ContextEntity();
             if ( contextEntity != null )
@@ -112,7 +108,6 @@ namespace RockWeb.Plugins.church_ccv.Core
                 }
 
                 noteList.EntityId = contextEntity.Id;
-                mergeFields.Add( "Context", contextEntity );
             }
 
             var definedTypeGuid = this.GetAttributeValue( "DefinedType" ).AsGuidOrNull();

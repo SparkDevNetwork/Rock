@@ -188,12 +188,12 @@ namespace RockWeb.Plugins.church_ccv.Groups
                 Person adminPerson = personService.Get( adminPersonId );
 
                 // put in the admin, the group member, and the reason
-                var mergeObjects = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
-                mergeObjects.Add( "Admin", adminPerson );
-                mergeObjects.Add( "Member", groupMember );
-                mergeObjects.Add( "Reason", tbReassignReason.Text );
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                mergeFields.Add( "Admin", adminPerson );
+                mergeFields.Add( "Member", groupMember );
+                mergeFields.Add( "Reason", tbReassignReason.Text );
 
-                SendEmail( mergeObjects, confirmationEmailTemplateGuid.Value, rockContext );
+                SendEmail( mergeFields, confirmationEmailTemplateGuid.Value, rockContext );
             }
         }
         

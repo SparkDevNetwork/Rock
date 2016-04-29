@@ -559,8 +559,8 @@ namespace RockWeb.Plugins.church_ccv.Finance
 
             var batchDateTime = dpBatchDate.SelectedDateTime ?? RockDateTime.Now;
             var financialBatch = new FinancialBatch();
-            
-            var mergeFields = GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
+
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "BatchDate", batchDateTime );
             financialBatch.Name = tbBatchNameFormat.Text.ResolveMergeFields( mergeFields );
             financialBatch.BatchStartDateTime = batchDateTime;

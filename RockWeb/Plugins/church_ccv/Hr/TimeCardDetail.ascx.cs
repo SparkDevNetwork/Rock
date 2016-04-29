@@ -668,14 +668,14 @@ namespace RockWeb.Plugins.church_ccv.Hr
 
             if ( submittedEmailTemplateGuid.HasValue )
             {
-                var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
-                mergeObjects.Add( "TimeCardPayPeriod", timeCard.TimeCardPayPeriod.ToString() );
-                mergeObjects.Add( "TimeCard", timeCard );
-                mergeObjects.Add( "Person", this.CurrentPerson );
-                mergeObjects.Add( "SubmitToPerson", submitToPersonAlias.Person );
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                mergeFields.Add( "TimeCardPayPeriod", timeCard.TimeCardPayPeriod.ToString() );
+                mergeFields.Add( "TimeCard", timeCard );
+                mergeFields.Add( "Person", this.CurrentPerson );
+                mergeFields.Add( "SubmitToPerson", submitToPersonAlias.Person );
 
                 var recipients = new List<RecipientData>();
-                recipients.Add( new RecipientData( submitToPersonAlias.Person.Email, mergeObjects ) );
+                recipients.Add( new RecipientData( submitToPersonAlias.Person.Email, mergeFields ) );
                 Email.Send( submittedEmailTemplateGuid.Value, recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
             }
 

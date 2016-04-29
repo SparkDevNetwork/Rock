@@ -179,12 +179,12 @@ namespace RockWeb.Plugins.church_ccv.Promotions
                     var eventChangedEmailTemplateGuid = GetAttributeValue( "EventChangedEmail" ).AsGuidOrNull();
                     if ( eventChangedEmailTemplateGuid.HasValue )
                     {
-                        var mergeObjects = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
-                        mergeObjects.Add( "Event", eventItemOccurrence );
-                        mergeObjects.Add( "EventCalendarId", EventCalendarId );
+                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                        mergeFields.Add( "Event", eventItemOccurrence );
+                        mergeFields.Add( "EventCalendarId", EventCalendarId );
 
                         var contentChannelItemList = promoOccurrenceList.Select( po => po.ContentChannelItemId ).ToList( );
-                        mergeObjects.Add( "ContentChannelItemList", contentChannelItemList );
+                        mergeFields.Add( "ContentChannelItemList", contentChannelItemList );
                         
                         // get the email service and email
                         SystemEmailService emailService = new SystemEmailService( rockContext );
@@ -194,7 +194,7 @@ namespace RockWeb.Plugins.church_ccv.Promotions
                         var recipients = new List<Rock.Communication.RecipientData>();
 
                         // add person and the mergeObjects (same mergeobjects as receipt)
-                        recipients.Add( new Rock.Communication.RecipientData( reassignEmail.To, mergeObjects ) );
+                        recipients.Add( new Rock.Communication.RecipientData( reassignEmail.To, mergeFields ) );
 
                         Rock.Communication.Email.Send( eventChangedEmailTemplateGuid.Value, recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
                     }

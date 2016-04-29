@@ -195,12 +195,12 @@ namespace RockWeb.Plugins.church_ccv.CommandCenter
                 
             if ( commandCenterEmailTemplateGuid.HasValue )
             {
-                var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
-                mergeObjects.Add( "Person", this.CurrentPerson );
-                mergeObjects.Add( "RecordingUrl", tbLink.Text );
-                mergeObjects.Add( "RecordingMessage", tbEmailMessage.Text );
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                mergeFields.Add( "Person", this.CurrentPerson );
+                mergeFields.Add( "RecordingUrl", tbLink.Text );
+                mergeFields.Add( "RecordingMessage", tbEmailMessage.Text );
 
-                recipients.Add( new RecipientData( tbEmailTo.Text, mergeObjects ) );
+                recipients.Add( new RecipientData( tbEmailTo.Text, mergeFields ) );
                 Email.Send( commandCenterEmailTemplateGuid.Value, recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
             }
         }

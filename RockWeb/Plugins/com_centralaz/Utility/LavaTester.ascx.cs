@@ -43,7 +43,7 @@ namespace RockWeb.Plugins.com_centralaz.Utility
         #region Fields
 
         // used for private variables
-        Dictionary<string,object> mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
+        Dictionary<string, object> mergeFields = null;
         private readonly string _USER_PREF_KEY = "MyLavaTestText";
         #endregion
 
@@ -63,6 +63,8 @@ namespace RockWeb.Plugins.com_centralaz.Utility
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
+            mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+            
             base.OnInit( e );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
@@ -94,7 +96,6 @@ namespace RockWeb.Plugins.com_centralaz.Utility
 
             if ( ! Page.IsPostBack )
             {
-                mergeFields.Add( "CurrentPerson", CurrentPerson );
                 if ( cbEnableDebug.Checked )
                 {
                     litDebug.Text = mergeFields.lavaDebugInfo();
@@ -163,7 +164,6 @@ namespace RockWeb.Plugins.com_centralaz.Utility
                 }
 
                 // Get Lava
-                mergeFields.Add( "CurrentPerson", CurrentPerson );
                 mergeFields.Add( "Person", person );
 
                 ResolveLava();
