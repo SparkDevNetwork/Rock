@@ -416,9 +416,9 @@ namespace Rock.Web.UI.Controls
 
             _btnSelectCurrentPage = new LinkButton();
             _btnSelectCurrentPage.ID = this.ID + "_btnSelectCurrentPage";
-            _btnSelectCurrentPage.CssClass = "btn btn-xs btn-default pull-right";
+            _btnSelectCurrentPage.CssClass = "btn btn-xs btn-link pull-right";
             _btnSelectCurrentPage.Text = "<i class='fa fa-file-o'></i>";
-            _btnSelectCurrentPage.ToolTip = "select current page";
+            _btnSelectCurrentPage.ToolTip = "Select Current Page";
             _btnSelectCurrentPage.CausesValidation = false;
             _btnSelectCurrentPage.Click += _btnSelectCurrentPage_Click;
             Controls.Add( _btnSelectCurrentPage );

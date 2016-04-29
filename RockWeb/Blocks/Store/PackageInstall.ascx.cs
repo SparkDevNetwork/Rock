@@ -165,7 +165,7 @@ namespace RockWeb.Blocks.Store
             {
                 RockSemanticVersion rockVersion = RockSemanticVersion.Parse( VersionInfo.GetRockSemanticVersionNumber() );
 
-                foreach ( var installStep in purchaseResponse.PackageInstallSteps.Where( s => s.RequiredRockVersion <= rockVersion ))
+                foreach ( var installStep in purchaseResponse.PackageInstallSteps.Where( s => s.RequiredRockSemanticVersion <= rockVersion ))
                 {
                     string appRoot = Server.MapPath( "~/" );
                     string rockShopWorkingDir = appRoot + "App_Data/RockShop";

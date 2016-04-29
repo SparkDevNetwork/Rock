@@ -34,7 +34,7 @@
                     <% } %>
                 </fieldset>
 
-                <asp:LinkButton ID="lbSave" runat="server" AccessKey="s" Text="Save Request" OnClick="btnSave_Click" CssClass="btn btn-primary" CausesValidation="True"/>
+                <Rock:BootstrapButton ID="lbSave" runat="server" AccessKey="s" Text="Save Request" DataLoadingText="Saving..." OnClick="btnSave_Click" CssClass="btn btn-primary" CausesValidation="True"/>
 
             </div>
 

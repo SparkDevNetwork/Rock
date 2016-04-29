@@ -701,7 +701,11 @@ namespace RockWeb.Blocks.Groups
                 gGroups.Columns.Add( registerColumn );
             }
 
-            var pageSizes = GetAttributeValue( "PageSizes" ).Split( ',' ).AsIntegerList();
+            var pageSizes = new List<int>();
+            if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "PageSizes" ) ) )
+            {
+                pageSizes = GetAttributeValue( "PageSizes" ).Split( ',' ).AsIntegerList();
+            }
 
             ddlPageSize.Items.Clear();
             ddlPageSize.Items.AddRange( pageSizes.Select( a => new ListItem( a.ToString(), a.ToString() ) ).ToArray() );

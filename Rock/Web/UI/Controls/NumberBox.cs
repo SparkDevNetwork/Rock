@@ -175,7 +175,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public override void RenderBaseControl( HtmlTextWriter writer )
         {
-            this.Attributes["type"] = "number";
+            this.Attributes["pattern"] = "[0-9]*";
 
             base.RenderBaseControl( writer );
         }

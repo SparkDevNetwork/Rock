@@ -28,9 +28,9 @@ using Rock.Model;
 
 namespace RockWeb.Blocks.CheckIn
 {
-    [DisplayName("Group Type Select")]
-    [Category("Check-in")]
-    [Description("Displays a list of group types the person is configured to checkin to.")]
+    [DisplayName( "Group Type Select" )]
+    [Category( "Check-in" )]
+    [Description( "Displays a list of group types the person is configured to checkin to." )]
 
     [BooleanField( "Select All and Skip", "Select this option if end-user should never see screen to select group types, all group types will automatically be selected and all the groups in all types will be available.", false, "", 0, "SelectAll" )]
     public partial class GroupTypeSelect : CheckInBlock
@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.CheckIn
                     }
 
                     lPersonName.Text = person.Person.FullName;
-                    
+
                     var availGroupTypes = person.GroupTypes.Where( t => !t.ExcludedByFilter ).ToList();
                     if ( availGroupTypes.Count == 1 )
                     {
@@ -83,7 +83,7 @@ namespace RockWeb.Blocks.CheckIn
                     }
                     else
                     {
-                        bool SelectAll = GetAttributeValue("SelectAll").AsBoolean(false);
+                        bool SelectAll = GetAttributeValue( "SelectAll" ).AsBoolean( false );
                         if ( SelectAll )
                         {
                             if ( UserBackedUp )
@@ -161,7 +161,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             ProcessSelection( maWarning, () => CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
                 .SelectMany( f => f.People.Where( p => p.Selected )
-                    .SelectMany( p => p.GroupTypes.Where( t => t.Selected)
+                    .SelectMany( p => p.GroupTypes.Where( t => t.Selected )
                         .SelectMany( t => t.Groups.Where( g => !g.ExcludedByFilter ) ) ) )
                 .Count() <= 0,
                 "<p>Sorry, based on your selection, there are currently not any available locations that can be checked into.</p>" );
