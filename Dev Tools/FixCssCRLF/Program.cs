@@ -27,7 +27,7 @@ namespace ConsoleApplication5
             }
 
             Console.WriteLine( "Press any key to continue" );
-            Console.ReadLine();
+            Console.ReadKey();
         }
     }
 }
