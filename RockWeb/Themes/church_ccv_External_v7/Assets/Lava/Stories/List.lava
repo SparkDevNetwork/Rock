@@ -1,6 +1,6 @@
 {% comment %}
 
-  {% assign detailPage = '/stories' %}
+  {% assign detailPage = '/stories/story' %}
   {% include '~~/Assets/Lava/Stories/List.lava' %}
 
 {% endcomment %}
