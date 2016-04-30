@@ -40,6 +40,10 @@
     <Reference Include="Quartz">
       <HintPath>..\RockWeb\Bin\Quartz.dll</HintPath>
     </Reference>
+    <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RestSharp.105.2.3\lib\net451\RestSharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -63,6 +67,7 @@
     <Compile Include="Jobs\CreateFirstVisitWorkflows.cs" />
     <Compile Include="Jobs\GroupMemberFollowUpNotifications.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Workflow\Action\PostWebhook.cs" />
     <Compile Include="Workflow\Action\SetPersonMobileSMSNumber.cs" />
     <Compile Include="SystemGuids\DefinedType.cs" />
     <Compile Include="SystemGuids\DefinedValue.cs" />
