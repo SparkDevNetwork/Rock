@@ -42,15 +42,15 @@ namespace RockWeb.Blocks.Event
     [DisplayName( "Registration Instance Detail" )]
     [Category( "Event" )]
     [Description( "Template block for editing an event registration instance." )]
-
     [AccountField( "Default Account", "The default account to use for new registration instances", false, "2A6F9E5F-6859-44F1-AB0E-CE9CF6B08EE5", "", 0 )]
     [LinkedPage( "Registration Page", "The page for editing registration and registrant information", true, "", "", 1 )]
     [LinkedPage( "Linkage Page", "The page for editing registration linkages", true, "", "", 2 )]
-    [LinkedPage( "Calendar Item Page", "The page to view calendar item details", true, "", "", 3)]
-    [LinkedPage( "Group Detail Page", "The page for viewing details about a group", true, "", "", 4)]
+    [LinkedPage( "Calendar Item Page", "The page to view calendar item details", true, "", "", 3 )]
+    [LinkedPage( "Group Detail Page", "The page for viewing details about a group", true, "", "", 4 )]
     [LinkedPage( "Content Item Page", "The page for viewing details about a content channel item", true, "", "", 5 )]
     [LinkedPage( "Transaction Detail Page", "The page for viewing details about a payment", true, "", "", 6 )]
-    [LinkedPage("Payment Reminder Page", "The page for manually sending payment reminders.", false, "", "", 7)]
+    [LinkedPage( "Payment Reminder Page", "The page for manually sending payment reminders.", false, "", "", 7 )]
+    [BooleanField( "Display Discount Codes", "Display the discount code used with a payment", false, "", 8 )]
     public partial class RegistrationInstanceDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         #region Fields
@@ -140,8 +140,8 @@ namespace RockWeb.Blocks.Event
             gPayments.DataKeyNames = new string[] { "Id" };
             gPayments.Actions.ShowAdd = false;
             gPayments.RowDataBound += gPayments_RowDataBound;
-            gPayments.GridRebind += gPayments_GridRebind; 
-            
+            gPayments.GridRebind += gPayments_GridRebind;
+
             fLinkages.ApplyFilterClick += fLinkages_ApplyFilterClick;
             gLinkages.DataKeyNames = new string[] { "Id" };
             gLinkages.Actions.ShowAdd = true;
@@ -175,7 +175,7 @@ namespace RockWeb.Blocks.Event
             }
         });
     });
-    
+
     $('table.js-grid-registration a.grid-delete-button').click(function( e ){
         e.preventDefault();
         var $hfHasPayments = $(this).closest('tr').find('input.js-has-payments').first();
@@ -215,15 +215,19 @@ namespace RockWeb.Blocks.Event
                         case 1:
                             ActiveTab = "lbRegistrations";
                             break;
+
                         case 2:
                             ActiveTab = "lbRegistrants";
                             break;
+
                         case 3:
                             ActiveTab = "lbPayments";
                             break;
+
                         case 4:
                             ActiveTab = "lbLinkage";
                             break;
+
                         case 5:
                             ActiveTab = "lbGroupPlacement";
                             break;
@@ -283,7 +287,6 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-
         }
 
         #endregion
@@ -342,7 +345,6 @@ namespace RockWeb.Blocks.Event
                         mdDeleteWarning.Show( "You are not authorized to delete this registration instance.", ModalAlertType.Information );
                         return;
                     }
-
                 }
             }
         }
@@ -381,7 +383,6 @@ namespace RockWeb.Blocks.Event
             {
                 var service = new RegistrationInstanceService( rockContext );
 
-
                 int? RegistrationInstanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
                 if ( RegistrationInstanceId.HasValue )
                 {
@@ -413,7 +414,7 @@ namespace RockWeb.Blocks.Event
             }
 
             // show send payment reminder link
-            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentReminderPage" ) ) && ((instance.RegistrationTemplate.SetCostOnInstance.HasValue && instance.RegistrationTemplate.SetCostOnInstance == true && instance.Cost.HasValue && instance.Cost.Value > 0) || instance.RegistrationTemplate.Cost > 0) )
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentReminderPage" ) ) && ( ( instance.RegistrationTemplate.SetCostOnInstance.HasValue && instance.RegistrationTemplate.SetCostOnInstance == true && instance.Cost.HasValue && instance.Cost.Value > 0 ) || instance.RegistrationTemplate.Cost > 0 ) )
             {
                 btnSendPaymentReminder.Visible = true;
             }
@@ -551,12 +552,11 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
-        void gRegistrations_RowDataBound( object sender, GridViewRowEventArgs e )
+        protected void gRegistrations_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             var registration = e.Row.DataItem as Registration;
             if ( registration != null )
             {
-
                 // Set the processor value
                 var lRegisteredBy = e.Row.FindControl( "lRegisteredBy" ) as Literal;
                 if ( lRegisteredBy != null )
@@ -599,7 +599,7 @@ namespace RockWeb.Blocks.Event
                 bool hasPayments = payments.Any();
                 decimal totalPaid = hasPayments ? payments.Select( p => p.Amount ).DefaultIfEmpty().Sum() : 0.0m;
 
-                var hfHasPayments = e.Row.FindControl( "hfHasPayments") as HiddenFieldWithClass;
+                var hfHasPayments = e.Row.FindControl( "hfHasPayments" ) as HiddenFieldWithClass;
                 if ( hfHasPayments != null )
                 {
                     hfHasPayments.Value = hasPayments.ToString();
@@ -612,6 +612,14 @@ namespace RockWeb.Blocks.Event
                 {
                     lCost.Visible = _instanceHasCost || discountedCost > 0.0M;
                     lCost.Text = discountedCost.FormatAsCurrency();
+                }
+
+                var discountCode = registration.DiscountCode;
+                var lDiscount = e.Row.FindControl( "lDiscount" ) as Label;
+                if ( lDiscount != null )
+                {
+                    lDiscount.Visible = _instanceHasCost && !string.IsNullOrEmpty( discountCode );
+                    lDiscount.Text = discountCode;
                 }
 
                 var lBalance = e.Row.FindControl( "lBalance" ) as Label;
@@ -648,7 +656,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        void gRegistrations_AddClick( object sender, EventArgs e )
+        protected void gRegistrations_AddClick( object sender, EventArgs e )
         {
             NavigateToLinkedPage( "RegistrationPage", "RegistrationId", 0, "RegistrationInstanceId", hfRegistrationInstanceId.ValueAsInt() );
         }
@@ -668,7 +676,7 @@ namespace RockWeb.Blocks.Event
                 {
                     int registrationInstanceId = registration.RegistrationInstanceId;
 
-                    if ( !UserCanEdit && 
+                    if ( !UserCanEdit &&
                         !registration.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) &&
                         !registration.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
                     {
@@ -759,8 +767,8 @@ namespace RockWeb.Blocks.Event
                                     }
 
                                     break;
-                                } 
-                            
+                                }
+
                             case RegistrationPersonFieldType.Birthdate:
                                 {
                                     var drpBirthdateFilter = phRegistrantFormFieldFilters.FindControl( "drpBirthdateFilter" ) as DateRangePicker;
@@ -926,7 +934,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
-        void gRegistrants_RowDataBound( object sender, GridViewRowEventArgs e )
+        private void gRegistrants_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             var registrant = e.Row.DataItem as RegistrationRegistrant;
             if ( registrant != null )
@@ -981,7 +989,7 @@ namespace RockWeb.Blocks.Event
                         }
                     }
                 }
-                
+
                 // Set the Fees
                 var lFees = e.Row.FindControl( "lFees" ) as Literal;
                 if ( lFees != null )
@@ -999,7 +1007,6 @@ namespace RockWeb.Blocks.Event
                         lFees.Text = feeDesc.AsDelimited( "<br/>" );
                     }
                 }
-
             }
         }
 
@@ -1009,7 +1016,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        void gRegistrants_AddClick( object sender, EventArgs e )
+        private void gRegistrants_AddClick( object sender, EventArgs e )
         {
             NavigateToLinkedPage( "RegistrationPage", "RegistrationId", 0, "RegistrationInstanceId", hfRegistrationInstanceId.ValueAsInt() );
         }
@@ -1087,7 +1094,6 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The e.</param>
         protected void fPayments_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
-
             switch ( e.Key )
             {
                 case "Date Range":
@@ -1128,19 +1134,19 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
-        void gPayments_RowDataBound( object sender, GridViewRowEventArgs e )
+        private void gPayments_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             var transaction = e.Row.DataItem as FinancialTransaction;
-            var lRegistrar = e.Row.FindControl("lRegistrar") as Literal;
-            var lRegistrants = e.Row.FindControl("lRegistrants") as Literal;
+            var lRegistrar = e.Row.FindControl( "lRegistrar" ) as Literal;
+            var lRegistrants = e.Row.FindControl( "lRegistrants" ) as Literal;
 
             if ( transaction != null && lRegistrar != null && lRegistrants != null )
             {
                 var registrars = new List<string>();
                 var registrants = new List<string>();
 
-                var registrationIds = transaction.TransactionDetails.Select( d => d.EntityId).ToList();
-                foreach( var registration in PaymentRegistrations
+                var registrationIds = transaction.TransactionDetails.Select( d => d.EntityId ).ToList();
+                foreach ( var registration in PaymentRegistrations
                     .Where( r => registrationIds.Contains( r.Id ) ) )
                 {
                     if ( registration.PersonAlias != null && registration.PersonAlias.Person != null )
@@ -1150,7 +1156,7 @@ namespace RockWeb.Blocks.Event
                         string url = LinkedPageUrl( "RegistrationPage", qryParams );
                         registrars.Add( string.Format( "<a href='{0}'>{1}</a>", url, registration.PersonAlias.Person.FullName ) );
 
-                        foreach( var registrant in registration.Registrants )
+                        foreach ( var registrant in registration.Registrants )
                         {
                             if ( registrant.PersonAlias != null && registrant.PersonAlias.Person != null )
                             {
@@ -1227,7 +1233,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
-        void gLinkages_RowDataBound( object sender, GridViewRowEventArgs e )
+        protected void gLinkages_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
@@ -1286,7 +1292,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        void gLinkages_AddClick( object sender, EventArgs e )
+        protected void gLinkages_AddClick( object sender, EventArgs e )
         {
             NavigateToLinkedPage( "LinkagePage", "LinkageId", 0, "RegistrationInstanceId", hfRegistrationInstanceId.ValueAsInt() );
         }
@@ -1352,11 +1358,11 @@ namespace RockWeb.Blocks.Event
         {
             int? parentGroupId = gpGroupPlacementParentGroup.SelectedValueAsInt();
 
-            SetUserPreference( string.Format( "ParentGroup_{0}_{1}", BlockId, hfRegistrationInstanceId.Value),
+            SetUserPreference( string.Format( "ParentGroup_{0}_{1}", BlockId, hfRegistrationInstanceId.Value ),
                 parentGroupId.HasValue ? parentGroupId.Value.ToString() : "", true );
 
             var groupPickerField = gGroupPlacements.Columns.OfType<GroupPickerField>().FirstOrDefault();
-            if (groupPickerField != null )
+            if ( groupPickerField != null )
             {
                 groupPickerField.RootGroupId = parentGroupId;
             }
@@ -1364,10 +1370,15 @@ namespace RockWeb.Blocks.Event
             BindGroupPlacementGrid();
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbPlaceInGroup control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbPlaceInGroup_Click( object sender, EventArgs e )
         {
             var col = gGroupPlacements.Columns.OfType<GroupPickerField>().FirstOrDefault();
-            if (col != null )
+            if ( col != null )
             {
                 var placements = new Dictionary<int, List<int>>();
 
@@ -1381,7 +1392,7 @@ namespace RockWeb.Blocks.Event
                         if ( groupId.HasValue )
                         {
                             int registrantId = (int)gGroupPlacements.DataKeys[row.RowIndex].Value;
-                            placements.AddOrIgnore( groupId.Value, new List<int>());
+                            placements.AddOrIgnore( groupId.Value, new List<int>() );
                             placements[groupId.Value].Add( registrantId );
                         }
                     }
@@ -1401,7 +1412,7 @@ namespace RockWeb.Blocks.Event
                     // Get any groups that were selected
                     var groupIds = placements.Keys.ToList();
                     foreach ( var group in new GroupService( rockContext )
-                        .Queryable("GroupType").AsNoTracking()
+                        .Queryable( "GroupType" ).AsNoTracking()
                         .Where( g => groupIds.Contains( g.Id ) ) )
                     {
                         foreach ( int registrantId in placements[group.Id] )
@@ -1434,7 +1445,7 @@ namespace RockWeb.Blocks.Event
 
             BindGroupPlacementGrid();
         }
-        
+
         #endregion
 
         #endregion
@@ -1500,7 +1511,7 @@ namespace RockWeb.Blocks.Event
                     registrationInstance.IsActive = true;
                     registrationInstance.RegistrationTemplateId = parentTemplateId ?? 0;
 
-                    Guid? accountGuid = GetAttributeValue( "DefaultAccount").AsGuidOrNull();
+                    Guid? accountGuid = GetAttributeValue( "DefaultAccount" ).AsGuidOrNull();
                     if ( accountGuid.HasValue )
                     {
                         var account = new FinancialAccountService( rockContext ).Get( accountGuid.Value );
@@ -1525,7 +1536,7 @@ namespace RockWeb.Blocks.Event
 
                 FollowingsHelper.SetFollowing( registrationInstance, pnlFollowing, this.CurrentPerson );
 
-                // render UI based on Authorized 
+                // render UI based on Authorized
                 bool readOnly = false;
 
                 bool canEdit = UserCanEdit ||
@@ -1564,7 +1575,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 // show send payment reminder link
-                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentReminderPage" ) ) && ((registrationInstance.RegistrationTemplate.SetCostOnInstance.HasValue && registrationInstance.RegistrationTemplate.SetCostOnInstance == true && registrationInstance.Cost.HasValue && registrationInstance.Cost.Value > 0) || registrationInstance.RegistrationTemplate.Cost > 0 ))
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentReminderPage" ) ) && ( ( registrationInstance.RegistrationTemplate.SetCostOnInstance.HasValue && registrationInstance.RegistrationTemplate.SetCostOnInstance == true && registrationInstance.Cost.HasValue && registrationInstance.Cost.Value > 0 ) || registrationInstance.RegistrationTemplate.Cost > 0 ) )
                 {
                     btnSendPaymentReminder.Visible = true;
                 }
@@ -1753,11 +1764,16 @@ namespace RockWeb.Blocks.Event
             }
         }
 
-        private void SetHasPayments ( int registrationInstanceId, RockContext rockContext )
+        /// <summary>
+        /// Sets whether the registration has payments.
+        /// </summary>
+        /// <param name="registrationInstanceId">The registration instance identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void SetHasPayments( int registrationInstanceId, RockContext rockContext )
         {
             var registrationIdQry = new RegistrationService( rockContext )
                 .Queryable().AsNoTracking()
-                .Where( r => 
+                .Where( r =>
                     r.RegistrationInstanceId == registrationInstanceId &&
                     !r.IsTemporary )
                 .Select( r => r.Id );
@@ -1813,7 +1829,7 @@ namespace RockWeb.Blocks.Event
                     var qry = new RegistrationService( rockContext )
                         .Queryable( "PersonAlias.Person,Registrants.PersonAlias.Person,Registrants.Fees.RegistrationTemplateFee" )
                         .AsNoTracking()
-                        .Where( r => 
+                        .Where( r =>
                             r.RegistrationInstanceId == instanceId.Value &&
                             !r.IsTemporary );
 
@@ -1912,7 +1928,6 @@ namespace RockWeb.Blocks.Event
                             } )
                             .ToList();
 
-
                         var ids = new List<int>();
 
                         if ( ddlRegistrationPaymentStatus.SelectedValue == "Paid in Full" )
@@ -1938,7 +1953,7 @@ namespace RockWeb.Blocks.Event
                     {
                         // If sorting by Total Cost or Balance Due, the database query needs to be run first without ordering,
                         // and then ordering needs to be done in memory since TotalCost and BalanceDue are not databae fields.
-                        if ( sortProperty.Property == "TotalCost")
+                        if ( sortProperty.Property == "TotalCost" )
                         {
                             if ( sortProperty.Direction == SortDirection.Ascending )
                             {
@@ -1970,7 +1985,6 @@ namespace RockWeb.Blocks.Event
                         gRegistrations.SetLinqDataSource( qry.OrderByDescending( r => r.CreatedDateTime ) );
                     }
 
-
                     // Get all the payments for any registrations being displayed on the current page.
                     // This is used in the RowDataBound event but queried now so that each row does
                     // not have to query for the data.
@@ -1989,6 +2003,12 @@ namespace RockWeb.Blocks.Event
                                 d.EntityTypeId.Value == registrationEntityType.Id &&
                                 registrationIds.Contains( d.EntityId.Value ) )
                             .ToList();
+                    }
+
+                    var discountCodeHeader = gRegistrations.Columns.GetColumnByHeaderText( "Discount Code" );
+                    if ( discountCodeHeader != null )
+                    {
+                        discountCodeHeader.Visible = GetAttributeValue( "DisplayDiscountCodes" ).AsBoolean();
                     }
 
                     gRegistrations.DataBind();
@@ -2069,7 +2089,7 @@ namespace RockWeb.Blocks.Event
 
                     if ( RegistrantFields != null )
                     {
-                        // Filter by any selected 
+                        // Filter by any selected
                         foreach ( var personFieldType in RegistrantFields
                             .Where( f =>
                                 f.FieldSource == RegistrationFieldSource.PersonField &&
@@ -2096,7 +2116,6 @@ namespace RockWeb.Blocks.Event
                                                         m.Group.CampusId.Value == campusId ) );
                                             }
                                         }
-
 
                                         break;
                                     }
@@ -2328,9 +2347,9 @@ namespace RockWeb.Blocks.Event
 
                             // Get all the group member ids and the group id in current page of query results
                             var groupMemberIds = new List<int>();
-                            GroupLinks = new Dictionary<int,string>();
-                            foreach( var groupMember in currentPageRegistrants
-                                .Where( m => 
+                            GroupLinks = new Dictionary<int, string>();
+                            foreach ( var groupMember in currentPageRegistrants
+                                .Where( m =>
                                     m.GroupMember != null &&
                                     m.GroupMember.Group != null )
                                 .Select( m => m.GroupMember ) )
@@ -2369,13 +2388,12 @@ namespace RockWeb.Blocks.Event
                                 }
                             }
 
-                            // If there are any attributes that were selected to be displayed, we're going 
-                            // to try and read all attribute values in one query and then put them into a 
-                            // custom grid ObjectList property so that the AttributeField columns don't need 
+                            // If there are any attributes that were selected to be displayed, we're going
+                            // to try and read all attribute values in one query and then put them into a
+                            // custom grid ObjectList property so that the AttributeField columns don't need
                             // to do the LoadAttributes and querying of values for each row/column
                             if ( personAttributesIds.Any() || groupMemberAttributesIds.Any() || registrantAttributeIds.Any() )
                             {
-
                                 // Query the attribute values for all rows and attributes
                                 var attributeValues = new AttributeValueService( rockContext )
                                     .Queryable( "Attribute" ).AsNoTracking()
@@ -2407,14 +2425,14 @@ namespace RockWeb.Blocks.Event
                                     .ForEach( a => attributes
                                         .Add( a.Id.ToString() + a.Key, a ) );
 
-                                // Initialize the grid's object list 
+                                // Initialize the grid's object list
                                 gRegistrants.ObjectList = new Dictionary<string, object>();
 
                                 // Loop through each of the current page's registrants and build an attribute
                                 // field object for storing attributes and the values for each of the registrants
                                 foreach ( var registrant in currentPageRegistrants )
                                 {
-                                    // Create a row attribute object 
+                                    // Create a row attribute object
                                     var attributeFieldObject = new AttributeFieldObject();
 
                                     // Add the attributes to the attribute object
@@ -2551,7 +2569,7 @@ namespace RockWeb.Blocks.Event
             }
 
             // Remove any of the dynamic attribute fields on group placements grid
-            foreach( var column in gGroupPlacements.Columns
+            foreach ( var column in gGroupPlacements.Columns
                 .OfType<AttributeField>()
                 .ToList() )
             {
@@ -2643,11 +2661,11 @@ namespace RockWeb.Blocks.Event
                                     birthdateField2.DataField = dataFieldExpression;
                                     birthdateField2.HeaderText = "Birthdate";
                                     birthdateField2.SortExpression = dataFieldExpression;
-                                    gGroupPlacements.Columns.Add( birthdateField2 ); 
-                                    
+                                    gGroupPlacements.Columns.Add( birthdateField2 );
+
                                     break;
                                 }
-                            
+
                             case RegistrationPersonFieldType.Gender:
                                 {
                                     var ddlGenderFilter = new RockDropDownList();
@@ -2671,7 +2689,7 @@ namespace RockWeb.Blocks.Event
                                     gGroupPlacements.Columns.Add( genderField2 );
                                     break;
                                 }
-                            
+
                             case RegistrationPersonFieldType.MaritalStatus:
                                 {
                                     var ddlMaritalStatusFilter = new RockDropDownList();
@@ -2719,7 +2737,6 @@ namespace RockWeb.Blocks.Event
                                 }
                         }
                     }
-
                     else if ( field.Attribute != null )
                     {
                         var attribute = field.Attribute;
@@ -2778,7 +2795,6 @@ namespace RockWeb.Blocks.Event
                             gRegistrants.Columns.Add( boundField );
                             gGroupPlacements.Columns.Add( boundField2 );
                         }
-
                     }
                 }
             }
@@ -2830,7 +2846,7 @@ namespace RockWeb.Blocks.Event
                     // Get all the registrations for this instance
                     PaymentRegistrations = new RegistrationService( rockContext )
                         .Queryable( "PersonAlias.Person,Registrants.PersonAlias.Person" ).AsNoTracking()
-                        .Where( r => 
+                        .Where( r =>
                             r.RegistrationInstanceId == instanceId.Value &&
                             !r.IsTemporary )
                         .ToList();
@@ -2963,6 +2979,10 @@ namespace RockWeb.Blocks.Event
 
         #region Group Placement Tab
 
+        /// <summary>
+        /// Binds the group placement grid.
+        /// </summary>
+        /// <param name="isExporting">if set to <c>true</c> [is exporting].</param>
         private void BindGroupPlacementGrid( bool isExporting = false )
         {
             int? groupId = gpGroupPlacementParentGroup.SelectedValueAsInt();
@@ -2981,7 +3001,7 @@ namespace RockWeb.Blocks.Event
 
                     if ( groupId.HasValue )
                     {
-                        var validGroupIds = new GroupService( rockContext).GetAllDescendents( groupId.Value )
+                        var validGroupIds = new GroupService( rockContext ).GetAllDescendents( groupId.Value )
                             .Select( g => g.Id )
                             .ToList();
 
@@ -3008,7 +3028,7 @@ namespace RockWeb.Blocks.Event
                                 f.PersonFieldType.HasValue &&
                                 f.PersonFieldType.Value == RegistrationPersonFieldType.Campus );
 
-                        // Get all the registrant attributes selected 
+                        // Get all the registrant attributes selected
                         var registrantAttributes = RegistrantFields
                             .Where( f =>
                                 f.Attribute != null &&
@@ -3017,7 +3037,7 @@ namespace RockWeb.Blocks.Event
                             .ToList();
                         registrantAttributeIds = registrantAttributes.Select( a => a.Id ).Distinct().ToList();
 
-                        // Get all the person attributes selected 
+                        // Get all the person attributes selected
                         var personAttributes = RegistrantFields
                             .Where( f =>
                                 f.Attribute != null &&
@@ -3073,9 +3093,9 @@ namespace RockWeb.Blocks.Event
 
                             // Get all the group member ids and the group id in current page of query results
                             var groupMemberIds = new List<int>();
-                            GroupLinks = new Dictionary<int,string>();
-                            foreach( var groupMember in currentPageRegistrants
-                                .Where( m => 
+                            GroupLinks = new Dictionary<int, string>();
+                            foreach ( var groupMember in currentPageRegistrants
+                                .Where( m =>
                                     m.GroupMember != null &&
                                     m.GroupMember.Group != null )
                                 .Select( m => m.GroupMember ) )
@@ -3114,13 +3134,12 @@ namespace RockWeb.Blocks.Event
                                 }
                             }
 
-                            // If there are any attributes that were selected to be displayed, we're going 
-                            // to try and read all attribute values in one query and then put them into a 
-                            // custom grid ObjectList property so that the AttributeField columns don't need 
+                            // If there are any attributes that were selected to be displayed, we're going
+                            // to try and read all attribute values in one query and then put them into a
+                            // custom grid ObjectList property so that the AttributeField columns don't need
                             // to do the LoadAttributes and querying of values for each row/column
                             if ( personAttributesIds.Any() || groupMemberAttributesIds.Any() || registrantAttributeIds.Any() )
                             {
-
                                 // Query the attribute values for all rows and attributes
                                 var attributeValues = new AttributeValueService( rockContext )
                                     .Queryable( "Attribute" ).AsNoTracking()
@@ -3152,14 +3171,14 @@ namespace RockWeb.Blocks.Event
                                     .ForEach( a => attributes
                                         .Add( a.Id.ToString() + a.Key, a ) );
 
-                                // Initialize the grid's object list 
+                                // Initialize the grid's object list
                                 gGroupPlacements.ObjectList = new Dictionary<string, object>();
 
                                 // Loop through each of the current page's registrants and build an attribute
                                 // field object for storing attributes and the values for each of the registrants
                                 foreach ( var registrant in currentPageRegistrants )
                                 {
-                                    // Create a row attribute object 
+                                    // Create a row attribute object
                                     var attributeFieldObject = new AttributeFieldObject();
 
                                     // Add the attributes to the attribute object
@@ -3205,9 +3224,6 @@ namespace RockWeb.Blocks.Event
                     gGroupPlacements.DataBind();
                 }
             }
-
-
-
         }
 
         #endregion
@@ -3248,6 +3264,5 @@ namespace RockWeb.Blocks.Event
         }
 
         #endregion
-
     }
 }
