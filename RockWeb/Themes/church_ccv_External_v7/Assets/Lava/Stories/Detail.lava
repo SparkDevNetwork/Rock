@@ -1,5 +1,6 @@
 {% comment %}
 
+  {% assign detailPage = '/story' %}
   {% include '~~/Assets/Lava/Stories/Detail.lava' %}
 
 {% endcomment %}
@@ -8,7 +9,7 @@
 {% capture pageTitle %}{{ item.Title }} - Stories | {{ 'Global' | Attribute:'OrganizationAbbreviation' }}{% endcapture %}
 {{ pageTitle | SetPageTitle }}
 
-{% assign detailPage = detailPage | Default: '/stories/story' %}
+{% assign detailPage = detailPage | Default: '/story' %}
 
 <header class="storythumb" style="background-image: url('{{ item | Attribute: 'Image', 'Url' }}&maxwidth=1140'); background-position: {{ item | Attribute: 'ImageFocalPoint', 'RawValue' }};">
 </header>

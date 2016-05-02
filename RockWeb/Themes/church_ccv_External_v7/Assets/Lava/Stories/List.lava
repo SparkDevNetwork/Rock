@@ -1,11 +1,11 @@
 {% comment %}
 
-  {% assign detailPage = '/stories/story' %}
+  {% assign detailPage = '/story' %}
   {% include '~~/Assets/Lava/Stories/List.lava' %}
 
 {% endcomment %}
 
-{% assign detailPage = detailPage | Default: '/stories/story' %}
+{% assign detailPage = detailPage | Default: '/story' %}
 
 {% assign firstItem = Items[0] %}
 
