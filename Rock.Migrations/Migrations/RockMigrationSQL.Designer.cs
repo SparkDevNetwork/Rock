@@ -1550,7 +1550,7 @@ namespace Rock.Migrations.Migrations {
         ///&lt;/doc&gt;
         ///*/
         ///
-        ///ALTER PROCEDURE [dbo] [rest of string was truncated]&quot;;.
+        ///CREATE PROCEDURE [dbo [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201605021826400_FamilyAnalyticsUpdates_spCrm_spCrm_FamilyAnalyticsAttendance {
             get {
@@ -1576,6 +1576,46 @@ namespace Rock.Migrations.Migrations {
             get {
                 return ResourceManager.GetString("_201605021826400_FamilyAnalyticsUpdates_spCrm_spCrm_FamilyAnalyticsUpdateVisitDat" +
                         "es", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCheckin_BadgeAttendance]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spCheckin_BadgeAttendance]
+        ///GO
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns the attendance data needed for the Attendance Badge. If no family role (adult/child)
+        ///		is given it is looked up.  If the individual is an adult it will return family attendance if it&apos;s a child
+        ///		it will return the individual&apos;s attendance. If a person is in two families once a [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201605022007364_AttendanceBadgeSpUpdates_spCheckin_BadgeAttendance {
+            get {
+                return ResourceManager.GetString("_201605022007364_AttendanceBadgeSpUpdates_spCheckin_BadgeAttendance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCheckin_WeeksAttendedInDuration]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spCheckin_WeeksAttendedInDuration]
+        ///GO
+        ///
+        ////*
+        ///    &lt;doc&gt;
+        ///	    &lt;summary&gt;
+        /// 		    This function returns the number of weekends a member of a family has attended a weekend service
+        ///		    in the last X weeks.
+        ///	    &lt;/summary&gt;
+        ///
+        ///	    &lt;returns&gt;
+        ///		    * Number of weeks
+        ///	    &lt;/returns&gt;
+        ///	    &lt;param name=&quot;&quot;PersonId&quot;&quot; datatype=&quot;&quot;int&quot;&quot;&gt;The person id to use [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201605022007364_AttendanceBadgeSpUpdates_spCheckin_WeeksAttendedInDuration {
+            get {
+                return ResourceManager.GetString("_201605022007364_AttendanceBadgeSpUpdates_spCheckin_WeeksAttendedInDuration", resourceCulture);
             }
         }
     }
