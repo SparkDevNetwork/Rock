@@ -336,6 +336,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                     checkinGroup.IsPublic = true;
                     checkinGroup.IsSystem = false;
                     checkinGroup.Order = parentGroup.Groups.Any() ? parentGroup.Groups.Max( t => t.Order ) + 1 : 0;
+                    checkinGroup.ParentGroupId = parentGroup.Id;
 
                     groupService.Add( checkinGroup );
 
