@@ -38,6 +38,9 @@ namespace Rock.Client
         public string AssessorParcelId { get; set; }
 
         /// <summary />
+        public string Barcode { get; set; }
+
+        /// <summary />
         public string City { get; set; }
 
         /// <summary />
@@ -45,6 +48,9 @@ namespace Rock.Client
 
         /// <summary />
         public string County { get; set; }
+
+        /// <summary />
+        public int? FirmRoomThreshold { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -98,6 +104,9 @@ namespace Rock.Client
 
         /// <summary />
         public int? PrinterDeviceId { get; set; }
+
+        /// <summary />
+        public int? SoftRoomThreshold { get; set; }
 
         /// <summary />
         public DateTime? StandardizeAttemptedDateTime { get; set; }
@@ -154,9 +163,11 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.AssessorParcelId = source.AssessorParcelId;
+            this.Barcode = source.Barcode;
             this.City = source.City;
             this.Country = source.Country;
             this.County = source.County;
+            this.FirmRoomThreshold = source.FirmRoomThreshold;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GeocodeAttemptedDateTime = source.GeocodeAttemptedDateTime;
@@ -174,6 +185,7 @@ namespace Rock.Client
             this.ParentLocationId = source.ParentLocationId;
             this.PostalCode = source.PostalCode;
             this.PrinterDeviceId = source.PrinterDeviceId;
+            this.SoftRoomThreshold = source.SoftRoomThreshold;
             this.StandardizeAttemptedDateTime = source.StandardizeAttemptedDateTime;
             this.StandardizeAttemptedResult = source.StandardizeAttemptedResult;
             this.StandardizeAttemptedServiceType = source.StandardizeAttemptedServiceType;
