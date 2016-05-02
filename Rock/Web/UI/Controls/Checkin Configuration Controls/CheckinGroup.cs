@@ -195,8 +195,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Gets or sets the group.
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
+        /// <param name="group">The group.</param>
         /// <value>
         /// The group.
         /// </value>

@@ -191,6 +191,7 @@ namespace Rock.Jobs
         /// <param name="personId">The person identifier.</param>
         /// <param name="syncGroup">The synchronize group.</param>
         /// <param name="createLogin">if set to <c>true</c> [create login].</param>
+        /// <param name="requirePasswordReset">if set to <c>true</c> [require password reset].</param>
         private void SendWelcomeEmail( int systemEmailId, int personId, Group syncGroup, bool createLogin, bool requirePasswordReset )
         {
 

@@ -131,6 +131,7 @@ namespace Rock.CheckIn
         /// Initializes a new instance of the <see cref="CheckInState" /> class.
         /// </summary>
         /// <param name="deviceId">The device id.</param>
+        /// <param name="checkinTypeId">The checkin type identifier.</param>
         /// <param name="configuredGroupTypes">The configured group types.</param>
         public CheckInState( int deviceId, int? checkinTypeId, List<int> configuredGroupTypes )
         {
