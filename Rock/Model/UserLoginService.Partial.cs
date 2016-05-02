@@ -278,6 +278,26 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Creates the specified rock context.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="serviceType">Type of the service.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="username">The username.</param>
+        /// <param name="password">The password.</param>
+        /// <param name="isConfirmed">if set to <c>true</c> [is confirmed].</param>
+        /// <param name="isRequirePasswordChange">if set to <c>true</c> [is require password change].</param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentOutOfRangeException">username;Username already exists</exception>
+        /// <exception cref="System.ArgumentException">
+        /// entityTypeId
+        /// or
+        /// Invalid EntityTypeId, entity does not exist;entityTypeId
+        /// or
+        /// Invalid Person, person does not exist;person
+        /// </exception>
         public static UserLogin Create( RockContext rockContext,
             Rock.Model.Person person,
             AuthenticationServiceType serviceType,

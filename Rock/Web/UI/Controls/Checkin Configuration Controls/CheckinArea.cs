@@ -170,8 +170,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Gets the type of the checkin group.
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
+        /// <param name="groupType">Type of the group.</param>
         public void GetGroupTypeValues( GroupType groupType )
         {
             EnsureChildControls();
