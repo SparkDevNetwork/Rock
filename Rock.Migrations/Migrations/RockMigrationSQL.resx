@@ -313,4 +313,13 @@
   <data name="_201604281205403_AttendanceAnalyticsGroupTypes_GroupTypeAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201604281205403_attendanceanalyticsgrouptypes_grouptypeattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_201605021826400_FamilyAnalyticsUpdates_spCrm_FamilyAnalyticsEraDataset" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201605021826400_FamilyAnalyticsUpdates_spCrm_FamilyAnalyticsEraDataset.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201605021826400_FamilyAnalyticsUpdates_spCrm_spCrm_FamilyAnalyticsAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201605021826400_FamilyAnalyticsUpdates_spCrm_spCrm_FamilyAnalyticsAttendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201605021826400_FamilyAnalyticsUpdates_spCrm_spCrm_FamilyAnalyticsUpdateVisitDates" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201605021826400_FamilyAnalyticsUpdates_spCrm_spCrm_FamilyAnalyticsUpdateVisitDates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>
