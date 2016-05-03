@@ -112,7 +112,7 @@ INSERT INTO [dbo].[MetricPartition] (
 SELECT Id
     ,NULL
     ,EntityTypeId
-    ,1
+    ,case when EntityTypeId is null then 0 else 1 end
     ,0
     ,newid()
 FROM Metric
@@ -143,6 +143,8 @@ WHERE mv.Id NOT IN (
             DropColumn("dbo.Metric", "EntityTypeId");
             DropColumn("dbo.MetricValue", "Order");
             DropColumn("dbo.MetricValue", "EntityId");
+
+            RockMigrationHelper.UpdateEntityTypeSingleValueFieldType( "Rock.Model.DefinedValue", Rock.SystemGuid.FieldType.DEFINED_VALUE );
         }
         
         /// <summary>
