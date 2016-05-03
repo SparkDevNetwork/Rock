@@ -52,6 +52,10 @@ If (Test-Path "$rootfolder\temp\web.connectionstrings.config"){
 	Copy-Item "$rootfolder\temp\web.connectionstrings.config" "$webroot" -force
 }
 
+# revert the app offline template
+Write-Host "Removing app offline template"
+Rename-Item $webroot\app_offline.htm app_offline-template.htm -force
+
 # start web publishing service
 Write-Host "Starting Web Publishing Service"
 Start-Service -ServiceName w3svc
