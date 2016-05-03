@@ -14,9 +14,11 @@ Write-Output "Running script as: $env:userdomain\$env:username"
 # stop execution of the deploy if the moves fail
 $ErrorActionPreference = "Stop"
 
-# rename the app offline template
-Write-Host "Loading app offline template"
-Rename-Item $webroot\app_offline-template.htm app_offline.htm -force
+# load the app offline template
+If (Test-Path "$rootfolder\temp\app_offline.htm"){
+	Write-Host "Loading the app offline template"
+	Copy-Item "$rootfolder\temp\app_offline.htm" "$webroot\app_offline.htm" -force
+}
 
 # stop web publishing service - needed to allow the deploy to overwrite the sql server spatial types
 #Write-Host "Stopping Web Publishing Service"

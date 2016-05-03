@@ -53,8 +53,10 @@ If (Test-Path "$rootfolder\temp\web.connectionstrings.config"){
 }
 
 # revert the app offline template
-Write-Host "Removing app offline template"
-Rename-Item $webroot\app_offline.htm app_offline-template.htm -force
+If (Test-Path "$webroot\app_offline.htm"){
+	Write-Host "Removing app offline template"
+	Copy-Item "$webroot\app_offline.htm" "$rootfolder\temp\app_offline.htm" -force
+}
 
 # start web publishing service
 #Write-Host "Starting Web Publishing Service"
