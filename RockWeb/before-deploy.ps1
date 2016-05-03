@@ -14,11 +14,32 @@ Write-Output "Running script as: $env:userdomain\$env:username"
 # stop execution of the deploy if the moves fail
 $ErrorActionPreference = "Stop"
 
+# backup web.config file
+If (Test-Path "$webroot\web.config"){
+	Write-Host "Moving web.config to temp dir"
+	Copy-Item "$webroot\web.config" "$rootfolder\temp" -force
+}
+
+# backup connection string file
+If (Test-Path "$webroot\web.connectionstrings.config"){
+	Write-Host "Moving web.connectionstrings.config to temp dir"
+	Copy-Item "$webroot\web.connectionstrings.config" "$rootfolder\temp" -force
+}
+
 # load the app offline template
 If (Test-Path "$rootfolder\temp\app_offline.htm"){
 	Write-Host "Loading the app offline template"
 	Copy-Item "$rootfolder\temp\app_offline.htm" "$webroot\app_offline.htm" -force
 }
+
+# load the app offline web.config
+If (Test-Path "$rootfolder\temp\app_offline.web.config"){
+	Write-Host "Loading the app offline template"
+	Copy-Item "$rootfolder\temp\app_offline.web.config" "$webroot\web.config" -force
+}
+
+# request a resource to set the timeouts from our new web.config 
+Invoke-WebRequest "$webroot\app_offline.htm"
 
 # stop web publishing service - needed to allow the deploy to overwrite the sql server spatial types
 #Write-Host "Stopping Web Publishing Service"
@@ -50,15 +71,3 @@ If (Test-Path "$rootfolder\temp\app_offline.htm"){
 #	Write-Host "Moving profiles folder to temp directory"
 #	Move-Item "$webroot\profiles" "$rootfolder\temp\profiles"
 #}
-
-# move web.config file
-If (Test-Path "$webroot\web.config"){
-	Write-Host "Moving web.config to temp dir"
-	Copy-Item "$webroot\web.config" "$rootfolder\temp" -force
-}
-
-# move connection string file
-If (Test-Path "$webroot\web.connectionstrings.config"){
-	Write-Host "Moving web.connectionstrings.config to temp dir"
-	Copy-Item "$webroot\web.connectionstrings.config" "$rootfolder\temp" -force
-}

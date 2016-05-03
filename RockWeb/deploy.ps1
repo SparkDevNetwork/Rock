@@ -40,7 +40,7 @@ Write-Output "Running script as: $env:userdomain\$env:username"
 #	Move-Item "$rootfolder\temp\profiles" "$webroot"
 #}
 
-# move web.config file back from temp
+# move web.config file back from temp, also replaces the app_offline.web.config added in before-deploy
 If (Test-Path "$rootfolder\temp\web.config"){
 	Write-Host "Moving web.config from temp dir"
 	Copy-Item "$rootfolder\temp\web.config" "$webroot" -force
