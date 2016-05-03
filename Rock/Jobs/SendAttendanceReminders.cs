@@ -196,7 +196,7 @@ namespace Rock.Jobs
                 {
                     foreach ( var group in occurrences.Where( o => o.Key == leader.GroupId ) )
                     {
-                        var mergeObjects = GlobalAttributesCache.GetMergeFields( leader.Person );
+                        var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields(  null, leader.Person );
                         mergeObjects.Add( "Person", leader.Person );
                         mergeObjects.Add( "Group", leader.Group );
                         mergeObjects.Add( "Occurrence", group.Value.Max() );

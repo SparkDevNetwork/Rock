@@ -3,7 +3,7 @@
   <h3>{{ item.Title }}</h3>
 
   <div>
-    {{ item.Summary }}
+    {{ item | Attribute:'Summary' }}
   </div>
 
   <p class="margin-t-lg">

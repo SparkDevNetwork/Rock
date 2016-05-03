@@ -34,7 +34,7 @@
 
                 <h4 class="js-grid-header"><asp:Literal ID="lWorkflow" runat="server"></asp:Literal></h4>
                 <div class="grid">
-                    <Rock:Grid ID="gWorkflows" runat="server" OnRowSelected="gWorkflows_Edit" >
+                    <Rock:Grid ID="gWorkflows" runat="server" OnRowSelected="gWorkflows_Edit" AllowSorting="true" >
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:RockBoundField DataField="Status" HeaderText="Status" SortExpression="Status" />

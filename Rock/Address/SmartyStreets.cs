@@ -79,7 +79,7 @@ namespace Rock.Address
                 if (candidates.Any())
                 {
                     var candidate = candidates.FirstOrDefault();
-                    resultMsg = string.Format( "record_type: {0}; dpv_match_code: {1}; precision {2}",
+                    resultMsg = string.Format( "RecordType:{0}; DPV MatchCode:{1}; Precision:{2}",
                         candidate.metadata.record_type, candidate.analysis.dpv_match_code, candidate.metadata.precision );
 
                     location.StandardizeAttemptedResult = candidate.analysis.dpv_match_code;

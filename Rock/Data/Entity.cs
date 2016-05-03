@@ -473,6 +473,45 @@ namespace Rock.Data
             return false;
 
         }
+
+        /// <summary>
+        /// Creates a transaction to launch a workflow for this entity.
+        /// </summary>
+        /// <param name="workflowTypeGuid">The workflow type unique identifier.</param>
+        /// <param name="workflowName">Name of the workflow.</param>
+        /// <param name="workflowAttributeValues">Any workflow attribute values that should be set.</param>
+        public void LaunchWorkflow( Guid? workflowTypeGuid, string workflowName = "", Dictionary<string, string> workflowAttributeValues = null )
+        {
+            if ( workflowTypeGuid.HasValue )
+            {
+                var transaction = new Rock.Transactions.LaunchWorkflowTransaction<T>( workflowTypeGuid.Value, workflowName, Id );
+                if ( workflowAttributeValues != null )
+                {
+                    transaction.WorkflowAttributeValues = workflowAttributeValues;
+                }
+                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+            }
+        }
+
+        /// <summary>
+        /// Creates a transaction to launch a workflow for this entity.
+        /// </summary>
+        /// <param name="workflowTypeId">The workflow type identifier.</param>
+        /// <param name="workflowName">Name of the workflow.</param>
+        /// <param name="workflowAttributeValues">Any workflow attribute values that should be set.</param>
+        public void LaunchWorkflow( int? workflowTypeId, string workflowName = "", Dictionary<string, string> workflowAttributeValues = null )
+        {
+            if ( workflowTypeId.HasValue )
+            {
+                var transaction = new Rock.Transactions.LaunchWorkflowTransaction<T>( workflowTypeId.Value, workflowName, Id );
+                if ( workflowAttributeValues != null )
+                {
+                    transaction.WorkflowAttributeValues = workflowAttributeValues;
+                }
+                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+            }
+        }
+
         #endregion
 
         #region Static Methods

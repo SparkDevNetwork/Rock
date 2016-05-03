@@ -71,10 +71,7 @@ namespace Rock.Transactions
 
                     if ( approvers != null )
                     {
-                        var mergeFields = new Dictionary<string, object>();
-                
-                        var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
-                        globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
+                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
 
                         string fromName = Rock.Web.Cache.GlobalAttributesCache.Value("OrganizationName");
                         string fromEmail = Rock.Web.Cache.GlobalAttributesCache.Value( "OrganizationEmail" );

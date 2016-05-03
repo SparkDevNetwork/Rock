@@ -173,6 +173,7 @@ namespace RockWeb.Blocks.Groups
                     return;
                 }
 
+                groupType.ParentGroupTypes.Clear();
                 groupType.ChildGroupTypes.Clear();
 
                 groupTypeService.Delete( groupType );

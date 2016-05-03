@@ -59,10 +59,12 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public virtual ExcelExportBehavior ExcelExportBehavior
         {
-            get { return _excelExportBehavior; }
-            set { _excelExportBehavior = value; }
+            get {
+                object t = ViewState["ExcelExportBehavior"];
+                return ( t == null ) ? ExcelExportBehavior.IncludeIfVisible : (ExcelExportBehavior)t;
+            }
+            set { ViewState["ExcelExportBehavior"] = value; }
         }
-        private ExcelExportBehavior _excelExportBehavior = ExcelExportBehavior.IncludeIfVisible;
 
         /// <summary>
         /// Formats the specified field value for a cell in the <see cref="T:System.Web.UI.WebControls.BoundField" /> object.
