@@ -76,7 +76,7 @@ namespace Rock.Field.Types
             nbHeight.AutoPostBack = true;
             nbHeight.TextChanged += OnQualifierUpdated;
             nbHeight.Label = "Editor Height";
-            nbHeight.Help = "The height of the control in pixels.";
+            nbHeight.Help = "The height of the control in pixels (minimum of 200)";
 
             return controls;
         }
