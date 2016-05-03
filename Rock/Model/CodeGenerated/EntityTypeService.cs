@@ -172,11 +172,6 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<Metric>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Metric.FriendlyTypeName );
-                return false;
-            }  
  
             if ( new Service<NoteType>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {

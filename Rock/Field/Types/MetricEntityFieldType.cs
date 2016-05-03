@@ -56,14 +56,15 @@ namespace Rock.Field.Types
                     if ( metric != null )
                     {
                         formattedValue = metric.Title;
-                        var entityType = EntityTypeCache.Read( metric.EntityTypeId ?? 0 );
+
+                        /*TODO var entityType = EntityTypeCache.Read( metric.EntityTypeId ?? 0 );
                         if ( entityType != null && entityType.SingleValueFieldType != null )
                         {
                             if ( valueParts.Length > 1 )
                             {
                                 formattedValue = string.Format( "{0} - EntityId:{1}", metric.Title, valueParts[1].AsIntegerOrNull() );
                             }
-                        }
+                        }*/
                     }
                 }
             }

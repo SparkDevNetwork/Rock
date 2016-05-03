@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -177,24 +176,23 @@ namespace Rock.Model
         [DataMember]
         public DateTime? LastRunDateTime { get; set; }
 
-        /// <summary>
-        /// Gets or sets the entity type identifier.
-        /// </summary>
-        /// <value>
-        /// The entity type identifier.
-        /// </value>
-        [DataMember]
-        public int? EntityTypeId { get; set; }
-
         #endregion
 
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets a collection that contains all the <see cref="MetricValue">Metric Values</see> (values) for this Metric.
+        /// Gets or sets the metric partitions.
         /// </summary>
         /// <value>
-        /// A collection of <see cref="Rock.Model.MetricValue">MetricValues</see> that are associated with this Metric.
+        /// The metric partitions.
+        /// </value>
+        public virtual ICollection<MetricPartition> MetricPartitions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the metric values.
+        /// </summary>
+        /// <value>
+        /// The metric values.
         /// </value>
         public virtual ICollection<MetricValue> MetricValues { get; set; }
 
@@ -246,21 +244,7 @@ namespace Rock.Model
         /// The metric categories.
         /// </value>
         [DataMember]
-        public virtual ICollection<MetricCategory> MetricCategories
-        {
-            get { return _metricCategories ?? ( _metricCategories = new Collection<MetricCategory>() ); }
-            set { _metricCategories = value; }
-        }
-        private ICollection<MetricCategory> _metricCategories;
-
-        /// <summary>
-        /// Gets or sets the type of the entity.
-        /// </summary>
-        /// <value>
-        /// The type of the entity.
-        /// </value>
-        [DataMember]
-        public virtual Model.EntityType EntityType { get; set; }
+        public virtual ICollection<MetricCategory> MetricCategories { get; set; }
 
         #endregion
 
@@ -312,7 +296,6 @@ namespace Rock.Model
             this.HasOptional( p => p.MetricChampionPersonAlias ).WithMany().HasForeignKey( p => p.MetricChampionPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.AdminPersonAlias ).WithMany().HasForeignKey( p => p.AdminPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Schedule ).WithMany().HasForeignKey( p => p.ScheduleId ).WillCascadeOnDelete( false );
-            this.HasOptional( a => a.EntityType ).WithMany().HasForeignKey( a => a.EntityTypeId ).WillCascadeOnDelete( false );
         }
     }
 

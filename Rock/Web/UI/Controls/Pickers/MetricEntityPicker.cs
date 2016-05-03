@@ -307,11 +307,11 @@ namespace Rock.Web.UI.Controls
                 var metric = new MetricService( new RockContext() ).Get( this.MetricId ?? 0 );
                 int? result = null;
 
-                var metricEntityType = EntityTypeCache.Read( metric.EntityTypeId ?? 0 );
+                /*var metricEntityType = EntityTypeCache.Read( metric.EntityTypeId ?? 0 );
                 if ( metricEntityType != null && metricEntityType.SingleValueFieldType != null && metricEntityType.SingleValueFieldType.Field is IEntityFieldType )
                 {
                     result = ( metricEntityType.SingleValueFieldType.Field as IEntityFieldType ).GetEditValueAsEntityId( _entityTypeEditControl, new Dictionary<string, ConfigurationValue>() );
-                }
+                }*/
 
                 return result;
             }
@@ -327,11 +327,11 @@ namespace Rock.Web.UI.Controls
 
                 var metric = new MetricService( new RockContext() ).Get( this.MetricId ?? 0 );
 
-                var metricEntityType = EntityTypeCache.Read( metric.EntityTypeId ?? 0 );
+               /* var metricEntityType = EntityTypeCache.Read( metric.EntityTypeId ?? 0 );
                 if ( metricEntityType != null && metricEntityType.SingleValueFieldType != null && metricEntityType.SingleValueFieldType.Field is IEntityFieldType )
                 {
                     ( metricEntityType.SingleValueFieldType.Field as IEntityFieldType ).SetEditValueFromEntityId( _entityTypeEditControl, new Dictionary<string, ConfigurationValue>(), value );
-                }
+                }*/
             }
         }
 
@@ -461,12 +461,13 @@ namespace Rock.Web.UI.Controls
             Control entityTypeEditControl = null;
             if ( metric != null )
             {
-                var entityType = EntityTypeCache.Read( metric.EntityTypeId ?? 0 );
+                /*var entityType = EntityTypeCache.Read( metric.EntityTypeId ?? 0 );
                 if ( entityType != null && entityType.SingleValueFieldType != null )
                 {
                     fieldTypeName = entityType.SingleValueFieldType.Name;
                     entityTypeEditControl = entityType.SingleValueFieldType.Field.EditControl( new Dictionary<string, Field.ConfigurationValue>(), string.Format( "{0}_{1}_Picker", this.ID, fieldTypeName ) );
                 }
+                 */ 
             }
 
             // only set the _entityTypeEditControl is needs to be

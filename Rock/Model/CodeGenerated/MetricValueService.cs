@@ -88,14 +88,12 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this MetricValue target, MetricValue source )
         {
             target.Id = source.Id;
-            target.EntityId = source.EntityId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.MetricId = source.MetricId;
             target.MetricValueDateTime = source.MetricValueDateTime;
             target.MetricValueType = source.MetricValueType;
             target.Note = source.Note;
-            target.Order = source.Order;
             target.XValue = source.XValue;
             target.YValue = source.YValue;
             target.CreatedDateTime = source.CreatedDateTime;

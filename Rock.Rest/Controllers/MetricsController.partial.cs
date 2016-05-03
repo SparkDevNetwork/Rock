@@ -42,7 +42,9 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/Metrics/GetHtmlForBlock/{blockId}" )]
         public string GetHtmlForBlock( int blockId, int? entityTypeId = null, int? entityId = null )
         {
-            RockContext rockContext = this.Service.Context as RockContext ?? new RockContext();
+            return "TODO";
+            
+            /* RockContext rockContext = this.Service.Context as RockContext ?? new RockContext();
             Block block = new BlockService( rockContext ).Get( blockId );
             if ( block != null )
             {
@@ -157,7 +159,7 @@ namespace Rock.Rest.Controllers
                 @"<div class='alert alert-danger'> 
                     unable to find block_id: {0}
                 </div>",
-                blockId );
+                blockId );*/
         }
     }
 

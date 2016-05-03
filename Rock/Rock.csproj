@@ -471,6 +471,8 @@
     <Compile Include="Model\GroupScheduleExclusion.cs" />
     <Compile Include="Model\GroupMemberWorkflowTrigger.Partial.cs" />
     <Compile Include="Model\MergeTemplate.cs" />
+    <Compile Include="Model\MetricValuePartition.cs" />
+    <Compile Include="Model\MetricPartition.cs" />
     <Compile Include="Model\PageViewSession.cs" />
     <Compile Include="Model\PageViewUserAgent.cs" />
     <Compile Include="Model\RegistrationRegistrant.cs" />

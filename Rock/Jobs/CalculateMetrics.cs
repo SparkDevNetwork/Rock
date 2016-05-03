@@ -85,7 +85,7 @@ namespace Rock.Jobs
                                 {
                                     var errorMessages = new List<string>();
                                     var qry = metric.DataView.GetQuery( null, null, out errorMessages );
-                                    if ( metric.EntityTypeId.HasValue )
+                                    if ( metric.MetricPartitions.Count > 1 )
                                     {
                                         throw new NotImplementedException( "Partitioned Metrics using DataViews is not supported." );
                                     }
@@ -147,7 +147,7 @@ namespace Rock.Jobs
                                     metricValue.MetricValueDateTime = scheduleDateTime;
                                     metricValue.MetricValueType = MetricValueType.Measure;
                                     metricValue.YValue = resultValue.Value;
-                                    metricValue.EntityId = resultValue.Key > 0 ? resultValue.Key : (int?)null;
+                                   // metricValue.EntityId = resultValue.Key > 0 ? resultValue.Key : (int?)null;
 
                                     metricValueService.Add( metricValue );
                                 }
