@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// MetricValue Service class
+    /// MetricValuePartition Service class
     /// </summary>
-    public partial class MetricValueService : Service<MetricValue>
+    public partial class MetricValuePartitionService : Service<MetricValuePartition>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="MetricValueService"/> class
+        /// Initializes a new instance of the <see cref="MetricValuePartitionService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public MetricValueService(RockContext context) : base(context)
+        public MetricValuePartitionService(RockContext context) : base(context)
         {
         }
 
@@ -48,15 +48,9 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( MetricValue item, out string errorMessage )
+        public bool CanDelete( MetricValuePartition item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<MetricValuePartition>( Context ).Queryable().Any( a => a.MetricValueId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", MetricValue.FriendlyTypeName, MetricValuePartition.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
@@ -64,44 +58,41 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class MetricValueExtensionMethods
+    public static partial class MetricValuePartitionExtensionMethods
     {
         /// <summary>
-        /// Clones this MetricValue object to a new MetricValue object
+        /// Clones this MetricValuePartition object to a new MetricValuePartition object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static MetricValue Clone( this MetricValue source, bool deepCopy )
+        public static MetricValuePartition Clone( this MetricValuePartition source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as MetricValue;
+                return source.Clone() as MetricValuePartition;
             }
             else
             {
-                var target = new MetricValue();
+                var target = new MetricValuePartition();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another MetricValue object to this MetricValue object
+        /// Copies the properties from another MetricValuePartition object to this MetricValuePartition object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this MetricValue target, MetricValue source )
+        public static void CopyPropertiesFrom( this MetricValuePartition target, MetricValuePartition source )
         {
             target.Id = source.Id;
+            target.EntityId = source.EntityId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.MetricId = source.MetricId;
-            target.MetricValueDateTime = source.MetricValueDateTime;
-            target.MetricValueType = source.MetricValueType;
-            target.Note = source.Note;
-            target.XValue = source.XValue;
-            target.YValue = source.YValue;
+            target.MetricPartitionId = source.MetricPartitionId;
+            target.MetricValueId = source.MetricValueId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

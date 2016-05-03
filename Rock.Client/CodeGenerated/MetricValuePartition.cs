@@ -27,12 +27,15 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for MetricValue that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for MetricValuePartition that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class MetricValueEntity
+    public partial class MetricValuePartitionEntity
     {
         /// <summary />
         public int Id { get; set; }
+
+        /// <summary />
+        public int? EntityId { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -41,27 +44,15 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public int MetricId { get; set; }
+        public int? MetricPartitionId { get; set; }
 
         /// <summary />
-        public DateTime? MetricValueDateTime { get; set; }
-
-        /// <summary />
-        public Rock.Client.Enums.MetricValueType MetricValueType { get; set; }
+        public int? MetricValueId { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
-
-        /// <summary />
-        public string Note { get; set; }
-
-        /// <summary />
-        public string XValue { get; set; }
-
-        /// <summary />
-        public decimal? YValue { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -90,21 +81,18 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source MetricValue object
+        /// Copies the base properties from a source MetricValuePartition object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( MetricValue source )
+        public void CopyPropertiesFrom( MetricValuePartition source )
         {
             this.Id = source.Id;
+            this.EntityId = source.EntityId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.MetricId = source.MetricId;
-            this.MetricValueDateTime = source.MetricValueDateTime;
-            this.MetricValueType = source.MetricValueType;
+            this.MetricPartitionId = source.MetricPartitionId;
+            this.MetricValueId = source.MetricValueId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.Note = source.Note;
-            this.XValue = source.XValue;
-            this.YValue = source.YValue;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -116,19 +104,10 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for MetricValue that includes all the fields that are available for GETs. Use this for GETs (use MetricValueEntity for POST/PUTs)
+    /// Client model for MetricValuePartition that includes all the fields that are available for GETs. Use this for GETs (use MetricValuePartitionEntity for POST/PUTs)
     /// </summary>
-    public partial class MetricValue : MetricValueEntity
+    public partial class MetricValuePartition : MetricValuePartitionEntity
     {
-        /// <summary />
-        public long DateTimeStamp { get; set; }
-
-        /// <summary />
-        public ICollection<MetricValuePartition> MetricValuePartitions { get; set; }
-
-        /// <summary />
-        public string SeriesId { get; set; }
-
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
