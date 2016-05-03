@@ -57,9 +57,9 @@ Write-Host "Removing app offline template"
 Rename-Item $webroot\app_offline.htm app_offline-template.htm -force
 
 # start web publishing service
-Write-Host "Starting Web Publishing Service"
-Start-Service -ServiceName w3svc
-Start-Service -ServiceName w3logsvc
+#Write-Host "Starting Web Publishing Service"
+#Start-Service -ServiceName w3svc
+#Start-Service -ServiceName w3logsvc
 
 # create empty migration flag
 New-Item "$webroot\App_Data\Run.Migration" -type file -force

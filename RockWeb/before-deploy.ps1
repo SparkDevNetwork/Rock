@@ -19,9 +19,9 @@ Write-Host "Loading app offline template"
 Rename-Item $webroot\app_offline-template.htm app_offline.htm -force
 
 # stop web publishing service - needed to allow the deploy to overwrite the sql server spatial types
-Write-Host "Stopping Web Publishing Service"
-Stop-Service -ServiceName w3logsvc
-Stop-Service -ServiceName w3svc
+#Write-Host "Stopping Web Publishing Service"
+#Stop-Service -ServiceName w3logsvc
+#Stop-Service -ServiceName w3svc
 
 # delete the content directory in temp
 If (Test-Path "$rootfolder\temp\Content"){
