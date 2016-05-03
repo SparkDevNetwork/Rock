@@ -26,30 +26,30 @@ If (Test-Path "$rootfolder\temp\app_offline.htm"){
 #Stop-Service -ServiceName w3svc
 
 # delete the content directory in temp
-If (Test-Path "$rootfolder\temp\Content"){
-	Remove-Item "$rootfolder\temp\Content" -Force -Confirm:$False -Recurse
-}
+#If (Test-Path "$rootfolder\temp\Content"){
+#	Remove-Item "$rootfolder\temp\Content" -Force -Confirm:$False -Recurse
+#}
 
 # move content folder to temp
-If (Test-Path "$webroot\Content"){
-	Write-Host "Moving content folder to temp directory"
-	Move-Item "$webroot\Content" "$rootfolder\temp\Content"
-}
+#If (Test-Path "$webroot\Content"){
+#	Write-Host "Moving content folder to temp directory"
+#	Move-Item "$webroot\Content" "$rootfolder\temp\Content"
+#}
 
-If (Test-Path "$webroot\checks"){
-	Write-Host "Moving checks folder to temp directory"
-	Move-Item "$webroot\checks" "$rootfolder\temp\checks"
-}
+#If (Test-Path "$webroot\checks"){
+#	Write-Host "Moving checks folder to temp directory"
+#	Move-Item "$webroot\checks" "$rootfolder\temp\checks"
+#}
 
-If (Test-Path "$webroot\documents"){
-	Write-Host "Moving documents folder to temp directory"
-	Move-Item "$webroot\documents" "$rootfolder\temp\documents"
-}
+#If (Test-Path "$webroot\documents"){
+#	Write-Host "Moving documents folder to temp directory"
+#	Move-Item "$webroot\documents" "$rootfolder\temp\documents"
+#}
 
-If (Test-Path "$webroot\profiles"){
-	Write-Host "Moving profiles folder to temp directory"
-	Move-Item "$webroot\profiles" "$rootfolder\temp\profiles"
-}
+#If (Test-Path "$webroot\profiles"){
+#	Write-Host "Moving profiles folder to temp directory"
+#	Move-Item "$webroot\profiles" "$rootfolder\temp\profiles"
+#}
 
 # move web.config file
 If (Test-Path "$webroot\web.config"){
