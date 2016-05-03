@@ -93,7 +93,7 @@ namespace Rock.Rest.Controllers
             {
                 if ( entityId.HasValue )
                 {
-                    qry = qry.Where( a => ( a.Metric.EntityTypeId == entityTypeId && a.EntityId == entityId ) || ( a.Metric.EntityTypeId == null) || ( a.EntityId == null ) );
+                   //TODO qry = qry.Where( a => ( a.Metric.EntityTypeId == entityTypeId && a.EntityId == entityId ) || ( a.Metric.EntityTypeId == null) || ( a.EntityId == null ) );
                 }
             }
 
@@ -141,7 +141,8 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/MetricValues/GetSeriesName/{metricId}/{seriesId}" )]
         public string GetSeriesName( int metricId, int seriesId )
         {
-            var rockContext = new RockContext();
+            return "TODO";
+            /*var rockContext = new RockContext();
             int? entityTypeId = new MetricService( rockContext ).Queryable().Where( a => a.Id == metricId ).Select( s => s.EntityTypeId ).FirstOrDefault();
             if ( entityTypeId.HasValue )
             {
@@ -161,7 +162,7 @@ namespace Rock.Rest.Controllers
                 }
             }
 
-            return null;
+            return null;*/
         }
     }
 }

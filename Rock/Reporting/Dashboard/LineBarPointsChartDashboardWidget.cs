@@ -224,7 +224,7 @@ namespace Rock.Reporting.Dashboard
                             var metric = new Rock.Model.MetricService( rockContext ).Get( this.MetricId ?? 0 );
                             if ( metric != null )
                             {
-                                entityTypeCache = EntityTypeCache.Read( metric.EntityTypeId ?? 0 );
+                            // TODO   entityTypeCache = EntityTypeCache.Read( metric.EntityTypeId ?? 0 );
                             }
                         }
                     }

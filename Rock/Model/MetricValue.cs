@@ -15,11 +15,12 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
-
 using Rock.Chart;
 using Rock.Data;
 
@@ -30,7 +31,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "MetricValue" )]
     [DataContract]
-    public partial class MetricValue : Model<MetricValue>, IOrdered, IChartData
+    public partial class MetricValue : Model<MetricValue>, IChartData
     {
         #region Entity Properties
 
@@ -67,16 +68,6 @@ namespace Rock.Model
         public decimal? YValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
-        /// </summary>
-        /// <value>
-        /// Order.
-        /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
-        public int Order { get; set; }
-
-        /// <summary>
         /// Gets or sets the MetricId.
         /// </summary>
         /// <value>
@@ -106,16 +97,6 @@ namespace Rock.Model
         [Previewable]
         public DateTime? MetricValueDateTime { get; set; }
 
-        /// <summary>
-        /// Gets or sets the entity identifier.
-        /// </summary>
-        /// <value>
-        /// The entity identifier.
-        /// </value>
-        [Index]
-        [DataMember]
-        public int? EntityId { get; set; }
-
         #endregion
 
         #region Virtual Properties
@@ -127,6 +108,15 @@ namespace Rock.Model
         /// The metric.
         /// </value>
         public virtual Metric Metric { get; set; }
+
+        /// <summary>
+        /// Gets or sets the metric value partitions.
+        /// </summary>
+        /// <value>
+        /// The metric value partitions.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<MetricValuePartition> MetricValuePartitions { get; set; }
 
         #endregion
 
@@ -165,7 +155,7 @@ namespace Rock.Model
         {
             get
             {
-                return string.Format( "{0}", this.EntityId ?? 0 );
+                return string.Format( "{0}", this.MetricValuePartitions.Select( a => a.Id ).ToList().AsDelimited( "," ) );
             }
         }
 
@@ -174,7 +164,7 @@ namespace Rock.Model
         /// </summary>
         public override Security.ISecured ParentAuthority
         {
-            get 
+            get
             {
                 return this.Metric != null ? this.Metric : base.ParentAuthority;
             }
@@ -188,7 +178,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.XValue;
+            return this.YValue.ToString();
         }
 
         #endregion
