@@ -40,18 +40,6 @@ Write-Output "Running script as: $env:userdomain\$env:username"
 #	Move-Item "$rootfolder\temp\profiles" "$webroot"
 #}
 
-# move web.config file back from temp, also replaces the app_offline.web.config added in before-deploy
-If (Test-Path "$rootfolder\temp\web.config"){
-	Write-Host "Moving web.config from temp dir"
-	Copy-Item "$rootfolder\temp\web.config" "$webroot" -force
-}
-
-# move connection string file back from temp
-If (Test-Path "$rootfolder\temp\web.connectionstrings.config"){
-	Write-Host "Moving web.connectionstrings.config from temp dir"
-	Copy-Item "$rootfolder\temp\web.connectionstrings.config" "$webroot" -force
-}
-
 # start web publishing service
 #Write-Host "Starting Web Publishing Service"
 #Start-Service -ServiceName w3svc
@@ -80,8 +68,20 @@ If (Test-Path "$webroot\before-deploy.ps1"){
 # 	Remove-Item c:\appveyor -Force -Confirm:$False -Recurse
 # }
 
-# revert the app offline template
+# move connection string file back from temp
+If (Test-Path "$rootfolder\temp\web.connectionstrings.config"){
+	Write-Host "Moving web.connectionstrings.config from temp dir"
+	Copy-Item "$rootfolder\temp\web.connectionstrings.config" "$webroot" -force
+}
+
+# remove the app offline flag
 If (Test-Path "$webroot\app_offline.htm"){
 	Write-Host "Removing app offline template"
 	Remove-Item "$webroot\app_offline.htm"
+}
+
+# move web.config file back from temp (restarts the app pool)
+If (Test-Path "$rootfolder\temp\web.config"){
+	Write-Host "Moving web.config from temp dir"
+	Copy-Item "$rootfolder\temp\web.config" "$webroot" -force
 }

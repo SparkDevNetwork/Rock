@@ -32,12 +32,6 @@ If (Test-Path "$rootfolder\temp\app_offline.htm"){
 	Copy-Item "$rootfolder\temp\app_offline.htm" "$webroot\app_offline.htm" -force
 }
 
-# load the app offline web.config
-If (Test-Path "$rootfolder\temp\app_offline.web.config"){
-	Write-Host "Loading the app offline template"
-	Copy-Item "$rootfolder\temp\app_offline.web.config" "$webroot\web.config" -force
-}
-
 # request a resource to set the timeouts from our new web.config 
 Invoke-WebRequest "$webroot\app_offline.htm"
 
