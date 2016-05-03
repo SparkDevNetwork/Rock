@@ -43,7 +43,7 @@ namespace RockWeb.Plugins.com_centralaz.Utility
         #region Fields
 
         // used for private variables
-        Dictionary<string,object> mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
+        Dictionary<string, object> mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
         private readonly string _USER_PREF_KEY = "MyLavaTestText";
         #endregion
 

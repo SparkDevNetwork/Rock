@@ -584,7 +584,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                         {
 
                             Person person = leader.Person;
-                            string imgPersonTag = Rock.Model.Person.GetPhotoImageTag( null, person.Age, person.Gender, 200, 200 );
+                            string imgPersonTag = Rock.Model.Person.GetPersonPhotoImageTag( person.Id, null, person.Age, person.Gender, null, 200, 200 );
                             if ( person.PhotoId.HasValue )
                             {
                                 lMainMedia.Text = string.Format( "<a href='{0}'>{1}</a>", person.PhotoUrl, imgPersonTag );

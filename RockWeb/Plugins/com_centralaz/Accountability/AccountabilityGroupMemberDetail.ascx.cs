@@ -421,7 +421,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
                 }
 
                 // Setup Image
-                string imgTag = Rock.Model.Person.GetPhotoImageTag( person.PhotoId, person.Age, person.Gender, 120, 120 );
+                string imgTag = Rock.Model.Person.GetPersonPhotoImageTag( person.Id, person.PhotoId, person.Age, person.Gender, null, 120, 120 );
                 if ( person.PhotoId.HasValue )
                 {
                     lImage.Text = string.Format( "<a href='{0}'>{1}</a>", person.PhotoUrl, imgTag );

@@ -208,7 +208,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         {
             var images = GetImageList();
 
-            var mergeFields = new Dictionary<string, object>();
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
             // add image
             if ( images.Count > 0 )
@@ -224,11 +224,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             mergeFields.Add( "YAxis", GetAttributeValue( "YAxis" ) );
             mergeFields.Add( "ImageTitle", GetAttributeValue( "FeatureTitle" ) );
 
-            mergeFields.Add( "CurrentPerson", CurrentPerson );
             mergeFields.Add( "CurrentUser", CurrentUser );
-
-            var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
 
             lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 

@@ -154,18 +154,13 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
 
         public void LoadContent()
         {
-            var mergeFields = new Dictionary<string, object>();
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
             // add linked pages
             Dictionary<string, object> linkedPages = new Dictionary<string, object>();
             linkedPages.Add( "MyAccountPage", LinkedPageUrl( "MyAccountPage", null ) );
             mergeFields.Add( "LinkedPages", linkedPages );
-
-            mergeFields.Add( "CurrentPerson", CurrentPerson );
             mergeFields.Add( "CurrentUser", CurrentUser );
-
-            var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
 
             lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 

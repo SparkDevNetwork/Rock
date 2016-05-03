@@ -236,7 +236,7 @@ namespace com.centralaz.Calendar.Jobs
 
                                 if ( additionalDetails )
                                 {
-                                    var mergeFields = new Dictionary<string, object>();
+                                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                                     mergeFields.Add( "Registrant", registrant );
                                     mergeFields.Add( "Registration", registration );
 
@@ -246,9 +246,6 @@ namespace com.centralaz.Calendar.Jobs
                                     String relativeUrl = String.Format( "page/{0}?RegistrationId={1}&Guid={2}&Key={3}", pageId, registration.Id, registration.Guid, encodedEmail );
 
                                     mergeFields.Add( "MagicUrl", relativeUrl );
-
-                                    var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
-                                    globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
 
                                     recipients.Add( new RecipientData( registrant.Email, mergeFields ) );
                                 }

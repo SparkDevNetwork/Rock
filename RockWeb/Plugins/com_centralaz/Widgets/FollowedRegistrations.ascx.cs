@@ -129,10 +129,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbEdit_Click( object sender, EventArgs e )
         {
-            var mergeFields = new Dictionary<string, object>();
-            mergeFields.Add( "CurrentPerson", CurrentPerson );
-            var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
             var registrationEntityType = EntityTypeCache.Read( "5CD9C0C8-C047-61A0-4E36-0FDB8496F066".AsGuid() );
 
@@ -334,10 +331,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             pnlEdit.Visible = false;
             pnlView.Visible = true;
 
-            var mergeFields = new Dictionary<string, object>();
-            mergeFields.Add( "CurrentPerson", CurrentPerson );
-            var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
             var entityType = EntityTypeCache.Read( "5CD9C0C8-C047-61A0-4E36-0FDB8496F066".AsGuid() );
 

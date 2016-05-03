@@ -139,12 +139,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                         family.FamilyMembers = members;
                     }
 
-                    var mergeFields = new Dictionary<string, object>();
-                    mergeFields.Add( "CurrentPerson", CurrentPerson );
-
-                    var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-                    globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
-
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                     mergeFields.Add( "Families", families );
                     mergeFields.Add( "DetailPage", LinkedPageUrl( "DetailPage", null ) );
                     mergeFields.Add( "CanEdit", GetAttributeValue( "CanEdit" ).AsBoolean() );

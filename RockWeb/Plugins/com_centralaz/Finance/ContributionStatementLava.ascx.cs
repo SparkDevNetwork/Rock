@@ -97,7 +97,7 @@ namespace RockWeb.Plugins.com_centralaz.Finance
                 var targetPerson = CurrentPerson;
                 if ( targetPerson != null )
                 {
-                    var mergeObjects = GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
                     var contributionTypeGuid = Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid();
                     var transactionDetailService = new FinancialTransactionService( rockContext );
@@ -144,7 +144,7 @@ namespace RockWeb.Plugins.com_centralaz.Finance
                         yearsMergeObjects.Add( transactionDictionary );
                     }
 
-                    mergeObjects.Add( "Transactions", yearsMergeObjects );
+                    mergeFields.Add( "Transactions", yearsMergeObjects );
 
                     // Add Yearly Totals
                     var qryTransactionDetails = qry.SelectMany( a => a.TransactionDetails );
@@ -159,8 +159,8 @@ namespace RockWeb.Plugins.com_centralaz.Finance
                     var summaryList = accountSummaryQry.ToList();
                     var grandTotalAmount = ( summaryList.Count > 0 ) ? summaryList.Sum( a => a.TotalAmount ?? 0 ) : 0;
 
-                    mergeObjects.Add( "Totals", summaryList );
-                    mergeObjects.Add( "FinalTotal", grandTotalAmount );
+                    mergeFields.Add( "Totals", summaryList );
+                    mergeFields.Add( "FinalTotal", grandTotalAmount );
 
                     //Add Giving People
                     var givingPeopleList = new PersonService( rockContext ).Queryable()
@@ -173,19 +173,18 @@ namespace RockWeb.Plugins.com_centralaz.Finance
                                 m.GroupRoleId == adultRoleId ) )
                                 .ToList();
 
-                    mergeObjects.Add( "GivingPeople", givingPeopleList );
-                    mergeObjects.Add( "GivingAdults", givingAdultList );
-                    mergeObjects.Add( "CurrentPerson", CurrentPerson );
+                    mergeFields.Add( "GivingPeople", givingPeopleList );
+                    mergeFields.Add( "GivingAdults", givingAdultList );
 
                     lContent.Text = string.Empty;
                     if ( GetAttributeValue( "EnableDebug" ).AsBooleanOrNull().GetValueOrDefault( false ) )
                     {
-                        lContent.Text = mergeObjects.lavaDebugInfo( rockContext );
+                        lContent.Text = mergeFields.lavaDebugInfo( rockContext );
                     }
 
                     string template = GetAttributeValue( "LavaTemplate" );
 
-                    lContent.Text += template.ResolveMergeFields( mergeObjects ).ResolveClientIds( upnlContent.ClientID );
+                    lContent.Text += template.ResolveMergeFields( mergeFields ).ResolveClientIds( upnlContent.ClientID );
                 }
             }
         }

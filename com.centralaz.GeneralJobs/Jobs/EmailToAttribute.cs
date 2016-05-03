@@ -193,7 +193,7 @@ namespace com.centralaz.GeneralJobs.Jobs
                 }
                 catch ( Exception e )
                 {
-                    LogToFile( "Error while reading Inbox of the configured Exchange account." );
+                    LogToFile( "Error while reading Inbox of the configured Exchange account." + e );
                 }
             }
             catch ( Exception ex )

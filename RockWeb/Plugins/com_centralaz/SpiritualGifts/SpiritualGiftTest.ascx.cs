@@ -301,15 +301,11 @@ namespace Rockweb.Plugins.com_centralaz.SpiritualGifts
             pnlResults.Visible = false;
 
             // Resolve the text field merge fields
-            var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( _targetPerson );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, _targetPerson );
             if ( _targetPerson != null )
             {
                 mergeFields.Add( "Person", _targetPerson );
             }
-            //TODO
-            //Rock.Web.Cache.GlobalAttributesCache.Read().AttributeValues
-            //    .ToList()
-            //    .ForEach( v => mergeFields.Add( v.Key, v.Value ) );
 
             lInstructions.Text = GetAttributeValue( "Instructions" ).ResolveMergeFields( mergeFields );
         }

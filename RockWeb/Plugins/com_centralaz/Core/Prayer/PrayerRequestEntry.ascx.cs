@@ -262,9 +262,9 @@ namespace RockWeb.Plugins.com_centralaz.Core.Prayer
                 pnlReceipt.Visible = true;
 
                 // Build success text that is Lava capable
-                var mergeObjects = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
-                mergeObjects.Add( "PrayerRequest", prayerRequest );
-                nbMessage.Text = GetAttributeValue( "SaveSuccessText" ).ResolveMergeFields( mergeObjects );
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                mergeFields.Add( "PrayerRequest", prayerRequest );
+                nbMessage.Text = GetAttributeValue( "SaveSuccessText" ).ResolveMergeFields( mergeFields );
 
                 // Resolve any dynamic url references
                 string appRoot = ResolveRockUrl( "~/" );
@@ -274,7 +274,7 @@ namespace RockWeb.Plugins.com_centralaz.Core.Prayer
                 // show liquid help for debug
                 if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
                 {
-                    nbMessage.Text += mergeObjects.lavaDebugInfo();
+                    nbMessage.Text += mergeFields.lavaDebugInfo();
                 }
             }
         }

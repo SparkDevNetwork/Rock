@@ -74,18 +74,13 @@ namespace com.centralaz.Prayer.Jobs
                         var prayerRequestList = prayerRequestQry.ToList();
                         foreach ( var prayerRequest in prayerRequestList )
                         {
-                            var mergeFields = new Dictionary<string, object>();
-                            mergeFields.Add( "PrayerRequest", prayerRequest );
-
                             Byte[] b = System.Text.Encoding.UTF8.GetBytes( prayerRequest.Email );
                             string encodedEmail = Convert.ToBase64String( b );
-
                             String relativeUrl = String.Format( "page/{0}?Guid={1}&Key={2}", pageId, prayerRequest.Guid, encodedEmail );
 
+                            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+                            mergeFields.Add( "PrayerRequest", prayerRequest );
                             mergeFields.Add( "MagicUrl", relativeUrl );
-
-                            var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
-                            globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
 
                             recipients.Add( new RecipientData( prayerRequest.Email, mergeFields ) );
                         }

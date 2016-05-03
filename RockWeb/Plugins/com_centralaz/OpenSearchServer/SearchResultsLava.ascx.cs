@@ -121,8 +121,7 @@ namespace RockWeb.Plugins.com_centralaz.OpenSearchServer
         /// </summary>
         /// <param name="query">The query.</param>
         public void LoadContent( string query )
-        {
-            var mergeFields = new Dictionary<string, object>();
+        {           
             var results = new ExpandoObject();
 
             try
@@ -136,12 +135,9 @@ namespace RockWeb.Plugins.com_centralaz.OpenSearchServer
                 nbWarning.Visible = true;
             }
 
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "Results", results );
-            mergeFields.Add( "CurrentPerson", CurrentPerson );
             mergeFields.Add( "CurrentUser", CurrentUser );
-
-            var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
 
             lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 

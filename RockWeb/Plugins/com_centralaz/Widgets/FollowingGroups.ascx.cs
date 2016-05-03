@@ -101,10 +101,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
 
         protected void LoadContent()
         {
-            var mergeFields = new Dictionary<string, object>();
-            mergeFields.Add( "CurrentPerson", CurrentPerson );
-            var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
             var entityType = EntityTypeCache.Read( Rock.SystemGuid.EntityType.GROUP.AsGuid() );
 

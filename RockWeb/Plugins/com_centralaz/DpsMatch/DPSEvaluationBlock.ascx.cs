@@ -303,7 +303,7 @@ namespace RockWeb.Plugins.com_centralaz.DpsMatch
             foreach ( Match match in matchList )
             {
                 var person = match.PersonAlias.Person;
-                rowValues.Add( Person.GetPhotoImageTag( match.PersonAlias.Person, 65, 65, "merge-photo" ) );
+                rowValues.Add( Person.GetPersonPhotoImageTag( match.PersonAlias.Person, 65, 65, "merge-photo" ) );
             }
             tbl.Rows.Add( rowValues.ToArray() );
 

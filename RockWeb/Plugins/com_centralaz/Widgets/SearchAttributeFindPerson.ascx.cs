@@ -367,13 +367,13 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         {
             var rockContext = new RockContext();
             var attributeService = new AttributeService( rockContext );
-            var entityTypeId = new EntityTypeService( rockContext ).Get( Rock.SystemGuid.EntityType.PERSON.AsGuid() ).Id;
-            if ( entityTypeId != null )
+            var entityType = new EntityTypeService( rockContext ).Get( Rock.SystemGuid.EntityType.PERSON.AsGuid() );
+            if ( entityType != null )
             {
                 ddlAttribute.Items.Clear();
                 var personAttributeList = attributeService.Queryable()
                     .Where( a =>
-                            a.EntityTypeId == entityTypeId );
+                            a.EntityTypeId == entityType.Id );
                 foreach ( var attribute in personAttributeList.ToList() )
                 {
                     ddlAttribute.Items.Add( new ListItem( attribute.Name, attribute.Id.ToString() ) );
@@ -637,10 +637,10 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                     var recordType = DefinedValueCache.Read( RecordTypeValueId.Value );
                     if ( recordType != null )
                     {
-                        return Person.GetPhotoUrl( this.PhotoId, this.Age, this.Gender, recordType.Guid );
+                        return Person.GetPersonPhotoUrl(this.Id, this.PhotoId, this.Age, this.Gender, recordType.Guid );
                     }
                 }
-                return Person.GetPhotoUrl( this.PhotoId, this.Age, this.Gender );
+                return Person.GetPersonPhotoUrl( this.Id, this.PhotoId, this.Age, this.Gender, null );
             }
             private set { }
         }

@@ -201,14 +201,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
 
                         if ( content.Content.HasMergeFields() || enableDebug )
                         {
-                            var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-                            if ( CurrentPerson != null )
-                            {
-                                // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
-                                mergeFields.Add( "Person", CurrentPerson );
-                                mergeFields.Add( "CurrentPerson", CurrentPerson );
-                            }
-
+                            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                             mergeFields.Add( "Campuses", Rock.Web.Cache.CampusCache.All() );
                             mergeFields.Add( "PageParameter", PageParameters() );
                             mergeFields.Add( "CurrentPage", GetPageProperties() );
