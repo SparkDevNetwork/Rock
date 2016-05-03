@@ -52,12 +52,6 @@ If (Test-Path "$rootfolder\temp\web.connectionstrings.config"){
 	Copy-Item "$rootfolder\temp\web.connectionstrings.config" "$webroot" -force
 }
 
-# revert the app offline template
-If (Test-Path "$webroot\app_offline.htm"){
-	Write-Host "Removing app offline template"
-	Copy-Item "$webroot\app_offline.htm" "$rootfolder\temp\app_offline.htm" -force
-}
-
 # start web publishing service
 #Write-Host "Starting Web Publishing Service"
 #Start-Service -ServiceName w3svc
@@ -85,3 +79,10 @@ If (Test-Path "$webroot\before-deploy.ps1"){
 # If (Test-Path c:\appveyor){
 # 	Remove-Item c:\appveyor -Force -Confirm:$False -Recurse
 # }
+
+
+# revert the app offline template
+If (Test-Path "$webroot\app_offline.htm"){
+	Write-Host "Removing app offline template"
+	Remove-Item "$webroot\app_offline.htm" "$rootfolder\temp\app_offline.htm" -force
+}
