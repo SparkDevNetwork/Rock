@@ -201,11 +201,6 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
 
                         if ( content.Content.HasMergeFields() || enableDebug )
                         {
-                            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-                            mergeFields.Add( "Campuses", Rock.Web.Cache.CampusCache.All() );
-                            mergeFields.Add( "PageParameter", PageParameters() );
-                            mergeFields.Add( "CurrentPage", GetPageProperties() );
-
                             var contextObjects = new Dictionary<string, object>();
                             foreach ( var contextEntityType in RockPage.GetContextEntityTypes() )
                             {
@@ -218,17 +213,18 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                                         contextObjects.Add( type.Name, contextEntity );
                                     }
                                 }
-
                             }
+
+                            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                            mergeFields.Add( "CurrentPage", GetPageProperties() );
+                            mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
+                            mergeFields.Add( "CurrentPersonCanEdit", IsUserAuthorized( Authorization.EDIT ) );
+                            mergeFields.Add( "CurrentPersonCanAdministrate", IsUserAuthorized( Authorization.ADMINISTRATE ) );
 
                             if ( contextObjects.Any() )
                             {
                                 mergeFields.Add( "Context", contextObjects );
                             }
-
-                            mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
-                            mergeFields.Add( "CurrentPersonCanEdit", IsUserAuthorized( Authorization.EDIT ) );
-                            mergeFields.Add( "CurrentPersonCanAdministrate", IsUserAuthorized( Authorization.ADMINISTRATE ) );
 
                             html = content.Content.ResolveMergeFields( mergeFields );
 

@@ -129,8 +129,6 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbEdit_Click( object sender, EventArgs e )
         {
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-
             var registrationEntityType = EntityTypeCache.Read( "5CD9C0C8-C047-61A0-4E36-0FDB8496F066".AsGuid() );
 
             if ( registrationEntityType != null )
@@ -331,8 +329,6 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             pnlEdit.Visible = false;
             pnlView.Visible = true;
 
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-
             var entityType = EntityTypeCache.Read( "5CD9C0C8-C047-61A0-4E36-0FDB8496F066".AsGuid() );
 
             if ( entityType != null )
@@ -430,6 +426,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                 bool hasMore = ( quantity < items.Count );
                 items = items.Take( quantity ).ToList();
 
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                 mergeFields.Add( "FollowingItems", items );
                 mergeFields.Add( "HasMore", hasMore );
                 mergeFields.Add( "Quantity", quantity );

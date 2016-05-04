@@ -101,8 +101,6 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
 
         protected void LoadContent()
         {
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-
             var entityType = EntityTypeCache.Read( Rock.SystemGuid.EntityType.GROUP.AsGuid() );
 
             if ( entityType != null )
@@ -130,6 +128,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                     groupList.OrderByDescending( g => g.CampusId.HasValue ).ThenBy( g => g.CampusId ).ThenBy( g => g.GroupTypeId );
                 }
 
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                 mergeFields.Add( "FollowingItems", qryFollowedItems );
                 mergeFields.Add( "SortProperty", sortProperty );
                 mergeFields.Add( "EntityType", entityType.FriendlyName );
