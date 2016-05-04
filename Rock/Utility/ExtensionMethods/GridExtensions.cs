@@ -26,7 +26,7 @@ namespace Rock
         /// Gets the grid column that matches the header text.
         /// </summary>
         /// <param name="dataControlFieldCollection">The data control field collection.</param>
-        /// <see cref="http://stackoverflow.com/a/22005731/1853867" />
+        /// <see href="http://stackoverflow.com/a/22005731/1853867" />
         /// <param name="headerText">The header text.</param>
         /// <returns></returns>
         public static DataControlField GetColumnByHeaderText( this DataControlFieldCollection dataControlFieldCollection, string headerText )
