@@ -23,7 +23,7 @@ namespace RockWeb.Plugins.church_ccv.Core
     public partial class BulkPhotoUpdater : Rock.Web.UI.RockBlock
     {
         #region Fields
-        
+
         private Guid? _photoProcessedAttribute = new Guid();
 
         #endregion
@@ -98,7 +98,7 @@ namespace RockWeb.Plugins.church_ccv.Core
                 {
                     var dataViewVal = this.GetBlockUserPreference( "DataView" );
                     dvpDataView.SetValue( dataViewVal );
-                    
+
                     UpdatePhotoList();
 
                     ShowDetail( hfPhotoIds.Value.SplitDelimitedValues().FirstOrDefault().AsIntegerOrNull() );
@@ -138,70 +138,89 @@ namespace RockWeb.Plugins.church_ccv.Core
 
                 // Get photo data so we can see dimensions
                 var photoData = binaryFileService.Queryable().Where( b => b.Id == photoId ).FirstOrDefault();
-
-                using ( System.Drawing.Image image = System.Drawing.Image.FromStream( photoData.ContentStream ) )
-                {
-                    if ( image.Width == image.Height )
-                    {
-                        lDimenions.Text = @"<span class='label label-success'>" + image.Width.ToString() + " X " + image.Height.ToString() + "</span>";
-                    }
-                    else
-                    {
-                        lDimenions.Text = @"<span class='label label-danger'>" + image.Width.ToString() + " X " + image.Height.ToString() + "</span>";
-                    }
-
-                    if ( image.Width >= 500 || image.Height >= 500 )
-                    {
-                        lSizeCheck.Text = "<span class='label label-danger'>Too Large</span>";
-                        lSizeCheck.Visible = true;
-                        
-                    }
-                    else
-                    {
-                        lSizeCheck.Visible = false;
-                    }
-
-                    btnShrink.Visible = image.Width > 500;
-                    nbShrinkPercent.Visible = btnShrink.Visible;
-
-                    var photoKiloBytes = photoData.ContentStream.Length / 1024;
-                    if ( photoKiloBytes > 1024 )
-                    {
-                        lByteSizeCheck.Text = string.Format( @"<span class='label label-danger'>{0}KB</span>", photoData.ContentStream.Length / 1024 );
-                        lByteSizeCheck.Visible = true;
-                    }
-                    else if ( photoKiloBytes > 100 )
-                    {
-                        lByteSizeCheck.Text = string.Format( @"<span class='label label-warning'>{0}KB</span>", photoData.ContentStream.Length / 1024 );
-                        lByteSizeCheck.Visible = true;
-                    }
-                    else
-                    {
-                        lByteSizeCheck.Text = string.Format( @"<span class='label label-info'>{0}KB</span>", photoData.ContentStream.Length / 1024 );
-                        lByteSizeCheck.Visible = true;
-                    }
-                }
+                UpdateDetails( photoData );
 
                 var person = personService.Queryable()
                         .Where( p => p.PhotoId == photoId )
                         .FirstOrDefault();
 
-                imgPhoto.Label = String.Empty;
-                lName.Text = string.Format( "<span class='first-word'>{0}</span> {1}", person.NickName, person.LastName );
-                lAge.Text = person.Age.ToString() + " yrs old";
-                lGender.Text = person.Gender.ToString();
-                lConnectionStatus.Text = person.ConnectionStatusValue.ToString();
+                imgPhoto.Label = string.Empty;
+                if ( person != null )
+                {
+                    lName.Text = string.Format( "<span class='first-word'>{0}</span> {1}", person.NickName, person.LastName );
+                    lAge.Text = person.Age.ToString() + " yrs old";
+                    lGender.Text = person.Gender.ToString();
+                    lConnectionStatus.Text = person.ConnectionStatusValue.ToString();
+                }
 
                 pnlDetails.Visible = true;
             }
             else
             {
-                lProgressBar.Text = "";
+                lProgressBar.Text = string.Empty;
 
                 pnlDetails.Visible = false;
                 nbWarning.Visible = true;
             }
+        }
 
+        /// <summary>
+        /// Updates the details.
+        /// </summary>
+        /// <param name="photoData">The photo data.</param>
+        private void UpdateDetails( BinaryFile photoData )
+        {
+            var photoDateTime = photoData.ModifiedDateTime ?? photoData.CreatedDateTime;
+            if ( photoDateTime.HasValue )
+            {
+                lPhotoDate.Text = photoDateTime.Value.ToString( "G" );
+            }
+            else
+            {
+                lPhotoDate.Text = "unknown date/time";
+            }
+
+            using ( System.Drawing.Image image = System.Drawing.Image.FromStream( photoData.ContentStream ) )
+            {
+                if ( image.Width == image.Height )
+                {
+                    lDimenions.Text = @"<span class='label label-success'>" + image.Width.ToString() + " X " + image.Height.ToString() + "</span>";
+                }
+                else
+                {
+                    lDimenions.Text = @"<span class='label label-danger'>" + image.Width.ToString() + " X " + image.Height.ToString() + "</span>";
+                }
+
+                if ( image.Width >= 500 || image.Height >= 500 )
+                {
+                    lSizeCheck.Text = "<span class='label label-danger'>Too Large</span>";
+                    lSizeCheck.Visible = true;
+                }
+                else
+                {
+                    lSizeCheck.Visible = false;
+                }
+
+                btnShrink.Visible = image.Width > 500;
+                nbShrinkWidth.Visible = btnShrink.Visible;
+
+                var photoKiloBytes = photoData.ContentStream.Length / 1024;
+                if ( photoKiloBytes > 1024 )
+                {
+                    lByteSizeCheck.Text = string.Format( @"<span class='label label-danger'>{0}KB</span>", photoData.ContentStream.Length / 1024 );
+                    lByteSizeCheck.Visible = true;
+                }
+                else if ( photoKiloBytes > 100 )
+                {
+                    lByteSizeCheck.Text = string.Format( @"<span class='label label-warning'>{0}KB</span>", photoData.ContentStream.Length / 1024 );
+                    lByteSizeCheck.Visible = true;
+                }
+                else
+                {
+                    lByteSizeCheck.Text = string.Format( @"<span class='label label-info'>{0}KB</span>", photoData.ContentStream.Length / 1024 );
+                    lByteSizeCheck.Visible = true;
+                }
+            }
         }
 
         /// <summary>
@@ -349,33 +368,15 @@ namespace RockWeb.Plugins.church_ccv.Core
         {
             if ( imgPhoto.CropBinaryFileId.HasValue )
             {
+                btnShrink.Visible = false;
+                nbShrinkWidth.Visible = false;
                 var rockContext = new RockContext();
                 var binaryFileService = new BinaryFileService( rockContext );
 
                 // Get photo data so we can see dimensions
                 var photoData = binaryFileService.Get( imgPhoto.BinaryFileId.Value );
 
-                using ( System.Drawing.Image image = System.Drawing.Image.FromStream( photoData.ContentStream ) )
-                {
-                    if ( image.Width == image.Height )
-                    {
-                        lDimenions.Text = @"<span class='label label-success'>" + image.Width.ToString() + " X " + image.Height.ToString() + "</span>";
-                    }
-                    else
-                    {
-                        lDimenions.Text = @"<span class='label label-danger'>" + image.Width.ToString() + " X " + image.Height.ToString() + "</span>";
-                    }
-
-                    if ( image.Width >= 500 || image.Height >= 500 )
-                    {
-                        lSizeCheck.Text = @"<span class='label label-danger'>Too Large</span>";
-                        lSizeCheck.Visible = true;
-                    }
-                    else
-                    {
-                        lSizeCheck.Visible = false;
-                    }
-                }
+                UpdateDetails( photoData );
             }
         }
 
@@ -407,15 +408,15 @@ namespace RockWeb.Plugins.church_ccv.Core
             using ( System.Drawing.Image image = System.Drawing.Image.FromStream( photoData.ContentStream ) )
             {
                 ResizeSettings settings = new ResizeSettings();
-                var keepPercent = ( 100.00 - nbShrinkPercent.Value ) / 100.00;
-                settings.MaxWidth = (int)( image.Width * keepPercent );
-                
+                settings.MaxWidth = nbShrinkWidth.Text.AsIntegerOrNull() ?? 3600;
+
                 // ImageResizer is limited to 3600 on resize
                 settings.MaxHeight = 3600;
                 if ( settings.MaxWidth > 3600 )
                 {
                     settings.MaxWidth = 3600;
                 }
+
                 MemoryStream resizedStream = new MemoryStream();
 
                 ImageBuilder.Current.Build( photoData.ContentStream, resizedStream, settings );
@@ -424,7 +425,6 @@ namespace RockWeb.Plugins.church_ccv.Core
 
                 ShowDetail( imgPhoto.BinaryFileId.Value );
             }
-
         }
     }
 }
