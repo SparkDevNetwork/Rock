@@ -386,7 +386,7 @@ namespace Rock.Model
                                 transaction.Summary += "Note: Downloaded transaction amount was greater than the configured allocation amounts for the Scheduled Transaction.";
                                 var transactionDetail = transaction.TransactionDetails
                                     .OrderByDescending( d => d.Amount )
-                                    .First();
+                                    .FirstOrDefault();
                                 if ( transactionDetail == null && defaultAccount != null )
                                 {
                                     transactionDetail = new FinancialTransactionDetail();
