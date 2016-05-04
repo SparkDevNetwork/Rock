@@ -51,16 +51,15 @@ namespace RockWeb.Blocks.Reporting
             if ( Page.IsPostBack )
             {
                 // create dynamic controls
-                FieldTypeCache fieldType = FieldTypeCache.Read( hfSingleValueFieldTypeId.Value.AsInteger() );
-                if ( fieldType != null )
+                var rockContext = new RockContext();
+                var metricValue = new MetricValueService( rockContext ).Get( hfMetricValueId.Value.AsInteger() );
+                if ( metricValue == null )
                 {
-                    var entityTypeEditControl = fieldType.Field.EditControl( new Dictionary<string, Rock.Field.ConfigurationValue>(), "entityTypeEditControl" );
-                    phEntityTypeEntityIdValue.Controls.Add( entityTypeEditControl );
-                    if ( entityTypeEditControl is IRockControl )
-                    {
-                        ( entityTypeEditControl as IRockControl ).Label = fieldType.Name;
-                    }
+                    metricValue = new MetricValue { MetricId = hfMetricId.Value.AsInteger() };
+                    metricValue.Metric = new MetricService( rockContext ).Get( metricValue.MetricId );
                 }
+
+                CreateDynamicControls( metricValue, false, false );
             }
 
             if ( !Page.IsPostBack )
@@ -100,6 +99,55 @@ namespace RockWeb.Blocks.Reporting
                 else
                 {
                     pnlDetails.Visible = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Creates the dynamic controls.
+        /// </summary>
+        /// <param name="metricValue">The metric value.</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
+        /// <param name="readOnly">if set to <c>true</c> [read only].</param>
+        private void CreateDynamicControls( MetricValue metricValue, bool setValues, bool readOnly )
+        {
+            if ( metricValue != null )
+            {
+                foreach ( var metricPartition in metricValue.Metric.MetricPartitions )
+                {
+                    if ( metricPartition.EntityTypeId.HasValue )
+                    {
+                        var entityTypeCache = EntityTypeCache.Read( metricPartition.EntityTypeId.Value );
+                        if ( entityTypeCache != null && entityTypeCache.SingleValueFieldType != null )
+                        {
+                            var fieldType = entityTypeCache.SingleValueFieldType;
+                            var entityTypeEditControl = fieldType.Field.EditControl( new Dictionary<string, Rock.Field.ConfigurationValue>(), string.Format( "metricPartition{0}_entityTypeEditControl", metricPartition.Id ) );
+                            var panelCol4 = new Panel { CssClass = "col-md-4" };
+                            panelCol4.Controls.Add( entityTypeEditControl );
+                            phMetricValuePartitions.Controls.Add( panelCol4 );
+                            if ( entityTypeEditControl is IRockControl )
+                            {
+                                var entityTypeRockControl = ( entityTypeEditControl as IRockControl );
+                                entityTypeRockControl.Label = metricPartition.Label;
+                                if ( entityTypeEditControl is WebControl )
+                                {
+                                    ( entityTypeEditControl as WebControl ).Enabled = !readOnly;
+                                }
+
+                                if ( setValues )
+                                {
+                                    var metricValuePartition = metricValue.MetricValuePartitions.FirstOrDefault( a => a.MetricPartitionId == metricPartition.Id );
+                                    if ( metricValuePartition != null )
+                                    {
+                                        if ( fieldType.Field is IEntityFieldType )
+                                        {
+                                            ( fieldType.Field as IEntityFieldType ).SetEditValueFromEntityId( entityTypeEditControl, new Dictionary<string, ConfigurationValue>(), metricValuePartition.EntityId );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -153,16 +201,29 @@ namespace RockWeb.Blocks.Reporting
             metricValue.MetricValueDateTime = dpMetricValueDateTime.SelectedDate;
 
             // Get EntityId from EntityType UI controls
-            var metricEntityType = EntityTypeCache.Read( metricValue.Metric.EntityTypeId ?? 0 );
-            Control entityTypeEditControl = phEntityTypeEntityIdValue.FindControl( "entityTypeEditControl" );
-            if ( metricEntityType != null && metricEntityType.SingleValueFieldType != null && metricEntityType.SingleValueFieldType.Field is IEntityFieldType )
+            foreach ( var metricPartition in metricValue.Metric.MetricPartitions )
             {
-                metricValue.EntityId = ( metricEntityType.SingleValueFieldType.Field as IEntityFieldType ).GetEditValueAsEntityId( entityTypeEditControl, new Dictionary<string, ConfigurationValue>() );
+                var metricPartitionEntityType = EntityTypeCache.Read( metricPartition.EntityTypeId ?? 0 );
+                var controlId = string.Format( "metricPartition{0}_entityTypeEditControl", metricPartition.Id );
+                Control entityTypeEditControl = phMetricValuePartitions.FindControl( controlId );
+                var metricValuePartition = metricValue.MetricValuePartitions.FirstOrDefault( a => a.MetricPartitionId == metricPartition.Id );
+                if ( metricValuePartition == null )
+                {
+                    metricValuePartition = new MetricValuePartition();
+                    metricValuePartition.MetricPartitionId = metricPartition.Id;
+                    metricValue.MetricValuePartitions.Add( metricValuePartition );
+                }
+
+                if ( metricPartitionEntityType != null && metricPartitionEntityType.SingleValueFieldType != null && metricPartitionEntityType.SingleValueFieldType.Field is IEntityFieldType )
+                {
+                    metricValuePartition.EntityId = ( metricPartitionEntityType.SingleValueFieldType.Field as IEntityFieldType ).GetEditValueAsEntityId( entityTypeEditControl, new Dictionary<string, ConfigurationValue>() );
+                }
+                else
+                {
+                    metricValuePartition.EntityId = null;
+                }
             }
-            else
-            {
-                metricValue.EntityId = null;
-            }
+
 
             if ( !metricValue.IsValid )
             {
@@ -223,29 +284,6 @@ namespace RockWeb.Blocks.Reporting
             tbNote.Text = metricValue.Note;
             dpMetricValueDateTime.SelectedDate = metricValue.MetricValueDateTime;
 
-            var metricEntityType = EntityTypeCache.Read( metricValue.Metric.EntityTypeId ?? 0 );
-
-            // Setup EntityType UI controls
-            Control entityTypeEditControl = null;
-            if ( metricEntityType != null && metricEntityType.SingleValueFieldType != null )
-            {
-                hfSingleValueFieldTypeId.Value = metricEntityType.SingleValueFieldType.Id.ToString();
-                FieldTypeCache fieldType = FieldTypeCache.Read( hfSingleValueFieldTypeId.Value.AsInteger() );
-                entityTypeEditControl = fieldType.Field.EditControl( new Dictionary<string, Rock.Field.ConfigurationValue>(), "entityTypeEditControl" );
-
-                if ( entityTypeEditControl is IRockControl )
-                {
-                    ( entityTypeEditControl as IRockControl ).Label = fieldType.Name;
-                }
-
-                phEntityTypeEntityIdValue.Controls.Add( entityTypeEditControl );
-                IEntityFieldType entityFieldType = metricEntityType.SingleValueFieldType.Field as IEntityFieldType;
-                if ( entityFieldType != null )
-                {
-                    entityFieldType.SetEditValueFromEntityId( entityTypeEditControl, new Dictionary<string, ConfigurationValue>(), metricValue.EntityId );
-                }
-            }
-
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
 
@@ -262,15 +300,13 @@ namespace RockWeb.Blocks.Reporting
                 btnCancel.Text = "Close";
             }
 
+            CreateDynamicControls( metricValue, true, readOnly );
+
             ddlMetricValueType.Enabled = !readOnly;
             tbXValue.ReadOnly = readOnly;
             tbYValue.ReadOnly = readOnly;
             tbNote.ReadOnly = readOnly;
             dpMetricValueDateTime.Enabled = !readOnly;
-            if ( entityTypeEditControl is WebControl )
-            {
-                ( entityTypeEditControl as WebControl ).Enabled = !readOnly;
-            }
 
             btnSave.Visible = !readOnly;
         }

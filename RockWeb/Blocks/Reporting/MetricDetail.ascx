@@ -120,16 +120,23 @@
             <Rock:ModalDialog ID="mdMetricPartitionDetail" runat="server" Title="Series Partition" ValidationGroup="vg-series-partition" OnSaveClick="mdMetricPartitionDetail_SaveClick">
                 <Content>
                     <asp:HiddenField ID="hfMetricPartitionGuid" runat="server" />
-                    <Rock:RockTextBox ID="tbMetricPartitionLabel" runat="server" Label="Label" Required="true" ValidationGroup="vg-series-partition" />
-                    <Rock:EntityTypePicker ID="etpMetricPartitionEntityType" runat="server" Label="Entity Type" AutoPostBack="true" OnSelectedIndexChanged="etpMetricPartitionEntityType_SelectedIndexChanged" />
-                    <Rock:RockCheckBox ID="cbMetricPartitionIsRequired" runat="server" Label="Is Required" />
-                    
-                    <Rock:PanelWidget ID="pwMetricPartitionAdvanced" Title="Advanced" runat="server">
-                        
-                        <Rock:RockTextBox ID="tbMetricPartitionEntityTypeQualifierColumn" runat="server" Label="Entity Type Qualifier Column" />
-                        <Rock:RockTextBox ID="tbMetricPartitionEntityTypeQualifierValue" runat="server" Label="Entity Type Qualifier Value" />
-                        <Rock:RockDropDownList ID="ddlMetricPartitionDefinedTypePicker" runat="server" Visible="false" Label="Entity Type Qualifier Value" />
-                    </Rock:PanelWidget>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockTextBox ID="tbMetricPartitionLabel" runat="server" Label="Label" Required="true" ValidationGroup="vg-series-partition" />
+                            <Rock:EntityTypePicker ID="etpMetricPartitionEntityType" runat="server" Label="Entity Type" AutoPostBack="true" OnSelectedIndexChanged="etpMetricPartitionEntityType_SelectedIndexChanged" />
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:RockCheckBox ID="cbMetricPartitionIsRequired" runat="server" Label="Is Required" />
+                            <Rock:RockControlWrapper ID="rcwAdvanced" runat="server" Label=" ">
+                                <Rock:PanelWidget ID="pwMetricPartitionAdvanced" Title="Advanced" runat="server">
+                                    <Rock:RockTextBox ID="tbMetricPartitionEntityTypeQualifierColumn" runat="server" Label="Entity Type Qualifier Column" />
+                                    <Rock:RockTextBox ID="tbMetricPartitionEntityTypeQualifierValue" runat="server" Label="Entity Type Qualifier Value" />
+                                    <Rock:RockDropDownList ID="ddlMetricPartitionDefinedTypePicker" runat="server" Visible="false" Label="Entity Type Qualifier Value" />
+                                </Rock:PanelWidget>
+                            </Rock:RockControlWrapper>
+                        </div>
+                    </div>
+
                 </Content>
             </Rock:ModalDialog>
 
