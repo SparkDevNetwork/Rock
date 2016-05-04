@@ -125,7 +125,7 @@
                                     <div class="measurechart" style="border: 3px solid <%# Eval("Color") %>; color: <%# Eval("Color") %>;">
                                         <div class="measurechart-legend">
                                             <h1><%# Eval("Title") %></h1>
-                                            <div class="measurechart-legend-value"><span><asp:Literal ID="lChartValue" runat="server" /></span> <i class="fa fa-fw <%# Eval("IconCssClass") %>"></i></div>
+                                            <div class="measurechart-legend-value"><i class="fa fa-fw <%# Eval("IconCssClass") %>"></i> <span><asp:Literal ID="lChartValue" runat="server" /></span></div>
                                         </div>
                                         <div class="chartwrapper">
                                             <Rock:LineChart ID="lcMeasure" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="120px" />
@@ -156,7 +156,7 @@
                                     <div class="measurechart" style="border: 3px solid <%# Eval("Color") %>; color: <%# Eval("Color") %>;">
                                         <div class="measurechart-legend">
                                             <h1><%# Eval("Title") %></h1>
-                                            <div class="measurechart-legend-value"><span><asp:Literal ID="lChartValue" runat="server" /></span> <i class="fa fa-fw <%# Eval("IconCssClass") %>"></i></div>
+                                            <div class="measurechart-legend-value"><i class="fa fa-fw <%# Eval("IconCssClass") %>"></i> <span><asp:Literal ID="lChartValue" runat="server" /></span></div>
                                         </div>
                                         <div class="chartwrapper">
                                             <Rock:LineChart ID="lcMeasure" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="120px" />

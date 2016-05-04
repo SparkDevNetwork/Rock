@@ -596,7 +596,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
         {
             RockContext rockContext = new RockContext();
 
-            if ( cpDetailCampus.SelectedCampusId == null )
+            if ( cpCampusCampus.SelectedCampusId == null )
             {
                 lCampusCampus.Text = "All Campuses ";
             }
@@ -667,35 +667,36 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     )
                     .SelectMany( x => x.d.DefaultIfEmpty(), ( g, u ) => new { Step = g.s, Datamart = u } );
 
-                var results = joinedQuery.Select( s =>
-                                new {
-                                    Id = s.Step.Id,
-                                    DateTaken = s.Step.DateTaken,
-                                    StepMeasureTitle = s.Step.StepMeasure.Title,
-                                    StepMeasureId = s.Step.StepMeasureId,
-                                    SundayDate = s.Step.SundayDate,
-                                    PersonId = s.Step.PersonAlias.PersonId,
-                                    FirstName = s.Step.PersonAlias.Person.FirstName,
-                                    NickName = s.Step.PersonAlias.Person.NickName,
-                                    LastName = s.Step.PersonAlias.Person.LastName,
-                                    FullName = s.Step.PersonAlias.Person.LastName + ", " + s.Step.PersonAlias.Person.NickName,
-                                    Campus = s.Step.Campus.Name,
-                                    Address = s.Datamart.Address,
-                                    State = s.Datamart.State, 
-                                    City = s.Datamart.City,
-                                    PostalCode = s.Datamart.PostalCode,
-                                    Email = s.Datamart.Email,
-                                    ConnectionStatus = s.Datamart.ConnectionStatusName,
-                                    FamilyRole = s.Datamart.FamilyRole,
-                                    FirstVisitDate = s.Datamart.FirstVisitDate, 
-                                    BaptismDate = s.Datamart.BaptismDate, 
-                                    StartingPointDate = s.Datamart.StartingPointDate, 
-                                    InNeighborhoodGroup = s.Datamart.InNeighborhoodGroup, 
-                                    IsServing = s.Datamart.IsServing,
-                                    IsEra = s.Datamart.IsEra,
-                                    IsCoaching = s.Datamart.IsCoaching,
-                                    IsGiving = (s.Datamart.GivingLast12Months != null) ? (s.Datamart.GivingLast12Months.Value > titheThreshold) : false
-                                }
+                var results = joinedQuery.Where(s => s.Datamart.FamilyRole == "Adult")
+                                .Select( s =>
+                                    new {
+                                        Id = s.Step.Id,
+                                        DateTaken = s.Step.DateTaken,
+                                        StepMeasureTitle = s.Step.StepMeasure.Title,
+                                        StepMeasureId = s.Step.StepMeasureId,
+                                        SundayDate = s.Step.SundayDate,
+                                        PersonId = s.Step.PersonAlias.PersonId,
+                                        FirstName = s.Step.PersonAlias.Person.FirstName,
+                                        NickName = s.Step.PersonAlias.Person.NickName,
+                                        LastName = s.Step.PersonAlias.Person.LastName,
+                                        FullName = s.Step.PersonAlias.Person.LastName + ", " + s.Step.PersonAlias.Person.NickName,
+                                        Campus = s.Step.Campus.Name,
+                                        Address = s.Datamart.Address,
+                                        State = s.Datamart.State, 
+                                        City = s.Datamart.City,
+                                        PostalCode = s.Datamart.PostalCode,
+                                        Email = s.Datamart.Email,
+                                        ConnectionStatus = s.Datamart.ConnectionStatusName,
+                                        FamilyRole = s.Datamart.FamilyRole,
+                                        FirstVisitDate = s.Datamart.FirstVisitDate, 
+                                        BaptismDate = s.Datamart.BaptismDate, 
+                                        StartingPointDate = s.Datamart.StartingPointDate, 
+                                        InNeighborhoodGroup = s.Datamart.InNeighborhoodGroup, 
+                                        IsServing = s.Datamart.IsServing,
+                                        IsEra = s.Datamart.IsEra,
+                                        IsCoaching = s.Datamart.IsCoaching,
+                                        IsGiving = (s.Datamart.GivingLast12Months != null) ? (s.Datamart.GivingLast12Months.Value > titheThreshold) : false
+                                    }
                 );
 
                 gStepDetails.SetLinqDataSource( results.OrderBy(s => s.DateTaken) );
@@ -771,7 +772,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                         d => d.Person.PersonId,
                         ( s, d ) => new { Step = s, Datamart = d }
                     )
-                    .Where(g => g.Datamart.Neighborhood.NeighborhoodPastorId == pastorId)
+                    .Where(g => g.Datamart.Neighborhood.NeighborhoodPastorId == pastorId && g.Datamart.Person.FamilyRole == "Adult" )
                     .Select(g => g.Step);
 
                 previousYearData = previousYearData.Join(
@@ -780,7 +781,30 @@ namespace RockWeb.Plugins.church_ccv.Steps
                         d => d.Person.PersonId,
                         ( s, d ) => new { Step = s, Datamart = d }
                     )
-                    .Where( g => g.Datamart.Neighborhood.NeighborhoodPastorId == pastorId )
+                    .Where( g => g.Datamart.Neighborhood.NeighborhoodPastorId == pastorId && g.Datamart.Person.FamilyRole == "Adult" )
+                    .Select( g => g.Step );
+            }
+            else
+            {
+                // don't need pastor so just link to datamart to filter adults
+                var datamartPersonQry = new DatamartPersonService( rockContext ).Queryable().AsNoTracking();
+
+                currentData = currentData.Join(
+                        datamartPersonQry,
+                        s => s.PersonAlias.PersonId,
+                        d => d.PersonId,
+                        ( s, d ) => new { Step = s, Datamart = d }
+                    )
+                    .Where( g => g.Datamart.FamilyRole == "Adult" )
+                    .Select( g => g.Step );
+
+                previousYearData = previousYearData.Join(
+                        datamartPersonQry,
+                        s => s.PersonAlias.PersonId,
+                        d => d.PersonId,
+                        ( s, d ) => new { Step = s, Datamart = d }
+                    )
+                    .Where( g => g.Datamart.FamilyRole == "Adult" )
                     .Select( g => g.Step );
             }
 
