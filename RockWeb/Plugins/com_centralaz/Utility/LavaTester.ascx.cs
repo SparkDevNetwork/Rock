@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -45,6 +46,13 @@ namespace RockWeb.Plugins.com_centralaz.Utility
         // used for private variables
         Dictionary<string, object> mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
         private readonly string _USER_PREF_KEY = "MyLavaTestText";
+        private readonly string _USER_PREF_PERSON = "MyLavaTest:Person";
+        private readonly string _USER_PREF_GROUP = "MyLavaTest:Group";
+        private readonly string _USER_PREF_WORKFLOWTYPE = "MyLavaTest:WorkflowTYPE";
+        private readonly string _USER_PREF_WORKFLOW = "MyLavaTest:Workflow";
+        private readonly string _USER_PREF_EDITORHEIGHT = "MyLavaTestEditorHeight";
+        private readonly string _EMPTY_SAVED_SLOT = "empty saved slot";
+        private readonly string _TEXT_MUTED = "text-muted";
         #endregion
 
         #region Properties
@@ -72,7 +80,29 @@ namespace RockWeb.Plugins.com_centralaz.Utility
             if ( string.IsNullOrEmpty( ceLava.Text ) )
             {
                 var text = GetUserPreference( _USER_PREF_KEY );
+                if ( ! string.IsNullOrEmpty( GetUserPreference( _USER_PREF_EDITORHEIGHT ) ) )
+                {
+                    ceLava.EditorHeight = GetUserPreference( _USER_PREF_EDITORHEIGHT );
+                    nbHeight.Text = ceLava.EditorHeight;
+                }
                 ceLava.Text = text;
+
+
+                // Set up the Merge Fields
+                ceLava.MergeFields.Clear();
+
+                ceLava.MergeFields.Add( "Person^Rock.Model.Person|Selected \"Person\"" );
+                ceLava.MergeFields.Add( "Group^Rock.Model.Group|Selected \"Group\"" );
+                ceLava.MergeFields.Add( "Workflow^Rock.Model.Workflow|Selected \"Workflow\"" );
+
+                ceLava.MergeFields.Add( "GlobalAttribute" );
+                ceLava.MergeFields.Add( "CurrentPerson^Rock.Model.Person|Current Person" );
+                ceLava.MergeFields.Add( "Campuses" );
+                ceLava.MergeFields.Add( "RockVersion" );
+                ceLava.MergeFields.Add( "PageParameter" );
+                ceLava.MergeFields.Add( "Date" );
+                ceLava.MergeFields.Add( "Time" );
+                ceLava.MergeFields.Add( "DayOfWeek" );
 
                 // Only show instructions the first time.
                 if ( !string.IsNullOrEmpty( text ) )
@@ -94,7 +124,9 @@ namespace RockWeb.Plugins.com_centralaz.Utility
 
             if ( ! Page.IsPostBack )
             {
-                mergeFields.Add( "CurrentPerson", CurrentPerson );
+                // Load the storage slots
+                BindData();
+
                 if ( cbEnableDebug.Checked )
                 {
                     litDebug.Text = mergeFields.lavaDebugInfo();
@@ -118,13 +150,135 @@ namespace RockWeb.Plugins.com_centralaz.Utility
 
         }
 
+        /// <summary>
+        /// Saves the user's lava into a user preference storage slot
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbSave_Click( object sender, EventArgs e )
+        {
+            var item = ddlSaveSlot.SelectedItem;
+            if ( string.IsNullOrWhiteSpace( ceLava.Text ) )
+            {
+                item.Text = _EMPTY_SAVED_SLOT;
+                AddCssClass( item, _TEXT_MUTED );
+                SetUserPreference( string.Format( "{0}:{1}", _USER_PREF_KEY, item.Value ), string.Empty );
+            }
+            else
+            {
+                item.Text = ceLava.Text.TrimStart().Truncate( 100 );
+                RemoveCssClass( item, _TEXT_MUTED );
+                SetUserPreference( string.Format( "{0}:{1}", _USER_PREF_KEY, item.Value ), ceLava.Text );
+            }
+        }
+
+        /// <summary>
+        ///  Loads the user's lava from the selected storage slot
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbLoadLava_Click( object sender, EventArgs e )
+        {
+            var item = ddlSaveSlot.SelectedItem;
+            ceLava.Text = GetUserPreference( string.Format( "{0}:{1}", _USER_PREF_KEY, item.Value ) );
+        }
+
+        /// <summary>
+        /// Handles the TextChanged event of the nbHeight control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void nbHeight_TextChanged( object sender, EventArgs e )
+        {
+            if ( nbHeight.Text.AsInteger() < 150 )
+            {
+                nbHeight.Text = "150";
+            }
+            ceLava.EditorHeight = nbHeight.Text;
+            SetUserPreference( _USER_PREF_EDITORHEIGHT, nbHeight.Text, true );
+        }
+
         #endregion
 
         #region Methods
 
-        // helper functional methods (like BindGrid(), etc.)
+        /// <summary>
+        /// Binds the storage slots from the users saved data.
+        /// </summary>
+        private void BindData()
+        {
+            var savedLava = string.Empty;
+            for ( int i = 0; i < 5; i++ )
+            {
+                savedLava = GetUserPreference( string.Format( "{0}:{1}", _USER_PREF_KEY, i ) );
+
+                if ( string.IsNullOrWhiteSpace( savedLava ) )
+                {
+                    AddCssClass( ddlSaveSlot.Items[i], _TEXT_MUTED );
+                    savedLava = _EMPTY_SAVED_SLOT;
+                }
+                else
+                {
+                    savedLava = savedLava.TrimStart().Truncate( 100 );
+                }
+
+                ddlSaveSlot.Items[i].Text = savedLava;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                ppPerson.PersonId = GetUserPreference( _USER_PREF_PERSON ).AsIntegerOrNull();
+                if ( ppPerson.PersonId != null )
+                {
+                    var person = new PersonService( rockContext ).Get( ppPerson.PersonId ?? -1 );
+                    ppPerson.SetValue( person );
+                }
+
+                var groupId = GetUserPreference( _USER_PREF_GROUP ).AsIntegerOrNull();
+                if ( groupId != null )
+                {
+                    gpGroups.SetValue( groupId );
+                }
+
+                var workflowTypeId = GetUserPreference( _USER_PREF_WORKFLOWTYPE ).AsIntegerOrNull();
+                if ( workflowTypeId != null )
+                {
+                    wfpWorkflowType.SetValue( workflowTypeId );
+                    BindWorkflowsUsingWorkflowType( workflowTypeId, setUserPreference: false );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds a CSS class name to an ListItem.
+        /// </summary>
+        /// <param name="htmlControl">The html control.</param>
+        /// <param name="className">Name of the class.</param>
+        public static void AddCssClass( ListItem item, string className )
+        {
+            string match = @"\b" + className + "\b";
+            string css = item.Attributes["class"] ?? string.Empty;
+
+            if ( !Regex.IsMatch( css, match, RegexOptions.IgnoreCase ) )
+                item.Attributes["class"] = Regex.Replace( css + " " + className, @"^\s+", "", RegexOptions.IgnoreCase );
+        }
+
+        /// <summary>
+        /// Removes a CSS class name from a ListItem.
+        /// </summary>
+        /// <param name="htmlControl">The html control.</param>
+        /// <param name="className">Name of the class.</param>
+        public static void RemoveCssClass( ListItem item, string className )
+        {
+            string match = @"\s*\b" + className + @"\b";
+            string css = item.Attributes["class"] ?? string.Empty;
+
+            if ( Regex.IsMatch( css, match, RegexOptions.IgnoreCase ) )
+                item.Attributes["class"] = Regex.Replace( css, match, "", RegexOptions.IgnoreCase );
+        }
 
         #endregion
+
         protected void bbTest_Click( object sender, EventArgs e )
         {
             nbInstructions.Visible = false;
@@ -134,39 +288,44 @@ namespace RockWeb.Plugins.com_centralaz.Utility
                 // Save lava test string for future use.
                 SetUserPreference( _USER_PREF_KEY, ceLava.Text );
 
-                RockContext rockContext = new RockContext();
-                PersonService personService = new PersonService( rockContext );
-                Person person;
-                if ( ppPerson.PersonId.HasValue )
+                using ( var rockContext = new RockContext() )
                 {
-                    person = personService.Get( ppPerson.PersonId ?? -1, false );
-                }
-                else
-                {
-                    person = CurrentPerson;
-                }
-
-                if ( gpGroups != null && gpGroups.SelectedValueAsInt().HasValue )
-                {
-                    GroupService groupService = new GroupService( rockContext );
-                    mergeFields.Add( "Group", groupService.Get( gpGroups.SelectedValueAsInt() ?? -1 ) );
-                }
-
-                if ( ddlWorkflows != null && ddlWorkflows.Items.Count > 0 && ddlWorkflows.SelectedValueAsInt().HasValue )
-                {
-                    WorkflowService workflowService = new WorkflowService( rockContext );
-                    if ( mergeFields.ContainsKey( "Workflow" ) )
+                    PersonService personService = new PersonService( rockContext );
+                    Person person;
+                    if ( ppPerson.PersonId.HasValue )
                     {
-                        mergeFields.Remove( "Workflow" );
+                        person = personService.Get( ppPerson.PersonId ?? -1, false );
                     }
-                    mergeFields.Add( "Workflow", workflowService.Get( ddlWorkflows.SelectedValueAsInt() ?? -1 ) );
+                    else
+                    {
+                        person = CurrentPerson;
+                    }
+
+                    // Get Lava
+                    mergeFields.Add( "Person", person );
+
+                    if ( gpGroups != null && gpGroups.SelectedValueAsInt().HasValue )
+                    {
+                        GroupService groupService = new GroupService( rockContext );
+                        mergeFields.Add( "Group", groupService.Get( gpGroups.SelectedValueAsInt() ?? -1 ) );
+                    }
+
+                    if ( ddlWorkflows != null && ddlWorkflows.Items.Count > 0 && ddlWorkflows.SelectedValueAsInt().HasValue )
+                    {
+                        WorkflowService workflowService = new WorkflowService( rockContext );
+                        if ( mergeFields.ContainsKey( "Workflow" ) )
+                        {
+                            mergeFields.Remove( "Workflow" );
+                        }
+
+                        if ( ddlWorkflows.SelectedValueAsInt() != null )
+                        {
+                            mergeFields.Add( "Workflow", workflowService.Get( ddlWorkflows.SelectedValueAsInt() ?? -1 ) );
+                        }
+                    }
+
+                    ResolveLava();
                 }
-
-                // Get Lava
-                mergeFields.Add( "CurrentPerson", CurrentPerson );
-                mergeFields.Add( "Person", person );
-
-                ResolveLava();
             }
             catch( Exception ex )
             {
@@ -175,13 +334,39 @@ namespace RockWeb.Plugins.com_centralaz.Utility
             }
         }
 
+        /// <summary>
+        /// Handles the SelectItem event of the wfpWorkflowType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void wfpWorkflowType_SelectItem( object sender, EventArgs e )
         {
-            RockContext rockContext = new RockContext();
-            WorkflowService workflowService = new WorkflowService( rockContext );
             int? workflowTypeId = wfpWorkflowType.SelectedValueAsInt();
             if ( workflowTypeId.HasValue )
             {
+                SetUserPreference( _USER_PREF_WORKFLOWTYPE, workflowTypeId.Value.ToStringSafe() );
+                BindWorkflowsUsingWorkflowType( workflowTypeId.Value, setUserPreference: true );
+            }
+            else
+            {
+                ddlWorkflows.SetValue( "" );
+                ddlWorkflows.SelectedIndex = -1;
+                ddlWorkflows.Visible = false;
+                ddlWorkflows.Items.Clear();
+                SetUserPreference( _USER_PREF_WORKFLOWTYPE, string.Empty );
+                SetUserPreference( _USER_PREF_WORKFLOW, string.Empty );
+            }
+        }
+
+        /// <summary>
+        /// Binds the type of the workflows using workflow type.
+        /// </summary>
+        private void BindWorkflowsUsingWorkflowType(int? workflowTypeId, bool setUserPreference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                WorkflowService workflowService = new WorkflowService( rockContext );
+
                 var workflows = workflowService.Queryable().AsNoTracking().Where( w => w.WorkflowTypeId == workflowTypeId.Value ).ToList();
                 ddlWorkflows.DataSource = workflows;
                 ddlWorkflows.DataBind();
@@ -189,22 +374,44 @@ namespace RockWeb.Plugins.com_centralaz.Utility
 
                 if ( workflows.Count > 0 )
                 {
-                    mergeFields.Add( "Workflow", workflows[0] );
+                    if ( setUserPreference )
+                    {
+                        SetUserPreference( _USER_PREF_WORKFLOW, workflows[0].Id.ToStringSafe() );
+                        mergeFields.Add( "Workflow", workflows[0] );
+                    }
+                    else
+                    {
+                        var workflowId = GetUserPreference( _USER_PREF_WORKFLOW ).AsIntegerOrNull();
+                        if ( workflowId != null )
+                        {
+                            ddlWorkflows.SetValue( workflowId );
+                            mergeFields.Add( "Workflow", workflows.Where( w =>w.Id == workflowId ).FirstOrDefault() );
+                        }
+                    }
+                    
                     ResolveLava();
                 }
-
             }
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlWorkflows control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlWorkflows_SelectedIndexChanged( object sender, EventArgs e )
         {
             RockContext rockContext = new RockContext();
             WorkflowService workflowService = new WorkflowService( rockContext );
             mergeFields.Add( "Workflow", workflowService.Get( ddlWorkflows.SelectedValueAsInt() ?? -1 ) );
+            SetUserPreference( _USER_PREF_WORKFLOW, ddlWorkflows.SelectedValue );
 
             ResolveLava();
         }
 
+        /// <summary>
+        /// Resolves the lava.
+        /// </summary>
         protected void ResolveLava()
         {
             string lava = ceLava.Text;
@@ -214,6 +421,26 @@ namespace RockWeb.Plugins.com_centralaz.Utility
                 litDebug.Text = mergeFields.lavaDebugInfo();
                 h3DebugTitle.Visible = true;
             }
+        }
+
+        /// <summary>
+        /// Handles the SelectPerson event of the ppPerson control and saves the user preference.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ppPerson_SelectPerson( object sender, EventArgs e )
+        {
+            SetUserPreference( _USER_PREF_PERSON, ppPerson.PersonId.ToStringSafe() );
+        }
+
+        /// <summary>
+        /// Handles the SelectItem event of the gpGroups control and saves the user preference.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gpGroups_SelectItem( object sender, EventArgs e )
+        {
+            SetUserPreference( _USER_PREF_GROUP, gpGroups.SelectedValue );
         }
 }
 }
