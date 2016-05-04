@@ -93,13 +93,36 @@ namespace com.centralaz.DataTransform.Person
         private Expression BuildExpression( IService serviceInstance, IQueryable<int> idQuery, ParameterExpression parameterExpression )
         {
             Guid adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
-            Guid childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
+            Guid marriedGuid = Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid();
+            int marriedDefinedValueId = Rock.Web.Cache.DefinedValueCache.Read( marriedGuid ).Id;
+            Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
 
-            var qry = new PersonService( (RockContext)serviceInstance.Context ).Queryable()
-                .Where( p => p.Members.Where( a => a.GroupRole.Guid == adultGuid && ! idQuery.Contains( a.PersonId ) )
-                    .Any( a => a.Group.Members.Any( c => idQuery.Contains( c.PersonId ) ) ) );
+            //// Spouse is determined if all these conditions are met
+            //// 1) Adult in the same family as Person (GroupType = Family, GroupRole = Adult, and in same Group)
+            //// 2) Opposite Gender as Person
+            //// 3) Both Persons are Married
 
-            return FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );
+            var familyGroupMembers = new GroupMemberService( (RockContext)serviceInstance.Context ).Queryable()
+                .Where( m => m.Group.GroupType.Guid == familyGuid                   // get all family members    
+                    && m.GroupRole.Guid == adultGuid                                // who are adults
+                    && idQuery.Contains( m.PersonId ) );                            // for all people given in the query
+
+            var personSpouseQuery = new PersonService( (RockContext)serviceInstance.Context ).Queryable()
+                .Where( p => familyGroupMembers                                     // now, go through all those family members
+                    .Where( s => s.PersonId == p.Id                                 // where the person
+                        && s.Person.MaritalStatusValueId == marriedDefinedValueId   // is married
+                        && s.GroupRole.Guid == adultGuid )                          // and an adult (redundant?)
+                    .Any( c => c.Group.Members                                      // and look at their family's members
+                        .Any( m =>                                                  // and for any member
+                            m.PersonId != p.Id                                      // that is not the same person
+                            && m.GroupRole.Guid == adultGuid                        // who is also an adult
+                            && m.Person.Gender != p.Gender                          // of the opposite gender
+                            && m.Person.MaritalStatusValueId == marriedDefinedValueId // who is married
+                            && !m.Person.IsDeceased )                               // and not deceased... that is the spouse
+                        )
+                    );
+
+            return FilterExpressionExtractor.Extract<Rock.Model.Person>( personSpouseQuery, parameterExpression, "p" );
         }
     }
 }
