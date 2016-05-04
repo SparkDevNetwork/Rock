@@ -303,12 +303,24 @@ namespace RockWeb.Blocks.Finance
             mergeFields.Add( "Salutation", salutation );
 
             var homeAddress = CurrentPerson.GetHomeLocation();
-            mergeFields.Add( "StreetAddress1", homeAddress.Street1 );
-            mergeFields.Add( "StreetAddress2", homeAddress.Street2 );
-            mergeFields.Add( "City", homeAddress.City );
-            mergeFields.Add( "State", homeAddress.State );
-            mergeFields.Add( "PostalCode", homeAddress.PostalCode );
-            mergeFields.Add( "Country", homeAddress.Country );
+            if ( homeAddress != null )
+            {
+                mergeFields.Add( "StreetAddress1", homeAddress.Street1 );
+                mergeFields.Add( "StreetAddress2", homeAddress.Street2 );
+                mergeFields.Add( "City", homeAddress.City );
+                mergeFields.Add( "State", homeAddress.State );
+                mergeFields.Add( "PostalCode", homeAddress.PostalCode );
+                mergeFields.Add( "Country", homeAddress.Country );
+            }
+            else
+            {
+                mergeFields.Add( "StreetAddress1", string.Empty );
+                mergeFields.Add( "StreetAddress2", string.Empty );
+                mergeFields.Add( "City", string.Empty );
+                mergeFields.Add( "State", string.Empty );
+                mergeFields.Add( "PostalCode", string.Empty );
+                mergeFields.Add( "Country", string.Empty );
+            }
 
             mergeFields.Add( "TransactionDetails", qry.ToList() );
                         
