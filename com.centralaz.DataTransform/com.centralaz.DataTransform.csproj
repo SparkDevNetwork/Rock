@@ -50,6 +50,7 @@
   <ItemGroup>
     <Compile Include="DataFilter\Person\FirstContributionTransactionDateFilter.cs" />
     <Compile Include="DataFilter\AttributeCompareFilter.cs" />
+    <Compile Include="Person\SpouseTransform.cs" />
     <Compile Include="Person\FamilyAdultTransform.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
