@@ -41,19 +41,136 @@ namespace RockWeb.Blocks.Finance
     [Description( "Block for displaying a Lava based contribution statement." )]
     [AccountsField("Accounts", "A selection of accounts to include on the statement. If none are selected all accounts that are tax-deductible will be uses.", false, order: 0 )]
     [BooleanField("Display Pledges", "Determines if pledges should be shown.", true, order:1)]
-    [CodeEditorField("Lava Template", "The Lava template to use for the contribution statement.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 500, true, @"{% assign currentYear = 'Now' | Date:'yyyy' %}
+    [CodeEditorField("Lava Template", "The Lava template to use for the contribution statement.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 500, true, @"{% capture pageTitle %}{{ 'Global' | Attribute:'OrganizationName' }} | Contribution Statement{%endcapture%}
+{{ pageTitle | SetPageTitle }}
 
-<h4>Available Contribution Statements</h4>
+<div class=""row margin-b-xl"">
+    <div class=""col-md-6"">
+        <div class=""pull-left"">
+            <img src=""{{ 'Global' | Attribute:'PublicApplicationRoot' }}{{ 'Global' | Attribute:'EmailHeaderLogo' }}"" width=""100px"" />
+        </div>
+        
+        <div class=""pull-left margin-l-md margin-t-sm"">
+            <strong>{{ 'Global' | Attribute:'OrganizationName' }}</strong><br />
+            {{ 'Global' | Attribute:'OrganizationAddress' }}<br />
+            {{ 'Global' | Attribute:'OrganizationWebsite' }}
+        </div>
+    </div>
+    <div class=""col-md-6 text-right"">
+        <h4>Charitable Contributions for the Year {{ StatementStartDate | Date:'yyyy' }}</h4>
+        <p>{{ StatementStartDate | Date:'M/d/yyyy' }} - {{ StatementEndDate | Date:'M/d/yyyy' }}<p>
+    </div>
+</div>
 
-<div class=""margin-b-md"">
-{% for statementyear in StatementYears %}
-    {% if currentYear == statementyear.Year %}
-        <a href=""{{ DetailPage }}?StatementYear={{ statementyear.Year }}"" class=""btn btn-primary"">{{ statementyear.Year }} <small>YTD</small></a>
-    {% else %}
-        <a href=""{{ DetailPage }}?StatementYear={{ statementyear.Year }}"" class=""btn btn-primary"">{{ statementyear.Year }}</a>
-    {% endif %}
-{% endfor %}
-</div>", order: 2)]
+<h4>
+{{ Salutation }} <br />
+{{ StreetAddress1 }} <br />
+{% if StreetAddress2 != '' %}
+    {{ StreetAddress2 }} <br />
+{% endif %}
+{{ City }}, {{ State }} {{ PostalCode }}
+</h4>
+
+
+<div class=""clearfix"">
+    <div class=""pull-right"">
+        <a href=""#"" class=""btn btn-primary hidden-print"" onClick=""window.print();""><i class=""fa fa-print""></i> Print Statement</a> 
+    </div>
+</div>
+
+<hr style=""opacity: .5;"" />
+
+<h4 class=""margin-t-md margin-b-md"">Gift List</h4>
+
+
+    <table class=""table table-bordered table-striped table-condensed"">
+        <tr>
+            <th>Date</th>
+            <th>Giving Area</th>
+            <th>Check/Trans #</th>
+            <th align=""right"">Amount</th>
+        </tr>
+    
+
+        {% for transaction in TransactionDetails %}
+            <tr>
+                <td>{{ transaction.Transaction.TransactionDateTime | Date:'M/d/yyyy' }}</td>
+                <td>{{ transaction.Account.Name }}</td>
+                <td>{{ transaction.Transaction.TransactionCode }}</td>
+                <td align=""right"">{{ 'Global' | Attribute:'CurrencySymbol' }}{{ transaction.Amount }}</td>
+            </tr>
+        {% endfor %}
+    
+    </table>
+
+
+
+
+<div class=""row"">
+    <div class=""col-xs-6 col-xs-offset-6"">
+        <h4 class=""margin-t-md margin-b-md"">Fund Summary</h4>
+        <div class=""row"">
+            <div class=""col-xs-6"">
+                <strong>Fund Name</strong>
+            </div>
+            <div class=""col-xs-6 text-right"">
+                <strong>Total Amount</strong>
+            </div>
+        </div>
+        
+        {% for accountsummary in AccountSummary %}
+            <div class=""row"">
+                <div class=""col-xs-6"">{{ accountsummary.AccountName }}</div>
+                <div class=""col-xs-6 text-right"">{{ 'Global' | Attribute:'CurrencySymbol' }}{{ accountsummary.Total }}</div>
+            </div>
+         {% endfor %}
+    </div>
+</div>
+
+{% assign pledgeCount = Pledges | Size %}
+
+{% if pledgeCount > 0 %}
+    <hr style=""opacity: .5;"" />
+    <h4 class=""margin-t-md margin-b-md"">Pledges</h4>
+ 
+    {% for pledge in Pledges %}
+        <div class=""row"">
+            <div class=""col-xs-6"">
+                <strong>{{ pledge.AccountName }}</strong>
+                
+                <p>
+                    Amt Pledged: {{ 'Global' | Attribute:'CurrencySymbol' }}{{ pledge.AmountPledged }} <br />
+                    Amt Given: {{ 'Global' | Attribute:'CurrencySymbol' }}{{ pledge.AmountGiven }} <br />
+                    Amt Remaining: {{ 'Global' | Attribute:'CurrencySymbol' }}{{ pledge.AmountRemaining }}
+                </p>
+            </div>
+            <div class=""col-xs-6 padding-t-md"">
+                <div class=""hidden-print"">
+                    Pledge Progress
+                    <div class=""progress"">
+                      <div class=""progress-bar"" role=""progressbar"" aria-valuenow=""{{ pledge.PercentComplete }}"" aria-valuemin=""0"" aria-valuemax=""100"" style=""width: {{ pledge.PercentComplete }}%;"">
+                        {{ pledge.PercentComplete }}%
+                      </div>
+                    </div>
+                </div>
+                <div class=""visible-print-block"">
+                    Percent Complete <br />
+                    {{ pledge.PercentComplete }}%
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<hr style=""opacity: .5;"" />
+<p class=""text-center"">
+    Thank you for your continued support of the {{ 'Global' | Attribute:'OrganizationName' }}. If you have any questions about your statement,
+    email {{ 'Global' | Attribute:'OrganizationEmail' }} or call {{ 'Global' | Attribute:'OrganizationPhone' }}.
+</p>
+
+<p class=""text-center"">
+    <em>Unless otherwise noted, the only goods and services provided are intangible religious benefits.</em>
+</p>", order: 2)]
     [BooleanField("Enable Debug", "Shows the merge fields available for the Lava", order:3)]
     public partial class ContributionStatementLava : Rock.Web.UI.RockBlock
     {
