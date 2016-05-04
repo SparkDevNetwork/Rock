@@ -95,8 +95,8 @@
     <Reference Include="Quartz">
       <HintPath>..\libs\Quartz\Quartz.dll</HintPath>
     </Reference>
-    <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\RestSharp.105.2.3\lib\net451\RestSharp.dll</HintPath>
+    <Reference Include="RestSharp, Version=105.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RestSharp.105.0.1\lib\net4\RestSharp.dll</HintPath>
     </Reference>
     <Reference Include="StackExchange.Redis, Version=1.0.316.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\StackExchange.Redis.1.0.488\lib\net45\StackExchange.Redis.dll</HintPath>
@@ -1488,7 +1488,9 @@
     <Compile Include="Web\UI\Validation\DataAnnotationValidator.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="packages.config" />
+    <Content Include="packages.config">
+      <SubType>Designer</SubType>
+    </Content>
     <None Include="App.config" />
     <None Include="Service References\MelissaData.AddressCheck\Rock.MelissaData.AddressCheck.ResponseArray.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
