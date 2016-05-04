@@ -540,6 +540,7 @@
     <Compile Include="Transactions\WorkflowTriggerTransaction.cs" />
     <Compile Include="Utility\DebugHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\DecimalExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\GridExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\StringHumanizerExtensions.cs" />
     <Compile Include="Utility\FileUtilities.cs" />
     <Compile Include="Utility\NotNullJsonConverter.cs" />
