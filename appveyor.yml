@@ -16,7 +16,6 @@ branches:
     - master
     - beta
     - alpha
-    - gauntlet
 
 # Do not build on tags (GitHub only)
 skip_tags: true
@@ -114,11 +113,6 @@ deploy:
     name: Alpha (alpha-rock.newspring.cc)
     on:
       branch: alpha
-
-  - provider: Environment
-    name: Gauntlet (gauntlet.newspring.cc)
-    on:
-      branch: gauntlet
 
 
 #---------------------------------#
