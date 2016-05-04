@@ -659,7 +659,6 @@ namespace RockWeb.Blocks.Reporting
             ddlSourceType.SetValue( metric.SourceValueTypeId ?? manualSourceType );
             tbYAxisLabel.Text = metric.YAxisLabel;
             cbIsCumulative.Checked = metric.IsCumulative;
-            // TODO etpEntityType.SelectedEntityTypeId = metric.EntityTypeId;
             ppMetricChampionPerson.SetValue( metric.MetricChampionPersonAlias != null ? metric.MetricChampionPersonAlias.Person : null );
             ppAdminPerson.SetValue( metric.AdminPersonAlias != null ? metric.AdminPersonAlias.Person : null );
             ceSourceSql.Text = metric.SourceSql;
@@ -854,7 +853,6 @@ The SQL can include Lava merge fields:";
                 hlScheduleFriendlyText.LabelType = LabelType.Danger;
                 hlScheduleFriendlyText.Text = "<i class='fa fa-clock-o'></i> " + "Not Scheduled";
             }
-
 
             lblMainDetails.Text = descriptionListMain.Html;
         }
