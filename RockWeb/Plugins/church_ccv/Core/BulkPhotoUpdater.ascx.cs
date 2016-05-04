@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
-
+using ImageResizer;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -22,8 +23,7 @@ namespace RockWeb.Plugins.church_ccv.Core
     public partial class BulkPhotoUpdater : Rock.Web.UI.RockBlock
     {
         #region Fields
-
-        RockContext _rockContext = new RockContext();
+        
         private Guid? _photoProcessedAttribute = new Guid();
 
         #endregion
@@ -35,7 +35,7 @@ namespace RockWeb.Plugins.church_ccv.Core
             get
             {
                 object skipCounter = ViewState["SkipCounter"];
-                return skipCounter != null ? ( int ) skipCounter : 0;
+                return skipCounter != null ? (int)skipCounter : 0;
             }
 
             set
@@ -49,7 +49,7 @@ namespace RockWeb.Plugins.church_ccv.Core
             get
             {
                 object currentPhotoId = ViewState["CurrentPhotoId"];
-                return currentPhotoId != null ? ( int ) currentPhotoId : 0;
+                return currentPhotoId != null ? (int)currentPhotoId : 0;
             }
 
             set
@@ -92,10 +92,13 @@ namespace RockWeb.Plugins.church_ccv.Core
 
             _photoProcessedAttribute = GetAttributeValue( "PhotoProcessedAttribute" ).AsGuidOrNull();
 
-            if ( _photoProcessedAttribute != null)
+            if ( _photoProcessedAttribute != null )
             {
                 if ( !Page.IsPostBack )
                 {
+                    var dataViewVal = this.GetBlockUserPreference( "DataView" );
+                    dvpDataView.SetValue( dataViewVal );
+                    
                     UpdatePhotoList();
 
                     ShowDetail( hfPhotoIds.Value.SplitDelimitedValues().FirstOrDefault().AsIntegerOrNull() );
@@ -106,7 +109,7 @@ namespace RockWeb.Plugins.church_ccv.Core
                 nbConfigurationWarning.Text = "An attribute needs to be configured in block settings";
                 nbConfigurationWarning.Visible = true;
                 pnlView.Visible = false;
-            }            
+            }
         }
 
         #endregion
@@ -124,8 +127,9 @@ namespace RockWeb.Plugins.church_ccv.Core
             {
                 imgPhoto.BinaryFileId = photoId;
 
-                var binaryFileService = new BinaryFileService( _rockContext );
-                var personService = new PersonService( _rockContext );
+                var rockContext = new RockContext();
+                var binaryFileService = new BinaryFileService( rockContext );
+                var personService = new PersonService( rockContext );
 
                 lProgressBar.Text = string.Format(
                             @"<span class='label label-info'>{0} of {1}</span>",
@@ -148,12 +152,33 @@ namespace RockWeb.Plugins.church_ccv.Core
 
                     if ( image.Width >= 500 || image.Height >= 500 )
                     {
-                        lSizeCheck.Text = @"<span class='label label-danger'>Too Large</span>";
+                        lSizeCheck.Text = "<span class='label label-danger'>Too Large</span>";
                         lSizeCheck.Visible = true;
+                        
                     }
                     else
                     {
                         lSizeCheck.Visible = false;
+                    }
+
+                    btnShrink.Visible = image.Width > 500;
+                    nbShrinkPercent.Visible = btnShrink.Visible;
+
+                    var photoKiloBytes = photoData.ContentStream.Length / 1024;
+                    if ( photoKiloBytes > 1024 )
+                    {
+                        lByteSizeCheck.Text = string.Format( @"<span class='label label-danger'>{0}KB</span>", photoData.ContentStream.Length / 1024 );
+                        lByteSizeCheck.Visible = true;
+                    }
+                    else if ( photoKiloBytes > 100 )
+                    {
+                        lByteSizeCheck.Text = string.Format( @"<span class='label label-warning'>{0}KB</span>", photoData.ContentStream.Length / 1024 );
+                        lByteSizeCheck.Visible = true;
+                    }
+                    else
+                    {
+                        lByteSizeCheck.Text = string.Format( @"<span class='label label-info'>{0}KB</span>", photoData.ContentStream.Length / 1024 );
+                        lByteSizeCheck.Visible = true;
                     }
                 }
 
@@ -176,7 +201,7 @@ namespace RockWeb.Plugins.church_ccv.Core
                 pnlDetails.Visible = false;
                 nbWarning.Visible = true;
             }
-            
+
         }
 
         /// <summary>
@@ -184,8 +209,9 @@ namespace RockWeb.Plugins.church_ccv.Core
         /// </summary>
         protected void UpdatePhotoList()
         {
-            var attributeValueService = new AttributeValueService( _rockContext );
-            var personService = new PersonService( _rockContext );
+            var rockContext = new RockContext();
+            var attributeValueService = new AttributeValueService( rockContext );
+            var personService = new PersonService( rockContext );
 
             List<int> dataViewPersonIds = new List<int>();
 
@@ -201,11 +227,11 @@ namespace RockWeb.Plugins.church_ccv.Core
             if ( dataViewId.HasValue )
             {
                 dataViewPersonIds = new List<int>();
-                var dataView = new DataViewService( _rockContext ).Get( dataViewId.Value );
+                var dataView = new DataViewService( rockContext ).Get( dataViewId.Value );
                 if ( dataView != null )
                 {
                     var errorMessages = new List<string>();
-                    var dvPersonService = new PersonService( _rockContext );
+                    var dvPersonService = new PersonService( rockContext );
                     ParameterExpression paramExpression = dvPersonService.ParameterExpression;
                     Expression whereExpression = dataView.GetExpression( dvPersonService, paramExpression, out errorMessages );
 
@@ -310,6 +336,7 @@ namespace RockWeb.Plugins.church_ccv.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void dvpDataView_SelectedIndexChanged( object sender, EventArgs e )
         {
+            this.SetBlockUserPreference( "DataView", dvpDataView.SelectedValue, true );
             UpdatePhotoList();
         }
 
@@ -322,7 +349,8 @@ namespace RockWeb.Plugins.church_ccv.Core
         {
             if ( imgPhoto.CropBinaryFileId.HasValue )
             {
-                var binaryFileService = new BinaryFileService( _rockContext );
+                var rockContext = new RockContext();
+                var binaryFileService = new BinaryFileService( rockContext );
 
                 // Get photo data so we can see dimensions
                 var photoData = binaryFileService.Get( imgPhoto.BinaryFileId.Value );
@@ -362,5 +390,41 @@ namespace RockWeb.Plugins.church_ccv.Core
         }
 
         #endregion
+
+        /// <summary>
+        /// Handles the Click event of the btnShrink control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnShrink_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            var binaryFileService = new BinaryFileService( rockContext );
+
+            // Get photo data
+            var photoData = binaryFileService.Get( imgPhoto.BinaryFileId.Value );
+
+            using ( System.Drawing.Image image = System.Drawing.Image.FromStream( photoData.ContentStream ) )
+            {
+                ResizeSettings settings = new ResizeSettings();
+                var keepPercent = ( 100.00 - nbShrinkPercent.Value ) / 100.00;
+                settings.MaxWidth = (int)( image.Width * keepPercent );
+                
+                // ImageResizer is limited to 3600 on resize
+                settings.MaxHeight = 3600;
+                if ( settings.MaxWidth > 3600 )
+                {
+                    settings.MaxWidth = 3600;
+                }
+                MemoryStream resizedStream = new MemoryStream();
+
+                ImageBuilder.Current.Build( photoData.ContentStream, resizedStream, settings );
+                photoData.ContentStream = resizedStream;
+                rockContext.SaveChanges();
+
+                ShowDetail( imgPhoto.BinaryFileId.Value );
+            }
+
+        }
     }
 }

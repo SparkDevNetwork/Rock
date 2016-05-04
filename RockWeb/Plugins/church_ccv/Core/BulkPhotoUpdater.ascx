@@ -26,12 +26,17 @@
 
                     <asp:Panel ID="pnlDetails" runat="server">
                         <div class="col-md-3">
-                            <Rock:ImageEditor ID="imgPhoto" runat="server" Label="Photo" BinaryFileTypeGuid="03BD8476-8A9F-4078-B628-5B538F967AFC"  />
+                            <Rock:ImageEditor ID="imgPhoto" runat="server" Label="Photo" BinaryFileTypeGuid="03BD8476-8A9F-4078-B628-5B538F967AFC" />
                         </div>
                         <div class="col-md-9">
                             <h1 class="title name" style="margin-top: 0px;"><asp:Literal ID="lName" runat="server" /></h1>
                             <asp:Literal ID="lDimenions" runat="server" />
                             <asp:Literal ID="lSizeCheck" runat="server" />
+                            <asp:Literal ID="lByteSizeCheck" runat="server" />
+                            
+                                <asp:LinkButton ID="btnShrink" runat="server" CssClass="btn btn-action btn-xs" Text="Shrink Photo" OnClick="btnShrink_Click" />
+                                <Rock:NumberUpDown ID="nbShrinkPercent" runat="server" Value="25" Maximum="50" Minimum="10" CssClass="btn btn-xs" ToolTip="Shrink by %" />
+                                <asp:Literal ID="lPercentSymbol" runat="server" Text="%" />
                             <ul class="list-unstyled margin-t-sm">
                                 <li><asp:Literal ID="lGender" runat="server" /></li>
                                 <li<><asp:Literal ID="lAge" runat="server" /></li>
