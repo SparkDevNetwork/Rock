@@ -956,6 +956,11 @@ namespace RockWeb.Blocks.Examples
         /// <param name="rockContext"></param>
         private void AddRegistrationInstances( XElement elemRegistrationInstances, RockContext rockContext )
         {
+            if ( elemRegistrationInstances == null )
+            {
+                return;
+            }
+
             foreach ( var element in elemRegistrationInstances.Elements( "registrationInstance" ) )
             {
                 // skip any illegally formatted items
