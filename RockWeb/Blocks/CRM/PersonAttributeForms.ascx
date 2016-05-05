@@ -58,7 +58,7 @@
                     <div class="col-md-6">
                         <Rock:WorkflowTypePicker ID="wtpWorkflow" runat="server" Label="Workflow"
                             Help="An optional workflow to launch after the person has filled out all of the forms." />
-                        <Rock:PagePicker ID="ppDonePage" runat="server" Label="'Done' Page" 
+                        <Rock:PagePicker ID="ppDonePage" runat="server" Label="Done Page" 
                             Help="An optional page to redirect user to after they have finished entering information on all the forms." />
                     </div>
                 </div>
