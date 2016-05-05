@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 using System.Web.Http;
@@ -45,9 +46,7 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/MetricValues/GetByMetricId/{metricId}" )]
         public IQueryable<MetricValue> GetByMetricId( int metricId, MetricValueType? metricValueType = null )
         {
-            var metric = new MetricService( new RockContext() ).Get( metricId );
-
-            var result = Get().Where( a => a.MetricId == metricId );
+            var result = Get().Include( a => a.MetricValuePartitions ).Where( a => a.MetricId == metricId );
             if ( metricValueType.HasValue )
             {
                 result = result.Where( a => a.MetricValueType == metricValueType );
@@ -93,7 +92,7 @@ namespace Rock.Rest.Controllers
             {
                 if ( entityId.HasValue )
                 {
-                   //TODO qry = qry.Where( a => ( a.Metric.EntityTypeId == entityTypeId && a.EntityId == entityId ) || ( a.Metric.EntityTypeId == null) || ( a.EntityId == null ) );
+                    // TODO qry = qry.Where( a => ( a.Metric.EntityTypeId == entityTypeId && a.EntityId == entityId ) || ( a.Metric.EntityTypeId == null) || ( a.EntityId == null ) );
                 }
             }
 
@@ -139,30 +138,53 @@ namespace Rock.Rest.Controllers
         /// <param name="seriesId">The series identifier.</param>
         /// <returns></returns>
         [System.Web.Http.Route( "api/MetricValues/GetSeriesName/{metricId}/{seriesId}" )]
+        [Obsolete( "Use" )]
         public string GetSeriesName( int metricId, int seriesId )
         {
-            return "TODO";
-            /*var rockContext = new RockContext();
-            int? entityTypeId = new MetricService( rockContext ).Queryable().Where( a => a.Id == metricId ).Select( s => s.EntityTypeId ).FirstOrDefault();
-            if ( entityTypeId.HasValue )
+            List<int> metricValuePartitionIds = new List<int>();
+            metricValuePartitionIds.Add( seriesId );
+            return GetSeriesPartitionName( metricId, metricValuePartitionIds.AsDelimited( "," ) );
+        }
+
+        /// <summary>
+        /// Gets the name of the series.
+        /// </summary>
+        /// <param name="metricId">The metric identifier.</param>
+        /// <param name="metricValuePartitionIds">The metric value partition ids.</param>
+        /// <returns></returns>
+        [System.Web.Http.Route( "api/MetricValues/GetSeriesPartitionName/{metricId}/{metricValuePartitionIds}" )]
+        public string GetSeriesPartitionName( int metricId, string metricValuePartitionIds )
+        {
+            List<int> metricValuePartitionIdList = metricValuePartitionIds.SplitDelimitedValues().AsIntegerList();
+            var rockContext = new RockContext();
+            var entityTypeEntityIdList = new MetricValuePartitionService( rockContext ).GetByIds( metricValuePartitionIdList ).Select( a => new
             {
-                var entityTypeCache = EntityTypeCache.Read( entityTypeId.Value );
-                if ( entityTypeCache != null )
+                a.MetricPartition.EntityTypeId,
+                a.EntityId
+            } );
+
+            foreach ( var entityTypeEntity in entityTypeEntityIdList )
+            {
+                if ( entityTypeEntity.EntityTypeId.HasValue )
                 {
-                    Type[] modelType = { entityTypeCache.GetEntityType() };
-                    Type genericServiceType = typeof( Rock.Data.Service<> );
-                    Type modelServiceType = genericServiceType.MakeGenericType( modelType );
-                    var serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { rockContext } ) as IService;
-                    MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
-                    var result = getMethod.Invoke( serviceInstance, new object[] { seriesId } );
-                    if ( result != null )
+                    var entityTypeCache = EntityTypeCache.Read( entityTypeEntity.EntityTypeId.Value );
+                    if ( entityTypeCache != null )
                     {
-                        return result.ToString();
+                        Type[] modelType = { entityTypeCache.GetEntityType() };
+                        Type genericServiceType = typeof( Rock.Data.Service<> );
+                        Type modelServiceType = genericServiceType.MakeGenericType( modelType );
+                        var serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { rockContext } ) as IService;
+                        MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
+                        var result = getMethod.Invoke( serviceInstance, new object[] { entityTypeEntity.EntityId } );
+                        if ( result != null )
+                        {
+                            return result.ToString();
+                        }
                     }
                 }
             }
 
-            return null;*/
+            return null;
         }
     }
 }

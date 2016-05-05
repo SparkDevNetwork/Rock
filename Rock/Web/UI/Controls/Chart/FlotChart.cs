@@ -48,7 +48,7 @@ namespace Rock.Web.UI.Controls
 
         private HiddenFieldWithClass _hfRestUrl;
         private HiddenFieldWithClass _hfRestUrlParams;
-        private HiddenFieldWithClass _hfSeriesNameUrl;
+        private HiddenFieldWithClass _hfSeriesPartitionNameUrl;
         private HiddenFieldWithClass _hfXAxisLabel;
         private HiddenFieldWithClass _hfYAxisLabel;
         private Label _lblChartTitle;
@@ -359,16 +359,36 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The series name URL.
         /// </value>
+        [Obsolete]
         public string SeriesNameUrl
         {
             get
             {
-                return ViewState["SeriesNameUrl"] as string;
+                return SeriesPartitionNameUrl;
             }
 
             set
             {
-                ViewState["SeriesNameUrl"] = value;
+                SeriesPartitionNameUrl = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the series partition name URL.
+        /// </summary>
+        /// <value>
+        /// The series partition name URL.
+        /// </value>
+        public string SeriesPartitionNameUrl
+        {
+            get
+            {
+                return ViewState["SeriesPartitionNameUrl"] as string;
+            }
+
+            set
+            {
+                ViewState["SeriesPartitionNameUrl"] = value;
             }
         }
 
@@ -620,20 +640,20 @@ namespace Rock.Web.UI.Controls
 
             _hbChartOptions.Text = "<div style='white-space: pre; max-height: 120px; overflow-y:scroll' Font-Names='Consolas' Font-Size='8'><br />" + chartOptionsJson + "</div>";
 
-            var seriesNameUrl = this.SeriesNameUrl;
+            var seriesPartitionNameUrl = this.SeriesPartitionNameUrl;
             if ( this.MetricId.HasValue )
             {
-                seriesNameUrl = seriesNameUrl ?? "~/api/MetricValues/GetSeriesName/";
-                seriesNameUrl = this.ResolveUrl( seriesNameUrl.EnsureTrailingForwardslash() + this.MetricId + "/" );
+                seriesPartitionNameUrl = seriesPartitionNameUrl ?? "~/api/MetricValues/GetSeriesPartitionName/";
+                seriesPartitionNameUrl = this.ResolveUrl( seriesPartitionNameUrl.EnsureTrailingForwardslash() + this.MetricId + "/" );
             }
 
-            if ( !string.IsNullOrWhiteSpace( seriesNameUrl ) )
+            if ( !string.IsNullOrWhiteSpace( seriesPartitionNameUrl ) )
             {
-                _hfSeriesNameUrl.Value = seriesNameUrl;
+                _hfSeriesPartitionNameUrl.Value = seriesPartitionNameUrl;
             }
             else
             {
-                _hfSeriesNameUrl.Value = null;
+                _hfSeriesPartitionNameUrl.Value = null;
             }
 
             string tooltipScript = ShowTooltip ? string.Format( "Rock.controls.charts.bindTooltip('{0}', {1})", this.ClientID, this.TooltipFormatter ?? "null" ) : null;
@@ -763,9 +783,9 @@ namespace Rock.Web.UI.Controls
             _hfRestUrl.ID = string.Format( "hfRestUrl_{0}", this.ID );
             _hfRestUrl.CssClass = "js-rest-url";
 
-            _hfSeriesNameUrl = new HiddenFieldWithClass();
-            _hfSeriesNameUrl.ID = string.Format( "hfSeriesNameUrl_{0}", this.ID );
-            _hfSeriesNameUrl.CssClass = "js-seriesname-url";
+            _hfSeriesPartitionNameUrl = new HiddenFieldWithClass();
+            _hfSeriesPartitionNameUrl.ID = string.Format( "hfSeriesPartitionNameUrl_{0}", this.ID );
+            _hfSeriesPartitionNameUrl.CssClass = "js-seriesname-url";
 
             _lblChartTitle = new Label();
             _lblChartTitle.ID = string.Format( "lblChartTitle_{0}", this.ID );
@@ -785,7 +805,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _hfYAxisLabel );
             Controls.Add( _hfRestUrlParams );
             Controls.Add( _hfRestUrl );
-            Controls.Add( _hfSeriesNameUrl );
+            Controls.Add( _hfSeriesPartitionNameUrl );
             Controls.Add( _lblChartTitle );
             Controls.Add( _lblChartSubtitle );
             Controls.Add( _pnlChartPlaceholder );
@@ -812,7 +832,7 @@ namespace Rock.Web.UI.Controls
                 _hfMetricId.RenderControl( writer );
                 _hfRestUrlParams.RenderControl( writer );
                 _hfRestUrl.RenderControl( writer );
-                _hfSeriesNameUrl.RenderControl( writer );
+                _hfSeriesPartitionNameUrl.RenderControl( writer );
                 _hfXAxisLabel.RenderControl( writer );
                 _hfYAxisLabel.RenderControl( writer );
 

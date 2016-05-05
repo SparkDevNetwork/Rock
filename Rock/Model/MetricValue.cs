@@ -151,11 +151,42 @@ namespace Rock.Model
         /// The series identifier.
         /// </value>
         [DataMember]
+        [Obsolete]
         public string SeriesId
         {
             get
             {
-                return string.Format( "{0}", this.MetricValuePartitions.Select( a => a.Id ).ToList().AsDelimited( "," ) );
+                return this.MetricValuePartitionIds;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the name of the series. This will be the default name of the series if MetricValuePartitionIds can't be resolved
+        /// </summary>
+        /// <value>
+        /// The name of the series.
+        /// </value>
+        [DataMember]
+        public string SeriesName
+        {
+            get
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the metric value partition ids.
+        /// </summary>
+        /// <value>
+        /// The metric value partition ids.
+        /// </value>
+        [DataMember]
+        public string MetricValuePartitionIds
+        {
+            get
+            {
+                return this.MetricValuePartitions.Select( a => a.Id ).ToList().AsDelimited( "," );
             }
         }
 
