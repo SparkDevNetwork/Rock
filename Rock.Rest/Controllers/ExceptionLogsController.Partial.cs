@@ -57,14 +57,14 @@ namespace Rock.Rest.Controllers
             {
                 DateTimeStamp = c.DateValue.ToJavascriptMilliseconds(),
                 YValue = c.ExceptionCount,
-                SeriesId = "Total Exceptions"
+                SeriesName = "Total Exceptions"
             } );
 
             var uniqueCountsQry = exceptionList.Select( c => new ExceptionChartData
             {
                 DateTimeStamp = c.DateValue.ToJavascriptMilliseconds(),
                 YValue = c.UniqueExceptionCount,
-                SeriesId = "Unique Exceptions"
+                SeriesName = "Unique Exceptions"
             } );
 
             var result = allCountsQry.Union( uniqueCountsQry );
@@ -90,8 +90,15 @@ namespace Rock.Rest.Controllers
         public class ExceptionChartData : IChartData
         {
             public long DateTimeStamp { get; set; }
+            
             public decimal? YValue { get; set; }
+
+            [Obsolete]
             public string SeriesId { get; set; }
+            
+            public string SeriesName { get; set; }
+            
+            public string MetricValuePartitionIds { get; set; }
         }
     }
 }

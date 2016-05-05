@@ -8,7 +8,7 @@
             ///
             /// handles putting chartData into a Line/Bar/Points chart
             ///
-            plotChartData: function (chartData, chartOptions, plotSelector, yaxisLabelText, getSeriesUrl, combineValues) {
+            plotChartData: function (chartData, chartOptions, plotSelector, yaxisLabelText, getSeriesPartitionNameUrl, combineValues) {
 
                 var chartSeriesLookup = {};
                 var chartSeriesList = [];
@@ -31,24 +31,21 @@
                         chartGoalPoints.chartData.push(chartData[i]);
                     }
                     else {
-                        if (!chartSeriesLookup[chartData[i].SeriesId]) {
+                        var lookupKey = chartData[i].MetricValuePartitionIds;
+                        if (!lookupKey || lookupKey == '') {
+                            lookupKey = chartData[i].SeriesName;
+                        }
+                        
+                        if (!chartSeriesLookup[lookupKey]) {
 
-                            var seriesName = null;
-                            if ( (chartData[i].SeriesId != '') && isNaN(chartData[i].SeriesId) )
+                            // If SeriesName is specified, that can be the name of the series if MetricValuePartitionIds is blank
+                            var seriesName = chartData[i].SeriesName;
+                            if (chartData[i].MetricValuePartitionIds && chartData[i].MetricValuePartitionIds != '')
                             {
-                                // SeriesId isn't a number (probably is text), so have that be the series name
-                                seriesName = chartData[i].SeriesId;
-                            }
-                            else if (chartData[i].SeriesId == 0) {
-                                // SeriesId of 0 means that the metric doesn't have a series partition. (Metrics don't have to be partitioned by Series)
-                                // set the series name to the yaxislabeltext or just 'value' if it's blank
-                                seriesName = yaxisLabelText || 'value';
-                            }
-                            else {
-                                // SeriesId is NonZero so get the seriesName from the getSeriesUrl
-                                if (getSeriesUrl) {
+                                // MetricValuePartitionIds is not blank so get the seriesName from the getSeriesPartitionNameUrl
+                                if (getSeriesPartitionNameUrl) {
                                     $.ajax({
-                                        url: getSeriesUrl + chartData[i].SeriesId,
+                                        url: getSeriesPartitionNameUrl + chartData[i].MetricValuePartitionIds,
                                         async: false
                                     })
                                     .done(function (data) {
@@ -57,25 +54,25 @@
                                 }
                             }
 
-                            // if we weren't able to determine the seriesName for some reason, output at least the seriesId
-                            // this could happen if there is no longer a record of the entity (Campus, Group, etc) with that value or if the getSeriesUrl failed
-                            seriesName = seriesName || yaxisLabelText + '(seriesId:' + chartData[i].SeriesId + ')';
+                            // if we weren't able to determine the seriesName for some reason, 
+                            // this could happen if there is no longer a record of the entity (Campus, Group, etc) with that value or if the getSeriesPartitionNameUrl failed
+                            seriesName = seriesName || yaxisLabelText || 'null';
 
-                            chartSeriesLookup[chartData[i].SeriesId] = {
+                            chartSeriesLookup[lookupKey] = {
                                 label: seriesName,
                                 chartData: [],
                                 data: []
                             };
                         }
 
-                        chartSeriesLookup[chartData[i].SeriesId].data.push([chartData[i].DateTimeStamp, chartData[i].YValue]);
-                        chartSeriesLookup[chartData[i].SeriesId].chartData.push(chartData[i]);
+                        chartSeriesLookup[lookupKey].data.push([chartData[i].DateTimeStamp, chartData[i].YValue]);
+                        chartSeriesLookup[lookupKey].chartData.push(chartData[i]);
                     }
                 }
 
                 // setup the series list (goal points last, if they exist)
-                for (var seriesId in chartSeriesLookup) {
-                    var chartMeasurePoints = chartSeriesLookup[seriesId];
+                for (var chartSeriesKey in chartSeriesLookup) {
+                    var chartMeasurePoints = chartSeriesLookup[chartSeriesKey];
                     if (chartMeasurePoints.data.length) {
                         chartSeriesList.push(chartMeasurePoints);
                     }
@@ -179,9 +176,9 @@
                 // populate the chartMeasurePoints data array with data from the REST result for pie data
                 for (var i = 0; i < chartData.length; i++) {
 
-                    var seriesCategory = chartData[i].SeriesId;
+                    var seriesCategory = chartData[i].MetricValuePartitionIds || chartData[i].SeriesName;
                     barData.push([seriesCategory, chartData[i].YValue])
-                    seriesLabels.push(chartData[i].SeriesId);
+                    seriesLabels.push(seriesCategory);
                 }
 
                 if (barData.length > 0) {

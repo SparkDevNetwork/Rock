@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
 namespace Rock.Chart
 {
     /// <summary>
@@ -43,6 +45,23 @@ namespace Rock.Chart
         /// <value>
         /// The series identifier.
         /// </value>
+        [Obsolete("Use MetricValuePartitionIds instead") ]
         string SeriesId { get;  }
+
+        /// <summary>
+        /// Gets or sets the name of the series. This will be the default name of the series if MetricValuePartitionIds can't be resolved
+        /// </summary>
+        /// <value>
+        /// The name of the series.
+        /// </value>
+        string SeriesName { get; }
+
+        /// <summary>
+        /// Gets or sets the metric value partition ids that will be used to figure the series name for each value
+        /// </summary>
+        /// <value>
+        /// The metric value partition ids.
+        /// </value>
+        string MetricValuePartitionIds { get; }
     }
 }

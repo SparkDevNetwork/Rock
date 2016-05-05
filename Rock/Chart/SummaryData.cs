@@ -58,7 +58,26 @@ namespace Rock.Chart
         /// The series identifier.
         /// </value>
         [Previewable]
+        [Obsolete( "Use MetricValuePartitionIds if you are populating this with Ids or use SeriesName for a static series name" )]
         public string SeriesId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the series. This will be the default name of the series if MetricValuePartitionIds can't be resolved
+        /// </summary>
+        /// <value>
+        /// The name of the series.
+        /// </value>
+        [Previewable]
+        public string SeriesName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the metric value partition ids that will be used to figure the series name for each value
+        /// </summary>
+        /// <value>
+        /// The metric value partition ids.
+        /// </value>
+        [Previewable]
+        public string MetricValuePartitionIds { get; set; }
 
         /// <summary>
         /// Gets or sets additional information about the series (i.e. for account, would be GL#)
@@ -68,5 +87,7 @@ namespace Rock.Chart
         /// </value>
         [Previewable]
         public string SeriesAddlInfo { get; set; }
+
+        
     }
 }
