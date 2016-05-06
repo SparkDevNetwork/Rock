@@ -311,50 +311,53 @@ namespace RockWeb.Blocks.Crm
 
                             person.SaveAttributeValues( rockContext );
 
-                            WorkflowType workflowType = null;
-                            Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
-                            if ( workflowTypeGuid.HasValue )
+                            if ( CurrentPageIndex >= FormState.Count )
                             {
-                                var workflowTypeService = new WorkflowTypeService( rockContext );
-                                workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
-                                if ( workflowType != null )
+                                WorkflowType workflowType = null;
+                                Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
+                                if ( workflowTypeGuid.HasValue )
                                 {
-                                    try
+                                    var workflowTypeService = new WorkflowTypeService( rockContext );
+                                    workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
+                                    if ( workflowType != null )
                                     {
-                                        var workflow = Workflow.Activate( workflowType, person.FullName );
-                                        List<string> workflowErrors;
-                                        new WorkflowService( rockContext ).Process( workflow, person, out workflowErrors );
-                                    }
-                                    catch ( Exception ex )
-                                    {
-                                        ExceptionLogService.LogException( ex, this.Context );
+                                        try
+                                        {
+                                            var workflow = Workflow.Activate( workflowType, person.FullName );
+                                            List<string> workflowErrors;
+                                            new WorkflowService( rockContext ).Process( workflow, person, out workflowErrors );
+                                        }
+                                        catch ( Exception ex )
+                                        {
+                                            ExceptionLogService.LogException( ex, this.Context );
+                                        }
                                     }
                                 }
+
+                                if ( GetAttributeValue( "DonePage" ).AsGuidOrNull().HasValue )
+                                {
+                                    NavigateToLinkedPage( "DonePage" );
+                                }
+                                else
+                                {
+                                    pnlView.Visible = false;
+                                }
+                                upnlContent.Update();
+                            }
+                            else
+                            {
+                                ShowPage();
+                                hfTriggerScroll.Value = "true";
                             }
                         }
-
                     }
                 }
-            }
-
-            if ( CurrentPageIndex >= FormState.Count )
-            {
-                if ( GetAttributeValue( "DonePage" ).AsGuidOrNull().HasValue )
-                {
-                    NavigateToLinkedPage( "DonePage" );
-                }
-                else
-                {
-                    pnlView.Visible = false;
-                }
-                upnlContent.Update();
             }
             else
             {
                 ShowPage();
                 hfTriggerScroll.Value = "true";
             }
-
         }
 
         /// <summary>
