@@ -125,7 +125,7 @@ namespace Rock.Workflow.Action
                                                 }
                                             }
 
-                                            action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, person.FullName ) );
+                                            action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, updateValue ) );
                                             return true;
 
                                         }
