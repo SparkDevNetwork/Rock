@@ -34,6 +34,8 @@ CREATE TABLE #MailChimpExport (
 	[Most Recent KidSpring Child Attendance Date] DATE,
 	[Most Recent Care Date] DATE,
 	[Most Recent VIP Date] DATE,
+	[Baptism Date] DATE,
+	[Salvation Date] DATE,
 	[Is Staff] BIT
 );
 
@@ -113,7 +115,85 @@ FROM
 	#MailChimpExport mce
 	JOIN cteMaxCreated cte ON mce.FamilyId = cte.FamilyId;
 
--- Attendance dates
+-- Family giving
+WITH cteGiving AS (
+	SELECT
+		mce.FamilyId,
+		MAX(ft.TransactionDateTime) AS MaxDate
+	FROM
+		#MailChimpExport mce
+		JOIN GroupMember gm ON gm.GroupId = mce.FamilyId
+		JOIN PersonAlias pa ON pa.PersonId = gm.PersonId
+		JOIN FinancialTransaction ft ON ft.AuthorizedPersonAliasId = pa.Id
+	WHERE
+		ft.TransactionDateTime >= @minActivityDate
+	GROUP BY
+		mce.FamilyId
+)
+UPDATE mce
+SET
+	[Most Recent Contribution] = g.MaxDate
+FROM
+	#MailChimpExport mce
+	JOIN cteGiving g ON g.FamilyId = mce.FamilyId;
+
+-- Personal attendance dates
+WITH cteAttendances AS (
+	SELECT
+		a.*,
+		p.PersonId,
+		gt.Name AS GroupType
+	FROM
+		Attendance a
+		JOIN PersonAlias pa ON pa.Id = a.PersonAliasId
+		JOIN #MailChimpExport p ON p.PersonId = pa.PersonId
+		JOIN [Group] g ON g.Id = a.GroupId
+		JOIN GroupType gt ON gt.Id = g.GroupTypeId
+	WHERE
+		a.DidAttend = @true
+		AND a.StartDateTime >= @minActivityDate
+), cteParticipant AS (
+	SELECT
+		a.PersonId,
+		MAX(a.StartDateTime) AS MaxDate
+	FROM
+		cteAttendances a
+	WHERE
+		a.GroupType NOT LIKE '%Volunteer'
+	GROUP BY
+		a.PersonId
+), cteVolunteer AS (
+	SELECT
+		a.PersonId,
+		MAX(a.StartDateTime) AS MaxDate
+	FROM
+		cteAttendances a
+	WHERE
+		a.GroupType LIKE '%Volunteer'
+	GROUP BY
+		a.PersonId
+), cteAll AS (
+	SELECT
+		a.PersonId,
+		MAX(a.StartDateTime) AS MaxDate
+	FROM
+		cteAttendances a
+	GROUP BY
+		a.PersonId
+)
+UPDATE mce
+SET
+	[Most Recent Volunteer Attendance] = v.MaxDate,
+	[Last AttendedRoster] = v.MaxDate,
+	[Most Recent Participant Attendance] = p.MaxDate,
+	[Most Recent Attendance] = a.MaxDate
+FROM
+	#MailChimpExport mce
+	LEFT JOIN cteParticipant p ON p.PersonId = mce.PersonId
+	LEFT JOIN cteVolunteer v ON v.PersonId = mce.PersonId
+	LEFT JOIN cteAll a ON a.PersonId = mce.PersonId;
+
+-- Family attendance dates
 WITH cteAttendances AS (
 	SELECT
 		a.*
@@ -162,6 +242,96 @@ FROM
 	LEFT JOIN cteKidSpring ks ON ks.FamilyId = mce.FamilyId
 	LEFT JOIN cteFuse f ON f.FamilyId = mce.FamilyId;
 
+-- Family attribute dates
+WITH cteCare AS (
+	SELECT
+		p.PersonId,
+		MAX(CONVERT(DATE, n.CreatedDateTime)) AS CareDate
+	FROM
+		#MailChimpExport p
+		JOIN Note n ON n.EntityId = p.PersonId
+		JOIN NoteType nt ON nt.Id = n.NoteTypeId
+	WHERE
+		nt.Name = 'Care Note'
+		AND nt.EntityTypeId = @etidPerson
+	GROUP BY
+		p.PersonId
+), cteBaptism AS (
+	SELECT
+		p.PersonId,
+		MAX(CONVERT(DATE, av.ValueAsDateTime)) AS BaptismDate
+	FROM
+		#MailChimpExport p
+		JOIN AttributeValue av ON p.PersonId = av.EntityId
+		JOIN Attribute a ON a.Id = av.AttributeId
+	WHERE
+		a.EntityTypeId = @etidPerson
+		AND a.Name = 'Baptism Date'
+	GROUP BY
+		p.PersonId
+), cteSalvation AS (
+	SELECT
+		p.PersonId,
+		MAX(CONVERT(DATE, av.ValueAsDateTime)) AS SalvationDate
+	FROM
+		#MailChimpExport p
+		JOIN AttributeValue av ON p.PersonId = av.EntityId
+		JOIN Attribute a ON a.Id = av.AttributeId
+	WHERE
+		a.EntityTypeId = @etidPerson
+		AND a.Name = 'Salvation Date'
+	GROUP BY
+		p.PersonId
+), cteVip AS (
+	SELECT
+		cp.PersonId,
+		MAX(CONVERT(DATE, a.StartDateTime)) AS LastAttendanceDate
+	FROM
+		Attendance a
+		JOIN PersonAlias pa ON pa.Id = a.PersonAliasId
+		JOIN #MailChimpExport cp ON pa.PersonId = cp.PersonId
+		JOIN [Group] g ON a.GroupId = g.Id
+	WHERE
+		g.Name = 'VIP Room Attendee'
+	GROUP BY
+		cp.PersonId
+)
+UPDATE mce
+SET
+	[Most Recent VIP Date] = v.LastAttendanceDate,
+	[Most Recent Care Date] = c.CareDate,
+	[Baptism Date] = b.BaptismDate,
+	[Salvation Date] = s.SalvationDate
+FROM
+	#MailChimpExport mce
+	LEFT JOIN cteBaptism b ON b.PersonId = mce.PersonId
+	LEFT JOIN cteSalvation s ON s.PersonId = mce.PersonId
+	LEFT JOIN cteVip v ON v.PersonId = mce.PersonId
+	LEFT JOIN cteCare c ON c.PersonId = mce.PersonId;
+
+-- Is Staff
+WITH cteStaff AS (
+	SELECT
+		mce.FamilyId
+	FROM
+		#MailChimpExport mce
+		JOIN GroupMember fm ON fm.GroupId = mce.FamilyId
+		JOIN GroupMember gm ON gm.PersonId = fm.PersonId
+		JOIN [Group] g ON g.Id = gm.GroupId 
+	WHERE
+		g.Name = 'RSR - Staff Workers'
+		AND g.IsSecurityRole = 1
+		AND gm.GroupMemberStatus = @gmsActive
+	GROUP BY
+		mce.FamilyId
+)
+UPDATE mce
+SET
+	[Is Staff] = 1
+FROM
+	#MailChimpExport mce
+	JOIN cteStaff s ON s.FamilyId = mce.FamilyId;
+
 -- Aggregate all dates into the most recent activity date
 UPDATE #MailChimpExport
 SET
@@ -182,14 +352,42 @@ SET
 				([Most Recent KidSpring Child Attendance Date]),
 				([Most Recent Care Date]),
 				([Most Recent VIP Date]),
+				([Baptism Date]),
+				([Salvation Date]),
 				(CASE WHEN [Is Staff] = 1 THEN GETDATE() END)
 			) AS value(v)
 	);
 
 -- Print data to screen for export
 SELECT 
-	* 
+	mce.AdultIndex,
+	mce.[First Name],
+	mce.[Last Name],
+	mce.[Email Address],
+	mce.Campus,
+	mce.Birthday,
+	mce.[Member Status],
+	mce.[Marital Status],
+	mce.[Most Recent Activity Date],
+	ISNULL(CONVERT(NVARCHAR(10), mce.[Most Recent Attendance]), '') AS [Most Recent Attendance],
+	ISNULL(CONVERT(NVARCHAR(10), mce.[First Record Date]), '') AS [First Record Date],
+	ISNULL(CONVERT(NVARCHAR(10), mce.[Last Updated]), '') AS [Last Updated],
+	ISNULL(CONVERT(NVARCHAR(10), mce.[Last AttendedRoster]), '') AS [Last AttendedRoster],
+	ISNULL(CONVERT(NVARCHAR(10), mce.[Most Recent Participant Attendance]), '') AS [Most Recent Participant Attendance],
+	ISNULL(CONVERT(NVARCHAR(10), mce.[Most Recent Volunteer Attendance]), '') AS [Most Recent Volunteer Attendance],
+	ISNULL(CONVERT(NVARCHAR(10), mce.[Most Recent Contribution]), '') AS [Most Recent Contribution],
+	ISNULL(CONVERT(NVARCHAR(10), mce.[Most Recent Fuse Child Attendance Date]), '') AS [Most Recent Fuse Child Attendance Date],
+	ISNULL(CONVERT(NVARCHAR(10), mce.[Most Recent KidSpring Child Attendance Date]), '') AS [Most Recent KidSpring Child Attendance Date],
+	ISNULL(CONVERT(NVARCHAR(10), mce.[Most Recent Care Date]), '') AS [Most Recent Care Date],
+	ISNULL(CONVERT(NVARCHAR(10), mce.[Most Recent VIP Date]), '') AS [Most Recent VIP Date],
+	ISNULL(CONVERT(NVARCHAR(10), mce.[Baptism Date]), '') AS [Baptism Date],
+	ISNULL(CONVERT(NVARCHAR(10), mce.[Salvation Date]), '') AS [Salvation Date],
+	CASE WHEN mce.[Is Staff] = 1 THEN '1' ELSE '' END AS [Is Staff]
 FROM 
-	#MailChimpExport
+	#MailChimpExport mce
 WHERE
-	[Most Recent Activity Date] >= @minActivityDate;
+	mce.[Most Recent Activity Date] >= @minActivityDate
+ORDER BY
+	mce.[Last Name],
+	mce.FamilyId,
+	mce.AdultIndex;
