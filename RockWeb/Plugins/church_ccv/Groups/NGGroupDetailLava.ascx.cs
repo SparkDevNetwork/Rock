@@ -139,6 +139,8 @@ namespace RockWeb.Plugins.church_ccv.Groups
         public override TextBox GroupName { get { return tbName; } }
         public override TextBox GroupDesc { get { return tbDescription; } }
         public override CheckBox IsActive { get { return cbIsActive; } }
+
+        const int NG_GroupRole_Member = 132;
     
         protected override void FinalizePresentView( Dictionary<string, object> mergeFields, bool enableDebug )
         {
@@ -257,14 +259,6 @@ namespace RockWeb.Plugins.church_ccv.Groups
             pnlGroupView.Visible = false;
             pnlEditGroupMember.Visible = true;
             
-            // load dropdowns
-            Group group = new GroupService( new RockContext() ).Get( _groupId );
-            if ( group != null )
-            {
-                ddlGroupRole.DataSource = group.GroupType.Roles.OrderBy( a => a.Order ).ToList();
-                ddlGroupRole.DataBind();
-            }
-
             // populate the member statuses, but remove InActive
             rblStatus.BindToEnum<GroupMemberStatus>();
             var inactiveItem = rblStatus.Items.FindByValue( ( (int)GroupMemberStatus.Inactive ).ToString() );
@@ -275,7 +269,6 @@ namespace RockWeb.Plugins.church_ccv.Groups
 
             // set default values
             ppGroupMemberPerson.SetValue( null );
-            ddlGroupRole.SetValue( group.GroupType.DefaultGroupRoleId ?? 0 );
             rblStatus.SetValue( (int)GroupMemberStatus.Active );
         }
         
@@ -286,11 +279,11 @@ namespace RockWeb.Plugins.church_ccv.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSaveGroupMember_Click( object sender, EventArgs e )
         {
-            if( Page.IsValid && ppGroupMemberPerson.SelectedValue.HasValue && ddlGroupRole.SelectedValueAsInt( ) != null )
+            if( Page.IsValid && ppGroupMemberPerson.SelectedValue.HasValue )
             {
                 var selectedStatus = rblStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>();
 
-                bool result = AddGroupMember( ppGroupMemberPerson.SelectedValue.Value, _groupId, ddlGroupRole.SelectedValueAsInt().Value, selectedStatus.Value );
+                bool result = AddGroupMember( ppGroupMemberPerson.SelectedValue.Value, _groupId, NG_GroupRole_Member, selectedStatus.Value );
 
                 if ( result )
                 {

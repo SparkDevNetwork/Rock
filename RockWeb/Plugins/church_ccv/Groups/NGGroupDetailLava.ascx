@@ -68,9 +68,6 @@
 
             <div class="row">
                 <div class="col-md-6">
-                    <Rock:RockDropDownList runat="server" ID="ddlGroupRole" DataTextField="Name" DataValueField="Id" Label="Role" Required="true" />
-                </div>
-                <div class="col-md-6">
                     <asp:PlaceHolder ID="phGroupMemberAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
                 </div>
             </div>
