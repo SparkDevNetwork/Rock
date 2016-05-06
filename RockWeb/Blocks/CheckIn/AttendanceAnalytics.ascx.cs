@@ -1047,50 +1047,38 @@ function(item) {
 
             if ( !showNonAttenders )
             {
+                var attendees = allAttendeeDates.AsQueryable();
+
+
                 // If dataview filter was included remove anyone not in that dataview
                 if ( dataViewPersonIds != null )
                 {
-                    allAttendeeDates = allAttendeeDates
-                        .Where( p => dataViewPersonIds.Contains( p.Key ) )
-                        .ToDictionary( k => k.Key, v => v.Value );
+                    attendees = attendees.Where( p => dataViewPersonIds.Contains( p.Key ) );
+                    //allAttendeeDates = allAttendeeDates
+                    //    .Where( p => dataViewPersonIds.Contains( p.Key ) )
+                    //    .ToDictionary( k => k.Key, v => v.Value );
                 }
 
                 // If filter for number missed was included, remove anyone who did not match that filter
                 if ( personIdsWhoDidNotMiss != null )
                 {
-                    allAttendeeDates = allAttendeeDates
-                        .Where( p => !personIdsWhoDidNotMiss.Contains( p.Key ) )
-                        .ToDictionary( k => k.Key, v => v.Value );
+                    attendees = attendees.Where( p => !personIdsWhoDidNotMiss.Contains( p.Key ) );
+                    //allAttendeeDates = allAttendeeDates
+                    //    .Where( p => !personIdsWhoDidNotMiss.Contains( p.Key ) )
+                    //    .ToDictionary( k => k.Key, v => v.Value );
                 }
 
                 // If filtering by minimum times attended
                 if ( attendedMinCount.HasValue )
                 {
-                    allAttendeeDates = allAttendeeDates
-                        .Where( p => p.Value.AttendanceSummary.Count() >= attendedMinCount )
-                        .ToDictionary( k => k.Key, v => v.Value );
+                    attendees = attendees.Where( p => p.Value.AttendanceSummary.Count() >= attendedMinCount );
+                    //allAttendeeDates = allAttendeeDates
+                    //    .Where( p => p.Value.AttendanceSummary.Count() >= attendedMinCount )
+                    //    .ToDictionary( k => k.Key, v => v.Value );
                 }
 
-                // Add the first visit dates for people
-                foreach ( DataRow row in dtAttendeeFirstDates.Rows )
-                {
-                    int personId = (int)row["PersonId"];
-                    if ( allAttendeeDates.ContainsKey( personId ) )
-                    {
-                        allAttendeeDates[personId].FirstVisits.Add( (DateTime)row["StartDate"] );
-                    }
-                }
-
-                // If filtering based on visit time, only include those who visited the selected time during the date range
-                if ( byNthVisit.HasValue )
-                {
-                    int skipCount = byNthVisit.Value - 1;
-                    allAttendeeDates = allAttendeeDates
-                        .Where( p => p.Value.FirstVisits.Skip( skipCount ).Take( 1 ).Any( d => d >= start && d < end ) )
-                        .ToDictionary( k => k.Key, v => v.Value );
-                }
-
-                // Add the Last Attended informatio
+                
+                // Add the Last Attended information
                 if ( dtAttendeeLastAttendance != null )
                 {
                     foreach ( DataRow row in dtAttendeeLastAttendance.Rows )
@@ -1115,6 +1103,25 @@ function(item) {
                             }
                         }
                     }
+                }
+
+                // Add the first visit dates for people
+                //foreach ( DataRow row in dtAttendeeFirstDates.Rows )
+                //{
+                //    int personId = (int)row["PersonId"];
+                //    if ( allAttendeeDates.ContainsKey( personId ) )
+                //    {
+                //        allAttendeeDates[personId].FirstVisits.Add( (DateTime)row["StartDate"] );
+                //    }
+                //}
+
+                // If filtering based on visit time, only include those who visited the selected time during the date range
+                if ( byNthVisit.HasValue )
+                {
+                    int skipCount = byNthVisit.Value - 1;
+                    allAttendeeDates = allAttendeeDates
+                        .Where( p => p.Value.FirstVisits.Skip( skipCount ).Take( 1 ).Any( d => d >= start && d < end ) )
+                        .ToDictionary( k => k.Key, v => v.Value );
                 }
 
                 // Add the Demographic information
@@ -2013,6 +2020,10 @@ function(item) {
             }
         }
 
+        /// <summary>
+        /// Attendee object that adds PersonInfo to the AttendeeVisit
+        /// </summary>
+        /// <seealso cref="RockWeb.Blocks.CheckIn.AttendanceAnalytics.AttendeeDates" />
         public class AttendeeResult : AttendeeDates
         {
             public PersonInfo Person { get; set; }
@@ -2031,6 +2042,9 @@ function(item) {
             }
         }
 
+        /// <summary>
+        /// Should be renamed to AttendeeVisits
+        /// </summary>
         public class AttendeeDates
         {
             public int PersonId { get; set; }
@@ -2044,6 +2058,9 @@ function(item) {
             }
         }
 
+        /// <summary>
+        /// Lightweight Rock Person object
+        /// </summary>
         public class PersonInfo
         {
             public string NickName { get; set; }
@@ -2059,6 +2076,9 @@ function(item) {
             }
         }
 
+        /// <summary>
+        /// All visit information from the most recent attendance
+        /// </summary>
         public class PersonLastAttendance
         {
             public int? CampusId { get; set; }
