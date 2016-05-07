@@ -35,11 +35,11 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     [Description( "Pie Chart Dashboard Widget" )]
 
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", Order = 3 )]
-    [EntityField( "Series Partition", "Select the series partition entity (Campus, Group, etc) to be used to limit the metric values for the selected metrics.", "Either select a specific {0} or leave {0} blank to get it from the page context.", Key = "Entity", Order = 4 )]
+    [EntityField( "Series Partition", "Select the series partition entity (Campus, Group, etc) to be used to limit the metric values for the selected metrics.", "Either select a specific {0} or leave {0} blank to get it from the page context.", false, Key = "Entity", Order = 4 )]
     [MetricCategoriesField( "Metrics", "Select the metrics to include in the pie chart.  Each Metric will be a section of the pie.", false, "", "", 5, "MetricCategories" )]
     [CustomRadioListField( "Metric Value Type", "Select which metric value type to display in the chart", "Goal,Measure", false, "Measure", Order = 6 )]
     [SlidingDateRangeField( "Date Range", Key = "SlidingDateRange", DefaultValue = "1||4||", Order = 7 )]
-    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", Order = 8 )]
+    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", false, Order = 8 )]
     public partial class PieChartDashboardWidget : DashboardWidget
     {
         /// <summary>
@@ -132,7 +132,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
             {
                 // entity id comes from context
                 Rock.Data.IEntity contextEntity;
-                if (entityType != null)
+                if ( entityType != null )
                 {
                     contextEntity = this.ContextEntity( entityType.Name );
                 }
@@ -143,7 +143,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
 
                 if ( contextEntity != null )
                 {
-                    restApiUrl += string.Format( "&entityTypeId={0}&entityId={1}", EntityTypeCache.GetId(contextEntity.GetType()), contextEntity.Id );
+                    restApiUrl += string.Format( "&entityTypeId={0}&entityId={1}", EntityTypeCache.GetId( contextEntity.GetType() ), contextEntity.Id );
                 }
             }
 
@@ -173,7 +173,7 @@ function labelFormatter(label, series) {
         /// </value>
         public List<int> GetMetricIds()
         {
-            var metricCategories = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs(GetAttributeValue( "MetricCategories" ));
+            var metricCategories = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( GetAttributeValue( "MetricCategories" ) );
 
             var metricGuids = metricCategories.Select( a => a.MetricGuid ).ToList();
             return new MetricService( new Rock.Data.RockContext() ).GetByGuids( metricGuids ).Select( a => a.Id ).ToList();

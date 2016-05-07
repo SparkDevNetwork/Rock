@@ -9,7 +9,7 @@
             /// handles putting chartData into a Line/Bar/Points chart
             ///
             plotChartData: function (chartData, chartOptions, plotSelector, yaxisLabelText, getSeriesPartitionNameUrl, combineValues) {
-
+                
                 var chartSeriesLookup = {};
                 var chartSeriesList = [];
 
@@ -31,21 +31,21 @@
                         chartGoalPoints.chartData.push(chartData[i]);
                     }
                     else {
-                        var lookupKey = chartData[i].MetricValuePartitionIds;
+                        var lookupKey = chartData[i].MetricValuePartitionEntityIds;
                         if (!lookupKey || lookupKey == '') {
                             lookupKey = chartData[i].SeriesName;
                         }
                         
                         if (!chartSeriesLookup[lookupKey]) {
 
-                            // If SeriesName is specified, that can be the name of the series if MetricValuePartitionIds is blank
+                            // If SeriesName is specified, that can be the name of the series if MetricValuePartitionEntityIds is blank
                             var seriesName = chartData[i].SeriesName;
-                            if (chartData[i].MetricValuePartitionIds && chartData[i].MetricValuePartitionIds != '')
+                            if (chartData[i].MetricValuePartitionEntityIds && chartData[i].MetricValuePartitionEntityIds != '')
                             {
-                                // MetricValuePartitionIds is not blank so get the seriesName from the getSeriesPartitionNameUrl
+                                // MetricValuePartitionEntityIds is not blank so get the seriesName from the getSeriesPartitionNameUrl
                                 if (getSeriesPartitionNameUrl) {
                                     $.ajax({
-                                        url: getSeriesPartitionNameUrl + chartData[i].MetricValuePartitionIds,
+                                        url: getSeriesPartitionNameUrl + chartData[i].MetricValuePartitionEntityIds,
                                         async: false
                                     })
                                     .done(function (data) {
@@ -54,9 +54,8 @@
                                 }
                             }
 
-                            // if we weren't able to determine the seriesName for some reason, 
-                            // this could happen if there is no longer a record of the entity (Campus, Group, etc) with that value or if the getSeriesPartitionNameUrl failed
-                            seriesName = seriesName || yaxisLabelText || 'null';
+                            // either either seriesName, yaxisLabelText or just 'value' if the seriesname isn't defined
+                            seriesName = seriesName || yaxisLabelText || 'value';
 
                             chartSeriesLookup[lookupKey] = {
                                 label: seriesName,
@@ -176,7 +175,7 @@
                 // populate the chartMeasurePoints data array with data from the REST result for pie data
                 for (var i = 0; i < chartData.length; i++) {
 
-                    var seriesCategory = chartData[i].MetricValuePartitionIds || chartData[i].SeriesName;
+                    var seriesCategory = chartData[i].MetricValuePartitionEntityIds || chartData[i].SeriesName;
                     barData.push([seriesCategory, chartData[i].YValue])
                     seriesLabels.push(seriesCategory);
                 }
