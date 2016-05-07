@@ -145,23 +145,24 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the series identifier.
+        /// Gets the series identifier (obsolete)
+        /// NOTE: Use MetricValuePartitionEntityIds if you are populating this with a EntityTypeId|EntityId list, or use SeriesName for a static series name
         /// </summary>
         /// <value>
         /// The series identifier.
         /// </value>
         [DataMember]
-        [Obsolete]
+        [Obsolete( "Use MetricValuePartitionEntityIds if you are populating this with a EntityTypeId|EntityId list, or use SeriesName for a static series name" )]
         public string SeriesId
         {
             get
             {
-                return this.MetricValuePartitionIds;
+                return this.MetricValuePartitionEntityIds;
             }
         }
 
         /// <summary>
-        /// Gets or sets the name of the series. This will be the default name of the series if MetricValuePartitionIds can't be resolved
+        /// Gets or sets the name of the series. This will be the default name of the series if MetricValuePartitionEntityIds can't be resolved
         /// </summary>
         /// <value>
         /// The name of the series.
@@ -176,19 +177,27 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the metric value partition ids.
+        /// Gets the metric value partitions as a comma-delimited list of EntityTypeId|EntityId
         /// </summary>
         /// <value>
-        /// The metric value partition ids.
+        /// The metric value entityTypeId,EntityId partitions
         /// </value>
         [DataMember]
-        public string MetricValuePartitionIds
+        public virtual string MetricValuePartitionEntityIds
         {
             get
             {
-                return this.MetricValuePartitions.Select( a => a.Id ).ToList().AsDelimited( "," );
+                if ( _metricValuePartitionEntityIds == null )
+                {
+                    var list = this.MetricValuePartitions.Select( a => new { a.MetricPartition.EntityTypeId, a.EntityId } ).ToList();
+                    _metricValuePartitionEntityIds = list.Select( a => string.Format( "{0}|{1}", a.EntityTypeId, a.EntityId ) ).ToList().AsDelimited( "," );
+                }
+
+                return _metricValuePartitionEntityIds;
             }
         }
+
+        private string _metricValuePartitionEntityIds;
 
         /// <summary>
         /// Gets the parent authority.

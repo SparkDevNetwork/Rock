@@ -119,21 +119,6 @@ namespace RockWeb.Blocks.Reporting
             ddlGoalMeasure.SelectedValue = gfMetricValues.GetUserPreference( "Goal/Measure" );
 
             var metric = new MetricService( new RockContext() ).Get( hfMetricId.Value.AsInteger() );
-
-            epEntity.Visible = metric != null;
-
-            if ( metric != null )
-            {
-                // TODO epEntity.EntityTypeId = metric.EntityTypeId;
-                epEntity.EntityTypePickerVisible = false;
-
-                var parts = gfMetricValues.GetUserPreference( this.EntityPreferenceKey ).Split( '|' );
-
-                if ( parts.Length >= 2 )
-                {
-                    epEntity.EntityId = parts[1].AsIntegerOrNull();
-                }
-            }
         }
 
         /// <summary>
@@ -159,15 +144,6 @@ namespace RockWeb.Blocks.Reporting
                     e.Value = null;
                 }
             }
-            else if ( e.Key == EntityPreferenceKey )
-            {
-                e.Name = hfEntityTypeName.Value;
-                var parts = e.Value.Split( '|' );
-                if ( parts.Length >= 2 )
-                {
-                    //e.Value = GetSeriesName( parts[1].AsIntegerOrNull() );
-                }
-            }
             else
             {
                 e.Value = null;
@@ -182,10 +158,7 @@ namespace RockWeb.Blocks.Reporting
         protected void gfMetricValues_ApplyFilterClick( object sender, EventArgs e )
         {
             gfMetricValues.SaveUserPreference( "Date Range", drpDates.DelimitedValues );
-            gfMetricValues.SaveUserPreference( this.EntityPreferenceKey, string.Format( "{0}|{1}", epEntity.EntityTypeId, epEntity.EntityId ) );
             gfMetricValues.SaveUserPreference( "Goal/Measure", ddlGoalMeasure.SelectedValue );
-
-            gfMetricValues.SaveUserPreference( "Entity", null );
 
             BindGrid();
         }
@@ -307,8 +280,7 @@ namespace RockWeb.Blocks.Reporting
                     seriesNames.Add( entityNameLookup[metricValuePartition.EntityId.Value] );
                 }
 
-
-                return seriesNames.AsDelimited(", ", " and ");
+                return seriesNames.AsDelimited( ", ", " and " );
             }
 
             return null;
@@ -346,10 +318,10 @@ namespace RockWeb.Blocks.Reporting
                 _entityTypeEntityNameLookup = new Dictionary<int, Dictionary<int, string>>();
                 _entityTypeEntityLookupQry = new Dictionary<int, IQueryable<IEntity>>();
 
-                foreach (var metricPartition in metric.MetricPartitions.Where(a => a.EntityTypeId.HasValue))
+                foreach ( var metricPartition in metric.MetricPartitions.Where( a => a.EntityTypeId.HasValue ) )
                 {
                     var entityTypeCache = EntityTypeCache.Read( metricPartition.EntityTypeId ?? 0 );
-                    
+
                     _entityTypeEntityNameLookup.AddOrIgnore( entityTypeCache.Id, new Dictionary<int, string>() );
                     _entityTypeEntityLookupQry.AddOrIgnore( entityTypeCache.Id, null );
                     if ( entityTypeCache != null )
@@ -391,20 +363,6 @@ namespace RockWeb.Blocks.Reporting
                 qry = qry.Where( a => a.MetricValueType == metricValueType.Value );
             }
 
-            // TODO 
-            /*var entityParts = gfMetricValues.GetUserPreference( this.EntityPreferenceKey ).Split( '|' );
-            if ( entityParts.Length == 2 )
-            {
-                if ( entityParts[0].AsInteger() == metric.EntityTypeId )
-                {
-                    var entityId = entityParts[1].AsIntegerOrNull();
-                    if ( entityId.HasValue )
-                    {
-                        qry = qry.Where( a => a.EntityId == entityId );
-                    }
-                }
-            }*/
-
             if ( sortProperty != null )
             {
                 qry = qry.Sort( sortProperty );
@@ -428,7 +386,6 @@ namespace RockWeb.Blocks.Reporting
 
             // in case called normally
             int? metricId = PageParameter( "MetricId" ).AsIntegerOrNull();
-            hfEntityTypeName.Value = string.Empty;
 
             // in case called from CategoryTreeView
             int? metricCategoryId = PageParameter( "MetricCategoryId" ).AsIntegerOrNull();
@@ -442,12 +399,6 @@ namespace RockWeb.Blocks.Reporting
                     if ( metricCategory != null )
                     {
                         metricId = metricCategory.MetricId;
-                        // TODO 
-                        /*
-                        if ( metricCategory.Metric != null && metricCategory.Metric.EntityType != null )
-                        {
-                            hfEntityTypeName.Value = metricCategory.Metric.EntityType.FriendlyName;
-                        }*/
                     }
                 }
                 else
