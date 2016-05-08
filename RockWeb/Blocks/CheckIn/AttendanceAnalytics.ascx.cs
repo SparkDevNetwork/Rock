@@ -842,7 +842,7 @@ function(item) {
             var includeChildren = hfViewBy.Value.ConvertToEnumOrNull<ViewBy>().GetValueOrDefault( ViewBy.Attendees ) == ViewBy.ChildrenOfAttendees;
 
             // Atttendance results
-            var allAttendeeDates = new Dictionary<int, AttendeeDates>();
+            var allAttendeeVisits = new Dictionary<int, AttendeeVisits>();
             var allResults = new List<AttendeeResult>();
 
             // Collection of async queries to run before assembling date
@@ -865,8 +865,8 @@ function(item) {
                     foreach ( DataRow row in dtAttendeeDates.Rows )
                     {
                         int personId = (int)row["PersonId"];
-                        allAttendeeDates.AddOrIgnore( personId, new AttendeeDates() );
-                        var result = allAttendeeDates[personId];
+                        allAttendeeVisits.AddOrIgnore( personId, new AttendeeVisits() );
+                        var result = allAttendeeVisits[personId];
                         result.PersonId = personId;
 
                         DateTime summaryDate = DateTime.MinValue;
@@ -1035,180 +1035,126 @@ function(item) {
             // Wait for all the queries to finish
             Task.WaitAll( qryTasks.ToArray() );
 
-            if ( !showNonAttenders )
+            var attendees = allAttendeeVisits.AsQueryable();
+
+            // If dataview filter was included remove anyone not in that dataview
+            if ( dataViewPersonIds != null )
             {
-                var attendees = allAttendeeDates.AsQueryable();
-
-                // If dataview filter was included remove anyone not in that dataview
-                if ( dataViewPersonIds != null )
-                {
-                    attendees = attendees.Where( p => dataViewPersonIds.Contains( p.Key ) );
-                    //allAttendeeDates = allAttendeeDates
-                    //    .Where( p => dataViewPersonIds.Contains( p.Key ) )
-                    //    .ToDictionary( k => k.Key, v => v.Value );
-                }
-
-                // If filter for number missed was included, remove anyone who did not match that filter
-                if ( personIdsWhoDidNotMiss != null )
-                {
-                    attendees = attendees.Where( p => !personIdsWhoDidNotMiss.Contains( p.Key ) );
-                    //allAttendeeDates = allAttendeeDates
-                    //    .Where( p => !personIdsWhoDidNotMiss.Contains( p.Key ) )
-                    //    .ToDictionary( k => k.Key, v => v.Value );
-                }
-
-                // If filtering by minimum times attended
-                if ( attendedMinCount.HasValue )
-                {
-                    attendees = attendees.Where( p => p.Value.AttendanceSummary.Count() >= attendedMinCount );
-                    //allAttendeeDates = allAttendeeDates
-                    //    .Where( p => p.Value.AttendanceSummary.Count() >= attendedMinCount )
-                    //    .ToDictionary( k => k.Key, v => v.Value );
-                }
-
-                // Add the Last Attended information
-                if ( dtAttendeeLastAttendance != null )
-                {
-                    foreach ( DataRow row in dtAttendeeLastAttendance.Rows )
-                    {
-                        int personId = (int)row["PersonId"];
-                        if ( allAttendeeDates.ContainsKey( personId ) )
-                        {
-                            var result = allAttendeeDates[personId];
-                            if ( result.LastVisit == null )
-                            {
-                                var lastAttendance = new PersonLastAttendance();
-                                lastAttendance.CampusId = row["CampusId"] as int?;
-                                lastAttendance.GroupId = row["GroupId"] as int?;
-                                lastAttendance.GroupName = row["GroupName"].ToString();
-                                lastAttendance.RoleName = row["RoleName"].ToString();
-                                lastAttendance.InGroup = !string.IsNullOrWhiteSpace( lastAttendance.RoleName );
-                                lastAttendance.ScheduleId = row["ScheduleId"] as int?;
-                                lastAttendance.StartDateTime = (DateTime)row["StartDateTime"];
-                                lastAttendance.LocationId = row["LocationId"] as int?;
-                                lastAttendance.LocationName = row["LocationName"].ToString();
-                                result.LastVisit = lastAttendance;
-                            }
-                        }
-                    }
-                }
-
-                // Add the first visit dates for people
-                //foreach ( DataRow row in dtAttendeeFirstDates.Rows )
-                //{
-                //    int personId = (int)row["PersonId"];
-                //    if ( allAttendeeDates.ContainsKey( personId ) )
-                //    {
-                //        allAttendeeDates[personId].FirstVisits.Add( (DateTime)row["StartDate"] );
-                //    }
-                //}
-
-                // If filtering based on visit time, only include those who visited the selected time during the date range
-                if ( byNthVisit.HasValue )
-                {
-                    int skipCount = byNthVisit.Value - 1;
-                    allAttendeeDates = allAttendeeDates
-                        .Where( p => p.Value.FirstVisits.Skip( skipCount ).Take( 1 ).Any( d => d >= start && d < end ) )
-                        .ToDictionary( k => k.Key, v => v.Value );
-                }
-
-                // Add the Demographic information
-                if ( dtAttendees != null )
-                {
-                    var newResults = new Dictionary<int, AttendeeResult>();
-
-                    foreach ( DataRow row in dtAttendees.Rows )
-                    {
-                        int personId = (int)row["Id"];
-                        if ( allAttendeeDates.ContainsKey( personId ) )
-                        {
-                            var result = new AttendeeResult( allAttendeeDates[personId] );
-
-                            var person = new PersonInfo();
-                            person.NickName = row["NickName"].ToString();
-                            person.LastName = row["LastName"].ToString();
-                            person.Email = row["Email"].ToString();
-                            person.Birthdate = row["BirthDate"] as DateTime?;
-                            person.Age = Person.GetAge( person.Birthdate );
-                            person.ConnectionStatusValueId = row["ConnectionStatusValueId"] as int?;
-                            result.Person = person;
-
-                            if ( includeParents )
-                            {
-                                result.ParentId = (int)row["ParentId"];
-                                var parent = new PersonInfo();
-                                parent.NickName = row["ParentNickName"].ToString();
-                                parent.LastName = row["ParentLastName"].ToString();
-                                parent.Email = row["ParentEmail"].ToString();
-                                parent.Birthdate = row["ParentBirthDate"] as DateTime?;
-                                parent.Age = Person.GetAge( parent.Birthdate );
-                                result.Parent = parent;
-                            }
-
-                            if ( includeChildren )
-                            {
-                                var child = new PersonInfo();
-                                result.ChildId = (int)row["ChildId"];
-                                child.NickName = row["ChildNickName"].ToString();
-                                child.LastName = row["ChildLastName"].ToString();
-                                child.Email = row["ChildEmail"].ToString();
-                                child.Birthdate = row["ChildBirthDate"] as DateTime?;
-                                child.Age = Person.GetAge( child.Birthdate );
-                                result.Child = child;
-                            }
-
-                            allResults.Add( result );
-                        }
-                    }
-                }
+                attendees = attendees.Where( p => dataViewPersonIds.Contains( p.Key ) );
             }
-            else
-            {
-                // If dataview filter was included remove anyone not in that dataview
-                if ( dataViewPersonIds != null )
-                {
-                    allResults = allResults
-                        .Where( p => dataViewPersonIds.Contains( p.PersonId ) )
-                        .ToList();
-                }
 
-                // Add the first visit dates for people
-                foreach ( DataRow row in dtAttendeeFirstDates.Rows )
+            // If filter for number missed was included, remove anyone who did not match that filter
+            if ( personIdsWhoDidNotMiss != null )
+            {
+                attendees = attendees.Where( p => !personIdsWhoDidNotMiss.Contains( p.Key ) );
+            }
+
+            // If filtering by minimum times attended
+            if ( attendedMinCount.HasValue )
+            {
+                attendees = attendees.Where( p => p.Value.AttendanceSummary.Count() >= attendedMinCount );
+            }
+
+            // Force filter application
+            allAttendeeVisits = attendees.ToDictionary( k => k.Key, v => v.Value );
+
+            // Add the Last Attended information
+            if ( dtAttendeeLastAttendance != null )
+            {
+                foreach ( DataRow row in dtAttendeeLastAttendance.Rows )
                 {
                     int personId = (int)row["PersonId"];
-                    foreach ( var result in allResults.Where( r => r.PersonId == personId ) )
+                    if ( allAttendeeVisits.ContainsKey( personId ) )
                     {
-                        result.FirstVisits.Add( (DateTime)row["StartDate"] );
-                    }
-                }
-
-                // Add the Last Attended information
-                if ( dtAttendeeLastAttendance != null )
-                {
-                    foreach ( DataRow row in dtAttendeeLastAttendance.Rows )
-                    {
-                        int personId = (int)row["PersonId"];
-                        foreach ( var result in allResults.Where( r => r.PersonId == personId ) )
+                        var result = allAttendeeVisits[personId];
+                        if ( result.LastVisit == null )
                         {
-                            if ( result.LastVisit == null )
-                            {
-                                var lastAttendance = new PersonLastAttendance();
-                                lastAttendance.CampusId = row["CampusId"] as int?;
-                                lastAttendance.GroupId = row["GroupId"] as int?;
-                                lastAttendance.GroupName = row["GroupName"].ToString();
-                                lastAttendance.RoleName = row["RoleName"].ToString();
-                                lastAttendance.InGroup = !string.IsNullOrWhiteSpace( lastAttendance.RoleName );
-                                lastAttendance.ScheduleId = row["ScheduleId"] as int?;
-                                lastAttendance.StartDateTime = (DateTime)row["StartDateTime"];
-                                lastAttendance.LocationId = row["LocationId"] as int?;
-                                lastAttendance.LocationName = row["LocationName"].ToString();
-                                result.LastVisit = lastAttendance;
-                            }
+                            var lastAttendance = new PersonLastAttendance();
+                            lastAttendance.CampusId = row["CampusId"] as int?;
+                            lastAttendance.GroupId = row["GroupId"] as int?;
+                            lastAttendance.GroupName = row["GroupName"].ToString();
+                            lastAttendance.RoleName = row["RoleName"].ToString();
+                            lastAttendance.InGroup = !string.IsNullOrWhiteSpace( lastAttendance.RoleName );
+                            lastAttendance.ScheduleId = row["ScheduleId"] as int?;
+                            lastAttendance.StartDateTime = (DateTime)row["StartDateTime"];
+                            lastAttendance.LocationId = row["LocationId"] as int?;
+                            lastAttendance.LocationName = row["LocationName"].ToString();
+                            result.LastVisit = lastAttendance;
                         }
                     }
                 }
             }
 
+            // Add the First Visit information
+            foreach ( DataRow row in dtAttendeeFirstDates.Rows )
+            {
+                int personId = (int)row["PersonId"];
+                if ( allAttendeeVisits.ContainsKey( personId ) )
+                {
+                    allAttendeeVisits[personId].FirstVisits.Add( (DateTime)row["StartDate"] );
+                }
+            }
+
+            // If filtering based on visit time, only include those who visited the selected time during the date range
+            if ( byNthVisit.HasValue && byNthVisit.Value > 0 )
+            {
+                int skipCount = byNthVisit.Value - 1;
+                allAttendeeVisits = allAttendeeVisits
+                    .Where( p => p.Value.FirstVisits.Skip( skipCount ).Take( 1 ).Any( d => d >= start && d < end ) )
+                    .ToDictionary( k => k.Key, v => v.Value );
+            }
+
+            // Add the Demographic information
+            if ( dtAttendees != null )
+            {
+                var newResults = new Dictionary<int, AttendeeResult>();
+
+                foreach ( DataRow row in dtAttendees.Rows )
+                {
+                    int personId = (int)row["Id"];
+                    if ( allAttendeeVisits.ContainsKey( personId ) )
+                    {
+                        var result = new AttendeeResult( allAttendeeVisits[personId] );
+
+                        var person = new PersonInfo();
+                        person.NickName = row["NickName"].ToString();
+                        person.LastName = row["LastName"].ToString();
+                        person.Email = row["Email"].ToString();
+                        person.Birthdate = row["BirthDate"] as DateTime?;
+                        person.Age = Person.GetAge( person.Birthdate );
+                        person.ConnectionStatusValueId = row["ConnectionStatusValueId"] as int?;
+                        result.Person = person;
+
+                        if ( includeParents )
+                        {
+                            result.ParentId = (int)row["ParentId"];
+                            var parent = new PersonInfo();
+                            parent.NickName = row["ParentNickName"].ToString();
+                            parent.LastName = row["ParentLastName"].ToString();
+                            parent.Email = row["ParentEmail"].ToString();
+                            parent.Birthdate = row["ParentBirthDate"] as DateTime?;
+                            parent.Age = Person.GetAge( parent.Birthdate );
+                            result.Parent = parent;
+                        }
+
+                        if ( includeChildren )
+                        {
+                            var child = new PersonInfo();
+                            result.ChildId = (int)row["ChildId"];
+                            child.NickName = row["ChildNickName"].ToString();
+                            child.LastName = row["ChildLastName"].ToString();
+                            child.Email = row["ChildEmail"].ToString();
+                            child.Birthdate = row["ChildBirthDate"] as DateTime?;
+                            child.Age = Person.GetAge( child.Birthdate );
+                            result.Child = child;
+                        }
+
+                        allResults.Add( result );
+                    }
+                }
+            }
+
+            // Begin formatting the columns
             var qryResult = allResults.AsQueryable();
 
             var personUrlFormatString = ( (RockPage)this.Page ).ResolveRockUrl( "~/Person/{0}" );
@@ -1370,6 +1316,10 @@ function(item) {
             }
         }
 
+        /// <summary>
+        /// Loads the current page objects.
+        /// </summary>
+        /// <param name="personIds">The person ids.</param>
         private void LoadCurrentPageObjects( List<int> personIds )
         {
             // Load the addresses
@@ -1418,7 +1368,7 @@ function(item) {
         }
 
         /// <summary>
-        /// Logs the and show exception.
+        /// Logs and shows the exception.
         /// </summary>
         /// <param name="exception">The exception.</param>
         private void LogAndShowException( Exception exception )
@@ -2007,8 +1957,8 @@ function(item) {
         /// <summary>
         /// Attendee object that adds PersonInfo to the AttendeeVisit
         /// </summary>
-        /// <seealso cref="RockWeb.Blocks.CheckIn.AttendanceAnalytics.AttendeeDates" />
-        public class AttendeeResult : AttendeeDates
+        /// <seealso cref="RockWeb.Blocks.CheckIn.AttendanceAnalytics.AttendeeVisits" />
+        public class AttendeeResult : AttendeeVisits
         {
             public PersonInfo Person { get; set; }
 
@@ -2025,7 +1975,7 @@ function(item) {
             {
             }
 
-            public AttendeeResult( AttendeeDates attendeeDates )
+            public AttendeeResult( AttendeeVisits attendeeDates )
             {
                 this.PersonId = attendeeDates.PersonId;
                 this.FirstVisits = attendeeDates.FirstVisits;
@@ -2035,9 +1985,9 @@ function(item) {
         }
 
         /// <summary>
-        /// Should be renamed to AttendeeVisits
+        /// List of person visits
         /// </summary>
-        public class AttendeeDates
+        public class AttendeeVisits
         {
             public int PersonId { get; set; }
 
@@ -2047,7 +1997,7 @@ function(item) {
 
             public List<DateTime> AttendanceSummary { get; set; }
 
-            public AttendeeDates()
+            public AttendeeVisits()
             {
                 FirstVisits = new List<DateTime>();
                 AttendanceSummary = new List<DateTime>();
