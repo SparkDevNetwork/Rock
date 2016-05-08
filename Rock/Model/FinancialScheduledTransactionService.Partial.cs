@@ -508,10 +508,10 @@ namespace Rock.Model
                     ( totalReversals == 1 ? "payment was" : "payments were" ) );
             }
 
-            if (totalStatusChanges > 0)
+            if ( totalStatusChanges > 0 )
             {
                 sb.AppendFormat( "<li>{0} {1} previously downloaded but had a change of status.</li>", totalStatusChanges.ToString( "N0" ),
-                    ( totalAlreadyDownloaded == 1 ? "payment was" : "payments were" ) );
+                    ( totalStatusChanges == 1 ? "payment was" : "payments were" ) );
             }
 
             foreach ( var batchItem in batchSummary )
