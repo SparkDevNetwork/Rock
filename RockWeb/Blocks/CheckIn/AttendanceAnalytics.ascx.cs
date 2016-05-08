@@ -16,14 +16,16 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.ComponentModel;
+using System.Data;
 using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text;
+using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -31,9 +33,6 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using System.Threading.Tasks;
-using System.Text;
-using Newtonsoft.Json;
 
 namespace RockWeb.Blocks.CheckIn
 {
@@ -419,7 +418,6 @@ function(item) {
             }
 
             SaveSettings();
-
         }
 
         /// <summary>
@@ -724,7 +722,7 @@ function(item) {
 
             // Adjust the start/end times to reflect the attendance dates who's SundayDate value would fall between the date range selected
             DateTime start = dateRange.Start.HasValue ?
-                dateRange.Start.Value.Date.AddDays(  0 - (dateRange.Start.Value.DayOfWeek == DayOfWeek.Sunday ? 6 : (int)dateRange.Start.Value.DayOfWeek - 1)) :
+                dateRange.Start.Value.Date.AddDays( 0 - ( dateRange.Start.Value.DayOfWeek == DayOfWeek.Sunday ? 6 : (int)dateRange.Start.Value.DayOfWeek - 1 ) ) :
                 new DateTime( 1900, 1, 1 );
 
             DateTime end = dateRange.End.HasValue ?
@@ -733,7 +731,7 @@ function(item) {
 
             if ( end < start )
             {
-                end = end.AddDays( start.Subtract(end).Days + 6 );
+                end = end.AddDays( start.Subtract( end ).Days + 6 );
             }
 
             string groupIds = GetSelectedGroupIds().AsDelimited( "," );
@@ -883,7 +881,6 @@ function(item) {
                             result.AttendanceSummary.Add( summaryDate );
                         }
                     }
-
                 } ) );
 
                 // Call the stored procedure to get the last attendance
@@ -942,9 +939,7 @@ function(item) {
                             .Where( m => missedPossibleCount - m.Value.AttendanceSummary.Count < attendedMissedCount.Value )
                             .Select( m => m.Key )
                             .ToList();
-
                     } ) );
-
                 }
 
                 // Call the stored procedure to get the first five dates that any person attended this group type
@@ -953,8 +948,6 @@ function(item) {
                     dtAttendeeFirstDates = AttendanceService.GetAttendanceAnalyticsAttendeeFirstDates(
                         groupType.Id, groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList ).Tables[0];
                 } ) );
-
-
             }
             else
             {
@@ -969,7 +962,6 @@ function(item) {
 
                     foreach ( DataRow row in dtNonAttenders.Rows )
                     {
-
                         int personId = (int)row["Id"];
 
                         var result = new AttendeeResult();
@@ -1011,8 +1003,6 @@ function(item) {
 
                         allResults.Add( result );
                     }
-
-
                 } ) );
             }
 
@@ -1049,7 +1039,6 @@ function(item) {
             {
                 var attendees = allAttendeeDates.AsQueryable();
 
-
                 // If dataview filter was included remove anyone not in that dataview
                 if ( dataViewPersonIds != null )
                 {
@@ -1077,7 +1066,6 @@ function(item) {
                     //    .ToDictionary( k => k.Key, v => v.Value );
                 }
 
-                
                 // Add the Last Attended information
                 if ( dtAttendeeLastAttendance != null )
                 {
@@ -1173,7 +1161,6 @@ function(item) {
                         }
                     }
                 }
-
             }
             else
             {
@@ -1220,7 +1207,6 @@ function(item) {
                         }
                     }
                 }
-
             }
 
             var qryResult = allResults.AsQueryable();
@@ -1378,13 +1364,11 @@ function(item) {
                 gAttendeesAttendance.DataBind();
                 _currentlyExporting = false;
             }
-
             catch ( Exception exception )
             {
                 LogAndShowException( exception );
             }
         }
-
 
         private void LoadCurrentPageObjects( List<int> personIds )
         {
@@ -1431,8 +1415,8 @@ function(item) {
                     PhoneNumbers = n.ToList()
                 } )
                 .ToDictionary( k => k.PersonId, v => v.PhoneNumbers );
-
         }
+
         /// <summary>
         /// Logs the and show exception.
         /// </summary>
@@ -1670,7 +1654,7 @@ function(item) {
                 {
                     currentPersonId = personDates.ParentId;
                 }
-                else if ( gAttendeesAttendance.PersonIdField == "ChildId")
+                else if ( gAttendeesAttendance.PersonIdField == "ChildId" )
                 {
                     currentPersonId = personDates.ChildId;
                 }
@@ -2027,12 +2011,20 @@ function(item) {
         public class AttendeeResult : AttendeeDates
         {
             public PersonInfo Person { get; set; }
+
             public int ParentId { get; set; }
+
             public PersonInfo Parent { get; set; }
+
             public int ChildId { get; set; }
+
             public PersonInfo Child { get; set; }
 
-            public AttendeeResult() : base() { }
+            public AttendeeResult()
+                : base()
+            {
+            }
+
             public AttendeeResult( AttendeeDates attendeeDates )
             {
                 this.PersonId = attendeeDates.PersonId;
@@ -2048,9 +2040,13 @@ function(item) {
         public class AttendeeDates
         {
             public int PersonId { get; set; }
+
             public List<DateTime> FirstVisits { get; set; }
+
             public PersonLastAttendance LastVisit { get; set; }
+
             public List<DateTime> AttendanceSummary { get; set; }
+
             public AttendeeDates()
             {
                 FirstVisits = new List<DateTime>();
@@ -2064,10 +2060,15 @@ function(item) {
         public class PersonInfo
         {
             public string NickName { get; set; }
+
             public string LastName { get; set; }
+
             public string Email { get; set; }
+
             public int? Age { get; set; }
+
             public DateTime? Birthdate { get; set; }
+
             public int? ConnectionStatusValueId { get; set; }
 
             public override string ToString()
@@ -2082,15 +2083,22 @@ function(item) {
         public class PersonLastAttendance
         {
             public int? CampusId { get; set; }
+
             public int? GroupId { get; set; }
+
             public string GroupName { get; set; }
+
             public bool InGroup { get; set; }
+
             public string RoleName { get; set; }
+
             public int? ScheduleId { get; set; }
+
             public DateTime StartDateTime { get; set; }
+
             public int? LocationId { get; set; }
+
             public string LocationName { get; set; }
         }
-
     }
 }
