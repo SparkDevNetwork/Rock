@@ -393,6 +393,7 @@ namespace Rock.Model
                                 {
                                     transactionDetail = new FinancialTransactionDetail();
                                     transactionDetail.AccountId = defaultAccount.Id;
+                                    transaction.TransactionDetails.Add(transactionDetail);
                                 }
                                 if ( transactionDetail != null )
                                 {
