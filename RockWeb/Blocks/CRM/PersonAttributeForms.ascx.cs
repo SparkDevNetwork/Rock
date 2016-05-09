@@ -47,11 +47,11 @@ namespace RockWeb.Blocks.Crm
     // Block Properties
 
     // Settings
-    [BooleanField( "Display Progress Bar", "", true, "CustomSetting" )]
+    [BooleanField( "Display Progress Bar", "Determines if the progress bar should be show if there is more than one form.", true, "CustomSetting" )]
     [CustomDropdownListField( "Save Values", "", "PAGE,END", true, "END", "CustomSetting" )]
-    [WorkflowTypeField( "Workflow", "", false, false, "", "CustomSetting" )]
-    [LinkedPage( "Done Page", "", false, "", "CustomSetting" )]
-    [TextField( "Forms", "", false, "", "CustomSetting" )]
+    [WorkflowTypeField( "Workflow", "The workflow to be launched when complete.", false, false, "", "CustomSetting" )]
+    [LinkedPage( "Done Page", "The page to redirect to when done.", false, "", "CustomSetting" )]
+    [TextField( "Forms", "The forms to show.", false, "", "CustomSetting" )]
 
     public partial class PersonAttributeForms : RockBlockCustomSettings
     {
@@ -635,7 +635,7 @@ namespace RockWeb.Blocks.Crm
                         }
                     }
                 }
-
+                
                 ProgressBarSteps = FormState.Count();
                 CurrentPageIndex = 0;
                 ShowPage();
@@ -653,7 +653,7 @@ namespace RockWeb.Blocks.Crm
         {
             decimal currentStep = CurrentPageIndex + 1;
             PercentComplete = ( currentStep / ProgressBarSteps ) * 100.0m;
-            pnlProgressBar.Visible = GetAttributeValue( "DisplayProgressBar" ).AsBoolean();
+            pnlProgressBar.Visible = GetAttributeValue( "DisplayProgressBar" ).AsBoolean() && (FormState.Count > 1);
 
             BuildViewControls( true );
 
