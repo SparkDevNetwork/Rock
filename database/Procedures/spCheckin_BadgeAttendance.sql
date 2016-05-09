@@ -100,6 +100,7 @@ BEGIN
 							[GroupId] IN (select groupId from @groupIds)
 							AND pa.[PersonId] IN (select PersonId from @familyMemberPersonIds) 
 							AND a.[StartDateTime] BETWEEN @StartDay AND @LastDay
+							AND a.[DidAttend] = 1
 						) a ON [AttendedSunday] = s.[SundayDate]
 
 		) [CheckinDates]
@@ -128,6 +129,7 @@ BEGIN
 							[GroupId] IN (select groupId from @groupIds)
 							AND pa.[PersonId] = @PersonId 
 							AND a.[StartDateTime] BETWEEN @StartDay AND @LastDay
+							AND a.[DidAttend] = 1
 						) a ON [AttendedSunday] = s.[SundayDate]
 
 		) [CheckinDates]

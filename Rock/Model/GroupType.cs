@@ -538,6 +538,9 @@ namespace Rock.Model
         AlreadyBelongs = 2
     }
 
+    /// <summary>
+    /// Group Capacity Rule
+    /// </summary>
     public enum GroupCapacityRule
     {
         /// <summary>

@@ -56,6 +56,9 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public int? GroupCapacity { get; set; }
+
+        /// <summary />
         public int GroupTypeId { get; set; }
 
         /// <summary />
@@ -136,6 +139,7 @@ namespace Rock.Client
             this.ExitSystemEmailId = source.ExitSystemEmailId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.GroupCapacity = source.GroupCapacity;
             this.GroupTypeId = source.GroupTypeId;
             this.IsActive = source.IsActive;
             this.IsPublic = source.IsPublic;
