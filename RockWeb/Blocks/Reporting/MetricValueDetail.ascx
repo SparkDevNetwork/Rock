@@ -32,9 +32,10 @@
                     </div>
 
                     <div class="row">
-                        
-                            <asp:PlaceHolder ID="phMetricValuePartitions" runat="server" />
-                        
+                        <div class="col-md-12">
+                            <Rock:NotificationBox ID="nbValueRequired" runat="server" NotificationBoxType="Warning" Visible="false" />
+                        </div>
+                        <asp:PlaceHolder ID="phMetricValuePartitions" runat="server" />
                     </div>
 
                     <div class="row">

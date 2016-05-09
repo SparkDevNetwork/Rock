@@ -75,7 +75,11 @@
                         </div>
                     </div>
 
+                    <Rock:ModalAlert ID="mdMetricPartitionsGridWarning" runat="server" />
+
+                    <Rock:NotificationBox ID="mdMetricPartitionsEntityTypeWarning" runat="server" NotificationBoxType="Danger" Visible="false" />
                     <Rock:PanelWidget ID="pwMetricPartitions" runat="server" Title="Series Partitions" TitleIconCssClass="fa fa-pause">
+                        <Rock:NotificationBox ID="nbMetricValuesWarning" runat="server" NotificationBoxType="Info" CssClass="margin-t-md" />
                         <Rock:Grid ID="gMetricPartitions" runat="server" AllowSorting="false" AllowPaging="false" DisplayType="Light" DataKeyNames="Guid" OnRowSelected="gMetricPartitions_RowSelected" RowItemText="Series Partition">
                             <Columns>
                                 <Rock:ReorderField />
@@ -120,6 +124,7 @@
             <Rock:ModalDialog ID="mdMetricPartitionDetail" runat="server" Title="Series Partition" ValidationGroup="vg-series-partition" OnSaveClick="mdMetricPartitionDetail_SaveClick">
                 <Content>
                     <asp:HiddenField ID="hfMetricPartitionGuid" runat="server" />
+                    
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:RockTextBox ID="tbMetricPartitionLabel" runat="server" Label="Label" Required="true" ValidationGroup="vg-series-partition" />
@@ -135,6 +140,8 @@
                                 </Rock:PanelWidget>
                             </Rock:RockControlWrapper>
                         </div>
+
+                        <Rock:NotificationBox ID="nbEntityTypeChanged" runat="server" NotificationBoxType="Warning" Dismissable="true" />
                     </div>
 
                 </Content>
