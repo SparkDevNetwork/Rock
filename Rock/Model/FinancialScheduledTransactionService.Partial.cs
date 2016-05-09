@@ -289,13 +289,14 @@ namespace Rock.Model
 
                         // Calculate whether a transaction needs to be added
                         var txnAmount = CalculateTransactionAmount( payment, txns );
-
-                        // Only consider transactions that have not already been added
                         if ( txnAmount != 0.0M )
                         {
                             scheduledTransactionIds.Add( scheduledTransaction.Id );
 
-                            scheduledTransaction.IsActive = payment.ScheduleActive;
+                            if ( payment.ScheduleActive.HasValue )
+                            {
+                                scheduledTransaction.IsActive = payment.ScheduleActive.Value;
+                            }
 
                             var transaction = new FinancialTransaction();
                             transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
@@ -402,7 +403,7 @@ namespace Rock.Model
                             }
 
                             // If the amount to apply was negative, update all details to be negative (absolute value was used when allocating to accounts)
-                            if ( txnAmount < 0 )
+                            if ( txnAmount < 0.0M )
                             {
                                 foreach ( var txnDetail in transaction.TransactionDetails )
                                 {
@@ -428,7 +429,7 @@ namespace Rock.Model
 
                             batch.Transactions.Add( transaction );
 
-                            if ( recieptEmail.HasValue )
+                            if ( txnAmount > 0.0M && recieptEmail.HasValue )
                             {
                                 newTransactions.Add( transaction );
                             }
@@ -440,7 +441,7 @@ namespace Rock.Model
                             }
                             batchSummary[batch.Guid].Add( txnAmount );
 
-                            if ( txnAmount > 0 )
+                            if ( txnAmount > 0.0M )
                             {
                                 totalAdded++;
                             }

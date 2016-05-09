@@ -734,10 +734,9 @@ namespace Rock.NMI
                                         payment.TransactionDateTime = actionDate.Value;
                                         payment.TransactionCode = GetXElementValue( xTxn, "transaction_id" );
                                         payment.GatewayScheduleId = subscriptionId;
-                                        payment.ScheduleActive = true;
-                                    }
                                     }
                                 }
+                            }
                             if ( payment != null )
                             {
                                 payment.StatusMessage = statusMessage.ToString();
