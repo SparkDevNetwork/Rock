@@ -1044,7 +1044,7 @@ namespace RockWeb.Blocks.Event
                     ShowWarning( "Please log in", "You must be logged in to access this registration." );
                     return false;
                 }
-                
+
                 // Only allow the person that was logged in when this registration was created. 
                 // If the logged in person, registered on someone elses behalf (for example, husband logged in, but entered wife's name as the Registrar), 
                 // also allow that person to access the regisratiuon

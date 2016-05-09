@@ -2195,7 +2195,7 @@ namespace RockWeb.Blocks.Finance
                     $form.find('.billing-state').val( $('#{17}_ddlState').val() );
                     $form.find('.billing-postal').val( $('#{17}_tbPostalCode').val() );
                 }}
-        
+
                 if ( $('#{1}').val() == 'CreditCard' ) {{
                     $form.find('.cc-first-name').val( $('#{18}').val() );
                     $form.find('.cc-last-name').val( $('#{19}').val() );
