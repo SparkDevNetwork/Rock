@@ -31,7 +31,6 @@ namespace RockWeb.Blocks.CheckIn
     [DisplayName("Location Select")]
     [Category("Check-in")]
     [Description("Displays a list of locations a person is able to checkin to.")]
-    [TextField( "Current Count Format", "How should current count be displayed", false, " Count: {0}" )]
     public partial class LocationSelect : CheckInBlock
     {
         /// <summary>
@@ -180,11 +179,9 @@ namespace RockWeb.Blocks.CheckIn
         /// <returns></returns>
         protected string FormatCount( int locationId )
         {
-            string currentCountFormat = GetAttributeValue( "CurrentCountFormat" );
-            if (!string.IsNullOrWhiteSpace(currentCountFormat) && currentCountFormat.Contains("{0}"))
-            {
-                return string.Format( " <span class='checkin-sub-title'>{0}</span>",
-                    string.Format( currentCountFormat, KioskLocationAttendance.Read( locationId ).CurrentCount ) );
+            if ( CurrentCheckInType != null && CurrentCheckInType.DisplayLocationCount )
+            { 
+                return string.Format( " <span class='checkin-sub-title'> Count: {0}</span>", KioskLocationAttendance.Read( locationId ).CurrentCount );
             }
 
             return string.Empty;

@@ -245,7 +245,10 @@ namespace RockWeb.Blocks.Core
             location.GeoFence = geopFence.SelectedValue;
 
             location.IsGeoPointLocked = cbGeoPointLocked.Checked;
-            
+
+            location.SoftRoomThreshold = nbSoftThreshold.Text.AsIntegerOrNull();
+            location.FirmRoomThreshold = nbFirmThreshold.Text.AsIntegerOrNull();
+
             location.LoadAttributes( rockContext );
             Rock.Attribute.Helper.GetEditValues( phAttributeEdits, location );
 
@@ -512,6 +515,9 @@ namespace RockWeb.Blocks.Core
 
             cbGeoPointLocked.Checked = location.IsGeoPointLocked ?? false;
 
+            nbSoftThreshold.Text = location.SoftRoomThreshold.HasValue ? location.SoftRoomThreshold.Value.ToString() : "";
+            nbFirmThreshold.Text = location.FirmRoomThreshold.HasValue ? location.FirmRoomThreshold.Value.ToString() : "";
+
             Guid mapStyleValueGuid = GetAttributeValue( "MapStyle" ).AsGuid();
             geopPoint.MapStyleValueGuid = mapStyleValueGuid;
             geopFence.MapStyleValueGuid = mapStyleValueGuid;
@@ -599,6 +605,16 @@ namespace RockWeb.Blocks.Core
             if ( location.PrinterDevice != null )
             {
                 descriptionList.Add( "Printer", location.PrinterDevice.Name );
+            }
+
+            if ( location.SoftRoomThreshold.HasValue )
+            {
+                descriptionList.Add( "Threshold", location.SoftRoomThreshold.Value.ToString( "N0" ) ); ;
+            }
+
+            if ( location.FirmRoomThreshold.HasValue )
+            {
+                descriptionList.Add( "Threshold (Absolute)", location.FirmRoomThreshold.Value.ToString( "N0" ) ); ;
             }
 
             string fullAddress = location.GetFullStreetAddress().ConvertCrLfToHtmlBr();

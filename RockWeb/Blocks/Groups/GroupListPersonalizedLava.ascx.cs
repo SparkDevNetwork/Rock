@@ -112,7 +112,6 @@ namespace RockWeb.Blocks.Groups
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "Groups", groups );
-            mergeFields.Add( "CurrentPerson", CurrentPerson );
 
             Dictionary<string, object> linkedPages = new Dictionary<string, object>();
             linkedPages.Add( "DetailPage", LinkedPageUrl( "DetailPage", null ) );

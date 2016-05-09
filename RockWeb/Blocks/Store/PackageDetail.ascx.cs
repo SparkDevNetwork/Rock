@@ -347,6 +347,11 @@ namespace RockWeb.Blocks.Store
             return "http://www.rockrms.com/" + url;
         }
 
+        protected string FormatReviewText(string reviewText )
+        {
+            return reviewText.Replace( "\r\n", "<br />" ).Replace( Environment.NewLine, "<br />" ).Replace( "\n", "<br />" );
+        }
+
         #endregion
 
     }

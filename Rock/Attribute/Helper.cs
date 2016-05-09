@@ -920,7 +920,7 @@ namespace Rock.Attribute
         /// <param name="supressOrdering">if set to <c>true</c> supresses reording (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
         public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue, string validationGroup, List<string> exclude, bool supressOrdering = false )
         {
-            if ( item.Attributes != null )
+            if ( item != null && item.Attributes != null )
             {
                 foreach ( var attributeCategory in GetAttributeCategories( item, false, false, supressOrdering ) )
                 {
@@ -969,7 +969,7 @@ namespace Rock.Attribute
             {
                 var attribute = item.Attributes[key];
 
-                if ( !exclude.Contains( attribute.Name ) )
+                if ( !exclude.Contains( attribute.Name ) && !exclude.Contains( attribute.Key ) )
                 {
                     // Add the control for editing the attribute value
                     attribute.AddControl( fieldSet.Controls, item.AttributeValues[attribute.Key].Value, validationGroup, setValue, true );
@@ -1023,7 +1023,7 @@ namespace Rock.Attribute
 
                 foreach ( var attribute in attributeCategory.Attributes )
                 {
-                    if ( exclude == null || !exclude.Contains( attribute.Name ) )
+                    if ( exclude == null || ( !exclude.Contains( attribute.Name ) && !exclude.Contains( attribute.Key ) ) )
                     {
                         // Get the Attribute Value formatted for display.
                         string value = attribute.DefaultValue;

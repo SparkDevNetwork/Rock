@@ -1,3 +1,22 @@
+Rock McKinley 4.6
+
++ Fixed the display of line breaks in Rock Shop ratings.
++ Fixed the person giving filter and select in reporting so that the end date range is inclusive (Fixes #1490).
++ Fixed issue with not being able to remove a workflow type from a connection opportunity if requests have already been created that use that workflow type (Fixes #1488).
++ Fixed issue with check-in configuration not clearing cache for the areas (i.e. which labels are associated with area).
++ Updated Connection Request so that members of a campus-specific connection group can now add connection requests (Fixes #1446).
++ Fixed column headers not being responsive.
++ Updated Mailgun component to deal with bounced events having incorrect formatting (Fixes #1478).
++ Updated the Device Detail block to prevent and warn when attempting to add a new device with same name as an existing device instead of causing an error (Fixes #1437).
++ Fixed exception that would occur when trying to delete a group type that was a child of another group type (Fixes #1415).
++ Updated the Benevolence Request Detail block to list case workers in alphabetical order (Fixes #1494).
++ Fixed the message that is displayed on the Merge People page when user navigates directly to page (instead of initiating request from a grid). Message will not indicate that they are not authorized to submit a request (Fixes #1501).
++ Fixed Spouse name field on reports to exclude any deceased spouses (Fixes #1498).
++ Updated Group Member List block so that the Group setting is not required (typically group is passed on the query string) Fixes #1500.
++ Fixed issue when adding a known relationship to an inactive person and it not creating the inverse relationship.
++ Fixed issue with new family block saving phone numbers without a country code and added migration to fix all missing country code values.
++ Fixed issue where only first recipient would receive email when it included one or more attachments and the default binary file type was using a custom storage provider.
+
 Rock McKinley 4.5
 
 + Updated the Protect My Ministry (PMM) background check integration to check for a valid response from PMM when submitting the initial request and add logging of both the request and the reply.
