@@ -643,7 +643,7 @@ namespace RockWeb.Blocks.Crm
             else
             {
                 nbMain.Title = "No Forms/Fields";
-                nbMain.Text = "There aren't any forms or fields that have been configured yet. Use the Block Configuration to add new forms and fields.";
+                nbMain.Text = "No forms or fields have been configured. Use the Block Configuration to add new forms and fields.";
                 nbMain.NotificationBoxType = NotificationBoxType.Warning;
                 nbMain.Visible = true;
             }
