@@ -285,7 +285,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets the attendance analytics attendee first dates.
         /// </summary>
-        /// <param name="GroupTypeId">The group type identifier.</param>
+        /// <param name="GroupTypeIds">The group type ids.</param>
         /// <param name="groupIds">The group ids.</param>
         /// <param name="start">The start.</param>
         /// <param name="end">The end.</param>
@@ -293,10 +293,10 @@ namespace Rock.Model
         /// <param name="includeNullCampusIds">The include null campus ids.</param>
         /// <param name="scheduleIds">The schedule ids.</param>
         /// <returns></returns>
-        public static DataSet GetAttendanceAnalyticsAttendeeFirstDates( int GroupTypeId, List<int> groupIds, DateTime? start, DateTime? end,
+        public static DataSet GetAttendanceAnalyticsAttendeeFirstDates( List<int> GroupTypeIds, List<int> groupIds, DateTime? start, DateTime? end,
             List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds )
         {
-            var parameters = GetAttendanceAnalyticsParameters( GroupTypeId, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds );
+            var parameters = GetAttendanceAnalyticsParameters( GroupTypeIds, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds );
             return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_AttendeeFirstDates", System.Data.CommandType.StoredProcedure, parameters, 300 );
         }
 
@@ -339,7 +339,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets the attendance analytics non attendees.
         /// </summary>
-        /// <param name="GroupTypeId">The group type identifier.</param>
+        /// <param name="GroupTypeIds">The group type ids.</param>
         /// <param name="groupIds">The group ids.</param>
         /// <param name="start">The start.</param>
         /// <param name="end">The end.</param>
@@ -349,21 +349,21 @@ namespace Rock.Model
         /// <param name="IncludeParentsWithChild">The include parents with child.</param>
         /// <param name="IncludeChildrenWithParents">The include children with parents.</param>
         /// <returns></returns>
-        public static DataSet GetAttendanceAnalyticsNonAttendees( int GroupTypeId, List<int> groupIds, DateTime? start, DateTime? end,
+        public static DataSet GetAttendanceAnalyticsNonAttendees( List<int> GroupTypeIds, List<int> groupIds, DateTime? start, DateTime? end,
             List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds, bool? IncludeParentsWithChild, bool? IncludeChildrenWithParents )
         {
-            var parameters = GetAttendanceAnalyticsParameters( GroupTypeId, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds, IncludeParentsWithChild, IncludeChildrenWithParents );
+            var parameters = GetAttendanceAnalyticsParameters( GroupTypeIds, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds, IncludeParentsWithChild, IncludeChildrenWithParents );
             return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_NonAttendees", System.Data.CommandType.StoredProcedure, parameters, 300 );
         }
 
-        private static Dictionary<string, object> GetAttendanceAnalyticsParameters( int? GroupTypeId, List<int> groupIds, DateTime? start, DateTime? end,
+        private static Dictionary<string, object> GetAttendanceAnalyticsParameters( List<int> GroupTypeIds, List<int> groupIds, DateTime? start, DateTime? end,
             List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds, bool? IncludeParentsWithChild = null, bool? IncludeChildrenWithParents = null )
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
 
-            if ( GroupTypeId.HasValue )
+            if ( GroupTypeIds != null && GroupTypeIds.Any() )
             {
-                parameters.Add( "GroupTypeId", GroupTypeId.Value );
+                parameters.Add( "GroupTypeIds", GroupTypeIds.AsDelimited( "," ) );
             }
 
             if ( groupIds != null && groupIds.Any() )

@@ -65,7 +65,7 @@ namespace Rock.NMI
         {
             get
             {
-                return "~/NMIGatewayStep2.html";
+                return string.Format( "~/NMIGatewayStep2.html?timestamp={0}", RockDateTime.Now.Ticks );
             }
         }
 
@@ -78,6 +78,20 @@ namespace Rock.NMI
         public override bool PromptForNameOnCard( FinancialGateway financialGateway )
         {
             return GetAttributeValue( financialGateway, "PromptForName" ).AsBoolean();
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether gateway provider needs first and last name on credit card as two distinct fields.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [split name on card]; otherwise, <c>false</c>.
+        /// </value>
+        public override bool SplitNameOnCard
+        {
+            get
+            {
+                return true;
+            }
         }
 
         /// <summary>

@@ -216,31 +216,9 @@ namespace RockWeb.Blocks.Event
                 eventOccurrenceSummaries = eventOccurrenceSummaries.Take( maxItems.Value ).ToList();
             }
 
-            var mergeFields = new Dictionary<string, object>();
-
-            var contextObjects = new Dictionary<string, object>();
-            foreach (var contextEntityType in RockPage.GetContextEntityTypes())
-            {
-                var contextEntity = RockPage.GetCurrentContext(contextEntityType);
-                if (contextEntity != null && contextEntity is DotLiquid.ILiquidizable)
-                {
-                    var type = Type.GetType(contextEntityType.AssemblyName ?? contextEntityType.Name);
-                    if (type != null)
-                    {
-                        contextObjects.Add(type.Name, contextEntity);
-                    }
-                }
-
-            }
-
-            if (contextObjects.Any())
-            {
-                mergeFields.Add("Context", contextObjects);
-            }
-
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "DetailsPage", LinkedPageUrl( "DetailsPage", null ) );
             mergeFields.Add( "EventOccurrenceSummaries", eventOccurrenceSummaries );
-            mergeFields.Add( "CurrentPerson", CurrentPerson );
 
             lContent.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 

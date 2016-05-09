@@ -136,7 +136,7 @@ namespace Rock.Lava
                 }
             }
 
-            if ( options.GetCurrentPerson )
+            if ( options.GetCampuses )
             {
                 mergeFields.Add( "Campuses", CampusCache.All() );
             }

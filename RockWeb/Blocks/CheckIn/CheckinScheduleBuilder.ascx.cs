@@ -86,7 +86,7 @@ namespace RockWeb.Blocks.CheckIn
             var scheduleQry = scheduleService.Queryable().Where( a => a.CheckInStartOffsetMinutes != null );
 
             // limit Schedules to the Category from the Filter
-            int scheduleCategoryId = rFilter.GetUserPreference( "Category" ).AsIntegerOrNull() ?? Rock.Constants.All.Id;
+            int scheduleCategoryId = pCategory.SelectedValueAsInt() ?? Rock.Constants.All.Id;
             if ( scheduleCategoryId != Rock.Constants.All.Id )
             {
                 scheduleQry = scheduleQry.Where( a => a.CategoryId == scheduleCategoryId );
@@ -161,8 +161,21 @@ namespace RockWeb.Blocks.CheckIn
                 ddlGroupType.Visible = false;
             }
 
-            var filterCategory = new CategoryService( rockContext ).Get( rFilter.GetUserPreference( "Category" ).AsInteger() );
-            pCategory.SetValue( filterCategory );
+            int? categoryId = rFilter.GetUserPreference( "Category" ).AsIntegerOrNull();
+            if ( !categoryId.HasValue )
+            {
+                var categoryCache = CategoryCache.Read( Rock.SystemGuid.Category.SCHEDULE_SERVICE_TIMES.AsGuid() );
+                categoryId = categoryCache != null ? categoryCache.Id : (int?)null;
+            }
+
+            if ( categoryId.HasValue )
+            {
+                pCategory.SetValue( new CategoryService( rockContext ).Get( categoryId.Value ) );
+            }
+            else
+            {
+                pCategory.SetValue( null );
+            }
 
             pkrParentLocation.SetValue( rFilter.GetUserPreference( "Parent Location" ).AsIntegerOrNull() );
         }
@@ -413,7 +426,7 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            NavigateToParentPage();
+            NavigateToParentPage( new Dictionary<string, string> { { "CheckinTypeId", this.PageParameter( "groupTypeId" ) } } );
         }
 
         /// <summary>
@@ -471,7 +484,7 @@ namespace RockWeb.Blocks.CheckIn
 
             Rock.CheckIn.KioskDevice.FlushAll();
 
-            NavigateToParentPage();
+            NavigateToParentPage( new Dictionary<string, string> { { "CheckinTypeId", this.PageParameter( "groupTypeId" ) } } );
 
         }
 

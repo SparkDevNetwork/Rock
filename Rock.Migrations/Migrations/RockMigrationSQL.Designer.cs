@@ -1396,5 +1396,117 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201603241157527_UpdateIndexes", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @GroupTypeEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = &apos;Rock.Model.GroupType&apos; )
+        ///DECLARE @CheckInTemplatePurposeId int = ( SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = &apos;4A406CB0-495B-4795-B788-52BDFDE00B01&apos; )
+        ///IF @GroupTypeEntityTypeId IS NOT NULL AND @CheckInTemplatePurposeId IS NOT NULL
+        ///BEGIN
+        ///
+        ///    UPDATE [Attribute] SET [EntityTypeQualifierValue] = CAST( @CheckInTemplatePurposeId AS varchar) 
+        ///    WHERE [EntityTypeId] = @GroupTypeEntityTypeId
+        ///    AND [EntityT [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201604251529438_CheckinEnhancement {
+            get {
+                return ResourceManager.GetString("_201604251529438_CheckinEnhancement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /* HtmlContent */
+        ///UPDATE HtmlContent
+        ///SET Content = REPLACE(Content, &apos;GlobalAttribute.OrganizationAddress&apos;, &apos;&apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;OrganizationAddress&apos;&apos;&apos;)
+        ///WHERE [Guid] IN (
+        ///        &apos;9C6D118B-6C7D-46C3-ACEC-4CF586DCE81F&apos;
+        ///        ,&apos;FBC4C931-6B27-4AFA-A1DE-C72DB75493A6&apos;
+        ///        ,&apos;A51C28B4-DC64-4D72-91D5-B73CAF8B5958&apos;
+        ///        ,&apos;320864D0-8872-4E94-A0C0-B53E03645EE4&apos;
+        ///        ,&apos;B89605CF-C111-4A1B-9228-29A78EA9DA25&apos;
+        ///        ,&apos;8458375D-3F98-461C-ACF1-1A1CF08806B8&apos;
+        ///        ,&apos;939ADB18-D2A9-4444-BB07-4E33C1 [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201604251529438_UpdateLegacyLava {
+            get {
+                return ResourceManager.GetString("_201604251529438_UpdateLegacyLava", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeFirstDates]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeFirstDates]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///        This function return people who attended based on selected filter criteria and the first 5 dates they ever attended the selected group type
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* PersonId
+        ///		* TimeAttending
+        ///		* SundayDate
+        ///	&lt;/returns&gt;
+        ///	&lt;param [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201604281205403_AttendanceAnalyticsGroupTypes_AttendeeFirstDates {
+            get {
+                return ResourceManager.GetString("_201604281205403_AttendanceAnalyticsGroupTypes_AttendeeFirstDates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS ( SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[vCheckin_GroupTypeAttendance]&apos;) AND type = N&apos;V&apos; )
+        ///DROP VIEW [dbo].[vCheckin_GroupTypeAttendance]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This view returns distinct attendance dates for a person and group type
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* GroupTypeId
+        ///        * PersonId
+        ///		* SundayDate
+        ///	&lt;/returns&gt;
+        ///	&lt;remarks&gt;	
+        ///	&lt;/remarks&gt;
+        ///	&lt;code&gt;
+        ///		SELECT * FROM [vCheckin_GroupTypeAttendance] WHERE [GroupTypeId] = 14
+        ///	&lt;/code&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///CREATE VI [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201604281205403_AttendanceAnalyticsGroupTypes_GroupTypeAttendance {
+            get {
+                return ResourceManager.GetString("_201604281205403_AttendanceAnalyticsGroupTypes_GroupTypeAttendance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCheckin_AttendanceAnalyticsQuery_NonAttendees]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_NonAttendees]
+        ///GO
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns any person ids for people that have attended previously but who have not attended since the beginning date
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* PersonId 
+        ///		* SundayDate - Last time attended
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;GroupTypeIds&apos; dataty [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201604281205403_AttendanceAnalyticsGroupTypes_NonAttendee {
+            get {
+                return ResourceManager.GetString("_201604281205403_AttendanceAnalyticsGroupTypes_NonAttendee", resourceCulture);
+            }
+        }
     }
 }
