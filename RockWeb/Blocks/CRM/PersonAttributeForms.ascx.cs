@@ -27,6 +27,7 @@ using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Field.Types;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
@@ -44,13 +45,13 @@ namespace RockWeb.Blocks.Crm
     [Description( "Block to display dynamic report, html, xml, or transformed xml based on a SQL query or stored procedure." )]
 
     // Block Properties
-    [BooleanField( "Display Progress Bar", "Display a progress bar for the registration.", true, "", 0 )]
-    [CustomDropdownListField("Save Values", "When should the values that user enters be saved if you are displaying more than one form?", "PAGE^After each Page,END^At the End", true, "END", "", 1)]
-    [WorkflowTypeField( "Workflow", "The workflow to launch after person fills out all forms.", false, false, "", "", 2 )]
-    [LinkedPage("Done Page", "The page to redirect user to after they have finished entering all the forms.", false, "", "", 3 )]
-    
+
     // Settings
-    [TextField( "Forms", "The forms and fields.", false, "", "CustomSetting" )]
+    [BooleanField( "Display Progress Bar", "Determines if the progress bar should be show if there is more than one form.", true, "CustomSetting" )]
+    [CustomDropdownListField( "Save Values", "", "PAGE,END", true, "END", "CustomSetting" )]
+    [WorkflowTypeField( "Workflow", "The workflow to be launched when complete.", false, false, "", "CustomSetting" )]
+    [LinkedPage( "Done Page", "The page to redirect to when done.", false, "", "CustomSetting" )]
+    [TextField( "Forms", "The forms to show.", false, "", "CustomSetting" )]
 
     public partial class PersonAttributeForms : RockBlockCustomSettings
     {
@@ -135,7 +136,7 @@ namespace RockWeb.Blocks.Crm
             {
                 BuildEditControls( false );
             }
-            
+
         }
 
         /// <summary>
@@ -310,50 +311,53 @@ namespace RockWeb.Blocks.Crm
 
                             person.SaveAttributeValues( rockContext );
 
-                            WorkflowType workflowType = null;
-                            Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
-                            if ( workflowTypeGuid.HasValue )
+                            if ( CurrentPageIndex >= FormState.Count )
                             {
-                                var workflowTypeService = new WorkflowTypeService( rockContext );
-                                workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
-                                if ( workflowType != null )
+                                WorkflowType workflowType = null;
+                                Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
+                                if ( workflowTypeGuid.HasValue )
                                 {
-                                    try
+                                    var workflowTypeService = new WorkflowTypeService( rockContext );
+                                    workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
+                                    if ( workflowType != null )
                                     {
-                                        var workflow = Workflow.Activate( workflowType, person.FullName );
-                                        List<string> workflowErrors;
-                                        new WorkflowService( rockContext ).Process( workflow, person, out workflowErrors );
-                                    }
-                                    catch ( Exception ex )
-                                    {
-                                        ExceptionLogService.LogException( ex, this.Context );
+                                        try
+                                        {
+                                            var workflow = Workflow.Activate( workflowType, person.FullName );
+                                            List<string> workflowErrors;
+                                            new WorkflowService( rockContext ).Process( workflow, person, out workflowErrors );
+                                        }
+                                        catch ( Exception ex )
+                                        {
+                                            ExceptionLogService.LogException( ex, this.Context );
+                                        }
                                     }
                                 }
+
+                                if ( GetAttributeValue( "DonePage" ).AsGuidOrNull().HasValue )
+                                {
+                                    NavigateToLinkedPage( "DonePage" );
+                                }
+                                else
+                                {
+                                    pnlView.Visible = false;
+                                }
+                                upnlContent.Update();
+                            }
+                            else
+                            {
+                                ShowPage();
+                                hfTriggerScroll.Value = "true";
                             }
                         }
-
                     }
                 }
-            }
-
-            if ( CurrentPageIndex >= FormState.Count )
-            {
-                if ( GetAttributeValue( "DonePage" ).AsGuidOrNull().HasValue )
-                {
-                    NavigateToLinkedPage( "DonePage" );
-                }
-                else
-                {
-                    pnlView.Visible = false;
-                }
-                upnlContent.Update();
             }
             else
             {
                 ShowPage();
                 hfTriggerScroll.Value = "true";
             }
-
         }
 
         /// <summary>
@@ -367,8 +371,34 @@ namespace RockWeb.Blocks.Crm
 
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            ParseEditControls();
+            SetAttributeValue( "DisplayProgressBar", cbDisplayProgressBar.Checked.ToString() );
+            SetAttributeValue( "SaveValues", ddlSaveValues.SelectedValue );
 
+            var workflowTypeId = wtpWorkflow.SelectedValueAsInt();
+            if ( workflowTypeId.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var workflowType = new WorkflowTypeService( rockContext ).Get( workflowTypeId.Value );
+                    if ( workflowType != null )
+                    {
+                        SetAttributeValue( "Workflow", workflowType.Guid.ToString() );
+                    }
+                    else
+                    {
+                        SetAttributeValue( "Workflow", "" );
+                    }
+                }
+            }
+            else
+            {
+                SetAttributeValue( "Workflow", "" );
+            }
+
+            var ppFieldType = new PageReferenceFieldType();
+            SetAttributeValue( "DonePage", ppFieldType.GetEditValue( ppDonePage, null ) );
+
+            ParseEditControls();
             var jsonSetting = new JsonSerializerSettings
             {
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
@@ -377,6 +407,7 @@ namespace RockWeb.Blocks.Crm
 
             string json = JsonConvert.SerializeObject( FormState, Formatting.None, jsonSetting );
             SetAttributeValue( "Forms", json );
+
             SaveAttributeValues();
 
             ShowDetail();
@@ -582,17 +613,17 @@ namespace RockWeb.Blocks.Crm
                 pnlView.Visible = true;
 
                 AttributeValueState = new Dictionary<int, string>();
-                if ( CurrentPerson !=  null )
+                if ( CurrentPerson != null )
                 {
                     if ( CurrentPerson.Attributes == null )
                     {
                         CurrentPerson.LoadAttributes();
                     }
 
-                    foreach( var form in FormState )
+                    foreach ( var form in FormState )
                     {
-                        foreach( var field in form.Fields
-                            .Where( a => 
+                        foreach ( var field in form.Fields
+                            .Where( a =>
                                 a.AttributeId.HasValue &&
                                 a.ShowCurrentValue == true ) )
                         {
@@ -604,7 +635,7 @@ namespace RockWeb.Blocks.Crm
                         }
                     }
                 }
-
+                
                 ProgressBarSteps = FormState.Count();
                 CurrentPageIndex = 0;
                 ShowPage();
@@ -612,7 +643,7 @@ namespace RockWeb.Blocks.Crm
             else
             {
                 nbMain.Title = "No Forms/Fields";
-                nbMain.Text = "There aren't any forms or fields that have been configured yet. Use the Block Configuration to add new forms and fields.";
+                nbMain.Text = "No forms or fields have been configured. Use the Block Configuration to add new forms and fields.";
                 nbMain.NotificationBoxType = NotificationBoxType.Warning;
                 nbMain.Visible = true;
             }
@@ -622,7 +653,7 @@ namespace RockWeb.Blocks.Crm
         {
             decimal currentStep = CurrentPageIndex + 1;
             PercentComplete = ( currentStep / ProgressBarSteps ) * 100.0m;
-            pnlProgressBar.Visible = GetAttributeValue( "DisplayProgressBar" ).AsBoolean();
+            pnlProgressBar.Visible = GetAttributeValue( "DisplayProgressBar" ).AsBoolean() && (FormState.Count > 1);
 
             BuildViewControls( true );
 
@@ -711,6 +742,24 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         protected override void ShowSettings()
         {
+            cbDisplayProgressBar.Checked = GetAttributeValue( "DisplayProgressBar" ).AsBoolean();
+            ddlSaveValues.SetValue( GetAttributeValue( "SaveValues" ) );
+
+            Guid? wtGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
+            if ( wtGuid.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    wtpWorkflow.SetValue( new WorkflowTypeService( rockContext ).Get( wtGuid.Value ) );
+                }
+            }
+            else
+            {
+                wtpWorkflow.SetValue( null );
+            }
+
+            var ppFieldType = new PageReferenceFieldType();
+            ppFieldType.SetEditValue( ppDonePage, null, GetAttributeValue( "DonePage" ) );
 
             string json = GetAttributeValue( "Forms" );
             if ( string.IsNullOrWhiteSpace( json ) )

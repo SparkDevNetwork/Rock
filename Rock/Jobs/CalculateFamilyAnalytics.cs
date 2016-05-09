@@ -40,6 +40,7 @@ namespace Rock.Jobs
     [WorkflowTypeField( "eRA Entry Workflow", "The workflow type to launch when a family becomes an eRA.", key: "EraEntryWorkflow", order: 0)]
     [WorkflowTypeField( "eRA Exit Workflow", "The workflow type to launch when a family exits from being an eRA.", key: "EraExitWorkflow", order: 1 )]
     [GroupTypesField("Enable History for Groups of Type", "This enables the tracking of when a person is in a group of a specific type.", false, key:"GroupTypes", order:2)]
+    [BooleanField("Set Visit Dates", "If enabled will update the first and second visit person attributes.", true, order: 3)]
     [DisallowConcurrentExecution]
     public class CalculateFamilyAnalytics : IJob
     {
@@ -67,6 +68,7 @@ namespace Rock.Jobs
 
             Guid? entryWorkflowType = dataMap.GetString( "EraEntryWorkflow" ).AsGuidOrNull();
             Guid? exitWorkflowType = dataMap.GetString( "EraExitWorkflow" ).AsGuidOrNull();
+            bool updateVisitDates = dataMap.GetBooleanValue( "SetVisitDates" );
             var groupTypeList = dataMap.GetString( "GroupTypes" );
 
             // configuration
@@ -87,7 +89,7 @@ namespace Rock.Jobs
             var eraStartAttribute = AttributeCache.Read( SystemGuid.Attribute.PERSON_ERA_START_DATE.AsGuid() );
             var eraEndAttribute = AttributeCache.Read( SystemGuid.Attribute.PERSON_ERA_END_DATE.AsGuid() );
 
-            resultContext.Database.CommandTimeout = 1200;
+            resultContext.Database.CommandTimeout = 3600;
 
             var results = resultContext.Database.SqlQuery<EraResult>( "spCrm_FamilyAnalyticsEraDataset" ).ToList();
 
@@ -331,6 +333,12 @@ namespace Rock.Jobs
                     }
                 }
                 
+            }
+
+            // process visit dates
+            if ( updateVisitDates )
+            {
+                resultContext.Database.ExecuteSqlCommand( "spCrm_FamilyAnalyticsGiving" );
             }
         }
 

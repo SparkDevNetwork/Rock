@@ -227,6 +227,15 @@ namespace Rock.Model
         }
         private bool _isPublic = true;
 
+        /// <summary>
+        /// Gets or sets the group capacity.
+        /// </summary>
+        /// <value>
+        /// The group capacity.
+        /// </value>
+        [DataMember]
+        public int? GroupCapacity { get; set; }
+
         #endregion
 
         #region Virtual Properties

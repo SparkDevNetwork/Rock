@@ -239,7 +239,8 @@ namespace Rock.Model
             int totalNoScheduledTransaction = 0;
             int totalAdded = 0;
             int totalReversals = 0;
-
+            int totalStatusChanges = 0;
+  		  
             var batches = new List<FinancialBatch>();
             var batchSummary = new Dictionary<Guid, List<Decimal>>();
             var initialControlAmounts = new Dictionary<Guid, decimal>();
@@ -288,13 +289,14 @@ namespace Rock.Model
 
                         // Calculate whether a transaction needs to be added
                         var txnAmount = CalculateTransactionAmount( payment, txns );
-
-                        // Only consider transactions that have not already been added
                         if ( txnAmount != 0.0M )
                         {
                             scheduledTransactionIds.Add( scheduledTransaction.Id );
 
-                            scheduledTransaction.IsActive = payment.ScheduleActive;
+                            if ( payment.ScheduleActive.HasValue )
+                            {
+                                scheduledTransaction.IsActive = payment.ScheduleActive.Value;
+                            }
 
                             var transaction = new FinancialTransaction();
                             transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
@@ -386,11 +388,12 @@ namespace Rock.Model
                                 transaction.Summary += "Note: Downloaded transaction amount was greater than the configured allocation amounts for the Scheduled Transaction.";
                                 var transactionDetail = transaction.TransactionDetails
                                     .OrderByDescending( d => d.Amount )
-                                    .First();
+                                    .FirstOrDefault();
                                 if ( transactionDetail == null && defaultAccount != null )
                                 {
                                     transactionDetail = new FinancialTransactionDetail();
                                     transactionDetail.AccountId = defaultAccount.Id;
+                                    transaction.TransactionDetails.Add( transactionDetail );
                                 }
                                 if ( transactionDetail != null )
                                 {
@@ -400,7 +403,7 @@ namespace Rock.Model
                             }
 
                             // If the amount to apply was negative, update all details to be negative (absolute value was used when allocating to accounts)
-                            if ( txnAmount < 0 )
+                            if ( txnAmount < 0.0M )
                             {
                                 foreach ( var txnDetail in transaction.TransactionDetails )
                                 {
@@ -426,7 +429,7 @@ namespace Rock.Model
 
                             batch.Transactions.Add( transaction );
 
-                            if ( recieptEmail.HasValue )
+                            if ( txnAmount > 0.0M && recieptEmail.HasValue )
                             {
                                 newTransactions.Add( transaction );
                             }
@@ -438,7 +441,7 @@ namespace Rock.Model
                             }
                             batchSummary[batch.Guid].Add( txnAmount );
 
-                            if ( txnAmount > 0 )
+                            if ( txnAmount > 0.0M )
                             {
                                 totalAdded++;
                             }
@@ -450,6 +453,13 @@ namespace Rock.Model
                         else
                         {
                             totalAlreadyDownloaded++;
+
+                            foreach ( var txn in txns.Where( t => t.Status != payment.Status || t.StatusMessage != payment.StatusMessage ) )
+                            {
+                                txn.Status = payment.Status;
+                                txn.StatusMessage = payment.StatusMessage;
+                                totalStatusChanges++;
+                            }
                         }
                     }
                     else
@@ -482,6 +492,12 @@ namespace Rock.Model
                 sb.AppendFormat( "<li>{0} {1} previously downloaded and {2} already been added.</li>", totalAlreadyDownloaded.ToString( "N0" ),
                     ( totalAlreadyDownloaded == 1 ? "payment was" : "payments were" ),
                     ( totalAlreadyDownloaded == 1 ? "has" : "have" ) );
+            }
+
+            if ( totalStatusChanges > 0 )
+            {
+                sb.AppendFormat( "<li>{0} {1} previously downloaded but had a change of status.</li>", totalStatusChanges.ToString( "N0" ),
+                ( totalStatusChanges == 1 ? "payment was" : "payments were" ) );
             }
 
             if ( totalNoScheduledTransaction > 0 )
