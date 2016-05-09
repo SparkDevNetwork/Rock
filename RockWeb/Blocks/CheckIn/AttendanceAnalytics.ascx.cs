@@ -1068,6 +1068,25 @@ function(item) {
             // Force filter application
             allAttendeeVisits = attendees.ToDictionary( k => k.Key, v => v.Value );
 
+            // Add the First Visit information
+            foreach ( DataRow row in dtAttendeeFirstDates.Rows )
+            {
+                int personId = (int)row["PersonId"];
+                if ( allAttendeeVisits.ContainsKey( personId ) )
+                {
+                    allAttendeeVisits[personId].FirstVisits.Add( (DateTime)row["StartDate"] );
+                }
+            }
+
+            // If filtering based on visit time, only include those who visited the selected time during the date range
+            if ( byNthVisit.HasValue && byNthVisit.Value > 0 )
+            {
+                int skipCount = byNthVisit.Value - 1;
+                allAttendeeVisits = allAttendeeVisits
+                    .Where( p => p.Value.FirstVisits.Skip( skipCount ).Take( 1 ).Any( d => d >= start && d < end ) )
+                    .ToDictionary( k => k.Key, v => v.Value );
+            }
+
             // Add the Last Attended information
             if ( dtAttendeeLastAttendance != null )
             {
@@ -1093,25 +1112,6 @@ function(item) {
                         }
                     }
                 }
-            }
-
-            // Add the First Visit information
-            foreach ( DataRow row in dtAttendeeFirstDates.Rows )
-            {
-                int personId = (int)row["PersonId"];
-                if ( allAttendeeVisits.ContainsKey( personId ) )
-                {
-                    allAttendeeVisits[personId].FirstVisits.Add( (DateTime)row["StartDate"] );
-                }
-            }
-
-            // If filtering based on visit time, only include those who visited the selected time during the date range
-            if ( byNthVisit.HasValue && byNthVisit.Value > 0 )
-            {
-                int skipCount = byNthVisit.Value - 1;
-                allAttendeeVisits = allAttendeeVisits
-                    .Where( p => p.Value.FirstVisits.Skip( skipCount ).Take( 1 ).Any( d => d >= start && d < end ) )
-                    .ToDictionary( k => k.Key, v => v.Value );
             }
 
             // Add the Demographic information
@@ -1717,6 +1717,7 @@ function(item) {
 
         // list of grouptype ids that have already been rendered (in case a group type has multiple parents )
         private List<int> _addedGroupTypeIds;
+
         private List<int> _addedGroupIds;
 
         /// <summary>
@@ -1883,7 +1884,7 @@ function(item) {
         }
 
         /// <summary>
-        /// Displays the show by.
+        /// Displays the results by chart or attendees.
         /// </summary>
         /// <param name="showBy">The show by.</param>
         private void DisplayShowBy( ShowBy showBy )
