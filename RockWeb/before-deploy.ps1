@@ -27,13 +27,10 @@ If (Test-Path "$webroot\web.connectionstrings.config"){
 }
 
 # load the app offline template
-If (Test-Path "$rootfolder\temp\app_offline.htm"){
+If (Test-Path "$webroot\app_offline-template.htm"){
 	Write-Host "Loading the app offline template"
-	Copy-Item "$rootfolder\temp\app_offline.htm" "$webroot\app_offline.htm" -force
+	Copy-Item "$webroot\app_offline-template.htm" "$webroot\app_offline.htm" -force
 }
-
-# request a resource to set the timeouts from our new web.config 
-Invoke-WebRequest "$webroot\app_offline.htm"
 
 # stop web publishing service - needed to allow the deploy to overwrite the sql server spatial types
 #Write-Host "Stopping Web Publishing Service"
@@ -46,22 +43,22 @@ Invoke-WebRequest "$webroot\app_offline.htm"
 #}
 
 # move content folder to temp
-#If (Test-Path "$webroot\Content"){
-#	Write-Host "Moving content folder to temp directory"
-#	Move-Item "$webroot\Content" "$rootfolder\temp\Content"
-#}
+If (Test-Path "$webroot\Content"){
+	Write-Host "Moving content folder to temp directory"
+	Move-Item "$webroot\Content" "$rootfolder\temp\Content"
+}
 
-#If (Test-Path "$webroot\checks"){
-#	Write-Host "Moving checks folder to temp directory"
-#	Move-Item "$webroot\checks" "$rootfolder\temp\checks"
-#}
+If (Test-Path "$webroot\checks"){
+	Write-Host "Moving checks folder to temp directory"
+	Move-Item "$webroot\checks" "$rootfolder\temp\checks"
+}
 
-#If (Test-Path "$webroot\documents"){
-#	Write-Host "Moving documents folder to temp directory"
-#	Move-Item "$webroot\documents" "$rootfolder\temp\documents"
-#}
+If (Test-Path "$webroot\documents"){
+	Write-Host "Moving documents folder to temp directory"
+	Move-Item "$webroot\documents" "$rootfolder\temp\documents"
+}
 
-#If (Test-Path "$webroot\profiles"){
-#	Write-Host "Moving profiles folder to temp directory"
-#	Move-Item "$webroot\profiles" "$rootfolder\temp\profiles"
-#}
+If (Test-Path "$webroot\profiles"){
+	Write-Host "Moving profiles folder to temp directory"
+	Move-Item "$webroot\profiles" "$rootfolder\temp\profiles"
+}

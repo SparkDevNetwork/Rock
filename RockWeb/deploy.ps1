@@ -12,33 +12,33 @@ Write-Output "Web root folder: $webroot"
 Write-Output "Running script as: $env:userdomain\$env:username"
 
 # ensure that the compilation debug is false
-#(Get-Content "$webroot\web.config").Replace('<compilation debug="true"', '<compilation debug="false"') | Set-Content "$webroot\web.config"
+(Get-Content "$webroot\web.config").Replace('<compilation debug="true"', '<compilation debug="false"') | Set-Content "$webroot\web.config"
 
 # delete the content directory if it exists as it was added by the deploy
-#If (Test-Path "$webroot\Content"){
-#	Remove-Item "$webroot\Content" -Force -Confirm:$False -Recurse
-#}
+If (Test-Path "$webroot\Content"){
+	Remove-Item "$webroot\Content" -Force -Confirm:$False -Recurse
+}
 
 # move content directory back from temp
-#If (Test-Path "$rootfolder\temp\Content"){
-#	Write-Host "Moving Contents folder back from temp directory"
-#	Move-Item "$rootfolder\temp\Content" "$webroot"
-#}
+If (Test-Path "$rootfolder\temp\Content"){
+	Write-Host "Moving Contents folder back from temp directory"
+	Move-Item "$rootfolder\temp\Content" "$webroot"
+}
 
-#If (Test-Path "$rootfolder\temp\checks"){
-#	Write-Host "Moving checks folder back from temp directory"
-#	Move-Item "$rootfolder\temp\checks" "$webroot"
-#}
+If (Test-Path "$rootfolder\temp\checks"){
+	Write-Host "Moving checks folder back from temp directory"
+	Move-Item "$rootfolder\temp\checks" "$webroot"
+}
 
-#If (Test-Path "$rootfolder\temp\documents"){
-#	Write-Host "Moving documents folder back from temp directory"
-#	Move-Item "$rootfolder\temp\documents" "$webroot"
-#}
+If (Test-Path "$rootfolder\temp\documents"){
+	Write-Host "Moving documents folder back from temp directory"
+	Move-Item "$rootfolder\temp\documents" "$webroot"
+}
 
-#If (Test-Path "$rootfolder\temp\profiles"){
-#	Write-Host "Moving profiles folder back from temp directory"
-#	Move-Item "$rootfolder\temp\profiles" "$webroot"
-#}
+If (Test-Path "$rootfolder\temp\profiles"){
+	Write-Host "Moving profiles folder back from temp directory"
+	Move-Item "$rootfolder\temp\profiles" "$webroot"
+}
 
 # start web publishing service
 #Write-Host "Starting Web Publishing Service"
