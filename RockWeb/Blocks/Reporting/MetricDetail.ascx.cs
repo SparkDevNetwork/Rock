@@ -212,8 +212,6 @@ namespace RockWeb.Blocks.Reporting
                 metric = metricService.Get( metricId );
 
                 // remove any metricPartitions that were removed in the UI
-
-                // TODO Warning about MetricValues...
                 var selectedMetricPartitionGuids = MetricPartitionsState.Select( r => r.Guid );
                 foreach ( var item in metric.MetricPartitions.Where( r => !selectedMetricPartitionGuids.Contains( r.Guid ) ).ToList() )
                 {
@@ -221,6 +219,18 @@ namespace RockWeb.Blocks.Reporting
                     metricPartitionService.Delete( item );
                 }
             }
+
+            metric.MetricPartitions = metric.MetricPartitions ?? new List<MetricPartition>();
+
+            if ( MetricPartitionsState.Count() > 1 && MetricPartitionsState.Any(a => !a.EntityTypeId.HasValue ))
+            {
+                mdMetricPartitionsEntityTypeWarning.Text = "If multiple partitions are defined for a metric, all the partitions must have an EntityType assigned";
+                mdMetricPartitionsEntityTypeWarning.Visible = true;
+                pwMetricPartitions.Expanded = true;
+                return;
+            }
+
+            mdMetricPartitionsEntityTypeWarning.Visible = false;
 
             foreach ( var metricPartitionState in MetricPartitionsState )
             {
@@ -237,6 +247,16 @@ namespace RockWeb.Blocks.Reporting
                 }
 
                 metricPartition.CopyPropertiesFrom( metricPartitionState );
+            }
+
+            // ensure there is at least one partition
+            if ( !metric.MetricPartitions.Any() )
+            {
+                var metricPartition = new MetricPartition();
+                metricPartition.EntityTypeId = null;
+                metricPartition.IsRequired = true;
+                metricPartition.Order = 0;
+                metric.MetricPartitions.Add( metricPartition );
             }
 
             metric.Title = tbTitle.Text;
@@ -570,6 +590,8 @@ namespace RockWeb.Blocks.Reporting
                     metricCategory.Category = metricCategory.Category ?? new CategoryService( rockContext ).Get( metricCategory.CategoryId );
                     metric.MetricCategories.Add( metricCategory );
                 }
+
+                metric.MetricPartitions = new List<MetricPartition>();
             }
 
             if ( !metric.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
@@ -734,7 +756,7 @@ The SQL can include Lava merge fields:";
                 string label;
                 if ( a.Order == 0 && !a.EntityTypeId.HasValue )
                 {
-                    label = "Default";
+                    label = a.Label ?? "Default";
                 }
                 else
                 {
@@ -759,6 +781,11 @@ The SQL can include Lava merge fields:";
 
             gMetricPartitions.DataSource = partitionList;
             gMetricPartitions.DataBind();
+
+            int metricId = hfMetricId.Value.AsInteger();
+            nbMetricValuesWarning.Visible = new MetricValueService( new RockContext() ).Queryable().Where( a => a.MetricId == metricId ).Any();
+            nbMetricValuesWarning.NotificationBoxType = NotificationBoxType.Warning;
+            nbMetricValuesWarning.Text = "This Metric already has some values.  If you are changing Metric Partitions, you might have to manually update the metric values to reflect the new partition arrangement.";
         }
 
         /// <summary>
@@ -992,6 +1019,26 @@ The SQL can include Lava merge fields:";
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gMetricPartitions_Delete( object sender, RowEventArgs e )
         {
+            var rockContext = new RockContext();
+            MetricPartitionService metricPartitionService = new MetricPartitionService( rockContext );
+            MetricPartition metricPartition = metricPartitionService.Get( (Guid)e.RowKeyValue );
+
+            if ( MetricPartitionsState.Count() == 1 )
+            {
+                mdMetricPartitionsGridWarning.Show( "Metric must have at least one partition defined", ModalAlertType.Warning );
+                return;
+            }
+
+            if ( metricPartition != null )
+            {
+                string errorMessage;
+                if ( !metricPartitionService.CanDelete( metricPartition, out errorMessage ) )
+                {
+                    mdMetricPartitionsGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
+                }
+            }
+
             Guid rowGuid = (Guid)e.RowKeyValue;
             MetricPartitionsState.RemoveEntity( rowGuid );
 
@@ -1036,6 +1083,8 @@ The SQL can include Lava merge fields:";
                 mdMetricPartitionDetail.Title = "Edit Partition";
             }
 
+            var metricValueService = new MetricValueService( new RockContext() );
+
             hfMetricPartitionGuid.Value = metricPartition.Guid.ToString();
             tbMetricPartitionLabel.Text = metricPartition.Label;
             etpMetricPartitionEntityType.SetValue( metricPartition.EntityTypeId );
@@ -1066,6 +1115,8 @@ The SQL can include Lava merge fields:";
             }
 
             var metricPartition = new MetricPartition();
+            var rockContext = new RockContext();
+            MetricValueService metricValueService = new MetricValueService( rockContext );
             var metricPartitionState = MetricPartitionsState.FirstOrDefault( a => a.Guid == hfMetricPartitionGuid.Value.AsGuid() );
             if ( metricPartitionState != null )
             {
@@ -1078,6 +1129,29 @@ The SQL can include Lava merge fields:";
             }
 
             metricPartition.Label = tbMetricPartitionLabel.Text;
+
+            var origEntityType = metricPartition.EntityTypeId.HasValue ? EntityTypeCache.Read( metricPartition.EntityTypeId.Value ) : null;
+            var newEntityType = etpMetricPartitionEntityType.SelectedEntityTypeId.HasValue ? EntityTypeCache.Read( etpMetricPartitionEntityType.SelectedEntityTypeId.Value ) : null;
+
+            if ( origEntityType != null )
+            {
+                if ( newEntityType == null || newEntityType.Id != origEntityType.Id )
+                {
+                    // if the EntityTypeId of this metricpartition has changed to NULL or to another EntityType, warn about the EntityId values being wrong
+                    bool hasEntityValues = metricValueService.Queryable().Any( a => a.MetricValuePartitions.Any( x => x.MetricPartitionId == metricPartition.Id && x.EntityId.HasValue ) );
+
+                    if ( hasEntityValues )
+                    {
+                        nbEntityTypeChanged.Text = string.Format(
+                            "Warning: You can't change this series partition to {0} when there are values associated with {1}.",
+                            newEntityType != null ? newEntityType.FriendlyName : "<none>",
+                            origEntityType.FriendlyName );
+                        nbEntityTypeChanged.Visible = true;
+                        return;
+                    }
+                }
+            }
+
             metricPartition.EntityTypeId = etpMetricPartitionEntityType.SelectedEntityTypeId;
             metricPartition.IsRequired = cbMetricPartitionIsRequired.Checked;
             metricPartition.EntityTypeQualifierColumn = tbMetricPartitionEntityTypeQualifierColumn.Text;

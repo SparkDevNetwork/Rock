@@ -188,6 +188,7 @@ namespace RockWeb.Blocks.Reporting
                 metricValueService.Add( metricValue );
                 metricValue.MetricId = hfMetricId.ValueAsInt();
                 metricValue.Metric = metricValue.Metric ?? new MetricService( rockContext ).Get( metricValue.MetricId );
+                metricValue.MetricValuePartitions = new List<MetricValuePartition>();
             }
             else
             {
@@ -221,6 +222,14 @@ namespace RockWeb.Blocks.Reporting
                 else
                 {
                     metricValuePartition.EntityId = null;
+                }
+
+                if ( metricPartition.IsRequired && metricPartitionEntityType != null && !metricValuePartition.EntityId.HasValue )
+                {
+                    nbValueRequired.Text = string.Format( "A value for {0} is required", metricPartition.Label ?? metricPartitionEntityType.FriendlyName );
+                    nbValueRequired.Dismissable = true;
+                    nbValueRequired.Visible = true;
+                    return;
                 }
             }
 
