@@ -37,9 +37,9 @@ namespace RockWeb.Plugins.church_ccv.Groups
     [DisplayName( "Neighborhood Group Member Detail" )]
     [Category( "CCV > Groups" )]
     [Description( "Displays the details of the given Neighborhood group member " )]
-    [WorkflowTypeField( "OptOut Needs Next Steps Coach", "The workflow to use when opting out a person due to them needing a Next Steps Coach. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "", 1 )]
-    [WorkflowTypeField( "OptOut Not Attending Group", "The workflow to use when opting out a person due to them not attending group. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "", 2 )]
-    [WorkflowTypeField( "OptOut No Longer Attends Workflow", "The workflow to use when opting out a person due to them no longer attending CCV. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "", 3 )]
+    [WorkflowTypeField( "OptOut Needs Next Steps Coach", "The workflow to use when opting out a person due to them needing a Next Steps Coach. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "" )]
+    [WorkflowTypeField( "OptOut Not Attending Group", "The workflow to use when opting out a person due to them not attending group. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "" )]
+    [WorkflowTypeField( "OptOut No Longer Attends Workflow", "The workflow to use when opting out a person due to them no longer attending CCV. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "" )]
     public partial class NHGroupMemberDetail : ToolboxGroupMemberDetail, IDetailBlock
     {
         #region Control Methods

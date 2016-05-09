@@ -36,13 +36,6 @@ namespace church.ccv.Utility.Groups
     [DisplayName( "Toolbox Group Member Detail" )]
     [Category( "CCV > Groups" )]
     [Description( "Displays the details of the given Next Steps group member " )]
-    [SystemEmailField( "Reassign To Another Coach Email Template", "Email template to use when a group member's opt-out status is set to \"Reassign to another Coach\".", false)]
-    [WorkflowTypeField( "OptOut Neighborhood Workflow", "The workflow to use when opting out a person due to them being in a neighborhood group. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "", 2 )]
-    [WorkflowTypeField( "OptOut No Longer Attends Workflow", "The workflow to use when opting out a person due to them no longer attending CCV. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "", 3 )]
-    [WorkflowTypeField( "OptOut Do Not Contact Workflow", "The workflow to use when opting out a person due to them not wanting to be contacted. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "", 4 )]
-    [WorkflowTypeField( "OptOut Unable To Reach Workflow", "The workflow to use when opting out a person due to them not beaing reachable. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "", 5 )]
-
-
     public abstract class ToolboxGroupMemberDetail : RockBlock
     {
         #region Control Methods

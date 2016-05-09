@@ -38,9 +38,9 @@ namespace RockWeb.Plugins.church_ccv.Groups
     [Category( "CCV > Groups" )]
     [Description( "Displays the details of the given Next Gen group member " )]
     [SystemEmailField( "Reassign To Another Coach Email Template", "Email template to use when a group member's opt-out status is set to \"Reassign to another Coach\".", false)]
-    [WorkflowTypeField( "OptOut No Longer Attends Workflow", "The workflow to use when opting out a person due to them no longer attending CCV. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "", 3 )]
-    [WorkflowTypeField( "OptOut Not Attending Group Workflow", "The workflow to use when opting out a person due to them no longer attending CCV. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "", 3 )]
-    [WorkflowTypeField( "OptOut Moved Schools Workflow", "Workflow used when a person moves schools.", false, false, "", "", 3 )]
+    [WorkflowTypeField( "OptOut Not Attending Group Workflow", "The workflow to use when opting out a person due to them no longer attending CCV. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "" )]
+    [WorkflowTypeField( "OptOut No Longer Attends Workflow", "The workflow to use when opting out a person due to them no longer attending CCV. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "" )]
+    [WorkflowTypeField( "OptOut Moved Schools Workflow", "Workflow used when a person moves schools.", false, false, "", "" )]
     public partial class NGGroupMemberDetail : ToolboxGroupMemberDetail, IDetailBlock
     {
         #region Control Methods
