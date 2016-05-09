@@ -650,8 +650,8 @@ namespace RockWeb.Blocks.Cms
                     {
                         AttributeField boundField = new AttributeField();
                         boundField.DataField = dataFieldExpression;
+                        boundField.AttributeId = attribute.Id;
                         boundField.HeaderText = attribute.Name;
-                        boundField.SortExpression = string.Empty;
                         boundField.ItemStyle.HorizontalAlign = attribute.FieldType.Field.AlignValue;
                         gContentChannelItems.Columns.Add( boundField );
                     }

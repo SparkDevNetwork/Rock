@@ -500,6 +500,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         contactInfoRow.HomePhoneNumber = PhoneNumber.FormattedNumber( homePhoneNumber.CountryCode, homePhoneNumber.Number );
                         contactInfoRow.HomePhoneCountryCode = homePhoneNumber.CountryCode;
                     }
+                    else
+                    {
+                        contactInfoRow.HomePhoneNumber = string.Empty;
+                        contactInfoRow.HomePhoneCountryCode = string.Empty;
+                    }
                 }
 
                 if ( _cellPhone != null )
@@ -509,6 +514,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     {
                         contactInfoRow.CellPhoneNumber = PhoneNumber.FormattedNumber( cellPhoneNumber.CountryCode, cellPhoneNumber.Number );
                         contactInfoRow.CellPhoneCountryCode = cellPhoneNumber.CountryCode;                     
+                    }
+                    else
+                    {
+                        contactInfoRow.CellPhoneNumber = string.Empty;
+                        contactInfoRow.CellPhoneCountryCode = string.Empty;
                     }
                 }
 

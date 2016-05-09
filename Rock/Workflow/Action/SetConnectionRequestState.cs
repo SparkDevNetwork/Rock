@@ -31,10 +31,10 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sets the state of a connection request.
     /// </summary>
-    [ActionCategory( "Connection Request" )]
+    [ActionCategory( "Connections" )]
     [Description( "Sets the state of a connection request." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Set Connection Request State" )]
+    [ExportMetadata( "ComponentName", "Connection Request Set State" )]
 
     [WorkflowAttribute( "Connection Request Attribute", "The attribute that contains the connection request.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.ConnectionRequestFieldType" } )]

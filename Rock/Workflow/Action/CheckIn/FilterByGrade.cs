@@ -30,7 +30,7 @@ namespace Rock.Workflow.Action.CheckIn
     /// Removes (or excludes) the grouptypes from each family member that are not specific to their grade
     /// </summary>
     [ActionCategory( "Check-In" )]
-    [Description( "Removes (or excludus) the grouptypes from each family member that are not specific to their grade." )]
+    [Description( "Removes (or excludes) the grouptypes from each family member that are not specific to their grade." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter By Grade" )]
 

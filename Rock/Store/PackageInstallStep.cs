@@ -14,11 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+using Rock.Utility;
 
 namespace Rock.Store
 {
@@ -42,6 +39,28 @@ namespace Rock.Store
         /// A <see cref="System.String"/> representing the Label of the Version.
         /// </value>
         public string VersionLabel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the required rock version.
+        /// </summary>
+        /// <value>
+        /// The required rock version.
+        /// </value>
+        public RockSemanticVersion RequiredRockSemanticVersion
+        {
+            get
+            {
+                return RockSemanticVersion.Parse( this.RequiredRockVersion );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the required Rock version. 
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> required Rock version.
+        /// </value>
+        public string RequiredRockVersion { get; set; }
 
         /// <summary>
         /// Gets or sets the URL of the Install Package. 

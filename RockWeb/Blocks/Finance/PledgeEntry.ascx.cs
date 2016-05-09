@@ -167,12 +167,12 @@ namespace RockWeb.Blocks.Finance
             // populate PledgeFrequencyValue so that Liquid can access it
             financialPledge.PledgeFrequencyValue = definedValueService.Get( financialPledge.PledgeFrequencyValueId ?? 0 );
 
-            var mergeObjects = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
-            mergeObjects.Add( "Person", person );
-            mergeObjects.Add( "FinancialPledge", financialPledge );
-            mergeObjects.Add( "PledgeFrequency", pledgeFrequencySelection );
-            mergeObjects.Add( "Account", financialAccount );
-            lReceipt.Text = GetAttributeValue( "ReceiptText" ).ResolveMergeFields( mergeObjects );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+            mergeFields.Add( "Person", person );
+            mergeFields.Add( "FinancialPledge", financialPledge );
+            mergeFields.Add( "PledgeFrequency", pledgeFrequencySelection );
+            mergeFields.Add( "Account", financialAccount );
+            lReceipt.Text = GetAttributeValue( "ReceiptText" ).ResolveMergeFields( mergeFields );
 
             // Resolve any dynamic url references
             string appRoot = ResolveRockUrl( "~/" );
@@ -182,7 +182,7 @@ namespace RockWeb.Blocks.Finance
             // show liquid help for debug
             if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
             {
-                lReceipt.Text += mergeObjects.lavaDebugInfo();
+                lReceipt.Text += mergeFields.lavaDebugInfo();
             }
 
             lReceipt.Visible = true;
@@ -196,7 +196,7 @@ namespace RockWeb.Blocks.Finance
                 var recipients = new List<Rock.Communication.RecipientData>();
 
                 // add person and the mergeObjects (same mergeobjects as receipt)
-                recipients.Add( new Rock.Communication.RecipientData( person.Email, mergeObjects ) );
+                recipients.Add( new Rock.Communication.RecipientData( person.Email, mergeFields ) );
 
                 Rock.Communication.Email.Send( confirmationEmailTemplateGuid.Value, recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
             }

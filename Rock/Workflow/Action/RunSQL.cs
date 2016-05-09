@@ -34,7 +34,7 @@ namespace Rock.Workflow.Action
     [ActionCategory( "Utility" )]
     [Description( "Runs the specified SQL query to perform an action against the database." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Run SQL" )]
+    [ExportMetadata( "ComponentName", "SQL Run" )]
     [CodeEditorField( "SQLQuery", "The SQL query to run. <span class='tip tip-lava'></span>", Web.UI.Controls.CodeEditorMode.Sql, Web.UI.Controls.CodeEditorTheme.Rock, 400, true, "", "", 0 )]
     [WorkflowAttribute( "Result Attribute", "An optional attribute to set to the scaler result of SQL query.", false, "", "", 1 )]
     public class RunSQL : ActionComponent

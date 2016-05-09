@@ -34,6 +34,22 @@ namespace Rock.Web.UI.Controls
     public class AttributeField : RockBoundField
     {
         /// <summary>
+        /// Gets or sets the attribute identifier.
+        /// </summary>
+        /// <value>
+        /// The attribute identifier.
+        /// </value>
+        public int? AttributeId
+        {
+            get { return ViewState["AttributeId"] as int?; }
+            set
+            {
+                ViewState["AttributeId"] = value;
+                this.SortExpression = string.Format( "attribute:{0}", value );
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="AttributeField"/> is condensed.
         /// </summary>
         /// <value>
@@ -97,11 +113,30 @@ namespace Rock.Web.UI.Controls
                     dataItem.LoadAttributes();
                 }
 
+                AttributeCache attrib = null;
+                string rawValue = string.Empty;
+
                 bool exists = dataItem.Attributes.ContainsKey( this.DataField );
                 if ( exists )
                 {
-                    var attrib = dataItem.Attributes[this.DataField];
-                    string rawValue = dataItem.GetAttributeValue( this.DataField );
+                    attrib = dataItem.Attributes[this.DataField];
+                    rawValue = dataItem.GetAttributeValue( this.DataField );
+                }
+                else
+                {
+                    if ( AttributeId.HasValue )
+                    {
+                        attrib = dataItem.Attributes.Where( a => a.Value.Id == AttributeId.Value ).Select( a => a.Value ).FirstOrDefault();
+                        if ( attrib != null )
+                        {
+                            exists = true;
+                            rawValue = dataItem.GetAttributeValue( attrib.Key );
+                        }
+                    }
+                }
+
+                if ( exists )
+                { 
                     if ( formatAsHtml )
                     {
                         string resultHtml = attrib.FieldType.Field.FormatValueAsHtml( null, rawValue, attrib.QualifierValues, condensed );

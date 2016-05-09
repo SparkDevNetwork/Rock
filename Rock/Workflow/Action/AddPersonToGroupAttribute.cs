@@ -31,10 +31,10 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Adds person to a group using a workflow attribute.
     /// </summary>
-    [ActionCategory( "Group Update" )]
+    [ActionCategory( "Groups" )]
     [Description( "Adds person to a group using a workflow attribute." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Add Person to a Group using Attribute" )]
+    [ExportMetadata( "ComponentName", "Group Member Add From Attribute" )]
 
     [WorkflowAttribute( "Person", "Workflow attribute that contains the person to add to the group.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.PersonFieldType" } )]

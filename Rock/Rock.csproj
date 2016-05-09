@@ -149,6 +149,7 @@
     <Compile Include="Address\VerificationContainer.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\Bing.cs" />
+    <Compile Include="Attribute\DataViewFieldAttribute.cs" />
     <Compile Include="Attribute\BinaryFileTypesFieldAttribute.cs" />
     <Compile Include="Attribute\ConnectionTypesFieldAttribute.cs" />
     <Compile Include="Attribute\ConnectionActivityTypeFieldAttribute.cs" />
@@ -234,6 +235,7 @@
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
     <Compile Include="Chart\SummaryData.cs" />
+    <Compile Include="CheckIn\CheckinType.cs" />
     <Compile Include="Communication\RecipientData.cs" />
     <Compile Include="Communication\SMTPComponent.cs" />
     <Compile Include="Communication\Transport\Twilio.cs" />
@@ -255,6 +257,7 @@
     <Compile Include="Data\Udf\GetAddressStoreFunctionInjectionConvention.cs" />
     <Compile Include="Data\Udf\DbMetadataExtensions.cs" />
     <Compile Include="Data\Udf\RockUdfHelper.cs" />
+    <Compile Include="Field\Types\DataViewFieldType.cs" />
     <Compile Include="Field\Types\BinaryFileTypesFieldType.cs" />
     <Compile Include="Field\Types\MergeTemplateFieldType.cs" />
     <Compile Include="Field\Types\ConnectionActivityTypeFieldType.cs" />
@@ -288,6 +291,10 @@
     <Compile Include="Jobs\SendRegistrationPaymentReminders.cs" />
     <Compile Include="Jobs\SendRegistrationReminders.cs" />
     <Compile Include="Jobs\SendGroupRequirementsNotification.cs" />
+    <Compile Include="Lava\CommonMergeFieldsOptions.cs" />
+    <Compile Include="Lava\LavaHelper.cs" />
+    <Compile Include="Lava\LavaSupportLevel.cs" />
+    <Compile Include="Lava\LegacyLavaSyntaxDetectedException.cs" />
     <Compile Include="Model\BackgroundCheck.cs" />
     <Compile Include="Model\CodeGenerated\BackgroundCheckService.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionActivityTypeService.cs" />
@@ -479,6 +486,7 @@
     <Compile Include="PersonProfile\Badge\GeofencedByGroup.cs" />
     <Compile Include="PersonProfile\Badge\DISC.cs" />
     <Compile Include="PersonProfile\Badge\InGroupWithPurpose.cs" />
+    <Compile Include="Plugin\HotFixes\001_FixPhoneCountryCode.cs" />
     <Compile Include="Reporting\ComparisonHelper.cs" />
     <Compile Include="Reporting\DataFilter\NotInOtherDataViewFilter.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupLinkSelect.cs" />
@@ -537,14 +545,20 @@
     <Compile Include="Transactions\SaveCommunicationTransaction.cs" />
     <Compile Include="Transactions\SendPaymentReciepts.cs" />
     <Compile Include="Transactions\UpdatePaymentStatusTransaction.cs" />
+    <Compile Include="Transactions\LaunchWorkflowTransaction.cs" />
     <Compile Include="Transactions\WorkflowTriggerTransaction.cs" />
     <Compile Include="Utility\DebugHelper.cs" />
+    <Compile Include="Utility\ExtensionMethods\ColorExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\DecimalExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\StringHumanizerExtensions.cs" />
     <Compile Include="Utility\FileUtilities.cs" />
     <Compile Include="Utility\NotNullJsonConverter.cs" />
     <Compile Include="Utility\ExtensionMethods\CurrencyExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\ExceptionExtensions.cs" />
+    <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinArea.cs" />
+    <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinAreaRow.cs" />
+    <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinGroup.cs" />
+    <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinGroupRow.cs" />
     <Compile Include="Web\UI\RockTheme.cs" />
     <Compile Include="Utility\SettingsStringBase.cs" />
     <Compile Include="Web\Cache\AttributeValueCache.cs" />
@@ -834,8 +848,6 @@
     <Compile Include="Web\DescriptionList.cs" />
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Controls\BootstrapButton.cs" />
-    <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinGroupEditor.cs" />
-    <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinGroupTypeEditor.cs" />
     <Compile Include="Web\UI\Controls\Communication\ChannelControl.cs" />
     <Compile Include="Data\IgnoreModelErrorsAttribute.cs" />
     <Compile Include="Model\CommunicationRecipientService.Partial.cs" />

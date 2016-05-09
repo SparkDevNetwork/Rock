@@ -146,8 +146,7 @@ namespace RockWeb.Blocks.Event
                 registrationList = registrationList.Take( maxResults.Value ).ToList();
             }
 
-            var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            mergeFields.Add( "CurrentPerson", CurrentPerson );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "Registrations", registrationList );
 
             string template = GetAttributeValue( "LavaTemplate" );

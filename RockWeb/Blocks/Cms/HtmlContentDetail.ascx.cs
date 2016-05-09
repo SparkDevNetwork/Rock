@@ -566,21 +566,6 @@ namespace RockWeb.Blocks.Cms
             return maxVersion;
         }
 
-        private Dictionary<string, object> GetPageProperties()
-        {
-            Dictionary<string, object> pageProperties = new Dictionary<string, object>();
-            pageProperties.Add( "Id", this.RockPage.PageId.ToString() );
-            pageProperties.Add( "BrowserTitle", this.RockPage.BrowserTitle );
-            pageProperties.Add( "PageTitle", this.RockPage.PageTitle );
-            pageProperties.Add( "Site", this.RockPage.Site.Name );
-            pageProperties.Add( "SiteId", this.RockPage.Site.Id.ToString() );
-            pageProperties.Add( "LayoutId", this.RockPage.Layout.Id.ToString() );
-            pageProperties.Add( "Layout", this.RockPage.Layout.Name );
-            pageProperties.Add( "SiteTheme", this.RockPage.Site.Theme );
-            pageProperties.Add( "PageIcon", this.RockPage.PageIcon );
-            pageProperties.Add( "Description", this.RockPage.MetaDescription );
-            return pageProperties;
-        }
 
         /// <summary>
         /// Shows the view.
@@ -615,38 +600,15 @@ namespace RockWeb.Blocks.Cms
 
                         if ( content.Content.HasMergeFields() || enableDebug )
                         {
-                            var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
+                            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                            mergeFields.Add( "CurrentPage", Rock.Lava.LavaHelper.GetPagePropertiesMergeObject( this.RockPage ) );
                             if ( CurrentPerson != null )
                             {
                                 // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
-                                mergeFields.Add( "Person", CurrentPerson );
-                                mergeFields.Add( "CurrentPerson", CurrentPerson );
+                                mergeFields.AddOrIgnore( "Person", CurrentPerson );
                             }
-
-                            mergeFields.Add( "Campuses", CampusCache.All() );
-                            mergeFields.Add( "PageParameter", PageParameters() );
-                            mergeFields.Add( "CurrentPage", GetPageProperties() );
-
-                            var contextObjects = new Dictionary<string, object>();
-                            foreach ( var contextEntityType in RockPage.GetContextEntityTypes() )
-                            {
-                                var contextEntity = RockPage.GetCurrentContext( contextEntityType );
-                                if ( contextEntity != null && contextEntity is DotLiquid.ILiquidizable )
-                                {
-                                    var type = Type.GetType( contextEntityType.AssemblyName ?? contextEntityType.Name );
-                                    if ( type != null )
-                                    {
-                                        contextObjects.Add( type.Name, contextEntity );
-                                    }
-                                }
-
-                            }
-
-                            if ( contextObjects.Any() )
-                            {
-                                mergeFields.Add( "Context", contextObjects );
-                            }
-
+                            
+                            
                             mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
                             mergeFields.Add( "CurrentPersonCanEdit", IsUserAuthorized( Authorization.EDIT ) );
                             mergeFields.Add( "CurrentPersonCanAdministrate", IsUserAuthorized( Authorization.ADMINISTRATE ) );
