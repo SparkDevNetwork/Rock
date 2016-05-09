@@ -31,10 +31,10 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sets an group member's note.
     /// </summary>
-    [ActionCategory( "Group Update" )]
+    [ActionCategory( "Groups" )]
     [Description( "Sets a person's group member note in a specified group." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Set Group Member Note" )]
+    [ExportMetadata( "ComponentName", "Group Member Set Note Field" )]
 
     [WorkflowAttribute( "Person", "Workflow attribute that contains the person to update in the group.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.PersonFieldType" } )]

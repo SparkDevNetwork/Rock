@@ -61,11 +61,11 @@ namespace Rock.Communication.Medium
             communication = new CommunicationService( rockContext ).Get( communication.Id );
 
             var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
-            var mergeValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
 
             if ( person != null )
             {
-                mergeValues.Add( "Person", person );
+                mergeFields.Add( "Person", person );
 
                 var recipient = new CommunicationRecipientService( rockContext ).Queryable().Where(a => a.CommunicationId == communication.Id).Where( r => r.PersonAlias != null && r.PersonAlias.PersonId == person.Id ).FirstOrDefault();
                 if ( recipient != null )
@@ -73,16 +73,16 @@ namespace Rock.Communication.Medium
                     // Add any additional merge fields created through a report
                     foreach ( var mergeField in recipient.AdditionalMergeValues )
                     {
-                        if ( !mergeValues.ContainsKey( mergeField.Key ) )
+                        if ( !mergeFields.ContainsKey( mergeField.Key ) )
                         {
-                            mergeValues.Add( mergeField.Key, mergeField.Value );
+                            mergeFields.Add( mergeField.Key, mergeField.Value );
                         }
                     }
                 }
             }
 
             string message = communication.GetMediumDataValue( "Message" );
-            return message.ResolveMergeFields( mergeValues );
+            return message.ResolveMergeFields( mergeFields );
         }
 
         /// <summary>

@@ -121,13 +121,9 @@ namespace RockWeb.Blocks.Store
             PackageService packageService = new PackageService();
             var package = packageService.GetPackage( packageId );
 
-            var mergeFields = new Dictionary<string, object>();
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
             mergeFields.Add( "Package", package );
-            mergeFields.Add( "CurrentPerson", CurrentPerson );
-
-            var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
 
             lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 

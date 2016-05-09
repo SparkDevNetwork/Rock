@@ -7,7 +7,7 @@
       {% else -%}
       <div class="item">
         {% endif -%}
-        <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">{{ item.Image }}</a>
+        <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">{{ item | Attribute:'Image' }}</a>
       </div>
       {% endfor %}
     </div>

@@ -579,8 +579,18 @@ namespace Rock.Data
         /// </summary>
         /// <param name="pageGuid">The page GUID.</param>
         /// <param name="route">The route.</param>
+        public void AddPageRoute( string pageGuid, string route )
+        {
+            AddPageRoute( pageGuid, route, null );
+        }
+
+        /// <summary>
+        /// Adds a new PageRoute to the given page but only if the given route name does not exist.
+        /// </summary>
+        /// <param name="pageGuid">The page GUID.</param>
+        /// <param name="route">The route.</param>
         /// <param name="guid">The unique identifier.</param>
-        public void AddPageRoute( string pageGuid, string route, string guid = null )
+        public void AddPageRoute( string pageGuid, string route, string guid )
         {
             guid = guid != null ? string.Format( "'{0}'", guid ) : "NEWID()";
 

@@ -210,7 +210,51 @@ namespace RockWeb.Blocks.Reporting
             foreach ( var panelWidget in phReportFields.ControlsOfTypeRecursive<PanelWidget>() )
             {
                 Guid reportFieldGuid = panelWidget.ID.Replace( "reportFieldWidget_", string.Empty ).AsGuid();
-                kvSortFields.CustomKeys.Add( reportFieldGuid.ToString(), panelWidget.Title );
+                if ( SelectedFieldTypeSupportsSorting( panelWidget ) )
+                {
+                    kvSortFields.CustomKeys.Add( reportFieldGuid.ToString(), panelWidget.Title );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Selecteds the field type supports sorting.
+        /// </summary>
+        /// <param name="panelWidget">The panel widget.</param>
+        /// <returns></returns>
+        private bool SelectedFieldTypeSupportsSorting( PanelWidget panelWidget )
+        {
+            try
+            {
+                string ddlFieldsId = panelWidget.ID + "_ddlFields";
+                RockDropDownList ddlFields = phReportFields.ControlsOfTypeRecursive<RockDropDownList>().First( a => a.ID == ddlFieldsId );
+                bool fieldSupportsSorting = true;
+                var fieldTypeSelection = GetSelectedFieldTypeSelection( ddlFields );
+                if ( fieldTypeSelection != null )
+                {
+                    if ( fieldTypeSelection.ReportFieldType == ReportFieldType.DataSelectComponent )
+                    {
+                        var entityTypeId = fieldTypeSelection.FieldSelection.AsIntegerOrNull();
+                        if ( entityTypeId.HasValue )
+                        {
+                            var dataSelectComponent = this.GetDataSelectComponent( new RockContext(), entityTypeId.Value );
+                            if ( dataSelectComponent != null )
+                            {
+                                if ( dataSelectComponent.SortProperties( string.Empty ) == string.Empty )
+                                {
+                                    fieldSupportsSorting = false;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return fieldSupportsSorting;
+            }
+            catch
+            {
+                // if an exception occurred, ignore and assume it supports sorting
+                return true;
             }
         }
 
@@ -460,13 +504,12 @@ namespace RockWeb.Blocks.Reporting
                 RockDropDownList ddlFields = phReportFields.ControlsOfTypeRecursive<RockDropDownList>().First( a => a.ID == ddlFieldsId );
                 ReportFieldType reportFieldType = ReportFieldType.Property;
                 string fieldSelection = string.Empty;
+                var fieldTypeSelection = GetSelectedFieldTypeSelection( ddlFields );
 
-                string fieldSelectionValue = ddlFields.SelectedItem.Value;
-                string[] fieldSelectionValueParts = fieldSelectionValue.Split( '|' );
-                if ( fieldSelectionValueParts.Count() == 2 )
+                if ( fieldTypeSelection != null )
                 {
-                    reportFieldType = fieldSelectionValueParts[0].ConvertToEnum<ReportFieldType>();
-                    fieldSelection = fieldSelectionValueParts[1];
+                    reportFieldType = fieldTypeSelection.ReportFieldType;
+                    fieldSelection = fieldTypeSelection.FieldSelection;
                 }
                 else
                 {
@@ -541,6 +584,52 @@ namespace RockWeb.Blocks.Reporting
             var qryParams = new Dictionary<string, string>();
             qryParams["ReportId"] = report.Id.ToString();
             NavigateToPage( RockPage.Guid, qryParams );
+        }
+
+        /// <summary>
+        /// Gets the selected field type select.
+        /// </summary>
+        /// <param name="ddlFields">The DDL fields.</param>
+        /// <returns></returns>
+        private FieldTypeSelection GetSelectedFieldTypeSelection( RockDropDownList ddlFields )
+        {
+            ReportFieldType reportFieldType = ReportFieldType.Property;
+            string fieldSelection = string.Empty;
+
+            string fieldSelectionValue = ddlFields.SelectedItem.Value;
+            string[] fieldSelectionValueParts = fieldSelectionValue.Split( '|' );
+            if ( fieldSelectionValueParts.Count() == 2 )
+            {
+                reportFieldType = fieldSelectionValueParts[0].ConvertToEnum<ReportFieldType>();
+                fieldSelection = fieldSelectionValueParts[1];
+                return new FieldTypeSelection { ReportFieldType = reportFieldType, FieldSelection = fieldSelection };
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private class FieldTypeSelection
+        {
+            /// <summary>
+            /// Gets or sets the type of the report field.
+            /// </summary>
+            /// <value>
+            /// The type of the report field.
+            /// </value>
+            public ReportFieldType ReportFieldType { get; set; }
+
+            /// <summary>
+            /// Gets or sets the field selection.
+            /// </summary>
+            /// <value>
+            /// The field selection.
+            /// </value>
+            public string FieldSelection { get; set; }
         }
 
         /// <summary>
