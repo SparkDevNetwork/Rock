@@ -42,11 +42,11 @@ namespace RockWeb.Blocks.CheckIn
     [DisplayName( "Attendance Analytics" )]
     [Category( "Check-in" )]
     [Description( "Shows a graph of attendance statistics which can be configured for specific groups, date range, etc." )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK )]
-    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", false )]
-    [BooleanField( "Show Group Ancestry", "By default the group ancestry path is shown.  Unselect this to show only the group name.", true )]
-    [GroupTypeField( "Attendance Type", required: false, key: "GroupTypeTemplate" )]
-    [LinkedPage( "Check-in Detail Page", "Page that shows the user details for the check-in data.", false )]
+    [GroupTypesField( "Group Types", "Optional List of specific group types that should be included. If none are selected, an option to select an attendance type will be displayed and all of that attendance type's areas will be available.", false, "", "", 0 )]
+    [BooleanField( "Show Group Ancestry", "By default the group ancestry path is shown.  Unselect this to show only the group name.", true, "", 1 )]
+    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", false, "", "", 2 )]
+    [LinkedPage( "Check-in Detail Page", "Page that shows the user details for the check-in data.", false, "", "", 3 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", "", true, false, Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK, "", 4 )]
     public partial class AttendanceAnalytics : RockBlock
     {
         #region Fields
