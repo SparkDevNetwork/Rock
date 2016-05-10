@@ -2358,6 +2358,23 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Converts Markdown to HTML
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string FromMarkdown( string input )
+        {
+            if ( input != null )
+            {
+                return input.ConvertMarkdownToHtml();
+            }
+            else
+            {
+                return input;
+            }
+        }
+
+        /// <summary>
         /// adds a meta tag to the head of the document
         /// </summary>
         /// <param name="input">The input to use for the content attribute of the tag.</param>
