@@ -93,7 +93,7 @@
 			                </div>
 
                             <div class="navbar-mobile-logo">
-                                <asp:Literal ID="lLogoSvg" runat="server" />
+                                <asp:Literal ID="lLogoSvg" runat="server" EnableViewState="false" />
                             </div>
 
                             <div class="navbar-content">
