@@ -51,6 +51,8 @@ namespace Rock.Web.UI
 
         private string _clientType = null;
 
+
+        private PageStatePersister _PageStatePersister = null;
         #endregion
 
         #region Protected Variables
@@ -423,6 +425,41 @@ namespace Rock.Web.UI
             }
         }
 
+
+        /// <summary>
+        /// Gets the size of the view state.
+        /// </summary>
+        /// <value>
+        /// The size of the view state.
+        /// </value>
+        public int ViewStateSize {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Gets the view state value.
+        /// </summary>
+        /// <value>
+        /// The view state value.
+        /// </value>
+        public string ViewStateValue
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether Enable ViewState Inspection.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if Enable ViewState Inspection otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableViewStateInspection
+        {
+            get; set;
+        }
+
         #endregion
 
         #region Protected Methods
@@ -470,6 +507,39 @@ namespace Rock.Web.UI
         #endregion
 
         #region Overridden Methods
+
+        /// <summary>
+        /// Gets the <see cref="T:System.Web.UI.PageStatePersister" /> object associated with the page.
+        /// </summary>
+        protected override PageStatePersister PageStatePersister
+        {
+            get
+            {
+                if ( _PageStatePersister == null )
+                    _PageStatePersister = new RockHiddenFieldPageStatePersister( this );
+
+                return _PageStatePersister;
+            }
+        }
+
+        /// <summary>
+        /// Saves any view-state and control-state information for the page.
+        /// </summary>
+        /// <param name="state">An <see cref="T:System.Object" /> in which to store the view-state information.</param>
+        protected override void SavePageStateToPersistenceMedium( object state )
+        {
+            base.SavePageStateToPersistenceMedium( state );
+
+            var customPersister = this.PageStatePersister as RockHiddenFieldPageStatePersister;
+
+            if ( customPersister != null )
+            {
+                this.ViewStateSize = customPersister.ViewStateSize;
+                this.ViewStateValue = customPersister.ViewStateValue;
+            }
+
+            OnViewStatePersisted();
+        }
 
         /// <summary>
         /// Initializes the page's culture to use the culture specified by the browser ("auto")
@@ -2573,7 +2643,24 @@ Sys.Application.add_load(function () {
         /// </summary>
         public event PageNavigateEventHandler PageNavigate;
 
+
+        /// <summary>
+        /// Occurs when ViewState is persisted.
+        /// </summary>
+        public event EventHandler ViewStatePersisted;
+
+        /// <summary>
+        /// Called when ViewState Is Persisted
+        /// </summary>
+        protected void OnViewStatePersisted()
+        {
+            if ( this.ViewStatePersisted != null )
+            {
+                ViewStatePersisted( this, EventArgs.Empty );
+            }
+        }
         #endregion
+
 
     }
 
