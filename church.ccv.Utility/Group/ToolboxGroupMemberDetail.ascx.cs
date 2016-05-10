@@ -274,7 +274,7 @@ namespace church.ccv.Utility.Groups
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="rockContext">The rock context.</param>
-        protected void StartWorkflow( string workflowName, Person person, RockContext rockContext )
+        protected void StartWorkflow( string workflowName, object entity, Dictionary<string, string> attributes, RockContext rockContext )
         {
             WorkflowType workflowType = null;
             Guid? workflowTypeGuid = GetAttributeValue( workflowName ).AsGuidOrNull();
@@ -286,9 +286,19 @@ namespace church.ccv.Utility.Groups
                 {
                     try
                     {
-                        var workflow = Rock.Model.Workflow.Activate( workflowType, person.FirstName );
+                        var workflow = Rock.Model.Workflow.Activate( workflowType, workflowName );
+
+                        // set optional attributes for the workflow
+                        if( attributes != null )
+                        {
+                            foreach ( KeyValuePair<string, string> kvp in attributes )
+                            {
+                                workflow.SetAttributeValue( kvp.Key, kvp.Value );
+                            }
+                        }
+
                         List<string> workflowErrors;
-                        new WorkflowService( rockContext ).Process( workflow, person, out workflowErrors );
+                        new WorkflowService( rockContext ).Process( workflow, entity, out workflowErrors );
                     }
                     catch ( Exception ex )
 

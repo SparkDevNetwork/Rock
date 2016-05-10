@@ -25,11 +25,9 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
-using church.ccv.Utility.SystemGuids;
 using church.ccv.Utility.Groups;
 
 namespace RockWeb.Plugins.church_ccv.Groups
@@ -37,10 +35,10 @@ namespace RockWeb.Plugins.church_ccv.Groups
     [DisplayName( "Next Gen Group Member Detail" )]
     [Category( "CCV > Groups" )]
     [Description( "Displays the details of the given Next Gen group member " )]
-    [SystemEmailField( "Reassign To Another Coach Email Template", "Email template to use when a group member's opt-out status is set to \"Reassign to another Coach\".", false)]
     [WorkflowTypeField( "OptOut Not Attending Group Workflow", "The workflow to use when opting out a person due to them no longer attending CCV. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "" )]
     [WorkflowTypeField( "OptOut No Longer Attends Workflow", "The workflow to use when opting out a person due to them no longer attending CCV. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "" )]
     [WorkflowTypeField( "OptOut Moved Schools Workflow", "Workflow used when a person moves schools.", false, false, "", "" )]
+    [WorkflowTypeField( "OptOut Reassign To New Coach", "Workflow used when a person should be reassigned to a new coach.", false, false, "", "" )]
     public partial class NGGroupMemberDetail : ToolboxGroupMemberDetail, IDetailBlock
     {
         #region Control Methods
@@ -142,55 +140,34 @@ namespace RockWeb.Plugins.church_ccv.Groups
                 {
                     case church.ccv.Utility.SystemGuids.DefinedValue.NEXT_GEN_OPT_OUT_REASSIGN_TO_NEW_COACH:
                     {
-                        HandleOptOut_Reassign( groupMember, rockContext );
+                        Dictionary<string, string> attribDict = new Dictionary<string, string>( );
+                        attribDict.Add( "Reason", tbReassignReason.Text );
+
+                        StartWorkflow( "OptOutReassignToNewCoach", groupMember.Person, attribDict, rockContext );
                         break;
                     }
 
                     case church.ccv.Utility.SystemGuids.DefinedValue.NEXT_GEN_OPT_OUT_NO_LONGER_ATTENDING_CCV:
                     {
-                        StartWorkflow( "OptOutNoLongerAttendsWorkflow", groupMember.Person, rockContext );
+                        StartWorkflow( "OptOutNoLongerAttendsWorkflow", groupMember.Person, null, rockContext );
                         break;
                     }
 
                     case church.ccv.Utility.SystemGuids.DefinedValue.NEXT_GEN_OPT_OUT_NOT_ATTENDING_GROUP:
                     {
-                        StartWorkflow( "OptOutNotAttendingGroupWorkflow", groupMember.Person, rockContext );
+                        StartWorkflow( "OptOutNotAttendingGroupWorkflow", groupMember.Person, null, rockContext );
                         break;
                     }
 
                     case church.ccv.Utility.SystemGuids.DefinedValue.NEXT_GEN_OPT_OUT_MOVED_SCHOOLS:
                     {
-                        StartWorkflow( "OptOutMovedSchoolsWorkflow", groupMember.Person, rockContext );
+                        StartWorkflow( "OptOutMovedSchoolsWorkflow", groupMember.Person, null, rockContext );
                         break;
                     }
                 }
             }
         }
-        
-        private void HandleOptOut_Reassign( GroupMember groupMember, RockContext rockContext )
-        {
-            // we need to send off a communcation email. 
-            
-            // if a ConfirmationEmailTemplate is configured (which it better be) assign it
-            var confirmationEmailTemplateGuid = GetAttributeValue( "ReassignToAnotherCoachEmailTemplate" ).AsGuidOrNull();
-            if ( confirmationEmailTemplateGuid.HasValue )
-            {
-                // Get the admin making changes
-                PersonService personService = new PersonService( rockContext );
-
-                int adminPersonId = int.Parse( hfAdminPersonId.Value );
-                Person adminPerson = personService.Get( adminPersonId );
-
-                // put in the admin, the group member, and the reason
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-                mergeFields.Add( "Admin", adminPerson );
-                mergeFields.Add( "Member", groupMember );
-                mergeFields.Add( "Reason", tbReassignReason.Text );
-
-                SendEmail( mergeFields, confirmationEmailTemplateGuid.Value, rockContext );
-            }
-        }
-        
+              
         /// <summary>
         /// Handles the Click event of the btnCancel control.
         /// </summary>
@@ -229,7 +206,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
         {
             // unused
         }
-        
+                
         /// <summary>
         /// Shows the detail.
         /// </summary>

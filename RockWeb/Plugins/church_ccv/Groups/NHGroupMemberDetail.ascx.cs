@@ -144,19 +144,19 @@ namespace RockWeb.Plugins.church_ccv.Groups
                 {
                     case church.ccv.Utility.SystemGuids.DefinedValue.NEIGHBORHOOD_OPT_OUT_NOT_ATTENDING_GROUP:
                     {
-                        StartWorkflow( "OptOutNotAttendingGroup", groupMember.Person, rockContext );
+                        StartWorkflow( "OptOutNotAttendingGroup", groupMember.Person, null, rockContext );
                         break;
                     }
 
                     case church.ccv.Utility.SystemGuids.DefinedValue.NEIGHBORHOOD_OPT_OUT_NEEDS_NEXT_STEPS_COACH:
                     {
-                        StartWorkflow( "OptOutNeedsNextStepsCoach", groupMember.Person, rockContext );
+                        StartWorkflow( "OptOutNeedsNextStepsCoach", groupMember.Person, null, rockContext );
                         break;
                     }
 
                     case church.ccv.Utility.SystemGuids.DefinedValue.NEIGHBORHOOD_OPT_OUT_NO_LONGER_ATTENDING_CCV:
                     {
-                        StartWorkflow( "OptOutNoLongerAttendsWorkflow", groupMember.Person, rockContext );
+                        StartWorkflow( "OptOutNoLongerAttendsWorkflow", groupMember.Person, null, rockContext );
                         break;
                     }
                 }

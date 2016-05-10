@@ -37,11 +37,11 @@ namespace RockWeb.Plugins.church_ccv.Groups
     [DisplayName( "Next Steps Group Member Detail" )]
     [Category( "CCV > Groups" )]
     [Description( "Displays the details of the given Next Steps group member " )]
-    [SystemEmailField( "Reassign To Another Coach Email Template", "Email template to use when a group member's opt-out status is set to \"Reassign to another Coach\".", false)]
     [WorkflowTypeField( "OptOut Do Not Contact Workflow", "The workflow to use when opting out a person due to them not wanting to be contacted. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "" )]
     [WorkflowTypeField( "OptOut Unable To Reach Workflow", "The workflow to use when opting out a person due to them not beaing reachable. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "" )]
     [WorkflowTypeField( "OptOut Neighborhood Workflow", "The workflow to use when opting out a person due to them being in a neighborhood group. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "" )]
     [WorkflowTypeField( "OptOut No Longer Attends Workflow", "The workflow to use when opting out a person due to them no longer attending CCV. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "" )]
+    [WorkflowTypeField( "OptOut Reassign To New Coach", "Workflow used when a person should be reassigned to a new coach.", false, false, "", "" )]
     public partial class NextStepsGroupMemberDetail : ToolboxGroupMemberDetail, IDetailBlock
     {
         #region Control Methods
@@ -144,56 +144,35 @@ namespace RockWeb.Plugins.church_ccv.Groups
                 {
                     case church.ccv.Utility.SystemGuids.DefinedValue.NEXT_STEPS_OPT_OUT_UNABLE_TO_REACH:
                     {
-                        StartWorkflow( "OptOutUnableToReachWorkflow", groupMember.Person, rockContext );
+                        StartWorkflow( "OptOutUnableToReachWorkflow", groupMember.Person, null, rockContext );
                         break;
                     }
                     case church.ccv.Utility.SystemGuids.DefinedValue.NEXT_STEPS_OPT_OUT_DO_NOT_CONTACT:
                     {
-                        StartWorkflow( "OptOutDoNotContactWorkflow", groupMember.Person, rockContext );
+                        StartWorkflow( "OptOutDoNotContactWorkflow", groupMember.Person, null, rockContext );
                         break;
                     }
                     case church.ccv.Utility.SystemGuids.DefinedValue.NEXT_STEPS_OPT_OUT_REASSIGN_TO_NEW_COACH:
                     {
-                        HandleOptOut_Reassign( groupMember, rockContext );
+                        Dictionary<string, string> attribDict = new Dictionary<string, string>( );
+                        attribDict.Add( "Reason", tbReassignReason.Text );
+
+                        StartWorkflow( "OptOutReassignToNewCoach", groupMember.Person, attribDict, rockContext );
                         break;
                     }
 
                     case church.ccv.Utility.SystemGuids.DefinedValue.NEXT_STEPS_OPT_OUT_REGISTERED_FOR_NEIGHBORHOOD_GROUP:
                     {
-                        StartWorkflow( "OptOutNeighborhoodWorkflow", groupMember.Person, rockContext );
+                        StartWorkflow( "OptOutNeighborhoodWorkflow", groupMember.Person, null, rockContext );
                         break;
                     }
 
                     case church.ccv.Utility.SystemGuids.DefinedValue.NEXT_STEPS_OPT_OUT_NO_LONGER_ATTENDING_CCV:
                     {
-                        StartWorkflow( "OptOutNoLongerAttendsWorkflow", groupMember.Person, rockContext );
+                        StartWorkflow( "OptOutNoLongerAttendsWorkflow", groupMember.Person, null, rockContext );
                         break;
                     }
                 }
-            }
-        }
-
-        private void HandleOptOut_Reassign( GroupMember groupMember, RockContext rockContext )
-        {
-            // we need to send off a communcation email. 
-            
-            // if a ConfirmationEmailTemplate is configured (which it better be) assign it
-            var confirmationEmailTemplateGuid = GetAttributeValue( "ReassignToAnotherCoachEmailTemplate" ).AsGuidOrNull();
-            if ( confirmationEmailTemplateGuid.HasValue )
-            {
-                // Get the admin making changes
-                PersonService personService = new PersonService( rockContext );
-
-                int adminPersonId = int.Parse( hfAdminPersonId.Value );
-                Person adminPerson = personService.Get( adminPersonId );
-
-                // put in the admin, the group member, and the reason
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-                mergeFields.Add( "Admin", adminPerson );
-                mergeFields.Add( "Member", groupMember );
-                mergeFields.Add( "Reason", tbReassignReason.Text );
-
-                SendEmail( mergeFields, confirmationEmailTemplateGuid.Value, rockContext );
             }
         }
         
