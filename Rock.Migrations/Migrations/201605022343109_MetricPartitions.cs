@@ -109,14 +109,19 @@ INSERT INTO [dbo].[MetricPartition] (
     ,[Order]
     ,[Guid]
     )
-SELECT Id
-    ,NULL
+SELECT m.Id
+    ,et.FriendlyName [Label]
     ,EntityTypeId
-    ,case when EntityTypeId is null then 0 else 1 end
+    ,CASE 
+        WHEN EntityTypeId IS NULL
+            THEN 0
+        ELSE 1
+        END
     ,0
     ,newid()
-FROM Metric
-WHERE Id NOT IN (
+FROM Metric m
+LEFT JOIN EntityType et ON et.Id = m.EntityTypeId
+WHERE m.Id NOT IN (
         SELECT MetricId
         FROM MetricPartition
         )" );
@@ -145,6 +150,8 @@ WHERE mv.Id NOT IN (
             DropColumn("dbo.MetricValue", "EntityId");
 
             RockMigrationHelper.UpdateEntityTypeSingleValueFieldType( "Rock.Model.DefinedValue", Rock.SystemGuid.FieldType.DEFINED_VALUE );
+            RockMigrationHelper.UpdateEntityTypeSingleValueFieldType( "Rock.Model.Category", Rock.SystemGuid.FieldType.CATEGORY );
+
         }
         
         /// <summary>
