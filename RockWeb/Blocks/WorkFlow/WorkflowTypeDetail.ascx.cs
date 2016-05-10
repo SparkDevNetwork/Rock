@@ -132,6 +132,8 @@ namespace RockWeb.Blocks.WorkFlow
             gAttributes.GridRebind += gAttributes_GridRebind;
             gAttributes.GridReorder += gAttributes_GridReorder;
 
+            LoadDropDowns();
+
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'This will also delete all the workflows of this type!');", WorkflowType.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.WorkflowType ) ).Id;
         }
@@ -1307,8 +1309,6 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             SetEditMode( true );
-
-            LoadDropDowns();
 
             cbIsActive.Checked = workflowType.IsActive ?? false;
             tbName.Text = workflowType.Name;
