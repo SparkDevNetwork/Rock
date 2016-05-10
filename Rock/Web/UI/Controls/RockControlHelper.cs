@@ -145,12 +145,17 @@ namespace Rock.Web.UI.Controls
                 }
 
                 writer.RenderEndTag();
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-wrapper" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
             }
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-wrapper" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             rockControl.RenderBaseControl( writer );
-            writer.RenderEndTag();
+
+            if ( renderLabel )
+            {
+                writer.RenderEndTag();
+            }
 
             if ( !renderLabel && renderHelp )
             {
