@@ -26,9 +26,7 @@ using Rock;
 using Rock.Model;
 namespace com.centralaz.SpiritualGifts.Model
 {
-    /// <summary>
-    /// DISC Class for administering and scoring a DISC Test
-    /// </summary>
+
     public class SpiritualGiftService
     {
         /// <summary>
@@ -68,14 +66,12 @@ namespace com.centralaz.SpiritualGifts.Model
         };
 
 #pragma warning disable 1591
+
         /// <summary>
         /// The TestResults struct used to return the final assessment scores
         /// </summary>
-        public struct TestResults
+        public class SpiritualGiftTestResults
         {
-            /// <summary>
-            /// The test results
-            /// </summary>
             public int Prophecy;
             public int Ministry;
             public int Teaching;
@@ -87,15 +83,12 @@ namespace com.centralaz.SpiritualGifts.Model
             public DateTime LastSaveDate;
         }
 
-        /// <summary>
-        /// An individual response to a question. 
-        /// <para>Properties: QuestionNumber, ResponseNumber, ResponseID (QuestionNumber + ResponseNumber), ResponseText, MostScore, and LeastScore.</para>
-        /// </summary>
-        public struct ResponseItem
+        public class QuestionItem
         {
-            public string QuestionNumber;
+            public int QuestionIndex;
             public string QuestionText;
-            public string GiftScore;
+            public string QuestionGifting;
+            public int? QuestionScore;
         }
 
         public class UiItem
@@ -106,7 +99,7 @@ namespace com.centralaz.SpiritualGifts.Model
         }
 
         /// <summary>
-        /// The key names for the DISC person attributes.
+        /// The key names for the person's spiritual gifting attributes.
         /// </summary>
         public static class AttributeKeys
         {
@@ -122,64 +115,42 @@ namespace com.centralaz.SpiritualGifts.Model
         }
 
 #pragma warning restore 1591
-
         /// <summary>
-        /// Returns the datasource.  Each row is a question,
-        /// comprised of four responses followed by a 'more' and 'less' score.
+        /// Fetch a List of <see cref="QuestionItem"/> for display/processing.
         /// </summary>
-        /// <returns></returns>
-        static public String[,] GetResponsesByQuestion()
+        /// <returns>a List of <see cref="QuestionItem"/>.</returns>
+        static public List<QuestionItem> GetQuestions()
         {
-            return questionData;
-        }
-
-        /// <summary>
-        /// Fetch a List of <see cref="ResponseItem"/> for display/processing.
-        /// </summary>
-        /// <returns>a List of <see cref="ResponseItem"/>.</returns>
-        static public List<ResponseItem> GetResponses()
-        {
-            List<ResponseItem> responseList = new List<ResponseItem>();
-            ResponseItem response = new ResponseItem();
+            List<QuestionItem> questionList = new List<QuestionItem>();
+            QuestionItem question = new QuestionItem();
 
             for ( int questionIndex = 0; questionIndex < questionData.GetLength( 0 ); questionIndex++ )
             {
-                response.QuestionNumber = ( questionIndex + 1 ).ToString( "D2" );
-                response.QuestionText = questionData[questionIndex, 0];
-                response.GiftScore = questionData[questionIndex, 1];
-                responseList.Add( response );
+                question = new QuestionItem();
+                question.QuestionIndex = questionIndex;
+                question.QuestionText = questionData[questionIndex, 0];
+                question.QuestionGifting = questionData[questionIndex, 1];
+                question.QuestionScore = null;
+                questionList.Add( question );
             }
-            return responseList;
+            return questionList;
         }
 
-        static public TestResults Score( int prophecy, int ministry, int teaching, int encouragement, int giving, int leadership, int mercy, int placebo )
+        static public SpiritualGiftTestResults Score( int prophecy, int ministry, int teaching, int encouragement, int giving, int leadership, int mercy, int placebo )
         {
-            // Holds the score for each gift
-            Dictionary<string, int> results = new Dictionary<string, int>();
+            SpiritualGiftTestResults testResults = new SpiritualGiftTestResults();
 
-            results["Prophecy"] = prophecy;
-            results["Ministry"] = ministry;
-            results["Teaching"] = teaching;
-            results["Encouragement"] = encouragement;
-            results["Giving"] = giving;
-            results["Leadership"] = leadership;
-            results["Mercy"] = mercy;
-            results["Placebo"] = placebo;
-
-            TestResults testResults = new TestResults();
-
-            testResults.Prophecy = Convert.ToInt32( prophecy );
-            testResults.Ministry = Convert.ToInt32( ministry );
-            testResults.Teaching = Convert.ToInt32( teaching );
-            testResults.Encouragement = Convert.ToInt32( encouragement );
-            testResults.Giving = Convert.ToInt32( giving );
-            testResults.Leadership = Convert.ToInt32( leadership );
-            testResults.Mercy = Convert.ToInt32( mercy );
+            testResults.Prophecy = prophecy;
+            testResults.Ministry = ministry;
+            testResults.Teaching = teaching;
+            testResults.Encouragement = encouragement;
+            testResults.Giving = giving;
+            testResults.Leadership = leadership;
+            testResults.Mercy = mercy;
             testResults.LastSaveDate = RockDateTime.Now;
 
             // Determine the Natural gifting
             testResults.Gifting = DetermineGifting( testResults );
-
 
             return testResults;
         }
@@ -190,22 +161,20 @@ namespace com.centralaz.SpiritualGifts.Model
         /// </summary>
         /// <param name="results">The TestResults</param>
         /// <returns></returns>
-        public static string DetermineGifting( TestResults results )
+        public static string DetermineGifting( SpiritualGiftTestResults results )
         {
             var gifting = string.Empty;
-            Dictionary<string, int> dictionary = new Dictionary<string, int>();
-            dictionary["Prophecy"] = results.Prophecy;
-            dictionary["Ministry"] = results.Ministry;
-            dictionary["Teaching"] = results.Teaching;
-            dictionary["Encouragement"] = results.Encouragement;
-            dictionary["Giving"] = results.Giving;
-            dictionary["Leadership"] = results.Leadership;
-            dictionary["Mercy"] = results.Mercy;
+            List<KeyValuePair<string, int>> list = new List<KeyValuePair<string, int>>();
+            list.Add( new KeyValuePair<string, int>( "Prophecy", results.Prophecy ) );
+            list.Add( new KeyValuePair<string, int>( "Ministry", results.Ministry ) );
+            list.Add( new KeyValuePair<string, int>( "Teaching", results.Teaching ) );
+            list.Add( new KeyValuePair<string, int>( "Encouragement", results.Encouragement ) );
+            list.Add( new KeyValuePair<string, int>( "Giving", results.Giving ) );
+            list.Add( new KeyValuePair<string, int>( "Leadership", results.Leadership ) );
+            list.Add( new KeyValuePair<string, int>( "Mercy", results.Mercy ) );
 
-            List<KeyValuePair<string, int>> list = dictionary.ToList();
             list.Sort( ( x, y ) => y.Value.CompareTo( x.Value ) );
-            gifting = string.Format( "{0}{1}", list[0].Key, ( list[1].Value > 24 ) ? list[1].Key : string.Empty );
-            return gifting;
+            return list[0].Key;
         }
 
         /// <summary>
@@ -214,11 +183,11 @@ namespace com.centralaz.SpiritualGifts.Model
         /// <param name="person"></param>
         /// <param name="attrib"></param>
         /// <returns>The DISC score, if one is saved. Otherwise, returns 0.</returns>
-        private static int AttributeValueLookup( Person person, string attrib )
+        private static int GetSpiritualGiftingValue( Person person, string attrib )
         {
-            int retVal = 0;
-            bool bCatch = int.TryParse( person.AttributeValues[attrib].Value, out retVal );
-            return retVal;
+            int giftingLevel = 0;
+            bool bCatch = int.TryParse( person.AttributeValues[attrib].Value, out giftingLevel );
+            return giftingLevel;
         }
 
         /// <summary>
@@ -226,9 +195,9 @@ namespace com.centralaz.SpiritualGifts.Model
         /// </summary>
         /// <param name="person">The Person to get the scores for.</param>
         /// <returns>TestResults</returns>
-        static public TestResults LoadSavedTestResults( Person person )
+        static public SpiritualGiftTestResults LoadSavedTestResults( Person person )
         {
-            TestResults savedScores = new TestResults();
+            SpiritualGiftTestResults savedScores = new SpiritualGiftTestResults();
 
             person.LoadAttributes();
 
@@ -239,25 +208,25 @@ namespace com.centralaz.SpiritualGifts.Model
                 switch ( attrib )
                 {
                     case AttributeKeys.Prophecy:
-                        savedScores.Prophecy = AttributeValueLookup( person, attrib );
+                        savedScores.Prophecy = GetSpiritualGiftingValue( person, attrib );
                         break;
                     case AttributeKeys.Ministry:
-                        savedScores.Ministry = AttributeValueLookup( person, attrib );
+                        savedScores.Ministry = GetSpiritualGiftingValue( person, attrib );
                         break;
                     case AttributeKeys.Teaching:
-                        savedScores.Teaching = AttributeValueLookup( person, attrib );
+                        savedScores.Teaching = GetSpiritualGiftingValue( person, attrib );
                         break;
                     case AttributeKeys.Encouragement:
-                        savedScores.Encouragement = AttributeValueLookup( person, attrib );
+                        savedScores.Encouragement = GetSpiritualGiftingValue( person, attrib );
                         break;
                     case AttributeKeys.Giving:
-                        savedScores.Giving = AttributeValueLookup( person, attrib );
+                        savedScores.Giving = GetSpiritualGiftingValue( person, attrib );
                         break;
                     case AttributeKeys.Leadership:
-                        savedScores.Leadership = AttributeValueLookup( person, attrib );
+                        savedScores.Leadership = GetSpiritualGiftingValue( person, attrib );
                         break;
                     case AttributeKeys.Mercy:
-                        savedScores.Mercy = AttributeValueLookup( person, attrib );
+                        savedScores.Mercy = GetSpiritualGiftingValue( person, attrib );
                         break;
                     case AttributeKeys.Gifting:
                         savedScores.Gifting = person.AttributeValues[attrib].Value;
@@ -316,6 +285,7 @@ namespace com.centralaz.SpiritualGifts.Model
         }
 
         #region Spiritual Gifts shared  UI stuff
+
         public static void PlotOneGraph( HtmlGenericControl barProphecy, HtmlGenericControl barMinistry, HtmlGenericControl barTeaching, HtmlGenericControl barEncouragement, HtmlGenericControl barGiving, HtmlGenericControl barLeadership, HtmlGenericControl barMercy,
             int scoreProphecy, int scoreMinistry, int scoreTeaching, int scoreEncouragement, int scoreGiving, int scoreLeadership, int scoreMercy, int maxScale )
         {
@@ -348,6 +318,7 @@ namespace com.centralaz.SpiritualGifts.Model
                 uiList.ElementAt( i ).Bar.Visible = false;
             }
         }
+
         #endregion
     }
 }

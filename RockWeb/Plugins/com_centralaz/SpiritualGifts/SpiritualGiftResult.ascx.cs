@@ -21,6 +21,7 @@ using System.Linq;
 using com.centralaz.SpiritualGifts.Model;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -34,18 +35,15 @@ namespace Rockweb.Plugins.com_centralaz.SpiritualGifts
     [DisplayName( "Spiritual Gifts Result" )]
     [Category( "com_centralaz > Spiritual Gifts" )]
     [Description( "Allows you to view your spiritual gift score." )]
+    [BooleanField( "Show Retake Test Button", "Whether to display the retake test button", false )]
+    [IntegerField( "Minimum Days To Retake", "The number of days that must pass before the test can be taken again.", false, 30 )]
+    [LinkedPage( "Spiritual Gift Test Page", "Page to take the spiritual gifts test. If blank no link is created.", false )]
     public partial class SpiritualGiftResult : Rock.Web.UI.RockBlock
     {
         #region Fields
 
         // used for private variables
         Person _targetPerson = null;
-
-        #endregion
-
-        #region Properties
-
-        // used for public / protected properties
 
         #endregion
 
@@ -87,8 +85,7 @@ namespace Rockweb.Plugins.com_centralaz.SpiritualGifts
             if ( _targetPerson != null )
             {
                 pnlResults.Visible = true;
-                SpiritualGiftService.TestResults savedScores = SpiritualGiftService.LoadSavedTestResults( _targetPerson );
-                ShowResults( savedScores );
+                ShowResults( _targetPerson );
             }
         }
 
@@ -98,11 +95,28 @@ namespace Rockweb.Plugins.com_centralaz.SpiritualGifts
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
+            if ( GetAttributeValue( "ShowRetakeTestButton" ).AsBoolean() )
+            {
+                if ( _targetPerson != null )
+                {
+                    SpiritualGiftService.SpiritualGiftTestResults savedScores = SpiritualGiftService.LoadSavedTestResults( _targetPerson );
+
+                    if ( savedScores.LastSaveDate.Date <= DateTime.Now.AddDays( -GetAttributeValue( "MinimumDaysToRetake" ).AsInteger() ).Date )
+                    {
+                        btnRetakeTest.Visible = true;
+                    }
+                }
+            }
         }
 
         #endregion
 
         #region Events
+
+        protected void btnRetakeTest_Click( object sender, EventArgs e )
+        {
+            NavigateToLinkedPage( "SpiritualGiftTestPage" );
+        }
 
         #endregion
 
@@ -112,24 +126,21 @@ namespace Rockweb.Plugins.com_centralaz.SpiritualGifts
         /// Shows the results of the assessment test.
         /// </summary>
         /// <param name="savedScores">The saved scores.</param>
-        private void ShowResults( SpiritualGiftService.TestResults savedScores )
+        private void ShowResults( Person person )
         {
+            SpiritualGiftService.SpiritualGiftTestResults savedScores = SpiritualGiftService.LoadSavedTestResults( person );
+
             // Plot the Natural graph
             SpiritualGiftService.PlotOneGraph( giftScore_Prophecy, giftScore_Ministry, giftScore_Teaching, giftScore_Encouragement, giftScore_Giving, giftScore_Leadership, giftScore_Mercy,
-                savedScores.Prophecy, savedScores.Ministry, savedScores.Teaching, savedScores.Encouragement, savedScores.Giving, savedScores.Leadership, savedScores.Mercy, 20 );
+                savedScores.Prophecy, savedScores.Ministry, savedScores.Teaching, savedScores.Encouragement, savedScores.Giving, savedScores.Leadership, savedScores.Mercy, 36 );
             ShowExplaination( savedScores.Gifting );
 
             hlTestDate.Text = String.Format( "Test Date: {0}", savedScores.LastSaveDate.ToShortDateString() );
-            lPersonName.Text = _targetPerson.FullName;
+            lPersonName.Text = person.FullName;
 
-            lHeading.Text = string.Format( "<div class='disc-heading'><h1>{0}</h1><h4>Spiritual Gifting: {1}</h4></div>", _targetPerson.FullName, savedScores.Gifting );
+            lHeading.Text = string.Format( "<div class='disc-heading'><h1>{0}</h1><h4>Spiritual Gifting: {1}</h4></div>", person.FullName, savedScores.Gifting );
         }
 
-        /// <summary>
-        /// Shows the explaination for the given personality type as defined in one of the
-        /// DefinedValues of the DISC Results DefinedType.
-        /// </summary>
-        /// <param name="gifting">The gifting.</param>
         private void ShowExplaination( string gifting )
         {
             var giftingValue = DefinedTypeCache.Read( com.centralaz.SpiritualGifts.SystemGuid.DefinedType.SPRITUAL_GIFTS_DEFINED_TYPE.AsGuid() ).DefinedValues.Where( v => v.Value == gifting ).FirstOrDefault();

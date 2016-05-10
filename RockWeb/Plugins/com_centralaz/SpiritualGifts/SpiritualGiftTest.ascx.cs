@@ -19,13 +19,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI.WebControls;
-
 using com.centralaz.SpiritualGifts.Model;
-
+using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -38,7 +38,9 @@ namespace Rockweb.Plugins.com_centralaz.SpiritualGifts
     [DisplayName( "Spiritual Gifts Test" )]
     [Category( "com_centralaz > Spiritual Gifts" )]
     [Description( "Allows you to take a spiritual gift test and saves your spiritual gift score." )]
+    [LinkedPage( "Spiritual Gift Result Detail", "Page to show the details of the spiritual assessment results. If blank no link is created.", false )]
     [IntegerField( "Minimum Days To Retake", "The number of days that must pass before the test can be taken again.", false, 30 )]
+    [IntegerField( "Number of Questions per Page", "The number of questions displayed on each page of the test", true, 6, key: "NumberOfQuestions" )]
     [CodeEditorField( "Instructions", "The text (HTML) to display at the top of the instructions section.  <span class='tip tip-lava'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
             <h2>Welcome!</h2>
             <p>
@@ -46,16 +48,7 @@ namespace Rockweb.Plugins.com_centralaz.SpiritualGifts
                 Select one phrase that MOST describes you and one phrase that LEAST describes you.
             </p>
             <p>
-                This assessment is environmentally sensitive, which means that you may score differently
-                in different situations. In other words, you may act differently at home than you
-                do on the job. So, as you complete the assessment you should focus on one environment
-                for which you are seeking to understand yourself. For instance, if you are trying
-                to understand yourself in marriage, you should only think of your responses to situations
-                in the context of your marriage. On the other hand, if you want to know your behavioral
-                needs on the job, then only think of how you would respond in the job context.
-            </p>
-            <p>
-                One final thought as you give your responses. On these kinds of assessments, it
+                One thought as you give your responses. On these kinds of assessments, it
                 is often best and easiest if you respond quickly and do not deliberate too long
                 on each question. Your response on one question will not unduly influence your scores,
                 so simply answer as quickly as possible and enjoy the process. Don't get too hung
@@ -72,12 +65,14 @@ namespace Rockweb.Plugins.com_centralaz.SpiritualGifts
 
         // used for private variables
         Person _targetPerson = null;
+        int _numberOfQuestions;
 
         #endregion
 
         #region Properties
 
-        // used for public / protected properties
+        private List<SpiritualGiftService.QuestionItem> QuestionList { get; set; }
+        public decimal PercentComplete { get; set; }
 
         #endregion
 
@@ -103,7 +98,6 @@ namespace Rockweb.Plugins.com_centralaz.SpiritualGifts
                     nbError.Visible = true;
                     pnlInstructions.Visible = false;
                     pnlQuestions.Visible = false;
-                    pnlResults.Visible = false;
                 }
             }
             else
@@ -118,23 +112,10 @@ namespace Rockweb.Plugins.com_centralaz.SpiritualGifts
                     nbError.Visible = true;
                     pnlInstructions.Visible = false;
                     pnlQuestions.Visible = false;
-                    pnlResults.Visible = false;
                 }
             }
 
-            if ( _targetPerson != null )
-            {
-                SpiritualGiftService.TestResults savedScores = SpiritualGiftService.LoadSavedTestResults( _targetPerson );
-
-                if ( savedScores.LastSaveDate <= DateTime.MinValue )
-                {
-                    ShowInstructions();
-                }
-                else
-                {
-                    ShowResults( savedScores );
-                }
-            }
+            _numberOfQuestions = GetAttributeValue( "NumberOfQuestions" ).AsIntegerOrNull() ?? 6;
         }
 
         /// <summary>
@@ -143,13 +124,89 @@ namespace Rockweb.Plugins.com_centralaz.SpiritualGifts
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
+            base.OnLoad( e );
+
+            if ( !Page.IsPostBack )
+            {
+                if ( _targetPerson != null )
+                {
+                    SpiritualGiftService.SpiritualGiftTestResults savedScores = SpiritualGiftService.LoadSavedTestResults( _targetPerson );
+
+                    if ( savedScores.LastSaveDate.Date <= DateTime.Now.AddDays( -GetAttributeValue( "MinimumDaysToRetake" ).AsInteger() ).Date )
+                    {
+                        ShowInstructions();
+                    }
+                    else
+                    {
+                        if ( IsUserAuthorized( Authorization.ADMINISTRATE ) )
+                        {
+                            nbError.Text = "If you did not have Administrate permissions on this block, you would have been redirected to your test results.";
+                            nbError.Visible = true;
+                        }
+                        else
+                        {
+                            NavigateToResultsPage();
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            string json = ViewState["QuestionList"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) || json == "null" )
+            {
+                QuestionList = SpiritualGiftService.GetQuestions();
+            }
+            else
+            {
+                QuestionList = JsonConvert.DeserializeObject<List<SpiritualGiftService.QuestionItem>>( json );
+            }
+
+            json = ViewState["PercentComplete"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) || json == "null" )
+            {
+                PercentComplete = 0;
+            }
+            else
+            {
+                PercentComplete = JsonConvert.DeserializeObject<decimal>( json );
+            }
+        }
+
+        /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            var jsonSetting = new JsonSerializerSettings
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
+            };
+
+            ViewState["QuestionList"] = JsonConvert.SerializeObject( QuestionList, Formatting.None, jsonSetting );
+            ViewState["PercentComplete"] = JsonConvert.SerializeObject( PercentComplete, Formatting.None, jsonSetting );
+
+            return base.SaveViewState();
         }
 
         #endregion
 
         #region Events
+
         /// <summary>
-        /// Handles the Click event of the btnStart button.
+        /// Handles the Click event of the btnStart control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
@@ -157,94 +214,96 @@ namespace Rockweb.Plugins.com_centralaz.SpiritualGifts
         {
             pnlInstructions.Visible = false;
             pnlQuestions.Visible = true;
-            BindRepeater();
+            BindRepeater( 0, _numberOfQuestions );
         }
 
         /// <summary>
-        /// Scores test, and displays results.
+        /// Handles the Click event of the lbFinish control.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        protected void btnScoreTest_Click( object sender, EventArgs e )
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbFinish_Click( object sender, EventArgs e )
         {
-            try
+            bool isFilledIn = SaveAnswers( true );
+            if ( isFilledIn )
             {
-                int prophecy = 0;
-                int ministry = 0;
-                int teaching = 0;
-                int encouragement = 0;
-                int giving = 0;
-                int leadership = 0;
-                int mercy = 0;
-                int placebo = 0;
-
-                foreach ( RepeaterItem rItem in rQuestions.Items )
+                int? currentEndIndex = hfEndIndex.Value.AsIntegerOrNull();
+                if ( currentEndIndex.HasValue )
                 {
-                    RockRadioButtonList rblAnswer = rItem.FindControl( "rblAnswer" ) as RockRadioButtonList;
-                    HiddenField hfGiftType = rItem.FindControl( "hfGiftType" ) as HiddenField;
-
-                    int? selectedValue = rblAnswer.SelectedValueAsInt();
-                    if ( !selectedValue.HasValue )
+                    try
                     {
-                        selectedValue = 0;
+                        int prophecy = 0;
+                        int ministry = 0;
+                        int teaching = 0;
+                        int encouragement = 0;
+                        int giving = 0;
+                        int leadership = 0;
+                        int mercy = 0;
+                        int placebo = 0;
+
+                        foreach ( var questionItem in QuestionList )
+                        {
+                            switch ( questionItem.QuestionGifting )
+                            {
+                                case "P":
+                                    prophecy += questionItem.QuestionScore ?? 0;
+                                    break;
+                                case "S":
+                                    ministry += questionItem.QuestionScore ?? 0;
+                                    break;
+                                case "T":
+                                    teaching += questionItem.QuestionScore ?? 0;
+                                    break;
+                                case "E":
+                                    encouragement += questionItem.QuestionScore ?? 0;
+                                    break;
+                                case "G":
+                                    giving += questionItem.QuestionScore ?? 0;
+                                    break;
+                                case "L":
+                                    leadership += questionItem.QuestionScore ?? 0;
+                                    break;
+                                case "M":
+                                    mercy += questionItem.QuestionScore ?? 0;
+                                    break;
+                                case "N":
+                                    placebo += questionItem.QuestionScore ?? 0;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+
+                        // Score the responses and return the results
+                        SpiritualGiftService.SpiritualGiftTestResults results = SpiritualGiftService.Score( prophecy, ministry, teaching, encouragement, giving, leadership, mercy, placebo );
+
+                        // Now save the results for this person
+                        SpiritualGiftService.SaveTestResults(
+                            _targetPerson,
+                            results.Prophecy.ToString(),
+                            results.Ministry.ToString(),
+                            results.Teaching.ToString(),
+                            results.Encouragement.ToString(),
+                            results.Giving.ToString(),
+                            results.Leadership.ToString(),
+                            results.Mercy.ToString(),
+                            results.Gifting
+                        );
+
+                        NavigateToResultsPage();
                     }
-
-                    switch ( hfGiftType.Value )
+                    catch ( Exception ex )
                     {
-                        case "P":
-                            prophecy += selectedValue.Value;
-                            break;
-                        case "S":
-                            ministry += selectedValue.Value;
-                            break;
-                        case "T":
-                            teaching += selectedValue.Value;
-                            break;
-                        case "E":
-                            encouragement += selectedValue.Value;
-                            break;
-                        case "G":
-                            giving += selectedValue.Value;
-                            break;
-                        case "L":
-                            leadership += selectedValue.Value;
-                            break;
-                        case "M":
-                            mercy += selectedValue.Value;
-                            break;
-                        case "N":
-                            placebo += selectedValue.Value;
-                            break;
-                        default:
-                            break;
+                        nbError.Visible = true;
+                        nbError.Title = "We're Sorry...";
+                        nbError.Text = "Something went wrong while trying to save your test results.";
+                        LogException( ex );
                     }
                 }
-
-                // Score the responses and return the results
-                SpiritualGiftService.TestResults results = SpiritualGiftService.Score( prophecy, ministry, teaching, encouragement, giving, leadership, mercy, placebo );
-
-                // Now save the results for this person
-                SpiritualGiftService.SaveTestResults(
-                    _targetPerson,
-                    results.Prophecy.ToString(),
-                    results.Ministry.ToString(),
-                    results.Teaching.ToString(),
-                    results.Encouragement.ToString(),
-                    results.Giving.ToString(),
-                    results.Leadership.ToString(),
-                    results.Mercy.ToString(),
-                    results.Gifting
-                );
-
-                // Show the results
-                ShowResults( results );
             }
-            catch ( Exception ex )
+            else
             {
-                nbError.Visible = true;
-                nbError.Title = "We're Sorry...";
-                nbError.Text = "Something went wrong while trying to save your test results.";
-                LogException( ex );
+                nbWarning.Visible = true;
             }
         }
 
@@ -255,41 +314,75 @@ namespace Rockweb.Plugins.com_centralaz.SpiritualGifts
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rQuestions_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            var responseItem = e.Item.DataItem as SpiritualGiftService.ResponseItem?;
-            if ( responseItem != null )
+            var questionItem = e.Item.DataItem as SpiritualGiftService.QuestionItem;
+            if ( questionItem != null )
             {
                 Literal lQuestion = e.Item.FindControl( "lQuestion" ) as Literal;
-                HiddenField hfGiftType = e.Item.FindControl( "hfGiftType" ) as HiddenField;
-                lQuestion.Text = responseItem.Value.QuestionText;
-                hfGiftType.Value = responseItem.Value.GiftScore;
+                HiddenField hfQuestionIndex = e.Item.FindControl( "hfQuestionIndex" ) as HiddenField;
+                HiddenField hfQuestionGifting = e.Item.FindControl( "hfQuestionGifting" ) as HiddenField;
+                RockRadioButtonList rblAnswer = e.Item.FindControl( "rblAnswer" ) as RockRadioButtonList;
+                hfQuestionIndex.Value = questionItem.QuestionIndex.ToString();
+                lQuestion.Text = String.Format( "<b>Question {0}:</b></br>{1}", questionItem.QuestionIndex + 1, questionItem.QuestionText );
+                hfQuestionGifting.Value = questionItem.QuestionGifting;
+                if ( questionItem.QuestionScore != null )
+                {
+                    rblAnswer.SelectedValue = questionItem.QuestionScore.ToString();
+                }
+                else
+                {
+                    rblAnswer.SelectedValue = null;
+                }
             }
         }
 
         /// <summary>
-        /// Handles the Click event of the lbRetake control.
+        /// Handles the Click event of the lbPrev control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnRetakeTest_Click( object sender, EventArgs e )
+        protected void lbPrev_Click( object sender, EventArgs e )
         {
-            btnRetakeTest.Visible = false;
-            ShowInstructions();
+            bool isFilledIn = SaveAnswers( false );
+            if ( isFilledIn )
+            {
+                int? currentStartIndex = hfStartIndex.Value.AsIntegerOrNull();
+                if ( currentStartIndex.HasValue )
+                {
+                    int newStartIndex = currentStartIndex.Value - _numberOfQuestions;
+                    if ( newStartIndex < 0 )
+                    {
+                        newStartIndex = 0;
+                    }
+                    BindRepeater( newStartIndex, newStartIndex + _numberOfQuestions );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbNext control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbNext_Click( object sender, EventArgs e )
+        {
+            bool isFilledIn = SaveAnswers( true );
+            if ( isFilledIn )
+            {
+                int? currentEndIndex = hfEndIndex.Value.AsIntegerOrNull();
+                if ( currentEndIndex.HasValue )
+                {
+                    BindRepeater( currentEndIndex.Value, currentEndIndex.Value + _numberOfQuestions );
+                }
+            }
+            else
+            {
+                nbWarning.Visible = true;
+            }
         }
 
         #endregion
 
         #region Methods
-
-        /// <summary>
-        /// Plots the graphs using the Disc score results.
-        /// </summary>
-        /// <param name="results">The results.</param>
-        private void PlotGraph( SpiritualGiftService.TestResults results )
-        {
-            // Plot the Natural graph
-            SpiritualGiftService.PlotOneGraph( giftScore_Prophecy, giftScore_Ministry, giftScore_Teaching, giftScore_Encouragement, giftScore_Giving, giftScore_Leadership, giftScore_Mercy,
-                results.Prophecy, results.Ministry, results.Teaching, results.Encouragement, results.Giving, results.Leadership, results.Mercy, 20 );
-        }
 
         /// <summary>
         /// Shows the instructions.
@@ -298,7 +391,6 @@ namespace Rockweb.Plugins.com_centralaz.SpiritualGifts
         {
             pnlInstructions.Visible = true;
             pnlQuestions.Visible = false;
-            pnlResults.Visible = false;
 
             // Resolve the text field merge fields
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, _targetPerson );
@@ -311,57 +403,127 @@ namespace Rockweb.Plugins.com_centralaz.SpiritualGifts
         }
 
         /// <summary>
-        /// Shows the results of the assessment test.
+        /// Binds the repeater.
         /// </summary>
-        /// <param name="savedScores">The saved scores.</param>
-        private void ShowResults( SpiritualGiftService.TestResults savedScores )
+        /// <param name="startIndex">The start index.</param>
+        /// <param name="endIndex">The end index.</param>
+        private void BindRepeater( int startIndex, int endIndex )
         {
-            pnlInstructions.Visible = false;
-            pnlQuestions.Visible = false;
-            pnlResults.Visible = true;
+            hfStartIndex.Value = startIndex.ToString();
+            hfEndIndex.Value = endIndex.ToString();
+            UpdatePaginationButtons( startIndex, endIndex );
+            UpdateProgressBar( startIndex, endIndex );
+            nbWarning.Visible = false;
 
-            if ( CurrentPersonId == _targetPerson.Id )
-            {
-                lPrintTip.Visible = true;
-            }
-            lHeading.Text = string.Format( "<div class='disc-heading'><h1>{0}</h1><h4>Spiritual Gift: {1}</h4></div>", _targetPerson.FullName, savedScores.Gifting );
-
-            // Show re-take test button if MinimumDaysToRetake has passed...
-            double days = GetAttributeValue( "MinimumDaysToRetake" ).AsDouble();
-            if ( savedScores.LastSaveDate.AddDays( days ) <= RockDateTime.Now )
-            {
-                btnRetakeTest.Visible = true;
-            }
-
-            PlotGraph( savedScores );
-
-            ShowExplaination( savedScores.Gifting );
-        }
-
-        /// <summary>
-        /// Shows the explaination for the given gifting as defined in one of the
-        /// DefinedValues of the Spiritual Gifts Results DefinedType.
-        /// </summary>
-        /// <param name="gifting">The gifting.</param>
-        private void ShowExplaination( string gifting )
-        {
-            var giftingValue = DefinedTypeCache.Read( com.centralaz.SpiritualGifts.SystemGuid.DefinedType.SPRITUAL_GIFTS_DEFINED_TYPE.AsGuid() ).DefinedValues.Where( v => v.Value == gifting ).FirstOrDefault();
-            if ( giftingValue != null )
-            {
-                lDescription.Text = giftingValue.Description;
-            }
-        }
-
-        /// <summary>
-        /// Binds the question data to the rQuestions repeater control.
-        /// </summary>
-        private void BindRepeater()
-        {
-            List<SpiritualGiftService.ResponseItem> responseItemList = SpiritualGiftService.GetResponses();
-            rQuestions.DataSource = responseItemList;
+            rQuestions.DataSource = QuestionList.Where( q => q.QuestionIndex >= startIndex && q.QuestionIndex < endIndex );
             rQuestions.DataBind();
         }
 
+        /// <summary>
+        /// Updates the progress bar.
+        /// </summary>
+        /// <param name="startIndex">The start index.</param>
+        private void UpdateProgressBar( int startIndex, int endIndex )
+        {
+            decimal completedQuestions = startIndex + 1;
+            decimal totalQuestions = QuestionList.Count;
+            PercentComplete = ( ( completedQuestions + 1 ) / totalQuestions ) * 100.0m;
+            lProgress.Text = String.Format( "Questions {0} - {1} of {2}", startIndex + 1, endIndex, QuestionList.Count );
+        }
+
+        /// <summary>
+        /// Updates the pagination buttons.
+        /// </summary>
+        /// <param name="startIndex">The start index.</param>
+        /// <param name="endIndex">The end index.</param>
+        private void UpdatePaginationButtons( int startIndex, int endIndex )
+        {
+            if ( startIndex <= 0 )
+            {
+                lbPrev.Visible = false;
+            }
+            else
+            {
+                lbPrev.Visible = true;
+            }
+            if ( endIndex >= QuestionList.Count - 1 )
+            {
+                lbNext.Visible = false;
+                lbFinish.Visible = true;
+            }
+            else
+            {
+                lbNext.Visible = true;
+                lbFinish.Visible = false;
+            }
+        }
+
+        /// <summary>
+        /// Saves the answers.
+        /// </summary>
+        /// <param name="isValidated">if set to <c>true</c> [is validated].</param>
+        /// <returns></returns>
+        private bool SaveAnswers( bool isValidated )
+        {
+            bool isMissingAnswer = false;
+
+            foreach ( RepeaterItem rItem in rQuestions.Items )
+            {
+                RockRadioButtonList rblAnswer = rItem.FindControl( "rblAnswer" ) as RockRadioButtonList;
+                HiddenField hfQuestionIndex = rItem.FindControl( "hfQuestionIndex" ) as HiddenField;
+                HiddenField hfQuestionGifting = rItem.FindControl( "hfQuestionGifting" ) as HiddenField;
+
+                int? selectedValue = rblAnswer.SelectedValueAsInt();
+                if ( selectedValue.HasValue )
+                {
+                    int? index = hfQuestionIndex.Value.AsIntegerOrNull();
+                    if ( index.HasValue )
+                    {
+                        try
+                        {
+                            QuestionList[index.Value].QuestionScore = selectedValue;
+                        }
+                        catch
+                        {
+
+                        }
+                    }
+                }
+                else
+                {
+                    isMissingAnswer = true;
+                }
+            }
+
+            if ( isValidated && isMissingAnswer )
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Navigates to the results page.
+        /// </summary>
+        private void NavigateToResultsPage()
+        {
+            string personKey = PageParameter( "rckipid" );
+            if ( !string.IsNullOrEmpty( personKey ) )
+            {
+                Dictionary<string, string> qryParams = new Dictionary<string, string>();
+                qryParams.Add( "rckipid", personKey );
+                NavigateToLinkedPage( "SpiritualGiftResultDetail", qryParams );
+            }
+            else
+            {
+                NavigateToLinkedPage( "SpiritualGiftResultDetail" );
+            }
+        }
+
         #endregion
+
     }
 }

@@ -13,36 +13,41 @@
                 </div>
             </div>
             <div class="panel-body">
-                <asp:Literal ID="lHeading" runat="server"></asp:Literal>
-                <ul class="discchart" style="text-align: center">
+                <asp:Literal ID="lHeading" runat="server"></asp:Literal>              
+                <ul class="spiritualchart" style="text-align: center">                 
                     <li style="height: 100%; width: 0px;"></li>
-                    <li id="giftScore_Prophecy" runat="server" class="discbar">
-                        <div class="discbar-label" style="text-transform: initial; font-size: 19px">Prophecy</div>
+                    <li id="giftScore_Prophecy" runat="server" class="spiritualbar">
+                        <div class="spiritualbar-label" style="text-transform: initial; font-size: 19px">Prophecy</div>
                     </li>
-                    <li id="giftScore_Ministry" runat="server" class="discbar">
-                        <div class="discbar-label" style="text-transform: initial; font-size: 19px">Ministry</div>
+                    <li id="giftScore_Ministry" runat="server" class="spiritualbar">                        
+                        <div class="spiritualbar-label" style="text-transform: initial; font-size: 19px">Ministry</div>
                     </li>
-                    <li id="giftScore_Teaching" runat="server" class="discbar">
-                        <div class="discbar-label" style="text-transform: initial; font-size: 19px">Teaching</div>
+                    <li id="giftScore_Teaching" runat="server" class="spiritualbar">
+                        <div class="spiritualbar-label" style="text-transform: initial; font-size: 19px">Teaching</div>
                     </li>
-                    <li id="giftScore_Encouragement" runat="server" class="discbar">
-                        <div class="discbar-label" style="text-transform: initial; font-size: 17px">Encouragement</div>
+                    <li id="giftScore_Encouragement" runat="server" class="spiritualbar">
+                        <div class="spiritualbar-label" style="text-transform: initial; font-size: 17px">Encouragement</div>
                     </li>
-                    <li id="giftScore_Giving" runat="server" class="discbar">
-                        <div class="discbar-label" style="text-transform: initial; font-size: 19px">Giving</div>
+                    <li id="giftScore_Giving" runat="server" class="spiritualbar">
+                        
+                        <div class="spiritualbar-label" style="text-transform: initial; font-size: 19px">Giving</div>
                     </li>
-                    <li id="giftScore_Leadership" runat="server" class="discbar">
-                        <div class="discbar-label" style="text-transform: initial; font-size: 19px">Leadership</div>
+                    <li id="giftScore_Leadership" runat="server" class="spiritualbar">
+                        <div class="spiritualbar-label" style="text-transform: initial; font-size: 19px">Leadership</div>
                     </li>
-                    <li id="giftScore_Mercy" runat="server" class="discbar">
-                        <div class="discbar-label" style="text-transform: initial; font-size: 19px">Mercy</div>
+                    <li id="giftScore_Mercy" runat="server" class="spiritualbar">
+                        <div class="spiritualbar-label" style="text-transform: initial; font-size: 19px">Mercy</div>
                     </li>
                 </ul>
 
                 <h3>Description</h3>
                 <asp:Literal ID="lDescription" runat="server"></asp:Literal>
 
-                <div class="disc-attribution margin-t-lg">
+                <div class="actions margin-t-lg">
+                    <asp:Button ID="btnRetakeTest" runat="server" Visible="false" Text="Retake Test" CssClass="btn btn-default" OnClick="btnRetakeTest_Click" />
+                </div>
+
+                <div class="spiritual-attribution margin-t-lg">
                     <small>Spiritual Gifts test courtesy of Jackson Snyder at <a href="http://positivepublications.com/">positivepublications.com/</a>.</small>
                 </div>
             </div>
