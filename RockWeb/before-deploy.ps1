@@ -2,7 +2,7 @@
 Import-Module WebAdministration
 
 # Get the application (web root) and the root folder
-$webroot = $env:RockSandboxRootPath
+$webroot = $env:RockRootPath
 $rootfolder = Split-Path -Parent $webroot
 
 Write-Output "Running pre-deploy script"

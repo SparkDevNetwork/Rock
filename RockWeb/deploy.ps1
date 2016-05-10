@@ -2,7 +2,7 @@
 Import-Module WebAdministration
 
 # Get the application (web root) and the root folder
-$webroot = $env:RockSandboxRootPath
+$webroot = $env:RockRootPath
 $rootfolder = Split-Path -Parent $webroot
 
 Write-Output "Running post-deploy script"
@@ -12,7 +12,7 @@ Write-Output "Web root folder: $webroot"
 Write-Output "Running script as: $env:userdomain\$env:username"
 
 # ensure that the compilation debug is false
-(Get-Content "$webroot\web.config").Replace('<compilation debug="true"', '<compilation debug="false"') | Set-Content "$webroot\web.config"
+(Get-Content "$webroot\web.config").Replace('<compilation debug="true"', '<compilation debug="false"').replace('RunJobsInIISContext" value="false"', 'RunJobsInIISContext" value="true"') | Set-Content "$webroot\web.config"
 
 # Now move your custom stuff back from the temp folder like this:
 
@@ -24,7 +24,7 @@ If (Test-Path "$rootfolder\temp\robots.txt"){
 
 # copy new connection string file
 Write-Host "Copying new web.ConnectionStrings.config to web dir"
-Copy-Item "$rootfolder\config\web.ConnectionStrings.config" $webroot -force
+Copy-Item "$rootfolder\..\web.ConnectionStrings.config" $webroot -force
 
 # start web site and app pool
 Write-Host "Starting ApplicationPool and Website"
