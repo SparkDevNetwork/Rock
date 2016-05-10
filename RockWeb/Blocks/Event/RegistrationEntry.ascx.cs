@@ -343,6 +343,9 @@ namespace RockWeb.Blocks.Event
         {
             base.OnInit( e );
 
+            // make sure that a URL with navigation history parameters is really from a browser navigation and not a Link or Refresh
+            hfAllowNavigate.Value = false.ToTrueFalse();
+
             RegisterClientScript();
         }
 
@@ -483,6 +486,8 @@ namespace RockWeb.Blocks.Event
         {
             if ( _saveNavigationHistory )
             {
+                // make sure that a URL with navigation history parameters is really from a browser navigation and not a Link or Refresh
+                hfAllowNavigate.Value = true.ToTrueFalse();
                 if ( CurrentPanel != 1 )
                 {
                     this.AddHistory( "event", string.Format( "{0},0,0", CurrentPanel ) );
@@ -512,7 +517,7 @@ namespace RockWeb.Blocks.Event
         {
             var state = e.State["event"];
 
-            if ( CurrentPanel > 0 && state != null )
+            if ( CurrentPanel > 0 && state != null && hfAllowNavigate.Value.AsBoolean() )
             {
                 string[] commands = state.Split( ',' );
 
