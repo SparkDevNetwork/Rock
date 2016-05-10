@@ -4,6 +4,7 @@
 <ContentTemplate>
 
     <asp:HiddenField ID="hfTriggerScroll" runat="server" Value="" />
+    <asp:HiddenField ID="hfAllowNavigate" runat="server" Value="" />
 
     <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
     <Rock:NotificationBox ID="nbPaymentValidation" runat="server" NotificationBoxType="Danger" Visible="false" />
