@@ -43,10 +43,10 @@ namespace Rock.Model
         public int MetricId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Label.
+        /// Gets or sets the label.
         /// </summary>
         /// <value>
-        /// The note.
+        /// The label.
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
