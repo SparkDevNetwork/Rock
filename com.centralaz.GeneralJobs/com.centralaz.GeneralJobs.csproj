@@ -69,6 +69,7 @@
     <Compile Include="Jobs\EmailToAttribute.cs" />
     <Compile Include="Jobs\MatchEmailPreference.cs" />
     <Compile Include="Jobs\EmailToWorkflow.cs" />
+    <Compile Include="Jobs\SendGroupEmail.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
