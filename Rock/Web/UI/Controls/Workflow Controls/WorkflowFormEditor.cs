@@ -231,6 +231,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _hfFormGuid );
 
             _ddlNotificationSystemEmail = new RockDropDownList();
+            _ddlNotificationSystemEmail.EnableViewState = false;
             _ddlNotificationSystemEmail.DataValueField = "Id";
             _ddlNotificationSystemEmail.DataTextField = "Title";
             _ddlNotificationSystemEmail.Label = "Notification Email";
@@ -279,6 +280,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _falActions );
 
             _ddlActionAttribute = new RockDropDownList();
+            _ddlActionAttribute.EnableViewState = false;
             _ddlActionAttribute.ID = this.ID + "_ddlActionAttribute";
             _ddlActionAttribute.Label = "Command Selected Attribute";
             _ddlActionAttribute.Help = "Optional text attribute that should be updated with the selected command label.";
