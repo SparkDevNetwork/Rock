@@ -322,17 +322,19 @@ namespace Rock.Model
 
             fullName = fullName.Trim();
 
+            var nameParts = fullName.Trim().Split( new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+
             if ( fullName.Contains( ',' ) )
             {
                 reversed = true;
 
                 // only split by comma if there is a comma present (for example if 'Smith Jones, Sally' is the search, last name would be 'Smith Jones')
-                var nameParts = fullName.Split( ',' );
-                if ( nameParts.Length >= 1 )
+                nameParts = fullName.Split( ',' ).ToList();
+                if ( nameParts.Count >= 1 )
                 {
                     lastNames.Add( nameParts[0].Trim() );
                 }
-                if ( nameParts.Length >= 2 )
+                if ( nameParts.Count >= 2 )
                 {
                     firstNames.Add( nameParts[1].Trim() );
                 }
@@ -341,7 +343,6 @@ namespace Rock.Model
             {
                 reversed = false;
 
-                var nameParts = fullName.Trim().Split( new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
                 for ( int i = 1; i < nameParts.Count; i++ )
                 {
                     firstNames.Add( nameParts.Take( i ).ToList().AsDelimited( " " ) );
@@ -398,6 +399,14 @@ namespace Rock.Model
                     qry = qry.Union( GetByFirstLastName( firstNames[i], lastNames[i], includeDeceased, includeBusinesses ) );
                 }
 
+                // always include a search for just last name using the last two parts of name search
+                if ( nameParts.Count >= 2 )
+                {
+                    var lastName = string.Join( " ", nameParts.TakeLast( 2 ) );
+
+                    qry = qry.Union( GetByLastName( lastName, includeDeceased, includeBusinesses ) );
+                }
+
                 return qry;
             }
         }
@@ -438,6 +447,25 @@ namespace Rock.Model
             }
 
             return qry;
+        }
+
+        /// <summary>
+        /// Gets the by full name ordered.
+        /// </summary>
+        /// <param name="fullName">The full name.</param>
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
+        /// <param name="allowFirstNameOnly">if set to <c>true</c> [allow first name only].</param>
+        /// <param name="reversed">if set to <c>true</c> [reversed].</param>
+        /// <returns></returns>
+        public IQueryable<Person> GetByLastName( string lastName, bool includeDeceased, bool includeBusinesses )
+        {
+            lastName = lastName.Trim();
+
+            var lastNameQry = Queryable( includeDeceased, includeBusinesses )
+                                    .Where(p => p.LastName.StartsWith( lastName ));
+
+            return lastNameQry;
         }
 
         /// <summary>
