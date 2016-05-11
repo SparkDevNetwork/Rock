@@ -1,12 +1,14 @@
 <link rel="stylesheet" href="/Styles/bootstrap-sortable.css">
 
 {% assign showPriority = false %}
+{% assign workflowPriority = action.Activity.Workflow | Attribute:'Priority' %}
+{% assign workflowDueDate = action.Activity.Workflow | Attribute:'DueDate' %}
 {% assign showDue = false %}
 {% for action in Actions %}
-  {% if action.Activity.Workflow.Priority %}
+  {% if workflowPriority %}
     {% assign showPriority = true %}
   {% endif %}
-  {% if action.Activity.Workflow.DueDate %}
+  {% if workflowDueDate %}
     {% assign showDue = true %}
   {% endif %}
 {% endfor %}
@@ -39,7 +41,7 @@
               </td>
               <td><i class='fa-fw {{ action.Activity.Workflow.WorkflowType.IconCssClass }}'></i> {{ action.Activity.Workflow.WorkflowType.Name }}</td>
               {% if showPriority %}
-                <td>{{ action.Activity.Workflow.Priority }}</td>
+                <td>{{ workflowPriority }}</td>
               {% endif %}
               {% if showDue %}
                 <td data-dateformat="M/D/YY">{{ action.Activity.Workflow.DueDate | Date:'M/d/yy' }}</td>
