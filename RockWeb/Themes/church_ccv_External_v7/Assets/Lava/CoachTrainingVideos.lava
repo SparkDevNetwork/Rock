@@ -14,16 +14,20 @@
 
 {% for item in Items %}
   {% assign itemCategory = item | Attribute:'Category' %}
-  {% if itemCategory != currentCategory %}
 
-    {% if currentCategory != '' %}
+  {% if itemCategory != currentCategory or forloop.first %}
+    {% unless forloop.first %}
     </div>
-    {% endif %}
+    {% endunless %}
 
     {% assign currentCategory = itemCategory %}
     {% assign Currentforloopindex = 0 %}
-    <a name="{{ itemCategory }}"></a>
-    <h2 class="page-header">{{ itemCategory }}</h1>
+
+    {% if itemCategory != '' %}
+      <a name="{{ itemCategory }}"></a>
+      <h2 class="page-header">{{ itemCategory }}</h1>
+    {% endif %}
+
     <div class="row margin-b-xl">
 
   {% endif %}
