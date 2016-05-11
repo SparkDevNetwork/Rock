@@ -38,7 +38,7 @@ namespace Rock.Workflow.Action
 
     [WorkflowAttribute("Person", "Workflow attribute that contains the person to update.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [CustomDropdownListField("Property", "The property to update.", "Title^Title (Defined Value),FirstName^First Name (Text),NickName^Nick Name (Text),MiddleName^Middle Name (Text),LastName^Last Name (Text),Suffix^Suffix (Defined Value),Birthdate^Birthdate (Date/Text),Photo^Photo (Binary File/Integer of Binary File),Gender^Gender (Text or Integer [1=Male 2=Female 0=Unknown]),MaritalStatus^Marital Status (Defined Value),AnniversaryDate^Anniversary Date (Date),Email^Email (Text),IsEmailActive^IsEmailActive (Boolean),EmailNote^EmailNote (Text),GraduationYear^Graduation Year (Integer),RecordStatus^Record Status (Defined Value),RecordStatusReason^Record Status Reason (Defined Value),InactiveReasonNote^Inactive Reason Note (Text),ConnectionStatus^Connection Status (Defined Value),IsDeceased^IsDeceased (Boolean),SystemNote^System Note (Text),", true, order: 1 )]
+    [CustomDropdownListField("Property", "The property to update.", "Title^Title (Defined Value),FirstName^First Name (Text),NickName^Nick Name (Text),MiddleName^Middle Name (Text),LastName^Last Name (Text),Suffix^Suffix (Defined Value),Birthdate^Birthdate (Date/Text),Photo^Photo (Binary File/Integer of Binary File),Gender^Gender (Text or Integer [1=Male 2=Female 0=Unknown]),MaritalStatus^Marital Status (Defined Value),AnniversaryDate^Anniversary Date (Date),Email^Email (Text),EmailPreference^Email Preference (Text or Integer [0=EmailAllowed 1=NoMassEmails 2=DoNotEmail]),IsEmailActive^Is Email Active (Boolean),EmailNote^Email Note (Text),GraduationYear^Graduation Year (Integer),RecordStatus^Record Status (Defined Value),RecordStatusReason^Inactive Record Status Reason (Defined Value),InactiveReasonNote^Inactive Reason Note (Text),ConnectionStatus^Connection Status (Defined Value),IsDeceased^IsDeceased (Boolean),SystemNote^System Note (Text),", true, order: 1 )]
     [WorkflowTextOrAttribute( "Value", "Attribute Value", "The value or attribute value to set the person property to. <span class='tip tip-lava'></span>", false, "", "", 2, "Value" )]
     [BooleanField("Ignore Blank Values", "If a value is blank should it be ignored, or should it be used to wipe out the current value. This is helpful with working with defined values that can not be found.", true, order: 3)]
     public class PersonPropertyUpdate : ActionComponent
@@ -271,38 +271,115 @@ namespace Rock.Workflow.Action
                     }
                 case "IsEmailActive":
                     {
+                        var updateAsBoolean = updateValue.AsBooleanOrNull();
+
+                        if ( ignoreBlanks == false || updateAsBoolean.HasValue )
+                        {
+                            if ( !updateAsBoolean.HasValue )
+                            {
+                                updateAsBoolean = true; // default to true
+                            }
+                            person.IsEmailActive = updateAsBoolean.Value;
+                        }
                         break;
                     }
                 case "EmailNote":
                     {
+                        if ( ignoreBlanks == false || !string.IsNullOrWhiteSpace( updateValue ) )
+                        {
+                            person.EmailNote = updateValue;
+                            rockContext.SaveChanges();
+                        }
+                        break;
+                    }
+                case "EmailPreference":
+                    {
+                        var emailPreference = updateValue.ConvertToEnumOrNull<EmailPreference>();
+                        if ( ignoreBlanks == false || emailPreference.HasValue )
+                        {
+                            if ( !emailPreference.HasValue )
+                            {
+                                emailPreference = EmailPreference.EmailAllowed;
+                            }
+                            person.EmailPreference = emailPreference.Value;
+                            rockContext.SaveChanges();
+                        }
                         break;
                     }
                 case "GraduationYear":
                     {
+                        var updateAsInt = updateValue.AsIntegerOrNull();
+
+                        if ( ignoreBlanks == false || updateAsInt.HasValue )
+                        {
+                            person.GraduationYear = updateAsInt;
+                        }
+
                         break;
                     }
                 case "RecordStatus":
                     {
+                        var definedValueId = GetDefinedValueId( updateValue, SystemGuid.DefinedType.PERSON_RECORD_STATUS.AsGuid(), rockContext );
+
+                        if ( ignoreBlanks == false || definedValueId.HasValue )
+                        {
+                            person.RecordStatusValueId = definedValueId;
+                            rockContext.SaveChanges();
+                        }
                         break;
                     }
                 case "RecordStatusReason":
                     {
+                        var definedValueId = GetDefinedValueId( updateValue, SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid(), rockContext );
+
+                        if ( ignoreBlanks == false || definedValueId.HasValue )
+                        {
+                            person.RecordStatusReasonValueId = definedValueId;
+                            rockContext.SaveChanges();
+                        }
                         break;
                     }
                 case "InactiveReasonNote":
                     {
+                        if ( ignoreBlanks == false || !string.IsNullOrWhiteSpace( updateValue ) )
+                        {
+                            person.InactiveReasonNote = updateValue;
+                            rockContext.SaveChanges();
+                        }
                         break;
                     }
                 case "ConnectionStatus":
                     {
+                        var definedValueId = GetDefinedValueId( updateValue, SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid(), rockContext );
+
+                        if ( ignoreBlanks == false || definedValueId.HasValue )
+                        {
+                            person.ConnectionStatusValueId = definedValueId;
+                            rockContext.SaveChanges();
+                        }
                         break;
                     }
                 case "IsDeceased":
                     {
+                        var updateAsBoolean = updateValue.AsBooleanOrNull();
+
+                        if ( ignoreBlanks == false || updateAsBoolean.HasValue )
+                        {
+                            if ( !updateAsBoolean.HasValue )
+                            {
+                                updateAsBoolean = false; // default to false
+                            }
+                            person.IsDeceased = updateAsBoolean.Value;
+                        }
                         break;
                     }
                 case "SystemNote":
                     {
+                        if ( ignoreBlanks == false || !string.IsNullOrWhiteSpace( updateValue ) )
+                        {
+                            person.SystemNote = updateValue;
+                            rockContext.SaveChanges();
+                        }
                         break;
                     }
             }
@@ -367,6 +444,7 @@ Anniversary Date, Date
 Email, Text
 IsEmailActive, Boolean
 EmailNote, Text
+Email Preference, Text or Integer (0=EmailAllowed 1=NoMassEmails 2=DoNotEmail)
 Graduation Year, Integer
 Record Status, Defined Value
 Record Status Reason, Defined Value
@@ -374,6 +452,7 @@ Inactive Reason Note, Text
 Connection Status, Defined Value
 IsDeceased, Boolean
 System Note, Text
+
 
     */
     }
