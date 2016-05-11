@@ -32,18 +32,17 @@ using Rock.Communication;
 
 namespace com.centralaz.GeneralJobs.Jobs
 {
-
     /// <summary>
-    /// This job will send a specified email template to all active group members of the specified group, with the option to also send it to members of descendant groups.
+    /// This job will send a specified email template to all active group members of the specified group, with the option to also send it to members of descendant groups. If a person is a member of multiple groups in the tree they will recieve an email for each group.
     /// </summary>
-    [CommunicationTemplateField( "Template", "The email template that will be sent.", true, "" )]
+    [SystemEmailField( "System Email", "The email template that will be sent.", true, "" )]
     [GroupField( "Group", "The group the email will be sent to." )]
     [BooleanField( "Send To Descendant Groups", "Determines if the email will be sent to descendant groups." )]
     [DisallowConcurrentExecution]
     public class SendGroupEmail : IJob
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="SendCommunications"/> class.
+        /// Initializes a new instance of the <see cref="SendGroupEmail"/> class.
         /// </summary>
         public SendGroupEmail()
         {
@@ -56,7 +55,7 @@ namespace com.centralaz.GeneralJobs.Jobs
         public virtual void Execute( IJobExecutionContext context )
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
-            var emailTemplateGuid = dataMap.Get( "Template" ).ToString().AsGuid();
+            var emailTemplateGuid = dataMap.Get( "SystemEmail" ).ToString().AsGuid();
             var groupGuid = dataMap.Get( "Group" ).ToString().AsGuid();
             var sendToDescendants = dataMap.Get( "SendToDescendantGroups" ).ToString().AsBoolean();
 
@@ -91,7 +90,7 @@ namespace com.centralaz.GeneralJobs.Jobs
         }
 
         /// <summary>
-        /// Gets the groups.
+        /// Gets the group ids.
         /// </summary>
         /// <param name="groupIds">The group ids.</param>
         /// <param name="sendToDescendants">if set to <c>true</c> [send to descendants].</param>
