@@ -4,7 +4,7 @@
     <div class="margin-b-md">
       <img src="{{ item | Attribute: 'Image', 'Url' }}&width=560" alt="{{ item.Title }}">
     </div>
-    <p class="lead">{{ item.Summary }}</p>
+    <p class="lead">{{ item | Attribute:'Summary' }}</p>
     {{ item.Content }}
   {% endfor %}
 </div>

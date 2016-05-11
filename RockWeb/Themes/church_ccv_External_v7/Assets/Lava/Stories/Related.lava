@@ -15,7 +15,7 @@
       {% for item in Items limit: 2 %}
 
       <div class="col-sm-6">
-        <a class="storythumb storythumb-link" href="{{ detailPage }}/{{ item.ShortUrl }}" style="background-image: url('{{ item | Attribute: 'Image', 'Url' }}&width=528');">
+        <a class="storythumb storythumb-link" href="{{ detailPage }}/{{ item | Attribute:'ShortUrl' }}" style="background-image: url('{{ item | Attribute: 'Image', 'Url' }}&width=528');">
           <div class="storythumb-title">
             <span>{{ item.Title }}</span>
           </div>

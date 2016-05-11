@@ -5,7 +5,7 @@
         <img src="{{ item | Attribute: 'Image', 'Url' }}&width=525&height=295&mode=crop&scale=both" alt="{{ item.Title }}">
         <div class="caption">
           <h4>{{ item.Title }}{% comment %} <small>{{ item.StartDateTime | Date:'M/d/yyyy' }}</small>{% endcomment %}</h4>
-          <p>{{ item.Summary }}</p>
+          <p>{{ item | Attribute:'Summary' }}</p>
           <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">Read &rarr;</a>
         </div>
       </div>
