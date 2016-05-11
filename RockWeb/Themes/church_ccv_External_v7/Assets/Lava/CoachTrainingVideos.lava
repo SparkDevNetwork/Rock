@@ -10,10 +10,10 @@
 
 {% assign currentCategory = '' %}
 {% assign Currentforloopindex = 0 %}
-{% assign itemCategory = item | Attribute:'Category' %}
+
 
 {% for item in Items %}
-
+  {% assign itemCategory = item | Attribute:'Category' %}
   {% if itemCategory != currentCategory %}
 
     {% if currentCategory != '' %}
