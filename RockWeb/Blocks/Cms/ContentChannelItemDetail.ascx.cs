@@ -409,6 +409,9 @@ namespace RockWeb.Blocks.Cms
                 lTitle.Text = title.FormatAsHtmlTitle();
 
                 hlContentChannel.Text = contentItem.ContentChannel.Name;
+
+                hlStatus.Visible = contentItem.ContentChannel.RequiresApproval;
+
                 hlStatus.Text = contentItem.Status.ConvertToString();
 
                 hlStatus.LabelType = LabelType.Default;
