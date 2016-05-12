@@ -8,8 +8,9 @@
         $(".js-settings-toggle").on("click", function () {
             $('.js-settings-panel').slideToggle();
         });
-    });
 
+        $('.js-date-tooltip').tooltip();
+    });
 </script>
 
 <style>
@@ -77,7 +78,9 @@
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-road"></i> Steps Taken</h1>
                 <div class="pull-right">
-                    <Rock:HighlightLabel ID="hlDate" runat="server" CssClass="js-settings-toggle cursor-pointer" />
+                    <div class="js-date-tooltip" data-toggle="tooltip" data-placement="top" title="Click to change date range.">
+                        <Rock:HighlightLabel ID="hlDate" runat="server" CssClass="js-settings-toggle cursor-pointer" />
+                    </div>
                 </div>
             </div>
             <div class="panel-body">
@@ -93,21 +96,21 @@
                 </div>
 
                 <ul class="nav nav-pills margin-b-md">
-                    <li id="liCampus" runat="server" class="active">
-                        <asp:LinkButton ID="lbCampus" runat="server" Text="Campus" OnClick="lbTab_Click" />
+                    <li id="liAdults" runat="server" class="active">
+                        <asp:LinkButton ID="lbAdults" runat="server" Text="Adults" OnClick="lbTab_Click" />
                     </li>
                     <li id="liPastor" runat="server">
                         <asp:LinkButton ID="lbPastor" runat="server" Text="Pastor" OnClick="lbTab_Click" />
                     </li>
-                    <li id="liAdults" runat="server" >
-                        <asp:LinkButton ID="lbAdults" runat="server" Text="Adults" OnClick="lbTab_Click" />
+                    <li id="liTotals" runat="server" >
+                        <asp:LinkButton ID="lbTotals" runat="server" Text="Totals" OnClick="lbTab_Click" />
                     </li>
                     <li id="liStepDetails" runat="server">
                         <asp:LinkButton ID="lbStepDetails" runat="server" Text="Step Details" OnClick="lbTab_Click" />
                     </li>
                 </ul>
 
-                <asp:Panel ID="pnlCampus" runat="server">
+                <asp:Panel ID="pnlAdults" runat="server">
                     <div class="row">
                         <div class="col-md-6">
                             <h2><asp:Literal ID="lCampusCampus" runat="server" Text="All Campuses" /></h2>
@@ -169,7 +172,7 @@
                     </div>
                 </asp:Panel>
 
-                <asp:Panel ID="pnlAdults" runat="server" Visible="false">
+                <asp:Panel ID="pnlTotals" runat="server" Visible="false">
                     <div class="row">
                         <div class="col-md-6">
                             <h2><asp:Literal ID="lAdultsCampus" runat="server" Text="All Campuses" /></h2>

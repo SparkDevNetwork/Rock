@@ -126,6 +126,8 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 LoadPastors();
 
                 ShowCampus();
+
+                ViewState["ActiveTab"] = "lbAdults";
             }
         }
 
@@ -452,14 +454,14 @@ namespace RockWeb.Plugins.church_ccv.Steps
         /// </summary>
         private void ShowTab()
         {
-            liCampus.RemoveCssClass( "active" );
-            pnlCampus.Visible = false;
+            liAdults.RemoveCssClass( "active" );
+            pnlAdults.Visible = false;
 
             liPastor.RemoveCssClass( "active" );
             pnlPastor.Visible = false;
 
-            liAdults.RemoveCssClass( "active" );
-            pnlAdults.Visible = false;
+            liTotals.RemoveCssClass( "active" );
+            pnlTotals.Visible = false;
 
             liStepDetails.RemoveCssClass( "active" );
             pnlStepDetails.Visible = false;
@@ -474,10 +476,10 @@ namespace RockWeb.Plugins.church_ccv.Steps
                         break;
                     }
 
-                case "lbAdults":
+                case "lbTotals":
                     {
-                        liAdults.AddCssClass( "active" );
-                        pnlAdults.Visible = true;
+                        liTotals.AddCssClass( "active" );
+                        pnlTotals.Visible = true;
                         ShowAdults();
                         break;
                     }
@@ -492,8 +494,8 @@ namespace RockWeb.Plugins.church_ccv.Steps
 
                 default:
                     {
-                        liCampus.AddCssClass( "active" );
-                        pnlCampus.Visible = true;
+                        liAdults.AddCssClass( "active" );
+                        pnlAdults.Visible = true;
                         ShowCampus();
                         break;
                     }
@@ -508,6 +510,10 @@ namespace RockWeb.Plugins.church_ccv.Steps
             cpDetailCampus.Campuses = CampusCache.All();
             cpCampusCampus.Campuses = CampusCache.All();
             cpAdultsCampus.Campuses = CampusCache.All();
+
+            cpDetailCampus.SelectedItem.Text = "All Campuses";
+            cpCampusCampus.SelectedItem.Text = "All Campuses";
+            cpAdultsCampus.SelectedItem.Text = "All Campuses";
         }
 
         /// <summary>
@@ -657,17 +663,33 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 // join to datamart
                 decimal titheThreshold = GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_TITHE_THRESHOLD ).AsDecimal();
 
-                var datamartQry = new DatamartPersonService( rockContext ).Queryable().AsNoTracking();
+                // let the unholiness begin as we join to the datamart person and datamart neighborhood tables to find the pastor
+                var datamartNeighborhoodQry = new DatamartNeighborhoodService( rockContext ).Queryable();
+                var datamartQry = new DatamartPersonService( rockContext ).Queryable().AsNoTracking()
+                                            .Join( datamartNeighborhoodQry,
+                                                    x => x.NeighborhoodId,
+                                                    y => y.NeighborhoodId,
+                                                    ( x, y ) => new { Person = x, Neighborhood = y } );
+
+
+
+
+
+
+                //var datamartQry = new DatamartPersonService( rockContext ).Queryable().AsNoTracking();
+
+
+
 
                 var joinedQuery = query.GroupJoin(
                         datamartQry,
                         s => s.PersonAlias.PersonId,
-                        d => d.PersonId,
+                        d => d.Person.PersonId,
                         ( s, d ) => new { s, d }
                     )
                     .SelectMany( x => x.d.DefaultIfEmpty(), ( g, u ) => new { Step = g.s, Datamart = u } );
 
-                var results = joinedQuery.Where(s => s.Datamart.FamilyRole == "Adult")
+                var results = joinedQuery.Where(s => s.Datamart.Person.FamilyRole == "Adult")
                                 .Select( s =>
                                     new {
                                         Id = s.Step.Id,
@@ -681,21 +703,23 @@ namespace RockWeb.Plugins.church_ccv.Steps
                                         LastName = s.Step.PersonAlias.Person.LastName,
                                         FullName = s.Step.PersonAlias.Person.LastName + ", " + s.Step.PersonAlias.Person.NickName,
                                         Campus = s.Step.Campus.Name,
-                                        Address = s.Datamart.Address,
-                                        State = s.Datamart.State, 
-                                        City = s.Datamart.City,
-                                        PostalCode = s.Datamart.PostalCode,
-                                        Email = s.Datamart.Email,
-                                        ConnectionStatus = s.Datamart.ConnectionStatusName,
-                                        FamilyRole = s.Datamart.FamilyRole,
-                                        FirstVisitDate = s.Datamart.FirstVisitDate, 
-                                        BaptismDate = s.Datamart.BaptismDate, 
-                                        StartingPointDate = s.Datamart.StartingPointDate, 
-                                        InNeighborhoodGroup = s.Datamart.InNeighborhoodGroup, 
-                                        IsServing = s.Datamart.IsServing,
-                                        IsEra = s.Datamart.IsEra,
-                                        IsCoaching = s.Datamart.IsCoaching,
-                                        IsGiving = (s.Datamart.GivingLast12Months != null) ? (s.Datamart.GivingLast12Months.Value > titheThreshold) : false
+                                        Address = s.Datamart.Person.Address,
+                                        State = s.Datamart.Person.State, 
+                                        City = s.Datamart.Person.City,
+                                        PostalCode = s.Datamart.Person.PostalCode,
+                                        Email = s.Datamart.Person.Email,
+                                        ConnectionStatus = s.Datamart.Person.ConnectionStatusName,
+                                        FamilyRole = s.Datamart.Person.FamilyRole,
+                                        FirstVisitDate = s.Datamart.Person.FirstVisitDate, 
+                                        BaptismDate = s.Datamart.Person.BaptismDate, 
+                                        StartingPointDate = s.Datamart.Person.StartingPointDate, 
+                                        InNeighborhoodGroup = s.Datamart.Person.InNeighborhoodGroup, 
+                                        IsServing = s.Datamart.Person.IsServing,
+                                        IsEra = s.Datamart.Person.IsEra,
+                                        IsCoaching = s.Datamart.Person.IsCoaching,
+                                        IsGiving = (s.Datamart.Person.GivingLast12Months != null) ? (s.Datamart.Person.GivingLast12Months.Value > titheThreshold) : false,
+                                        Neighborhood = s.Datamart.Neighborhood.NeighborhoodName,
+                                        AssociatePastor = s.Datamart.Neighborhood.NeighborhoodPastorName
                                     }
                 );
 
