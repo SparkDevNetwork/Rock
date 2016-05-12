@@ -1,6 +1,6 @@
 <header>
 
-    <a class="logo" href="~/page/1"><span class="sr-only">{{ GlobalAttribute.OrganizationName }}</span></a>
+    <a class="logo" href="~/page/1"><span class="sr-only">{{ GlobalAttribute | Attribute:'OrganizationName' }}</span></a>
 
     <section>
         <p class="tagline">CCV is one church with many locations</p>
