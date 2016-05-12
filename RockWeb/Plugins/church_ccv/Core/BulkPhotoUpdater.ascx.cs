@@ -44,17 +44,16 @@ namespace RockWeb.Plugins.church_ccv.Core
             }
         }
 
-        protected int? CurrentPhotoId
+        protected int? CurrentPhotoPersonId
         {
             get
             {
-                object currentPhotoId = ViewState["CurrentPhotoId"];
-                return currentPhotoId != null ? (int)currentPhotoId : 0;
+                return ViewState["CurrentPhotoPersonId"] as int? ?? 0;
             }
 
             set
             {
-                ViewState["CurrentPhotoId"] = value;
+                ViewState["CurrentPhotoPersonId"] = value;
             }
         }
 
@@ -101,7 +100,7 @@ namespace RockWeb.Plugins.church_ccv.Core
 
                     UpdatePhotoList();
 
-                    ShowDetail( hfPhotoIds.Value.SplitDelimitedValues().FirstOrDefault().AsIntegerOrNull() );
+                    ShowPersonDetail( hfPersonIds.Value.SplitDelimitedValues().FirstOrDefault().AsIntegerOrNull() );
                 }
             }
             else
@@ -119,32 +118,31 @@ namespace RockWeb.Plugins.church_ccv.Core
         /// <summary>
         /// Shows the detail page.
         /// </summary>
-        protected void ShowDetail( int? photoId )
+        protected void ShowPersonDetail( int? personId )
         {
-            CurrentPhotoId = photoId;
+            CurrentPhotoPersonId = personId;
 
-            if ( CurrentPhotoId != null && CurrentPhotoId != 0 )
+            if ( CurrentPhotoPersonId != null && CurrentPhotoPersonId != 0 && personId.HasValue )
             {
-                imgPhoto.BinaryFileId = photoId;
-
                 var rockContext = new RockContext();
-                var binaryFileService = new BinaryFileService( rockContext );
+
                 var personService = new PersonService( rockContext );
+                var person = personService.Get( personId.Value );
 
                 lProgressBar.Text = string.Format(
                             @"<span class='label label-info'>{0} of {1}</span>",
                            SkipCounter + 1,
-                           hfPhotoIds.Value.SplitDelimitedValues().Count() );
+                           hfPersonIds.Value.SplitDelimitedValues().Count() );
 
                 // Get photo data so we can see dimensions
-                var photoData = binaryFileService.Queryable().Where( b => b.Id == photoId ).FirstOrDefault();
-                UpdateDetails( photoData );
+                int? photoId = null;
+                if ( person != null && person.PhotoId.HasValue )
+                {
+                    photoId = person.PhotoId.Value;
+                }
 
-                var person = personService.Queryable()
-                        .Where( p => p.PhotoId == photoId )
-                        .FirstOrDefault();
+                UpdatePhotoDetails( photoId );
 
-                imgPhoto.Label = string.Empty;
                 if ( person != null )
                 {
                     lName.Text = string.Format( "<span class='first-word'>{0}</span> {1}", person.NickName, person.LastName );
@@ -165,10 +163,25 @@ namespace RockWeb.Plugins.church_ccv.Core
         }
 
         /// <summary>
+        /// Updates the photo details.
+        /// </summary>
+        /// <param name="photoId">The photo identifier.</param>
+        private void UpdatePhotoDetails( int? photoId )
+        {
+            imgPhoto.BinaryFileId = photoId;
+            var rockContext = new RockContext();
+            var binaryFileService = new BinaryFileService( rockContext );
+            var photoData = binaryFileService.Queryable().Where( b => b.Id == photoId ).FirstOrDefault();
+            UpdatePhotoDetails( photoData );
+
+            imgPhoto.Label = string.Empty;
+        }
+
+        /// <summary>
         /// Updates the details.
         /// </summary>
         /// <param name="photoData">The photo data.</param>
-        private void UpdateDetails( BinaryFile photoData )
+        private void UpdatePhotoDetails( BinaryFile photoData )
         {
             var photoDateTime = photoData.ModifiedDateTime ?? photoData.CreatedDateTime;
             if ( photoDateTime.HasValue )
@@ -264,7 +277,7 @@ namespace RockWeb.Plugins.church_ccv.Core
             }
 
             // get a list of person photos
-            var photoIds = personService
+            var qryPerson = personService
                 .Queryable().AsNoTracking()
                 .Where( p => p.PhotoId != null )
                 .Where( p => !processedPeople.Contains( p.Id ) );
@@ -272,15 +285,15 @@ namespace RockWeb.Plugins.church_ccv.Core
             // if data view is selected, then filter the results
             if ( dataViewPersonIds.Any() || ( !dataViewPersonIds.Any() && dataViewId.HasValue ) )
             {
-                photoIds = photoIds.Where( p => dataViewPersonIds.Contains( p.Id ) );
+                qryPerson = qryPerson.Where( p => dataViewPersonIds.Contains( p.Id ) );
             }
 
-            var photoIdList = photoIds.Select( p => p.PhotoId ).ToList();
-            hfPhotoIds.Value = photoIdList.AsDelimited( "," );
+            var personIdList = qryPerson.Select( p => p.Id ).ToList();
+            hfPersonIds.Value = personIdList.AsDelimited( "," );
 
             SkipCounter = 0;
 
-            ShowDetail( hfPhotoIds.Value.SplitDelimitedValues().FirstOrDefault().AsIntegerOrNull() );
+            ShowPersonDetail( hfPersonIds.Value.SplitDelimitedValues().FirstOrDefault().AsIntegerOrNull() );
         }
 
         #endregion
@@ -294,21 +307,19 @@ namespace RockWeb.Plugins.church_ccv.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            // todo
             RockContext rockContext = new RockContext();
             PersonService personService = new PersonService( rockContext );
 
             var person = personService.Queryable()
-                    .Where( p => p.PhotoId == CurrentPhotoId )
+                    .Where( p => p.Id == CurrentPhotoPersonId )
                     .FirstOrDefault();
 
             // set photo processed attribute so we know that this photo is done
-            person.LoadAttributes();
-            person.SetAttributeValue( AttributeCache.Read( _photoProcessedAttribute.Value ).Key, "True" );
-            person.SaveAttributeValues( rockContext );
+            Helper.SaveAttributeValue( person, AttributeCache.Read( _photoProcessedAttribute.Value ), "True", rockContext );
 
             if ( person.PhotoId != imgPhoto.BinaryFileId )
             {
+                // note Person PreSave changes ensures that BinaryPhoto.IsTemporary is set to False
                 person.PhotoId = imgPhoto.BinaryFileId;
             }
 
@@ -333,7 +344,7 @@ namespace RockWeb.Plugins.church_ccv.Core
             }
 
             SkipCounter += 1;
-            ShowDetail( hfPhotoIds.Value.SplitDelimitedValues().Skip( SkipCounter ).FirstOrDefault().AsIntegerOrNull() );
+            ShowPersonDetail( hfPersonIds.Value.SplitDelimitedValues().Skip( SkipCounter ).FirstOrDefault().AsIntegerOrNull() );
         }
 
         /// <summary>
@@ -345,7 +356,7 @@ namespace RockWeb.Plugins.church_ccv.Core
         {
             SkipCounter += 1;
 
-            ShowDetail( hfPhotoIds.Value.SplitDelimitedValues().Skip( SkipCounter ).FirstOrDefault().AsIntegerOrNull() );
+            ShowPersonDetail( hfPersonIds.Value.SplitDelimitedValues().Skip( SkipCounter ).FirstOrDefault().AsIntegerOrNull() );
         }
 
         /// <summary>
@@ -376,7 +387,7 @@ namespace RockWeb.Plugins.church_ccv.Core
                 // Get photo data so we can see dimensions
                 var photoData = binaryFileService.Get( imgPhoto.BinaryFileId.Value );
 
-                UpdateDetails( photoData );
+                UpdatePhotoDetails( photoData );
             }
         }
 
@@ -387,10 +398,50 @@ namespace RockWeb.Plugins.church_ccv.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            ShowDetail( hfPhotoIds.Value.SplitDelimitedValues().Skip( SkipCounter ).FirstOrDefault().AsIntegerOrNull() );
+            ShowPersonDetail( hfPersonIds.Value.SplitDelimitedValues().Skip( SkipCounter ).FirstOrDefault().AsIntegerOrNull() );
         }
 
         #endregion
+
+        /// <summary>
+        /// Gets the resized photo.
+        /// </summary>
+        /// <param name="photoData">The photo data.</param>
+        /// <param name="settings">The settings.</param>
+        /// <returns></returns>
+        private static int GetResizedPhotoId( int photoId, ResizeSettings settings )
+        {
+            var rockContext = new RockContext();
+            var binaryFileService = new BinaryFileService( rockContext );
+            var photoData = binaryFileService.Get( photoId );
+
+            // ImageResizer is limited to 3600 on resize
+            if ( settings.MaxWidth > 3600 || settings.MaxWidth < 100 )
+            {
+                settings.MaxWidth = 3600;
+            }
+
+            int resizedPhotoId = 0;
+
+            using ( MemoryStream resizedStream = new MemoryStream() )
+            {
+                ImageBuilder.Current.Build( photoData.ContentStream, resizedStream, settings );
+
+                var resizedPhotoData = new BinaryFile();
+                resizedPhotoData.ContentStream = resizedStream;
+                resizedPhotoData.BinaryFileTypeId = photoData.BinaryFileTypeId;
+                resizedPhotoData.FileName = photoData.FileName;
+                resizedPhotoData.MimeType = photoData.MimeType;
+                resizedPhotoData.IsTemporary = true;
+
+                binaryFileService.Add( resizedPhotoData );
+                rockContext.SaveChanges();
+
+                resizedPhotoId = resizedPhotoData.Id;
+            }
+
+            return resizedPhotoId;
+        }
 
         /// <summary>
         /// Handles the Click event of the btnShrink control.
@@ -399,32 +450,23 @@ namespace RockWeb.Plugins.church_ccv.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnShrink_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
-            var binaryFileService = new BinaryFileService( rockContext );
+            ResizeSettings settings = new ResizeSettings();
+            settings.MaxWidth = nbShrinkWidth.Text.AsIntegerOrNull() ?? 3600;
+            var resizedPhotoId = GetResizedPhotoId( imgPhoto.BinaryFileId.Value, settings );
+            UpdatePhotoDetails( resizedPhotoId );
+        }
 
-            // Get photo data
-            var photoData = binaryFileService.Get( imgPhoto.BinaryFileId.Value );
-
-            using ( System.Drawing.Image image = System.Drawing.Image.FromStream( photoData.ContentStream ) )
-            {
-                ResizeSettings settings = new ResizeSettings();
-                settings.MaxWidth = nbShrinkWidth.Text.AsIntegerOrNull() ?? 3600;
-
-                // ImageResizer is limited to 3600 on resize
-                settings.MaxHeight = 3600;
-                if ( settings.MaxWidth > 3600 )
-                {
-                    settings.MaxWidth = 3600;
-                }
-
-                MemoryStream resizedStream = new MemoryStream();
-
-                ImageBuilder.Current.Build( photoData.ContentStream, resizedStream, settings );
-                photoData.ContentStream = resizedStream;
-                rockContext.SaveChanges();
-
-                ShowDetail( imgPhoto.BinaryFileId.Value );
-            }
+        /// <summary>
+        /// Handles the Click event of the btnRotate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnRotate_Click( object sender, EventArgs e )
+        {
+            ResizeSettings settings = new ResizeSettings();
+            settings.Rotate = 90;
+            var resizedPhotoId = GetResizedPhotoId( imgPhoto.BinaryFileId.Value, settings );
+            UpdatePhotoDetails( resizedPhotoId );
         }
     }
 }

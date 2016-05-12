@@ -6,7 +6,7 @@
         <Rock:NotificationBox ID="nbConfigurationWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
 
         <asp:Panel ID="pnlView" runat="server">
-            <asp:HiddenField ID="hfPhotoIds" runat="server" />
+            <asp:HiddenField ID="hfPersonIds" runat="server" />
 
             <div class="panel panel-block">
                 <div class="panel-heading">
@@ -26,7 +26,14 @@
 
                     <asp:Panel ID="pnlDetails" runat="server">
                         <div class="col-md-3">
+                            
                             <Rock:ImageEditor ID="imgPhoto" runat="server" Label="Photo" BinaryFileTypeGuid="03BD8476-8A9F-4078-B628-5B538F967AFC" />
+                            <div class="form-inline margin-t-md">
+                                <asp:LinkButton ID="btnRotate" runat="server" CssClass="btn btn-action btn-sm" OnClick="btnRotate_Click" ><i class="fa fa-repeat" title="rotate"></i></asp:LinkButton>
+                                <asp:LinkButton ID="btnShrink" runat="server" CssClass="btn btn-action btn-sm" Text="Shrink" OnClick="btnShrink_Click" />
+                                <Rock:NumberBox ID="nbShrinkWidth" AppendText="px" runat="server" Value="1000" Maximum="1000" Minimum="250" CssClass="input-width-md" />
+                            </div>
+                            
                             <Rock:RockLiteral ID="lPhotoDate" runat="server" Label="Photo Date/Time" />
                         </div>
                         <div class="col-md-9">
@@ -34,13 +41,10 @@
                             <asp:Literal ID="lDimenions" runat="server" />
                             <asp:Literal ID="lSizeCheck" runat="server" />
                             <asp:Literal ID="lByteSizeCheck" runat="server" />
-                            <div class="form-inline margin-t-md">
-                                <asp:LinkButton ID="btnShrink" runat="server" CssClass="btn btn-action btn-xs" Text="Shrink Photo" OnClick="btnShrink_Click" />
-                                <Rock:NumberBox ID="nbShrinkWidth" AppendText="px" runat="server" Value="1000" Maximum="1000" Minimum="250" CssClass="btn btn-xs input-width-md" />
-                            </div>
+                            
                             <ul class="list-unstyled margin-t-sm">
                                 <li><asp:Literal ID="lGender" runat="server" /></li>
-                                <li<><asp:Literal ID="lAge" runat="server" /></li>
+                                <li><asp:Literal ID="lAge" runat="server" /></li>
                                 <li><asp:Literal ID="lConnectionStatus" runat="server" /></li>                            
                             </ul>
                         </div>
@@ -52,6 +56,13 @@
                 </div>
             </div>
         </asp:Panel>
-        
+        <script>
+            $(document).ready(function () {
+                Sys.Application.add_load(function () {
+                    // hide the green saved status in the image editor
+                    $("span[id$='_lSaveStatus']").hide();
+                })
+            });
+        </script>
     </ContentTemplate>
 </asp:UpdatePanel>
