@@ -20,10 +20,12 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
+using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Field;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -45,16 +47,16 @@ namespace RockWeb.Blocks.Reporting
         private Dictionary<int, Dictionary<int, string>> _entityTypeEntityNameLookup;
 
         /// <summary>
-        /// Gets the entity preference key.
+        /// Gets the entity type entity preference key.
         /// </summary>
         /// <value>
-        /// The entity preference key.
+        /// The entity type entity preference key.
         /// </value>
-        private string EntityPreferenceKey
+        private string EntityTypeEntityPreferenceKey
         {
             get
             {
-                return string.Format( "EntityForMetric:{0}", hfMetricId.Value );
+                return string.Format( "EntityTypeEntityForMetric:{0}", hfMetricId.Value );
             }
         }
 
@@ -93,6 +95,13 @@ namespace RockWeb.Blocks.Reporting
             {
                 SetHiddenFieldValues();
                 this.Visible = hfMetricId.Value.AsIntegerOrNull().HasValue;
+            }
+
+            CreateDynamicControls( hfMetricId.Value.AsIntegerOrNull() );
+            CreateEntityValueLookups( hfMetricId.Value.AsIntegerOrNull() );
+
+            if ( !Page.IsPostBack )
+            {
                 BindFilter();
                 BindGrid();
             }
@@ -119,6 +128,65 @@ namespace RockWeb.Blocks.Reporting
             ddlGoalMeasure.SelectedValue = gfMetricValues.GetUserPreference( "Goal/Measure" );
 
             var metric = new MetricService( new RockContext() ).Get( hfMetricId.Value.AsInteger() );
+
+            var entityTypeEntityUserPreference = gfMetricValues.GetUserPreference( this.EntityTypeEntityPreferenceKey ) ?? string.Empty;
+
+            var entityTypeEntityList = entityTypeEntityUserPreference.Split( ',' ).Select( a => a.Split( '|' ) ).Where( a => a.Length == 2 ).Select( a =>
+                new
+                {
+                    EntityTypeId = a[0].AsIntegerOrNull(),
+                    EntityId = a[1].AsIntegerOrNull()
+                } ).ToList();
+
+
+            if ( metric != null )
+            {
+                foreach ( var metricPartition in metric.MetricPartitions )
+                {
+                    var metricPartitionEntityType = EntityTypeCache.Read( metricPartition.EntityTypeId ?? 0 );
+                    var controlId = string.Format( "metricPartition{0}_entityTypeEditControl", metricPartition.Id );
+                    Control entityTypeEditControl = phMetricValuePartitions.FindControl( controlId );
+
+                    int? entityId = entityTypeEntityList.Where( a => a.EntityTypeId == metricPartition.EntityTypeId ).Select( a => a.EntityId ).FirstOrDefault();
+
+                    if ( metricPartitionEntityType != null && metricPartitionEntityType.SingleValueFieldType != null && metricPartitionEntityType.SingleValueFieldType.Field is IEntityFieldType )
+                    {
+                        ( metricPartitionEntityType.SingleValueFieldType.Field as IEntityFieldType ).SetEditValueFromEntityId( entityTypeEditControl, new Dictionary<string, ConfigurationValue>(), entityId );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Creates the dynamic controls.
+        /// </summary>
+        /// <param name="metricID">The metric identifier.</param>
+        private void CreateDynamicControls( int? metricID )
+        {
+            Metric metric = new MetricService( new RockContext() ).Get( metricID ?? 0 );
+            if ( metric != null )
+            {
+                foreach ( var metricPartition in metric.MetricPartitions )
+                {
+                    if ( metricPartition.EntityTypeId.HasValue )
+                    {
+                        var entityTypeCache = EntityTypeCache.Read( metricPartition.EntityTypeId.Value );
+                        if ( entityTypeCache != null && entityTypeCache.SingleValueFieldType != null )
+                        {
+                            var fieldType = entityTypeCache.SingleValueFieldType;
+                            var entityTypeEditControl = fieldType.Field.EditControl( new Dictionary<string, Rock.Field.ConfigurationValue>(), string.Format( "metricPartition{0}_entityTypeEditControl", metricPartition.Id ) );
+                            var panelCol4 = new Panel { CssClass = "col-md-4" };
+
+                            phMetricValuePartitions.Controls.Add( entityTypeEditControl );
+                            if ( entityTypeEditControl is IRockControl )
+                            {
+                                var entityTypeRockControl = ( entityTypeEditControl as IRockControl );
+                                entityTypeRockControl.Label = metricPartition.Label;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -144,6 +212,20 @@ namespace RockWeb.Blocks.Reporting
                     e.Value = null;
                 }
             }
+            else if ( e.Key == this.EntityTypeEntityPreferenceKey )
+            {
+                var entityTypeEntityUserPreference = gfMetricValues.GetUserPreference( this.EntityTypeEntityPreferenceKey ) ?? string.Empty;
+
+                var entityTypeEntityList = ( e.Value ?? string.Empty ).Split( ',' ).Select( a => a.Split( '|' ) ).Where( a => a.Length == 2 ).Select( a =>
+                    new MetricValuePartition
+                    {
+                        MetricPartition = new MetricPartition { EntityTypeId = a[0].AsIntegerOrNull() },
+                        EntityId = a[1].AsIntegerOrNull()
+                    } ).ToList();
+
+                e.Name = "Partitions";
+                e.Value = GetSeriesName( entityTypeEntityList );
+            }
             else
             {
                 e.Value = null;
@@ -159,6 +241,32 @@ namespace RockWeb.Blocks.Reporting
         {
             gfMetricValues.SaveUserPreference( "Date Range", drpDates.DelimitedValues );
             gfMetricValues.SaveUserPreference( "Goal/Measure", ddlGoalMeasure.SelectedValue );
+
+            var metric = new MetricService( new RockContext() ).Get( hfMetricId.Value.AsInteger() );
+
+            var entityTypeEntityFilters = new Dictionary<int, int?>();
+            foreach ( var metricPartition in metric.MetricPartitions )
+            {
+                var metricPartitionEntityType = EntityTypeCache.Read( metricPartition.EntityTypeId ?? 0 );
+                var controlId = string.Format( "metricPartition{0}_entityTypeEditControl", metricPartition.Id );
+                Control entityTypeEditControl = phMetricValuePartitions.FindControl( controlId );
+
+                int? entityId;
+
+                if ( metricPartitionEntityType != null && metricPartitionEntityType.SingleValueFieldType != null && metricPartitionEntityType.SingleValueFieldType.Field is IEntityFieldType )
+                {
+                    entityId = ( metricPartitionEntityType.SingleValueFieldType.Field as IEntityFieldType ).GetEditValueAsEntityId( entityTypeEditControl, new Dictionary<string, ConfigurationValue>() );
+
+                    entityTypeEntityFilters.AddOrIgnore( metricPartitionEntityType.Id, entityId );
+                }
+            }
+
+            var entityTypeEntityUserPreferenceValue = entityTypeEntityFilters
+                .Select( a => new { EntityTypeId = a.Key, EntityId = a.Value } )
+                .Select( a => string.Format( "{0}|{1}", a.EntityTypeId, a.EntityId ) )
+                .ToList().AsDelimited( "," );
+
+            gfMetricValues.SaveUserPreference( this.EntityTypeEntityPreferenceKey, entityTypeEntityUserPreferenceValue );
 
             BindGrid();
         }
@@ -313,8 +421,66 @@ namespace RockWeb.Blocks.Reporting
             var metric = new MetricService( rockContext ).Get( metricId ?? 0 );
             metricValuePartitionsColumn.Visible = metric != null && metric.MetricPartitions.Any( a => a.EntityTypeId.HasValue );
 
+            var drp = new DateRangePicker();
+            drp.DelimitedValues = gfMetricValues.GetUserPreference( "Date Range" );
+            if ( drp.LowerValue.HasValue )
+            {
+                qry = qry.Where( a => a.MetricValueDateTime >= drp.LowerValue.Value );
+            }
+
+            if ( drp.UpperValue.HasValue )
+            {
+                DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
+                qry = qry.Where( a => a.MetricValueDateTime < upperDate );
+            }
+
+            var metricValueType = gfMetricValues.GetUserPreference( "Goal/Measure" ).ConvertToEnumOrNull<MetricValueType>();
+            if ( metricValueType.HasValue )
+            {
+                qry = qry.Where( a => a.MetricValueType == metricValueType.Value );
+            }
+
+            var entityTypeEntityUserPreference = gfMetricValues.GetUserPreference( this.EntityTypeEntityPreferenceKey ) ?? string.Empty;
+
+            var entityTypeEntityList = entityTypeEntityUserPreference.Split( ',' ).Select( a => a.Split( '|' ) ).Where( a => a.Length == 2 ).Select( a =>
+                new
+                {
+                    EntityTypeId = a[0].AsIntegerOrNull(),
+                    EntityId = a[1].AsIntegerOrNull()
+                } );
+
+            foreach ( var entityTypeEntity in entityTypeEntityList )
+            {
+                if ( entityTypeEntity.EntityTypeId.HasValue && entityTypeEntity.EntityId.HasValue )
+                {
+                    qry = qry.Where( a => a.MetricValuePartitions.Any( x => x.MetricPartition.EntityTypeId == entityTypeEntity.EntityTypeId && x.EntityId == entityTypeEntity.EntityId ) );
+                }
+            }
+
+            if ( sortProperty != null )
+            {
+                qry = qry.Sort( sortProperty );
+            }
+            else
+            {
+                qry = qry.OrderBy( s => s.MetricValueDateTime ).ThenBy( s => s.YValue ).ThenBy( s => s.XValue ).ThenByDescending( s => s.ModifiedDateTime );
+            }
+
+            gMetricValues.SetLinqDataSource( qry );
+
+            gMetricValues.DataBind();
+        }
+
+        /// <summary>
+        /// Creates the entity value lookups.
+        /// </summary>
+        /// <param name="metricID">The metric identifier.</param>
+        private void CreateEntityValueLookups(int? metricID )
+        {
+            Metric metric = new MetricService( new RockContext() ).Get( metricID ?? 0 );
             if ( metric != null )
             {
+                var rockContext = new RockContext();
                 _entityTypeEntityNameLookup = new Dictionary<int, Dictionary<int, string>>();
                 _entityTypeEntityLookupQry = new Dictionary<int, IQueryable<IEntity>>();
 
@@ -343,38 +509,6 @@ namespace RockWeb.Blocks.Reporting
                     }
                 }
             }
-
-            var drp = new DateRangePicker();
-            drp.DelimitedValues = gfMetricValues.GetUserPreference( "Date Range" );
-            if ( drp.LowerValue.HasValue )
-            {
-                qry = qry.Where( a => a.MetricValueDateTime >= drp.LowerValue.Value );
-            }
-
-            if ( drp.UpperValue.HasValue )
-            {
-                DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
-                qry = qry.Where( a => a.MetricValueDateTime < upperDate );
-            }
-
-            var metricValueType = gfMetricValues.GetUserPreference( "Goal/Measure" ).ConvertToEnumOrNull<MetricValueType>();
-            if ( metricValueType.HasValue )
-            {
-                qry = qry.Where( a => a.MetricValueType == metricValueType.Value );
-            }
-
-            if ( sortProperty != null )
-            {
-                qry = qry.Sort( sortProperty );
-            }
-            else
-            {
-                qry = qry.OrderBy( s => s.MetricValueDateTime ).ThenBy( s => s.YValue ).ThenBy( s => s.XValue ).ThenByDescending( s => s.ModifiedDateTime );
-            }
-
-            gMetricValues.SetLinqDataSource( qry );
-
-            gMetricValues.DataBind();
         }
 
         /// <summary>

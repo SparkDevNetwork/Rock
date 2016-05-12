@@ -16,6 +16,7 @@
                     <Rock:GridFilter ID="gfMetricValues" runat="server">
                         <Rock:DateRangePicker ID="drpDates" runat="server" Label="Date Range" />
                         <Rock:RockDropDownList ID="ddlGoalMeasure" runat="server" Label="Goal/Measure" />
+                        <asp:PlaceHolder ID="phMetricValuePartitions" runat="server" />
                     </Rock:GridFilter>
                     <Rock:Grid ID="gMetricValues" runat="server" AllowSorting="true" OnRowSelected="gMetricValues_Edit" OnRowDataBound="gMetricValues_RowDataBound" ExportSource="ColumnOutput">
                         <Columns>
