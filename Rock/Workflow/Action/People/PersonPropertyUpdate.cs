@@ -79,14 +79,14 @@ namespace Rock.Workflow.Action
                                 if ( person == null )
                                 {
                                     errorMessages.Add( string.Format( "Person could not be found for selected value ('{0}')!", guidPersonAttribute.ToString() ) );
-                                    return true;
+                                    return false;
                                 }
                             }
                         }
                         else
                         {
                             errorMessages.Add( "The attribute used to provide the person was not of type 'Person'." );
-                            return true;
+                            return false;
                         }
                     }
                 }
@@ -280,6 +280,7 @@ namespace Rock.Workflow.Action
                                 updateAsBoolean = true; // default to true
                             }
                             person.IsEmailActive = updateAsBoolean.Value;
+                            rockContext.SaveChanges();
                         }
                         break;
                     }
@@ -313,6 +314,7 @@ namespace Rock.Workflow.Action
                         if ( ignoreBlanks == false || updateAsInt.HasValue )
                         {
                             person.GraduationYear = updateAsInt;
+                            rockContext.SaveChanges();
                         }
 
                         break;
@@ -370,6 +372,7 @@ namespace Rock.Workflow.Action
                                 updateAsBoolean = false; // default to false
                             }
                             person.IsDeceased = updateAsBoolean.Value;
+                            rockContext.SaveChanges();
                         }
                         break;
                     }
