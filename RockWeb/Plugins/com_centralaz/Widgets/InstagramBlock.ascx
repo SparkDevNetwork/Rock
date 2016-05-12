@@ -17,6 +17,66 @@
         var index = 0;
         var div = document.querySelector('.instawrapper')
         switch (gridsize) {
+            case "wide":
+                for (var row = 0; row < 1; row++) {
+
+                    // create the row div
+                    var rowdiv = document.createElement('div');
+                    rowdiv.className = "row";
+
+                    // loop for each item
+                    for (var col = 0; col < 19; col++) {
+
+                        //create a single div column that contains image and link
+                        var coldiv = document.createElement('div'),
+                            anchor = document.createElement('a'),
+                            bckgrndimg = document.createElement('bg-image');
+
+                        //get item from the array
+                        var item = response.data[index];
+
+                        anchor.href = item.link;
+                        anchor.target = '_blank';
+                        switch (imageres) {
+                            case "thumbnail":
+                                bckgrndimg.src = item.images.thumbnail.url;
+                                break;
+                            case "low_resolution":
+                                bckgrndimg.src = item.images.low_resolution.url;
+                                break;
+                            case "standard_resolution":
+                                bckgrndimg.src = item.images.standard_resolution.url;
+                                break;
+                        }
+
+                        coldiv.style.paddingLeft = 0;
+                        coldiv.style.paddingRight = 0;
+                        coldiv.style.backgroundImage = "url(" + bckgrndimg.src + ")";
+                        coldiv.style.backgroundPosition = "50% 50%";
+                        coldiv.style.backgroundSize = "cover";
+                        coldiv.style.backgroundRepeat = "no-repeat";
+                        coldiv.style.minHeight = minimageheight;
+                        //Determine which elements should be hidden in each configuration
+                        if (index <= 5) {
+                            coldiv.className = "col-xs-4 col-sm-3 col-md-2";
+                        }
+                        if (index>6) {
+                            coldiv.className = "hidden-xs col-sm-3 col-md-2";
+                        }
+                        if (index > 8) {
+                            coldiv.className = "hidden-xs hidden-sm col-md-2";
+                        }
+
+                        anchor.appendChild(coldiv);
+                        rowdiv.appendChild(anchor);
+
+                        index++;
+                    }
+                    // end the row div
+                    div.appendChild(rowdiv);
+                }
+                break;
+
             case "medium":
                 for (var row = 0; row < 3; row++) {
                     // create the row div
