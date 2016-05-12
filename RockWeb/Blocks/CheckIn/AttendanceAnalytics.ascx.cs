@@ -43,11 +43,12 @@ namespace RockWeb.Blocks.CheckIn
     [DisplayName( "Attendance Analytics" )]
     [Category( "Check-in" )]
     [Description( "Shows a graph of attendance statistics which can be configured for specific groups, date range, etc." )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK )]
-    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", false )]
-    [BooleanField( "Show Group Ancestry", "By default the group ancestry path is shown.  Unselect this to show only the group name.", true )]
-    [GroupTypeField( "Attendance Type", required: false, key: "GroupTypeTemplate" )]
-    [LinkedPage( "Check-in Detail Page", "Page that shows the user details for the check-in data.", false )]
+
+    [GroupTypesField( "Group Types", "Optional List of specific group types that should be included. If none are selected, an option to select an attendance type will be displayed and all of that attendance type's areas will be available.", false, "", "", 0 )]
+    [BooleanField( "Show Group Ancestry", "By default the group ancestry path is shown.  Unselect this to show only the group name.", true, "", 1 )]
+    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", false, "", "", 2 )]
+    [LinkedPage( "Check-in Detail Page", "Page that shows the user details for the check-in data.", false, "", "", 3 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", "", true, false, Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK, "", 4 )]
     public partial class AttendanceAnalytics : RockBlock
     {
         #region Fields
@@ -220,10 +221,10 @@ namespace RockWeb.Blocks.CheckIn
                 clbCampuses.Items.Add( listItem );
             }
 
-            var groupTypeTemplateGuid = this.GetAttributeValue( "GroupTypeTemplate" ).AsGuidOrNull();
-            if ( !groupTypeTemplateGuid.HasValue )
+            var groupTypeGuids = this.GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().AsGuidList();
+            if ( !groupTypeGuids.Any() )
             {
-                // show the CheckinType(GroupTypeTemplate) control if there isn't a block setting for it
+                // show the CheckinType control if there isn't a block setting for specific group types
                 ddlAttendanceType.Visible = true;
                 var groupTypeService = new GroupTypeService( _rockContext );
                 Guid groupTypePurposeGuid = Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid();
@@ -233,7 +234,7 @@ namespace RockWeb.Blocks.CheckIn
             }
             else
             {
-                // hide the CheckinType(GroupTypeTemplate) control if there is a block setting for it
+                // hide the CheckinType control if there is a block setting for group types
                 ddlAttendanceType.Visible = false;
             }
         }
@@ -243,15 +244,14 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void BuildGroupTypesUI()
         {
-            var groupType = this.GetSelectedTemplateGroupType();
-
-            if ( groupType != null )
+            var groupTypes = this.GetSelectedGroupTypes();
+            if ( groupTypes.Any() )
             {
                 nbGroupTypeWarning.Visible = false;
-                var groupTypes = new GroupTypeService( _rockContext ).GetChildGroupTypes( groupType.Id ).OrderBy( a => a.Order ).ThenBy( a => a.Name );
 
-                // only add each group type once in case the group type is a child of multiple parents
+                // only add each grouptype/group once in case they are a child of multiple parents
                 _addedGroupTypeIds = new List<int>();
+                _addedGroupIds = new List<int>();
                 rptGroupTypes.DataSource = groupTypes.ToList();
                 rptGroupTypes.DataBind();
             }
@@ -266,22 +266,31 @@ namespace RockWeb.Blocks.CheckIn
         /// Gets the type of the selected template group (Check-In Type)
         /// </summary>
         /// <returns></returns>
-        private GroupTypeCache GetSelectedTemplateGroupType()
+        private List<GroupType> GetSelectedGroupTypes()
         {
-            var groupTypeTemplateGuid = this.GetAttributeValue( "GroupTypeTemplate" ).AsGuidOrNull();
-            if ( !groupTypeTemplateGuid.HasValue )
+            var groupTypeGuids = this.GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().AsGuidList();
+            if ( groupTypeGuids.Any() )
+            {
+                return new GroupTypeService( _rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( t => groupTypeGuids.Contains( t.Guid ) )
+                    .OrderBy( t => t.Order )
+                    .ThenBy( t => t.Name )
+                    .ToList();
+            }
+            else
             {
                 if ( ddlAttendanceType.SelectedGroupTypeId.HasValue )
                 {
-                    var groupType = GroupTypeCache.Read( ddlAttendanceType.SelectedGroupTypeId.Value );
-                    if ( groupType != null )
-                    {
-                        groupTypeTemplateGuid = groupType.Guid;
-                    }
+                    return new GroupTypeService( _rockContext )
+                        .GetChildGroupTypes( ddlAttendanceType.SelectedGroupTypeId.Value )
+                        .OrderBy( a => a.Order )
+                        .ThenBy( a => a.Name )
+                        .ToList();
                 }
             }
 
-            return groupTypeTemplateGuid.HasValue ? GroupTypeCache.Read( groupTypeTemplateGuid.Value ) : null;
+            return new List<GroupType>();
         }
 
         /// <summary>
@@ -761,11 +770,12 @@ function(item) {
         private void BindAttendeesGrid( bool isExporting = false )
         {
             // Get Group Type filter
-            var groupType = this.GetSelectedTemplateGroupType();
-            if ( groupType == null )
+            var groupTypes = this.GetSelectedGroupTypes();
+            if ( groupTypes == null || !groupTypes.Any() )
             {
                 return;
             }
+            var groupTypeIdList = groupTypes.Select( t => t.Id ).ToList();
 
             // Get the daterange filter
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
@@ -951,7 +961,7 @@ function(item) {
                 qryTasks.Add( Task.Run( () =>
                 {
                     dtAttendeeFirstDates = AttendanceService.GetAttendanceAnalyticsAttendeeFirstDates(
-                        groupType.Id, groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList ).Tables[0];
+                        groupTypeIdList, groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList ).Tables[0];
                 } ) );
 
 
@@ -961,7 +971,7 @@ function(item) {
                 qryTasks.Add( Task.Run( () =>
                 {
                     DataSet ds = AttendanceService.GetAttendanceAnalyticsNonAttendees(
-                        groupType.Id, groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList, includeParents, includeChildren );
+                        groupTypeIdList, groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList, includeParents, includeChildren );
 
                     DataTable dtNonAttenders = ds.Tables[0];
                     dtAttendeeFirstDates = ds.Tables[1];
@@ -1766,6 +1776,7 @@ function(item) {
 
         // list of grouptype ids that have already been rendered (in case a group type has multiple parents )
         private List<int> _addedGroupTypeIds;
+        private List<int> _addedGroupIds;
 
         /// <summary>
         /// Adds the group type controls.
@@ -1837,20 +1848,24 @@ function(item) {
             // Only show groups that actually have a schedule
             if ( group != null )
             {
-                if ( group.ScheduleId.HasValue || group.GroupLocations.Any( l => l.Schedules.Any() ) )
+                if ( !_addedGroupIds.Contains( group.Id ) )
                 {
-                    string displayName = showGroupAncestry ? service.GroupAncestorPathName( group.Id ) : group.Name;
-                    checkBoxList.Items.Add( new ListItem( displayName, group.Id.ToString() ) );
-                }
-
-                if ( group.Groups != null )
-                {
-                    foreach ( var childGroup in group.Groups
-                        .OrderBy( a => a.Order )
-                        .ThenBy( a => a.Name )
-                        .ToList() )
+                    _addedGroupIds.Add( group.Id );
+                    if ( group.ScheduleId.HasValue || group.GroupLocations.Any( l => l.Schedules.Any() ) )
                     {
-                        AddGroupControls( childGroup, checkBoxList, service, showGroupAncestry );
+                        string displayName = showGroupAncestry ? service.GroupAncestorPathName( group.Id ) : group.Name;
+                        checkBoxList.Items.Add( new ListItem( displayName, group.Id.ToString() ) );
+                    }
+
+                    if ( group.Groups != null )
+                    {
+                        foreach ( var childGroup in group.Groups
+                            .OrderBy( a => a.Order )
+                            .ThenBy( a => a.Name )
+                            .ToList() )
+                        {
+                            AddGroupControls( childGroup, checkBoxList, service, showGroupAncestry );
+                        }
                     }
                 }
             }
@@ -2002,12 +2017,13 @@ function(item) {
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCheckinDetails_Click( object sender, EventArgs e )
         {
-            var groupType = GetSelectedTemplateGroupType();
+            var groupTypes = GetSelectedGroupTypes();
 
-            if ( groupType != null )
+            if ( groupTypes != null && groupTypes.Any() )
             {
+                var groupTypeIds = groupTypes.Select( t => t.Id ).ToList().AsDelimited( "," );
                 Dictionary<string, string> queryParams = new Dictionary<string, string>();
-                queryParams.Add( "GroupTypeId", groupType.Id.ToString() );
+                queryParams.Add( "GroupTypeIds", groupTypeIds );
 
                 NavigateToLinkedPage( "Check-inDetailPage", queryParams );
             }

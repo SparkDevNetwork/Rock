@@ -6,6 +6,9 @@
     Rock.controls.itemPicker = (function () {
         var ItemPicker = function (options) {
             this.options = options;
+
+            // set a flag so that the picker only auto-scrolls to a selected item once. This prevents it from scrolling at unwanted times
+            this.alreadyScrolledToSelected = false;
         },
             exports;
 
@@ -65,18 +68,23 @@
                         // intentionally blank
                     })
                     .on('rockTree:itemClicked', function (e) {
+                        // make sure it doesn't autoscroll after something has been manually clicked
+                        self.alreadyScrolledToSelected = true;
                         if (!self.options.allowMultiSelect) {
                             $control.find('.picker-btn').trigger('click');
                         }
                     })
-                    .on('rockTree:expand rockTree:collapse rockTree:dataBound rockTree:rendered', function (evt) {
+                    .on('rockTree:expand rockTree:collapse rockTree:dataBound', function (evt) {
                         self.updateScrollbar();
+                    })
+                    .on('rockTree:rendered', function (evt) {
+                        self.scrollToSelectedItem();
                     });
 
                 $control.find('a.picker-label').click(function (e) {
                     e.preventDefault();
                     $control.find('.picker-menu').first().toggle(function () {
-                        self.updateScrollbar();
+                        self.scrollToSelectedItem();
                     });
                 });
 
@@ -142,16 +150,45 @@
                     $spanNames.text(self.options.defaultText);
                 });
             },
-            updateScrollbar: function () {
+            updateScrollbar: function (sPosition) {
                 // first, update this control's scrollbar, then the modal's
                 var $container = $('#' + this.options.controlId).find('.scroll-container')
 
                 if ($container.is(':visible')) {
-                    $container.tinyscrollbar_update('relative');
+                    if (!sPosition) {
+                        sPosition = 'relative'
+                    }
+                    $container.tinyscrollbar_update(sPosition);
                 }
 
                 // update the outer modal  
                 Rock.dialogs.updateModalScrollBar(this.options.controlId);
+            },
+            scrollToSelectedItem: function () {
+                var $selectedItem = $('#' + this.options.controlId).find('.picker-menu').find('.selected').first()
+                if ($selectedItem.length && (!this.alreadyScrolledToSelected)) {
+                    var $scrollContainer = $selectedItem.closest('.scroll-container');
+                    var itemTop = $selectedItem.offset().top
+                    var itemBottom = $selectedItem.offset().top + $selectedItem.height();
+                    var viewportTop = $scrollContainer.offset().top;
+                    var viewportBottom = $scrollContainer.offset().top + $scrollContainer.height();
+
+                    // scroll so the item is at top if it isn't already showing within the viewport
+                    if (itemTop < viewportTop || itemBottom > viewportBottom) {
+                        var treeview = $selectedItem.closest('.treeview');
+                        var pPosition = $selectedItem.offset().top - treeview.offset().top;
+                        // initialize/update the scrollbar and set to a specific position
+                        this.updateScrollbar(pPosition);
+                        this.alreadyScrolledToSelected = true;
+                    }
+                    else {
+                        // initialize/update the scrollbar 
+                        this.updateScrollbar();
+                    }
+                } else {
+                    // initialize/update the scrollbar 
+                    this.updateScrollbar();
+                }
             }
         };
 

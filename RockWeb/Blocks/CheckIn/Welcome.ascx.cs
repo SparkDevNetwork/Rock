@@ -36,9 +36,6 @@ namespace RockWeb.Blocks.CheckIn
     [Description( "Welcome screen for check-in." )]
     [LinkedPage( "Family Select Page" )]
     [LinkedPage( "Scheduled Locations Page" )]
-    [IntegerField( "Refresh Interval", "How often (seconds) should page automatically query server for new Check-in data", false, 10 )]
-    [BooleanField( "Enable Override", "Allows the override link to be used on the configuration page.", true )]
-    [BooleanField( "Enable Manager", "Allows the manager link to be placed on the page.", true )]
     public partial class Welcome : CheckInBlock
     {
         protected override void OnInit( EventArgs e )
@@ -72,11 +69,12 @@ namespace RockWeb.Blocks.CheckIn
             if (localStorage) {{
                 localStorage.theme = '{0}'
                 localStorage.checkInKiosk = '{1}';
-                localStorage.checkInGroupTypes = '{2}';
+                localStorage.checkInType = '{2}';
+                localStorage.checkInGroupTypes = '{3}';
             }}
         }});
     </script>
-", CurrentTheme, CurrentKioskId, CurrentGroupTypeIds.AsDelimited( "," ) );
+", CurrentTheme, CurrentKioskId, CurrentCheckinTypeId, CurrentGroupTypeIds.AsDelimited( "," ) );
                 phScript.Controls.Add( new LiteralControl( script ) );
 
                 CurrentWorkflow = null;
@@ -197,7 +195,7 @@ if ($ActiveWhen.text() != '')
         /// </summary>
         private void RefreshView()
         {
-            hfRefreshTimerSeconds.Value = GetAttributeValue( "RefreshInterval" );
+            hfRefreshTimerSeconds.Value = ( CurrentCheckInType != null ? CurrentCheckInType.RefreshInterval.ToString() : "10" );
             pnlNotActive.Visible = false;
             pnlNotActiveYet.Visible = false;
             pnlClosed.Visible = false;
@@ -205,8 +203,8 @@ if ($ActiveWhen.text() != '')
             ManagerLoggedIn = false;
             pnlManagerLogin.Visible = false;
             pnlManager.Visible = false;
-            btnManager.Visible = GetAttributeValue( "EnableManager" ).AsBoolean();
-            btnOverride.Visible = GetAttributeValue( "EnableOverride" ).AsBoolean();
+            btnManager.Visible = ( CurrentCheckInType != null ? CurrentCheckInType.EnableManagerOption : true );
+            btnOverride.Visible = ( CurrentCheckInType != null ? CurrentCheckInType.EnableOverride : true );
 
             lblActiveWhen.Text = string.Empty;
 
@@ -215,6 +213,9 @@ if ($ActiveWhen.text() != '')
                 NavigateToPreviousPage();
                 return;
             }
+
+            // Set to null so that object will be recreated with a potentially updated group type cache.
+            CurrentCheckInState.CheckInType = null;
 
             if ( CurrentCheckInState.Kiosk.FilteredGroupTypes( CurrentCheckInState.ConfiguredGroupTypes ).Count == 0 )
             {

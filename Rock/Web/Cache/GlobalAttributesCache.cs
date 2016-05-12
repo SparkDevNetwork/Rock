@@ -400,7 +400,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="currentPerson">The current person.</param>
         /// <returns></returns>
-        [Obsolete( "Use LavaHelper.GetCommonMergeFields instead" )]
+        [Obsolete( "Use Rock.Lava.LavaHelper.GetCommonMergeFields instead" )]
         public static Dictionary<string, object> GetMergeFields( Person currentPerson )
         {
             return GetLegacyMergeFields( currentPerson );

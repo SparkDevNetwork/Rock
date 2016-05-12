@@ -332,9 +332,12 @@ namespace Rock.Reporting.DataFilter
                 v.EntityId.HasValue &&
                 v.Value != string.Empty );
 
-            if (entityField.AttributeGuid.HasValue)
+            if ( entityField.AttributeGuid.HasValue )
             {
-                attributeValues = attributeValues.Where( v => v.Attribute.Guid == entityField.AttributeGuid );
+                var attributeCache = AttributeCache.Read( entityField.AttributeGuid.Value );
+                var attributeId = attributeCache != null ? attributeCache.Id : 0;
+
+                attributeValues = attributeValues.Where( v => v.AttributeId == attributeId );
             }
             else
             {

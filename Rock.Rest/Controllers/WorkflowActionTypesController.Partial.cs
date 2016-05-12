@@ -87,7 +87,7 @@ namespace Rock.Rest.Controllers
                 }
             }
 
-            return list.AsQueryable();
+            return list.OrderBy( i => i.Name ).AsQueryable();
         }
 
         /// <summary>

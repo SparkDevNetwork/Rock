@@ -39,8 +39,18 @@
                                 <asp:Button ID="btnStandardize" runat="server" OnClick="btnStandardize_Click" Text="Verify Address" CssClass="btn btn-action margin-b-md" />
                                 <asp:Literal ID="lStandardizationUpdate" runat="server" />
                                 <Rock:RockCheckBox ID="cbGeoPointLocked" runat="server" Label="Location Locked" Text="Yes" Help="Locks the location to prevent verification services (standardization/geocoding) from updating the address or point." />
-                                <Rock:GeoPicker ID="geopPoint" runat="server" DrawingMode="Point" Label="Point" />
-                                <Rock:GeoPicker ID="geopFence" runat="server" DrawingMode="Polygon" Label="Geo-fence" />
+                                <div class="row">
+                                    <div class="col-sm-7">
+                                        <Rock:GeoPicker ID="geopPoint" runat="server" DrawingMode="Point" Label="Point" />
+                                        <Rock:GeoPicker ID="geopFence" runat="server" DrawingMode="Polygon" Label="Geo-fence" />
+                                    </div>
+                                    <div class="col-sm-5">
+                                        <Rock:NumberBox ID="nbSoftThreshold" runat="server" MinimumValue="0" NumberType="Integer" Label="Threshold"
+                                            Help="The maximum number of people that room allows before a check-in will require a manager override." />
+                                        <Rock:NumberBox ID="nbFirmThreshold" runat="server" MinimumValue="0" NumberType="Integer" Label="Threshold (Absolute)"
+                                            Help="The absolute maximum number of people that room allows. Check-in will not allow check-in after this number of people have checked in." />
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
