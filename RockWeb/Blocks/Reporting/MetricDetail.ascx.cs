@@ -784,7 +784,6 @@ The SQL can include Lava merge fields:";
 
             int metricId = hfMetricId.Value.AsInteger();
             nbMetricValuesWarning.Visible = new MetricValueService( new RockContext() ).Queryable().Where( a => a.MetricId == metricId ).Any();
-            nbMetricValuesWarning.NotificationBoxType = NotificationBoxType.Warning;
             nbMetricValuesWarning.Text = "This Metric already has some values.  If you are changing Metric Partitions, you might have to manually update the metric values to reflect the new partition arrangement.";
         }
 
