@@ -61,6 +61,11 @@ BEGIN
         SET [Body] = REPLACE([Body], @origValue, @newValue)
         WHERE [Body] LIKE @likeValue
 
+		/* SystemEmail Subject */
+        UPDATE SystemEmail
+        SET [Subject] = REPLACE([Subject], @origValue, @newValue)
+        WHERE [Subject] LIKE @likeValue
+
         /* WorkflowActionForm */
         UPDATE WorkflowActionForm
         SET Header = REPLACE(Header, @origValue, @newValue)
