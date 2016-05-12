@@ -2,7 +2,7 @@
 Import-Module WebAdministration
 
 # Get the application (web root) and the root folder
-$webroot = $env:RockRootPath
+$webroot = "c:\inetpub\wwwroot\rock"
 $rootfolder = Split-Path -Parent $webroot
 
 Write-Output "Running post-deploy script"
