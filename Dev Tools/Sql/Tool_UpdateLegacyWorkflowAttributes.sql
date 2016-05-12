@@ -6,7 +6,7 @@ DECLARE @origValue NVARCHAR(max) = CONCAT (
                 ,@attributeKey
                 )
             ,@newValue NVARCHAR(max) = CONCAT (
-                '''Workflow'' | Attribute:'''
+                'Workflow | Attribute:'''
                 ,@attributeKey
                 ,''''
                 )
