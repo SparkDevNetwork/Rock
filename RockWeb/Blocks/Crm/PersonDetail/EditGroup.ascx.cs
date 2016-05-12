@@ -302,7 +302,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                     GroupAddresses = new List<GroupAddressInfo>();
                     foreach ( var groupLocation in _group.GroupLocations
+                        .Where( l => l.GroupLocationTypeValue != null )
                         .OrderBy( l => l.GroupLocationTypeValue.Order ) )
+                    {
+                        GroupAddresses.Add( new GroupAddressInfo( groupLocation ) );
+                    }
+                    foreach ( var groupLocation in _group.GroupLocations
+                        .Where( l => l.GroupLocationTypeValue == null ) )
                     {
                         GroupAddresses.Add( new GroupAddressInfo( groupLocation ) );
                     }
@@ -1085,7 +1091,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         .Where( l => l.GroupId == _group.Id &&
                             !remainingLocationIds.Contains( l.Id ) ) )
                     {
-                        History.EvaluateChange( groupChanges, removedLocation.GroupLocationTypeValue.Value + " Location", removedLocation.Location.ToString(), string.Empty );
+                        History.EvaluateChange( groupChanges, 
+                            ( removedLocation.GroupLocationTypeValue != null ? removedLocation.GroupLocationTypeValue.Value : "Unknown" ) + " Location", 
+                            removedLocation.Location.ToString(), string.Empty );
                         groupLocationService.Delete( removedLocation );
                     }
 

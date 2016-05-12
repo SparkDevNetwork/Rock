@@ -1172,6 +1172,8 @@
     <Compile Include="Web\UI\IDetailBlock.cs" />
     <Compile Include="Web\UI\ISecondaryBlock.cs" />
     <Compile Include="Web\Utilities\HtmlSanitizer.cs" />
+    <Compile Include="Workflow\Action\People\PersonAddressUpdate.cs" />
+    <Compile Include="Workflow\Action\People\PersonPhoneUpdate.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\ActivateActions.cs" />
     <Compile Include="Workflow\Action\People\PersonPropertyUpdate.cs" />
     <Compile Include="Workflow\Action\Groups\RemovePersonFromGroupAttribute.cs" />

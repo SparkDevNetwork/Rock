@@ -75,7 +75,7 @@
                     <div class="panel-body">
                 
                         <div class="grid grid-panel">
-                            <Rock:Grid ID="gLocations" runat="server" AllowSorting="true" AllowPaging="false" DisplayType="Light">
+                            <Rock:Grid ID="gLocations" runat="server" AllowSorting="true" AllowPaging="false" DisplayType="Light" RowItemText="Address">
                                 <Columns>
                                     <Rock:RockTemplateField HeaderText="Type">
                                         <ItemTemplate>

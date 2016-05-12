@@ -345,7 +345,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <returns></returns>
         protected string FormatAddressType( object addressType )
         {
-            string type = addressType.ToString();
+            string type = addressType != null ? addressType.ToString() : "Unknown";
             return type.EndsWith( "Address", StringComparison.CurrentCultureIgnoreCase ) ? type : type + " Address";
         }
 
