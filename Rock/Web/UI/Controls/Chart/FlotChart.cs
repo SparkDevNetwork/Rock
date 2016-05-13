@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -710,11 +711,15 @@ namespace Rock.Web.UI.Controls
                 // MetricValueType is an enum, which isn't quite supported for $filters as of Web Api 2.1, so pass it as a regular rest param instead of as part of the odata $filter
                 qryParams.Add( string.Format( "metricValueType={0}", this.MetricValueType ) );
             }
-
+            
             if ( this.EntityId.HasValue )
             {
-                filterParams.Add( string.Format( "(EntityId eq {0} or EntityId eq null)", this.EntityId ) );
+                
+                int partitionId = metric.MetricPartitions.OrderBy( a => a.Order ).First().Id;
+                filterParams.Add( string.Format( "MetricValuePartitions/any(metricValuePartition: metricValuePartition/EntityId eq {0} and metricValuePartition/MetricPartitionId eq {1})", this.EntityId, partitionId ) );
             }
+
+            // TODO, figure out how to filter by multiple partitions (instead of just the First partition)
 
             if ( filterParams.Count > 0 )
             {

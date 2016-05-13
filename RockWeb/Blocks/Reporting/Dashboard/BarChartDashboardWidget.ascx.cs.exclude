@@ -62,5 +62,10 @@ namespace RockWeb.Blocks.Reporting.Dashboard
             lDashboardTitle.Text = this.Title;
             lDashboardSubtitle.Text = this.Subtitle;
         }
+
+        protected override void ShowSettings()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }
