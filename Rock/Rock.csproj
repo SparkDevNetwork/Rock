@@ -198,7 +198,6 @@
     <Compile Include="Attribute\EntityTypeFieldAttribute.cs" />
     <Compile Include="Attribute\MetricCategoriesFieldAttribute.cs" />
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
-    <Compile Include="Attribute\MetricEntityFieldAttribute.cs" />
     <Compile Include="Attribute\AccountsFieldAttribute.cs" />
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
     <Compile Include="Attribute\DaysOfWeekFieldAttribute.cs" />
@@ -350,7 +349,6 @@
     <Compile Include="Field\Types\EntityFieldType.cs" />
     <Compile Include="Field\Types\MetricCategoriesFieldType.cs" />
     <Compile Include="Field\Types\ComparisonFieldType.cs" />
-    <Compile Include="Field\Types\MetricEntityFieldType.cs" />
     <Compile Include="Field\Types\AudioFileFieldType.cs" />
     <Compile Include="Field\Types\AudioUrlFieldType.cs" />
     <Compile Include="Field\Types\VideoUrlFieldType.cs" />
@@ -692,9 +690,6 @@
     <Compile Include="Field\Types\WorkflowActivityTypeFieldType.cs" />
     <Compile Include="Plugin\Migration.cs" />
     <Compile Include="Plugin\VersionAttribute.cs" />
-    <Compile Include="Reporting\Dashboard\LineBarPointsChartDashboardWidget.cs">
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
     <Compile Include="Data\DbService.cs" />
     <Compile Include="Data\IgnoreCanDelete.cs" />
     <Compile Include="Data\IModel.cs" />
@@ -1067,7 +1062,6 @@
     <Compile Include="Web\UI\Controls\Pickers\DayOfWeekPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DaysOfWeekPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\EntityPicker.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\MetricEntityPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\RemoteAuthsPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\SlidingDateRangePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\YearPicker.cs" />
