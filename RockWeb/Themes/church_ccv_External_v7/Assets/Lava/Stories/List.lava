@@ -10,7 +10,7 @@
 {% assign firstItem = Items[0] %}
 
 <header>
-  <a class="storythumb storythumb-featured storythumb-link" href="{{ detailPage }}/{{ firstitem | Attribute:'ShortUrl' }}" style="background-image: url('{{ firstItem | Attribute: 'Image', 'Url' }}&maxwidth=1140'); background-position: {{ firstItem | Attribute: 'ImageFocalPoint', 'RawValue' }};">
+  <a class="storythumb storythumb-featured storythumb-link" href="{{ detailPage }}/{{ firstItem | Attribute:'ShortUrl' }}" style="background-image: url('{{ firstItem | Attribute: 'Image', 'Url' }}&maxwidth=1140'); background-position: {{ firstItem | Attribute: 'ImageFocalPoint', 'RawValue' }};">
     <div class="storythumb-title">
       <span>{{ firstItem.Title }}</span>
     </div>
