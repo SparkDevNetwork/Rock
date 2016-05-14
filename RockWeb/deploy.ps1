@@ -23,8 +23,11 @@ If (Test-Path "$rootfolder\temp\robots.txt"){
 }
 
 # copy new connection string file
-Write-Host "Copying new web.ConnectionStrings.config to web dir"
-Copy-Item "$rootfolder\..\web.ConnectionStrings.config" $webroot -force
+Write-Host "Copying web.config and web.ConnectionStrings.config to web dir"
+Copy-Item "$rootfolder\web.ConnectionStrings.config" $webroot -force
+Copy-Item "$rootfolder\web.config" $webroot -force
+
+Start-Sleep 5
 
 # start web site and app pool
 Write-Host "Starting ApplicationPool and Website"
