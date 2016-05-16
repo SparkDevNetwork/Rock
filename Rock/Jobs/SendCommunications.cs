@@ -54,6 +54,7 @@ namespace Rock.Jobs
             JobDataMap dataMap = context.JobDetail.JobDataMap;
             var beginWindow = RockDateTime.Now.AddDays( 0 - dataMap.GetInt( "ExpirationPeriod" ) );
             var endWindow = RockDateTime.Now.AddMinutes( 0 - dataMap.GetInt( "DelayPeriod" ) );
+            var nowDate = RockDateTime.Now;
 
             var rockContext = new RockContext();
             var qryPendingRecipients = new CommunicationRecipientService( rockContext ).Queryable().Where( a => a.Status == CommunicationRecipientStatus.Pending );
@@ -64,7 +65,7 @@ namespace Rock.Jobs
                     qryPendingRecipients.Where( r => r.CommunicationId == c.Id ).Any() &&
                     (
                         ( !c.FutureSendDateTime.HasValue && c.CreatedDateTime.HasValue && c.CreatedDateTime.Value.CompareTo( beginWindow ) >= 0 && c.CreatedDateTime.Value.CompareTo( endWindow ) <= 0 ) ||
-                        ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value.CompareTo( beginWindow ) >= 0 && c.FutureSendDateTime.Value.CompareTo( endWindow ) <= 0 )
+                        ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value.CompareTo( beginWindow ) >= 0 && c.FutureSendDateTime.Value.CompareTo( nowDate ) <= 0 )
                     ) );
 
             var exceptionMsgs = new List<string>();
