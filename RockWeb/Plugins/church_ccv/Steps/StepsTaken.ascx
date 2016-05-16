@@ -26,7 +26,7 @@
     }
 
     .measurechart-legend h1 {
-        margin: 0 0 4px 0;
+        margin: 0 0 8px 0;
         font-size: 18px;
     }
 
@@ -111,37 +111,82 @@
                 </ul>
 
                 <asp:Panel ID="pnlAdults" runat="server">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h2><asp:Literal ID="lCampusCampus" runat="server" Text="All Campuses" /></h2>
-                        </div>
-                        <div class="col-md-6">
-                            <Rock:CampusPicker ID="cpCampusCampus" runat="server" OnSelectedIndexChanged="cpCampusCampus_SelectedIndexChanged" AutoPostBack="true" />
-                        </div>
-                    </div>
                     
-                    <div class="row">
-                        <asp:Repeater ID="rptCampusMeasures" runat="server" OnItemDataBound="rptCampusMeasures_ItemDataBound">
-                            <ItemTemplate>
+                    <asp:Panel ID="pnlAdultsAllMeasures" runat="server">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h2><asp:Literal ID="lCampusCampus" runat="server" Text="All Campuses" /></h2>
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:CampusPicker ID="cpCampusCampus" runat="server" OnSelectedIndexChanged="cpCampusCampus_SelectedIndexChanged" AutoPostBack="true" />
+                            </div>
+                        </div>
+                    
+                        <div class="row">
+                            <asp:Repeater ID="rptAdultMeasures" runat="server" OnItemDataBound="rptCampusMeasures_ItemDataBound">
+                                <ItemTemplate>
 
-                                <div class="col-md-6">
-                                    <div class="measurechart" style="border: 3px solid <%# Eval("Color") %>; color: <%# Eval("Color") %>;">
-                                        <div class="measurechart-legend">
-                                            <h1><%# Eval("Title") %></h1>
-                                            <div class="measurechart-legend-value"><i class="fa fa-fw <%# Eval("IconCssClass") %>"></i> <span><asp:Literal ID="lChartValue" runat="server" /></span></div>
+                                    <div class="col-md-6">
+                                        <a href="?MeasureId=<%# Eval("Id") %>&ActiveTab=lbAdults">
+                                        <div class="measurechart" style="border: 3px solid <%# Eval("Color") %>; color: <%# Eval("Color") %>;">
+                                            <div class="measurechart-legend">
+                                                <h1><%# Eval("Title") %></h1>
+                                                <div class="measurechart-legend-value"><i class="fa fa-fw <%# Eval("IconCssClass") %>"></i> <span><asp:Literal ID="lChartValue" runat="server" /></span></div>
+                                            </div>
+                                            <div class="chartwrapper">
+                                                <Rock:LineChart ID="lcMeasure" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="120px" />
+                                            </div>
                                         </div>
-                                        <div class="chartwrapper">
-                                            <Rock:LineChart ID="lcMeasure" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="120px" />
+                                        </a>
+                                    </div>
+
+                                </ItemTemplate>
+                            </asp:Repeater>
+                        </div>
+                    </asp:Panel>
+                    
+                    <asp:Panel ID="pnlAdultsSingleMeasure" runat="server" Visible="false">
+                       <div class="row">
+                            <div class="col-md-6">
+                                <div class="measurechart" id="divAdultSingleMeasureWrap" runat="server">
+                                    <div class="measurechart-legend">
+                                        <h1>All Campuses</h1>
+                                        <div class="measurechart-legend-value"><i id="iAdultSingleMeasureIcon" runat="server" class="fa fa-fw"></i> <span><asp:Literal ID="lAdultSingleChartValue" runat="server" /></span></div>
+                                    </div>
+                                    <div class="chartwrapper">
+                                        <Rock:LineChart ID="lcAdultsSingleMeasure" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="120px" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr />
+                        </div>
+
+                        <asp:Repeater ID="rptAdultSingleMeasure" runat="server" OnItemDataBound="rptAdultSingleMeasure_ItemDataBound">
+                            <ItemTemplate>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="measurechart" style="border: 3px solid <%# CurrentMeasure != null ? CurrentMeasure.Color : "" %>; color: <%# CurrentMeasure != null ? CurrentMeasure.Color : "" %>;">
+                                            <div class="measurechart-legend">
+                                                <h1><%# Eval("Name") %></h1>
+                                                <div class="measurechart-legend-value"><i class="fa fa-fw <%# CurrentMeasure != null ? CurrentMeasure.IconCssClass : "" %>"></i> <span><asp:Literal ID="lChartValue" runat="server" /></span></div>
+                                            </div>
+                                            <div class="chartwrapper">
+                                                <Rock:LineChart ID="lcMeasure" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="120px" />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-
                             </ItemTemplate>
                         </asp:Repeater>
-                    </div> 
+
+                        <a href="?ActiveTab=lbAdults" class="btn btn-default"><i class="fa fa-chevron-left"></i> Adults View</a>
+                    </asp:Panel> 
                 </asp:Panel>
 
                 <asp:Panel ID="pnlPastor" runat="server" Visible="false">
+                    
+                    <asp:Panel ID="pnlPastorMeasures" runat="server" Visible="false">
                     <div class="row">
                         <div class="col-md-6">
                             <h2><asp:Literal ID="lPastorPastor" runat="server" Text="All Pastors" /></h2>
@@ -156,6 +201,7 @@
                             <ItemTemplate>
 
                                 <div class="col-md-6">
+                                    <a href="?MeasureId=<%# Eval("Id") %>&ActiveTab=lbPastor">
                                     <div class="measurechart" style="border: 3px solid <%# Eval("Color") %>; color: <%# Eval("Color") %>;">
                                         <div class="measurechart-legend">
                                             <h1><%# Eval("Title") %></h1>
@@ -165,11 +211,53 @@
                                             <Rock:LineChart ID="lcMeasure" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="120px" />
                                         </div>
                                     </div>
+                                    </a>
                                 </div>
 
                             </ItemTemplate>
                         </asp:Repeater>
                     </div>
+                    </asp:Panel>
+
+                    <asp:Panel ID="pnlPastorSingleMeasure" runat="server">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="measurechart" id="divPastorSingleMeasureWrap" runat="server">
+                                    <div class="measurechart-legend">
+                                        <h1>All Pastors</h1>
+                                        <div class="measurechart-legend-value"><i id="iPastorSingleMeasureIcon" runat="server" class="fa fa-fw"></i> <span><asp:Literal ID="lPastorSingleChartValue" runat="server" /></span></div>
+                                    </div>
+                                    <div class="chartwrapper">
+                                        <Rock:LineChart ID="lcPastorSingleMeasure" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="120px" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <asp:Repeater ID="rptPastorSingleMeasure" runat="server" OnItemDataBound="rptPastorSingleMeasure_ItemDataBound">
+                        <ItemTemplate>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="measurechart" style="border: 3px solid <%# CurrentMeasure != null ? CurrentMeasure.Color : "" %>; color: <%# CurrentMeasure != null ? CurrentMeasure.Color : "" %>;">
+                                        <div class="measurechart-legend">
+                                            <h1><%# Eval("Name") %></h1>
+                                            <div class="measurechart-legend-value"><i class="fa fa-fw <%# CurrentMeasure != null ? CurrentMeasure.IconCssClass : "" %>"></i> <span><asp:Literal ID="lChartValue" runat="server" /></span></div>
+                                        </div>
+                                        <div class="chartwrapper">
+                                            <Rock:LineChart ID="lcMeasure" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="120px" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </ItemTemplate>
+                    </asp:Repeater>
+
+                        <a href="?ActiveTab=lbPastor" class="btn btn-default"><i class="fa fa-chevron-left"></i> Pastor View</a>
+
+                    </asp:Panel>
+
                 </asp:Panel>
 
                 <asp:Panel ID="pnlTotals" runat="server" Visible="false">
@@ -178,7 +266,7 @@
                             <h2><asp:Literal ID="lAdultsCampus" runat="server" Text="All Campuses" /></h2>
                         </div>
                         <div class="col-md-6">
-                            <Rock:CampusPicker ID="cpAdultsCampus" runat="server" OnSelectedIndexChanged="cpAdultsCampus_SelectedIndexChanged" AutoPostBack="true" />
+                            <Rock:CampusPicker ID="cpAdultsCampus" runat="server" OnSelectedIndexChanged="cpAdultsCampus_SelectedIndexChanged" AutoPostBack="true" Visible="false" />
                         </div>
                     </div>
 
@@ -202,6 +290,10 @@
                             </div>
                         </div>
                     </div>
+
+                    <hr />
+
+                    <asp:Literal ID="lTotalsByCampus" runat="server" />
                 </asp:Panel>
 
                 <asp:Panel ID="pnlStepDetails" runat="server" Visible="false">

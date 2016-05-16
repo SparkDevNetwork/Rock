@@ -56,23 +56,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
         #endregion
 
         #region Properties
-        /// <summary>
-        /// Gets or sets the active tab.
-        /// </summary>
-        /// <value>
-        /// The active tab.
-        /// </value>
-        protected string ActiveTab {
-            get
-            {
-                return ViewState["ActiveTab"].ToString();
-            }
-            set
-            {
-                ViewState["ActiveTab"] = value;
-            }
-        }
-
+        
         /// <summary>
         /// Gets or sets the date range.
         /// </summary>
@@ -80,6 +64,14 @@ namespace RockWeb.Plugins.church_ccv.Steps
         /// The date range.
         /// </value>
         protected DateRange DateRange { get; set; }
+
+        /// <summary>
+        /// Gets or sets the current measure.
+        /// </summary>
+        /// <value>
+        /// The current measure.
+        /// </value>
+        public StepMeasure CurrentMeasure { get; set; }
         #endregion
 
         #region Base Control Methods
@@ -125,9 +117,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 LoadStepTypes();
                 LoadPastors();
 
-                ShowCampus();
-
-                ViewState["ActiveTab"] = "lbAdults";
+                ShowTab();
             }
         }
 
@@ -158,11 +148,10 @@ namespace RockWeb.Plugins.church_ccv.Steps
         protected void lbTab_Click( object sender, EventArgs e )
         {
             LinkButton lb = sender as LinkButton;
-            if ( lb != null )
-            {
-                ActiveTab = lb.ID;
-                ShowTab();
-            }
+            
+            Dictionary<string, string> queryParms = new Dictionary<string, string>();
+            queryParms.Add( "ActiveTab", lb.ID );
+            NavigateToPage( this.RockPage.Guid, queryParms );
         }
 
         /// <summary>
@@ -228,7 +217,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cpCampusCampus_SelectedIndexChanged( object sender, EventArgs e )
         {
-            ShowCampus();
+            ShowAdults();
         }
 
         /// <summary>
@@ -397,7 +386,137 @@ namespace RockWeb.Plugins.church_ccv.Steps
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cpAdultsCampus_SelectedIndexChanged( object sender, EventArgs e )
         {
-            ShowAdults();
+            ShowTotals();
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptAdultSingleMeasure control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptAdultSingleMeasure_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            {
+                var item = e.Item.DataItem as CampusCache;
+
+                LineChart lcChart = (LineChart)e.Item.FindControl( "lcMeasure" );
+                Literal lChartValue = (Literal)e.Item.FindControl( "lChartValue" );
+                               
+                var chartData = GetChartData( DateRange, measureId: CurrentMeasure.Id, campusId: item.Id ).ToList();
+
+                // ensure there is at least one last year date to ensure 2 series
+                if ( !chartData.Any( d => d.SeriesId == "Previous Year" ) && chartData.Count > 0 )
+                {
+                    SummaryData blankItem = new SummaryData();
+                    blankItem.SeriesId = "Previous Year";
+                    blankItem.YValue = 0;
+                    blankItem.DateTimeStamp = chartData.OrderBy( d => d.DateTimeStamp ).FirstOrDefault().DateTimeStamp;
+
+                    chartData.Add( blankItem );
+                }
+
+                // sort data
+                chartData = chartData.OrderByDescending( c => c.SeriesId ).ThenBy( c => c.DateTimeStamp ).ToList();
+
+                if ( chartData.Count() > 0 )
+                {
+                    var jsonSetting = new JsonSerializerSettings
+                    {
+                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                        ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
+                    };
+                    string chartDataJson = JsonConvert.SerializeObject( chartData, Formatting.None, jsonSetting );
+
+                    lcChart.Options.SetChartStyle( new Guid( "2ABB2EA0-B551-476C-8F6B-478CD08C2227" ) ); // default rock style that we'll then heavily tweak
+                    lcChart.Visible = true;
+                    lcChart.ChartData = chartDataJson;
+                    lcChart.Options.legend.show = false;
+                    lcChart.Options.series.lines.lineWidth = 4;
+                    lcChart.Options.xaxis.show = false;
+                    lcChart.Options.yaxis.show = false;
+
+                    Color measureColor = ColorTranslator.FromHtml( CurrentMeasure.Color );
+                    Color measureColorLight = measureColor.ChangeColorBrightness( 0.8f );
+
+                    lcChart.Options.colors = new string[] { measureColorLight.ToHtml(), measureColor.ToHtml() };
+                    lcChart.Options.series.lines.fill = 0;
+                    lcChart.Options.grid.show = false;
+                    lcChart.Options.series.shadowSize = 0;
+                }
+                else
+                {
+                    lcChart.Visible = false;
+                }
+
+                lChartValue.Text = string.Format( "{0:n0}", chartData.Where( d => d.SeriesId == "Current Year" ).Sum( d => d.YValue ) );
+                
+            }
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptPastorSingleMeasure control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptPastorSingleMeasure_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            {
+                var item = e.Item.DataItem as NeighborhoodPastor;
+
+                LineChart lcChart = (LineChart)e.Item.FindControl( "lcMeasure" );
+                Literal lChartValue = (Literal)e.Item.FindControl( "lChartValue" );
+
+                var chartData = GetChartData( DateRange, measureId: CurrentMeasure.Id, pastorId: item.PersonId ).ToList();
+
+                // ensure there is at least one last year date to ensure 2 series
+                if ( !chartData.Any( d => d.SeriesId == "Previous Year" ) && chartData.Count > 0 )
+                {
+                    SummaryData blankItem = new SummaryData();
+                    blankItem.SeriesId = "Previous Year";
+                    blankItem.YValue = 0;
+                    blankItem.DateTimeStamp = chartData.OrderBy( d => d.DateTimeStamp ).FirstOrDefault().DateTimeStamp;
+
+                    chartData.Add( blankItem );
+                }
+
+                // sort data
+                chartData = chartData.OrderByDescending( c => c.SeriesId ).ThenBy( c => c.DateTimeStamp ).ToList();
+
+                if ( chartData.Count() > 0 )
+                {
+                    var jsonSetting = new JsonSerializerSettings
+                    {
+                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                        ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
+                    };
+                    string chartDataJson = JsonConvert.SerializeObject( chartData, Formatting.None, jsonSetting );
+
+                    lcChart.Options.SetChartStyle( new Guid( "2ABB2EA0-B551-476C-8F6B-478CD08C2227" ) ); // default rock style that we'll then heavily tweak
+                    lcChart.Visible = true;
+                    lcChart.ChartData = chartDataJson;
+                    lcChart.Options.legend.show = false;
+                    lcChart.Options.series.lines.lineWidth = 4;
+                    lcChart.Options.xaxis.show = false;
+                    lcChart.Options.yaxis.show = false;
+
+                    Color measureColor = ColorTranslator.FromHtml( CurrentMeasure.Color );
+                    Color measureColorLight = measureColor.ChangeColorBrightness( 0.8f );
+
+                    lcChart.Options.colors = new string[] { measureColorLight.ToHtml(), measureColor.ToHtml() };
+                    lcChart.Options.series.lines.fill = 0;
+                    lcChart.Options.grid.show = false;
+                    lcChart.Options.series.shadowSize = 0;
+                }
+                else
+                {
+                    lcChart.Visible = false;
+                }
+
+                lChartValue.Text = string.Format( "{0:n0}", chartData.Where( d => d.SeriesId == "Current Year" ).Sum( d => d.YValue ) );
+
+            }
         }
         #endregion
 
@@ -466,7 +585,15 @@ namespace RockWeb.Plugins.church_ccv.Steps
             liStepDetails.RemoveCssClass( "active" );
             pnlStepDetails.Visible = false;
 
-            switch ( ActiveTab ?? string.Empty )
+            string visibleTab = "lbAdults";           
+
+            // if query string contains a tab to view use that instead
+            if (Request["ActiveTab"] != null )
+            {
+                visibleTab = Request["ActiveTab"].ToString();
+            }
+
+            switch ( visibleTab ?? string.Empty )
             {
                 case "lbPastor":
                     {
@@ -480,7 +607,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     {
                         liTotals.AddCssClass( "active" );
                         pnlTotals.Visible = true;
-                        ShowAdults();
+                        ShowTotals();
                         break;
                     }
 
@@ -496,7 +623,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     {
                         liAdults.AddCssClass( "active" );
                         pnlAdults.Visible = true;
-                        ShowCampus();
+                        ShowAdults();
                         break;
                     }
             }
@@ -549,7 +676,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
         /// <summary>
         /// Shows the adults.
         /// </summary>
-        private void ShowAdults(int? campusId = null)
+        private void ShowTotals(int? campusId = null)
         {
             RockContext rockContext = new RockContext();
 
@@ -563,7 +690,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 lAdultsCampus.Text = string.Format( "{0} Campus", cpAdultsCampus.SelectedItem.Text );
             }
 
-            var adultCountResult = GetAdultsCount( DateRange, rockContext, cpAdultsCampus.SelectedValue.AsIntegerOrNull() );
+            var adultCountResult = GetTotals( DateRange, rockContext, cpAdultsCampus.SelectedValue.AsIntegerOrNull() );
 
             int uniqueAdults = adultCountResult.UniqueAdults;
             int totalSteps = adultCountResult.TotalSteps;
@@ -577,6 +704,48 @@ namespace RockWeb.Plugins.church_ccv.Steps
             lAdultUniqueAdults.Text = uniqueAdults.ToString();
             lAdultsTotalSteps.Text = totalSteps.ToString();
             lAdultsAvergeSteps.Text = averageSteps != 0 ? Math.Round( averageSteps, 1).ToString() : "NA";
+
+            // get similar results for each campus (added after intial release)
+            string outputPattern = @"<div class=""row"">
+                        <div class=""col-md-12"">
+                            <h4>{0}</h4>
+                        </div>
+                        <div class=""col-md-4"">
+                            <div class=""adultmetric-cell"">
+                                <h1>Unique Adults Who Took A Step</h1>
+                                <div class=""adultmetric-value"">{1} <i class=""fa fa-user""></i></div>
+                            </div>
+                        </div>
+                        <div class=""col-md-4"">
+                            <div class=""adultmetric-cell"">
+                                <h1>Total Number of Steps Taken</h1>
+                                <div class=""adultmetric-value"">{2} <i class=""fa fa-road""></i></div>
+                            </div>
+                        </div>
+                        <div class=""col-md-4"">
+                            <div class=""adultmetric-cell"">
+                                <h1>Average Steps Per Person</h1>
+                                <div class=""adultmetric-value"">{3} <i class=""fa fa-calculator""></i></div>
+                            </div>
+                        </div>
+                    </div>";
+
+            var campuses = CampusCache.All();
+
+            foreach(var campus in campuses )
+            {
+                var totalResult = GetTotals( DateRange, rockContext, campus.Id );
+
+                averageSteps = 0;
+
+                if ( uniqueAdults != 0 )
+                {
+                    averageSteps = (double)totalSteps / (double)uniqueAdults;
+                }
+
+                lTotalsByCampus.Text += string.Format( outputPattern, campus.Name, totalResult.UniqueAdults, totalResult.TotalSteps, averageSteps != 0 ? Math.Round( averageSteps, 1 ).ToString() : "NA" );
+            }
+
         }
 
         /// <summary>
@@ -587,34 +756,189 @@ namespace RockWeb.Plugins.church_ccv.Steps
         {
             RockContext rockContext = new RockContext();
 
-            pastorId = ddlPastor.SelectedItem.Value.AsInteger();
-            lPastorPastor.Text = ddlPastor.SelectedItem.Text;
-            
-            var measures = new StepMeasureService( rockContext ).Queryable().AsNoTracking().Where( m => m.IsActive ).ToList();
-            rptPastorMeasures.DataSource = measures;
-            rptPastorMeasures.DataBind();
+            // first determine which subpanel to display
+            if ( Request["MeasureId"] == null )
+            {
+                pnlPastorMeasures.Visible = true;
+                pnlPastorSingleMeasure.Visible = false;
+
+                pastorId = ddlPastor.SelectedItem.Value.AsInteger();
+                lPastorPastor.Text = ddlPastor.SelectedItem.Text;
+
+                var measures = new StepMeasureService( rockContext ).Queryable().AsNoTracking().Where( m => m.IsActive ).ToList();
+                rptPastorMeasures.DataSource = measures;
+                rptPastorMeasures.DataBind();
+            }
+            else
+            {
+                pnlPastorMeasures.Visible = false;
+                pnlPastorSingleMeasure.Visible = true;
+
+                int measureId = Request["MeasureId"].AsInteger();
+
+                // wire up data for the campus charts
+                CurrentMeasure = new StepMeasureService( rockContext ).Queryable().AsNoTracking().Where( m => m.Id == measureId ).FirstOrDefault();
+
+                divPastorSingleMeasureWrap.Style.Add( "border", "3px solid " + CurrentMeasure.Color );
+                divPastorSingleMeasureWrap.Style.Add( "color", CurrentMeasure.Color );
+                iPastorSingleMeasureIcon.AddCssClass( CurrentMeasure.IconCssClass );
+
+                // get pastors
+                DatamartNeighborhoodService datamartNeighborhoodService = new DatamartNeighborhoodService( rockContext );
+                var pastors = datamartNeighborhoodService.Queryable().AsNoTracking()
+                                    .Where( n => n.NeighborhoodPastorId != null )
+                                    .Select( n => new NeighborhoodPastor { Name = n.NeighborhoodPastorName, PersonId = n.NeighborhoodPastorId.Value } )
+                                    .Distinct()
+                                    .ToList();
+
+                rptPastorSingleMeasure.DataSource = pastors;
+                rptPastorSingleMeasure.DataBind();
+
+                // get chart data for the top chart
+                var chartData = GetChartData( DateRange, measureId: CurrentMeasure.Id, campusId: null ).ToList();
+
+                // ensure there is at least one last year date to ensure 2 series
+                if ( !chartData.Any( d => d.SeriesId == "Previous Year" ) && chartData.Count > 0 )
+                {
+                    SummaryData blankItem = new SummaryData();
+                    blankItem.SeriesId = "Previous Year";
+                    blankItem.YValue = 0;
+                    blankItem.DateTimeStamp = chartData.OrderBy( d => d.DateTimeStamp ).FirstOrDefault().DateTimeStamp;
+
+                    chartData.Add( blankItem );
+                }
+
+                // sort data
+                chartData = chartData.OrderByDescending( c => c.SeriesId ).ThenBy( c => c.DateTimeStamp ).ToList();
+
+                if ( chartData.Count() > 0 )
+                {
+                    var jsonSetting = new JsonSerializerSettings
+                    {
+                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                        ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
+                    };
+                    string chartDataJson = JsonConvert.SerializeObject( chartData, Formatting.None, jsonSetting );
+
+                    lcPastorSingleMeasure.Options.SetChartStyle( new Guid( "2ABB2EA0-B551-476C-8F6B-478CD08C2227" ) ); // default rock style that we'll then heavily tweak
+                    lcPastorSingleMeasure.Visible = true;
+                    lcPastorSingleMeasure.ChartData = chartDataJson;
+                    lcPastorSingleMeasure.Options.legend.show = false;
+                    lcPastorSingleMeasure.Options.series.lines.lineWidth = 4;
+                    lcPastorSingleMeasure.Options.xaxis.show = false;
+                    lcPastorSingleMeasure.Options.yaxis.show = false;
+
+                    Color measureColor = ColorTranslator.FromHtml( CurrentMeasure.Color );
+                    Color measureColorLight = measureColor.ChangeColorBrightness( 0.8f );
+
+                    lcPastorSingleMeasure.Options.colors = new string[] { measureColorLight.ToHtml(), measureColor.ToHtml() };
+                    lcPastorSingleMeasure.Options.series.lines.fill = 0;
+                    lcPastorSingleMeasure.Options.grid.show = false;
+                    lcPastorSingleMeasure.Options.series.shadowSize = 0;
+                }
+                else
+                {
+                    lcPastorSingleMeasure.Visible = false;
+                }
+
+                lPastorSingleChartValue.Text = string.Format( "{0:n0}", chartData.Where( d => d.SeriesId == "Current Year" ).Sum( d => d.YValue ) );
+            }
         }
 
         /// <summary>
         /// Shows the campus.
         /// </summary>
-        private void ShowCampus(int? campusId = null)
+        private void ShowAdults(int? campusId = null)
         {
             RockContext rockContext = new RockContext();
 
-            if ( cpCampusCampus.SelectedCampusId == null )
+            // first determine which subpanel to display
+            if ( Request["MeasureId"] == null )
             {
-                lCampusCampus.Text = "All Campuses ";
+                pnlAdultsAllMeasures.Visible = true;
+                pnlAdultsSingleMeasure.Visible = false;
+
+                if ( cpCampusCampus.SelectedCampusId == null )
+                {
+                    lCampusCampus.Text = "All Campuses ";
+                }
+                else
+                {
+                    campusId = cpCampusCampus.SelectedItem.Value.AsInteger();
+                    lCampusCampus.Text = string.Format( "{0} Campus", cpCampusCampus.SelectedItem.Text );
+                }
+
+                var measures = new StepMeasureService( rockContext ).Queryable().AsNoTracking().Where( m => m.IsActive ).ToList();
+                rptAdultMeasures.DataSource = measures;
+                rptAdultMeasures.DataBind();
             }
             else
             {
-                campusId = cpCampusCampus.SelectedItem.Value.AsInteger();
-                lCampusCampus.Text = string.Format( "{0} Campus", cpCampusCampus.SelectedItem.Text );
-            }
+                pnlAdultsAllMeasures.Visible = false;
+                pnlAdultsSingleMeasure.Visible = true;
 
-            var measures = new StepMeasureService( rockContext ).Queryable().AsNoTracking().Where( m => m.IsActive ).ToList();
-            rptCampusMeasures.DataSource = measures;
-            rptCampusMeasures.DataBind();
+                int measureId = Request["MeasureId"].AsInteger();
+
+                // wire up data for the campus charts
+                CurrentMeasure = new StepMeasureService( rockContext ).Queryable().AsNoTracking().Where( m => m.Id == measureId ).FirstOrDefault();
+
+                divAdultSingleMeasureWrap.Style.Add( "border", "3px solid " + CurrentMeasure.Color );
+                divAdultSingleMeasureWrap.Style.Add( "color", CurrentMeasure.Color );
+                iAdultSingleMeasureIcon.AddCssClass( CurrentMeasure.IconCssClass );
+
+                var campuses = CampusCache.All();
+                rptAdultSingleMeasure.DataSource = campuses;
+                rptAdultSingleMeasure.DataBind();
+
+                // get chart data for the top chart
+                var chartData = GetChartData( DateRange, measureId: CurrentMeasure.Id, campusId: null ).ToList();
+
+                // ensure there is at least one last year date to ensure 2 series
+                if ( !chartData.Any( d => d.SeriesId == "Previous Year" ) && chartData.Count > 0 )
+                {
+                    SummaryData blankItem = new SummaryData();
+                    blankItem.SeriesId = "Previous Year";
+                    blankItem.YValue = 0;
+                    blankItem.DateTimeStamp = chartData.OrderBy( d => d.DateTimeStamp ).FirstOrDefault().DateTimeStamp;
+
+                    chartData.Add( blankItem );
+                }
+
+                // sort data
+                chartData = chartData.OrderByDescending( c => c.SeriesId ).ThenBy( c => c.DateTimeStamp ).ToList();
+
+                if ( chartData.Count() > 0 )
+                {
+                    var jsonSetting = new JsonSerializerSettings
+                    {
+                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                        ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
+                    };
+                    string chartDataJson = JsonConvert.SerializeObject( chartData, Formatting.None, jsonSetting );
+
+                    lcAdultsSingleMeasure.Options.SetChartStyle( new Guid( "2ABB2EA0-B551-476C-8F6B-478CD08C2227" ) ); // default rock style that we'll then heavily tweak
+                    lcAdultsSingleMeasure.Visible = true;
+                    lcAdultsSingleMeasure.ChartData = chartDataJson;
+                    lcAdultsSingleMeasure.Options.legend.show = false;
+                    lcAdultsSingleMeasure.Options.series.lines.lineWidth = 4;
+                    lcAdultsSingleMeasure.Options.xaxis.show = false;
+                    lcAdultsSingleMeasure.Options.yaxis.show = false;
+
+                    Color measureColor = ColorTranslator.FromHtml( CurrentMeasure.Color );
+                    Color measureColorLight = measureColor.ChangeColorBrightness( 0.8f );
+
+                    lcAdultsSingleMeasure.Options.colors = new string[] { measureColorLight.ToHtml(), measureColor.ToHtml() };
+                    lcAdultsSingleMeasure.Options.series.lines.fill = 0;
+                    lcAdultsSingleMeasure.Options.grid.show = false;
+                    lcAdultsSingleMeasure.Options.series.shadowSize = 0;
+                }
+                else
+                {
+                    lcAdultsSingleMeasure.Visible = false;
+                }
+
+                lAdultSingleChartValue.Text = string.Format( "{0:n0}", chartData.Where( d => d.SeriesId == "Current Year" ).Sum( d => d.YValue ) );
+            }
         }
 
         /// <summary>
@@ -877,7 +1201,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
         /// <param name="rockContext">The rock context.</param>
         /// <param name="campusId">The campus identifier.</param>
         /// <returns></returns>
-        private AdultCountResult GetAdultsCount( DateRange dateRange, RockContext rockContext = null, int? campusId = null )
+        private AdultCountResult GetTotals( DateRange dateRange, RockContext rockContext = null, int? campusId = null )
         {
             AdultCountResult result = new AdultCountResult();
 
@@ -941,5 +1265,27 @@ namespace RockWeb.Plugins.church_ccv.Steps
         /// The total steps.
         /// </value>
         public int TotalSteps { get; set; }
+    }
+
+    /// <summary>
+    /// Object for holding neighborhood pastors
+    /// </summary>
+    public class NeighborhoodPastor
+    {
+        /// <summary>
+        /// Gets or sets the person identifier.
+        /// </summary>
+        /// <value>
+        /// The person identifier.
+        /// </value>
+        public int PersonId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        public string Name { get; set; }
     }
 }
