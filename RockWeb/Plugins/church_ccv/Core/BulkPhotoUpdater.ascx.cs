@@ -121,6 +121,7 @@ namespace RockWeb.Plugins.church_ccv.Core
         protected void ShowPersonDetail( int? personId )
         {
             CurrentPhotoPersonId = personId;
+            hfOrphanedPhotoIds.Value = string.Empty;
 
             if ( CurrentPhotoPersonId != null && CurrentPhotoPersonId != 0 && personId.HasValue )
             {
@@ -323,12 +324,14 @@ namespace RockWeb.Plugins.church_ccv.Core
                 person.PhotoId = imgPhoto.BinaryFileId;
             }
 
+            BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+
             // if they used the ImageEditor, and cropped it, the uncropped file is still in BinaryFile. So clean it up
             if ( imgPhoto.CropBinaryFileId.HasValue )
             {
                 if ( imgPhoto.CropBinaryFileId != person.PhotoId )
                 {
-                    BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+                    
                     var binaryFile = binaryFileService.Get( imgPhoto.CropBinaryFileId.Value );
                     if ( binaryFile != null && binaryFile.IsTemporary )
                     {
@@ -342,6 +345,21 @@ namespace RockWeb.Plugins.church_ccv.Core
 
                 rockContext.SaveChanges();
             }
+
+            rockContext.SaveChanges();
+            var orphanedPhotoIds = hfOrphanedPhotoIds.Value.Split( ',' ).AsIntegerList();
+            var orphanedPhotos = binaryFileService.GetByIds( orphanedPhotoIds );
+            foreach ( var photo in orphanedPhotos )
+            {
+                string errorMessage;
+                if ( binaryFileService.CanDelete( photo, out errorMessage ) )
+                {
+                    photo.IsTemporary = true;
+                }
+            }
+
+            rockContext.SaveChanges();
+
 
             SkipCounter += 1;
             ShowPersonDetail( hfPersonIds.Value.SplitDelimitedValues().Skip( SkipCounter ).FirstOrDefault().AsIntegerOrNull() );
@@ -452,6 +470,7 @@ namespace RockWeb.Plugins.church_ccv.Core
         {
             ResizeSettings settings = new ResizeSettings();
             settings.MaxWidth = nbShrinkWidth.Text.AsIntegerOrNull() ?? 3600;
+            hfOrphanedPhotoIds.Value += string.Format( ",{0}", imgPhoto.BinaryFileId );
             var resizedPhotoId = GetResizedPhotoId( imgPhoto.BinaryFileId.Value, settings );
             UpdatePhotoDetails( resizedPhotoId );
         }
@@ -465,6 +484,7 @@ namespace RockWeb.Plugins.church_ccv.Core
         {
             ResizeSettings settings = new ResizeSettings();
             settings.Rotate = 90;
+            hfOrphanedPhotoIds.Value += string.Format( ",{0}", imgPhoto.BinaryFileId );
             var resizedPhotoId = GetResizedPhotoId( imgPhoto.BinaryFileId.Value, settings );
             UpdatePhotoDetails( resizedPhotoId );
         }

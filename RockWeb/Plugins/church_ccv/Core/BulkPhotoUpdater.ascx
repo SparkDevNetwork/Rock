@@ -7,6 +7,7 @@
 
         <asp:Panel ID="pnlView" runat="server">
             <asp:HiddenField ID="hfPersonIds" runat="server" />
+            <asp:HiddenField ID="hfOrphanedPhotoIds" runat="server" />
 
             <div class="panel panel-block">
                 <div class="panel-heading">
