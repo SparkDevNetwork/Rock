@@ -393,6 +393,13 @@ namespace Rock.Workflow.Action
             return true;
         }
 
+        /// <summary>
+        /// Gets the defined value identifier.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="definedTypeGuid">The defined type unique identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
         public int? GetDefinedValueId( string value, Guid definedTypeGuid, RockContext rockContext )
         {
             // returns the guid of the matching defined value for the passed defined type

@@ -452,11 +452,9 @@ namespace Rock.Model
         /// <summary>
         /// Gets the by full name ordered.
         /// </summary>
-        /// <param name="fullName">The full name.</param>
+        /// <param name="lastName">The last name.</param>
         /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
         /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
-        /// <param name="allowFirstNameOnly">if set to <c>true</c> [allow first name only].</param>
-        /// <param name="reversed">if set to <c>true</c> [reversed].</param>
         /// <returns></returns>
         public IQueryable<Person> GetByLastName( string lastName, bool includeDeceased, bool includeBusinesses )
         {
