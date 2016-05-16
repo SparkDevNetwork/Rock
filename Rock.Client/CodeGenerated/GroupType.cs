@@ -65,6 +65,9 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public Rock.Client.Enums.GroupCapacityRule GroupCapacityRule { get; set; }
+
+        /// <summary />
         public string GroupMemberTerm { get; set; }
 
         /// <summary />
@@ -157,6 +160,7 @@ namespace Rock.Client
             this.EnableLocationSchedules = source.EnableLocationSchedules;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.GroupCapacityRule = source.GroupCapacityRule;
             this.GroupMemberTerm = source.GroupMemberTerm;
             this.GroupTerm = source.GroupTerm;
             this.GroupTypePurposeValueId = source.GroupTypePurposeValueId;

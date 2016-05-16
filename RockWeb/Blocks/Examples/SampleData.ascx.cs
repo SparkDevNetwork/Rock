@@ -956,6 +956,11 @@ namespace RockWeb.Blocks.Examples
         /// <param name="rockContext"></param>
         private void AddRegistrationInstances( XElement elemRegistrationInstances, RockContext rockContext )
         {
+            if ( elemRegistrationInstances == null )
+            {
+                return;
+            }
+
             foreach ( var element in elemRegistrationInstances.Elements( "registrationInstance" ) )
             {
                 // skip any illegally formatted items
@@ -1481,7 +1486,11 @@ namespace RockWeb.Blocks.Examples
                 // add the families giving data
                 if ( GetAttributeValue( "EnableGiving" ).AsBoolean() )
                 {
-                    AddFamilyGiving( elemFamily.Element( "giving" ), elemFamily.Attribute( "name" ).Value, rockContext );
+                    // Support multiple giving elements per family
+                    foreach ( var elementGiving in elemFamily.Elements( "giving" ) )
+                    {
+                        AddFamilyGiving( elementGiving, elemFamily.Attribute( "name" ).Value, rockContext );
+                    }
                 }
             }
 
@@ -2218,7 +2227,11 @@ namespace RockWeb.Blocks.Examples
             DateTime startingDate = DateTime.Parse( elemGiving.Attribute( "startGiving" ).Value.Trim(), new CultureInfo( "en-US" ) );
             DateTime endDate = RockDateTime.Now;
 
-            if ( elemGiving.Attribute( "endingGivingWeeksAgo" ) != null )
+            if ( elemGiving.Attribute( "endGiving" ) != null )
+            {
+                DateTime.TryParse( elemGiving.Attribute( "endGiving" ).Value.Trim(), out endDate );
+            }
+            else if ( elemGiving.Attribute( "endingGivingWeeksAgo" ) != null )
             {
                 int endingWeeksAgo = 0;
                 int.TryParse( elemGiving.Attribute( "endingGivingWeeksAgo" ).Value.Trim(), out endingWeeksAgo );

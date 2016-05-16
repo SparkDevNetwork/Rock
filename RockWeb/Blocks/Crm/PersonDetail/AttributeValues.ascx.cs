@@ -347,6 +347,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             fsAttributes.Controls.Clear();
 
             string validationGroup = string.Format("vgAttributeValues_{0}", this.BlockId );
+            valSummaryTop.ValidationGroup = validationGroup;
             btnSave.ValidationGroup = validationGroup;
 
             hfAttributeOrder.Value = AttributeList.AsDelimited( "|" );
