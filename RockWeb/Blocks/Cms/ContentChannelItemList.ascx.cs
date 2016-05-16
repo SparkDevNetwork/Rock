@@ -83,6 +83,8 @@ namespace RockWeb.Blocks.Cms
             _channelId = PageParameter( "contentChannelId" ).AsIntegerOrNull();
             if ( _channelId != null )
             {
+                upnlContent.Visible = true;
+
                 string cssIcon = "fa fa-bullhorn";
                 var contentChannel = new ContentChannelService( new RockContext() ).Get( _channelId.Value );
                 if ( contentChannel != null )
@@ -158,6 +160,10 @@ namespace RockWeb.Blocks.Cms
                 // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
                 this.BlockUpdated += Block_BlockUpdated;
                 this.AddConfigurationUpdateTrigger( upnlContent );
+            }
+            else
+            {
+                upnlContent.Visible = false;
             }
         }
 

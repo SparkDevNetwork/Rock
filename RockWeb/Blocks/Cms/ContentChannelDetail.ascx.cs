@@ -117,7 +117,16 @@ namespace RockWeb.Blocks.Cms
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "contentChannelId" ).AsInteger() );
+                int? contentChannelId = PageParameter( "contentChannelId" ).AsIntegerOrNull( );
+                if( contentChannelId.HasValue )
+                {
+                    upnlContent.Visible = true;
+                    ShowDetail( contentChannelId.Value );
+                }
+                else
+                {
+                    upnlContent.Visible = false;
+                }
             }
             else
             {
