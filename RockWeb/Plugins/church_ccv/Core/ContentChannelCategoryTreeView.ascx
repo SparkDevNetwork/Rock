@@ -113,16 +113,66 @@
                     };
 
                 $('#<%=pnlTreeviewContent.ClientID%>')
-                        .rockTree({
-                            restUrl: '<%= ResolveUrl( "~/api/contentchannelcategories/getchildren/" ) %>',
-                            restParams: '<%= RestParms %>',
-                            mapping: {
-                                include: ['isCategory', 'entityId'],
-                                mapData: _mapCategories
-                            },
-                            selectedIds: $selectedId.val() ? $selectedId.val().split(',') : null,
-                            expandedIds: $expandedIds.val() ? $expandedIds.val().split(',') : null
-                        });
+                    .on('rockTree:selected', function (e, id) {
+
+                        var $node = $('[data-id="' + id + '"]'),
+                            isCategory = $node.attr('data-iscategory') === 'true',
+                            urlParameter = (isCategory ? 'CategoryId' : '<%= PageParameterName %>');
+
+                        // Get the id of the Entity represented by this Tree Node if it has been specified as an attribute.
+                        // If not, assume the id of the Entity is the same as the Node.
+                        var entityId = $node.attr('data-entityid') || id;
+
+                        var itemSearch = '?' + urlParameter + '=' + entityId;
+
+                        var currentItemId = $selectedId.val();
+
+                        if (currentItemId !== id) {
+                            // get the data-id values of rock-tree items that are showing visible children (in other words, Expanded Nodes)
+                            var expandedDataIds = $(e.currentTarget).find('.rocktree-children').filter(":visible").closest('.rocktree-item').map(function () {
+                                return $(this).attr('data-id')
+                            }).get().join(',');
+
+                            var pageRouteTemplate = $('#<%=hfPageRouteTemplate.ClientID%>').val();
+                            var locationUrl = "";
+                            var regex = new RegExp("{" + urlParameter + "}", "i");
+
+                            if (pageRouteTemplate.match(regex)) {
+                                locationUrl = Rock.settings.get('baseUrl') + pageRouteTemplate.replace(regex, entityId);
+                                locationUrl += "?ExpandedIds=" + encodeURIComponent(expandedDataIds);
+                            }
+                            else {
+                                var detailPageUrl = $('#<%=hfDetailPageUrl.ClientID%>').val();
+                                if (detailPageUrl) {
+                                    locationUrl = Rock.settings.get('baseUrl') + detailPageUrl + itemSearch;
+                                }
+                                else {
+                                    locationUrl = window.location.href.split('?')[0] + itemSearch;
+                                }
+
+                                locationUrl += "&ExpandedIds=" + encodeURIComponent(expandedDataIds);
+                            }
+
+                            window.location = locationUrl;
+                        }
+
+                    })
+                    .on('rockTree:rendered', function () {
+
+                        // update viewport height
+                        resizeScrollbar(scrollbCategory);
+
+                    })
+                    .rockTree({
+                        restUrl: '<%= ResolveUrl( "~/api/contentchannelcategories/getchildren/" ) %>',
+                        restParams: '<%= RestParms %>',
+                        mapping: {
+                            include: ['isCategory', 'entityId'],
+                            mapData: _mapCategories
+                        },
+                        selectedIds: $selectedId.val() ? $selectedId.val().split(',') : null,
+                        expandedIds: $expandedIds.val() ? $expandedIds.val().split(',') : null
+                    });
             });
 
             function resizeScrollbar(scrollControl) {

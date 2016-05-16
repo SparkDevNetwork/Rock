@@ -16,7 +16,11 @@
 //
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Xml;
 using Rock;
 using Rock.Data;
 using Rock.Model;
@@ -31,37 +35,173 @@ namespace chuch.ccv.Podcasts.Rest
     {
         public ContentChannelCategoriesController() : base( new Rock.Model.CategoryService( new Rock.Data.RockContext() ) ) { } 
 
-        /// <summary>
-        /// Gets the children.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="rootCategoryId">The root category identifier.</param>
-        /// <param name="entityTypeId">The entity type identifier.</param>
-        /// <param name="entityQualifier">The entity qualifier.</param>
-        /// <param name="entityQualifierValue">The entity qualifier value.</param>
-        /// <param name="showUnnamedEntityItems">if set to <c>true</c> [show unnamed entity items].</param>
-        /// <param name="showCategoriesThatHaveNoChildren">if set to <c>true</c> [show categories that have no children].</param>
-        /// <param name="includedCategoryIds">The included category ids.</param>
-        /// <param name="excludedCategoryIds">The excluded category ids.</param>
-        /// <returns></returns>
+        const string ContentChannel_CategoryAttributeGuid = "DEA4ACCE-82F6-43E3-B381-6959FBF66E74";
+        const int WeekendVideos_CategoryId = 451; 
+        const string GetImageEndpoint = "GetImage.ashx?guid=";
+
+        string PublicApplicationRoot { get; set; }
+        
+        [System.Web.Http.Route( "api/ContentChannelCategories/GetNotes/" )]
+        public HttpResponseMessage GetNotes( )
+        {
+            using ( StringWriter stringWriter = new StringWriterWithEncoding(Encoding.UTF8) )
+            {
+                XmlWriterSettings settings = new XmlWriterSettings();
+                settings.Indent = true;
+                settings.IndentChars = "\t";
+                settings.NewLineOnAttributes = true;
+                settings.Encoding = System.Text.Encoding.UTF8;
+                
+                using ( XmlWriter writer = XmlWriter.Create( stringWriter, settings) )
+                {
+                    // first, get the public application root
+                    RockContext rockContext = new RockContext( );
+                    var attribQuery = new AttributeService( rockContext ).Queryable( ).Where( a => a.Key == "PublicApplicationRoot" ).SingleOrDefault( );
+                    PublicApplicationRoot = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.AttributeId == attribQuery.Id ).SingleOrDefault( ).Value;
+
+
+                    // start with the root node and header info
+                    writer.WriteStartDocument( true );
+                    writer.WriteStartElement( "NoteDB" );
+
+                    //todo: decide how to manage this
+                    /*writer.WriteStartElement( "HostDomain" );
+                    writer.WriteString( PublicApplicationRoot );
+                    writer.WriteEndElement( );*/
+                                    
+                    // write the series list, which is the heart of the XML
+                    WriteSeriesList( writer );
+                    
+                    // close out the root node and document
+                    writer.WriteEndElement( );
+                    writer.WriteEndDocument( );
+
+                    // dump to the stringWriter's stream
+                    writer.Flush();
+                }
+
+                // return the XML
+                return new HttpResponseMessage()
+                {
+                    Content = new StringContent( stringWriter.ToString(), Encoding.UTF8, "application/xml" )
+                };
+            }
+        }
+        
+        private void WriteSeriesList( XmlWriter writer )
+        {
+            // begin the serisList section
+            writer.WriteStartElement( "SeriesList" );
+
+            // get all content channel types in the "Weekend Series" podcast
+            IQueryable<ContentChannel> seriesContentChannels = GetCategorizedItems( WeekendVideos_CategoryId );
+            IQueryable<AttributeValue> attribValueQuery = new AttributeValueService( new RockContext( ) ).Queryable( );
+            
+            foreach( ContentChannel series in seriesContentChannels )
+            {
+                writer.WriteStartElement( "Series" );
+
+                // pull in all this series' attributes
+                List<AttributeValue> contentChannelAttribValList = attribValueQuery.Where( av => av.EntityId == series.Id && 
+                                                                                           av.Attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" ).ToList( );
+
+                // Put each needed XML element
+                writer.WriteStartElement( "SeriesName" );
+                writer.WriteValue( series.Name );
+                writer.WriteEndElement( );
+
+                writer.WriteStartElement( "Description" );
+                writer.WriteValue( series.Description );
+                writer.WriteEndElement( );
+
+                writer.WriteStartElement( "DateRanges" );
+                writer.WriteValue( contentChannelAttribValList.Where( av => av.AttributeKey == "DateRange" ).SingleOrDefault( ).Value );
+                writer.WriteEndElement( );
+
+                // The images will be Guids with the GetImage path prefixed
+                writer.WriteStartElement( "BillboardUrl" );
+                string billboardUrl = PublicApplicationRoot + GetImageEndpoint + contentChannelAttribValList.Where( av => av.AttributeKey == "BillboardImage" ).SingleOrDefault( ).Value;
+                writer.WriteValue( billboardUrl );
+                writer.WriteEndElement( );
+
+                writer.WriteStartElement( "ThumbnailUrl" );
+                string thumbnailUrl = PublicApplicationRoot + GetImageEndpoint + contentChannelAttribValList.Where( av => av.AttributeKey == "ThumbnailImage" ).SingleOrDefault( ).Value;
+                writer.WriteValue( thumbnailUrl );
+                writer.WriteEndElement( );
+
+                
+                // Now generate each message of the series
+                foreach( ContentChannelItem message in series.Items )
+                {
+                    // get this message's attributes
+                    List<AttributeValue> itemAttribValList = attribValueQuery.Where( av => av.EntityId == message.Id && 
+                                                                                           av.Attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" ).ToList( );
+
+                    writer.WriteStartElement( "Message" );
+
+                    // Put required elements
+                    writer.WriteStartElement( "Name" );
+                    writer.WriteValue( message.Title );
+                    writer.WriteEndElement( );
+
+                    writer.WriteStartElement( "Speaker" );
+                    writer.WriteValue( itemAttribValList.Where( av => av.AttributeKey == "Speaker" ).SingleOrDefault( ).Value );
+                    writer.WriteEndElement( );
+
+                    writer.WriteStartElement( "Date" );
+                    writer.WriteValue( message.StartDateTime.ToShortDateString( ) );
+                    writer.WriteEndElement( );
+
+                    writer.WriteStartElement( "NoteUrl" );
+                    writer.WriteValue( itemAttribValList.Where( av => av.AttributeKey == "NoteUrl" ).SingleOrDefault( ).Value );
+                    writer.WriteEndElement( );
+
+                    // Watch/Share/Audio URLs are optional, so check that they exist
+                    string watchUrlValue = itemAttribValList.Where( av => av.AttributeKey == "WatchUrl" ).SingleOrDefault( ).Value;
+                    if( string.IsNullOrEmpty( watchUrlValue ) == false )
+                    {
+                        writer.WriteStartElement( "WatchUrl" );
+                        writer.WriteValue( watchUrlValue );
+                        writer.WriteEndElement();
+                    }
+                    
+                    string shareUrlValue = itemAttribValList.Where( av => av.AttributeKey == "ShareUrl" ).SingleOrDefault( ).Value;
+                    if( string.IsNullOrEmpty( shareUrlValue ) == false )
+                    {
+                        writer.WriteStartElement( "ShareUrl" );
+                        writer.WriteValue( shareUrlValue );
+                        writer.WriteEndElement();
+                    }
+
+                    string audioUrlValue = itemAttribValList.Where( av => av.AttributeKey == "AudioUrl" ).SingleOrDefault( ).Value;
+                    if( string.IsNullOrEmpty( audioUrlValue ) == false )
+                    {
+                        writer.WriteStartElement( "AudioUrl" );
+                        writer.WriteValue( audioUrlValue );
+                        writer.WriteEndElement();
+                    }
+
+                    // close the message
+                    writer.WriteEndElement( );
+                }
+                
+                // close the series
+                writer.WriteEndElement( );
+            }
+
+            // close the seriesList
+            writer.WriteEndElement( );
+        }
+        
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/ContentChannelCategories/GetChildren/{id}" )]
         public IQueryable<CategoryItem> GetChildren(
             int id,
             int rootCategoryId = 0,
             int entityTypeId = 0,
-            string entityQualifier = null,
-            string entityQualifierValue = null,
-            bool showUnnamedEntityItems = true,
-            bool showCategoriesThatHaveNoChildren = true,
-            string includedCategoryIds = null,
-            string excludedCategoryIds = null,
             string defaultIconCssClass = null )
         {
             Person currentPerson = GetPerson();
-
-            var includedCategoryIdList = includedCategoryIds.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
-            var excludedCategoryIdList = excludedCategoryIds.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
             defaultIconCssClass = defaultIconCssClass ?? "fa fa-list-ol";
 
             IQueryable<Category> qry = Get();
@@ -82,49 +222,10 @@ namespace chuch.ccv.Podcasts.Rest
                 qry = qry.Where( a => a.ParentCategoryId == id );
             }
 
-            
-            if ( includedCategoryIdList.Any() )
-            {
-                // if includedCategoryIdList is specified, only get categories that are in the includedCategoryIdList
-                // NOTE: no need to factor in excludedCategoryIdList since included would take precendance and the excluded ones would already not be included
-                qry = qry.Where( a => includedCategoryIdList.Contains( a.Id ) );
-            }
-            else if ( excludedCategoryIdList.Any() )
-            {
-                qry = qry.Where( a => !excludedCategoryIdList.Contains( a.Id ) );
-            }
-
-            IService serviceInstance = null;
-
             var cachedEntityType = EntityTypeCache.Read( entityTypeId );
             if ( cachedEntityType != null )
             {
                 qry = qry.Where( a => a.EntityTypeId == entityTypeId );
-                if ( !string.IsNullOrWhiteSpace( entityQualifier ) )
-                {
-                    qry = qry.Where( a => string.Compare( a.EntityTypeQualifierColumn, entityQualifier, true ) == 0 );
-                    if ( !string.IsNullOrWhiteSpace( entityQualifierValue ) )
-                    {
-                        qry = qry.Where( a => string.Compare( a.EntityTypeQualifierValue, entityQualifierValue, true ) == 0 );
-                    }
-                    else
-                    {
-                        qry = qry.Where( a => a.EntityTypeQualifierValue == null || a.EntityTypeQualifierValue == string.Empty );
-                    }
-                }
-
-                // Get the GetByCategory method
-                if ( cachedEntityType.AssemblyName != null )
-                {
-                    Type entityType = cachedEntityType.GetEntityType();
-                    if ( entityType != null )
-                    {
-                        Type[] modelType = { entityType };
-                        Type genericServiceType = typeof( Rock.Data.Service<> );
-                        Type modelServiceType = genericServiceType.MakeGenericType( modelType );
-                        serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { new RockContext() } ) as IService;
-                    }
-                }
             }
             
             List<Category> categoryList = qry.OrderBy( c => c.Order ).ThenBy( c => c.Name ).ToList();
@@ -148,7 +249,7 @@ namespace chuch.ccv.Podcasts.Rest
             // if id is zero and we have a rootCategory, show the children of that rootCategory (but don't show the rootCategory)
             int parentItemId = id == 0 ? rootCategoryId : id;
 
-            var itemsQry = GetCategorizedItems( parentItemId, showUnnamedEntityItems );
+            var itemsQry = GetCategorizedItems( parentItemId );
             if ( itemsQry != null )
             {
                 // do a ToList to load from database prior to ordering by name, just in case Name is a virtual property
@@ -187,7 +288,7 @@ namespace chuch.ccv.Podcasts.Rest
 
                     if ( !g.HasChildren )
                     {
-                        var childItems = GetCategorizedItems( parentId, showUnnamedEntityItems );
+                        var childItems = GetCategorizedItems( parentId );
                         if ( childItems != null )
                         {
                             foreach ( var categorizedItem in childItems )
@@ -202,23 +303,11 @@ namespace chuch.ccv.Podcasts.Rest
                     }
                 }
             }
-
-            if ( !showCategoriesThatHaveNoChildren )
-            {
-                categoryItemList = categoryItemList.Where( a => !a.IsCategory || ( a.IsCategory && a.HasChildren ) ).ToList();
-            }
-
+            
             return categoryItemList.AsQueryable();
         }
-
-        /// <summary>
-        /// Gets the categorized items.
-        /// </summary>
-        /// <param name="serviceInstance">The service instance.</param>
-        /// <param name="categoryId">The category id.</param>
-        /// <param name="showUnnamedEntityItems">if set to <c>true</c> [show unnamed entity items].</param>
-        /// <returns></returns>
-        private IQueryable<ContentChannel> GetCategorizedItems( int categoryId, bool showUnnamedEntityItems )
+        
+        private IQueryable<ContentChannel> GetCategorizedItems( int categoryId )
         {
             // if there's a valid category ID, find content channel items
             if( categoryId != 0 )
@@ -229,7 +318,7 @@ namespace chuch.ccv.Podcasts.Rest
                 var categoryList = new CategoryService( rockContext ).Queryable( ).Where( c => c.Id == categoryId ).SingleOrDefault( );
             
                 // create a query that'll get all of the "Category" attributes for all the content channels
-                var categoryAttribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.Guid == new Guid( "DEA4ACCE-82F6-43E3-B381-6959FBF66E74" ) );
+                var categoryAttribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.Guid == new Guid( ContentChannel_CategoryAttributeGuid  ) );
 
                 // now get all the content channels, with their parent category(s) attributes as a joined object
                 ContentChannelService contentChannelService = new ContentChannelService( rockContext );
@@ -247,9 +336,22 @@ namespace chuch.ccv.Podcasts.Rest
         }
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
+    // Inherit StringWriter so we can set the encoding, which is protected
+    public sealed class StringWriterWithEncoding : StringWriter
+    {
+        private readonly Encoding encoding;
+
+        public StringWriterWithEncoding (Encoding encoding)
+        {
+            this.encoding = encoding;
+        }
+
+        public override Encoding Encoding
+        {
+            get { return encoding; }
+        }
+    }
+    
     public class ContentChannelCategoryItem : Rock.Web.UI.Controls.TreeViewItem
     {
         /// <summary>
