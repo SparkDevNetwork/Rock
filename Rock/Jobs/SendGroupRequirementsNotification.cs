@@ -211,7 +211,7 @@ namespace Rock.Jobs
                 {
                     var recipient = _notificationList.Where( n => n.Person.Id == recipientId.Key ).Select( n => n.Person ).FirstOrDefault();
 
-                    var mergeFields = new Dictionary<string, object>();
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                     mergeFields.Add( "Person", recipient );
 
                     var notificationGroupIds = _notificationList
@@ -222,10 +222,6 @@ namespace Rock.Jobs
                     var missingRequirements = _groupsMissingRequriements.Where( g => notificationGroupIds.Contains( g.Id ) ).ToList();
 
                     mergeFields.Add( "GroupsMissingRequirements", missingRequirements );
-
-                    var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
-                    globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
-
 
                     recipients.Add( new RecipientData( recipient.Email, mergeFields ) );
                     Email.Send( systemEmailGuid.Value, recipients, appRoot );
@@ -242,12 +238,10 @@ namespace Rock.Jobs
 
                     foreach ( var person in accountabilityGroupMembers )
                     {
-                        var mergeFields = new Dictionary<string, object>();
+                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                         mergeFields.Add( "Person", person );
                         mergeFields.Add( "GroupsMissingRequirements", _groupsMissingRequriements );
 
-                        var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
-                        globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
                         recipients.Add( new RecipientData( person.Email, mergeFields ) );
                     }
                 }

@@ -81,6 +81,20 @@ namespace Rock.NMI
         }
 
         /// <summary>
+        /// Gets a value indicating whether gateway provider needs first and last name on credit card as two distinct fields.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [split name on card]; otherwise, <c>false</c>.
+        /// </value>
+        public override bool SplitNameOnCard
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        /// <summary>
         /// Prompts the name of for bank account.
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>

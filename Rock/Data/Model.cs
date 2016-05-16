@@ -191,6 +191,15 @@ namespace Rock.Data
         [RockClientInclude("If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true")]
         public virtual bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
+        /// <summary>
+        /// Gets or sets a field that can be used for custom sorting.
+        /// </summary>
+        /// <value>
+        /// The sort value.
+        /// </value>
+        [NotMapped]
+        public virtual object CustomSortValue { get; set; }
+
         #endregion
 
         #region Methods
@@ -373,6 +382,8 @@ namespace Rock.Data
                 object item = base[key];
                 if ( item == null )
                 {
+                    var lavaSupportLevel = GlobalAttributesCache.Read().LavaSupportLevel; 
+                    
                     if (this.Attributes == null)
                     {
                         this.LoadAttributes();
@@ -388,6 +399,12 @@ namespace Rock.Data
                     // deprecated ( in v4.0 ), and only the new method of using the Attribute filter is 
                     // suported (e.g. {{ Person | Attribute:'BaptismDate' }} ), the remainder of this method 
                     // can be removed
+
+                    if ( lavaSupportLevel == Lava.LavaSupportLevel.NoLegacy )
+                    {
+                        return null;
+                    }
+                    
 
                     if ( this.Attributes != null )
                     {
@@ -422,6 +439,12 @@ namespace Rock.Data
                                 if ( url && field is Rock.Field.ILinkableFieldType )
                                 {
                                     return ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.QualifierValues );
+                                }
+
+                                if ( lavaSupportLevel == Lava.LavaSupportLevel.LegacyWithWarning )
+
+                                {
+                                    Rock.Model.ExceptionLogService.LogException( new Rock.Lava.LegacyLavaSyntaxDetectedException( this.GetType().GetFriendlyTypeName(), attributeKey ), System.Web.HttpContext.Current );
                                 }
 
                                 return field.FormatValue( null, value, attribute.QualifierValues, false );

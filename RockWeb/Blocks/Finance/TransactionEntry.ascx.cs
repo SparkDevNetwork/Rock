@@ -647,16 +647,16 @@ namespace RockWeb.Blocks.Finance
                                     txtPassword.Text,
                                     false );
 
-                                var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
-                                mergeObjects.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
+                                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                                mergeFields.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
 
                                 var personDictionary = authorizedPersonAlias.Person.ToLiquid() as Dictionary<string, object>;
-                                mergeObjects.Add( "Person", personDictionary );
+                                mergeFields.Add( "Person", personDictionary );
 
-                                mergeObjects.Add( "User", user );
+                                mergeFields.Add( "User", user );
 
                                 var recipients = new List<Rock.Communication.RecipientData>();
-                                recipients.Add( new Rock.Communication.RecipientData( authorizedPersonAlias.Person.Email, mergeObjects ) );
+                                recipients.Add( new Rock.Communication.RecipientData( authorizedPersonAlias.Person.Email, mergeFields ) );
 
                                 Rock.Communication.Email.Send( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ), false );
                             }
@@ -2195,8 +2195,11 @@ namespace RockWeb.Blocks.Finance
                     $form.find('.billing-state').val( $('#{17}_ddlState').val() );
                     $form.find('.billing-postal').val( $('#{17}_tbPostalCode').val() );
                 }}
-        
+
                 if ( $('#{1}').val() == 'CreditCard' ) {{
+                    $form.find('.cc-first-name').val( $('#{18}').val() );
+                    $form.find('.cc-last-name').val( $('#{19}').val() );
+                    $form.find('.cc-full-name').val( $('#{20}').val() );
                     $form.find('.cc-number').val( $('#{8}').val() );
                     var mm = $('#{9}_monthDropDownList').val();
                     var yy = $('#{9}_yearDropDownList_').val();
@@ -2257,7 +2260,10 @@ namespace RockWeb.Blocks.Finance
                 rblAccountType.ClientID,        // {14}
                 hfStep2AutoSubmit.ClientID,     // {15}
                 cbBillingAddress.ClientID,      // {16}
-                acBillingAddress.ClientID       // {17}
+                acBillingAddress.ClientID,      // {17}
+                txtCardFirstName.ClientID,      // {18}
+                txtCardLastName.ClientID,       // {19}
+                txtCardName.ClientID            // {20}
             ); 
 
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );

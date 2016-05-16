@@ -103,7 +103,7 @@
                     </nav>
 
                 </header>
-                
+
                 <main>
                     <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
 
@@ -176,11 +176,9 @@
             // show/hide sidebar nav
             $('.navbar-minimize').click(function () {
                 if ($('.navbar-static-side').is(":visible")) {
-                    $('body').addClass('navbar-side-close');
-                    $('body').removeClass('navbar-side-open');
+                    $('body').addClass('navbar-side-close').removeClass('navbar-side-open');
                 } else {
-                    $('body').addClass('navbar-side-open');
-                    $('body').removeClass('navbar-side-close');
+                    $('body').addClass('navbar-side-open').removeClass('navbar-side-close');
                 }
             });
         });

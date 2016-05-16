@@ -30,7 +30,7 @@ namespace Rock.Workflow.Action
     [ActionCategory( "Workflow Control" )]
     [Description( "Marks the workflow as complete" )]
     [Export(typeof(ActionComponent))]
-    [ExportMetadata( "ComponentName", "Complete Workflow" )]
+    [ExportMetadata( "ComponentName", "Workflow Complete" )]
     public class CompleteWorkflow : ActionComponent
     {
         /// <summary>

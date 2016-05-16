@@ -82,7 +82,10 @@ namespace Rock.Jobs
                             DateTime today = RockDateTime.Today;
                             TimeSpan days = new TimeSpan( daysBack, 0, 0, 0 );
                             DateTime endDateTime = today.Add( financialGateway.GetBatchTimeOffset() );
-                            endDateTime = RockDateTime.Now.CompareTo( endDateTime ) < 0 ? endDateTime.AddDays( -1 ) : today;
+
+                            // If the calculated end time has not yet occurred, use the previous day.
+                            endDateTime = RockDateTime.Now.CompareTo( endDateTime ) >= 0 ? endDateTime : endDateTime.AddDays( -1 );
+
                             DateTime startDateTime = endDateTime.Subtract( days );
 
                             string errorMessage = string.Empty;

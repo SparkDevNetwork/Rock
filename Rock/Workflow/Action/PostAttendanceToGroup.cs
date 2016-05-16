@@ -32,10 +32,10 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Posts attendance to a group
     /// </summary>
-    [ActionCategory( "Group Update" )]
+    [ActionCategory( "Groups" )]
     [Description( "Sets attendance in a group." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Post Attendance To Group" )]
+    [ExportMetadata( "ComponentName", "Group Member Attendance Add" )]
 
     [WorkflowAttribute("Group", "The attribute containing the group to get the leader for.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.GroupFieldType" })]

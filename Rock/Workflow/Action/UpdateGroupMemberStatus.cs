@@ -31,10 +31,10 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sets an attribute's value to the selected person 
     /// </summary>
-    [ActionCategory( "Group Update" )]
+    [ActionCategory( "Groups" )]
     [Description( "Updates a person's group member status in a specified group." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Update Group Member Status" )]
+    [ExportMetadata( "ComponentName", "Group Member Set Status" )]
 
     [WorkflowAttribute( "Person", "Workflow attribute that contains the person to update in the group.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.PersonFieldType" } )]

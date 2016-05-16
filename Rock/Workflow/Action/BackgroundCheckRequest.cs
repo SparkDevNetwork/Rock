@@ -33,7 +33,7 @@ namespace Rock.Workflow.Action
     [ActionCategory( "Background Check" )]
     [Description( "Sends a Background Check Request." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Background Check Request" )]
+    [ExportMetadata( "ComponentName", "Background Check Send Request" )]
 
     [ComponentField( "Rock.Security.BackgroundCheckContainer, Rock", "Background Check Provider", "The Background Check provider to use", false, "", "", 0, "Provider" )]
     [WorkflowAttribute("Person Attribute", "The Person attribute that contains the person who the background check should be submitted for.", true, "", "", 1, null,

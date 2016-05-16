@@ -227,6 +227,15 @@ namespace Rock.Model
         }
         private bool _isPublic = true;
 
+        /// <summary>
+        /// Gets or sets the group capacity.
+        /// </summary>
+        /// <value>
+        /// The group capacity.
+        /// </value>
+        [DataMember]
+        public int? GroupCapacity { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -299,7 +308,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of Groups that are children of this group.
         /// </value>
-        [DataMember]
+        [LavaInclude]
         public virtual ICollection<Group> Groups
         {
             get { return _groups ?? ( _groups = new Collection<Group>() ); }

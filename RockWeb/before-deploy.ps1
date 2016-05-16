@@ -14,15 +14,33 @@ Write-Output "Running script as: $env:userdomain\$env:username"
 # stop execution of the deploy if the moves fail
 $ErrorActionPreference = "Stop"
 
+# backup web.config file
+If (Test-Path "$webroot\web.config"){
+	Write-Host "Moving web.config to temp dir"
+	Copy-Item "$webroot\web.config" "$rootfolder\temp" -force
+}
+
+# backup connection string file
+If (Test-Path "$webroot\web.connectionstrings.config"){
+	Write-Host "Moving web.connectionstrings.config to temp dir"
+	Copy-Item "$webroot\web.connectionstrings.config" "$rootfolder\temp" -force
+}
+
+# load the app offline template
+If (Test-Path "$webroot\app_offline-template.htm"){
+	Write-Host "Loading the app offline template"
+	Copy-Item "$webroot\app_offline-template.htm" "$webroot\app_offline.htm" -force
+}
+
 # stop web publishing service - needed to allow the deploy to overwrite the sql server spatial types
-Write-Host "Stopping Web Publishing Service"
-Stop-Service -ServiceName w3logsvc
-Stop-Service -ServiceName w3svc
+#Write-Host "Stopping Web Publishing Service"
+#Stop-Service -ServiceName w3logsvc
+#Stop-Service -ServiceName w3svc
 
 # delete the content directory in temp
-If (Test-Path "$rootfolder\temp\Content"){
-	Remove-Item "$rootfolder\temp\Content" -Force -Confirm:$False -Recurse
-}
+#If (Test-Path "$rootfolder\temp\Content"){
+#	Remove-Item "$rootfolder\temp\Content" -Force -Confirm:$False -Recurse
+#}
 
 # move content folder to temp
 If (Test-Path "$webroot\Content"){
@@ -43,16 +61,4 @@ If (Test-Path "$webroot\documents"){
 If (Test-Path "$webroot\profiles"){
 	Write-Host "Moving profiles folder to temp directory"
 	Move-Item "$webroot\profiles" "$rootfolder\temp\profiles"
-}
-
-# move web.config file
-If (Test-Path "$webroot\web.config"){
-	Write-Host "Moving web.config to temp dir"
-	Copy-Item "$webroot\web.config" "$rootfolder\temp" -force
-}
-
-# move connection string file
-If (Test-Path "$webroot\web.connectionstrings.config"){
-	Write-Host "Moving web.connectionstrings.config to temp dir"
-	Copy-Item "$webroot\web.connectionstrings.config" "$rootfolder\temp" -force
 }

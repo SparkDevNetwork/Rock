@@ -36,6 +36,7 @@ namespace Rock.Jobs
     /// Job to run quick SQL queries on a schedule
     /// </summary>
     [DisallowConcurrentExecution]
+    [BooleanField("Require Password Reset On New Logins", "Determines if new logins should be created in such a way that the individual will need to reset the password on their first login.", Key = "RequirePasswordReset")]
     public class GroupSync : IJob
     {
         /// <summary> 
@@ -59,6 +60,9 @@ namespace Rock.Jobs
         public virtual void Execute( IJobExecutionContext context )
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
+
+            bool requirePasswordReset = dataMap.GetBoolean( "RequirePasswordReset" );
+
             int groupsSynced = 0;
             int groupsChanged = 0;
 
@@ -133,7 +137,7 @@ namespace Rock.Jobs
 
                                 if ( syncGroup.WelcomeSystemEmailId.HasValue )
                                 {
-                                    SendWelcomeEmail( syncGroup.WelcomeSystemEmailId.Value, sourceItem, syncGroup, syncGroup.AddUserAccountsDuringSync ?? false );
+                                    SendWelcomeEmail( syncGroup.WelcomeSystemEmailId.Value, sourceItem, syncGroup, syncGroup.AddUserAccountsDuringSync ?? false, requirePasswordReset );
                                 }
                             }
 
@@ -187,7 +191,8 @@ namespace Rock.Jobs
         /// <param name="personId">The person identifier.</param>
         /// <param name="syncGroup">The synchronize group.</param>
         /// <param name="createLogin">if set to <c>true</c> [create login].</param>
-        private void SendWelcomeEmail( int systemEmailId, int personId, Group syncGroup, bool createLogin )
+        /// <param name="requirePasswordReset">if set to <c>true</c> [require password reset].</param>
+        private void SendWelcomeEmail( int systemEmailId, int personId, Group syncGroup, bool createLogin, bool requirePasswordReset )
         {
 
             using ( var rockContext = new RockContext() )
@@ -224,7 +229,8 @@ namespace Rock.Jobs
                                 EntityTypeCache.Read( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
                                 username,
                                 newPassword,
-                                true );
+                                true,
+                                requirePasswordReset );
                         }
                         mergeFields.Add( "Person", recipient );
                         mergeFields.Add( "NewPassword", newPassword );

@@ -229,7 +229,7 @@ namespace Rock.Web.UI.Controls
                         (!string.IsNullOrWhiteSpace(mergeField.ModifiedBy) ? "by " + mergeField.ModifiedBy : "");
                     if ( created != string.Empty )
                     {
-                        headerSummary.Controls.Add(new LiteralControl(string.Format("<small>Last Modifed {0}</small>", created)));
+                        headerSummary.Controls.Add( new LiteralControl( string.Format( "<small>Last Modified {0}</small>", created ) ) );
                     }
 
                     cell.Controls.Add(headerSummary);

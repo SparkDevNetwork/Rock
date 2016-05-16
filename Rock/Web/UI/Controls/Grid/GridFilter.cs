@@ -310,7 +310,20 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute("class", "row");
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
+                var filterControls = new List<Control>();
                 foreach ( Control child in Controls )
+                {
+                    if ( child is PlaceHolder )
+                    {
+                        filterControls.AddRange( ( child as PlaceHolder ).Controls.OfType<Control>().ToList() );
+                    }
+                    else
+                    {
+                        filterControls.Add( child );
+                    }
+                }
+
+                foreach ( Control child in filterControls )
                 {
                     // write new row
                     if ( cellCount >= cellsPerRow )
