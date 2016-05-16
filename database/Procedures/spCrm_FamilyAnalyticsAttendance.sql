@@ -79,7 +79,7 @@ BEGIN
 			, @FirstAttendedAttributeId AS [AttributeId]
 			, CASE WHEN [FamilyRole] = 'Adult' THEN 
 					(SELECT 
-						MIN(a.SundayDate )
+						MIN(a.StartDateTime )
 					FROM
 						[Attendance] a
 						INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
@@ -88,7 +88,7 @@ BEGIN
 						AND pa.[PersonId] IN (SELECT [Id] FROM [dbo].[ufnCrm_FamilyMembersOfPersonId](i.[PersonId])))
 				ELSE
 					(SELECT 
-						MIN(a.SundayDate )
+						MIN(a.StartDateTime )
 					FROM
 						[Attendance] a
 						INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
@@ -133,7 +133,7 @@ BEGIN
 			, @LastAttendedAttributeId AS [AttributeId]
 			, CASE WHEN [FamilyRole] = 'Adult' THEN 
 					(SELECT 
-						MAX(a.SundayDate )
+						MAX(a.StartDateTime )
 					FROM
 						[Attendance] a
 						INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
@@ -142,7 +142,7 @@ BEGIN
 						AND pa.[PersonId] IN (SELECT [Id] FROM [dbo].[ufnCrm_FamilyMembersOfPersonId](i.[PersonId])))
 				ELSE
 					(SELECT 
-						MAX(a.SundayDate )
+						MAX(a.StartDateTime )
 					FROM
 						[Attendance] a
 						INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]

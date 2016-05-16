@@ -289,7 +289,7 @@ namespace Rock
                 }
                 else
                 {
-                    if ( listControl.Items.Count > 0 )
+                    if ( !(listControl is RadioButtonList) && listControl.Items.Count > 0 )
                     {
                         listControl.SelectedIndex = 0;
                     }
@@ -297,7 +297,7 @@ namespace Rock
             }
             catch
             {
-                if ( listControl.Items.Count > 0 )
+                if ( !( listControl is RadioButtonList ) && listControl.Items.Count > 0 )
                 {
                     listControl.SelectedIndex = 0;
                 }
