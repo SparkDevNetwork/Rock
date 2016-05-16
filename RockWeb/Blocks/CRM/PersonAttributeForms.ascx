@@ -45,6 +45,24 @@
             <div class="panel-heading"></div>
             <div class="panel-body">
 
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:RockCheckBox ID="cbDisplayProgressBar" runat="server" Label="Display Progress Bar" Text="Yes"
+                            Help="Display a progress to the user that indicates how far along they are in filling out multiple forms." />
+                        <Rock:RockDropDownList ID="ddlSaveValues" runat="server" Label="Save Values"
+                            Help="Determines if values should be saved each time user navigates to next form or not saved until the very end. An advantage to saving them on each form, is that those values can then be used in the header or footer of the next page using Lava.">
+                            <asp:ListItem Value="PAGE" Text="After Each Page" />
+                            <asp:ListItem Value="END" Text="At the End" />
+                        </Rock:RockDropDownList>
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:WorkflowTypePicker ID="wtpWorkflow" runat="server" Label="Workflow"
+                            Help="An optional workflow to launch after the person has filled out all of the forms." />
+                        <Rock:PagePicker ID="ppDonePage" runat="server" Label="Done Page" 
+                            Help="An optional page to redirect user to after they have finished entering information on all the forms." />
+                    </div>
+                </div>
+
                 <div class="panel panel-default contribution-info">
                     <div class="panel-heading"><h3 class="panel-title">Forms</h3></div>
                     <div class="panel-body">
@@ -55,12 +73,12 @@
                             <asp:LinkButton ID="lbAddForm" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddForm_Click" CausesValidation="false"><i class="fa fa-plus"></i> Add Form</asp:LinkButton>
                         </div>
 
-                        <div class="actions">
-                            <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                            <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
-                        </div>
-
                      </div>
+                </div>
+
+                <div class="actions">
+                    <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                    <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                 </div>
 
             </div>

@@ -147,7 +147,10 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
             }
 
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-wrapper" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             rockControl.RenderBaseControl( writer );
+            writer.RenderEndTag();
 
             if ( !renderLabel && renderHelp )
             {
@@ -198,6 +201,11 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();  // label
 
                 control.RenderControl( writer );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-wrapper" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                control.RenderControl( writer );
+                writer.RenderEndTag();
 
                 writer.RenderEndTag();  // form-group
             }

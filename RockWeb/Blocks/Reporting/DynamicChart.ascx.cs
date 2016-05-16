@@ -282,6 +282,10 @@ function labelFormatter(label, series) {
                     Response.End();
                 }
             }
+            catch (System.Threading.ThreadAbortException)
+            {
+                // ignore the ThreadAbort exception from Response.End();
+            }
             catch ( Exception ex )
             {
                 LogException( ex );
