@@ -26,6 +26,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -156,7 +157,7 @@ namespace RockWeb.Blocks.Finance
                 mergeFields.Add( "Rows", yearsMergeObjects );
 
                 lLavaOutput.Text = string.Empty;
-                if ( GetAttributeValue( "EnableDebug" ).AsBooleanOrNull().GetValueOrDefault( false ) )
+                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
                 {
                     lLavaOutput.Text = mergeFields.lavaDebugInfo( rockContext );
                 }

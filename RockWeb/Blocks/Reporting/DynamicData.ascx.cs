@@ -522,6 +522,12 @@ namespace RockWeb.Blocks.Reporting
                                 FilterTable( grid, dataTable );
                                 SortTable( grid, dataTable );
                                 grid.DataSource = dataTable;
+                                
+                                if ( personReport)
+                                {
+                                    grid.EntityTypeId = EntityTypeCache.GetId<Person>();
+                                }
+
                                 grid.DataBind();
                             }
                         }

@@ -2447,8 +2447,24 @@ namespace Rock.Web.UI.Controls
         {
             var entitySet = new Rock.Model.EntitySet();
 
-            // the datasource is a DataTable so there isn't an EntityTypeId
-            entitySet.EntityTypeId = null;
+            // if the EntityTypeId was set for the Grid, use that, otherwise, we don't know since this is a DataTable
+            if ( this.EntityTypeId.HasValue )
+            {
+                entitySet.EntityTypeId = this.EntityTypeId;
+            }
+            else
+            {
+                entitySet.EntityTypeId = null;
+            }
+            
+            bool isPersonEntitySet = this.EntityTypeId == EntityTypeCache.GetId<Rock.Model.Person>();
+            string dataKeyField = this.DataKeyNames.FirstOrDefault() ?? "Id";
+            if ( isPersonEntitySet && !string.IsNullOrEmpty(this.PersonIdField) )
+            {
+                dataKeyField = this.PersonIdField;
+            }
+
+            DataColumn dataKeyColumn = this.DataSourceAsDataTable.Columns.OfType<DataColumn>().FirstOrDefault( a => a.ColumnName == dataKeyField );
 
             entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
 
@@ -2459,8 +2475,16 @@ namespace Rock.Web.UI.Controls
                 {
                     var item = new Rock.Model.EntitySetItem();
 
-                    // the datasource is a DataTable (not an Entity), so just set it to zero.  The entire datarow will be put into AdditionalMergeValues
-                    item.EntityId = 0;
+                    if ( entitySet.EntityTypeId.HasValue && dataKeyColumn != null )
+                    {
+                        // we know the EntityTypeId, so set the EntityId to the dataKeyColumn value
+                        item.EntityId = ( row[dataKeyColumn] as int? ) ?? 0;
+                    }
+                    else
+                    {
+                        // the datasource is a DataTable (not an Entity), so just set it to zero.  The entire datarow will be put into AdditionalMergeValues
+                        item.EntityId = 0;
+                    }
 
                     item.Order = itemOrder++;
                     item.AdditionalMergeValues = new Dictionary<string, object>();

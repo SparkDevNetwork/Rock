@@ -234,6 +234,15 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum GroupCapacityRule
+    {
+        None = 0x0,
+        Hard = 0x1,
+        Soft = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     [Flags]
     public enum GroupLocationPickerMode
     {
