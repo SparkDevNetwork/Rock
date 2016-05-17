@@ -469,6 +469,11 @@ namespace RockWeb.Blocks.Communication
 
             pnlOpened.Visible = false;
 
+            if ( communication.MediumData.ContainsKey( "UrlReferrer" ) )
+            {
+                lCreatedBy.Text += string.Format( " via <a href='{0}'><i class='fa fa-external-link'></i></a>", communication.MediumData["UrlReferrer"] );
+            }
+
             lDetails.Text = communication.MediumDataJson;
             if ( communication.MediumEntityTypeId.HasValue )
             {
