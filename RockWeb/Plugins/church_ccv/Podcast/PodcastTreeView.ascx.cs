@@ -28,10 +28,10 @@ using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.Cache;
 
-namespace RockWeb.Plugins.church_ccv.Core
+namespace RockWeb.Plugins.church_ccv.Podcast
 {
-    [DisplayName( "Content Channel Category Tree View" )]
-    [Category( "CCV > Core" )]
+    [DisplayName( "Podcast Tree View" )]
+    [Category( "CCV > Podcast" )]
     [Description( "Displays a tree of categories for the configured entity type." )]
 
     [LinkedPage( "Detail Page" )]
@@ -45,7 +45,7 @@ namespace RockWeb.Plugins.church_ccv.Core
 
     [CategoryField( "Root Category", "Select the root category to use as a starting point for the tree view.", false, required:false, category: "CustomSetting" )]
     [CategoryField( "Exclude Categories", "Select any category that you need to exclude from the tree view", true, required:false, category: "CustomSetting" )]
-    public partial class ContentChannelCategoryTreeView : RockBlockCustomSettings
+    public partial class PodcastTreeView : RockBlockCustomSettings
     {
         public const string CategoryNodePrefix = "C";
 

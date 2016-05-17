@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ContentChannelCategoryTreeView.ascx.cs" Inherits="RockWeb.Plugins.church_ccv.Core.ContentChannelCategoryTreeView" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PodcastTreeView.ascx.cs" Inherits="RockWeb.Plugins.church_ccv.Podcast.PodcastTreeView" %>
 
 <asp:UpdatePanel ID="upCategoryTree" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
     <ContentTemplate>
@@ -164,7 +164,7 @@
 
                     })
                     .rockTree({
-                        restUrl: '<%= ResolveUrl( "~/api/contentchannelcategories/getchildren/" ) %>',
+                        restUrl: '<%= ResolveUrl( "~/api/podcast/getchildren/" ) %>',
                         restParams: '<%= RestParms %>',
                         mapping: {
                             include: ['isCategory', 'entityId'],

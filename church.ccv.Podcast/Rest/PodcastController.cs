@@ -20,6 +20,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Web.Http;
 using System.Xml;
 using Rock;
 using Rock.Data;
@@ -29,11 +30,11 @@ using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.Web.Cache;
 
-namespace chuch.ccv.Podcasts.Rest
+namespace chuch.ccv.Podcast.Rest
 {
-    public partial class ContentChannelCategoriesController : Rock.Rest.ApiController<Category>
+    public partial class PodcastController : Rock.Rest.ApiController<Category>
     {
-        public ContentChannelCategoriesController() : base( new Rock.Model.CategoryService( new Rock.Data.RockContext() ) ) { } 
+        public PodcastController() : base( new Rock.Model.CategoryService( new Rock.Data.RockContext() ) ) { } 
 
         const string ContentChannel_CategoryAttributeGuid = "DEA4ACCE-82F6-43E3-B381-6959FBF66E74";
         const int WeekendVideos_CategoryId = 451; 
@@ -41,8 +42,40 @@ namespace chuch.ccv.Podcasts.Rest
 
         string PublicApplicationRoot { get; set; }
         
-        [System.Web.Http.Route( "api/ContentChannelCategories/GetNotes/" )]
-        public HttpResponseMessage GetNotes( )
+        [HttpGet]
+        [System.Web.Http.Route( "api/Podcast/Retrieve/{platform}/{version}" )]
+        public HttpResponseMessage Retrieve( string platform, int version )
+        {
+            // first, what platform are we handling?
+            StringContent restContent = null;
+            switch( platform )
+            {
+                case "mobile_app":
+                {
+                    restContent = Retrieve_MobileApp( version );
+                    break;
+                }
+
+                case "apple_tv":
+                {
+                    restContent = Retrieve_MobileApp( version );
+                    break;
+                }
+
+                case "roku":
+                {
+                    restContent = Retrieve_MobileApp( version );
+                    break;
+                }
+            }
+
+            return new HttpResponseMessage()
+                {
+                    Content = restContent
+                };
+        }
+
+        private StringContent Retrieve_MobileApp( int version )
         {
             using ( StringWriter stringWriter = new StringWriterWithEncoding(Encoding.UTF8) )
             {
@@ -81,10 +114,7 @@ namespace chuch.ccv.Podcasts.Rest
                 }
 
                 // return the XML
-                return new HttpResponseMessage()
-                {
-                    Content = new StringContent( stringWriter.ToString(), Encoding.UTF8, "application/xml" )
-                };
+                return new StringContent( stringWriter.ToString(), Encoding.UTF8, "application/xml" );
             }
         }
         
@@ -94,99 +124,114 @@ namespace chuch.ccv.Podcasts.Rest
             writer.WriteStartElement( "SeriesList" );
 
             // get all content channel types in the "Weekend Series" podcast
-            IQueryable<ContentChannel> seriesContentChannels = GetCategorizedItems( WeekendVideos_CategoryId );
+            IQueryable<ContentChannel> seriesContentChannels = GetPodcastsByCategory( WeekendVideos_CategoryId );
             IQueryable<AttributeValue> attribValueQuery = new AttributeValueService( new RockContext( ) ).Queryable( );
             
             foreach( ContentChannel series in seriesContentChannels )
             {
-                writer.WriteStartElement( "Series" );
-
                 // pull in all this series' attributes
                 List<AttributeValue> contentChannelAttribValList = attribValueQuery.Where( av => av.EntityId == series.Id && 
                                                                                            av.Attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" ).ToList( );
 
-                // Put each needed XML element
-                writer.WriteStartElement( "SeriesName" );
-                writer.WriteValue( series.Name );
-                writer.WriteEndElement( );
-
-                writer.WriteStartElement( "Description" );
-                writer.WriteValue( series.Description );
-                writer.WriteEndElement( );
-
-                writer.WriteStartElement( "DateRanges" );
-                writer.WriteValue( contentChannelAttribValList.Where( av => av.AttributeKey == "DateRange" ).SingleOrDefault( ).Value );
-                writer.WriteEndElement( );
-
-                // The images will be Guids with the GetImage path prefixed
-                writer.WriteStartElement( "BillboardUrl" );
-                string billboardUrl = PublicApplicationRoot + GetImageEndpoint + contentChannelAttribValList.Where( av => av.AttributeKey == "BillboardImage" ).SingleOrDefault( ).Value;
-                writer.WriteValue( billboardUrl );
-                writer.WriteEndElement( );
-
-                writer.WriteStartElement( "ThumbnailUrl" );
-                string thumbnailUrl = PublicApplicationRoot + GetImageEndpoint + contentChannelAttribValList.Where( av => av.AttributeKey == "ThumbnailImage" ).SingleOrDefault( ).Value;
-                writer.WriteValue( thumbnailUrl );
-                writer.WriteEndElement( );
-
-                
-                // Now generate each message of the series
-                foreach( ContentChannelItem message in series.Items )
+                // don't inlude series that aren't active
+                bool activeValue = contentChannelAttribValList.Where( av => av.AttributeKey == "Active" ).SingleOrDefault( ).Value == "True" ? true : false;
+                if( activeValue )
                 {
-                    // get this message's attributes
-                    List<AttributeValue> itemAttribValList = attribValueQuery.Where( av => av.EntityId == message.Id && 
-                                                                                           av.Attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" ).ToList( );
+                    // write the "Series" start element
+                    writer.WriteStartElement( "Series" );
 
-                    writer.WriteStartElement( "Message" );
-
-                    // Put required elements
-                    writer.WriteStartElement( "Name" );
-                    writer.WriteValue( message.Title );
+                    // Put each needed XML element
+                    writer.WriteStartElement( "SeriesName" );
+                    writer.WriteValue( series.Name );
                     writer.WriteEndElement( );
 
-                    writer.WriteStartElement( "Speaker" );
-                    writer.WriteValue( itemAttribValList.Where( av => av.AttributeKey == "Speaker" ).SingleOrDefault( ).Value );
+                    writer.WriteStartElement( "Description" );
+                    writer.WriteValue( series.Description );
                     writer.WriteEndElement( );
 
-                    writer.WriteStartElement( "Date" );
-                    writer.WriteValue( message.StartDateTime.ToShortDateString( ) );
+                    // parse and setup the date range for the series
+                    string[] dateRanges = contentChannelAttribValList.Where( av => av.AttributeKey == "DateRange" ).SingleOrDefault( ).Value.Split( ',' );
+                    string startDate = DateTime.Parse( dateRanges[ 0 ] ).ToShortDateString( );
+                    string endDate = DateTime.Parse( dateRanges[ 1 ] ).ToShortDateString( );
+
+                    writer.WriteStartElement( "DateRanges" );
+                    writer.WriteValue( startDate + " - " + endDate );
                     writer.WriteEndElement( );
 
-                    writer.WriteStartElement( "NoteUrl" );
-                    writer.WriteValue( itemAttribValList.Where( av => av.AttributeKey == "NoteUrl" ).SingleOrDefault( ).Value );
+                    // The images will be Guids with the GetImage path prefixed
+                    writer.WriteStartElement( "BillboardUrl" );
+                    string billboardUrl = PublicApplicationRoot + GetImageEndpoint + contentChannelAttribValList.Where( av => av.AttributeKey == "BillboardImage" ).SingleOrDefault( ).Value;
+                    writer.WriteValue( billboardUrl );
                     writer.WriteEndElement( );
 
-                    // Watch/Share/Audio URLs are optional, so check that they exist
-                    string watchUrlValue = itemAttribValList.Where( av => av.AttributeKey == "WatchUrl" ).SingleOrDefault( ).Value;
-                    if( string.IsNullOrEmpty( watchUrlValue ) == false )
-                    {
-                        writer.WriteStartElement( "WatchUrl" );
-                        writer.WriteValue( watchUrlValue );
-                        writer.WriteEndElement();
-                    }
-                    
-                    string shareUrlValue = itemAttribValList.Where( av => av.AttributeKey == "ShareUrl" ).SingleOrDefault( ).Value;
-                    if( string.IsNullOrEmpty( shareUrlValue ) == false )
-                    {
-                        writer.WriteStartElement( "ShareUrl" );
-                        writer.WriteValue( shareUrlValue );
-                        writer.WriteEndElement();
-                    }
-
-                    string audioUrlValue = itemAttribValList.Where( av => av.AttributeKey == "AudioUrl" ).SingleOrDefault( ).Value;
-                    if( string.IsNullOrEmpty( audioUrlValue ) == false )
-                    {
-                        writer.WriteStartElement( "AudioUrl" );
-                        writer.WriteValue( audioUrlValue );
-                        writer.WriteEndElement();
-                    }
-
-                    // close the message
+                    writer.WriteStartElement( "ThumbnailUrl" );
+                    string thumbnailUrl = PublicApplicationRoot + GetImageEndpoint + contentChannelAttribValList.Where( av => av.AttributeKey == "ThumbnailImage" ).SingleOrDefault( ).Value;
+                    writer.WriteValue( thumbnailUrl );
                     writer.WriteEndElement( );
-                }
+
                 
-                // close the series
-                writer.WriteEndElement( );
+                    // Now generate each message of the series
+                    foreach( ContentChannelItem message in series.Items )
+                    {
+                        // only include items whose start date has already begun and that have been approved
+                        if( message.StartDateTime < DateTime.Now && message.Status == ContentChannelItemStatus.Approved )
+                        {
+                            // get this message's attributes
+                            List<AttributeValue> itemAttribValList = attribValueQuery.Where( av => av.EntityId == message.Id && 
+                                                                                                   av.Attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" ).ToList( );
+
+                            writer.WriteStartElement( "Message" );
+
+                            // Put required elements
+                            writer.WriteStartElement( "Name" );
+                            writer.WriteValue( message.Title );
+                            writer.WriteEndElement( );
+
+                            writer.WriteStartElement( "Speaker" );
+                            writer.WriteValue( itemAttribValList.Where( av => av.AttributeKey == "Speaker" ).SingleOrDefault( ).Value );
+                            writer.WriteEndElement( );
+
+                            writer.WriteStartElement( "Date" );
+                            writer.WriteValue( message.StartDateTime.ToShortDateString( ) );
+                            writer.WriteEndElement( );
+
+                            writer.WriteStartElement( "NoteUrl" );
+                            writer.WriteValue( itemAttribValList.Where( av => av.AttributeKey == "NoteUrl" ).SingleOrDefault( ).Value );
+                            writer.WriteEndElement( );
+
+                            // Watch/Share/Audio URLs are optional, so check that they exist
+                            string watchUrlValue = itemAttribValList.Where( av => av.AttributeKey == "WatchUrl" ).SingleOrDefault( ).Value;
+                            if( string.IsNullOrEmpty( watchUrlValue ) == false )
+                            {
+                                writer.WriteStartElement( "WatchUrl" );
+                                writer.WriteValue( watchUrlValue );
+                                writer.WriteEndElement();
+                            }
+                    
+                            string shareUrlValue = itemAttribValList.Where( av => av.AttributeKey == "ShareUrl" ).SingleOrDefault( ).Value;
+                            if( string.IsNullOrEmpty( shareUrlValue ) == false )
+                            {
+                                writer.WriteStartElement( "ShareUrl" );
+                                writer.WriteValue( shareUrlValue );
+                                writer.WriteEndElement();
+                            }
+
+                            string audioUrlValue = itemAttribValList.Where( av => av.AttributeKey == "AudioUrl" ).SingleOrDefault( ).Value;
+                            if( string.IsNullOrEmpty( audioUrlValue ) == false )
+                            {
+                                writer.WriteStartElement( "AudioUrl" );
+                                writer.WriteValue( audioUrlValue );
+                                writer.WriteEndElement();
+                            }
+
+                            // close the message
+                            writer.WriteEndElement();
+                        }
+
+                        // close the series
+                        writer.WriteEndElement();
+                    }
+                }
             }
 
             // close the seriesList
@@ -194,7 +239,7 @@ namespace chuch.ccv.Podcasts.Rest
         }
         
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/ContentChannelCategories/GetChildren/{id}" )]
+        [System.Web.Http.Route( "api/Podcast/GetChildren/{id}" )]
         public IQueryable<CategoryItem> GetChildren(
             int id,
             int rootCategoryId = 0,
@@ -249,7 +294,7 @@ namespace chuch.ccv.Podcasts.Rest
             // if id is zero and we have a rootCategory, show the children of that rootCategory (but don't show the rootCategory)
             int parentItemId = id == 0 ? rootCategoryId : id;
 
-            var itemsQry = GetCategorizedItems( parentItemId );
+            var itemsQry = GetPodcastsByCategory( parentItemId );
             if ( itemsQry != null )
             {
                 // do a ToList to load from database prior to ordering by name, just in case Name is a virtual property
@@ -288,7 +333,7 @@ namespace chuch.ccv.Podcasts.Rest
 
                     if ( !g.HasChildren )
                     {
-                        var childItems = GetCategorizedItems( parentId );
+                        var childItems = GetPodcastsByCategory( parentId );
                         if ( childItems != null )
                         {
                             foreach ( var categorizedItem in childItems )
@@ -307,7 +352,7 @@ namespace chuch.ccv.Podcasts.Rest
             return categoryItemList.AsQueryable();
         }
         
-        private IQueryable<ContentChannel> GetCategorizedItems( int categoryId )
+        public IQueryable<ContentChannel> GetPodcastsByCategory( int categoryId )
         {
             // if there's a valid category ID, find content channel items
             if( categoryId != 0 )
@@ -350,16 +395,5 @@ namespace chuch.ccv.Podcasts.Rest
         {
             get { return encoding; }
         }
-    }
-    
-    public class ContentChannelCategoryItem : Rock.Web.UI.Controls.TreeViewItem
-    {
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is category.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if this instance is category; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsCategory { get; set; }
     }
 }
