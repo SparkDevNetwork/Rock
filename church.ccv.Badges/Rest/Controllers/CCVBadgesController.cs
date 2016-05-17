@@ -257,6 +257,9 @@ namespace church.ccv.Badges.Rest.Controllers
                     if ( stepsBarResult.BaptismResult.BaptismDate.HasValue )
                     {
                         stepsBarResult.BaptismResult.BaptismStatus = BaptismStatus.Baptised;
+
+                        // set the formatted date so there is consistent output in all browsers
+                        stepsBarResult.BaptismResult.BaptismDateFormatted = stepsBarResult.BaptismResult.BaptismDate.Value.ToShortDateString();
                     } else
                     {
                         // check if registered for baptism
@@ -807,6 +810,15 @@ namespace church.ccv.Badges.Rest.Controllers
             /// The baptism date.
             /// </value>
             public DateTime? BaptismDate { get; set; }
+
+            /// <summary>
+            /// Gets or sets the baptism date formatted.
+            /// </summary>
+            /// <value>
+            /// The baptism date formatted.
+            /// </value>
+            public string BaptismDateFormatted { get; set; }
+            
             /// <summary>
             /// Gets or sets the baptism status.
             /// </summary>
@@ -814,6 +826,7 @@ namespace church.ccv.Badges.Rest.Controllers
             /// The baptism status.
             /// </value>
             public BaptismStatus BaptismStatus { get; set; }
+            
             /// <summary>
             /// Gets or sets the registration group identifier.
             /// </summary>
@@ -821,6 +834,7 @@ namespace church.ccv.Badges.Rest.Controllers
             /// The registration group identifier.
             /// </value>
             public int? RegistrationGroupId { get; set; }
+            
             /// <summary>
             /// Gets or sets the baptism registration date.
             /// </summary>

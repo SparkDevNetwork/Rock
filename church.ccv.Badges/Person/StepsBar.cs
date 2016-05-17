@@ -113,8 +113,7 @@ namespace church.ccv.Badges.Person
                     $badge.find('.badge-baptism').removeClass('step-nottaken');
                     $badge.find('.badge-baptism').addClass('step-partial');
                 }} else if (data.BaptismResult.BaptismStatus == 1) {{
-                    var baptismDate = new Date(data.BaptismResult.BaptismDate);
-                    var baptismDateFormatted = (baptismDate.getMonth() + 1) + '/' + baptismDate.getDate() + '/' + baptismDate.getFullYear();
+                    var baptismDateFormatted = data.BaptismResult.BaptismDateFormatted;
 
                     $badge.find('.badge-baptism').removeClass('step-nottaken');
                     $badge.find('.badge-baptism').attr('data-original-title', firstName + ' was baptized on ' + baptismDateFormatted + '');
