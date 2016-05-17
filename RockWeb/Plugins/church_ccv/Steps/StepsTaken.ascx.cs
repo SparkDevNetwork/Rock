@@ -740,7 +740,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
 
                 if ( uniqueAdults != 0 )
                 {
-                    averageSteps = (double)totalSteps / (double)uniqueAdults;
+                    averageSteps = (double)totalResult.TotalSteps / (double)totalResult.UniqueAdults;
                 }
 
                 lTotalsByCampus.Text += string.Format( outputPattern, campus.Name, totalResult.UniqueAdults, totalResult.TotalSteps, averageSteps != 0 ? Math.Round( averageSteps, 1 ).ToString() : "NA" );
