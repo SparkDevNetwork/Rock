@@ -1301,6 +1301,11 @@ namespace Rock.Web.UI.Controls
                         communication.SenderPersonAliasId = rockPage.CurrentPersonAliasId;
                     }
 
+                    if ( rockPage.Request != null && rockPage.Request.Url != null )
+                    {
+                        communication.MediumData.AddOrReplace( "UrlReferrer", rockPage.Request.Url.AbsoluteUri );
+                    }
+
                     communicationService.Add( communication );
 
                     // save communication to get Id
