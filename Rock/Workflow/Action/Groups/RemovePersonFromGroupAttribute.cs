@@ -34,7 +34,7 @@ namespace Rock.Workflow.Action
     [ActionCategory( "Groups" )]
     [Description( "Removes a person from a group using a workflow attribute." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Group Member Remove from  Group Using Attribute" )]
+    [ExportMetadata( "ComponentName", "Group Member Remove from Group Using Attribute" )]
 
     [WorkflowAttribute( "Person", "Workflow attribute that contains the person to remove from the group.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.PersonFieldType" } )]
