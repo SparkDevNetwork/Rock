@@ -158,10 +158,27 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
 
                     //save entry Id for future use
                     hidEntryId.Value = entry.Id.ToString();
+
+                    var entryHistoryGuid = com.centralaz.Prayerbook.SystemGuid.Category.HISTORY_UPTEAM_ENTRY.AsGuid();
+                    var historyList = new HistoryService( rockContext ).Queryable().Where( h =>
+                        h.EntityId == entry.Id &&
+                        h.Category.Guid == entryHistoryGuid )
+                        .OrderByDescending( h => h.CreatedDateTime )
+                        .ToList();
+
+                    gHistory.DataSource = historyList.Select( h => new
+                    {
+                        CreatedDateTime = h.CreatedDateTime.ToString(),
+                        CreatedByPerson = h.CreatedByPersonName
+                    } )
+                        .ToList();
+                    gHistory.DataBind();
                 }
                 //else this is a new entry
                 else
                 {
+                    gHistory.Visible = false;
+
                     //get the current book
                     book = MostRecentBook.Get( rockContext );
 
@@ -337,7 +354,15 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
             entry.SaveAttributeValues( rockContext );
             contributorGroupMember.SaveAttributeValues( rockContext );
 
-            //navigate to Pryaer Book home page
+            HistoryService.SaveChanges(
+                        rockContext,
+                        typeof( GroupMember ),
+                        com.centralaz.Prayerbook.SystemGuid.Category.HISTORY_UPTEAM_ENTRY.AsGuid(),
+                        entry.Id,
+                        new List<string> { String.Format( "Modified by {0} on {1}", CurrentPerson.FullName, DateTime.Now.ToString() ) }
+                    );
+
+            //navigate to Prayer Book home page
             NavigateToParentPage();
         }
 
@@ -376,6 +401,16 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
 
             //navigate back to Prayer Book home page
             NavigateToParentPage();
+        }
+
+        /// <summary>
+        /// Handles the RowSelected event of the gHistory control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
+        protected void gHistory_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        {
+            // Absolutely nothing! Need this method to build the block.
         }
 
         #endregion
@@ -514,5 +549,6 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
         }
 
         #endregion
+
     }
 }

@@ -30,7 +30,7 @@ namespace com.centralaz.Prayerbook.Migrations
             RockMigrationHelper.AddPage( com.centralaz.Prayerbook.SystemGuid.Page.CONTRIBUTORS_GROUP_MANAGEMENT_PAGE, com.centralaz.Prayerbook.SystemGuid.Layout.ROCK_SITE1_FULLWIDTH_LAYOUT, "Contributors Group Member Detail", "", com.centralaz.Prayerbook.SystemGuid.Page.CONTRIBUTORS_GROUP_MEMBER_DETAIL_PAGE, "fa fa-book" );
 
             //Update Block Types
-            RockMigrationHelper.UpdateBlockType( "Up Team Prayerbook Homepage Sidebar", "Up Team Prayebook Homepage Sidebar", "~/Plugins/com_centralaz/Prayerbook/PrayerBookHomePageSidebar.ascx", "com_centralaz > Prayerbook", com.centralaz.Prayerbook.SystemGuid.BlockType.HOMEPAGE_SIDEBAR_BLOCKTYPE );
+            RockMigrationHelper.UpdateBlockType( "Up Team Prayerbook Homepage Sidebar", "Up Team Prayebook Homepage Sidebar", "~/Plugins/com_centralaz/Prayerbook/HomePageSidebar.ascx", "com_centralaz > Prayerbook", com.centralaz.Prayerbook.SystemGuid.BlockType.HOMEPAGE_SIDEBAR_BLOCKTYPE );
             RockMigrationHelper.UpdateBlockType( "UP Team Prayerbook Edit Entry", "Edit and Add Prayerbook Entries", "~/Plugins/com_centralaz/Prayerbook/EditEntry.ascx", "com_centralaz > Prayerbook", com.centralaz.Prayerbook.SystemGuid.BlockType.EDIT_ENTRY_BLOCKTYPE );
             RockMigrationHelper.UpdateBlockType( "UP Team Prayerbook Book Management", "Manage Books; Open, Close, Publish, etc.", "~/Plugins/com_centralaz/Prayerbook/BookManagement.ascx", "com_centralaz > Prayerbook", com.centralaz.Prayerbook.SystemGuid.BlockType.BOOK_MANAGEMENT_BLOCKTYPE );
 

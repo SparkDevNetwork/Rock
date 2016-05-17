@@ -51,6 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Migrations\001_AddSystemData.cs" />
+    <Compile Include="Migrations\004_EntryHistory.cs" />
     <Compile Include="Migrations\003_Rename.cs" />
     <Compile Include="Migrations\002_AddSystemData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -59,6 +60,7 @@
     <Compile Include="SystemGuid\AttributeValue.cs" />
     <Compile Include="SystemGuid\Block.cs" />
     <Compile Include="SystemGuid\BlockType.cs" />
+    <Compile Include="SystemGuid\Category.cs" />
     <Compile Include="SystemGuid\DefinedType.cs" />
     <Compile Include="SystemGuid\DefinedValue.cs" />
     <Compile Include="SystemGuid\Group.cs" />
