@@ -68,7 +68,9 @@ namespace Rock.Store
             // setup REST call
             var client = new RestClient( _rockStoreUrl );
             client.Timeout = _clientTimeout;
-            string requestUrl = string.Format( "api/Store/AuthenicateUser/{0}/{1}", username, password );
+            string encodedUserName = HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( username ) ) );
+            string encodedPassword = HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( password ) ) );
+            string requestUrl = string.Format( "api/Store/AuthenicateUser/{0}/{1}", encodedUserName, encodedPassword );
             var request = new RestRequest( requestUrl, Method.GET );
 
             // deserialize to list of packages
@@ -91,19 +93,6 @@ namespace Rock.Store
         /// <param name="username">The username.</param>
         /// <param name="password">The password.</param>
         /// <param name="packageId">The package identifier.</param>
-        /// <returns></returns>
-        public PurchaseResponse Purchase( string username, string password, int packageId )
-        {
-            string errorResponse = string.Empty;
-            return Purchase( username, password, packageId, out errorResponse );
-        }
-
-        /// <summary>
-        /// Purchases the specified username.
-        /// </summary>
-        /// <param name="username">The username.</param>
-        /// <param name="password">The password.</param>
-        /// <param name="packageId">The package identifier.</param>
         /// <param name="errorResponse">The error response.</param>
         /// <returns></returns>
         public PurchaseResponse Purchase( string username, string password, int packageId, out string errorResponse )
@@ -116,7 +105,9 @@ namespace Rock.Store
             // setup REST call
             var client = new RestClient( _rockStoreUrl );
             client.Timeout = _clientTimeout;
-            string requestUrl = string.Format( "api/Store/Purchase/{0}/{1}/{2}/{3}", username, password, organizationKey, packageId.ToString() );
+            string encodedUserName = HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( username ) ) );
+            string encodedPassword = HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( password ) ) );
+            string requestUrl = string.Format( "api/Store/Purchase/{0}/{1}/{2}/{3}", encodedUserName, encodedPassword, organizationKey, packageId.ToString() );
             var request = new RestRequest( requestUrl, Method.GET );
 
             // deserialize to list of packages
@@ -129,7 +120,7 @@ namespace Rock.Store
             else
             {
                 errorResponse = response.ErrorMessage;
-                return new PurchaseResponse();
+                return null;
             }
         }
 
