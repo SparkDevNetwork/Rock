@@ -798,9 +798,11 @@ namespace Rock.Attribute
                     attributeValueService.Add( attributeValue );
                 }
 
-                attributeValue.Value = newValue;
-
-                rockContext.SaveChanges();
+                if ( attributeValue.Value != newValue )
+                {
+                    attributeValue.Value = newValue;
+                    rockContext.SaveChanges();
+                }
 
                 if ( model.AttributeValues != null && model.AttributeValues.ContainsKey( attribute.Key ) )
                 {
