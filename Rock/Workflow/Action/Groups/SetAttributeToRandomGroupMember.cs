@@ -36,7 +36,7 @@ namespace Rock.Workflow.Action
     [ActionCategory( "Groups" )]
     [Description( "Sets an attribute to a random person from a group with optional filter on a campus group member attribute. For example this could return a random person from the group with a group member attribute of 'Surprise'." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Select Random Group Member" )]
+    [ExportMetadata( "ComponentName", "Group Member Select Random" )]
 
     [GroupField( "Selection Group", "The group to select the random person from.", true, "", "", 0 )]
     [TextField( "Group Member Attribute Key", "The key of the group member attribute to filter on (optional). No no key is provided all group members will be considered. Otherwise the list of available group members will be filtered by the value you provide from the attribute below.", false, "", "", 1 )]

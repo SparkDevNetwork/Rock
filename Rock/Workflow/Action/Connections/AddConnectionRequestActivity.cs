@@ -34,7 +34,7 @@ namespace Rock.Workflow.Action
     [ActionCategory( "Connections" )]
     [Description( "Adds a new connection request activity." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Connection Request Activity Add " )]
+    [ExportMetadata( "ComponentName", "Connection Request Activity Add" )]
 
     [WorkflowAttribute( "Connection Request Attribute", "The attribute that contains the connection request to add an activity to.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.ConnectionRequestFieldType" } )]

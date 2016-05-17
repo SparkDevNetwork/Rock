@@ -1398,7 +1398,7 @@
     <Compile Include="Workflow\Action\WorkflowControl\CompleteWorkflow.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\ActivateActivity.cs" />
     <Compile Include="Workflow\Action\Communications\SendSystemEmail.cs" />
-    <Compile Include="Workflow\Action\People\SetStatus.cs" />
+    <Compile Include="Workflow\Action\WorkflowControl\SetStatus.cs" />
     <Compile Include="Model\WorkflowService.Partial.cs" />
     <Compile Include="Workflow\ActionComponent.cs" />
     <Compile Include="Workflow\ActionContainer.cs" />
