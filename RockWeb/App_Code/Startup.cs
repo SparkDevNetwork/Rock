@@ -27,6 +27,13 @@ namespace RockWeb
         public void Configuration( IAppBuilder app )
         {
             app.MapSignalR();
+            // Find any plugins that have OwinStartup decorations
+            foreach( var pluginStartup in Rock.Reflection.FindTypes(typeof(Rock.Plugin.IStartup)))
+            {
+                // Create an instance of the startup class and run the configuration
+                var startup = Activator.CreateInstance(pluginStartup.Value) as Rock.Plugin.IStartup;
+                startup.Configuration(app);
+            }
         }
     }
 }
