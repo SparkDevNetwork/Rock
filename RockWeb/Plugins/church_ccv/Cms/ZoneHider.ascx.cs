@@ -17,6 +17,7 @@ namespace RockWeb.Plugins.church_ccv.Cms
     [TextField( "UrlParameterValue", "The value to look for that will hide the zones. ", true, "Mobile" )]
     [TextField( "ZonesToHide", "Comma Delimited List of Zones that should be hidden", true, "Header, Navigation, Login, Full Menu, Feature, Sidebar 1, Main, Section A, Section B, Section C, Section D, Footer Left, Footer Right, Footer" )]
     [BooleanField( "Hide Breadcrumbs", "", true )]
+    [TextField("HTML To Hide", "Optional comma delimited list of ID tags of html to hide. Tags must be 'runat=server'. Ex: 'masthead, mainfooter'", false, "")]
     public partial class ZoneHider : RockBlock
     {
         /// <summary>
@@ -29,6 +30,7 @@ namespace RockWeb.Plugins.church_ccv.Cms
             var urlParameterName = this.GetAttributeValue( "UrlParameterName" );
             var urlParameterValue = this.GetAttributeValue( "UrlParameterValue" );
             var hideBreadcrumbs = this.GetAttributeValue( "HideBreadcrumbs" ).AsBooleanOrNull() ?? false;
+            var htmlToHide = this.GetAttributeValue( "HTMLToHide" );
 
             if ( !string.IsNullOrEmpty( urlParameterName ) && !string.IsNullOrEmpty( urlParameterValue ) )
             {
@@ -46,8 +48,18 @@ namespace RockWeb.Plugins.church_ccv.Cms
 
                     if ( hideBreadcrumbs )
                     {
-                        var script = "$('.breadcrumb').hide()";
+                        var script = "$('.breadcrumb').hide();";
                         ScriptManager.RegisterStartupScript( this, this.GetType(), "HideBreadcrumbs", script, true );
+                    }
+
+                    if ( htmlToHide != "" )
+                    {
+                        var controlsToHide = (htmlToHide ?? string.Empty).Split(',').Select(a => a.Trim()).ToList();
+                        foreach (var controlId in controlsToHide)
+                        {
+                            var control = this.Page.Controls[0].FindControl(controlId);
+                            if (control != null) control.Visible = false;
+                        }
                     }
                 }
             }
