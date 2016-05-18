@@ -1682,6 +1682,12 @@ namespace RockWeb.Blocks.Event
 
             }
 
+            // if this registration was marked as temporary (started from another page, then specified in the url), set IsTemporary to False now that we are done
+            if ( registration.IsTemporary )
+            {
+                registration.IsTemporary = false;
+            }
+
             // Save the registration ( so we can get an id )
             rockContext.SaveChanges();
             RegistrationState.RegistrationId = registration.Id;
