@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Field;
 using Rock.Model;
 using Rock.Reporting.Dashboard;
 using Rock.Web.Cache;
@@ -45,7 +46,6 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     [CustomDropdownListField( "Legend Position", "Select the position of the Legend (corner)", "ne,nw,se,sw", false, "ne", Order = 8 )]
     [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", false, Order = 9 )]
 
-    // TODO MEtric/EntityType, etc filters in CustomSettings
     [TextField( "Metric", "NOTE: Weird storage due to backwards compatible", false, "", "CustomSetting" )]
     [TextField( "MetricEntityTypeEntityIds", "", false, "", "CustomSetting" )]
 
@@ -159,13 +159,14 @@ namespace RockWeb.Blocks.Reporting.Dashboard
 
             var rockContext = new RockContext();
             var metricCategoryService = new MetricCategoryService( rockContext );
+            MetricCategory metricCategory = null;
             if ( this.MetricId.HasValue )
             {
-                var metricCategory = metricCategoryService.Queryable().Where( a => a.MetricId == this.MetricId ).FirstOrDefault();
+                metricCategory = metricCategoryService.Queryable().Where( a => a.MetricId == this.MetricId ).FirstOrDefault();
                 mpMetricCategoryPicker.SetValue( metricCategory );
             }
-            
-            if (this.GetEntityFromContext)
+
+            if ( this.GetEntityFromContext )
             {
                 rblSelectOrContext.SetValue( "1" );
             }
@@ -176,7 +177,28 @@ namespace RockWeb.Blocks.Reporting.Dashboard
 
             cbCombineValues.Checked = this.CombineValues;
 
-            // TODO Populate MetricPartitionValues
+            var entityTypeEntityList = ( GetAttributeValue( "MetricEntityTypeEntityIds" ) ?? string.Empty ).Split( ',' ).Select( a => a.Split( '|' ) ).Where( a => a.Length == 2 ).Select( a => new
+            {
+                EntityTypeId = a[0].AsIntegerOrNull(),
+                EntityId = a[1].AsIntegerOrNull()
+            } ).ToList();
+
+            if ( metricCategory != null )
+            {
+                foreach ( var metricPartition in metricCategory.Metric.MetricPartitions.OrderBy( a => a.Order ) )
+                {
+                    var metricPartitionEntityType = EntityTypeCache.Read( metricPartition.EntityTypeId ?? 0 );
+                    var controlId = string.Format( "metricPartition{0}_entityTypeEditControl", metricPartition.Id );
+                    Control entityTypeEditControl = phMetricValuePartitions.FindControl( controlId );
+
+                    int? entityId = entityTypeEntityList.Where( a => a.EntityTypeId == metricPartition.EntityTypeId ).Select( a => a.EntityId ).FirstOrDefault();
+
+                    if ( metricPartitionEntityType != null && metricPartitionEntityType.SingleValueFieldType != null && metricPartitionEntityType.SingleValueFieldType.Field is IEntityFieldType )
+                    {
+                        ( metricPartitionEntityType.SingleValueFieldType.Field as IEntityFieldType ).SetEditValueFromEntityId( entityTypeEditControl, new Dictionary<string, ConfigurationValue>(), entityId );
+                    }
+                }
+            }
 
             mdEdit.Show();
         }
@@ -194,16 +216,37 @@ namespace RockWeb.Blocks.Reporting.Dashboard
             Guid? metricCategoryGuid = metricCategory != null ? metricCategory.Category.Guid : (Guid?)null; ;
 
             // NOTE: Weird storage due to backwards compatible
-            // value stored as pipe delimited: Metric (as Guid) | EntityId | GetEntityFromContext | CombineValues | Metric's Category (as Guid)
+            // value stored as pipe delimited: Metric (as Guid) | EntityId (leave null) | GetEntityFromContext | CombineValues | Metric's Category (as Guid)
             var metricAttributeValue = string.Format( "{0}|{1}|{2}|{3}|{4}", metricGuid, null, rblSelectOrContext.SelectedValue == "1", cbCombineValues.Checked, metricCategoryGuid );
             SetAttributeValue( "Metric", metricAttributeValue );
+
+            var entityTypeEntityFilters = new Dictionary<int, int?>();
+            if ( metricCategory != null )
+            {
+                foreach ( var metricPartition in metricCategory.Metric.MetricPartitions.OrderBy( a => a.Order ) )
+                {
+                    var metricPartitionEntityType = EntityTypeCache.Read( metricPartition.EntityTypeId ?? 0 );
+                    var controlId = string.Format( "metricPartition{0}_entityTypeEditControl", metricPartition.Id );
+                    Control entityTypeEditControl = phMetricValuePartitions.FindControl( controlId );
+
+                    int? entityId;
+
+                    if ( metricPartitionEntityType != null && metricPartitionEntityType.SingleValueFieldType != null && metricPartitionEntityType.SingleValueFieldType.Field is IEntityFieldType )
+                    {
+                        entityId = ( metricPartitionEntityType.SingleValueFieldType.Field as IEntityFieldType ).GetEditValueAsEntityId( entityTypeEditControl, new Dictionary<string, ConfigurationValue>() );
+
+                        entityTypeEntityFilters.AddOrIgnore( metricPartitionEntityType.Id, entityId );
+                    }
+                }
+            }
+
+            string metricEntityTypeEntityIdsValue = entityTypeEntityFilters.Select( a => string.Format( "{0}|{1}", a.Key, a.Value ) ).ToList().AsDelimited( "," );
+            SetAttributeValue( "MetricEntityTypeEntityIds", metricEntityTypeEntityIdsValue );
+
             SaveAttributeValues();
 
             mdEdit.Hide();
             pnlEditModel.Visible = false;
-
-            // TODO Get selected MetricPartitionValues and set EntityId on FirstPartition for backwards compatibiliy
-
 
             LoadChart();
         }
@@ -335,10 +378,25 @@ namespace RockWeb.Blocks.Reporting.Dashboard
                 }
                 else
                 {
-                    var valueParts = GetAttributeValue( "Metric" ).Split( '|' );
-                    if ( valueParts.Length > 1 )
+                    var metricEntityTypeEntityIds = ( GetAttributeValue( "MetricEntityTypeEntityIds" ) ?? string.Empty ).Split( ',' ).Select( a => a.Split( '|' ) ).Where( a => a.Length == 2 ).Select( a => new
                     {
-                        result = valueParts[1].AsIntegerOrNull();
+                        EntityTypeId = a[0].AsIntegerOrNull(),
+                        EntityId = a[1].AsIntegerOrNull()
+                    } ).ToList();
+
+                    if ( metricEntityTypeEntityIds.Count() >= 1 )
+                    {
+                        // return the EntityId of the first partition
+                        result = metricEntityTypeEntityIds[0].EntityId;
+                    }
+                    else
+                    {
+                        // backwards compatibility, see if the old "Metric" attribute has an EntityId set
+                        var valueParts = GetAttributeValue( "Metric" ).Split( '|' );
+                        if ( valueParts.Length > 1 )
+                        {
+                            result = valueParts[1].AsIntegerOrNull();
+                        }
                     }
                 }
 
@@ -445,7 +503,8 @@ namespace RockWeb.Blocks.Reporting.Dashboard
             floatChartControl.Options.legend.position = this.GetAttributeValue( "LegendPosition" );
 
             floatChartControl.MetricId = this.MetricId;
-            floatChartControl.EntityId = this.EntityId;
+            floatChartControl.MetricValuePartitionEntityIds = GetAttributeValue( "MetricEntityTypeEntityIds" );
+
             nbMetricWarning.Visible = !this.MetricId.HasValue;
 
             pnlDashboardTitle.Visible = !string.IsNullOrEmpty( this.Title );
@@ -482,6 +541,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mpMetricCategoryPicker_SelectItem( object sender, EventArgs e )
         {
+            mpMetricCategoryPicker = this.ControlsOfTypeRecursive<MetricCategoryPicker>().FirstOrDefault( a => a.ID == "mpMetricCategoryPicker" );
             var metricCategoryId = mpMetricCategoryPicker.SelectedValue.AsIntegerOrNull();
             var metricCategory = new MetricCategoryService( new RockContext() ).Get( metricCategoryId ?? 0 );
             CreateDynamicControls( metricCategory != null ? metricCategory.MetricId : (int?)null );
@@ -499,5 +559,5 @@ namespace RockWeb.Blocks.Reporting.Dashboard
             var metricCategory = new MetricCategoryService( new RockContext() ).Get( metricCategoryId ?? 0 );
             CreateDynamicControls( metricCategory != null ? metricCategory.MetricId : (int?)null );
         }
-}
+    }
 }
