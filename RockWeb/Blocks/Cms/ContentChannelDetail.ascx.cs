@@ -91,6 +91,8 @@ namespace RockWeb.Blocks.Cms
             gItemAttributes.GridRebind += gItemAttributes_GridRebind;
             gItemAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
             gItemAttributes.GridReorder += gItemAttributes_GridReorder;
+
+            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentChannel ) ).Id;
             
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -584,6 +586,10 @@ namespace RockWeb.Blocks.Cms
                         ShowEditDetails( contentChannel );
                     }
                 }
+
+                btnSecurity.Visible = contentChannel.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+                btnSecurity.Title = contentChannel.Name;
+                btnSecurity.EntityId = contentChannel.Id;
 
                 lbSave.Visible = !readOnly;
             }

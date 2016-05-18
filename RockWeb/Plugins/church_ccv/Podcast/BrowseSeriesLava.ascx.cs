@@ -21,7 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using church.ccv.Podcast;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -63,10 +63,15 @@ namespace RockWeb.Plugins.church_ccv.Podcast
         #region Methods
         
         /// Displays the view group  using a lava template
+        /// 
         protected void ShowDetail( )
         {
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );            
-            //mergeFields.Add( "PendingGroupMembers", pendingGroupMembers );
+            // 450: All podcasts
+            // 451: Weekend Series
+            string podcastSeriesList = PodcastUtil.PodcastsAsJson( 450 );
+            
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+            mergeFields.Add( "PodcastSeries", podcastSeriesList );
     
             string template = GetAttributeValue( "LavaTemplate" );
             

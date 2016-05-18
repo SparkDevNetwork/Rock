@@ -90,6 +90,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\PodcastUtil.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rest\PodcastController.cs" />
   </ItemGroup>

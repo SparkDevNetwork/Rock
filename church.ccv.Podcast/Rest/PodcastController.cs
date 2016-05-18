@@ -29,18 +29,17 @@ using Rock.Rest.Controllers;
 using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.Web.Cache;
+using church.ccv.Podcast;
 
 namespace chuch.ccv.Podcast.Rest
 {
     public partial class PodcastController : Rock.Rest.ApiController<Category>
     {
         public PodcastController() : base( new Rock.Model.CategoryService( new Rock.Data.RockContext() ) ) { } 
-
-        const string ContentChannel_CategoryAttributeGuid = "DEA4ACCE-82F6-43E3-B381-6959FBF66E74";
-        const int WeekendVideos_CategoryId = 451; 
+        
         const string GetImageEndpoint = "GetImage.ashx?guid=";
 
-        string PublicApplicationRoot { get; set; }
+        
         
         [HttpGet]
         [System.Web.Http.Route( "api/Podcast/Retrieve/{platform}/{version}" )]
@@ -58,13 +57,15 @@ namespace chuch.ccv.Podcast.Rest
 
                 case "apple_tv":
                 {
-                    restContent = Retrieve_MobileApp( version );
+                    string response = PodcastUtil.PodcastsAsJson( PodcastUtil.RootPodcast_CategoryId );
+                    restContent = new StringContent( response, Encoding.UTF8, "application/json" );
                     break;
                 }
 
                 case "roku":
                 {
-                    restContent = Retrieve_MobileApp( version );
+                    string response = PodcastUtil.PodcastsAsJson( PodcastUtil.RootPodcast_CategoryId );
+                    restContent = new StringContent( response, Encoding.UTF8, "application/json" );
                     break;
                 }
             }
@@ -75,168 +76,6 @@ namespace chuch.ccv.Podcast.Rest
                 };
         }
 
-        private StringContent Retrieve_MobileApp( int version )
-        {
-            using ( StringWriter stringWriter = new StringWriterWithEncoding(Encoding.UTF8) )
-            {
-                XmlWriterSettings settings = new XmlWriterSettings();
-                settings.Indent = true;
-                settings.IndentChars = "\t";
-                settings.NewLineOnAttributes = true;
-                settings.Encoding = System.Text.Encoding.UTF8;
-                
-                using ( XmlWriter writer = XmlWriter.Create( stringWriter, settings) )
-                {
-                    // first, get the public application root
-                    RockContext rockContext = new RockContext( );
-                    var attribQuery = new AttributeService( rockContext ).Queryable( ).Where( a => a.Key == "PublicApplicationRoot" ).SingleOrDefault( );
-                    PublicApplicationRoot = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.AttributeId == attribQuery.Id ).SingleOrDefault( ).Value;
-
-
-                    // start with the root node and header info
-                    writer.WriteStartDocument( true );
-                    writer.WriteStartElement( "NoteDB" );
-
-                    //todo: decide how to manage this
-                    /*writer.WriteStartElement( "HostDomain" );
-                    writer.WriteString( PublicApplicationRoot );
-                    writer.WriteEndElement( );*/
-                                    
-                    // write the series list, which is the heart of the XML
-                    WriteSeriesList( writer );
-                    
-                    // close out the root node and document
-                    writer.WriteEndElement( );
-                    writer.WriteEndDocument( );
-
-                    // dump to the stringWriter's stream
-                    writer.Flush();
-                }
-
-                // return the XML
-                return new StringContent( stringWriter.ToString(), Encoding.UTF8, "application/xml" );
-            }
-        }
-        
-        private void WriteSeriesList( XmlWriter writer )
-        {
-            // begin the serisList section
-            writer.WriteStartElement( "SeriesList" );
-
-            // get all content channel types in the "Weekend Series" podcast
-            IQueryable<ContentChannel> seriesContentChannels = GetPodcastsByCategory( WeekendVideos_CategoryId );
-            IQueryable<AttributeValue> attribValueQuery = new AttributeValueService( new RockContext( ) ).Queryable( );
-            
-            foreach( ContentChannel series in seriesContentChannels )
-            {
-                // pull in all this series' attributes
-                List<AttributeValue> contentChannelAttribValList = attribValueQuery.Where( av => av.EntityId == series.Id && 
-                                                                                           av.Attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" ).ToList( );
-
-                // don't inlude series that aren't active
-                bool activeValue = contentChannelAttribValList.Where( av => av.AttributeKey == "Active" ).SingleOrDefault( ).Value == "True" ? true : false;
-                if( activeValue )
-                {
-                    // write the "Series" start element
-                    writer.WriteStartElement( "Series" );
-
-                    // Put each needed XML element
-                    writer.WriteStartElement( "SeriesName" );
-                    writer.WriteValue( series.Name );
-                    writer.WriteEndElement( );
-
-                    writer.WriteStartElement( "Description" );
-                    writer.WriteValue( series.Description );
-                    writer.WriteEndElement( );
-
-                    // parse and setup the date range for the series
-                    string[] dateRanges = contentChannelAttribValList.Where( av => av.AttributeKey == "DateRange" ).SingleOrDefault( ).Value.Split( ',' );
-                    string startDate = DateTime.Parse( dateRanges[ 0 ] ).ToShortDateString( );
-                    string endDate = DateTime.Parse( dateRanges[ 1 ] ).ToShortDateString( );
-
-                    writer.WriteStartElement( "DateRanges" );
-                    writer.WriteValue( startDate + " - " + endDate );
-                    writer.WriteEndElement( );
-
-                    // The images will be Guids with the GetImage path prefixed
-                    writer.WriteStartElement( "BillboardUrl" );
-                    string billboardUrl = PublicApplicationRoot + GetImageEndpoint + contentChannelAttribValList.Where( av => av.AttributeKey == "BillboardImage" ).SingleOrDefault( ).Value;
-                    writer.WriteValue( billboardUrl );
-                    writer.WriteEndElement( );
-
-                    writer.WriteStartElement( "ThumbnailUrl" );
-                    string thumbnailUrl = PublicApplicationRoot + GetImageEndpoint + contentChannelAttribValList.Where( av => av.AttributeKey == "ThumbnailImage" ).SingleOrDefault( ).Value;
-                    writer.WriteValue( thumbnailUrl );
-                    writer.WriteEndElement( );
-
-                
-                    // Now generate each message of the series
-                    foreach( ContentChannelItem message in series.Items )
-                    {
-                        // only include items whose start date has already begun and that have been approved
-                        if( message.StartDateTime < DateTime.Now && message.Status == ContentChannelItemStatus.Approved )
-                        {
-                            // get this message's attributes
-                            List<AttributeValue> itemAttribValList = attribValueQuery.Where( av => av.EntityId == message.Id && 
-                                                                                                   av.Attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" ).ToList( );
-
-                            writer.WriteStartElement( "Message" );
-
-                            // Put required elements
-                            writer.WriteStartElement( "Name" );
-                            writer.WriteValue( message.Title );
-                            writer.WriteEndElement( );
-
-                            writer.WriteStartElement( "Speaker" );
-                            writer.WriteValue( itemAttribValList.Where( av => av.AttributeKey == "Speaker" ).SingleOrDefault( ).Value );
-                            writer.WriteEndElement( );
-
-                            writer.WriteStartElement( "Date" );
-                            writer.WriteValue( message.StartDateTime.ToShortDateString( ) );
-                            writer.WriteEndElement( );
-
-                            writer.WriteStartElement( "NoteUrl" );
-                            writer.WriteValue( itemAttribValList.Where( av => av.AttributeKey == "NoteUrl" ).SingleOrDefault( ).Value );
-                            writer.WriteEndElement( );
-
-                            // Watch/Share/Audio URLs are optional, so check that they exist
-                            string watchUrlValue = itemAttribValList.Where( av => av.AttributeKey == "WatchUrl" ).SingleOrDefault( ).Value;
-                            if( string.IsNullOrEmpty( watchUrlValue ) == false )
-                            {
-                                writer.WriteStartElement( "WatchUrl" );
-                                writer.WriteValue( watchUrlValue );
-                                writer.WriteEndElement();
-                            }
-                    
-                            string shareUrlValue = itemAttribValList.Where( av => av.AttributeKey == "ShareUrl" ).SingleOrDefault( ).Value;
-                            if( string.IsNullOrEmpty( shareUrlValue ) == false )
-                            {
-                                writer.WriteStartElement( "ShareUrl" );
-                                writer.WriteValue( shareUrlValue );
-                                writer.WriteEndElement();
-                            }
-
-                            string audioUrlValue = itemAttribValList.Where( av => av.AttributeKey == "AudioUrl" ).SingleOrDefault( ).Value;
-                            if( string.IsNullOrEmpty( audioUrlValue ) == false )
-                            {
-                                writer.WriteStartElement( "AudioUrl" );
-                                writer.WriteValue( audioUrlValue );
-                                writer.WriteEndElement();
-                            }
-
-                            // close the message
-                            writer.WriteEndElement();
-                        }
-
-                        // close the series
-                        writer.WriteEndElement();
-                    }
-                }
-            }
-
-            // close the seriesList
-            writer.WriteEndElement( );
-        }
         
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Podcast/GetChildren/{id}" )]
@@ -351,8 +190,8 @@ namespace chuch.ccv.Podcast.Rest
             
             return categoryItemList.AsQueryable();
         }
-        
-        public IQueryable<ContentChannel> GetPodcastsByCategory( int categoryId )
+
+        static IQueryable<ContentChannel> GetPodcastsByCategory( int categoryId )
         {
             // if there's a valid category ID, find content channel items
             if( categoryId != 0 )
@@ -363,7 +202,7 @@ namespace chuch.ccv.Podcast.Rest
                 var categoryList = new CategoryService( rockContext ).Queryable( ).Where( c => c.Id == categoryId ).SingleOrDefault( );
             
                 // create a query that'll get all of the "Category" attributes for all the content channels
-                var categoryAttribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.Guid == new Guid( ContentChannel_CategoryAttributeGuid  ) );
+                var categoryAttribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.Guid == new Guid( PodcastUtil.ContentChannel_CategoryAttributeGuid ) );
 
                 // now get all the content channels, with their parent category(s) attributes as a joined object
                 ContentChannelService contentChannelService = new ContentChannelService( rockContext );
@@ -372,14 +211,170 @@ namespace chuch.ccv.Podcast.Rest
 
                 // now only take content channel items whose category attribute (which is a list of category guids) includes the category defined by categoryId
                 var finalList = categoryContentChannelItems.Where( cci => cci.CategoryAttribValue.Value.Contains( categoryList.Guid.ToString( ) ) ).Select( cci => cci.ContentChannel );
-
-
+                
                 return finalList;
             }
 
             return null;
         }
+
+        StringContent Retrieve_MobileApp( int version )
+        {
+            using ( StringWriter stringWriter = new StringWriterWithEncoding(Encoding.UTF8) )
+            {
+                string publicApplicationRoot = string.Empty;
+
+                XmlWriterSettings settings = new XmlWriterSettings();
+                settings.Indent = true;
+                settings.IndentChars = "\t";
+                settings.NewLineOnAttributes = true;
+                settings.Encoding = System.Text.Encoding.UTF8;
+                
+                using ( XmlWriter writer = XmlWriter.Create( stringWriter, settings) )
+                {
+                    // first, get the public application root
+                    RockContext rockContext = new RockContext( );
+                    var attribQuery = new AttributeService( rockContext ).Queryable( ).Where( a => a.Key == "PublicApplicationRoot" ).SingleOrDefault( );
+                    publicApplicationRoot = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.AttributeId == attribQuery.Id ).SingleOrDefault( ).Value;
+
+
+                    // start with the root node and header info
+                    writer.WriteStartDocument( true );
+                    writer.WriteStartElement( "NoteDB" );
+                                    
+                    // write the series list, which is the heart of the XML
+                    // begin the serisList section
+                    writer.WriteStartElement( "SeriesList" );
+
+                    // get all content channel types in the "Weekend Series" podcast
+                    IQueryable<ContentChannel> seriesContentChannels = GetPodcastsByCategory( PodcastUtil.WeekendVideos_CategoryId );
+                    IQueryable<AttributeValue> attribValueQuery = new AttributeValueService( new RockContext( ) ).Queryable( );
+            
+                    foreach( ContentChannel series in seriesContentChannels )
+                    {
+                        // pull in all this series' attributes
+                        List<AttributeValue> contentChannelAttribValList = attribValueQuery.Where( av => av.EntityId == series.Id && 
+                                                                                                    av.Attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" ).ToList( );
+
+                        // don't inlude series that aren't active
+                        bool activeValue = contentChannelAttribValList.Where( av => av.AttributeKey == "Active" ).SingleOrDefault( ).Value == "True" ? true : false;
+                        if( activeValue )
+                        {
+                            // write the "Series" start element
+                            writer.WriteStartElement( "Series" );
+
+                            // Put each needed XML element
+                            writer.WriteStartElement( "SeriesName" );
+                            writer.WriteValue( series.Name );
+                            writer.WriteEndElement( );
+
+                            writer.WriteStartElement( "Description" );
+                            writer.WriteValue( series.Description );
+                            writer.WriteEndElement( );
+
+                            // parse and setup the date range for the series
+                            string[] dateRanges = contentChannelAttribValList.Where( av => av.AttributeKey == "DateRange" ).SingleOrDefault( ).Value.Split( ',' );
+                            string startDate = DateTime.Parse( dateRanges[ 0 ] ).ToShortDateString( );
+                            string endDate = DateTime.Parse( dateRanges[ 1 ] ).ToShortDateString( );
+
+                            writer.WriteStartElement( "DateRanges" );
+                            writer.WriteValue( startDate + " - " + endDate );
+                            writer.WriteEndElement( );
+
+                            // The images will be Guids with the GetImage path prefixed
+                            writer.WriteStartElement( "BillboardUrl" );
+                            string billboardUrl = publicApplicationRoot + GetImageEndpoint + contentChannelAttribValList.Where( av => av.AttributeKey == "BillboardImage" ).SingleOrDefault( ).Value;
+                            writer.WriteValue( billboardUrl );
+                            writer.WriteEndElement( );
+
+                            writer.WriteStartElement( "ThumbnailUrl" );
+                            string thumbnailUrl = publicApplicationRoot + GetImageEndpoint + contentChannelAttribValList.Where( av => av.AttributeKey == "ThumbnailImage" ).SingleOrDefault( ).Value;
+                            writer.WriteValue( thumbnailUrl );
+                            writer.WriteEndElement( );
+
+                
+                            // Now generate each message of the series
+                            foreach( ContentChannelItem message in series.Items )
+                            {
+                                // only include items whose start date has already begun and that have been approved
+                                if( message.StartDateTime < DateTime.Now && message.Status == ContentChannelItemStatus.Approved )
+                                {
+                                    // get this message's attributes
+                                    List<AttributeValue> itemAttribValList = attribValueQuery.Where( av => av.EntityId == message.Id && 
+                                                                                                            av.Attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" ).ToList( );
+
+                                    writer.WriteStartElement( "Message" );
+
+                                    // Put required elements
+                                    writer.WriteStartElement( "Name" );
+                                    writer.WriteValue( message.Title );
+                                    writer.WriteEndElement( );
+
+                                    writer.WriteStartElement( "Speaker" );
+                                    writer.WriteValue( itemAttribValList.Where( av => av.AttributeKey == "Speaker" ).SingleOrDefault( ).Value );
+                                    writer.WriteEndElement( );
+
+                                    writer.WriteStartElement( "Date" );
+                                    writer.WriteValue( message.StartDateTime.ToShortDateString( ) );
+                                    writer.WriteEndElement( );
+
+                                    writer.WriteStartElement( "NoteUrl" );
+                                    writer.WriteValue( itemAttribValList.Where( av => av.AttributeKey == "NoteUrl" ).SingleOrDefault( ).Value );
+                                    writer.WriteEndElement( );
+
+                                    // Watch/Share/Audio URLs are optional, so check that they exist
+                                    string watchUrlValue = itemAttribValList.Where( av => av.AttributeKey == "WatchUrl" ).SingleOrDefault( ).Value;
+                                    if( string.IsNullOrEmpty( watchUrlValue ) == false )
+                                    {
+                                        writer.WriteStartElement( "WatchUrl" );
+                                        writer.WriteValue( watchUrlValue );
+                                        writer.WriteEndElement();
+                                    }
+                    
+                                    string shareUrlValue = itemAttribValList.Where( av => av.AttributeKey == "ShareUrl" ).SingleOrDefault( ).Value;
+                                    if( string.IsNullOrEmpty( shareUrlValue ) == false )
+                                    {
+                                        writer.WriteStartElement( "ShareUrl" );
+                                        writer.WriteValue( shareUrlValue );
+                                        writer.WriteEndElement();
+                                    }
+
+                                    string audioUrlValue = itemAttribValList.Where( av => av.AttributeKey == "AudioUrl" ).SingleOrDefault( ).Value;
+                                    if( string.IsNullOrEmpty( audioUrlValue ) == false )
+                                    {
+                                        writer.WriteStartElement( "AudioUrl" );
+                                        writer.WriteValue( audioUrlValue );
+                                        writer.WriteEndElement();
+                                    }
+
+                                    // close the message
+                                    writer.WriteEndElement();
+                                }
+
+                                // close the series
+                                writer.WriteEndElement();
+                            }
+                        }
+                    }
+
+                    // close the seriesList
+                    writer.WriteEndElement( );
+
+                    
+                    // close out the root node and document
+                    writer.WriteEndElement( );
+                    writer.WriteEndDocument( );
+
+                    // dump to the stringWriter's stream
+                    writer.Flush();
+                }
+
+                // return the XML
+                return new StringContent( stringWriter.ToString(), Encoding.UTF8, "application/xml" );
+            }
+        }
     }
+       
 
     // Inherit StringWriter so we can set the encoding, which is protected
     public sealed class StringWriterWithEncoding : StringWriter
