@@ -312,7 +312,8 @@ namespace RockWeb.Blocks.Event
                     .Queryable( "EventItem, EventItem.EventItemAudiences,Schedule" )
                     .Where( m =>
                         m.EventItem.EventCalendarItems.Any( i => i.EventCalendarId == _calendarId ) &&
-                        m.EventItem.IsActive );
+                        m.EventItem.IsActive &&
+                        m.EventItem.IsApproved );
 
             // Filter by campus
             List<int> campusIds =  cblCampus.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value.AsInteger() ).ToList();
