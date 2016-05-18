@@ -12,57 +12,34 @@
             };
         </script>
         <Rock:NotificationBox ID="nbNotice" runat="server" Visible="false" CssClass="lifegroupdetail-noticebox" NotificationBoxType="Danger" />
-        <asp:Panel ID="pnlEmailSent" runat="server" Visible="false">
-            <h1>Your request for information has been sent.
-            </h1>
-        </asp:Panel>
         <asp:Panel ID="pnlView" runat="server" Visible="true">
             <div class="row lifegroupdetail-groupname">
                 <h2>
                     <asp:Literal ID="lGroupName" runat="server" />
                 </h2>
             </div>
-            <hr />
             <div class="row">
                 <div class="lifegroupdetail-backdiv pull-left">
                     <asp:LinkButton ID="lbGoBack" runat="server" Text="Back" OnClick="lbGoBack_Click" />
+                </div>
+                <div class="lifegroupdetail-registerdiv row text-center">
+                    <asp:LinkButton ID="lbRegister" runat="server" Text="Sign up!" CssClass="btn btn-primary" OnClick="lbRegister_Click" CausesValidation="false" />
+                </div>
+                <div class="lifegroupdetail-emailleaderdiv row text-center">
+                    <asp:LinkButton ID="lbEmail" runat="server" Text="Email" OnClick="lbEmail_Click" CausesValidation="false" Visible="false" />
                 </div>
                 <asp:Panel ID="pnlLogin" runat="server" CssClass="lifegroupdetail-loginbutton">
                     <asp:LinkButton ID='lbLogin' runat='server' Text='Sign in' OnClick='lbLogin_Click' CausesValidation="false" />
                     to autocomplete forms. 
                 </asp:Panel>
             </div>
-            <div class="row">
-                <div class="lifegroupdetail-videoboxdiv col-md-5 text-center">
-                    <asp:Literal ID="lMainMedia" runat="server" />
-                </div>
-                <div class="lifegroupdetail-contactdiv col-md-2">
-                    <div class="lifegroupdetail-registerdiv row text-center">
-                        <asp:LinkButton ID="lbRegister" runat="server" Text="Sign up!" CssClass="btn btn-primary" OnClick="lbRegister_Click" CausesValidation="false" />
-                    </div>
-                    <div class="lifegroupdetail-emailleaderdiv row text-center">
-                        <asp:LinkButton ID="lbEmail" runat="server" Text="Email" OnClick="lbEmail_Click" CausesValidation="false" Visible="false" />
-                    </div>
-                </div>
-                <div class="lifegroupdetail-mapdiv col-md-5 location-maps text-center">
-                    <asp:PlaceHolder ID="phMaps" runat="server" EnableViewState="true" />
-                </div>
-            </div>
-            <div class="lifegroupdetail-descriptiondiv row">
-                <p>
-                    <asp:Literal ID="lDescription" runat="server" />
-                </p>
-            </div>
-
-            <asp:Literal ID="lPhotoOutput" runat="server" />
-            <asp:Literal ID="lPhotoDebug" Visible="false" runat="server" />
-
+            <asp:Literal ID="lOutput" runat="server" />
+            <asp:Literal ID="lDebug" Visible="false" runat="server" />
+        </asp:Panel>
+        <asp:Panel ID="pnlSignup" runat="server" Visible="true">
             <div class="lifegroupdetail-validationdiv">
                 <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
             </div>
-        </asp:Panel>
-        <asp:Panel ID="pnlSignup" runat="server" Visible="true">
-
             <div class="lifegroupdetail-errordiv">
                 <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" />
             </div>
@@ -181,6 +158,11 @@
                     </div>
                 </asp:Panel>
             </div>
+        </asp:Panel>
+
+        <asp:Panel ID="pnlEmailSent" runat="server" Visible="false">
+            <h1>Your request for information has been sent.
+            </h1>
         </asp:Panel>
     </ContentTemplate>
 </asp:UpdatePanel>

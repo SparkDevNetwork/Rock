@@ -46,7 +46,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
     [WorkflowTypeField( "Workflow", "An optional workflow to start when registration is created. The following workflow Attribute keys will be set: GroupId (Int), GroupLeader (Person), GroupMember (Person).", false, false, "", "", 4 )]
     [WorkflowTypeField( "Email Workflow", "An optional workflow to start when an email request is created. The following workflow Attribute keys will be set: GroupId (Int), GroupLeader (Person), GroupMember (Person).", false, false, "", "", 5 )]
     [LinkedPage( "Result Page", "An optional page to redirect user to after they have been registered for the group.", false, "", "", 6 )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display the group photos.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"", "", 7 )]
+    [CodeEditorField( "Lava Template", "Lava template to use to display the group's information", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~/Plugins/com_centralaz/LifeGroupFinder/Lava/LifeGroupDetail.lava' %}", "", 7 )]
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 8 )]
     public partial class LifeGroupDetail : RockBlock
     {
@@ -562,61 +562,26 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
 
             if ( _group != null )
             {
-                lGroupName.Text = String.Format( "The {0} Life Group", _group.Name );
-                _group.LoadAttributes();
-                string vidTag = GetVideoTag( _group.GetAttributeValue( "MainVideo" ) );
-                if ( !string.IsNullOrWhiteSpace( _group.GetAttributeValue( "MainVideo" ) ) )
-                {
-                    lMainMedia.Text = vidTag;
-                }
-                else
-                {
-                    string imgTag = GetImageTag( _group.GetAttributeValue( "MainPhoto" ), 350, 200 );
-                    if ( !string.IsNullOrWhiteSpace( _group.GetAttributeValue( "MainPhoto" ) ) )
-                    {
-                        string imageUrl = ResolveRockUrl( String.Format( "~/GetImage.ashx?guid={0}", _group.GetAttributeValue( "MainPhoto" ) ) );
-                        lMainMedia.Text = string.Format( "<a href='{0}'>{1}</a>", imageUrl, imgTag );
-                    }
-                    else
-                    {
-                        GroupMember leader = _group.Members.FirstOrDefault( m => m.GroupRole.IsLeader == true );
-                        if ( leader != null )
-                        {
-
-                            Person person = leader.Person;
-                            string imgPersonTag = Rock.Model.Person.GetPersonPhotoImageTag( person.Id, null, person.Age, person.Gender, null, 200, 200 );
-                            if ( person.PhotoId.HasValue )
-                            {
-                                lMainMedia.Text = string.Format( "<a href='{0}'>{1}</a>", person.PhotoUrl, imgPersonTag );
-                            }
-                            else
-                            {
-                                lMainMedia.Text = imgTag;
-                            }
-                        }
-                    }
-                }
-
-                var mergeFields = new Dictionary<string, object>();
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                 mergeFields.Add( "PhotoGuid1", _group.GetAttributeValue( "GroupPhoto1" ) );
                 mergeFields.Add( "PhotoGuid2", _group.GetAttributeValue( "GroupPhoto2" ) );
                 mergeFields.Add( "PhotoGuid3", _group.GetAttributeValue( "GroupPhoto3" ) );
-                lPhotoOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
+                mergeFields.Add( "PortraitMedia", GetPortraitMedia() );
+                mergeFields.Add( "Map", BuildMap() );
+                mergeFields.Add( "Group", _group );
+                lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 
                 // show debug info
                 if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Rock.Security.Authorization.EDIT ) )
                 {
-                    lPhotoDebug.Visible = true;
-                    lPhotoDebug.Text = mergeFields.lavaDebugInfo();
+                    lDebug.Visible = true;
+                    lDebug.Text = mergeFields.lavaDebugInfo();
                 }
                 else
                 {
-                    lPhotoDebug.Visible = false;
-                    lPhotoDebug.Text = string.Empty;
+                    lDebug.Visible = false;
+                    lDebug.Text = string.Empty;
                 }
-
-                lDescription.Text = _group.Description;
-                BuildMap();
 
                 pnlSignup.AddCssClass( "col-md-12" );
 
@@ -640,6 +605,48 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                     }
                 }
             }
+        }
+
+        private string GetPortraitMedia()
+        {
+            String portraitMedia = String.Empty;
+
+            lGroupName.Text = String.Format( "The {0} Life Group", _group.Name );
+            _group.LoadAttributes();
+            string vidTag = GetVideoTag( _group.GetAttributeValue( "MainVideo" ) );
+            if ( !string.IsNullOrWhiteSpace( _group.GetAttributeValue( "MainVideo" ) ) )
+            {
+                portraitMedia = vidTag;
+            }
+            else
+            {
+                string imgTag = GetImageTag( _group.GetAttributeValue( "MainPhoto" ), 350, 200 );
+                if ( !string.IsNullOrWhiteSpace( _group.GetAttributeValue( "MainPhoto" ) ) )
+                {
+                    string imageUrl = ResolveRockUrl( String.Format( "~/GetImage.ashx?guid={0}", _group.GetAttributeValue( "MainPhoto" ) ) );
+                    portraitMedia = string.Format( "<a href='{0}'>{1}</a>", imageUrl, imgTag );
+                }
+                else
+                {
+                    GroupMember leader = _group.Members.FirstOrDefault( m => m.GroupRole.IsLeader == true );
+                    if ( leader != null )
+                    {
+
+                        Person person = leader.Person;
+                        string imgPersonTag = Rock.Model.Person.GetPersonPhotoImageTag( person.Id, null, person.Age, person.Gender, null, 200, 200 );
+                        if ( person.PhotoId.HasValue )
+                        {
+                            portraitMedia = string.Format( "<a href='{0}'>{1}</a>", person.PhotoUrl, imgPersonTag );
+                        }
+                        else
+                        {
+                            portraitMedia = imgTag;
+                        }
+                    }
+                }
+            }
+
+            return portraitMedia;
         }
 
         /// <summary>
@@ -716,10 +723,10 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
         /// <summary>
         /// Builds the map.
         /// </summary>
-        private void BuildMap()
+        private String BuildMap()
         {
-            // Get Map Style
-            phMaps.Controls.Clear();
+            String mapString = String.Empty;
+            // Get Map Style           
             var mapStyleValue = DefinedValueCache.Read( GetAttributeValue( "MapStyle" ) );
             if ( mapStyleValue == null )
             {
@@ -741,14 +748,9 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                                 string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", markerPoints );
                                 mapLink = System.Text.RegularExpressions.Regex.Replace( mapLink, @"\{\s*PolygonPoints\s*\}", string.Empty );
                                 mapLink += "&sensor=false&size=350x200&zoom=13&format=png";
-                                var literalcontrol = new Literal()
-                                {
-                                    Text = string.Format(
+                                mapString = string.Format(
                                     "<div class='group-location-map'><img src='{0}'/></div>",
-                                    mapLink ),
-                                    Mode = LiteralMode.PassThrough
-                                };
-                                phMaps.Controls.Add( literalcontrol );
+                                    mapLink );
                             }
                             else if ( groupLocation.Location.GeoFence != null )
                             {
@@ -756,15 +758,15 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                                 string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", string.Empty );
                                 mapLink = System.Text.RegularExpressions.Regex.Replace( mapLink, @"\{\s*PolygonPoints\s*\}", polygonPoints );
                                 mapLink += "&sensor=false&size=350x200&format=png";
-                                phMaps.Controls.Add(
-                                    new LiteralControl( string.Format(
+                                mapString = string.Format(
                                         "<div class='group-location-map'><img src='{0}'/></div>",
-                                        mapLink ) ) );
+                                        mapLink );
                             }
                         }
                     }
                 }
             }
+            return mapString;
         }
 
         /// <summary>
@@ -855,7 +857,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             _group = new GroupService( _rockContext )
                 .Queryable( "GroupType.DefaultGroupRole" ).AsNoTracking()
                 .FirstOrDefault( g => g.Id == groupId );
-            if ( _group == null || _group.Members.FirstOrDefault( m => m.GroupRole.IsLeader == true ) == null )
+            if ( _group == null )
             {
                 nbNotice.Heading = "Unknown Group";
                 nbNotice.Text = "<p>This page requires a valid group id parameter, and there was not one provided.</p>";
@@ -864,6 +866,13 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             else
             {
                 _defaultGroupRole = _group.GroupType.DefaultGroupRole;
+            }
+
+            if ( _group.Members.FirstOrDefault( m => m.GroupRole.IsLeader == true ) == null )
+            {
+                nbNotice.Heading = "No Leader";
+                nbNotice.Text = "<p>This page requires a valid group leader, and the provided group does not have one.</p>";
+                return false;
             }
 
             _dvcConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );

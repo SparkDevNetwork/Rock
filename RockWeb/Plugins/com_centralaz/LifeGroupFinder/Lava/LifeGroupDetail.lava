@@ -1,0 +1,32 @@
+<div class="row">
+  <div class="lifegroupdetail-videoboxdiv col-md-5 text-center">
+    {{ PortraitMedia }}
+  </div>
+  <div class="lifegroupdetail-contactdiv col-md-2">
+  </div>
+  <div class="lifegroupdetail-mapdiv col-md-5 location-maps text-center">
+    {{ Map }}
+  </div>
+</div>
+<div class="lifegroupdetail-descriptiondiv row">
+  <p>
+    {{ Group.Description }}
+  </p>
+</div>
+
+{% if PhotoGuid1 != '' || PhotoGuid2 != '' || PhotoGuid3 != '' %}
+<div class="row">
+  <div class="col-xs-6 col-md-4">
+    <div class="widget-image" style="background: url(//rockweb.centralaz.com/GetImage.ashx?guid={{ PhotoGuid1 }}) 50% 50% / cover; min-height: 300px;">
+    </div>
+  </div>
+  <div class="col-xs-6 col-md-4">
+    <div class="widget-image" style="background: url(//rockweb.centralaz.com/GetImage.ashx?guid={{ PhotoGuid2 }}) 50% 50% / cover; min-height: 300px;">
+    </div>
+  </div>
+  <div class="col-xs-6 col-md-4 hidden-xs ">
+    <div class="widget-image" style="background: url(//rockweb.centralaz.com/GetImage.ashx?guid={{ PhotoGuid3 }}) 50% 50% / cover; min-height: 300px;">
+    </div>
+  </div>
+</div>
+{% endif %}
