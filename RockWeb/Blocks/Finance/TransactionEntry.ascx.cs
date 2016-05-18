@@ -1818,6 +1818,16 @@ namespace RockWeb.Blocks.Finance
             }
             scheduledTransaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, gateway, rockContext );
 
+            Guid sourceGuid = Guid.Empty;
+            if ( Guid.TryParse( GetAttributeValue( "Source" ), out sourceGuid ) )
+            {
+                var source = DefinedValueCache.Read( sourceGuid );
+                if ( source != null )
+                {
+                    scheduledTransaction.SourceTypeValueId = source.Id;
+                }
+            }
+
             var changeSummary = new StringBuilder();
             changeSummary.AppendFormat( "{0} starting {1}", schedule.TransactionFrequencyValue.Value, schedule.StartDate.ToShortDateString() );
             changeSummary.AppendLine();

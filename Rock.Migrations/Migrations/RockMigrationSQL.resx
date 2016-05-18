@@ -328,4 +328,7 @@
   <data name="_201605022007364_AttendanceBadgeSpUpdates_spCheckin_WeeksAttendedInDuration" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201605022007364_AttendanceBadgeSpUpdates_spCheckin_WeeksAttendedInDuration.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_201605180005401_ScheduledTxnSource_ContributionStatementQuery" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201605180005401_scheduledtxnsource_contributionstatementquery.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>

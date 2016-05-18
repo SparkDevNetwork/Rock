@@ -223,6 +223,10 @@
     <Compile Include="Migrations\201605042128481_OnlineContributionStatementPages.Designer.cs">
       <DependentUpon>201605042128481_OnlineContributionStatementPages.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201605180005401_ScheduledTxnSource.cs" />
+    <Compile Include="Migrations\201605180005401_ScheduledTxnSource.Designer.cs">
+      <DependentUpon>201605180005401_ScheduledTxnSource.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.cs" />
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.Designer.cs">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
@@ -2234,6 +2238,9 @@
     <EmbeddedResource Include="Migrations\201605042128481_OnlineContributionStatementPages.resx">
       <DependentUpon>201605042128481_OnlineContributionStatementPages.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201605180005401_ScheduledTxnSource.resx">
+      <DependentUpon>201605180005401_ScheduledTxnSource.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.resx">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
     </EmbeddedResource>
@@ -3640,6 +3647,7 @@
   <ItemGroup>
     <Content Include="Migrations\201604281205403_AttendanceAnalyticsGroupTypes_AttendeeFirstDates.sql" />
     <Content Include="Migrations\201604281205403_AttendanceAnalyticsGroupTypes_GroupTypeAttendance.sql" />
+    <Content Include="Migrations\201605180005401_ScheduledTxnSource_ContributionStatementQuery.sql" />
     <Content Include="Migrations\201605022007364_AttendanceBadgeSpUpdates_spCheckin_BadgeAttendance.sql" />
     <Content Include="Migrations\201605022007364_AttendanceBadgeSpUpdates_spCheckin_WeeksAttendedInDuration.sql" />
     <Content Include="Migrations\201605021826400_FamilyAnalyticsUpdates_spCrm_spCrm_FamilyAnalyticsUpdateVisitDates.sql" />

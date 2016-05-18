@@ -107,6 +107,7 @@ namespace Rock.Model
             target.LastStatusUpdateDateTime = source.LastStatusUpdateDateTime;
             target.NextPaymentDate = source.NextPaymentDate;
             target.NumberOfPayments = source.NumberOfPayments;
+            target.SourceTypeValueId = source.SourceTypeValueId;
             target.StartDate = source.StartDate;
             target.TransactionCode = source.TransactionCode;
             target.TransactionFrequencyValueId = source.TransactionFrequencyValueId;
