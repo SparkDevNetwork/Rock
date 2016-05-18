@@ -100,24 +100,49 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+
+        /// <summary>
+        /// Gets the metric value partitions as a position sensitive comma-delimited list of EntityTypeId|EntityId
+        /// </summary>
+        /// <value>
+        /// The metric value EntityTypeId|EntityId of each Partition (by order)
+        /// </value>
+        public string MetricValuePartitionEntityIds
+        {
+            get
+            {
+                return ViewState["MetricValuePartitionEntityIds"] as string;
+            }
+
+            set
+            {
+                ViewState["MetricValuePartitionEntityIds"] = value;
+            }
+        }
+
         /// <summary>
         /// Gets or sets the entity identifier.
         /// </summary>
         /// <value>
         /// The entity identifier.
         /// </value>
+        [Obsolete("use MetricValuePartitionEntityIds instead")]
         public int? EntityId
         {
             get
             {
-                return ViewState["EntityId"] as int?;
+                legacyEntityId = ViewState["EntityId"] as int?;
+                return legacyEntityId;
             }
 
             set
             {
-                ViewState["EntityId"] = value;
+                legacyEntityId = value;
+                ViewState["EntityId"] = legacyEntityId;
             }
         }
+        private int? legacyEntityId;
+
 
         /// <summary>
         /// Gets a value indicating whether to combine values with different EntityId values into one series vs. showing each in its own series
@@ -711,15 +736,34 @@ namespace Rock.Web.UI.Controls
                 // MetricValueType is an enum, which isn't quite supported for $filters as of Web Api 2.1, so pass it as a regular rest param instead of as part of the odata $filter
                 qryParams.Add( string.Format( "metricValueType={0}", this.MetricValueType ) );
             }
-            
-            if ( this.EntityId.HasValue )
+
+            var entityTypeEntityIds = MetricValuePartitionEntityIds.Split( ',' ).Select( a => a.Split( '|' ) ).Where( a => a.Length == 2 ).Select( a => new
+            {
+                EntityTypeId = a[0].AsIntegerOrNull(),
+                EntityId = a[1].AsIntegerOrNull()
+            } ).ToList();
+
+            if ( entityTypeEntityIds.Any() )
+            {
+                var position = 0;
+                foreach ( var metricPartition in metric.MetricPartitions.OrderBy(a => a.Order ))
+                {
+                    if ( entityTypeEntityIds.Count() > position )
+                    {
+                        var entry = entityTypeEntityIds[position];
+                        if ( entry.EntityTypeId == metricPartition.EntityTypeId )
+                        {
+                            filterParams.Add( string.Format( "MetricValuePartitions/any(metricValuePartition: metricValuePartition/EntityId eq {0} and metricValuePartition/MetricPartitionId eq {1})", entry.EntityId, metricPartition.Id ) );
+                        }
+                    }
+                }
+            }
+            else if ( this.legacyEntityId.HasValue )
             {
                 
                 int partitionId = metric.MetricPartitions.OrderBy( a => a.Order ).First().Id;
-                filterParams.Add( string.Format( "MetricValuePartitions/any(metricValuePartition: metricValuePartition/EntityId eq {0} and metricValuePartition/MetricPartitionId eq {1})", this.EntityId, partitionId ) );
+                filterParams.Add( string.Format( "MetricValuePartitions/any(metricValuePartition: metricValuePartition/EntityId eq {0} and metricValuePartition/MetricPartitionId eq {1})", this.legacyEntityId, partitionId ) );
             }
-
-            // TODO, figure out how to filter by multiple partitions (instead of just the First partition)
 
             if ( filterParams.Count > 0 )
             {
