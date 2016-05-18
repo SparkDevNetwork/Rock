@@ -79,6 +79,9 @@ namespace Rock.Client
         public int? NumberOfPayments { get; set; }
 
         /// <summary />
+        public int? SourceTypeValueId { get; set; }
+
+        /// <summary />
         public DateTime StartDate { get; set; }
 
         /// <summary />
@@ -134,6 +137,7 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.NextPaymentDate = source.NextPaymentDate;
             this.NumberOfPayments = source.NumberOfPayments;
+            this.SourceTypeValueId = source.SourceTypeValueId;
             this.StartDate = source.StartDate;
             this.TransactionCode = source.TransactionCode;
             this.TransactionFrequencyValueId = source.TransactionFrequencyValueId;
@@ -160,6 +164,9 @@ namespace Rock.Client
 
         /// <summary />
         public ICollection<FinancialScheduledTransactionDetail> ScheduledTransactionDetails { get; set; }
+
+        /// <summary />
+        public DefinedValue SourceTypeValue { get; set; }
 
         /// <summary />
         public DefinedValue TransactionFrequencyValue { get; set; }

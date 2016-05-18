@@ -308,6 +308,7 @@ namespace Rock.Model
                             transaction.StatusMessage = payment.StatusMessage;
                             transaction.ScheduledTransactionId = scheduledTransaction.Id;
                             transaction.AuthorizedPersonAliasId = scheduledTransaction.AuthorizedPersonAliasId;
+                            transaction.SourceTypeValueId = scheduledTransaction.SourceTypeValueId;
                             txnPersonNames.Add( transaction.Guid, scheduledTransaction.AuthorizedPersonAlias.Person.FullName );
                             transaction.FinancialGatewayId = gateway.Id;
                             transaction.TransactionTypeValueId = contributionTxnType.Id;
