@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Configuration;
 using System.Data.Entity;
 using System.Data.SqlClient;
@@ -31,8 +30,6 @@ using System.Web.Caching;
 using System.Web.Http;
 using System.Web.Optimization;
 using System.Web.Routing;
-using dotless.Core;
-using dotless.Core.configuration;
 using DotLiquid;
 using Quartz;
 using Quartz.Impl;
@@ -44,7 +41,6 @@ using Rock.Jobs;
 using Rock.Model;
 using Rock.Plugin;
 using Rock.Transactions;
-using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -128,7 +124,7 @@ namespace RockWeb
         {
             try
             {
-                var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+              var stopwatch = System.Diagnostics.Stopwatch.StartNew();
                 LogMessage( APP_LOG_FILENAME, "Application Starting..." ); 
                 
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
@@ -618,6 +614,7 @@ namespace RockWeb
                                                     migration.SqlConnection = con;
                                                     migration.SqlTransaction = sqlTxn;
                                                     migration.Up();
+                                                    migration.RunMigration();
                                                     sqlTxn.Commit();
                                                     transactionActive = false;
 
