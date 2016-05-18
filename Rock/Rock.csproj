@@ -160,6 +160,7 @@
     <Compile Include="Address\VerificationContainer.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\Bing.cs" />
+    <Compile Include="Attribute\AddressFieldAttribute.cs" />
     <Compile Include="Attribute\PhoneNumberFieldAttribute.cs" />
     <Compile Include="Attribute\DataViewFieldAttribute.cs" />
     <Compile Include="Attribute\BinaryFileTypesFieldAttribute.cs" />
@@ -269,6 +270,7 @@
     <Compile Include="Data\Udf\GetAddressStoreFunctionInjectionConvention.cs" />
     <Compile Include="Data\Udf\DbMetadataExtensions.cs" />
     <Compile Include="Data\Udf\RockUdfHelper.cs" />
+    <Compile Include="Field\Types\AddressFieldType.cs" />
     <Compile Include="Field\Types\PhoneNumberFieldType.cs" />
     <Compile Include="Field\Types\DataViewFieldType.cs" />
     <Compile Include="Field\Types\BinaryFileTypesFieldType.cs" />
