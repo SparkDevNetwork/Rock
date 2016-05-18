@@ -359,8 +359,8 @@ namespace RockWeb.Blocks.Core
                     {
                         AttributeField boundField = new AttributeField();
                         boundField.DataField = dataFieldExpression;
+                        boundField.AttributeId = attribute.Id;
                         boundField.HeaderText = attribute.Name;
-                        boundField.SortExpression = string.Empty;
 
                         var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
                         if ( attributeCache != null )

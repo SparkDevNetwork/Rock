@@ -55,8 +55,7 @@ namespace Rock.Workflow.Action.CheckIn
 
             if ( checkInState != null )
             {
-                var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext );
-                var globalMergeValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
+                var commonMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
 
                 var groupMemberService = new GroupMemberService( rockContext );
 
@@ -67,10 +66,11 @@ namespace Rock.Workflow.Action.CheckIn
                         foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
                         {
                             var mergeObjects = new Dictionary<string, object>();
-                            foreach ( var keyValue in globalMergeValues )
+                            foreach ( var keyValue in commonMergeFields )
                             {
                                 mergeObjects.Add( keyValue.Key, keyValue.Value );
                             }
+
                             mergeObjects.Add( "Person", person );
                             mergeObjects.Add( "GroupType", groupType );
 

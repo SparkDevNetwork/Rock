@@ -82,6 +82,7 @@ namespace RockWeb.Blocks.Event
         #region Properties
 
         private String ViewMode { get; set; }
+        private DateTime? SelectedDate { get; set; }
         private DateTime? FilterStartDate { get; set; }
         private DateTime? FilterEndDate { get; set; }
         private List<DateTime> CalendarEventDates { get; set; }
@@ -99,6 +100,7 @@ namespace RockWeb.Blocks.Event
             base.LoadViewState( savedState );
 
             ViewMode = ViewState["ViewMode"] as String;
+            SelectedDate = ViewState["SelectedDate"] as DateTime?;
             FilterStartDate = ViewState["FilterStartDate"] as DateTime?;
             FilterEndDate = ViewState["FilterEndDate"] as DateTime?;
             CalendarEventDates = ViewState["CalendarEventDates"] as List<DateTime>;
@@ -165,6 +167,7 @@ namespace RockWeb.Blocks.Event
         protected override object SaveViewState()
         {
             ViewState["ViewMode"]  = ViewMode;
+            ViewState["SelectedDate"] = SelectedDate;
             ViewState["FilterStartDate"] = FilterStartDate;
             ViewState["FilterEndDate"] = FilterEndDate;
             ViewState["CalendarEventDates"] = CalendarEventDates;
@@ -218,6 +221,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void calEventCalendar_SelectionChanged( object sender, EventArgs e )
         {
+            SelectedDate = calEventCalendar.SelectedDate;
             ResetCalendarSelection();
             BindData();
         }
@@ -243,7 +247,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="MonthChangedEventArgs"/> instance containing the event data.</param>
         protected void calEventCalendar_VisibleMonthChanged( object sender, MonthChangedEventArgs e )
         {
-            calEventCalendar.SelectedDate = e.NewDate;
+            SelectedDate = e.NewDate;
             ResetCalendarSelection();
             BindData();
         }
@@ -382,7 +386,9 @@ namespace RockWeb.Blocks.Event
                             DateTime = datetime,
                             Date = datetime.ToShortDateString(),
                             Time = datetime.ToShortTimeString(),
+                            Campus = eventItemOccurrence.Campus != null ? eventItemOccurrence.Campus.Name : "All Campuses",
                             Location = eventItemOccurrence.Campus != null ? eventItemOccurrence.Campus.Name : "All Campuses",
+                            LocationDescription = eventItemOccurrence.Location,
                             Description = eventItemOccurrence.EventItem.Description,
                             Summary = eventItemOccurrence.EventItem.Summary,
                             OccurrenceNote = eventItemOccurrence.Note.SanitizeHtml(),
@@ -524,6 +530,10 @@ namespace RockWeb.Blocks.Event
         private void ResetCalendarSelection()
         {
             // Even though selection will be a single date due to calendar's selection mode, set the appropriate days
+            if ( SelectedDate != null )
+            {
+                calEventCalendar.SelectedDate = SelectedDate.Value;
+            }
             var selectedDate = calEventCalendar.SelectedDate;
             FilterStartDate = selectedDate;
             FilterEndDate = selectedDate;
@@ -581,7 +591,7 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// A class to store event item occurrence data for liquid
         /// </summary>
-        [DotLiquid.LiquidType( "EventItemOccurrence", "DateTime", "Name", "Date", "Time", "Location", "Description", "Summary", "OccurrenceNote", "DetailPage" )]
+        [DotLiquid.LiquidType( "EventItemOccurrence", "DateTime", "Name", "Date", "Time", "Campus", "Location", "LocationDescription", "Description", "Summary", "OccurrenceNote", "DetailPage" )]
         public class EventOccurrenceSummary
         {
             public EventItemOccurrence EventItemOccurrence { get; set; }
@@ -589,7 +599,9 @@ namespace RockWeb.Blocks.Event
             public String Name { get; set; }
             public String Date { get; set; }
             public String Time { get; set; }
+            public String Campus { get; set; }
             public String Location { get; set; }
+            public String LocationDescription { get; set; }
             public String Summary { get; set; }
             public String Description { get; set; }
             public String OccurrenceNote { get; set; }

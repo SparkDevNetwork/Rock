@@ -5,7 +5,7 @@
 
         {% for item in Items -%}
           <li>
-            <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">{{ item.Image }}</a>
+            <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">{{ item | Attribute:'Image' }}</a>
           </li>   
         {% endfor -%}
 

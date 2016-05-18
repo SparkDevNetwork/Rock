@@ -31,10 +31,10 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sets an attribute's value to the selected value
     /// </summary>
-    [ActionCategory( "Set Workflow Attribute" )]
+    [ActionCategory( "Workflow Attributes" )]
     [Description( "Sets an attribute's value to the selected value." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Set Attribute Value" )]
+    [ExportMetadata( "ComponentName", "Attribute Set Value" )]
 
     [WorkflowAttribute( "Attribute", "The attribute to set the value of." )]
     [WorkflowTextOrAttribute( "Text Value", "Attribute Value", "The text or attribute to set the value from. <span class='tip tip-lava'></span>", false, "", "", 1, "Value" )]

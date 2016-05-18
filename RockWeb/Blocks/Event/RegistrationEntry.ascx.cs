@@ -909,16 +909,17 @@ namespace RockWeb.Blocks.Event
                                     txtPassword.Text,
                                     false );
 
-                                var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
-                                mergeObjects.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
+                                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+
+                                mergeFields.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
 
                                 var personDictionary = authorizedPersonAlias.Person.ToLiquid() as Dictionary<string, object>;
-                                mergeObjects.Add( "Person", personDictionary );
+                                mergeFields.Add( "Person", personDictionary );
 
-                                mergeObjects.Add( "User", user );
+                                mergeFields.Add( "User", user );
 
                                 var recipients = new List<Rock.Communication.RecipientData>();
-                                recipients.Add( new Rock.Communication.RecipientData( authorizedPersonAlias.Person.Email, mergeObjects ) );
+                                recipients.Add( new Rock.Communication.RecipientData( authorizedPersonAlias.Person.Email, mergeFields ) );
 
                                 try
                                 {
@@ -1032,54 +1033,61 @@ namespace RockWeb.Blocks.Event
                     .Where( r => r.Id == registrationId.Value )
                     .FirstOrDefault();
 
-                if ( registration != null  && CurrentPersonId.HasValue )
+                if ( registration == null )
                 {
-                    if ( ( registration.PersonAlias != null && registration.PersonAlias.PersonId == CurrentPersonId.Value ) ||
-                        ( registration.CreatedByPersonAlias != null && registration.CreatedByPersonAlias.PersonId == CurrentPersonId.Value ) )
-                    {
-                        RegistrationInstanceState = registration.RegistrationInstance;
-                        RegistrationState = new RegistrationInfo( registration, rockContext );
-                        RegistrationState.PreviousPaymentTotal = registrationService.GetTotalPayments( registration.Id );
-                    }
-                    else
-                    {
-                        ShowError( "Sorry", "You are not allowed to view or edit the selected registration since you are not the one who created the registration." );
-                        return false;
-                    }
+                    ShowError( "Error", "Registration not found" );
+                    return false;
+                }
 
-                    // set the max number of steps in the progress bar
-                    numHowMany.Value = registration.Registrants.Count();
-                    this.ProgressBarSteps = numHowMany.Value * FormCount + 2;
+                if ( CurrentPersonId == null )
+                {
+                    ShowWarning( "Please log in", "You must be logged in to access this registration." );
+                    return false;
+                }
 
-                    // set group id
-                    if ( groupId.HasValue )
-                    {
-                        GroupId = groupId;
-                    }
-                    else if ( !string.IsNullOrWhiteSpace( registrationSlug ) )
-                    {
-                        var dateTime = RockDateTime.Now;
-                        var linkage = new EventItemOccurrenceGroupMapService( rockContext )
-                            .Queryable().AsNoTracking()
-                            .Where( l =>
-                                l.UrlSlug == registrationSlug &&
-                                l.RegistrationInstance != null &&
-                                l.RegistrationInstance.IsActive &&
-                                l.RegistrationInstance.RegistrationTemplate != null &&
-                                l.RegistrationInstance.RegistrationTemplate.IsActive &&
-                                (!l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime) &&
-                                (!l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime) )
-                            .FirstOrDefault();
-                        if ( linkage != null )
-                        {
-                            GroupId = linkage.GroupId;
-                        }
-                    }
+                // Only allow the person that was logged in when this registration was created. 
+                // If the logged in person, registered on someone elses behalf (for example, husband logged in, but entered wife's name as the Registrar), 
+                // also allow that person to access the regisratiuon
+                if ( ( registration.PersonAlias != null && registration.PersonAlias.PersonId == CurrentPersonId.Value ) ||
+                    ( registration.CreatedByPersonAlias != null && registration.CreatedByPersonAlias.PersonId == CurrentPersonId.Value ) )
+                {
+                    RegistrationInstanceState = registration.RegistrationInstance;
+                    RegistrationState = new RegistrationInfo( registration, rockContext );
+                    RegistrationState.PreviousPaymentTotal = registrationService.GetTotalPayments( registration.Id );
                 }
                 else
                 {
-                    ShowError( "Sorry", "You are not allowed to view or edit the selected registration since you are not the one who created the registration." );
+                    ShowWarning( "Sorry", "You are not allowed to view or edit the selected registration since you are not the one who created the registration." );
                     return false;
+                }
+
+                // set the max number of steps in the progress bar
+                numHowMany.Value = registration.Registrants.Count();
+                this.ProgressBarSteps = numHowMany.Value * FormCount + 2;
+
+                // set group id
+                if ( groupId.HasValue )
+                {
+                    GroupId = groupId;
+                }
+                else if ( !string.IsNullOrWhiteSpace( registrationSlug ) )
+                {
+                    var dateTime = RockDateTime.Now;
+                    var linkage = new EventItemOccurrenceGroupMapService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( l =>
+                            l.UrlSlug == registrationSlug &&
+                            l.RegistrationInstance != null &&
+                            l.RegistrationInstance.IsActive &&
+                            l.RegistrationInstance.RegistrationTemplate != null &&
+                            l.RegistrationInstance.RegistrationTemplate.IsActive &&
+                            (!l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime) &&
+                            (!l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime) )
+                        .FirstOrDefault();
+                    if ( linkage != null )
+                    {
+                        GroupId = linkage.GroupId;
+                    }
                 }
             }
 
@@ -3136,6 +3144,10 @@ namespace RockWeb.Blocks.Event
                 var src = $('#{7}').val();
                 var $form = $('#iframeStep2').contents().find('#Step2Form');
 
+                $form.find('.cc-first-name').val( $('#{16}').val() );
+                $form.find('.cc-last-name').val( $('#{17}').val() );
+                $form.find('.cc-full-name').val( $('#{18}').val() );
+
                 $form.find('.cc-number').val( $('#{11}').val() );
                 var mm = $('#{12}_monthDropDownList').val();
                 var yy = $('#{12}_yearDropDownList_').val();
@@ -3189,7 +3201,10 @@ namespace RockWeb.Blocks.Event
             mypExpiration.ClientID,         // {12}
             txtCVV.ClientID,                // {13}
             hfStep2AutoSubmit.ClientID,     // {14}
-            acBillingAddress.ClientID       // {15}
+            acBillingAddress.ClientID,      // {15}
+            txtCardFirstName.ClientID,      // {16}
+            txtCardLastName.ClientID,       // {17}
+            txtCardName.ClientID            // {18}
             );
 
             ScriptManager.RegisterStartupScript( Page, Page.GetType(), "registrationEntry", script, true );

@@ -432,7 +432,7 @@ namespace RockWeb.Blocks.Security
                     url = ResolveRockUrl( "~/ConfirmAccount" );
                 }
 
-                var mergeObjects = GlobalAttributesCache.GetMergeFields( CurrentPerson );
+                var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields(this.RockPage, this.CurrentPerson );
                 mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
                 var results = new List<IDictionary<string, object>>();
 
@@ -489,7 +489,7 @@ namespace RockWeb.Blocks.Security
                     url = ResolveRockUrl( "~/ConfirmAccount" );
                 }
 
-                var mergeObjects = GlobalAttributesCache.GetMergeFields( CurrentPerson );
+                var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                 mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
                 mergeObjects.Add( "Person", person );
                 mergeObjects.Add( "User", user );
@@ -531,7 +531,7 @@ namespace RockWeb.Blocks.Security
                             url = ResolveRockUrl( "~/ConfirmAccount" );
                         }
 
-                        var mergeObjects = GlobalAttributesCache.GetMergeFields( CurrentPerson );
+                        var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                         mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
                         mergeObjects.Add( "Person", person );
                         mergeObjects.Add( "User", user );

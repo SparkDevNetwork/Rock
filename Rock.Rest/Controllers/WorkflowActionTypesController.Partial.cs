@@ -77,7 +77,7 @@ namespace Rock.Rest.Controllers
                             {
                                 var item = new TreeViewItem();
                                 item.Id = entityType.Id.ToString();
-                                item.Name = entityType.FriendlyName;
+                                item.Name = ActionContainer.GetComponentName(entityType.Name);
                                 item.HasChildren = false;
                                 item.IconCssClass = "fa fa-cube";
                                 list.Add( item );
@@ -87,7 +87,7 @@ namespace Rock.Rest.Controllers
                 }
             }
 
-            return list.AsQueryable();
+            return list.OrderBy( i => i.Name ).AsQueryable();
         }
 
         /// <summary>

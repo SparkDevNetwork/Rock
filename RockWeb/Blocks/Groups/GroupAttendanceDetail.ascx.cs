@@ -364,9 +364,8 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            var globalMergeFields = GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
-            globalMergeFields.Add( "CurrentPerson", this.CurrentPerson );
-            globalMergeFields.Add( "Group", this._group );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+            mergeFields.Add( "Group", this._group );
 
             var mergeTemplate = new MergeTemplateService( rockContext ).Get( this.GetAttributeValue( "AttendanceRosterTemplate" ).AsGuid() );
             
@@ -391,7 +390,7 @@ namespace RockWeb.Blocks.Groups
 
             var mergeObjectList = mergeObjectsDictionary.Select( a => a.Value ).ToList();
 
-            outputBinaryFileDoc = mergeTemplateType.CreateDocument( mergeTemplate, mergeObjectList, globalMergeFields );
+            outputBinaryFileDoc = mergeTemplateType.CreateDocument( mergeTemplate, mergeObjectList, mergeFields );
 
             // set the name of the output doc
             outputBinaryFileDoc = new BinaryFileService( rockContext ).Get( outputBinaryFileDoc.Id );
@@ -512,17 +511,11 @@ namespace RockWeb.Blocks.Groups
 
             List<int> locationIds = new List<int>();
             int? locationId = PageParameter( "LocationId" ).AsIntegerOrNull();
-            if ( locationId.HasValue )
-            {
-                locationIds.Add( locationId.Value );
-            }
+            locationIds.Add( locationId ?? 0 );
 
             List<int> scheduleIds = new List<int>();
             int? scheduleId = PageParameter( "ScheduleId" ).AsIntegerOrNull();
-            if ( scheduleId.HasValue )
-            {
-                scheduleIds.Add( scheduleId.Value );
-            }
+            scheduleIds.Add( locationId ?? 0 );
 
             if ( Page.IsPostBack && _allowAdd )
             {
@@ -531,13 +524,13 @@ namespace RockWeb.Blocks.Groups
                     occurrenceDate = dpOccurrenceDate.SelectedDate;
                 }
 
-                if ( !locationIds.Any() && ddlLocation.SelectedValueAsInt().HasValue )
+                if ( !locationIds.Any( l => l != 0 ) && ddlLocation.SelectedValueAsInt().HasValue )
                 {
                     locationId = ddlLocation.SelectedValueAsInt().Value;
                     locationIds.Add( locationId.Value );
                 }
 
-                if ( !scheduleIds.Any() && ddlSchedule.SelectedValueAsInt().HasValue )
+                if ( !scheduleIds.Any( s => s != 0 ) && ddlSchedule.SelectedValueAsInt().HasValue )
                 {
                     scheduleId = ddlSchedule.SelectedValueAsInt().Value;
                     scheduleIds.Add( scheduleId.Value );

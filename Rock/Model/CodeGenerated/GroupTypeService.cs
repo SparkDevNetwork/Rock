@@ -5,7 +5,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 // <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -118,6 +118,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AllowedScheduleTypes = source.AllowedScheduleTypes;
             target.AllowMultipleLocations = source.AllowMultipleLocations;
+            target.AttendanceCountsAsWeekendService = source.AttendanceCountsAsWeekendService;
             target.AttendancePrintTo = source.AttendancePrintTo;
             target.AttendanceRule = source.AttendanceRule;
             target.DefaultGroupRoleId = source.DefaultGroupRoleId;
@@ -125,6 +126,7 @@ namespace Rock.Model
             target.EnableLocationSchedules = source.EnableLocationSchedules;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.GroupCapacityRule = source.GroupCapacityRule;
             target.GroupMemberTerm = source.GroupMemberTerm;
             target.GroupTerm = source.GroupTerm;
             target.GroupTypePurposeValueId = source.GroupTypePurposeValueId;

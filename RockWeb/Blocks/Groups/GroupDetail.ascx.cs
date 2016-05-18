@@ -21,6 +21,7 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Humanizer;
 using Newtonsoft.Json;
 
 using Rock;
@@ -553,6 +554,7 @@ namespace RockWeb.Blocks.Groups
             group.CampusId = ddlCampus.SelectedValueAsInt();
             group.GroupTypeId = CurrentGroupTypeId;
             group.ParentGroupId = gpParentGroup.SelectedValueAsInt();
+            group.GroupCapacity = nbGroupCapacity.Text.AsIntegerOrNull();
             group.IsSecurityRole = cbIsSecurityRole.Checked;
             group.IsActive = cbIsActive.Checked;
             group.IsPublic = cbIsPublic.Checked;
@@ -1141,6 +1143,7 @@ namespace RockWeb.Blocks.Groups
 
             tbName.Text = group.Name;
             tbDescription.Text = group.Description;
+            nbGroupCapacity.Text = group.GroupCapacity.ToString();
             cbIsSecurityRole.Checked = group.IsSecurityRole;
             cbIsActive.Checked = group.IsActive;
             cbIsPublic.Checked = group.IsPublic;
@@ -1445,6 +1448,35 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 hlCampus.Visible = false;
+            }
+
+            
+            // configure group capacity
+            if ( group.GroupType.GroupCapacityRule == GroupCapacityRule.None )
+            {
+                nbGroupCapacity.Visible = false;
+            }
+            else
+            {
+                nbGroupCapacity.Visible = true;
+
+                // check if we're over capacity and if so show warning
+                if ( group.GroupCapacity.HasValue )
+                {
+                    int activeGroupMemberCount = group.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active ).Count();
+                    if ( activeGroupMemberCount > group.GroupCapacity )
+                    {
+                        nbGroupCapacityMessage.Text = string.Format( "This group is over capacity by {0}.", "individual".ToQuantity((activeGroupMemberCount - group.GroupCapacity.Value)) );
+                        nbGroupCapacityMessage.Visible = true;
+
+                        if ( group.GroupType.GroupCapacityRule == GroupCapacityRule.Hard )
+                        {
+                            nbGroupCapacityMessage.NotificationBoxType = NotificationBoxType.Danger;
+                        }
+                    }
+
+                    descriptionList.Add( "Capacity", group.GroupCapacity.ToString() );
+                }
             }
 
             lblMainDetails.Text = descriptionList.Html;

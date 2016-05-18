@@ -1362,9 +1362,7 @@ namespace RockWeb.Blocks.WorkFlow
 <div>
     <ol>";
 
-                foreach ( var activityType in workflowType.ActivityTypes.OrderBy( a => a.Order ) )
-                {
-                    string activityTypeTextFormat = @"
+                string activityTypeTextFormat = @"
         <li>
             <strong>{0}</strong>
             {1}
@@ -1375,7 +1373,8 @@ namespace RockWeb.Blocks.WorkFlow
             </ol>
         </li>
 ";
-
+                foreach ( var activityType in workflowType.ActivityTypes.OrderBy( a => a.Order ) )
+                {
                     string actionTypeText = string.Empty;
 
                     foreach ( var actionType in activityType.ActionTypes.OrderBy( a => a.Order ) )

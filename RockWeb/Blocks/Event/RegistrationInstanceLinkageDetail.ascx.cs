@@ -337,6 +337,7 @@ namespace RockWeb.Blocks.Event
             }
 
             gpLinkageGroup.SetValue( linkage.Group );
+            gpLinkageGroup_SelectItem( null, null );
 
             tbLinkagePublicName.Text = linkage.PublicName;
             tbLinkageUrlSlug.Text = linkage.UrlSlug;
@@ -430,5 +431,26 @@ namespace RockWeb.Blocks.Event
 
         #endregion
 
+        /// <summary>
+        /// Handles the SelectItem event of the gpLinkageGroup control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gpLinkageGroup_SelectItem( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            var registrationInstance = new RegistrationInstanceService( rockContext ).Get( PageParameter( "RegistrationInstanceId" ).AsInteger() );
+            var group = new GroupService( rockContext ).Get( gpLinkageGroup.SelectedValue.AsInteger() );
+            bool showGroupTypeWarning = false;
+            if ( registrationInstance != null && group != null )
+            {
+                if ( registrationInstance.RegistrationTemplate.GroupTypeId != group.GroupTypeId )
+                {
+                    showGroupTypeWarning = true;
+                }
+            }
+
+            nbGroupTypeWarning.Visible = showGroupTypeWarning;
+        }
     }
 }

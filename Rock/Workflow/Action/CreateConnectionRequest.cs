@@ -31,10 +31,10 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Creates a new connection request.
     /// </summary>
-    [ActionCategory( "Connection Request" )]
+    [ActionCategory( "Connections" )]
     [Description( "Creates a new connection request." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Create Connection Request" )]
+    [ExportMetadata( "ComponentName", "Connection Request Create" )]
 
     [WorkflowAttribute( "Person Attribute", "The Person attribute that contains the person that connection request should be created for.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.PersonFieldType" } )]

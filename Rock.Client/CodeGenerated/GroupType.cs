@@ -5,7 +5,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 // <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -41,6 +41,9 @@ namespace Rock.Client
         public bool AllowMultipleLocations { get; set; }
 
         /// <summary />
+        public bool AttendanceCountsAsWeekendService { get; set; }
+
+        /// <summary />
         public Rock.Client.Enums.PrintTo AttendancePrintTo { get; set; }
 
         /// <summary />
@@ -60,6 +63,9 @@ namespace Rock.Client
 
         /// <summary />
         public string ForeignKey { get; set; }
+
+        /// <summary />
+        public Rock.Client.Enums.GroupCapacityRule GroupCapacityRule { get; set; }
 
         /// <summary />
         public string GroupMemberTerm { get; set; }
@@ -146,6 +152,7 @@ namespace Rock.Client
             this.Id = source.Id;
             this.AllowedScheduleTypes = source.AllowedScheduleTypes;
             this.AllowMultipleLocations = source.AllowMultipleLocations;
+            this.AttendanceCountsAsWeekendService = source.AttendanceCountsAsWeekendService;
             this.AttendancePrintTo = source.AttendancePrintTo;
             this.AttendanceRule = source.AttendanceRule;
             this.DefaultGroupRoleId = source.DefaultGroupRoleId;
@@ -153,6 +160,7 @@ namespace Rock.Client
             this.EnableLocationSchedules = source.EnableLocationSchedules;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.GroupCapacityRule = source.GroupCapacityRule;
             this.GroupMemberTerm = source.GroupMemberTerm;
             this.GroupTerm = source.GroupTerm;
             this.GroupTypePurposeValueId = source.GroupTypePurposeValueId;

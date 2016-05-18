@@ -75,7 +75,7 @@ namespace Rock.Transactions
                         var person = transaction.AuthorizedPersonAlias.Person;
 
                         // setup merge fields
-                        var mergeFields = new Dictionary<string, object>();
+                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                         mergeFields.Add( "Person", person );
 
                         decimal totalAmount = 0;
@@ -102,9 +102,6 @@ namespace Rock.Transactions
                         mergeFields.Add( "FirstNames", person.NickName );
                         mergeFields.Add( "TransactionCode", transaction.TransactionCode );
                         mergeFields.Add( "Amounts", accountAmounts );
-
-                        var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( person );
-                        globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
 
                         var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
 

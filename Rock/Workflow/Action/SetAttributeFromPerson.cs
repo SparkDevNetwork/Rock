@@ -31,10 +31,10 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sets an attribute's value to the selected person 
     /// </summary>
-    [ActionCategory( "Set Workflow Attribute" )]
+    [ActionCategory( "Workflow Attributes" )]
     [Description( "Sets an attribute to the selected person." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Set Attribute from Person" )]
+    [ExportMetadata( "ComponentName", "Attribute Set from Person" )]
 
     [WorkflowAttribute( "Attribute", "The person attribute to set the value of.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.PersonFieldType" } )]

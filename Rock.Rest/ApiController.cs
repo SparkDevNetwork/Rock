@@ -348,6 +348,72 @@ namespace Rock.Rest
             return null;
         }
 
+        /// <summary>
+        /// Launches a workflow. And optionally passes the entity with selected id as the entity for the workflow
+        /// </summary>
+        /// <param name="id">The Id of the entity to pass to workflow, if entity cannot be loaded workflow will still be launched but without passing an entity</param>
+        /// <param name="workflowTypeGuid">The workflow type unique identifier.</param>
+        /// <param name="workflowName">The Name of the workflow.</param>
+        /// <param name="workflowAttributeValues">Optional list of workflow values to set.</param>
+        [Authenticate, Secured]
+        [ActionName( "LaunchWorkflow" )]
+        [HttpPost]
+        public void LaunchWorkflow( int id, Guid workflowTypeGuid, string workflowName, [FromBody] Dictionary<string, string> workflowAttributeValues )
+        {
+            T entity = null;
+            if ( id > 0 )
+            {
+                entity = Get( id );
+            }
+
+            if ( entity != null )
+            {
+                entity.LaunchWorkflow( workflowTypeGuid, workflowName, workflowAttributeValues );
+            }
+            else
+            {
+                var transaction = new Rock.Transactions.LaunchWorkflowTransaction( workflowTypeGuid, workflowName );
+                if ( workflowAttributeValues != null )
+                {
+                    transaction.WorkflowAttributeValues = workflowAttributeValues;
+                }
+                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+            }
+        }
+
+        /// <summary>
+        /// Launches a workflow. And optionally passes the entity with selected id as the entity for the workflow
+        /// </summary>
+        /// <param name="id">The Id of the entity to pass to workflow, if entity cannot be loaded workflow will still be launched but without passing an entity</param>
+        /// <param name="workflowTypeId">The workflow type identifier.</param>
+        /// <param name="workflowName">Name of the workflow.</param>
+        /// <param name="workflowAttributeValues">Optional list of workflow values to set.</param>
+        [Authenticate, Secured]
+        [ActionName( "LaunchWorkflow" )]
+        [HttpPost]
+        public void LaunchWorkflow( int id, int workflowTypeId, string workflowName, [FromBody] Dictionary<string, string> workflowAttributeValues )
+        {
+            T entity = null;
+            if ( id > 0 )
+            {
+                entity = Get( id );
+            }
+
+            if ( entity != null )
+            {
+                entity.LaunchWorkflow( workflowTypeId, workflowName, workflowAttributeValues );
+            }
+            else
+            {
+                var transaction = new Rock.Transactions.LaunchWorkflowTransaction( workflowTypeId, workflowName );
+                if ( workflowAttributeValues != null )
+                {
+                    transaction.WorkflowAttributeValues = workflowAttributeValues;
+                }
+                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+            }
+        }
+
         // DELETE api/<controller>/AttributeValue 
         [Authenticate, Secured]
         [HttpDelete]

@@ -114,12 +114,11 @@ namespace RockWeb.Blocks.Core
         protected void LoadContent()
         {
             List<DefinedValueCache> definedValues = new List<DefinedValueCache>();
-            var mergeFields = new Dictionary<string, object>();
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+            
             // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
-            mergeFields.Add( "Person", CurrentPerson );
-            mergeFields.Add( "CurrentPerson", CurrentPerson );
-            var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
+            mergeFields.AddOrIgnore( "Person", CurrentPerson );
+            
             
             string selectedDefinedType = GetAttributeValue("DefinedType");
             

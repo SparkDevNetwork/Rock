@@ -33,10 +33,10 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sets an attribute equal to the person who created workflow (if known).
     /// </summary>
-    [ActionCategory( "Set Workflow Attribute" )]
+    [ActionCategory( "Workflow Attributes" )]
     [Description( "Sets an attribute to the leader of the group provided. Returns the first person in a role marked 'Is Leader'." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Set Attribute to Group Leader" )]
+    [ExportMetadata( "ComponentName", "Attribute Set to Group Leader" )]
 
     [WorkflowAttribute("Group", "The attribute containing the group to get the leader for.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.GroupFieldType" })]
