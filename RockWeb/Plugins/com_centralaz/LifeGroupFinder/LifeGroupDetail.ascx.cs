@@ -562,6 +562,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
 
             if ( _group != null )
             {
+                _group.LoadAttributes();
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                 mergeFields.Add( "PhotoGuid1", _group.GetAttributeValue( "GroupPhoto1" ) );
                 mergeFields.Add( "PhotoGuid2", _group.GetAttributeValue( "GroupPhoto2" ) );
