@@ -38,7 +38,7 @@ namespace Rock.Workflow.Action
     [ExportMetadata( "ComponentName", "Person Get Spouse" )]
 
     [WorkflowAttribute("Person", "Workflow attribute that contains the person to add the note to.", true, "", "", 0, null, new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [WorkflowAttribute( "Spouse Attribuute", "The workflow attribute to assign the spouse to. Spouse is deemed to be the other adult on the family.", true, "", "", 1, null, new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [WorkflowAttribute( "Spouse Attribute", "The workflow attribute to assign the spouse to. Spouse is deemed to be the other adult on the family.", true, "", "", 1, null, new string[] { "Rock.Field.Types.PersonFieldType" } )]
     public class PersonGetSpouse : ActionComponent
     {
         /// <summary>
@@ -62,7 +62,7 @@ namespace Rock.Workflow.Action
             var person = GetPersonAliasFromActionAttribute("Person", rockContext, action, errorMessages);
             if (person != null)
             {
-                string spouseAttributeValue = GetAttributeValue( action, "SpouseAttribuute" );
+                string spouseAttributeValue = GetAttributeValue( action, "SpouseAttribute" );
                 Guid? spouseGuid = spouseAttributeValue.AsGuidOrNull();
                 if ( spouseGuid.HasValue )
                 {
