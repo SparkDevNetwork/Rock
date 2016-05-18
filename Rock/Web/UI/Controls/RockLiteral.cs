@@ -71,11 +71,16 @@ namespace Rock.Web.UI.Controls
                 writer.Write( Label );
                 writer.RenderEndTag();  // label
 
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-wrapper" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
                 writer.AddAttribute("class", "form-control-static");
                 writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ClientID );
                 writer.RenderBeginTag( HtmlTextWriterTag.P );
                 base.RenderControl( writer );
                 writer.RenderEndTag();
+
+                writer.RenderEndTag();  // control-wrapper
 
                 writer.RenderEndTag();  // form-group            
             }

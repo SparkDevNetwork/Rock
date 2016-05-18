@@ -209,6 +209,15 @@ namespace Rock.Model
         public AttendanceRule AttendanceRule { get; set; }
 
         /// <summary>
+        /// Gets or sets the group capacity rule.
+        /// </summary>
+        /// <value>
+        /// The group capacity rule.
+        /// </value>
+        [DataMember]
+        public GroupCapacityRule GroupCapacityRule { get; set; }
+
+        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.PrintTo"/> indicating the type of  location of where attendee labels for <see cref="Rock.Model.Group">Groups</see> of this GroupType should print.
         /// </summary>
         /// <value>
@@ -527,6 +536,27 @@ namespace Rock.Model
         /// User must already belong to the group before they will be allowed to check-in
         /// </summary>
         AlreadyBelongs = 2
+    }
+
+    /// <summary>
+    /// Group Capacity Rule
+    /// </summary>
+    public enum GroupCapacityRule
+    {
+        /// <summary>
+        /// The group does not have capacity limitations
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// The group can not go over capacity
+        /// </summary>
+        Hard = 1,
+
+        /// <summary>
+        /// A warning will be shown if a group is going to go over capacity
+        /// </summary>
+        Soft = 2
     }
 
     /// <summary>

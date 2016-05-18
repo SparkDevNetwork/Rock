@@ -133,6 +133,7 @@ namespace Rock.Model
             target.ExitSystemEmailId = source.ExitSystemEmailId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.GroupCapacity = source.GroupCapacity;
             target.GroupTypeId = source.GroupTypeId;
             target.IsActive = source.IsActive;
             target.IsPublic = source.IsPublic;

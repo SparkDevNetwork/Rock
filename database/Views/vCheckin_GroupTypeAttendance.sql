@@ -27,7 +27,7 @@ AS
         A.[CampusId],
         A.[LocationId],
         G.[Name] AS [GroupName],
-		GTA.[GroupTypeId],		
+		G.[GroupTypeId],		
 		PA.[PersonId],
 		A.[StartDateTime],
 		CONVERT( date, [StartDateTime] ) AS [StartDate],
@@ -35,5 +35,4 @@ AS
 	FROM [Attendance] A
 	INNER JOIN [PersonAlias] PA ON PA.[Id] = A.[PersonAliasId]
 	INNER JOIN [Group] G ON G.[Id] = A.[GroupId]
-	INNER JOIN [GroupTypeAssociation] GTA ON GTA.[ChildGroupTypeId] = G.[GroupTypeId]
 	AND A.[DidAttend] = 1
