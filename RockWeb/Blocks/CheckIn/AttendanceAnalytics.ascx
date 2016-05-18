@@ -326,7 +326,7 @@
                 // toggle all group checkboxes
                 $('.js-checkbox-selector, .js-group-checkboxes .rock-check-box-list label').on('click', function (e) {
                     
-                    var container = $(this).siblings('.js-group-checkboxes, .controls');
+                    var container = $(this).parent().find('.js-group-checkboxes, .controls');
                     var isChecked = container.hasClass('all-checked');
 
                     container.find('input:checkbox').each(function () {
@@ -347,7 +347,7 @@
                 // toggle campus checkboxes
                 $('.js-campuses-picker label').on('click', function (e) {
 
-                    var container = $(this).siblings('.controls');
+                    var container = $(this).parent().find('.controls');
                     var isChecked = container.hasClass('all-checked');
 
                     container.find('input:checkbox').each(function () {
