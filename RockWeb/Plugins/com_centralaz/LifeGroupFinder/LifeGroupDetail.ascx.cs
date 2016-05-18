@@ -607,6 +607,10 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             }
         }
 
+        /// <summary>
+        /// Gets the portrait media.
+        /// </summary>
+        /// <returns></returns>
         private string GetPortraitMedia()
         {
             String portraitMedia = String.Empty;
