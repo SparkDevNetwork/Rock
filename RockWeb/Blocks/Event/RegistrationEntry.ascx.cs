@@ -1682,6 +1682,12 @@ namespace RockWeb.Blocks.Event
 
             }
 
+            // if this registration was marked as temporary (started from another page, then specified in the url), set IsTemporary to False now that we are done
+            if ( registration.IsTemporary )
+            {
+                registration.IsTemporary = false;
+            }
+
             // Save the registration ( so we can get an id )
             rockContext.SaveChanges();
             RegistrationState.RegistrationId = registration.Id;
@@ -1914,6 +1920,17 @@ namespace RockWeb.Blocks.Event
                                 string newValue = fieldValue.ToString();
                                 person.SetAttributeValue( attribute.Key, fieldValue.ToString() );
 
+                                // DateTime values must be stored in ISO8601 format as http://www.rockrms.com/Rock/Developer/BookContent/16/16#datetimeformatting
+                                if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE.AsGuid() ) ||
+                                    attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE_TIME.AsGuid() ) )
+                                {
+                                    DateTime aDateTime;
+                                    if ( DateTime.TryParse( newValue, out aDateTime ) )
+                                    {
+                                        newValue = aDateTime.ToString( "o" );
+                                    }
+                                }
+
                                 if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
                                 {
                                     string formattedOriginalValue = string.Empty;
@@ -2039,6 +2056,17 @@ namespace RockWeb.Blocks.Event
                                 string originalValue = registrant.GetAttributeValue( attribute.Key );
                                 string newValue = fieldValue.ToString();
                                 registrant.SetAttributeValue( attribute.Key, fieldValue.ToString() );
+
+                                // DateTime values must be stored in ISO8601 format as http://www.rockrms.com/Rock/Developer/BookContent/16/16#datetimeformatting
+                                if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE.AsGuid() ) ||
+                                    attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE_TIME.AsGuid() ) )
+                                {
+                                    DateTime aDateTime;
+                                    if ( DateTime.TryParse( fieldValue.ToString(), out aDateTime ) )
+                                    {
+                                        newValue = aDateTime.ToString( "o" );
+                                    }
+                                }
 
                                 if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
                                 {
