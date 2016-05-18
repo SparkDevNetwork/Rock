@@ -2,7 +2,11 @@
 
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
-        <asp:Literal ID="lContent" runat="server" />
+        <style runat="server" id="sBreadCrumbStyleHidden" visible="false">
+            .breadcrumb {
+                display: none;
+            }
+        </style>
     </ContentTemplate>
 </asp:UpdatePanel>
 
