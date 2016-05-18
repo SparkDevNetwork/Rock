@@ -33,12 +33,13 @@ BEGIN
     AS (
         SELECT *
         FROM (
-            SELECT dbo.ufnUtility_GetPersonIdFromPersonAlias(FT.AuthorizedPersonAliasId) AS [PersonId]
+            SELECT PA.PersonId AS [PersonId]
                 ,YEAR(FT.TransactionDateTime) AS [year]
                 ,SUM(FTD.Amount) AS [total]
             FROM FinancialTransactionDetail FTD
             INNER JOIN FinancialTransaction FT ON FT.Id = FTD.TransactionId
             INNER JOIN FinancialAccount FA ON FA.Id = FTD.AccountId
+			INNER JOIN PersonAlias PA on PA.Id = FT.AuthorizedPersonAliasId
             WHERE FA.Id IN (
                     745
                     ,498
@@ -48,7 +49,7 @@ BEGIN
                     ,727
                     )
                 AND YEAR(FT.TransactionDateTime) >= 2007
-            GROUP BY dbo.ufnUtility_GetPersonIdFromPersonAlias(FT.AuthorizedPersonAliasId)
+            GROUP BY PA.PersonId
                 ,YEAR(FT.TransactionDateTime)
             ) AS s
         PIVOT(SUM([total]) FOR [year] IN (
@@ -139,7 +140,7 @@ BEGIN
         ,[WorkPhone]
         ,[IsBaptized]
         ,[BaptismDate]
-       ,[LastContributionDate]
+        ,[LastContributionDate]
 		,[Giving2016]
         ,[Giving2015]
         ,[Giving2014]
@@ -187,20 +188,7 @@ BEGIN
         ,YEAR(GETDATE()) - YEAR(P.AnniversaryDate) AS [AnniversaryYears]
 		,gfg.Id [NeighborhoodId]
 		,gfg.Name [NeighborhoodName]
-        ,CASE 
-            WHEN (
-                    SELECT max(A.Id)
-					FROM Attendance A
-					INNER JOIN [GroupMember] SPM ON A.GroupId = SPM.GroupId
-					INNER JOIN [Group] SP ON SP.Id = SPM.GroupId
-						AND SP.GroupTypeId = 57
-					WHERE SPM.PersonId = P.Id
-						AND A.DidAttend = 1
-						AND A.StartDateTime <= GETDATE()
-                    ) IS NOT NULL
-                THEN 1
-            ELSE 0
-            END AS [TakenStartingPoint]
+        ,0 [TakenStartingPoint] -- this gets filled in later
         ,(
             SELECT MAX(A.StartDateTime)
             FROM Attendance A
@@ -212,15 +200,7 @@ BEGIN
 				AND A.StartDateTime <= GETDATE()
             ) AS [StartingPointDate]
         ,CASE 
-            WHEN (
-                    SELECT max(NG.Id)
-                    FROM GroupMember NGM
-                    LEFT OUTER JOIN [Group] NG ON NG.Id = NGM.GroupId
-                        AND NG.GroupTypeId = 49
-                    WHERE NGM.PersonId = P.Id
-                        AND NG.IsActive = 1
-						AND NGM.GroupMemberStatus = 1
-                    ) IS NOT NULL
+            WHEN ng.Id is not null
                 THEN 1
             ELSE 0
             END AS [InNeighborhoodGroup]
@@ -297,7 +277,7 @@ BEGIN
                 THEN 1
             ELSE 0
             END AS [IsHeadOfHousehold]
-        ,L.[Street1] + ' ' + L.[Street2] AS [Address]
+        ,L.[Street1] + ' ' + ISNULL(L.[Street2], '') AS [Address]
         ,L.[City]
         ,L.[State]
         ,L.[PostalCode]
@@ -365,14 +345,17 @@ BEGIN
                 AND [n].Id NOT IN (
                     SELECT EntityId
                     FROM Auth
-WHERE EntityTypeId = @entityTypeIdNote
+                    WHERE EntityTypeId = @entityTypeIdNote
                         AND AllowOrDeny = 'D'
                         AND [SpecialRole] = 1
                     )
                 AND isnull([n].[Text], '') != ''
                 AND [n].EntityId = p.Id
             ) AS [LastPublicNote]
-			,YGV.Value AS [GivingLast12Months]
+			,CASE -- need to not have nulls because lava
+				WHEN YGV.Value IS NULL THEN 0
+				ELSE CAST(YGV.Value AS MONEY)
+			 END AS [GivingLast12Months] 
 		,CASE 
             WHEN (
                     SELECT max(CG.Id)
@@ -432,4 +415,39 @@ WHERE EntityTypeId = @entityTypeIdNote
     LEFT OUTER JOIN Giving G ON G.PersonId = P.Id
     WHERE P.RecordTypeValueId = 1
         AND P.RecordStatusValueId = 3
+
+	-- fill in TakenStartingPoint based on StartingPointDate
+	UPDATE _church_ccv_Datamart_Person
+		SET TakenStartingPoint = 1
+		WHERE [StartingPointDate] IS NOT NULL
+
+	-- fill in First and Second Time Gifts
+	;WITH Gifts AS (
+		SELECT
+			G.PersonId,
+			MAX(CASE WHEN G.rownumber = 1 THEN gift END) AS [FirstGift],
+			MAX(CASE WHEN G.rownumber = 2 THEN gift END) AS [SecondGift]
+		FROM (
+			SELECT
+				PA.PersonId,
+				FT.TransactionDateTime AS [gift],
+				ROW_NUMBER() OVER (PARTITION BY PA.PersonId ORDER BY FT.TransactionDateTime) AS rownumber
+			FROM FinancialTransactionDetail FTD
+			INNER JOIN FinancialTransaction FT ON FT.Id = FTD.TransactionId
+			INNER JOIN FinancialAccount FA ON FA.Id = FTD.AccountId
+			INNER JOIN PersonAlias PA on PA.Id = FT.AuthorizedPersonAliasId
+			WHERE FA.Id IN (SELECT * FROM dbo._church_ccv_ufnUtility_GetGeneralFinanceAccountIds())
+			GROUP BY PA.PersonId, FT.TransactionDateTime
+		) AS G
+		GROUP BY G.PersonId
+	)
+
+	UPDATE DP
+	SET 
+		DP.FirstTimeGift = G.FirstGift,
+		DP.SecondTimeGift = G.SecondGift
+	FROM _church_ccv_Datamart_Person DP
+	INNER JOIN Gifts G
+		ON G.PersonId = DP.PersonId
+
 END
