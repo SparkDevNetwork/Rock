@@ -149,8 +149,11 @@ WHERE mv.Id NOT IN (
             DropColumn("dbo.MetricValue", "Order");
             DropColumn("dbo.MetricValue", "EntityId");
 
+            RockMigrationHelper.UpdateFieldType( "Schedule", "", "Rock", "Rock.Field.Types.ScheduleFieldType", "E9C12C59-98EA-4977-8318-647435BE9A9C" );
+
             RockMigrationHelper.UpdateEntityTypeSingleValueFieldType( "Rock.Model.DefinedValue", Rock.SystemGuid.FieldType.DEFINED_VALUE );
             RockMigrationHelper.UpdateEntityTypeSingleValueFieldType( "Rock.Model.Category", Rock.SystemGuid.FieldType.CATEGORY );
+            RockMigrationHelper.UpdateEntityTypeSingleValueFieldType( "Rock.Model.Schedule", Rock.SystemGuid.FieldType.SCHEDULES );
 
         }
         
