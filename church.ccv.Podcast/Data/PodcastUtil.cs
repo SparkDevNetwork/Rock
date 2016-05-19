@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using Rock;
 using Rock.Data;
 using Rock.Model;
 
@@ -123,7 +124,7 @@ namespace church.ccv.Podcast
                 series.Attributes.Add( attribValue.AttributeKey, attribValue.Value );
             }
                 
-            series.Messages = new List<PodcastSeries.PodcastMessage>( );
+            series.Messages = new List<PodcastMessage>( );
             foreach( ContentChannelItem contentChannelItem in contentChannel.Items )
             {
                 // get this message's attributes
@@ -131,7 +132,7 @@ namespace church.ccv.Podcast
                                                                                         av.Attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" )
                                                                        .ToList( );
 
-                PodcastSeries.PodcastMessage message = new PodcastSeries.PodcastMessage( );
+                PodcastMessage message = new PodcastMessage( );
                     
                 message.Name = contentChannelItem.Title;
                 message.Description = contentChannelItem.Content;
@@ -151,7 +152,7 @@ namespace church.ccv.Podcast
             if( series.Messages.Count > 0 )
             {
                 // sort the messages by date
-                series.Messages.Sort( delegate( PodcastSeries.PodcastMessage a, PodcastSeries.PodcastMessage b )
+                series.Messages.Sort( delegate( PodcastMessage a, PodcastMessage b )
                 {
                     if( a.Date > b.Date )
                     {
@@ -170,6 +171,11 @@ namespace church.ccv.Podcast
 
             return series;
         }
+
+        public static PodcastCategory PodcastsAsModel( int podcastCategory )
+        {
+            return GetPodcastsByCategory( podcastCategory );
+        }
         
         public static string PodcastsAsJson( int podcastCategory )
         {
@@ -186,15 +192,67 @@ namespace church.ccv.Podcast
         }
 
         // Interface so that PodcastCategories can have either Series or Categories as children.
-        public interface IPodcastNode
+        public interface IPodcastNode : Rock.Lava.ILiquidizable
         {
         }
 
         public class PodcastCategory : IPodcastNode
         {
             public string Name { get; set; }
-
             public List<IPodcastNode> Children { get; set; }
+
+            // Liquid Methods
+            [JsonIgnore]
+            [Rock.Data.LavaIgnore]
+            public List<string> AvailableKeys
+            {
+                get
+                {
+                    var availableKeys = new List<string> { "Name", "Children" };
+                                            
+                    foreach ( IPodcastNode child in Children )
+                    {
+                        availableKeys.AddRange( child.AvailableKeys );
+                    }
+
+                    return availableKeys;
+                }
+            }
+            
+            public object ToLiquid()
+            {
+                return this;
+            }
+
+            [JsonIgnore]
+            [Rock.Data.LavaIgnore]
+            public object this[object key]
+            {
+               get
+                {
+                   switch( key.ToStringSafe() )
+                   {
+                       case "Name": return Name;
+                       case "Children": return Children;
+                   }
+
+                    return null;
+                }
+            }
+            
+            public bool ContainsKey( object key )
+            {
+                var additionalKeys = new List<string> { "Name", "Children" };
+                if ( additionalKeys.Contains( key.ToStringSafe() ) )
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            //
         }
 
         public class PodcastSeries : IPodcastNode
@@ -203,15 +261,121 @@ namespace church.ccv.Podcast
             public string Description { get; set; }
             public DateTime? Date { get; set; }
             public Dictionary<string, string> Attributes { get; set; }
-
-            public class PodcastMessage
-            {
-                public string Name { get; set; }
-                public string Description { get; set; }
-                public DateTime Date { get; set; }
-                public Dictionary<string, string> Attributes { get; set; }
-            }
             public List<PodcastMessage> Messages { get; set; }
+
+            // Liquid Methods
+            [JsonIgnore]
+            [Rock.Data.LavaIgnore]
+            public List<string> AvailableKeys
+            {
+                get
+                {
+                    var availableKeys = new List<string> { "Name", "Description", "Date", "Attributes", "Messages" };
+
+                    foreach ( IPodcastNode child in Messages )
+                    {
+                        availableKeys.AddRange( child.AvailableKeys );
+                    }
+
+                    return availableKeys;
+                }
+            }
+            
+            public object ToLiquid()
+            {
+                return this;
+            }
+
+            [JsonIgnore]
+            [Rock.Data.LavaIgnore]
+            public object this[object key]
+            {
+               get
+                {
+                   switch( key.ToStringSafe() )
+                   {
+                       case "Name": return Name;
+                       case "Description": return Description;
+                       case "Date": return Date;
+                       case "Attributes": return Attributes;
+                       case "Messages": return Messages;
+                   }
+
+                    return null;
+                }
+            }
+            
+            public bool ContainsKey( object key )
+            {
+                var additionalKeys = new List<string> { "Name", "Description", "Date", "Attributes", "Messages" };
+                if ( additionalKeys.Contains( key.ToStringSafe() ) )
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            //
+        }
+
+        public class PodcastMessage
+        {
+            public string Name { get; set; }
+            public string Description { get; set; }
+            public DateTime Date { get; set; }
+            public Dictionary<string, string> Attributes { get; set; }
+
+            // Liquid Methods
+            [JsonIgnore]
+            [Rock.Data.LavaIgnore]
+            public List<string> AvailableKeys
+            {
+                get
+                {
+                    var availableKeys = new List<string> { "Name", "Description", "Date", "Attributes" };
+                    
+                    return availableKeys;
+                }
+            }
+            
+            public object ToLiquid()
+            {
+                return this;
+            }
+
+            [JsonIgnore]
+            [Rock.Data.LavaIgnore]
+            public object this[object key]
+            {
+               get
+                {
+                   switch( key.ToStringSafe() )
+                   {
+                       case "Name": return Name;
+                       case "Description": return Description;
+                       case "Date": return Date;
+                       case "Attributes": return Attributes;
+                   }
+
+                    return null;
+                }
+            }
+            
+            public bool ContainsKey( object key )
+            {
+                var additionalKeys = new List<string> { "Name", "Description", "Date", "Attributes" };
+                if ( additionalKeys.Contains( key.ToStringSafe() ) )
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            //
         }
     }
 }
