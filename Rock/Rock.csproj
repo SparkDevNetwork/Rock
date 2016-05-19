@@ -183,6 +183,7 @@
     <Compile Include="Attribute\DefinedValueRangeFieldAttribute.cs" />
     <Compile Include="Attribute\GroupAndRoleFieldAttribute.cs" />
     <Compile Include="Attribute\KeyValueListFieldAttribute.cs" />
+    <Compile Include="Attribute\ScheduleFieldAttribute.cs" />
     <Compile Include="Attribute\SystemEmailFieldAttribute.cs" />
     <Compile Include="Attribute\EnumsFieldAttribute.cs" />
     <Compile Include="Attribute\EnumFieldAttribute.cs" />
@@ -284,6 +285,7 @@
     <Compile Include="Field\Types\EnumFieldType.cs" />
     <Compile Include="Field\Types\RangeSliderFieldType.cs" />
     <Compile Include="Field\Types\MarkdownFieldType.cs" />
+    <Compile Include="Field\Types\ScheduleFieldType.cs" />
     <Compile Include="Financial\ThreeStepGatewayComponent.cs" />
     <Compile Include="Follow\Event\PersonFirstAttendedGroupType.cs" />
     <Compile Include="Follow\Event\PersonFirstJoinedGroupType.cs" />

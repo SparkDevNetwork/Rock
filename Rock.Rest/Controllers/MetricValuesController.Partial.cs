@@ -188,6 +188,8 @@ namespace Rock.Rest.Controllers
 
             var rockContext = new RockContext();
 
+            List<string> seriesPartitionValues = new List<string>();
+
             foreach ( var entityTypeEntity in entityTypeEntityIdList )
             {
                 if ( entityTypeEntity.EntityTypeId.HasValue && entityTypeEntity.EntityId.HasValue )
@@ -200,7 +202,7 @@ namespace Rock.Rest.Controllers
                             var campus = CampusCache.Read( entityTypeEntity.EntityId.Value );
                             if ( campus != null )
                             {
-                                return campus.Name;
+                                seriesPartitionValues.Add( campus.Name );
                             }
                         }
                         else if ( entityTypeCache.Id == EntityTypeCache.GetId<DefinedValue>() )
@@ -208,7 +210,7 @@ namespace Rock.Rest.Controllers
                             var definedValue = DefinedValueCache.Read( entityTypeEntity.EntityId.Value );
                             if ( definedValue != null )
                             {
-                                return definedValue.ToString();
+                                seriesPartitionValues.Add( definedValue.ToString() );
                             }
                         }
                         else
@@ -221,14 +223,21 @@ namespace Rock.Rest.Controllers
                             var result = getMethod.Invoke( serviceInstance, new object[] { entityTypeEntity.EntityId } );
                             if ( result != null )
                             {
-                                return result.ToString();
+                                seriesPartitionValues.Add( result.ToString() );
                             }
                         }
                     }
                 }
             }
 
-            return null;
+            if ( seriesPartitionValues.Any() )
+            {
+                return seriesPartitionValues.AsDelimited( "," );
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }
