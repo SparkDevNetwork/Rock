@@ -150,7 +150,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var campusi = CampusCache.All();
             cpCampus.Campuses = campusi;
             cpCampus.Visible = campusi.Any();
-            
+
             if ( _isFamilyGroupType )
             {
                 cpCampus.Required = true;
@@ -269,11 +269,26 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         {
                             ddlRecordStatus.SetValue( _group.Members.Select( m => m.Person.RecordStatusValueId ).FirstOrDefault() );
                         }
+                        else
+                        {
+                            ddlRecordStatus.Warning = String.Format( "{0} members have different record statuses", _groupType.Name );
+                        }
 
                         // If all group members have the same inactive reason, set that value
                         if ( _group.Members.Select( m => m.Person.RecordStatusReasonValueId ).Distinct().Count() == 1 )
                         {
                             ddlReason.SetValue( _group.Members.Select( m => m.Person.RecordStatusReasonValueId ).FirstOrDefault() );
+                        }
+                        else
+                        {
+                            if ( String.IsNullOrWhiteSpace( ddlRecordStatus.Warning ) )
+                            {
+                                ddlRecordStatus.Warning = String.Format( "{0} members have different record status reasons", _groupType.Name );
+                            }
+                            else
+                            {
+                                ddlRecordStatus.Warning += " and record status reasons";
+                            }
                         }
                     }
 
@@ -297,7 +312,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         .Where( m => otherGroupPersonIds.Contains( m.Id ) )
                         .ToList()
                         .ForEach( m => m.IsInOtherGroups = true );
-                    
+
                     BindMembers();
 
                     GroupAddresses = new List<GroupAddressInfo>();
@@ -1091,8 +1106,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         .Where( l => l.GroupId == _group.Id &&
                             !remainingLocationIds.Contains( l.Id ) ) )
                     {
-                        History.EvaluateChange( groupChanges, 
-                            ( removedLocation.GroupLocationTypeValue != null ? removedLocation.GroupLocationTypeValue.Value : "Unknown" ) + " Location", 
+                        History.EvaluateChange( groupChanges,
+                            ( removedLocation.GroupLocationTypeValue != null ? removedLocation.GroupLocationTypeValue.Value : "Unknown" ) + " Location",
                             removedLocation.Location.ToString(), string.Empty );
                         groupLocationService.Delete( removedLocation );
                     }
