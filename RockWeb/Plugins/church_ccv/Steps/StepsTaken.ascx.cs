@@ -101,18 +101,25 @@ namespace RockWeb.Plugins.church_ccv.Steps
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
-            DateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpDateRange.DelimitedValues );
+            base.OnLoad( e );          
 
             if ( !Page.IsPostBack )
             {
                 drpDateRange.SlidingDateRangeMode = SlidingDateRangePicker.SlidingDateRangeType.Current;
                 drpDateRange.TimeUnit = SlidingDateRangePicker.TimeUnitType.Year;
 
-                DateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpDateRange.DelimitedValues );
+                if ( Session["StepsTakenDateRange"] != null )
+                {
+                    DateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( Session["StepsTakenDateRange"].ToString() );
+                    drpDateRange.DelimitedValues = Session["StepsTakenDateRange"].ToString();
+                    SetDateLabel();
+                }
+                else
+                {
+                    DateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpDateRange.DelimitedValues );
+                    SetDateLabel();
+                }
 
-                SetDateLabel();
                 LoadCampuses();
                 LoadStepTypes();
                 LoadPastors();
@@ -120,8 +127,6 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 ShowTab();
             }
         }
-
-        
 
         #endregion
 
@@ -136,6 +141,9 @@ namespace RockWeb.Plugins.church_ccv.Steps
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSetDateRange_Click( object sender, EventArgs e )
         {
+            Session["StepsTakenDateRange"] = drpDateRange.DelimitedValues;
+            DateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpDateRange.DelimitedValues );
+
             SetDateLabel();
             ShowTab();
         }
@@ -706,7 +714,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
             lAdultsAvergeSteps.Text = averageSteps != 0 ? Math.Round( averageSteps, 1).ToString() : "NA";
 
             // get similar results for each campus (added after intial release)
-            string outputPattern = @"<div class=""row"">
+            string outputPattern = @"<div class=""row"" style=""background-color: {4}"">
                         <div class=""col-md-12"">
                             <h4>{0}</h4>
                         </div>
@@ -732,8 +740,19 @@ namespace RockWeb.Plugins.church_ccv.Steps
 
             var campuses = CampusCache.All();
 
+            string rowBackgroundColor = "#f2eee9";
+
             foreach(var campus in campuses )
             {
+                if ( rowBackgroundColor == "transparent" )
+                {
+                    rowBackgroundColor = "#f2eee9";
+                }
+                else
+                {
+                    rowBackgroundColor = "transparent";
+                }
+
                 var totalResult = GetTotals( DateRange, rockContext, campus.Id );
 
                 averageSteps = 0;
@@ -743,7 +762,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     averageSteps = (double)totalResult.TotalSteps / (double)totalResult.UniqueAdults;
                 }
 
-                lTotalsByCampus.Text += string.Format( outputPattern, campus.Name, totalResult.UniqueAdults, totalResult.TotalSteps, averageSteps != 0 ? Math.Round( averageSteps, 1 ).ToString() : "NA" );
+                lTotalsByCampus.Text += string.Format( outputPattern, campus.Name, totalResult.UniqueAdults, totalResult.TotalSteps, averageSteps != 0 ? Math.Round( averageSteps, 1 ).ToString() : "NA", rowBackgroundColor );
             }
 
         }
@@ -990,20 +1009,11 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 // let the unholiness begin as we join to the datamart person and datamart neighborhood tables to find the pastor
                 var datamartNeighborhoodQry = new DatamartNeighborhoodService( rockContext ).Queryable();
                 var datamartQry = new DatamartPersonService( rockContext ).Queryable().AsNoTracking()
-                                            .Join( datamartNeighborhoodQry,
+                                            .GroupJoin( datamartNeighborhoodQry,
                                                     x => x.NeighborhoodId,
                                                     y => y.NeighborhoodId,
-                                                    ( x, y ) => new { Person = x, Neighborhood = y } );
-
-
-
-
-
-
-                //var datamartQry = new DatamartPersonService( rockContext ).Queryable().AsNoTracking();
-
-
-
+                                                    ( x, y ) => new { Person = x, Neighborhood = y } )
+                                            .SelectMany(x => x.Neighborhood.DefaultIfEmpty(), (g,u) => new { Person = g.Person, Neighborhood = u });
 
                 var joinedQuery = query.GroupJoin(
                         datamartQry,

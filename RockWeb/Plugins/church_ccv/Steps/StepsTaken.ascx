@@ -1,5 +1,63 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="StepsTaken.ascx.cs" Inherits="RockWeb.Plugins.church_ccv.Steps.StepsTaken" %>
 
+<style>
+    @media print {
+        .panel panel-block {
+            border: 0;
+        }
+
+        #page-title {
+            display: none;
+        }
+
+        #content-wrapper {
+            margin-left: 0 !important;
+        }
+
+        #page-wrapper {
+            position: absolute;
+            left: -70px;
+            right: -70px;
+        }
+
+        #content-wrapper #page-content {
+            padding: 0;
+        }
+
+        body {
+            margin: 8mm 8mm 8mm 8mm;
+        }
+
+        .measurechart {
+            height: 130px;
+            float: left;
+            width: 100%;
+            margin-right: 12px;
+            page-break-inside: avoid;
+        }
+
+        .chartwrapper {
+            width: 100%;
+        }
+
+        .measurechart-legend-value span {
+            font-size: 22px;
+        }
+
+        .measurechart-legend-value i {
+            font-size: 22px;
+        }
+
+        .measurechart-legend-value {
+            margin-top: -8px;
+        }
+
+        .tab-title {
+            margin-top: 0;
+        }
+    }
+</style>
+
 <script>
 
     Sys.Application.add_load( function () {
@@ -95,7 +153,7 @@
                     </div>
                 </div>
 
-                <ul class="nav nav-pills margin-b-md">
+                <ul class="nav nav-pills margin-b-md hidden-print">
                     <li id="liAdults" runat="server" class="active">
                         <asp:LinkButton ID="lbAdults" runat="server" Text="Adults" OnClick="lbTab_Click" />
                     </li>
@@ -115,9 +173,9 @@
                     <asp:Panel ID="pnlAdultsAllMeasures" runat="server">
                         <div class="row">
                             <div class="col-md-6">
-                                <h2><asp:Literal ID="lCampusCampus" runat="server" Text="All Campuses" /></h2>
+                                <h2 class="tab-title"><asp:Literal ID="lCampusCampus" runat="server" Text="All Campuses" /></h2>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-6 hidden-print">
                                 <Rock:CampusPicker ID="cpCampusCampus" runat="server" OnSelectedIndexChanged="cpCampusCampus_SelectedIndexChanged" AutoPostBack="true" />
                             </div>
                         </div>
@@ -189,9 +247,9 @@
                     <asp:Panel ID="pnlPastorMeasures" runat="server" Visible="false">
                     <div class="row">
                         <div class="col-md-6">
-                            <h2><asp:Literal ID="lPastorPastor" runat="server" Text="All Pastors" /></h2>
+                            <h2 class="tab-title"><asp:Literal ID="lPastorPastor" runat="server" Text="All Pastors" /></h2>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-6 hidden-print">
                             <Rock:RockDropDownList ID="ddlPastor" Label="Pastor" runat="server" OnSelectedIndexChanged="ddlPastor_SelectedIndexChanged" AutoPostBack="true" />
                         </div>
                     </div>
@@ -263,7 +321,7 @@
                 <asp:Panel ID="pnlTotals" runat="server" Visible="false">
                     <div class="row">
                         <div class="col-md-6">
-                            <h2><asp:Literal ID="lAdultsCampus" runat="server" Text="All Campuses" /></h2>
+                            <h2 class="tab-title"><asp:Literal ID="lAdultsCampus" runat="server" Text="All Campuses" /></h2>
                         </div>
                         <div class="col-md-6">
                             <Rock:CampusPicker ID="cpAdultsCampus" runat="server" OnSelectedIndexChanged="cpAdultsCampus_SelectedIndexChanged" AutoPostBack="true" Visible="false" />
@@ -299,7 +357,7 @@
                 <asp:Panel ID="pnlStepDetails" runat="server" Visible="false">
                     <div class="row">
                         <div class="col-md-6">
-                            <h2><asp:Literal ID="lDetailCampus" runat="server" Text="All Campuses" /></h2>
+                            <h2 class="tab-title"><asp:Literal ID="lDetailCampus" runat="server" Text="All Campuses" /></h2>
                         </div>
                         <div class="col-md-6">
                             <Rock:CampusPicker ID="cpDetailCampus" runat="server" OnSelectedIndexChanged="cpDetailCampus_SelectedIndexChanged" AutoPostBack="true" />
