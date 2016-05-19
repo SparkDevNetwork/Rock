@@ -344,7 +344,8 @@ namespace RockWeb.Blocks.Event
 
             int maxDisplayItems = GetAttributeValue( "MaxDisplayEvents" ).AsInteger();
 
-            rptEvents.DataSource = eventSummaries.OrderBy(e => e.StartDate).Take(maxDisplayItems);
+            eventSummaries = eventSummaries.OrderBy( e => e.StartDate ).Take( maxDisplayItems ).ToList();
+            rptEvents.DataSource = eventSummaries;
             rptEvents.DataBind();
 
             if ( eventSummaries.Count > 0 )
