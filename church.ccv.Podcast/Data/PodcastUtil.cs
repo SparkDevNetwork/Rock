@@ -27,12 +27,17 @@ namespace church.ccv.Podcast
 {
     public static class PodcastUtil
     {
-        // todo: these need to be updated to use Production Rock values.
-        public const int RootPodcast_CategoryId = 450;
-        public const int WeekendVideos_CategoryId = 451;
+        // This is rock's core podcast category and will never change.
+        const int RootPodcast_CategoryId = 451;
 
         public static PodcastCategory GetPodcastsByCategory( int categoryId, bool keepCategoryHierarchy = true )
         {
+            // if they pass in 0, accept that as the Root
+            if ( categoryId == 0 )
+            {
+                categoryId = RootPodcast_CategoryId;
+            }
+
             RockContext rockContext = new RockContext( );
 
             // get the root category that's parent to all categories and podcasts they care about

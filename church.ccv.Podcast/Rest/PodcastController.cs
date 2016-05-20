@@ -61,7 +61,7 @@ namespace chuch.ccv.Podcast.Rest
                     // if no category was specified, give them the root
                     if( category == 0 )
                     {
-                        response = Retrieve_RootWithCategories( version, PodcastUtil.RootPodcast_CategoryId );
+                        response = Retrieve_RootWithCategories( version );
                     }
                     else
                     {
@@ -79,7 +79,7 @@ namespace chuch.ccv.Podcast.Rest
                     // if no category was specified, give them the root
                     if( category == 0 )
                     {
-                        response = Retrieve_RootWithCategories( version, PodcastUtil.RootPodcast_CategoryId );
+                        response = Retrieve_RootWithCategories( version );
                     }
                     else
                     {
@@ -112,7 +112,7 @@ namespace chuch.ccv.Podcast.Rest
             return JsonConvert.SerializeObject( rootCategory );
         }
 
-        string Retrieve_RootWithCategories( int version, int categoryId )
+        string Retrieve_RootWithCategories( int version )
         {
             // we will provide the "Root" that they ask for (defiend by categoryId),
             // and then the child series and immediate child categories. The child categories will contain all their
@@ -125,7 +125,7 @@ namespace chuch.ccv.Podcast.Rest
             //--------Walk Thru John (S) [Note, this might actually be in a child category of Neighborhood Videos, but we flatten those.
 
             // First, get the root category, fully, and with its child categories.
-            PodcastUtil.PodcastCategory fullRootCategory = PodcastUtil.GetPodcastsByCategory( categoryId, true );
+            PodcastUtil.PodcastCategory fullRootCategory = PodcastUtil.GetPodcastsByCategory( 0, true );
 
             // now, we want to create a new root with only any immediate series as its children
             PodcastUtil.PodcastCategory rootCategory = new PodcastUtil.PodcastCategory( fullRootCategory.Name, fullRootCategory.Id );
@@ -139,7 +139,7 @@ namespace chuch.ccv.Podcast.Rest
             
             // now load the category they care about, so we can get its children
             RockContext rockContext = new RockContext( );
-            var category = new CategoryService( rockContext ).Queryable( ).Where( c => c.Id == categoryId ).SingleOrDefault( );
+            var category = new CategoryService( rockContext ).Queryable( ).Where( c => c.Id == fullRootCategory.Id ).SingleOrDefault( );
 
             // finally, recursively load all child categories, but flatten it all into one list per child category
             foreach( Category childCategory in category.ChildCategories )
@@ -293,6 +293,8 @@ namespace chuch.ccv.Podcast.Rest
             return null;
         }
 
+        // eventually it'd be better to replace the mobile app endpoint with one that uses json like the rest. Until then..
+        public const int WeekendVideos_CategoryId = 452;
         StringContent Retrieve_MobileApp( int version )
         {
             using ( StringWriter stringWriter = new StringWriterWithEncoding(Encoding.UTF8) )
@@ -322,7 +324,7 @@ namespace chuch.ccv.Podcast.Rest
                     writer.WriteStartElement( "SeriesList" );
 
                     // get all content channel types in the "Weekend Series" podcast
-                    IQueryable<ContentChannel> seriesContentChannels = GetPodcastsByCategory( PodcastUtil.WeekendVideos_CategoryId );
+                    IQueryable<ContentChannel> seriesContentChannels = GetPodcastsByCategory( WeekendVideos_CategoryId );
                     IQueryable<AttributeValue> attribValueQuery = new AttributeValueService( new RockContext( ) ).Queryable( );
             
                     foreach( ContentChannel series in seriesContentChannels )

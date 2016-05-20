@@ -66,9 +66,7 @@ namespace RockWeb.Plugins.church_ccv.Podcast
         /// 
         protected void ShowDetail( )
         {
-            // 450: All podcasts
-            // 451: Weekend Series
-            PodcastUtil.PodcastCategory podcastSeriesList = PodcastUtil.PodcastsAsModel( 450 );
+            PodcastUtil.PodcastCategory podcastSeriesList = PodcastUtil.PodcastsAsModel( 0 );
             
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "PodcastSeries", podcastSeriesList );
