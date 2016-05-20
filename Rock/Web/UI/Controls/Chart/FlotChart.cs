@@ -737,7 +737,7 @@ namespace Rock.Web.UI.Controls
                 qryParams.Add( string.Format( "metricValueType={0}", this.MetricValueType ) );
             }
 
-            var entityTypeEntityIds = MetricValuePartitionEntityIds.Split( ',' ).Select( a => a.Split( '|' ) ).Where( a => a.Length == 2 ).Select( a => new
+            var entityTypeEntityIds = (MetricValuePartitionEntityIds ?? string.Empty).Split( ',' ).Select( a => a.Split( '|' ) ).Where( a => a.Length == 2 ).Select( a => new
             {
                 EntityTypeId = a[0].AsIntegerOrNull(),
                 EntityId = a[1].AsIntegerOrNull()
@@ -751,9 +751,9 @@ namespace Rock.Web.UI.Controls
                     if ( entityTypeEntityIds.Count() > position )
                     {
                         var entry = entityTypeEntityIds[position];
-                        if ( entry.EntityTypeId == metricPartition.EntityTypeId )
+                        if ( entry.EntityTypeId == metricPartition.EntityTypeId && entry.EntityId.HasValue )
                         {
-                            filterParams.Add( string.Format( "MetricValuePartitions/any(metricValuePartition: metricValuePartition/EntityId eq {0} and metricValuePartition/MetricPartitionId eq {1})", entry.EntityId, metricPartition.Id ) );
+                            filterParams.Add( string.Format( "MetricValuePartitions/any(metricValuePartition: metricValuePartition/EntityId eq {0} and metricValuePartition/MetricPartitionId eq {1})", entry.EntityId.Value, metricPartition.Id ) );
                         }
                     }
                 }

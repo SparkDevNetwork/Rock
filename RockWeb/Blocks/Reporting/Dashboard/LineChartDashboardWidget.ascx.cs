@@ -166,7 +166,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
                 mpMetricCategoryPicker.SetValue( metricCategory );
             }
 
-            if ( this.GetEntityFromContext )
+            if ( this.GetEntityFromContextEnabled )
             {
                 rblSelectOrContext.SetValue( "1" );
             }
@@ -200,6 +200,8 @@ namespace RockWeb.Blocks.Reporting.Dashboard
                 }
             }
 
+            rblSelectOrContext_SelectedIndexChanged( null, null );
+
             mdEdit.Show();
         }
 
@@ -216,7 +218,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
             Guid? metricCategoryGuid = metricCategory != null ? metricCategory.Category.Guid : (Guid?)null; ;
 
             // NOTE: Weird storage due to backwards compatible
-            // value stored as pipe delimited: Metric (as Guid) | EntityId (leave null) | GetEntityFromContext | CombineValues | Metric's Category (as Guid)
+            // value stored as pipe delimited: Metric (as Guid) | EntityId (leave null) | GetEntityFromContextEnabled | CombineValues | Metric's Category (as Guid)
             var metricAttributeValue = string.Format( "{0}|{1}|{2}|{3}|{4}", metricGuid, null, rblSelectOrContext.SelectedValue == "1", cbCombineValues.Checked, metricCategoryGuid );
             SetAttributeValue( "Metric", metricAttributeValue );
 
@@ -256,6 +258,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
         /// </summary>
         private void CreateDynamicControls( int? metricId )
         {
+            phMetricValuePartitions.Controls.Clear();
             Metric metric = new MetricService( new RockContext() ).Get( metricId ?? 0 );
             if ( metric != null )
             {
@@ -315,7 +318,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
         /// <value>
         /// <c>true</c> if [get entity from context]; otherwise, <c>false</c>.
         /// </value>
-        private bool GetEntityFromContext
+        private bool GetEntityFromContextEnabled
         {
             get
             {
@@ -342,39 +345,10 @@ namespace RockWeb.Blocks.Reporting.Dashboard
             get
             {
                 int? result = null;
-                if ( GetEntityFromContext )
+                if ( GetEntityFromContextEnabled )
                 {
-                    EntityTypeCache entityTypeCache = null;
-                    if ( this.MetricId.HasValue )
-                    {
-                        using ( var rockContext = new Rock.Data.RockContext() )
-                        {
-                            var metric = new Rock.Model.MetricService( rockContext ).Get( this.MetricId ?? 0 );
-                            if ( metric != null )
-                            {
-                                // for backwards compatibily, get the first metric partition
-                                entityTypeCache = EntityTypeCache.Read( metric.MetricPartitions.OrderBy( a => a.Order ).First().EntityTypeId ?? 0 );
-                            }
-                        }
-                    }
-
-                    if ( entityTypeCache != null && this.ContextEntity( entityTypeCache.Name ) != null )
-                    {
-                        result = this.ContextEntity( entityTypeCache.Name ).Id;
-                    }
-
-                    // if Getting the EntityFromContext, and we didn't get it from ContextEntity, get it from the Page Param
-                    if ( !result.HasValue )
-                    {
-                        // figure out what the param name should be ("CampusId, GroupId, etc") depending on metric's entityType
-                        var entityParamName = "EntityId";
-                        if ( entityTypeCache != null )
-                        {
-                            entityParamName = entityTypeCache.Name + "Id";
-                        }
-
-                        result = this.PageParameter( entityParamName ).AsIntegerOrNull();
-                    }
+                    MetricPartitionEntityId primaryMetricPartitionEntityId = GetPrimaryMetricPartitionEntityIdFromContext();
+                    result = primaryMetricPartitionEntityId.EntityId;
                 }
                 else
                 {
@@ -402,6 +376,59 @@ namespace RockWeb.Blocks.Reporting.Dashboard
 
                 return result;
             }
+        }
+
+        /// <summary>
+        /// Gets the primary partition entity identifier from context.
+        /// </summary>
+        /// <param name="result">The result.</param>
+        /// <returns></returns>
+        private MetricPartitionEntityId GetPrimaryMetricPartitionEntityIdFromContext()
+        {
+            EntityTypeCache entityTypeCache = null;
+            MetricPartitionEntityId result = new MetricPartitionEntityId();
+            if ( this.MetricId.HasValue )
+            {
+                using ( var rockContext = new Rock.Data.RockContext() )
+                {
+                    var metric = new Rock.Model.MetricService( rockContext ).Get( this.MetricId ?? 0 );
+                    if ( metric != null )
+                    {
+                        // for backwards compatibily, get the first metric partition
+                        result.MetricPartition = metric.MetricPartitions.OrderBy( a => a.Order ).First();
+                        entityTypeCache = EntityTypeCache.Read( result.MetricPartition.EntityTypeId ?? 0 );
+                    }
+                }
+            }
+
+            if ( entityTypeCache != null && this.ContextEntity( entityTypeCache.Name ) != null )
+            {
+                result.EntityId = this.ContextEntity( entityTypeCache.Name ).Id;
+            }
+
+            // if Getting the EntityFromContext, and we didn't get it from ContextEntity, get it from the Page Param
+            if ( !result.EntityId.HasValue )
+            {
+                // figure out what the param name should be ("CampusId, GroupId, etc") depending on metric's entityType
+                var entityParamName = "EntityId";
+                if ( entityTypeCache != null )
+                {
+                    entityParamName = entityTypeCache.Name + "Id";
+                }
+
+                result.EntityId = this.PageParameter( entityParamName ).AsIntegerOrNull();
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public class MetricPartitionEntityId
+        {
+            public MetricPartition MetricPartition { get; set; }
+            public int? EntityId { get; set; }
         }
 
         /// <summary>
@@ -482,28 +509,40 @@ namespace RockWeb.Blocks.Reporting.Dashboard
         /// </summary>
         public void LoadChart()
         {
-            var floatChartControl = lcChart;
-            floatChartControl.StartDate = this.DateRange.Start;
-            floatChartControl.EndDate = this.DateRange.End;
-            floatChartControl.MetricValueType = this.MetricValueType;
+            var flotChartControl = lcChart;
+            flotChartControl.StartDate = this.DateRange.Start;
+            flotChartControl.EndDate = this.DateRange.End;
+            flotChartControl.MetricValueType = this.MetricValueType;
 
-            floatChartControl.CombineValues = this.CombineValues;
-            floatChartControl.ShowTooltip = true;
+            flotChartControl.CombineValues = this.CombineValues;
+            flotChartControl.ShowTooltip = true;
 
             Guid? detailPageGuid = ( GetAttributeValue( "DetailPage" ) ?? string.Empty ).AsGuidOrNull();
             if ( detailPageGuid.HasValue )
             {
-                floatChartControl.ChartClick += lcExample_ChartClick;
+                flotChartControl.ChartClick += lcExample_ChartClick;
             }
 
-            floatChartControl.Options.SetChartStyle( this.ChartStyleDefinedValueGuid );
+            flotChartControl.Options.SetChartStyle( this.ChartStyleDefinedValueGuid );
 
-            floatChartControl.Options.legend = floatChartControl.Options.legend ?? new Legend();
-            floatChartControl.Options.legend.show = this.GetAttributeValue( "ShowLegend" ).AsBooleanOrNull();
-            floatChartControl.Options.legend.position = this.GetAttributeValue( "LegendPosition" );
+            flotChartControl.Options.legend = flotChartControl.Options.legend ?? new Legend();
+            flotChartControl.Options.legend.show = this.GetAttributeValue( "ShowLegend" ).AsBooleanOrNull();
+            flotChartControl.Options.legend.position = this.GetAttributeValue( "LegendPosition" );
 
-            floatChartControl.MetricId = this.MetricId;
-            floatChartControl.MetricValuePartitionEntityIds = GetAttributeValue( "MetricEntityTypeEntityIds" );
+            flotChartControl.MetricId = this.MetricId;
+            
+            if ( this.GetEntityFromContextEnabled )
+            {
+                MetricPartitionEntityId primaryMetricPartitionEntityId = GetPrimaryMetricPartitionEntityIdFromContext();
+                if ( primaryMetricPartitionEntityId != null && primaryMetricPartitionEntityId.MetricPartition != null )
+                {
+                    flotChartControl.MetricValuePartitionEntityIds = string.Format( "{0}|{1}", primaryMetricPartitionEntityId.MetricPartition.EntityTypeId, primaryMetricPartitionEntityId.EntityId );
+                }
+            }
+            else
+            {
+                flotChartControl.MetricValuePartitionEntityIds = GetAttributeValue( "MetricEntityTypeEntityIds" );
+            }
 
             nbMetricWarning.Visible = !this.MetricId.HasValue;
 
