@@ -132,7 +132,7 @@ namespace church.ccv.Datamart.Reporting.DataSelect.Person
             ddlField.Label = "Field Name";
             ddlField.ID = parentControl.ID + "_ddlField";
             var datamartFields = EntityHelper.GetEntityFields( typeof( DatamartPerson ) ).Where( a => a.FieldKind == FieldKind.Property ).OrderBy( a => a.Name ).ToList();
-            var supportedTypes = new Type[] { typeof( string ), typeof( bool? ), typeof( DateTime? ), typeof( decimal? ) };
+            var supportedTypes = new Type[] { typeof( string ), typeof( bool? ), typeof( DateTime? ), typeof( decimal? ), typeof( int ), typeof( int? ) };
             foreach ( var field in datamartFields )
             {
                 if ( supportedTypes.Any( a => a.IsAssignableFrom( field.PropertyType ) ) )
@@ -224,6 +224,20 @@ namespace church.ccv.Datamart.Reporting.DataSelect.Person
             else if ( datamartMember.Type == typeof( decimal? ) )
             {
                 var projectionLamba = Expression.Lambda<Func<DatamartPerson, decimal?>>( datamartMember, new ParameterExpression[] { datamartParameterExpression } );
+                qryResult = qryPerson
+                    .Select( p => qryDatamartPerson.Where( d => d.PersonId == p.Id )
+                      .Select( projectionLamba ).FirstOrDefault() );
+            }
+            else if ( datamartMember.Type == typeof( int ) )
+            {
+                var projectionLamba = Expression.Lambda<Func<DatamartPerson, int>>( datamartMember, new ParameterExpression[] { datamartParameterExpression } );
+                qryResult = qryPerson
+                    .Select( p => qryDatamartPerson.Where( d => d.PersonId == p.Id )
+                      .Select( projectionLamba ).FirstOrDefault() );
+            }
+            else if ( datamartMember.Type == typeof( int? ) )
+            {
+                var projectionLamba = Expression.Lambda<Func<DatamartPerson, int?>>( datamartMember, new ParameterExpression[] { datamartParameterExpression } );
                 qryResult = qryPerson
                     .Select( p => qryDatamartPerson.Where( d => d.PersonId == p.Id )
                       .Select( projectionLamba ).FirstOrDefault() );
