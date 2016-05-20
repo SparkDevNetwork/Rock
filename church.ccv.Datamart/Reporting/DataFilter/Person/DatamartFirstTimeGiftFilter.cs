@@ -203,12 +203,8 @@ namespace church.ccv.Datamart.Reporting.DataFilter.Person
                 qryDatamartPerson = qryDatamartPerson.Where( p => p.FirstTimeGift < endDate );
             }
 
-            var count = qryDatamartPerson.Count();
-
             var qry = new PersonService( rockContext ).Queryable()
                 .Where( p => qryDatamartPerson.Any( xx => xx.PersonId == p.Id ) );
-
-            var count2 = qry.Count();
 
             Expression result = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );
 
