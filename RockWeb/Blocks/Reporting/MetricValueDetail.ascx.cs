@@ -128,6 +128,11 @@ namespace RockWeb.Blocks.Reporting
                             if ( entityTypeEditControl is IRockControl )
                             {
                                 var entityTypeRockControl = ( entityTypeEditControl as IRockControl );
+                                if ( !string.IsNullOrEmpty( metricPartition.EntityTypeQualifierColumn ) )
+                                {
+                                    // TODO: Rock doesn't have a way to filter Pickers based on EntityTypeQualifierColumn yet
+                                }
+
                                 entityTypeRockControl.Label = metricPartition.Label;
                                 if ( entityTypeEditControl is WebControl )
                                 {
