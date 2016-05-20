@@ -98,10 +98,6 @@ namespace Rock.Field.Types
                 {
                     guid = location.Guid;
                 }
-                else
-                {
-                    //TODO
-                }
 
                 result = guid.ToString();
             }
@@ -146,7 +142,6 @@ namespace Rock.Field.Types
                         addressControl.State = addressControl.GetDefaultState();
                         addressControl.PostalCode = string.Empty;
                     }
-
                 }
             }
         }
