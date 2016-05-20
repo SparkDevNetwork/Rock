@@ -506,8 +506,8 @@ namespace RockWeb.Blocks.Administration
             var authService = new AuthService( rockContext );
             var pageService = new PageService( rockContext );
             var blockService = new BlockService( rockContext );
-            var pageGuid = "E104DCDF-247C-4CED-A119-8CC51632761F".AsGuid();
-            var blockGuid = "D89555CA-9AE4-4D62-8AF1-E5E463C1EF65".AsGuid();
+            var pageGuid = Rock.SystemGuid.EntityType.PAGE.AsGuid();
+            var blockGuid = Rock.SystemGuid.EntityType.BLOCK.AsGuid();
 
             Dictionary<Guid, int> pageIntDictionary = pageService.Queryable()
                 .Where( p => pageGuidDictionary.Keys.Contains( p.Guid ) || pageGuidDictionary.Values.Contains( p.Guid ) )
@@ -571,8 +571,8 @@ namespace RockWeb.Blocks.Administration
             var attributeValueService = new AttributeValueService( rockContext );
             var pageService = new PageService( rockContext );
             var blockService = new BlockService( rockContext );
-            var pageGuid = "E104DCDF-247C-4CED-A119-8CC51632761F".AsGuid();
-            var blockGuid = "D89555CA-9AE4-4D62-8AF1-E5E463C1EF65".AsGuid();
+            var pageGuid = Rock.SystemGuid.EntityType.PAGE.AsGuid();
+            var blockGuid = Rock.SystemGuid.EntityType.BLOCK.AsGuid();
 
             Dictionary<Guid, int> blockIntDictionary = blockService.Queryable()
                 .Where( p => blockGuidDictionary.Keys.Contains( p.Guid ) || blockGuidDictionary.Values.Contains( p.Guid ) )
@@ -595,7 +595,7 @@ namespace RockWeb.Blocks.Administration
                 newAttributeValue.Guid = Guid.NewGuid();
                 newAttributeValue.EntityId = blockIntDictionary[blockGuidDictionary[blockIntDictionary.Where( d => d.Value == attributeValue.EntityId.Value ).FirstOrDefault().Key]];
 
-                if ( attributeValue.Attribute.FieldType.Guid == "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108".AsGuid() )
+                if ( attributeValue.Attribute.FieldType.Guid == Rock.SystemGuid.FieldType.PAGE_REFERENCE.AsGuid() )
                 {
                     if ( pageGuidDictionary.ContainsKey( attributeValue.Value.AsGuid() ) )
                     {
