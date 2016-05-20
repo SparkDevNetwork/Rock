@@ -16,7 +16,7 @@
 //
 using System;
 using System.Linq;
-
+using System.Text.RegularExpressions;
 using Rock.Data;
 using Rock.Model;
 
@@ -169,9 +169,13 @@ namespace Rock.Transactions
                 PageView pageView = new PageView();
                 pageViewService.Add( pageView );
 
+                // obscate rock magic token
+                Regex rgx = new Regex( @"rockipid=([^&]*)" );
+                string cleanUrl = rgx.Replace( this.Url, "rockipid=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
+
                 pageView.PageId = this.PageId;
                 pageView.SiteId = this.SiteId;
-                pageView.Url = this.Url;
+                pageView.Url = cleanUrl;
                 pageView.DateTimeViewed = this.DateViewed;
                 pageView.PersonAliasId = this.PersonAliasId;
                 pageView.PageTitle = this.PageTitle;
