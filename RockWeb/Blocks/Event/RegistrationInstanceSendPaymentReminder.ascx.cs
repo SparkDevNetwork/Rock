@@ -130,24 +130,27 @@ namespace RockWeb.Blocks.Event
             if ( registrationsSelected.Any() )
             {
                 var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "ExternalApplicationRoot" );
-
-                using ( RockContext rockContext = new RockContext() )
+                
+                if ( _registrationInstance == null )
                 {
-                    if ( _registrationInstance == null )
-                    {
-                        int? registrationInstanceId = PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull();
+                    int? registrationInstanceId = PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull();
 
+                    using ( RockContext rockContext = new RockContext() )
+                    {
                         RegistrationInstanceService registrationInstanceService = new RegistrationInstanceService( rockContext );
                         _registrationInstance = registrationInstanceService.Queryable( "RegistrationTemplate" ).AsNoTracking()
-                                                    .Where( r => r.Id == registrationInstanceId ).FirstOrDefault();
+                                                .Where( r => r.Id == registrationInstanceId ).FirstOrDefault();
+                    }
 
-
-                        foreach(var registrationId in registrationsSelected )
+                    foreach( var registrationId in registrationsSelected )
+                    {
+                        // use a new rockContext for each registration so that ChangeTracker doesn't get bogged down
+                        using ( RockContext rockContext = new RockContext() )
                         {
                             var registrationService = new RegistrationService( rockContext );
 
                             var registration = registrationService.Get( registrationId );
-                            if (registration != null && !string.IsNullOrWhiteSpace(registration.ConfirmationEmail) )
+                            if ( registration != null && !string.IsNullOrWhiteSpace(registration.ConfirmationEmail) )
                             {
                                 var recipients = new List<string>();
 
