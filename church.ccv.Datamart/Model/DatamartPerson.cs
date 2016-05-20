@@ -667,7 +667,7 @@ namespace church.ccv.Datamart.Model
         /// Gets or sets the first time gift.
         /// </summary>
         /// <value>
-        /// The last public note.
+        /// The first time gift.
         /// </value>
         [DataMember]
         public DateTime? FirstTimeGift { get; set; }
@@ -676,10 +676,19 @@ namespace church.ccv.Datamart.Model
         /// Gets or sets the second time gift.
         /// </summary>
         /// <value>
-        /// The last public note.
+        /// The second time gift.
         /// </value>
         [DataMember]
         public DateTime? SecondTimeGift { get; set; }
+
+        /// <summary>
+        /// Gets or sets the total gifts.
+        /// </summary>
+        /// <value>
+        /// The total gifts.
+        /// </value>
+        [DataMember]
+        public int? TotalGifts { get; set; }
 
         #endregion
     }
