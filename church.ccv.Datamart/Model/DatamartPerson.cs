@@ -663,6 +663,24 @@ namespace church.ccv.Datamart.Model
         [DataMember]
         public string LastPublicNote { get; set; }
 
+        /// <summary>
+        /// Gets or sets the first time gift.
+        /// </summary>
+        /// <value>
+        /// The last public note.
+        /// </value>
+        [DataMember]
+        public DateTime? FirstTimeGift { get; set; }
+
+        /// <summary>
+        /// Gets or sets the second time gift.
+        /// </summary>
+        /// <value>
+        /// The last public note.
+        /// </value>
+        [DataMember]
+        public DateTime? SecondTimeGift { get; set; }
+
         #endregion
     }
 }
