@@ -27,12 +27,11 @@ namespace church.ccv.Podcast
 {
     public static class PodcastUtil
     {
-        //todo: This should be moved into our CCV Guids, but not until we first create it in Production ON the Content Channel
-        public const string ContentChannel_CategoryAttributeGuid = "DEA4ACCE-82F6-43E3-B381-6959FBF66E74";
+        // todo: these need to be updated to use Production Rock values.
         public const int RootPodcast_CategoryId = 450;
         public const int WeekendVideos_CategoryId = 451;
 
-        static PodcastCategory GetPodcastsByCategory( int categoryId )
+        public static PodcastCategory GetPodcastsByCategory( int categoryId, bool keepCategoryHierarchy = true )
         {
             RockContext rockContext = new RockContext( );
 
@@ -40,7 +39,7 @@ namespace church.ccv.Podcast
             var category = new CategoryService( rockContext ).Queryable( ).Where( c => c.Id == categoryId ).SingleOrDefault( );
             
             // create a query that'll get all of the "Category" attributes for all the content channels
-            var categoryAttribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.Guid == new Guid( ContentChannel_CategoryAttributeGuid  ) );
+            var categoryAttribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.Guid == new Guid( church.ccv.Utility.SystemGuids.Attribute.CONTENT_CHANNEL_CATEGORY_ATTRIBUTE  ) );
 
             // now get ALL content channels with their parent category(s) attributes as a joined object
             ContentChannelService contentChannelService = new ContentChannelService( rockContext );
@@ -48,19 +47,16 @@ namespace church.ccv.Podcast
                                                                                        cc => cc.Id, cav => cav.EntityId, ( cc, cav ) => new ContentChannelWithAttribs { ContentChannel = cc, CategoryAttribValue = cav } );
             
             // create our root podcast object
-            PodcastCategory rootPodcast = new PodcastCategory( );
+            PodcastCategory rootPodcast = new PodcastCategory( category.Name, category.Id );
                         
             // see if this category has any podcasts to add.
-            Internal_GetPodcastsByCategory( category, rootPodcast, categoryContentChannelItems );
+            Internal_GetPodcastsByCategory( category, rootPodcast, categoryContentChannelItems, keepCategoryHierarchy );
     
             return rootPodcast;
         }
 
-        static void Internal_GetPodcastsByCategory( Category category, PodcastCategory rootPodcast, IQueryable<ContentChannelWithAttribs> categoryContentChannelItems )
+        static void Internal_GetPodcastsByCategory( Category category, PodcastCategory rootPodcast, IQueryable<ContentChannelWithAttribs> categoryContentChannelItems, bool keepCategoryHierarchy = true )
         {
-            rootPodcast.Name = category.Name;
-            rootPodcast.Children = new List<IPodcastNode>( );
-
             // Get all Content Channels that are immediate children of the provided category.
             var podcastsForCategory = categoryContentChannelItems.Where( cci => cci.CategoryAttribValue.Value.Contains( category.Guid.ToString( ) ) ).Select( cci => cci.ContentChannel );
 
@@ -76,10 +72,7 @@ namespace church.ccv.Podcast
             // (We're safe to do this because we KNOW we've only added PodcastSeries at this point)
             rootPodcast.Children.Sort( delegate( IPodcastNode a, IPodcastNode b )
             {
-                PodcastSeries podcastSeriesA = a as PodcastSeries;
-                PodcastSeries podcastSeriesB = b as PodcastSeries;
-                
-                if( podcastSeriesA.Date > podcastSeriesB.Date )
+                if( a.Date > b.Date )
                 {
                     return -1;
                 }
@@ -87,16 +80,31 @@ namespace church.ccv.Podcast
             });
 
             // now recursively handle all child categories
-            foreach( Category childCategory in category.ChildCategories )
+            foreach ( Category childCategory in category.ChildCategories )
             {
-                // create the child podcast category
-                PodcastCategory childPodcastCategory = new PodcastCategory( );
+                PodcastCategory podcastCategory = null;
 
-                // add it to this root podcast
-                rootPodcast.Children.Add( childPodcastCategory );
+                // if true, we'll maintain the category hierarchy.
+                if ( keepCategoryHierarchy )
+                {
+                    // so create a new child category object
+                    PodcastCategory childPodcastCategory = new PodcastCategory( childCategory.Name, childCategory.Id );
+
+                    // add it to this root podcast
+                    rootPodcast.Children.Add( childPodcastCategory );
+
+                    // and set it as the next category to use
+                    podcastCategory = childPodcastCategory;
+                }
+                else
+                {
+                    // false, so we should use the initial root category, so that all series / messages go into this category's
+                    // Children list as a big flat list
+                    podcastCategory = rootPodcast;
+                }
 
                 // now recursively call this so it can add its children
-                Internal_GetPodcastsByCategory( childCategory, childPodcastCategory, categoryContentChannelItems );
+                Internal_GetPodcastsByCategory( childCategory, podcastCategory, categoryContentChannelItems, keepCategoryHierarchy );
             }
         }
 
@@ -194,12 +202,25 @@ namespace church.ccv.Podcast
         // Interface so that PodcastCategories can have either Series or Categories as children.
         public interface IPodcastNode : Rock.Lava.ILiquidizable
         {
+            DateTime? Date { get; set; }
         }
 
         public class PodcastCategory : IPodcastNode
         {
             public string Name { get; set; }
+            public int Id { get; set; }
             public List<IPodcastNode> Children { get; set; }
+            public DateTime? Date { get; set; }
+
+
+            public PodcastCategory( string name, int id )
+            {
+                Name = name;
+                Id = id;
+                Children = new List<IPodcastNode>( );
+            }
+
+
 
             // Liquid Methods
             [JsonIgnore]
@@ -208,7 +229,7 @@ namespace church.ccv.Podcast
             {
                 get
                 {
-                    var availableKeys = new List<string> { "Name", "Children" };
+                    var availableKeys = new List<string> { "Name", "Id", "Children" };
                                             
                     foreach ( IPodcastNode child in Children )
                     {
@@ -234,6 +255,7 @@ namespace church.ccv.Podcast
                    {
                        case "Name": return Name;
                        case "Children": return Children;
+                        case "Id": return Id;
                    }
 
                     return null;
@@ -242,7 +264,7 @@ namespace church.ccv.Podcast
             
             public bool ContainsKey( object key )
             {
-                var additionalKeys = new List<string> { "Name", "Children" };
+                var additionalKeys = new List<string> { "Id", "Name", "Children" };
                 if ( additionalKeys.Contains( key.ToStringSafe() ) )
                 {
                     return true;

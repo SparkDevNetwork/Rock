@@ -53,7 +53,7 @@ namespace church.ccv.Residency.Model
         /// <value>
         /// The point of assessment type value id.
         /// </value>
-        [Rock.Data.DefinedValue( church.ccv.Residency.SystemGuid.DefinedType.RESIDENCY_POINT_OF_ASSESSMENT_TYPE )]
+        [Rock.Data.DefinedValue( church.ccv.Utility.SystemGuids.DefinedType.RESIDENCY_POINT_OF_ASSESSMENT_TYPE )]
         public int? PointOfAssessmentTypeValueId { get; set; }
 
         /// <summary>

@@ -67,6 +67,10 @@
     <Compile Include="Jobs\CreateFirstVisitWorkflows.cs" />
     <Compile Include="Jobs\GroupMemberFollowUpNotifications.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SystemGuids\Attribute.cs" />
+    <Compile Include="SystemGuids\Category.cs" />
+    <Compile Include="SystemGuids\EmailTemplate.cs" />
+    <Compile Include="SystemGuids\Schedule.cs" />
     <Compile Include="Workflow\Action\PostWebhook.cs" />
     <Compile Include="Workflow\Action\SetPersonMobileSMSNumber.cs" />
     <Compile Include="SystemGuids\DefinedType.cs" />

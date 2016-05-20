@@ -108,7 +108,6 @@
     <Compile Include="Rest\Controllers\CodeGenerated\TimeCardHistoriesController.cs" />
     <Compile Include="Rest\Controllers\CodeGenerated\TimeCardPayPeriodsController.cs" />
     <Compile Include="Rest\Controllers\CodeGenerated\TimeCardsController.cs" />
-    <Compile Include="SystemGuid\Schedule.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

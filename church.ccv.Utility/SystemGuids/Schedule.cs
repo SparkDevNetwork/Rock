@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace church.ccv.Hr.SystemGuid
+namespace church.ccv.Utility.SystemGuids
 {
     /// <summary>
     /// 

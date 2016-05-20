@@ -30,6 +30,7 @@ using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.Web.Cache;
 using church.ccv.Podcast;
+using Newtonsoft.Json;
 
 namespace chuch.ccv.Podcast.Rest
 {
@@ -38,12 +39,10 @@ namespace chuch.ccv.Podcast.Rest
         public PodcastController() : base( new Rock.Model.CategoryService( new Rock.Data.RockContext() ) ) { } 
         
         const string GetImageEndpoint = "GetImage.ashx?guid=";
-
-        
-        
+                
         [HttpGet]
-        [System.Web.Http.Route( "api/Podcast/Retrieve/{platform}/{version}" )]
-        public HttpResponseMessage Retrieve( string platform, int version )
+        [System.Web.Http.Route( "api/Podcast/Retrieve/{platform}/{version}/{category}" )]
+        public HttpResponseMessage Retrieve( string platform, int version, int category )
         {
             // first, what platform are we handling?
             StringContent restContent = null;
@@ -57,14 +56,37 @@ namespace chuch.ccv.Podcast.Rest
 
                 case "apple_tv":
                 {
-                    string response = PodcastUtil.PodcastsAsJson( PodcastUtil.RootPodcast_CategoryId );
+                    string response = string.Empty;
+
+                    // if no category was specified, give them the root
+                    if( category == 0 )
+                    {
+                        response = Retrieve_RootWithCategories( version, PodcastUtil.RootPodcast_CategoryId );
+                    }
+                    else
+                    {
+                        // otherwise, give them their category with a flat list of series
+                        response = Retrieve_FlatCategory( version, category );
+                    }
                     restContent = new StringContent( response, Encoding.UTF8, "application/json" );
                     break;
                 }
 
                 case "roku":
                 {
-                    string response = PodcastUtil.PodcastsAsJson( PodcastUtil.RootPodcast_CategoryId );
+                    string response = string.Empty;
+
+                    // if no category was specified, give them the root
+                    if( category == 0 )
+                    {
+                        response = Retrieve_RootWithCategories( version, PodcastUtil.RootPodcast_CategoryId );
+                    }
+                    else
+                    {
+                        // otherwise, give them their category with a flat list of series
+                        response = Retrieve_FlatCategory( version, category );
+                    }
+
                     restContent = new StringContent( response, Encoding.UTF8, "application/json" );
                     break;
                 }
@@ -76,6 +98,59 @@ namespace chuch.ccv.Podcast.Rest
                 };
         }
 
+        string Retrieve_FlatCategory( int version, int categoryId )
+        {
+            // we will provide the "Root" that they ask for (defiend by categoryId),
+            // and then all children as a FLAT LIST OF SERIES.
+            //--Root (Weekend Series)(C)
+            //----Game Plan (S)
+            //----True (S)
+            
+            // First, get the root category, fully, and with its child categories.
+            PodcastUtil.PodcastCategory rootCategory = PodcastUtil.GetPodcastsByCategory( categoryId, false );
+            
+            return JsonConvert.SerializeObject( rootCategory );
+        }
+
+        string Retrieve_RootWithCategories( int version, int categoryId )
+        {
+            // we will provide the "Root" that they ask for (defiend by categoryId),
+            // and then the child series and immediate child categories. The child categories will contain all their
+            // children as a FLAT SERIES LIST.
+            //--Root (C)
+            //----Weekend Series (C)
+            //--------Game Plan (S)
+            //--------True (S)
+            //----Neighborhoood Videos (C)
+            //--------Walk Thru John (S) [Note, this might actually be in a child category of Neighborhood Videos, but we flatten those.
+
+            // First, get the root category, fully, and with its child categories.
+            PodcastUtil.PodcastCategory fullRootCategory = PodcastUtil.GetPodcastsByCategory( categoryId, true );
+
+            // now, we want to create a new root with only any immediate series as its children
+            PodcastUtil.PodcastCategory rootCategory = new PodcastUtil.PodcastCategory( fullRootCategory.Name, fullRootCategory.Id );
+            foreach( PodcastUtil.IPodcastNode node in fullRootCategory.Children )
+            {
+                if ( ( node as PodcastUtil.PodcastSeries ) != null )
+                {
+                    rootCategory.Children.Add( node );
+                }
+            }
+            
+            // now load the category they care about, so we can get its children
+            RockContext rockContext = new RockContext( );
+            var category = new CategoryService( rockContext ).Queryable( ).Where( c => c.Id == categoryId ).SingleOrDefault( );
+
+            // finally, recursively load all child categories, but flatten it all into one list per child category
+            foreach( Category childCategory in category.ChildCategories )
+            {
+                PodcastUtil.PodcastCategory podcasts = PodcastUtil.GetPodcastsByCategory( childCategory.Id, false );
+                
+                rootCategory.Children.Add( podcasts );
+            }
+            
+            return JsonConvert.SerializeObject( rootCategory );
+        }
         
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Podcast/GetChildren/{id}" )]
@@ -202,7 +277,7 @@ namespace chuch.ccv.Podcast.Rest
                 var categoryList = new CategoryService( rockContext ).Queryable( ).Where( c => c.Id == categoryId ).SingleOrDefault( );
             
                 // create a query that'll get all of the "Category" attributes for all the content channels
-                var categoryAttribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.Guid == new Guid( PodcastUtil.ContentChannel_CategoryAttributeGuid ) );
+                var categoryAttribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.Guid == new Guid( church.ccv.Utility.SystemGuids.Attribute.CONTENT_CHANNEL_CATEGORY_ATTRIBUTE ) );
 
                 // now get all the content channels, with their parent category(s) attributes as a joined object
                 ContentChannelService contentChannelService = new ContentChannelService( rockContext );

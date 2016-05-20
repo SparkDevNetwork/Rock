@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace church.ccv.Residency.SystemGuid
+namespace church.ccv.Utility.SystemGuids
 {
     /// <summary>
     /// Email Templates used specifically by the church.ccv.* Plugins

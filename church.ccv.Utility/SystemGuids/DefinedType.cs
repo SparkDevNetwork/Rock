@@ -22,5 +22,12 @@ namespace church.ccv.Utility.SystemGuids
         /// Defines the reason a coach needs to opt-out a next-gen group member.
         /// </summary>
         public const string NEXT_GEN_OPT_OUT_REASON = "93611663-D83E-464E-BEB7-3C2B61BB29BA";
+		
+		
+        /// <summary>
+        /// Residency Point of Assessment Types
+        /// </summary>
+        public const string RESIDENCY_POINT_OF_ASSESSMENT_TYPE = "338A8802-4022-404F-9FA2-150F1FB3838F";
+
     }
 }

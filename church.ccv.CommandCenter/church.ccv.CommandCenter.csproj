@@ -104,12 +104,6 @@
     <Compile Include="Model\RecordingService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rest\RecordingsController.cs" />
-    <Compile Include="SystemGuid\Attribute.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="SystemGuid\Category.cs">
-      <SubType>Code</SubType>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

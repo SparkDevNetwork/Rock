@@ -1,13 +1,12 @@
 ﻿using System;
 
-namespace church.ccv.CommandCenter.SystemGuid
+namespace church.ccv.Utility.SystemGuids
 {
     /// <summary>
     /// System Category Guids
     /// </summary>
-    public class Category
+    public static class Category
     {
-
         /// <summary>
         /// The Command Center category
         /// </summary>
