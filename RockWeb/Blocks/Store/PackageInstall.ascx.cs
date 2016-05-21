@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Store
                 switch ( installResponse.PurchaseResult )
                 {
                     case PurchaseResult.AuthenicationFailed:
-                        lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Could Not Authenicate</strong> {0}</div>", installResponse.Message );
+                        lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Could Not Authenticate</strong> {0}</div>", installResponse.Message );
                         break;
                     case PurchaseResult.Error:
                         lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>An Error Occurred</strong> {0}</div>", installResponse.Message );
@@ -145,10 +145,10 @@ namespace RockWeb.Blocks.Store
                         lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>No Card On File</strong> No credit card is on file for your organization. Please add a card from your <a href='{0}'>Account Page</a>.</div>", ResolveRockUrl( "~/RockShop/Account" ) );
                         break;
                     case PurchaseResult.NotAuthorized:
-                        lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Unauthorized</strong> You are not currently authorized to make purchased for this organization. Please see your organization's primary contact to enable your account for purchases.</div>" );
+                        lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Unauthorized</strong> You are not currently authorized to make purchases for this organization. Please see your organization's primary contact to enable your account for purchases.</div>" );
                         break;
                     case PurchaseResult.PaymentFailed:
-                        lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Payment Error</strong> An error occurred will processing the credit card on file for your organization. The error was: {0}. Please update your card's information from your <a href='{1}'>Account Page</a>.</div>", installResponse.Message, ResolveRockUrl( "~/RockShop/Account" ) );
+                        lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Payment Error</strong> An error occurred while processing the credit card on file for your organization. The error was: {0}. Please update your card's information from your <a href='{1}'>Account Page</a>.</div>", installResponse.Message, ResolveRockUrl( "~/RockShop/Account" ) );
                         break;
                     case PurchaseResult.Success:
                         ProcessInstall( installResponse );
