@@ -491,6 +491,15 @@ namespace RockWeb.Blocks.WorkFlow
                 lFootingText.Text = form.Footer.ResolveMergeFields( mergeFields );
             }
 
+            if ( _workflow != null && _workflow.CreatedDateTime.HasValue )
+            {
+                hlblDateAdded.Text = String.Format( "Added: {0}", _workflow.CreatedDateTime.Value.ToShortDateString() );
+            }
+            else
+            {
+                hlblDateAdded.Visible = false;
+            }
+
             phAttributes.Controls.Clear();
             foreach ( var formAttribute in form.FormAttributes.OrderBy( a => a.Order ) )
             {
