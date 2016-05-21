@@ -2633,6 +2633,9 @@ namespace RockWeb.Blocks.Examples
                 if ( person == null )
                 {
                     person = new Person();
+                    person.CreatedByPersonAliasId = CurrentPersonAliasId;
+                    person.CreatedDateTime = RockDateTime.Now;
+                    
                     person.Guid = guid;
                     person.FirstName = personElem.Attribute( "firstName" ).Value.Trim();
                     if ( personElem.Attribute( "suffix") != null )
