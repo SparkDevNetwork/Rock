@@ -12,6 +12,10 @@
                         <h1 class="panel-title">
                             <asp:Literal ID="lIconHtml" runat="server" ><i class="fa fa-gear"></i></asp:Literal>
                             <asp:Literal ID="lTitle" runat="server" >Workflow Entry</asp:Literal>
+                        </h1>
+                        <div class="panel-labels">
+                            <Rock:HighlightLabel ID="hlblDateAdded" runat="server" LabelType="Default" />
+                        </div>
                     </div>
                     <div class="panel-body">
 
