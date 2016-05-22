@@ -1015,27 +1015,29 @@ namespace Rock.Model
         /// </summary>
         /// <param name="condensed">if set to <c>true</c> age in years is returned without a unit suffix.</param>
         /// <returns></returns>
-        public string FormatAge( bool condensed = false)
+        public string FormatAge(bool condensed = false)
         {
             var age = Age;
-            if (age != null && age > 0 )
+            if (age != null)
             {
-                if (condensed)
+                if (age > 0)
+                // Age in years
                 {
-                    return age.ToString();
+                    if (condensed)
+                    {
+                        return age.ToString();
+                    }
+                    return age + (age == 1 ? " yr old " : " yrs old ");
                 }
-                return age  + (age == 1 ? " yr old " : " yrs old ");
-            }
-            var today = RockDateTime.Today;
-            if (BirthMonth != null && BirthMonth < today.Month)
-            {
-                int months = today.Month - BirthMonth.Value;
-                return months + (months == 1 ? " mo old " : " mos old ");
-            }
-            if (BirthDay != null)
-            {
-                int days = today.Day - BirthDay.Value;
-                return days + (days == 1 ? " day old " : " days old ");
+
+                var daysOld = (RockDateTime.Today - BirthDate.Value).TotalDays;
+
+                if (daysOld > 31)
+                {
+                    var months = Math.Floor(daysOld / (365.2425 / 12));
+                    return months + (months == 1.0 ? " mo old " : " mos old ");
+                }
+                return daysOld + (daysOld == 1 ? " day old " : " days old ");
             }
             return string.Empty;
         }
