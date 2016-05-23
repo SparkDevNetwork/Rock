@@ -191,16 +191,13 @@ namespace RockWeb.Blocks.Finance
                 nbRefundError.Visible = false;
                 ShowDialog();
 
-                int? txnId = hfTransactionId.Value.AsIntegerOrNull();
-                if (txnId.HasValue)
+                if ( pnlEditDetails.Visible )
                 {
-
-                    var rockContext = new RockContext();
-
-                    var txnService = new FinancialTransactionService(rockContext);
-                    FinancialTransaction txn = txnService.Get(txnId.Value);
+                    var txn = new FinancialTransaction();
                     txn.LoadAttributes();
-                    Rock.Attribute.Helper.AddEditControls(txn, phAttributeEdits, true, BlockValidationGroup);
+
+                    phAttributeEdits.Controls.Clear();
+                    Rock.Attribute.Helper.AddEditControls( txn, phAttributeEdits, false, BlockValidationGroup );
                 }
             }
         }
@@ -252,7 +249,13 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbEdit_Click( object sender, EventArgs e )
         {
-            ShowEditDetails( GetTransaction( hfTransactionId.Value.AsInteger() ), new RockContext() );
+            var rockContext = new RockContext();
+            var txn = GetTransaction( hfTransactionId.Value.AsInteger(), rockContext );
+            if ( txn != null )
+            {
+                txn.LoadAttributes( rockContext );
+                ShowEditDetails( txn, rockContext );
+            }
         }
 
         /// <summary>
@@ -530,7 +533,11 @@ namespace RockWeb.Blocks.Finance
 
                 // Requery the batch to support EF navigation properties
                 var savedTxn = GetTransaction( txn.Id );
-                ShowReadOnlyDetails( savedTxn );
+                if ( savedTxn != null )
+                {
+                    savedTxn.LoadAttributes();
+                    ShowReadOnlyDetails( savedTxn );
+                }
             }
         }
 
@@ -544,7 +551,12 @@ namespace RockWeb.Blocks.Finance
             int txnId = hfTransactionId.ValueAsInt();
             if ( txnId != 0 )
             {
-                ShowReadOnlyDetails( GetTransaction( txnId ) );
+                var txn = GetTransaction( txnId );
+                if ( txn != null )
+                {
+                    txn.LoadAttributes();
+                    ShowReadOnlyDetails( txn );
+                }
             }
             else
             {
@@ -899,8 +911,11 @@ namespace RockWeb.Blocks.Finance
                             rockContext.SaveChanges();
 
                             var updatedTxn = GetTransaction( txn.Id );
-                            ShowReadOnlyDetails( updatedTxn );
-
+                            if ( updatedTxn != null )
+                            {
+                                updatedTxn.LoadAttributes( rockContext );
+                                ShowReadOnlyDetails( updatedTxn );
+                            }
                         }
                         else
                         {
@@ -1118,6 +1133,8 @@ namespace RockWeb.Blocks.Finance
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( FinancialTransaction.FriendlyTypeName );
             }
+
+            txn.LoadAttributes( rockContext );
 
             if ( readOnly )
             {
@@ -1376,7 +1393,6 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
-                txn.LoadAttributes();
                 Helper.AddDisplayControls(txn, Helper.GetAttributeCategories(txn, false, false), phAttributes, null, false);
 
             }
@@ -1461,6 +1477,9 @@ namespace RockWeb.Blocks.Finance
                 tbSummary.Text = txn.Summary;
 
                 BindImages();
+
+                phAttributeEdits.Controls.Clear();
+                Rock.Attribute.Helper.AddEditControls( txn, phAttributeEdits, true, BlockValidationGroup );
             }
         }
 
