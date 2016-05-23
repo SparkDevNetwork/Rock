@@ -544,6 +544,7 @@
     <Compile Include="Reporting\DataSelect\Group\GroupLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\ParticipationRateSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\ParentGroupSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Person\LastLoginSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\LastAttendedGroupOfType.cs" />
     <Compile Include="Reporting\DataSelect\Person\ParentEmailSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\ParentPhoneNumberSelect.cs" />
