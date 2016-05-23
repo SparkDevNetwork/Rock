@@ -19,7 +19,7 @@
                             <Rock:BoolField DataField="AllowsCompile" HeaderText="Allows Compile" HeaderStyle-HorizontalAlign="Center" />
                             <Rock:BoolField DataField="IsSystem" HeaderText="System" HeaderStyle-HorizontalAlign="Center" />
                             <Rock:LinkButtonField HeaderText="Compile" CssClass="btn btn-default btn-sm fa fa-refresh" OnClick="gCompileTheme_Click" HeaderStyle-HorizontalAlign="Center" />
-                            <Rock:LinkButtonField HeaderText="Clone" CssClass="btn btn-default btn-sm fa fa-clone" OnClick="gCloneTheme_Click" HeaderStyle-HorizontalAlign="Center" />
+                            <Rock:LinkButtonField HeaderText="Copy" CssClass="btn btn-default btn-sm fa fa-clone" OnClick="gCloneTheme_Click" HeaderStyle-HorizontalAlign="Center" />
                             <Rock:DeleteField OnClick="gThemes_Delete" />
                         </Columns>
                     </Rock:Grid>
