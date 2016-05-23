@@ -190,6 +190,18 @@ namespace RockWeb.Blocks.Finance
                 nbErrorMessage.Visible = false;
                 nbRefundError.Visible = false;
                 ShowDialog();
+
+                int? txnId = hfTransactionId.Value.AsIntegerOrNull();
+                if (txnId.HasValue)
+                {
+
+                    var rockContext = new RockContext();
+
+                    var txnService = new FinancialTransactionService(rockContext);
+                    FinancialTransaction txn = txnService.Get(txnId.Value);
+                    txn.LoadAttributes();
+                    Rock.Attribute.Helper.AddEditControls(txn, phAttributeEdits, true, BlockValidationGroup);
+                }
             }
         }
 
@@ -476,6 +488,10 @@ namespace RockWeb.Blocks.Finance
                         binaryFileService.Delete( binaryFile );
                     }
 
+                    // Update any attributes
+                    txn.LoadAttributes(rockContext);
+                    Rock.Attribute.Helper.GetEditValues(phAttributeEdits, txn);
+
                     // If the transaction is associated with a batch, update that batch's history
                     if ( batchId.HasValue )
                     {
@@ -492,6 +508,7 @@ namespace RockWeb.Blocks.Finance
                     }
 
                     rockContext.SaveChanges();
+                    txn.SaveAttributeValues(rockContext);
 
                 } );
 
@@ -1358,6 +1375,9 @@ namespace RockWeb.Blocks.Finance
                         }
                     }
                 }
+
+                txn.LoadAttributes();
+                Helper.AddDisplayControls(txn, Helper.GetAttributeCategories(txn, false, false), phAttributes, null, false);
 
             }
             else
