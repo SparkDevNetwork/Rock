@@ -128,7 +128,7 @@ namespace RockWeb.Plugins.church_ccv.Hr
 
         public List<DateTime> GetHolidayDates( TimeCard timeCard )
         {
-            Rock.Model.Schedule timeCardHolidaySchedule = new Rock.Model.ScheduleService( new Rock.Data.RockContext() ).Get( church.ccv.Hr.SystemGuid.Schedule.TIMECARD_HOLIDAY_SCHEDULE.AsGuid() );
+            Rock.Model.Schedule timeCardHolidaySchedule = new Rock.Model.ScheduleService( new Rock.Data.RockContext() ).Get( church.ccv.Utility.SystemGuids.Schedule.TIMECARD_HOLIDAY_SCHEDULE.AsGuid() );
 
             if ( timeCardHolidaySchedule != null )
             {
