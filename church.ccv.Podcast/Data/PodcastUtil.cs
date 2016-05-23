@@ -150,6 +150,7 @@ namespace church.ccv.Podcast
                 message.Name = contentChannelItem.Title;
                 message.Description = contentChannelItem.Content;
                 message.Date = contentChannelItem.StartDateTime;
+                message.Approved = contentChannelItem.Status == ContentChannelItemStatus.Approved ? true : false;
 
                 // add all the attributes
                 message.Attributes = new Dictionary<string, string>( );
@@ -353,6 +354,7 @@ namespace church.ccv.Podcast
             public string Description { get; set; }
             public DateTime Date { get; set; }
             public Dictionary<string, string> Attributes { get; set; }
+            public bool Approved { get; set; }
 
             // Liquid Methods
             [JsonIgnore]
@@ -361,7 +363,7 @@ namespace church.ccv.Podcast
             {
                 get
                 {
-                    var availableKeys = new List<string> { "Name", "Description", "Date", "Attributes" };
+                    var availableKeys = new List<string> { "Name", "Description", "Date", "Attributes", "Approved" };
                     
                     return availableKeys;
                 }
@@ -384,6 +386,7 @@ namespace church.ccv.Podcast
                        case "Description": return Description;
                        case "Date": return Date;
                        case "Attributes": return Attributes;
+                       case "Approved": return Approved;
                    }
 
                     return null;
@@ -392,7 +395,7 @@ namespace church.ccv.Podcast
             
             public bool ContainsKey( object key )
             {
-                var additionalKeys = new List<string> { "Name", "Description", "Date", "Attributes" };
+                var additionalKeys = new List<string> { "Name", "Description", "Date", "Attributes", "Approved" };
                 if ( additionalKeys.Contains( key.ToStringSafe() ) )
                 {
                     return true;
