@@ -8,6 +8,7 @@ tasks:
       "rock-attended-checkin": "NewSpring/rock-attended-checkin"
       "rock-apollos": "NewSpring/rock-apollos"
       "rock-f1": "NewSpring/rock-f1"
+	  "rock-paid-plugins": "NewSpring/rock-paid-plugins"
       # "rock-spiritual-gifts": "NewSpring/rock-spiritual-gifts"
 
   # copy over all plugin blocks/styles/etc
