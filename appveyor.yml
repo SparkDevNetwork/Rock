@@ -54,6 +54,7 @@ install:
   - ps: Set-Content c:\users\appveyor\.ssh\id_rsa $fileContent
   - cmd: git clone -q --depth=1 git@github.com:NewSpring/rock-bookshelf.git c:\projects\Rock\.remote\rock-bookshelf
   - cmd: git clone -q --depth=1 git@github.com:NewSpring/rock-power-bi.git c:\projects\Rock\.remote\rock-power-bi
+  - cmd: git clone -q --depth=1 git@github.com:NewSpring/rock-paid-plugins.git c:\projects\Rock\.remote\rock-paid-plugins
   
 
 
@@ -71,7 +72,7 @@ before_build:
   - cmd: npm install --production
   - cmd: node ./node_modules/normajs/bin/norma.js build  # use cached version of norma
   - cmd: git clone -q --depth=1 https://github.com/NewSpring/rock-spiritual-gifts.git ../rock-spiritual-gifts
-  - cmd: git clone -q --depth=1 https://github.com/NewSpring/rock-paid-plugins.git ../rock-paid-plugins
+ 
 
 
 build:
