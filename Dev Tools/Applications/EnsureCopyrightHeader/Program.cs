@@ -54,7 +54,7 @@ namespace EnsureCopyrightHeader
             List<string> sourceFilenames = Directory.GetFiles( searchDirectory, "*.cs", SearchOption.AllDirectories ).ToList();
 
             // this was was our standard copyright badge up until 1/17/2014. Look for it in case it sneaks back in
-            const string oldCopyrightBadge = @"// <copyright>
+            const string oldCopyrightBadge1 = @"// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the ""License"");
@@ -71,8 +71,8 @@ namespace EnsureCopyrightHeader
 // </copyright>
 //";
 
-            // standard copyright badge starting 4/1/2016
-            const string newCopyrightBadge = @"// <copyright>
+            // standard copyright badge 4/1/2016 to 5/22/2016
+            const string oldCopyrightBadge2 = @"// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the ""License"");
@@ -80,6 +80,25 @@ namespace EnsureCopyrightHeader
 // You may obtain a copy of the License at
 //
 // http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an ""AS IS"" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+";
+
+            // standard copyright badge starting 5/23/2016
+            const string newCopyrightBadge = @"// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the ""License"");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an ""AS IS"" BASIS,
@@ -137,7 +156,8 @@ namespace EnsureCopyrightHeader
                 string newFileContents = origFileContents.Substring( codeStart );
 
                 // try to clean up cases where the badge is after some of the using statements
-                newFileContents = newFileContents.Replace( oldCopyrightBadge, string.Empty ).Replace( newCopyrightBadge, string.Empty );
+                newFileContents = newFileContents.Replace( oldCopyrightBadge1, string.Empty ).Replace( newCopyrightBadge, string.Empty );
+                newFileContents = newFileContents.Replace( oldCopyrightBadge2, string.Empty ).Replace( newCopyrightBadge, string.Empty );
 
                 newFileContents = newCopyrightBadge + newFileContents.TrimStart();
 
