@@ -218,6 +218,7 @@ namespace Rock.Model
             string state = location.State;
             string country = location.Country;
             string postalCode = location.PostalCode;
+            string barcode = location.Barcode;
             DbGeography geoPoint = location.GeoPoint;
 
             // Try each of the verification services that were found through MEF
@@ -260,6 +261,7 @@ namespace Rock.Model
                             state = location.State;
                             country = location.Country;
                             postalCode = location.PostalCode;
+                            barcode = location.Barcode;
                         }
                     }
                     else
@@ -272,6 +274,7 @@ namespace Rock.Model
                         location.State = state;
                         location.Country = country;
                         location.PostalCode = postalCode;
+                        location.Barcode = barcode;
                     }
 
                     if ( !geocoded && component.SupportsGeocoding )

@@ -369,6 +369,8 @@ namespace RockWeb.Blocks.Core
 
             service.Verify( location, true );
 
+            rockContext.SaveChanges();
+
             acAddress.SetValues( location );
             geopPoint.SetValue( location.GeoPoint );
 
