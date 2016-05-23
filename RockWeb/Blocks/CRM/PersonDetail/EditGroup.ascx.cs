@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -150,7 +150,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var campusi = CampusCache.All();
             cpCampus.Campuses = campusi;
             cpCampus.Visible = campusi.Any();
-            
+
             if ( _isFamilyGroupType )
             {
                 cpCampus.Required = true;
@@ -269,11 +269,26 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         {
                             ddlRecordStatus.SetValue( _group.Members.Select( m => m.Person.RecordStatusValueId ).FirstOrDefault() );
                         }
+                        else
+                        {
+                            ddlRecordStatus.Warning = String.Format( "{0} members have different record statuses", _groupType.Name );
+                        }
 
                         // If all group members have the same inactive reason, set that value
                         if ( _group.Members.Select( m => m.Person.RecordStatusReasonValueId ).Distinct().Count() == 1 )
                         {
                             ddlReason.SetValue( _group.Members.Select( m => m.Person.RecordStatusReasonValueId ).FirstOrDefault() );
+                        }
+                        else
+                        {
+                            if ( String.IsNullOrWhiteSpace( ddlRecordStatus.Warning ) )
+                            {
+                                ddlRecordStatus.Warning = String.Format( "{0} members have different record status reasons", _groupType.Name );
+                            }
+                            else
+                            {
+                                ddlRecordStatus.Warning += " and record status reasons";
+                            }
                         }
                     }
 
@@ -297,12 +312,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         .Where( m => otherGroupPersonIds.Contains( m.Id ) )
                         .ToList()
                         .ForEach( m => m.IsInOtherGroups = true );
-                    
+
                     BindMembers();
 
                     GroupAddresses = new List<GroupAddressInfo>();
                     foreach ( var groupLocation in _group.GroupLocations
+                        .Where( l => l.GroupLocationTypeValue != null )
                         .OrderBy( l => l.GroupLocationTypeValue.Order ) )
+                    {
+                        GroupAddresses.Add( new GroupAddressInfo( groupLocation ) );
+                    }
+                    foreach ( var groupLocation in _group.GroupLocations
+                        .Where( l => l.GroupLocationTypeValue == null ) )
                     {
                         GroupAddresses.Add( new GroupAddressInfo( groupLocation ) );
                     }
@@ -1085,7 +1106,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         .Where( l => l.GroupId == _group.Id &&
                             !remainingLocationIds.Contains( l.Id ) ) )
                     {
-                        History.EvaluateChange( groupChanges, removedLocation.GroupLocationTypeValue.Value + " Location", removedLocation.Location.ToString(), string.Empty );
+                        History.EvaluateChange( groupChanges,
+                            ( removedLocation.GroupLocationTypeValue != null ? removedLocation.GroupLocationTypeValue.Value : "Unknown" ) + " Location",
+                            removedLocation.Location.ToString(), string.Empty );
                         groupLocationService.Delete( removedLocation );
                     }
 

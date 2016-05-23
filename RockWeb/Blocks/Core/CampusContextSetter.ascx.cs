@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -40,8 +40,9 @@ namespace RockWeb.Blocks.Core
     [TextField( "Current Item Template", "Lava template for the current item. The only merge field is {{ CampusName }}.", true, "{{ CampusName }}", order: 1 )]
     [TextField( "Dropdown Item Template", "Lava template for items in the dropdown. The only merge field is {{ CampusName }}.", true, "{{ CampusName }}", order: 2 )]
     [TextField( "No Campus Text", "The text displayed when no campus context is selected.", true, "Select Campus", order: 3 )]
-    [TextField( "Clear Selection Text", "The text displayed when a campus can be unselected. This will not display when the text is empty.", true, "", order: 4 )]
+    [TextField( "Clear Selection Text", "The text displayed when a campus can be unselected. This will not display when the text is empty.", false, "", order: 4 )]
     [BooleanField( "Display Query Strings", "Select to always display query strings. Default behavior will only display the query string when it's passed to the page.", false, "", order: 5 )]
+    [BooleanField("Include Inactive Campuses", "Should inactive campuses be listed as well?", false, "", order: 6)]
     [BooleanField("Default To Current User's Campus", "Will use the campus of the current user if no context is provided.", key:"DefaultToCurrentUser")]
     public partial class CampusContextSetter : RockBlock
     {
@@ -120,7 +121,8 @@ namespace RockWeb.Blocks.Core
                 lCurrentSelection.Text = GetAttributeValue( "NoCampusText" );
             }
 
-            var campusList = CampusCache.All()
+            bool includeInactive =  GetAttributeValue( "IncludeInactiveCampuses" ).AsBoolean();
+            var campusList = CampusCache.All(includeInactive)
                 .Select( a => new CampusItem { Name = a.Name, Id = a.Id } )
                 .ToList();
 
