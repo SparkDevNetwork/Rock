@@ -91,6 +91,7 @@ namespace Rock.Address
                         location.County = candidate.metadata.county_name;
                         location.State = candidate.components.state_abbreviation;
                         location.PostalCode = candidate.components.zipcode + "-" + candidate.components.plus4_code;
+                        location.Barcode = candidate.delivery_point_barcode;
                         result = result | VerificationResult.Standardized;
                     }
 
