@@ -605,6 +605,25 @@ namespace Rock.Lava
             }
         }
 
+        /// <summary>
+        /// Tests if the inputted string matches the regex
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="expression">The regex expression.</param>
+        /// <returns></returns>
+        public static bool RegExMatch( string input, string expression )
+        {
+            if ( input == null )
+            {
+                return false;
+            }
+
+            Regex regex = new Regex( expression );
+            Match match = regex.Match( input );
+
+            return match.Success;
+        }
+
         #endregion
 
         #region DateTime Filters
@@ -2336,6 +2355,23 @@ namespace Rock.Lava
             }
 
             return contentObject;
+        }
+
+        /// <summary>
+        /// Converts Markdown to HTML
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string FromMarkdown( string input )
+        {
+            if ( input != null )
+            {
+                return input.ConvertMarkdownToHtml();
+            }
+            else
+            {
+                return input;
+            }
         }
 
         /// <summary>

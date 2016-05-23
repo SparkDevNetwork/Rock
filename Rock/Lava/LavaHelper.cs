@@ -95,14 +95,9 @@ namespace Rock.Lava
                 }
             }
 
-            if ( options.GetPageParameters && rockPage != null )
+            HttpRequest request = null;
+            try
             {
-                mergeFields.Add( "PageParameter", rockPage.PageParameters() );
-            }
-
-            if ( options.GetOSFamily || options.GetDeviceFamily )
-            {
-                HttpRequest request = null;
                 if ( rockPage != null )
                 {
                     request = rockPage.Request;
@@ -111,7 +106,19 @@ namespace Rock.Lava
                 {
                     request = HttpContext.Current.Request;
                 }
+            }
+            catch
+            {
+                // intentionally ignore exception (.Request will throw an exception instead of simply returning null if it isn't available)
+            }
 
+            if ( options.GetPageParameters && rockPage != null && request != null)
+            {
+                mergeFields.Add( "PageParameter", rockPage.PageParameters() );
+            }
+
+            if ( options.GetOSFamily || options.GetDeviceFamily )
+            {
                 if ( request != null && !string.IsNullOrEmpty( request.UserAgent ) )
                 {
                     Parser uaParser = Parser.GetDefault();
