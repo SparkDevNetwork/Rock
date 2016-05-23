@@ -567,6 +567,7 @@
     <Compile Include="Utility\DebugHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\ColorExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\DecimalExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\GridExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\StringHumanizerExtensions.cs" />
     <Compile Include="Utility\FileUtilities.cs" />
     <Compile Include="Utility\IgnoreUrlEncodedKeyContractResolver.cs" />
