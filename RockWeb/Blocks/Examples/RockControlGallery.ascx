@@ -65,6 +65,71 @@
                         In Bootstrap 3 inputs are <em>display:block;</em>. If you need these sized controls to align horizontally, consider wrapping them with the <em>form-control-group</em> class.
                     </div>
 
+                    <h2 runat="server">Horizontal Forms</h2>
+                    <p>While Rock uses a similar approach to Bootstrap, we've made horizontal forms a bit easier to help facilitate their use when creating forms in workflows and event
+                        registrations. Below is the syntax for declaring a horizontal form.
+                    </p>
+                    <div runat="server" class="r-example"><div class="form-horizontal">
+  <div class="form-group">
+    <label for="inputEmail3" class="control-label">Email</label>
+    <div class="control-wrapper">
+      <input type="email" class="form-control" id="inputEmail3" placeholder="Email">
+    </div>
+  </div>
+</div></div>
+
+                    <p>When using this in form generators you'll simply need to add the wrapping <code>&lt;div class=&quot;form-group&quot;&gt;</code> in your pre/post fields.</p>
+
+                    <p>At this point you're probably thinking 'Cool!, but the label column is a fixed size and too small.' That's a valid concern!  By default the label column will
+                        be 2 grid units with the field value as 10. We've added a couple of extension classes to extend that.</p>
+
+                    <ul>
+                        <li><strong>label-md: </strong> Label column of 4, field column of 8</li>
+                        <li><strong>label-lg: </strong> Label column of 6, field column of 6</li>
+                        <li><strong>label-xl: </strong> Label column of 8, field column of 4</li>
+                    </ul>
+
+                    <div runat="server" class="r-example">
+<div class="form-horizontal">
+  <div class="form-group">
+    <label for="inputEmail3" class="control-label">Email</label>
+    <div class="control-wrapper">
+      <input type="email" class="form-control" id="inputEmail3" placeholder="Email">
+    </div>
+  </div>
+</div>
+
+<div class="form-horizontal label-md">
+  <div class="form-group">
+    <label for="inputEmail3" class="control-label">Email</label>
+    <div class="control-wrapper">
+      <input type="email" class="form-control" id="inputEmail3" placeholder="Email">
+    </div>
+  </div>
+</div>
+
+<div class="form-horizontal label-lg">
+  <div class="form-group">
+    <label for="inputEmail3" class="control-label">Email</label>
+    <div class="control-wrapper">
+      <input type="email" class="form-control" id="inputEmail3" placeholder="Email">
+    </div>
+  </div>
+</div>
+
+<div class="form-horizontal label-xl">
+  <div class="form-group">
+    <label for="inputEmail3" class="control-label">Email</label>
+    <div class="control-wrapper">
+      <input type="email" class="form-control" id="inputEmail3" placeholder="Email">
+    </div>
+  </div>
+</div>
+
+
+                    </div>
+
+
                     <h2 runat="server">Margins and Padding</h2>
 
                     <div class="alert alert-warning">

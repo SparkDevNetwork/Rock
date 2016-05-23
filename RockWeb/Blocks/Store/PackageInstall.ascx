@@ -19,7 +19,13 @@
                     
                     <div class="row">
                         <div class="col-md-4">
-                            
+                            <div class="alert alert-warning">
+                                <strong>Note</strong><br />
+                                <p>
+                                    The installation of many plugins will cause Rock to restart. You may consider
+                                    installing during off-peak times.
+                                </p>
+                            </div>
                         </div>
                         <div class="col-md-8">
                             
