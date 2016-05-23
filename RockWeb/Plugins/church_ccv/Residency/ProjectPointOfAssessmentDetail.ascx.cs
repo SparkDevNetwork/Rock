@@ -149,7 +149,7 @@ namespace RockWeb.Plugins.church_ccv.Residency
         /// </summary>
         private void LoadDropDowns()
         {
-            var definedTypeCache = DefinedTypeCache.Read( church.ccv.Residency.SystemGuid.DefinedType.RESIDENCY_POINT_OF_ASSESSMENT_TYPE.AsGuid() );
+            var definedTypeCache = DefinedTypeCache.Read( church.ccv.Utility.SystemGuids.DefinedType.RESIDENCY_POINT_OF_ASSESSMENT_TYPE.AsGuid() );
 
             var list = definedTypeCache.DefinedValues.OrderBy( a => a.Value ).ToList();
             foreach ( var item in list )
