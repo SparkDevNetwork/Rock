@@ -41,7 +41,10 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Block to display the content channels/items that user is authorized to view." )]
 
-    [LinkedPage( "Detail Page", "Page used to view a content item." )]
+    [LinkedPage( "Detail Page", "Page used to view a content item.", order: 1 )]
+
+    [ContentChannelTypesField( "Content Channel Types Include", "Select any specific content channel types to show in this block. Leave all unchecked to show all content channel types ( except for excluded content channel types )", false, key: "ContentChannelTypesInclude", order: 2 )]
+    [ContentChannelTypesField( "Content Channel Types Exclude", "Select content channel types to exclude from this block. Note that this setting is only effective if 'Content Channel Types Include' has no specific content channel types selected.", false, key: "ContentChannelTypesExclude", order: 3 )]
     public partial class ContentChannelItemView : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -93,6 +96,10 @@ namespace RockWeb.Blocks.Cms
             gContentChannelItems.DataKeyNames = new string[] { "Id" };
             gContentChannelItems.Actions.AddClick += gContentChannelItems_Add;
             gContentChannelItems.GridRebind += gContentChannelItems_GridRebind;
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlContent );
         }
 
         /// <summary>
@@ -389,13 +396,27 @@ namespace RockWeb.Blocks.Cms
             var itemService = new ContentChannelItemService(rockContext);
 
             // Get all of the content channels
-            var allChannels = new ContentChannelService( rockContext ).Queryable( "ContentChannelType" )
-                .OrderBy( w => w.Name )
-                .ToList();
+            var contentChannelsQry = new ContentChannelService( rockContext ).Queryable( "ContentChannelType" );
+
+            List<Guid> contentChannelTypeGuidsInclude = GetAttributeValue( "ContentChannelTypesInclude" ).SplitDelimitedValues().AsGuidList();
+            List<Guid> contentChannelTypeGuidsExclude = GetAttributeValue( "ContentChannelTypesExclude" ).SplitDelimitedValues().AsGuidList();
+
+            if ( contentChannelTypeGuidsInclude.Any() )
+            {
+                // if contentChannelTypeGuidsInclude is specified, only get contentChannelTypes that are in the contentChannelTypeGuidsInclude
+                // NOTE: no need to factor in contentChannelTypeGuidsExclude since included would take precendance and the excluded ones would already not be included
+                contentChannelsQry = contentChannelsQry.Where( a => contentChannelTypeGuidsInclude.Contains( a.ContentChannelType.Guid ) );
+            }
+            else if ( contentChannelTypeGuidsExclude.Any() )
+            {
+                contentChannelsQry = contentChannelsQry.Where( a => !contentChannelTypeGuidsExclude.Contains( a.ContentChannelType.Guid ) );
+            }
+
+            var contentChannelsList = contentChannelsQry.OrderBy( w => w.Name ).ToList();                
 
             // Create variable for storing authorized channels and the count of active items
             var channelCounts = new Dictionary<int, int>();
-            foreach ( var channel in allChannels )
+            foreach ( var channel in contentChannelsList )
             {
                 if ( channel.IsAuthorized( Authorization.VIEW, CurrentPerson))
                 {
@@ -417,7 +438,7 @@ namespace RockWeb.Blocks.Cms
                 .ForEach( i => channelCounts[i.Id] = i.Count );
 
             // Create a query to return channel, the count of items, and the selected class
-            var qry = allChannels
+            var qry = contentChannelsList
                 .Where( c => channelCounts.Keys.Contains( c.Id ) )
                 .Select( c => new
                 {
@@ -440,7 +461,7 @@ namespace RockWeb.Blocks.Cms
             ContentChannel selectedChannel = null;
             if ( SelectedChannelId.HasValue )
             {
-                selectedChannel = allChannels
+                selectedChannel = contentChannelsList
                     .Where( w => 
                         w.Id == SelectedChannelId.Value &&
                         channelCounts.Keys.Contains( SelectedChannelId.Value ) )
