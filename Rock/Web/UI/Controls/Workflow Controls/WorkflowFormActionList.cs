@@ -113,6 +113,7 @@ namespace Rock.Web.UI.Controls
 
                 var ddlButtonHtml = new RockDropDownList();
                 ddlButtonHtml.ID = this.ID + "_ddlButtonHtml" + i.ToString();
+                ddlButtonHtml.EnableViewState = false;
                 Controls.Add( ddlButtonHtml );
                 ddlButtonHtml.AddCssClass( "form-action-button" );
                 ddlButtonHtml.AddCssClass( "form-control" );
@@ -128,6 +129,7 @@ namespace Rock.Web.UI.Controls
 
                 var ddlActivity = new RockDropDownList();
                 ddlActivity.ID = this.ID + "_ddlActivity" + i.ToString();
+                ddlActivity.EnableViewState = false;
                 Controls.Add( ddlActivity );
                 ddlActivity.AddCssClass( "form-action-value" );
                 ddlActivity.AddCssClass( "form-control" );

@@ -1657,7 +1657,7 @@ namespace Rock.Web.UI.Controls
                         if ( lavaFields.Any() )
                         {
                             var mergeFieldName = prop.Name;
-                            lavaDataFields.Add( mergeFieldName, new LiquidFieldTemplate.DataFieldInfo { PropertyInfo = prop, GridField = null } );
+                            lavaDataFields.AddOrIgnore( mergeFieldName, new LiquidFieldTemplate.DataFieldInfo { PropertyInfo = prop, GridField = null } );
                         }
 
                         worksheet.Cells[3, columnCounter].Value = prop.Name.SplitCase();

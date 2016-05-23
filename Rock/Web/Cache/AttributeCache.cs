@@ -49,7 +49,7 @@ namespace Rock.Web.Cache
     {
         #region constructors
 
-        private AttributeCache()
+        internal AttributeCache()
         {
         }
 
@@ -229,7 +229,6 @@ namespace Rock.Web.Cache
         /// <value>
         /// The type of the field.
         /// </value>
-        [DataMember]
         public FieldTypeCache FieldType
         {
             get { return FieldTypeCache.Read( FieldTypeId ); }

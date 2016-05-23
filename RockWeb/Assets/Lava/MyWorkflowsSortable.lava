@@ -3,10 +3,12 @@
 {% assign showPriority = false %}
 {% assign showDue = false %}
 {% for action in Actions %}
-  {% if action.Activity.Workflow.Priority %}
+  {% assign workflowPriority = action.Activity.Workflow | Attribute:'Priority' %}
+  {% assign workflowDueDate = action.Activity.Workflow | Attribute:'DueDate' %}
+  {% if workflowPriority != '' %}
     {% assign showPriority = true %}
   {% endif %}
-  {% if action.Activity.Workflow.DueDate %}
+  {% if workflowDueDate != '' %} 
     {% assign showDue = true %}
   {% endif %}
 {% endfor %}
@@ -29,6 +31,8 @@
         </thead>
         <tbody>
           {% for action in Actions %}
+		    {% assign workflowPriority = action.Activity.Workflow | Attribute:'Priority' %}
+            {% assign workflowDueDate = action.Activity.Workflow | Attribute:'DueDate' %}
             <tr>
               <td data-dateformat="M/D/YY">{{ action.Activity.Workflow.CreatedDateTime | Date:'M/d/yy' }}</td>
               <td>
@@ -39,10 +43,10 @@
               </td>
               <td><i class='fa-fw {{ action.Activity.Workflow.WorkflowType.IconCssClass }}'></i> {{ action.Activity.Workflow.WorkflowType.Name }}</td>
               {% if showPriority %}
-                <td>{{ action.Activity.Workflow.Priority }}</td>
+                <td>{{ workflowPriority }}</td>
               {% endif %}
               {% if showDue %}
-                <td data-dateformat="M/D/YY">{{ action.Activity.Workflow.DueDate | Date:'M/d/yy' }}</td>
+                <td data-dateformat="M/D/YY">{{ workflowDueDate | Date:'M/d/yy' }}</td>
               {% endif %}
             </tr>
           {% endfor %}

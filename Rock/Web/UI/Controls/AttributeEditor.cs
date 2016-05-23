@@ -486,6 +486,11 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
+            EnsureChildControls();
+
+            _ddlFieldType.DataSource = FieldTypeCache.All();
+            _ddlFieldType.DataBind();
+
             base.OnInit( e );
         }
 
@@ -591,15 +596,9 @@ namespace Rock.Web.UI.Controls
                 _ddlFieldType.Label = "Field Type";
                 _ddlFieldType.AutoPostBack = true;
                 _ddlFieldType.SelectedIndexChanged += _ddlFieldType_SelectedIndexChanged;
+                _ddlFieldType.DataValueField = "Id";
+                _ddlFieldType.DataTextField = "Name";
                 Controls.Add( _ddlFieldType );
-
-                if ( !Page.IsPostBack )
-                {
-                    _ddlFieldType.DataValueField = "Id";
-                    _ddlFieldType.DataTextField = "Name";
-                    _ddlFieldType.DataSource = FieldTypeCache.All();
-                    _ddlFieldType.DataBind();
-                }
 
                 _phQualifiers = new PlaceHolder();
                 _phQualifiers.ID = "phQualifiers";

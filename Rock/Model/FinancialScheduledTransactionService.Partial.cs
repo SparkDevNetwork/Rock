@@ -454,7 +454,7 @@ namespace Rock.Model
                         {
                             totalAlreadyDownloaded++;
 
-                            foreach( var txn in txns.Where( t => t.Status != payment.Status || t.StatusMessage != payment.StatusMessage ) )
+                            foreach ( var txn in txns.Where( t => t.Status != payment.Status || t.StatusMessage != payment.StatusMessage ) )
                             {
                                 txn.Status = payment.Status;
                                 txn.StatusMessage = payment.StatusMessage;
@@ -482,7 +482,7 @@ namespace Rock.Model
                     Rock.Transactions.RockQueue.TransactionQueue.Enqueue( sendPaymentRecieptsTxn );
                 }
             }
-             
+
             StringBuilder sb = new StringBuilder();
             sb.AppendFormat( "<li>{0} {1} downloaded.</li>", totalPayments.ToString( "N0" ), 
                 ( totalPayments == 1 ? "payment" : "payments" ) );
@@ -492,6 +492,12 @@ namespace Rock.Model
                 sb.AppendFormat( "<li>{0} {1} previously downloaded and {2} already been added.</li>", totalAlreadyDownloaded.ToString( "N0" ),
                     ( totalAlreadyDownloaded == 1 ? "payment was" : "payments were" ),
                     ( totalAlreadyDownloaded == 1 ? "has" : "have" ) );
+            }
+
+            if ( totalStatusChanges > 0 )
+            {
+                sb.AppendFormat( "<li>{0} {1} previously downloaded but had a change of status.</li>", totalStatusChanges.ToString( "N0" ),
+                ( totalStatusChanges == 1 ? "payment was" : "payments were" ) );
             }
 
             if ( totalNoScheduledTransaction > 0 )

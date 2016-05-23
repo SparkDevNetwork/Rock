@@ -48,7 +48,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:RockCheckBox ID="cbDisplayProgressBar" runat="server" Label="Display Progress Bar" Text="Yes"
-                            Help="Display a progress to the user that indicates how far along they are in filling out multiple forms." />
+                            Help="Display a progress to the user that indicates how far along they are in filling out multiple forms. Not shown when there is only one form." />
                         <Rock:RockDropDownList ID="ddlSaveValues" runat="server" Label="Save Values"
                             Help="Determines if values should be saved each time user navigates to next form or not saved until the very end. An advantage to saving them on each form, is that those values can then be used in the header or footer of the next page using Lava.">
                             <asp:ListItem Value="PAGE" Text="After Each Page" />
