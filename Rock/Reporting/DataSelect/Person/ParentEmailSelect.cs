@@ -185,11 +185,12 @@ namespace Rock.Reporting.DataSelect.Person
             emailPreferenceTypeList.Items.Clear();
             foreach (var preference in Enum.GetValues(typeof(EmailPreference)))
             {
-                emailPreferenceTypeList.Items.Add(new ListItem(preference.ToString(), ((int)preference).ToString()));
+                emailPreferenceTypeList.Items.Add(new ListItem(preference.ToString().SplitCase(), ((int)preference).ToString()));
             }
 
             emailPreferenceTypeList.ID = parentControl.ID + "_emailPreferenceList";
             emailPreferenceTypeList.Label = "Email Preference";
+            emailPreferenceTypeList.Help = "Only include a parent's email address if their email preference is one of these selected values.";
             parentControl.Controls.Add(emailPreferenceTypeList);
 
             return new System.Web.UI.Control[] { emailPreferenceTypeList };
