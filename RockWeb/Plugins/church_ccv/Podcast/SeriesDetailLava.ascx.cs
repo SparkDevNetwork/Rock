@@ -35,11 +35,11 @@ namespace RockWeb.Plugins.church_ccv.Podcast
     /// <summary>
     /// Template block for developers to use to start a new block.
     /// </summary>
-    [DisplayName( "Browse Series Lava" )]
+    [DisplayName( "Series Detail Lava" )]
     [Category( "CCV > Podcast" )]
-    [Description( "Presents the available Podcasts as series" )]
+    [Description( "Presents the given Podcast Series Detail" )]
     [CodeEditorField( "Lava Template", "The lava template to use to format the page.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true)]
-    public partial class BrowseSeriesLava : Rock.Web.UI.RockBlock
+    public partial class SeriesDetailLava : Rock.Web.UI.RockBlock
     {        
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -49,7 +49,7 @@ namespace RockWeb.Plugins.church_ccv.Podcast
         {
             base.OnInit( e );
 
-            ShowDetail( );
+            ShowDetail( PageParameter( "SeriesId" ).AsInteger() );
         }
         
         /// <summary>
@@ -64,17 +64,16 @@ namespace RockWeb.Plugins.church_ccv.Podcast
         
         /// Displays the view group  using a lava template
         /// 
-        protected void ShowDetail( )
+        protected void ShowDetail( int seriesId )
         {
-            PodcastUtil.PodcastCategory podcastSeriesList = PodcastUtil.PodcastsAsModel( 0 );
+            PodcastUtil.PodcastSeries podcastSeries = PodcastUtil.GetSeries( seriesId );
             
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-            mergeFields.Add( "PodcastSeries", podcastSeriesList );
+            mergeFields.Add( "PodcastSeries", podcastSeries );
     
             string template = GetAttributeValue( "LavaTemplate" );
             
             // now set the main HTML, including lava merge fields.
-            //MainViewContent.Text = template.ResolveMergeFields( mergeFields ).ResolveClientIds( MainPanel.ClientID );
             lContent.Text = template.ResolveMergeFields( mergeFields );
         }
         #endregion

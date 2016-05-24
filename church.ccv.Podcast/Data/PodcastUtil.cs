@@ -30,6 +30,9 @@ namespace church.ccv.Podcast
         // This is rock's core podcast category and will never change.
         const int RootPodcast_CategoryId = 451;
 
+        // This is Rock's Weekend Videos podcast category, and will also never change.
+        public const int WeekendVideos_CategoryId = 452;
+
         public static PodcastCategory GetPodcastsByCategory( int categoryId, bool keepCategoryHierarchy = true )
         {
             // if they pass in 0, accept that as the Root
@@ -122,11 +125,12 @@ namespace church.ccv.Podcast
 
             // get the list of attributes for this content channel
             List<AttributeValue> contentChannelAttribValList = attribValQuery.Where( av => av.EntityId == contentChannel.Id && 
-                                                                                            av.Attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" )
+                                                                                           av.Attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" )
                                                                              .ToList( );
 
             // setup the series
             PodcastSeries series = new PodcastSeries( );
+            series.Id = contentChannel.Id;
             series.Name = contentChannel.Name;
             series.Description = contentChannel.Description;
                 
@@ -140,25 +144,8 @@ namespace church.ccv.Podcast
             series.Messages = new List<PodcastMessage>( );
             foreach( ContentChannelItem contentChannelItem in contentChannel.Items )
             {
-                // get this message's attributes
-                List<AttributeValue> itemAttribValList = attribValQuery.Where( av => av.EntityId == contentChannelItem.Id && 
-                                                                                        av.Attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" )
-                                                                       .ToList( );
-
-                PodcastMessage message = new PodcastMessage( );
-                    
-                message.Name = contentChannelItem.Title;
-                message.Description = contentChannelItem.Content;
-                message.Date = contentChannelItem.StartDateTime;
-                message.Approved = contentChannelItem.Status == ContentChannelItemStatus.Approved ? true : false;
-
-                // add all the attributes
-                message.Attributes = new Dictionary<string, string>( );
-                foreach( AttributeValue attribValue in itemAttribValList )
-                {
-                    message.Attributes.Add( attribValue.AttributeKey, attribValue.Value );
-                }
-
+                // convert each contentChannelItem into a PodcastMessage, and add it to our list
+                PodcastMessage message = ContentChannelItemToPodcastMessage( contentChannelItem );
                 series.Messages.Add( message );
             }
 
@@ -186,18 +173,76 @@ namespace church.ccv.Podcast
             return series;
         }
 
+        static PodcastMessage ContentChannelItemToPodcastMessage( ContentChannelItem contentChannelItem )
+        {
+            // Given a content channel item, convert it into a PodcastMessage and return it
+
+            RockContext rockContext = new RockContext( );
+            IQueryable<AttributeValue> attribValQuery = new AttributeValueService( rockContext ).Queryable( );
+
+            // get this message's attributes
+            List<AttributeValue> itemAttribValList = attribValQuery.Where( av => av.EntityId == contentChannelItem.Id && 
+                                                                                 av.Attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" )
+                                                                    .ToList( );
+
+            PodcastMessage message = new PodcastMessage( );
+            message.Id = contentChannelItem.Id;
+            message.Name = contentChannelItem.Title;
+            message.Description = contentChannelItem.Content;
+            message.Date = contentChannelItem.StartDateTime;
+            message.Approved = contentChannelItem.Status == ContentChannelItemStatus.Approved ? true : false;
+
+            // add all the attributes
+            message.Attributes = new Dictionary<string, string>( );
+            foreach( AttributeValue attribValue in itemAttribValList )
+            {
+                message.Attributes.Add( attribValue.AttributeKey, attribValue.Value );
+            }
+
+            return message;
+        }
+
         public static PodcastCategory PodcastsAsModel( int podcastCategory )
         {
             return GetPodcastsByCategory( podcastCategory );
         }
-        
-        public static string PodcastsAsJson( int podcastCategory )
+
+        public static PodcastSeries GetSeries( int seriesId )
         {
-            PodcastCategory requestedPodcast = GetPodcastsByCategory( podcastCategory );
+            // try to get the content channel that represents this series
+            RockContext rockContext = new RockContext( );
+            ContentChannelService contentChannelService = new ContentChannelService( rockContext );
+
+            ContentChannel seriesContentChannel = contentChannelService.Queryable( ).Where( cc => cc.Id == seriesId ).SingleOrDefault( );
+            if( seriesContentChannel != null )
+            {
+                // convert it to a PodcastSeries and return it
+                PodcastSeries series = ContentChannelToPodcastSeries( seriesContentChannel );
+                return series;
+            }
             
-            return JsonConvert.SerializeObject( requestedPodcast );
+            // couldn't find it? return null
+            return null;
         }
 
+        public static PodcastMessage GetMessage( int messageId )
+        {
+            // try to get the content channel item that represents this message
+            RockContext rockContext = new RockContext( );
+            ContentChannelItemService contentChannelItemService = new ContentChannelItemService( rockContext );
+
+            ContentChannelItem messageContentChannelItem = contentChannelItemService.Queryable( ).Where( cc => cc.Id == messageId ).SingleOrDefault( );
+            if( messageContentChannelItem != null )
+            {
+                // convert it to a PodcastMessage and return it
+                PodcastMessage message = ContentChannelItemToPodcastMessage( messageContentChannelItem );
+                return message;
+            }
+            
+            // couldn't find it? return null
+            return null;
+        }
+        
         // Helper class for storing a Content Channel with its Category Attribute Value
         public class ContentChannelWithAttribs
         {
@@ -213,8 +258,8 @@ namespace church.ccv.Podcast
 
         public class PodcastCategory : IPodcastNode
         {
-            public string Name { get; set; }
             public int Id { get; set; }
+            public string Name { get; set; }
             public List<IPodcastNode> Children { get; set; }
             public DateTime? Date { get; set; }
 
@@ -235,7 +280,7 @@ namespace church.ccv.Podcast
             {
                 get
                 {
-                    var availableKeys = new List<string> { "Name", "Id", "Children" };
+                    var availableKeys = new List<string> { "Id", "Name", "Children" };
                                             
                     foreach ( IPodcastNode child in Children )
                     {
@@ -259,9 +304,9 @@ namespace church.ccv.Podcast
                 {
                    switch( key.ToStringSafe() )
                    {
+                       case "Id": return Id;
                        case "Name": return Name;
                        case "Children": return Children;
-                        case "Id": return Id;
                    }
 
                     return null;
@@ -285,6 +330,7 @@ namespace church.ccv.Podcast
 
         public class PodcastSeries : IPodcastNode
         {
+            public int Id { get; set; }
             public string Name { get; set; }
             public string Description { get; set; }
             public DateTime? Date { get; set; }
@@ -298,7 +344,7 @@ namespace church.ccv.Podcast
             {
                 get
                 {
-                    var availableKeys = new List<string> { "Name", "Description", "Date", "Attributes", "Messages" };
+                    var availableKeys = new List<string> { "Id", "Name", "Description", "Date", "Attributes", "Messages" };
 
                     foreach ( IPodcastNode child in Messages )
                     {
@@ -322,6 +368,7 @@ namespace church.ccv.Podcast
                 {
                    switch( key.ToStringSafe() )
                    {
+                       case "Id": return Id;
                        case "Name": return Name;
                        case "Description": return Description;
                        case "Date": return Date;
@@ -335,7 +382,7 @@ namespace church.ccv.Podcast
             
             public bool ContainsKey( object key )
             {
-                var additionalKeys = new List<string> { "Name", "Description", "Date", "Attributes", "Messages" };
+                var additionalKeys = new List<string> { "Id", "Name", "Description", "Date", "Attributes", "Messages" };
                 if ( additionalKeys.Contains( key.ToStringSafe() ) )
                 {
                     return true;
@@ -350,6 +397,7 @@ namespace church.ccv.Podcast
 
         public class PodcastMessage
         {
+            public int Id { get; set; }
             public string Name { get; set; }
             public string Description { get; set; }
             public DateTime Date { get; set; }
@@ -363,7 +411,7 @@ namespace church.ccv.Podcast
             {
                 get
                 {
-                    var availableKeys = new List<string> { "Name", "Description", "Date", "Attributes", "Approved" };
+                    var availableKeys = new List<string> { "Id", "Name", "Description", "Date", "Attributes", "Approved" };
                     
                     return availableKeys;
                 }
@@ -382,6 +430,7 @@ namespace church.ccv.Podcast
                 {
                    switch( key.ToStringSafe() )
                    {
+                       case "Id": return Id;
                        case "Name": return Name;
                        case "Description": return Description;
                        case "Date": return Date;
@@ -395,7 +444,7 @@ namespace church.ccv.Podcast
             
             public bool ContainsKey( object key )
             {
-                var additionalKeys = new List<string> { "Name", "Description", "Date", "Attributes", "Approved" };
+                var additionalKeys = new List<string> { "Id", "Name", "Description", "Date", "Attributes", "Approved" };
                 if ( additionalKeys.Contains( key.ToStringSafe() ) )
                 {
                     return true;

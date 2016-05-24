@@ -294,7 +294,6 @@ namespace chuch.ccv.Podcast.Rest
         }
 
         // eventually it'd be better to replace the mobile app endpoint with one that uses json like the rest. Until then..
-        public const int WeekendVideos_CategoryId = 452;
         StringContent Retrieve_MobileApp( int version )
         {
             using ( StringWriter stringWriter = new StringWriterWithEncoding(Encoding.UTF8) )
@@ -324,7 +323,7 @@ namespace chuch.ccv.Podcast.Rest
                     writer.WriteStartElement( "SeriesList" );
 
                     // get all content channel types in the "Weekend Series" podcast
-                    IQueryable<ContentChannel> seriesContentChannels = GetPodcastsByCategory( WeekendVideos_CategoryId );
+                    IQueryable<ContentChannel> seriesContentChannels = GetPodcastsByCategory( PodcastUtil.WeekendVideos_CategoryId );
                     IQueryable<AttributeValue> attribValueQuery = new AttributeValueService( new RockContext( ) ).Queryable( );
             
                     foreach( ContentChannel series in seriesContentChannels )
