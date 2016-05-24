@@ -227,7 +227,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                 groupType.SetAttributeValue( "core_checkin_MaximumPhoneSearchLength", nbMaxPhoneLength.Text );
                 groupType.SetAttributeValue( "core_checkin_MaxSearchResults", nbMaxResults.Text );
                 groupType.SetAttributeValue( "core_checkin_MinimumPhoneSearchLength", nbMinPhoneLength.Text );
-                groupType.SetAttributeValue( "core_checkin_OneParentLabel", cbOneParentLabel.Checked.ToString() );
+                groupType.SetAttributeValue( "core_checkin_UseSameOptions", cbUseSameOptions.Checked.ToString() );
                 groupType.SetAttributeValue( "core_checkin_PhoneSearchType", ddlPhoneSearchType.SelectedValue );
                 groupType.SetAttributeValue( "core_checkin_RefreshInterval", nbRefreshInterval.Text );
                 groupType.SetAttributeValue( "core_checkin_RegularExpressionFilter", tbSearchRegex.Text );
@@ -373,7 +373,7 @@ namespace RockWeb.Blocks.CheckIn.Config
             {
                 if ( groupType.Id == 0 )
                 {
-                    lReadOnlyTitle.Text = ActionTitle.Add( "Check-in Type" ).FormatAsHtmlTitle();
+                    lReadOnlyTitle.Text = ActionTitle.Add( "Check-in Configuration" ).FormatAsHtmlTitle();
                 }
                 else
                 {
@@ -397,7 +397,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                 nbMaxPhoneLength.Text = groupType.GetAttributeValue( "core_checkin_MaximumPhoneSearchLength" );
                 nbMaxResults.Text = groupType.GetAttributeValue( "core_checkin_MaxSearchResults" );
                 nbMinPhoneLength.Text = groupType.GetAttributeValue( "core_checkin_MinimumPhoneSearchLength" );
-                cbOneParentLabel.Checked = groupType.GetAttributeValue( "core_checkin_OneParentLabel" ).AsBoolean( false );
+                cbUseSameOptions.Checked = groupType.GetAttributeValue( "core_checkin_UseSameOptions" ).AsBoolean( false );
                 ddlPhoneSearchType.SetValue( groupType.GetAttributeValue( "core_checkin_PhoneSearchType" ) );
                 nbRefreshInterval.Text = groupType.GetAttributeValue( "core_checkin_RefreshInterval" );
                 tbSearchRegex.Text = groupType.GetAttributeValue( "core_checkin_RegularExpressionFilter" );
@@ -429,7 +429,7 @@ namespace RockWeb.Blocks.CheckIn.Config
             excludeList.Add( "core_checkin_MaximumPhoneSearchLength" );
             excludeList.Add( "core_checkin_MaxSearchResults" );
             excludeList.Add( "core_checkin_MinimumPhoneSearchLength" );
-            excludeList.Add( "core_checkin_OneParentLabel" );
+            excludeList.Add( "core_checkin_UseSameOptions" );
             excludeList.Add( "core_checkin_PhoneSearchType" );
             excludeList.Add( "core_checkin_RefreshInterval" );
             excludeList.Add( "core_checkin_RegularExpressionFilter" );
@@ -451,10 +451,10 @@ namespace RockWeb.Blocks.CheckIn.Config
 
         private void SetFieldVisibility()
         {
-            bool familyType = ddlType.SelectedValue == "Family";
+            bool familyType = ddlType.SelectedValue == "1";
             nbAutoSelectDaysBack.Visible = familyType;
             cbReuseCode.Visible = familyType;
-            cbOneParentLabel.Visible = familyType;
+            cbUseSameOptions.Visible = familyType;
 
             bool showPhoneFields = true;
             int? searchTypeId = ddlSearchType.SelectedValueAsId();
@@ -489,7 +489,9 @@ namespace RockWeb.Blocks.CheckIn.Config
                 hlType.Text = groupType.GetAttributeValue( "CheckInType" );
                 hlType.Visible = true;
 
-                DescriptionList descriptionList = new DescriptionList();
+                DescriptionList mainDetailsDescList = new DescriptionList();
+                DescriptionList leftDetailsDescList = new DescriptionList();
+                DescriptionList rightDetailsDescList = new DescriptionList();
 
                 string scheduleList = string.Empty;
                 using ( var rockContext = new RockContext() )
@@ -508,12 +510,33 @@ namespace RockWeb.Blocks.CheckIn.Config
                         .AsDelimited( ", " );
                 }
 
-                if ( !string.IsNullOrWhiteSpace( scheduleList ))
+                if ( !string.IsNullOrWhiteSpace( scheduleList ) )
                 {
-                    descriptionList.Add( "Scheduled Times", scheduleList );
+                    mainDetailsDescList.Add( "Scheduled Times", scheduleList );
                 }
 
-                lblMainDetails.Text = descriptionList.Html;
+                groupType.LoadAttributes();
+
+                if ( groupType.AttributeValues.ContainsKey( "core_checkin_CheckInType" ) )
+                {
+                    leftDetailsDescList.Add( "Check-in Type", groupType.AttributeValues["core_checkin_CheckInType"].ValueFormatted );
+                }
+                if ( groupType.AttributeValues.ContainsKey( "core_checkin_SecurityCodeLength" ) )
+                {
+                    leftDetailsDescList.Add( "Security Code Length", groupType.AttributeValues["core_checkin_SecurityCodeLength"].ValueFormatted );
+                }
+                if ( groupType.AttributeValues.ContainsKey( "core_checkin_SearchType" ) )
+                {
+                    rightDetailsDescList.Add( "Search Type", groupType.AttributeValues["core_checkin_SearchType"].ValueFormatted );
+                }
+                if ( groupType.AttributeValues.ContainsKey( "core_checkin_PhoneSearchType" ) )
+                {
+                    rightDetailsDescList.Add( "Phone Number Compare", groupType.AttributeValues["core_checkin_PhoneSearchType"].ValueFormatted );
+                }
+
+                lblMainDetails.Text = mainDetailsDescList.Html;
+                lblLeftDetails.Text = leftDetailsDescList.Html;
+                lblRightDetails.Text = rightDetailsDescList.Html;
             }
         }
 

@@ -121,7 +121,7 @@ namespace Rock.Extension
                     }
                     else
                     {
-                        break;
+                        //break;
                     }
                 }
             }
@@ -130,7 +130,7 @@ namespace Rock.Extension
         }
 
         /// <summary>
-        /// Forces a reloading of all the GeocodeService classes
+        /// Forces a reloading of all the components
         /// </summary>
         public virtual void Refresh()
         {

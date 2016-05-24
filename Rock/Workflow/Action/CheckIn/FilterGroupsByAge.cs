@@ -55,7 +55,7 @@ namespace Rock.Workflow.Action.CheckIn
                 return false;
             }
 
-            var family = checkInState.CheckIn.Families.FirstOrDefault( f => f.Selected );
+            var family = checkInState.CheckIn.CurrentFamily;
             if ( family != null )
             {
                 var remove = GetAttributeValue( action, "Remove" ).AsBoolean();

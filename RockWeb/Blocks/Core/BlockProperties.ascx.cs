@@ -85,6 +85,23 @@ namespace RockWeb.Blocks.Core
 
                 if ( _block.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                 {
+                    var blockType = BlockTypeCache.Read( _block.BlockTypeId );
+                    if ( blockType != null && !blockType.IsInstancePropertiesVerified )
+                    {
+                        System.Web.UI.Control control = Page.LoadControl( blockType.Path );
+                        if ( control is RockBlock )
+                        {
+                            using ( var rockContext = new RockContext() )
+                            {
+                                var rockBlock = control as RockBlock;
+                                int? blockEntityTypeId = EntityTypeCache.Read( typeof( Block ) ).Id;
+                                Rock.Attribute.Helper.UpdateAttributes( rockBlock.GetType(), blockEntityTypeId, "BlockTypeId", blockType.Id.ToString(), rockContext );
+                            }
+
+                            blockType.IsInstancePropertiesVerified = true;
+                        }
+                    }
+
                     phAttributes.Controls.Clear();
                     phAdvancedAttributes.Controls.Clear();
 

@@ -49,36 +49,66 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     ClearSelection();
 
-                    CheckInPerson person = null;
-                    CheckInGroup group = null;
-                    CheckInLocation location = null;
+                    var availSchedules = new List<CheckInSchedule>();
 
-                    person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
-                        .SelectMany( f => f.People.Where( p => p.Selected ) )
-                        .FirstOrDefault();
-
-                    if ( person != null )
+                    if ( CurrentCheckInType != null && CurrentCheckInType.TypeOfCheckin == TypeOfCheckin.Family )
                     {
-                        group = person.GroupTypes.Where( t => t.Selected )
-                                .SelectMany( t => t.Groups.Where( g => g.Selected ) )
-                                .FirstOrDefault();
-
-                        if ( group != null )
+                        CheckInFamily family = CurrentCheckInState.CheckIn.CurrentFamily;
+                        if ( family != null )
                         {
-                            location = group.Locations.Where( l => l.Selected )
-                                        .FirstOrDefault();
+                            foreach( var schedule in family.GetPeople( true ).SelectMany( p => p.PossibleSchedules ).ToList() )
+                            {
+                                if ( !availSchedules.Any( s => s.Schedule.Id == schedule.Schedule.Id ))
+                                {
+                                    availSchedules.Add( schedule );
+                                }
+                            }
+                            
                         }
+                        else
+                        {
+                            GoBack();
+                        }
+
+                        lTitle.Text = family.ToString();
+                        lbSelect.Text = "Next";
+                        lbSelect.Attributes.Add( "data-loading-text", "Loading..." );
+                    }
+                    else
+                    { 
+                        CheckInPerson person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
+                            .SelectMany( f => f.People.Where( p => p.Selected ) )
+                            .FirstOrDefault();
+
+                        CheckInGroup group = null;
+                        CheckInLocation location = null;
+
+                        if ( person != null )
+                        {
+                            group = person.GroupTypes.Where( t => t.Selected )
+                                    .SelectMany( t => t.Groups.Where( g => g.Selected ) )
+                                    .FirstOrDefault();
+
+                            if ( group != null )
+                            {
+                                location = group.Locations.Where( l => l.Selected )
+                                            .FirstOrDefault();
+                            }
+                        }
+
+                        if ( location == null )
+                        {
+                            GoBack();
+                        }
+
+                        lTitle.Text = person.ToString();
+                        lSubTitle.Text = string.Format( "{0} - {1}", group.ToString(), location.ToString() );
+                        lbSelect.Text = "Check In";
+                        lbSelect.Attributes.Add( "data-loading-text", "Printing..." );
+
+                        availSchedules = location.Schedules.Where( s => !s.ExcludedByFilter ).ToList();
                     }
 
-                    if ( location == null )
-                    {
-                        GoBack();
-                    }
-
-                    lTitle.Text = person.ToString();
-                    lSubTitle.Text = string.Format( "{0} - {1}", group.ToString(), location.ToString() );
-
-                    var availSchedules = location.Schedules.Where( s => !s.ExcludedByFilter ).ToList();
                     if ( availSchedules.Count == 1 )
                     {
                         availSchedules.FirstOrDefault().Selected = true;
@@ -128,6 +158,12 @@ namespace RockWeb.Blocks.CheckIn
             {
                 foreach ( var person in family.People )
                 {
+                    foreach ( var schedule in person.PossibleSchedules )
+                    {
+                        schedule.Selected = false;
+                        schedule.Processed = false;
+                    }
+
                     foreach ( var groupType in person.GroupTypes )
                     {
                         foreach ( var group in groupType.Groups )
@@ -148,25 +184,31 @@ namespace RockWeb.Blocks.CheckIn
         {
             if ( KioskCurrentlyActive )
             {
-                var location = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
-                    .SelectMany( f => f.People.Where( p => p.Selected )
-                        .SelectMany( p => p.GroupTypes.Where( t => t.Selected )
-                            .SelectMany( t => t.Groups.Where( g => g.Selected ) 
-                                .SelectMany( g => g.Locations.Where( l => l.Selected ) ) ) ) )
-                    .FirstOrDefault();
+                var schedules = new List<CheckInSchedule>();
 
-                if ( location != null )
+                var selectedIDs = hfTimes.Value.SplitDelimitedValues().AsIntegerList();
+                if ( CurrentCheckInType != null && CurrentCheckInType.TypeOfCheckin == TypeOfCheckin.Family )
                 {
-                    foreach( var scheduleId in hfTimes.Value.SplitDelimitedValues())
-                    {
-                        int id = Int32.Parse( scheduleId );
-                        var schedule = location.Schedules.Where( s => s.Schedule.Id == id).FirstOrDefault();
-                        if (schedule != null)
-                        {
-                            schedule.Selected = true;
-                        }
-                    }
+                    schedules = CurrentCheckInState.CheckIn.GetFamilies( true )
+                        .SelectMany( f => f.GetPeople( true )
+                            .SelectMany( p => p.PossibleSchedules.Where( s => selectedIDs.Contains( s.Schedule.Id ) ) ) )
+                        .ToList();
 
+                }
+                else
+                {
+                    schedules = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
+                        .SelectMany( f => f.People.Where( p => p.Selected )
+                            .SelectMany( p => p.GroupTypes.Where( t => t.Selected )
+                                .SelectMany( t => t.Groups.Where( g => g.Selected )
+                                    .SelectMany( g => g.Locations.Where( l => l.Selected )
+                                        .SelectMany( l => l.Schedules.Where( s => selectedIDs.Contains( s.Schedule.Id ) ) ) ) ) ) )
+                        .ToList();
+                }
+
+                if ( schedules != null && schedules.Any() )
+                {
+                    schedules.ForEach( s => s.Selected = true );
                     ProcessSelection( maWarning );
                 }
             }

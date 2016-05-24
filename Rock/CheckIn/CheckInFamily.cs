@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Model;
@@ -55,6 +56,20 @@ namespace Rock.CheckIn
         public List<CheckInPerson> People { get; set; }
 
         /// <summary>
+        /// Gets the current person if using family check-in mode
+        /// </summary>
+        /// <value>
+        /// The current person.
+        /// </value>
+        public CheckInPerson CurrentPerson
+        {
+            get
+            {
+                return GetPeople( true ).FirstOrDefault( p => !p.Processed );
+            }
+        }
+
+        /// <summary>
         /// An optional value that can be set to display family name.  If not set, the Group name will be used
         /// </summary>
         [DataMember]
@@ -87,6 +102,20 @@ namespace Rock.CheckIn
             {
                 person.ClearFilteredExclusions();
             }
+        }
+
+        /// <summary>
+        /// Gets the people.
+        /// </summary>
+        /// <param name="selectedOnly">if set to <c>true</c> [selected only].</param>
+        /// <returns></returns>
+        public List<CheckInPerson> GetPeople( bool selectedOnly )
+        {
+            if ( selectedOnly )
+            {
+                return People.Where( p => p.Selected ).ToList();
+            }
+            return People;
         }
 
         /// <summary>

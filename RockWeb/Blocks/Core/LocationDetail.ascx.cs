@@ -194,7 +194,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            Location location;
+            Location location = null;
 
             var rockContext = new RockContext();
             LocationService locationService = new LocationService( rockContext );
@@ -203,16 +203,19 @@ namespace RockWeb.Blocks.Core
 
             int locationId = int.Parse( hfLocationId.Value );
 
-            if ( locationId == 0 )
-            {
-                location = new Location();
-                location.Name = string.Empty;
-            }
-            else
+            if ( locationId != 0 )
             {
                 location = locationService.Get( locationId );
                 FlushCampus( locationId );
             }
+
+            if ( location == null )
+            { 
+                location = new Location();
+                location.Name = string.Empty;
+            }
+
+            string previousName = location.Name;
 
             int? orphanedImageId = null;
             if ( location.ImageId != imgImage.BinaryFileId )
@@ -290,6 +293,13 @@ namespace RockWeb.Blocks.Core
                 location.SaveAttributeValues( rockContext );
 
             } );
+
+            // If this is a names location (or was previouisly)
+            if ( !string.IsNullOrWhiteSpace( location.Name ) || ( previousName ?? string.Empty ) != (location.Name ?? string.Empty ) )
+            {
+                // flush the checkin config
+                Rock.CheckIn.KioskDevice.FlushAll();
+            }
 
             if ( _personId.HasValue )
             {
