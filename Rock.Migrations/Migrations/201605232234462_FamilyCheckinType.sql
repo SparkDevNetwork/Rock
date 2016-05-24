@@ -209,3 +209,1594 @@ BEGIN
 	UPDATE [AttributeValue] SET [Value] = 'True' WHERE [AttributeId] = @AttributeId AND [EntityId] = @GroupTypeId 
 
 END
+
+-- Update the mergefield help text for labels
+UPDATE [DefinedType]
+SET [helptext] = 
+'
+Label merge fields are defined with a liquid syntax. Click the ''Show Merge Fields'' button below to view the available merge fields.
+
+<p>
+    <a data-toggle="collapse"  href="#collapseMergeFields" class=''btn btn-action btn-xs''>Show/Hide Merge Fields</a>
+</p>
+
+<div id="collapseMergeFields" class="panel-collapse collapse">
+
+    <div class=''alert alert-info lava-debug''>
+        <div class=''panel panel-default panel-lavadebug''><div class=''panel-heading clearfix collapsed'' data-toggle=''collapse'' data-target=''#collapse-8ba173c6-7c85-47e6-9cdf-4d747c050d14''><h5 class=''panel-title pull-left''>Global Attribute</h5> <div class=''pull-right''><i class=''fa fa-chevron-up''></i></div></div><div id=''collapse-8ba173c6-7c85-47e6-9cdf-4d747c050d14'' class=''panel-collapse collapse''><div class=''panel-body''><p>Global attributes should be accessed using <code>{{ ''Global'' | Attribute:''[AttributeKey]'' }}</code>. Find out more about using Global Attributes in Lava at <a href=''http://www.rockrms.com/lava/globalattributes'' target=''_blank''>rockrms.com/lava/globalattributes</a>.</p>
+        <ul>
+            <li><span class=''lava-debug-key''>ContentFiletypeBlacklist</span> <span class=''lava-debug-value''> - ascx, ashx, aspx, ascx.cs, ashx.cs, aspx.cs,...</span></li>
+            <li><span class=''lava-debug-key''>ContentImageFiletypeWhitelist</span> <span class=''lava-debug-value''> - jpg,png,gif,bmp,svg</span></li>
+            <li><span class=''lava-debug-key''>core.GradeLabel</span> <span class=''lava-debug-value''> - Grade</span></li>
+            <li><span class=''lava-debug-key''>core.LavaSupportLevel</span> <span class=''lava-debug-value''> - Legacy</span></li>
+            <li><span class=''lava-debug-key''>core.ValidUsernameCaption</span> <span class=''lava-debug-value''> - It must only contain letters, numbers, +, -,...</span></li>
+            <li><span class=''lava-debug-key''>core.ValidUsernameRegularExpression</span> <span class=''lava-debug-value''> - ^[A-Za-z0-9+.@_-]{3,128}$</span></li>
+            <li><span class=''lava-debug-key''>CurrencySymbol</span> <span class=''lava-debug-value''> - $</span></li>
+            <li><span class=''lava-debug-key''>EmailExceptionsFilter</span> <span class=''lava-debug-value''> - </span></li>
+            <li><span class=''lava-debug-key''>EmailExceptionsList</span> <span class=''lava-debug-value''> - </span></li>
+            <li>
+                <span class=''lava-debug-key''>EmailFooter</span> <span class=''lava-debug-value''>
+                    -
+                    ...
+                </span>
+            </li>
+            <li>
+                <span class=''lava-debug-key''>EmailHeader</span> <span class=''lava-debug-value''>
+                    -
+                    &lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD XHTML 1.0...
+                </span>
+            </li>
+            <li><span class=''lava-debug-key''>EmailHeaderLogo</span> <span class=''lava-debug-value''> - assets/images/email-header.jpg</span></li>
+            <li><span class=''lava-debug-key''>EnableAuditing</span> <span class=''lava-debug-value''> - No</span></li>
+            <li><span class=''lava-debug-key''>GoogleAPIKey</span> <span class=''lava-debug-value''> - </span></li>
+            <li><span class=''lava-debug-key''>GradeTransitionDate</span> <span class=''lava-debug-value''> - 6/1</span></li>
+            <li><span class=''lava-debug-key''>InternalApplicationRoot</span> <span class=''lava-debug-value''> - http://rock.organization.com/</span></li>
+            <li><span class=''lava-debug-key''>JobPulse</span> <span class=''lava-debug-value''> - 7/13/2012 4:58:30 PM</span></li>
+            <li><span class=''lava-debug-key''>Log404AsException</span> <span class=''lava-debug-value''> - No</span></li>
+            <li><span class=''lava-debug-key''>OrganizationAbbreviation</span> <span class=''lava-debug-value''> - </span></li>
+            <li>
+                <span class=''lava-debug-key''>OrganizationAddress</span> <span class=''lava-debug-value''>
+                    - 3120 W Cholla St
+                    Phoenix, AZ 85029
+                </span>
+            </li>
+            <li><span class=''lava-debug-key''>OrganizationEmail</span> <span class=''lava-debug-value''> - info@organizationname.com</span></li>
+            <li><span class=''lava-debug-key''>OrganizationName</span> <span class=''lava-debug-value''> - Rock Solid Church</span></li>
+            <li><span class=''lava-debug-key''>OrganizationPhone</span> <span class=''lava-debug-value''> - </span></li>
+            <li><span class=''lava-debug-key''>OrganizationWebsite</span> <span class=''lava-debug-value''> - www.organization.com</span></li>
+            <li><span class=''lava-debug-key''>PasswordRegexFriendlyDescription</span> <span class=''lava-debug-value''> - Invalid Password. Password must be at least 6...</span></li>
+            <li><span class=''lava-debug-key''>PasswordRegularExpression</span> <span class=''lava-debug-value''> - \\w{6,255}</span></li>
+            <li><span class=''lava-debug-key''>PreferredEmailLinkType</span> <span class=''lava-debug-value''> - New Communication</span></li>
+            <li><span class=''lava-debug-key''>PublicApplicationRoot</span> <span class=''lava-debug-value''> - http://www.organization.com/</span></li>
+            <li><span class=''lava-debug-key''>SupportInternationalAddresses</span> <span class=''lava-debug-value''> - No</span></li>
+            <li><span class=''lava-debug-key''>UpdateServerUrl</span> <span class=''lava-debug-value''> - http://update.rockrms.com/F/rock/api/v2/</span></li>
+        </ul>
+    </div></div></div><div class=''panel panel-default panel-lavadebug''>
+        <div class=''panel-heading clearfix collapsed'' data-toggle=''collapse'' data-target=''#collapse-20fb5df4-c3ec-4ea3-a842-655a30fbee40''><h5 class=''panel-title pull-left''>Page Parameter</h5> <div class=''pull-right''><i class=''fa fa-chevron-up''></i></div></div><div id=''collapse-20fb5df4-c3ec-4ea3-a842-655a30fbee40'' class=''panel-collapse collapse''>
+            <div class=''panel-body''>
+                <p>PageParameter properties can be accessed by <code>{{ PageParameter.[PropertyKey] }}</code>.</p>
+                <ul>
+                    <li><span class=''lava-debug-key''>PageId</span> <span class=''lava-debug-value''> - 447</span></li>
+                </ul>
+            </div>
+        </div>
+    </div><div class=''panel panel-default panel-lavadebug''>
+        <div class=''panel-heading clearfix collapsed'' data-toggle=''collapse'' data-target=''#collapse-7bebe6b0-493a-4d96-8ea7-a721a4c5a6da''><h5 class=''panel-title pull-left''>Current Person</h5> <div class=''pull-right''><i class=''fa fa-chevron-up''></i></div></div><div id=''collapse-7bebe6b0-493a-4d96-8ea7-a721a4c5a6da'' class=''panel-collapse collapse''>
+            <div class=''panel-body''>
+                <p>CurrentPerson properties can be accessed by <code>{{ CurrentPerson.[PropertyKey] }}</code>. Find out more about using ''Person'' fields in Lava at <a href=''http://www.rockrms.com/lava/person'' target=''_blank''>rockrms.com/lava/person</a>.</p>
+                <ul>
+                    <li><span class=''lava-debug-key''>IsSystem</span> <span class=''lava-debug-value''> - True</span></li>
+                    <li><span class=''lava-debug-key''>RecordTypeValueId</span> <span class=''lava-debug-value''> - 1</span></li>
+                    <li><span class=''lava-debug-key''>RecordStatusValueId</span> <span class=''lava-debug-value''> - 3</span></li>
+                    <li><span class=''lava-debug-key''>RecordStatusLastModifiedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>RecordStatusReasonValueId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ConnectionStatusValueId</span> <span class=''lava-debug-value''> - 66</span></li>
+                    <li><span class=''lava-debug-key''>ReviewReasonValueId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>IsDeceased</span> <span class=''lava-debug-value''> - False</span></li>
+                    <li><span class=''lava-debug-key''>TitleValueId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>FirstName</span> <span class=''lava-debug-value''> - Admin</span></li>
+                    <li><span class=''lava-debug-key''>NickName</span> <span class=''lava-debug-value''> - Admin</span></li>
+                    <li><span class=''lava-debug-key''>MiddleName</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>LastName</span> <span class=''lava-debug-value''> - Admin</span></li>
+                    <li><span class=''lava-debug-key''>SuffixValueId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>PhotoId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>BirthDay</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>BirthMonth</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>BirthYear</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>Gender</span> <span class=''lava-debug-value''> - Unknown</span></li>
+                    <li><span class=''lava-debug-key''>MaritalStatusValueId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>AnniversaryDate</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>GraduationYear</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>GivingGroupId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>GivingId</span> <span class=''lava-debug-value''> - P1</span></li>
+                    <li><span class=''lava-debug-key''>GivingLeaderId</span> <span class=''lava-debug-value''> - 1</span></li>
+                    <li><span class=''lava-debug-key''>Email</span> <span class=''lava-debug-value''> - admin@organization.com</span></li>
+                    <li><span class=''lava-debug-key''>IsEmailActive</span> <span class=''lava-debug-value''> - False</span></li>
+                    <li><span class=''lava-debug-key''>EmailNote</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>EmailPreference</span> <span class=''lava-debug-value''> - EmailAllowed</span></li>
+                    <li><span class=''lava-debug-key''>ReviewReasonNote</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>InactiveReasonNote</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>SystemNote</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ViewedCount</span> <span class=''lava-debug-value''> - </span></li>
+                    <li>
+                        <span class=''lava-debug-key lava-debug-section level-1''>PrimaryAlias</span>
+                        <ul>
+                            <li><span class=''lava-debug-key''>Name</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>PersonId</span> <span class=''lava-debug-value''> - 1</span></li>
+                            <li><span class=''lava-debug-key''>AliasPersonId</span> <span class=''lava-debug-value''> - 1</span></li>
+                            <li><span class=''lava-debug-key''>AliasPersonGuid</span> <span class=''lava-debug-value''> - ad28da19-4af1-408f-9090-2672f8376f27</span></li>
+                            <li><span class=''lava-debug-key''>Person</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - 10</span></li>
+                            <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - 93c3bdc3-3318-48f3-8a6c-327d0b10f4f5</span></li>
+                            <li><span class=''lava-debug-key''>UrlEncodedKey</span> <span class=''lava-debug-value''> - EAAAACw5J!2fMPWJmtPFNtPxP!2fB91GAPCIKyFKkho07Za...</span></li>
+                        </ul>
+                    </li>
+                    <li><span class=''lava-debug-key''>PrimaryAliasId</span> <span class=''lava-debug-value''> - 10</span></li>
+                    <li><span class=''lava-debug-key''>FullName</span> <span class=''lava-debug-value''> - Admin Admin</span></li>
+                    <li><span class=''lava-debug-key''>BirthdayDayOfWeek</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>BirthdayDayOfWeekShort</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>PhotoUrl</span> <span class=''lava-debug-value''> - /Assets/Images/person-no-photo-male.svg?</span></li>
+                    <li>
+                        <span class=''lava-debug-key lava-debug-section level-1''>Users</span>
+                        {<ul>
+                            <li>
+                                [0]
+                                <ul>
+                                    <li><span class=''lava-debug-key''>EntityTypeId</span> <span class=''lava-debug-value''> - 27</span></li>
+                                    <li><span class=''lava-debug-key''>UserName</span> <span class=''lava-debug-value''> - admin</span></li>
+                                    <li><span class=''lava-debug-key''>IsConfirmed</span> <span class=''lava-debug-value''> - True</span></li>
+                                    <li><span class=''lava-debug-key''>LastActivityDateTime</span> <span class=''lava-debug-value''> - 5/24/2016 5:27:37 AM</span></li>
+                                    <li><span class=''lava-debug-key''>LastLoginDateTime</span> <span class=''lava-debug-value''> - 5/24/2016 5:23:45 AM</span></li>
+                                    <li><span class=''lava-debug-key''>LastPasswordChangedDateTime</span> <span class=''lava-debug-value''> - 1/23/2012 3:43:25 AM</span></li>
+                                    <li><span class=''lava-debug-key''>IsOnLine</span> <span class=''lava-debug-value''> - True</span></li>
+                                    <li><span class=''lava-debug-key''>IsLockedOut</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>IsPasswordChangeRequired</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>LastLockedOutDateTime</span> <span class=''lava-debug-value''> - 12/15/2011 2:45:54 AM</span></li>
+                                    <li><span class=''lava-debug-key''>FailedPasswordAttemptCount</span> <span class=''lava-debug-value''> - 1</span></li>
+                                    <li><span class=''lava-debug-key''>FailedPasswordAttemptWindowStartDateTime</span> <span class=''lava-debug-value''> - 6/7/2012 3:25:06 PM</span></li>
+                                    <li><span class=''lava-debug-key''>LastPasswordExpirationWarningDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>ApiKey</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>PersonId</span> <span class=''lava-debug-value''> - 1</span></li>
+                                    <li><span class=''lava-debug-key''>ConfirmationCode</span> <span class=''lava-debug-value''> - EAAAAA8WH7prJrJh0VVWNVjvssHBjfS9szcDz0wmL15mRS2...</span></li>
+                                    <li><span class=''lava-debug-key''>ConfirmationCodeEncoded</span> <span class=''lava-debug-value''> - EAAAADe6EidQRyVANNhSHPbWfcrm4FLHuvaUMJeRqEQ8BLm...</span></li>
+                                    <li><span class=''lava-debug-key''>CreatedDateTime</span> <span class=''lava-debug-value''> - 3/19/2011 7:34:15 AM</span></li>
+                                    <li><span class=''lava-debug-key''>ModifiedDateTime</span> <span class=''lava-debug-value''> - 5/24/2016 5:27:40 AM</span></li>
+                                    <li><span class=''lava-debug-key''>CreatedByPersonAliasId</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>ModifiedByPersonAliasId</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>CreatedByPersonId</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>CreatedByPersonName</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>ModifiedByPersonId</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>ModifiedByPersonName</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>ModifiedAuditValuesAlreadyUpdated</span> <span class=''lava-debug-value''> - False</span></li>
+                                    <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - 1</span></li>
+                                    <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - 7e10a764-ef6b-431f-87c7-861053c84131</span></li>
+                                    <li><span class=''lava-debug-key''>UrlEncodedKey</span> <span class=''lava-debug-value''> - EAAAAIPHvKvnVBr5496TB4!2bgCYtfpTuYqhyR5z5H!2bz0...</span></li>
+                                </ul>
+                            </li>
+                        </ul>}
+                    </li>
+                    <li>
+                        <span class=''lava-debug-key lava-debug-section level-1''>PhoneNumbers</span>
+                        {<ul></ul>}
+                    </li>
+                    <li><span class=''lava-debug-key''>MaritalStatusValue</span> <span class=''lava-debug-value''> - </span></li>
+                    <li>
+                        <span class=''lava-debug-key lava-debug-section level-1''>ConnectionStatusValue</span>
+                        <ul>
+                            <li><span class=''lava-debug-key''>IsSystem</span> <span class=''lava-debug-value''> - False</span></li>
+                            <li><span class=''lava-debug-key''>DefinedTypeId</span> <span class=''lava-debug-value''> - 4</span></li>
+                            <li><span class=''lava-debug-key''>Order</span> <span class=''lava-debug-value''> - 2</span></li>
+                            <li><span class=''lava-debug-key''>Value</span> <span class=''lava-debug-value''> - Visitor</span></li>
+                            <li><span class=''lava-debug-key''>Description</span> <span class=''lava-debug-value''> - Used when a person first enters through your...</span></li>
+                            <li><span class=''lava-debug-key''>CreatedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ModifiedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>CreatedByPersonAliasId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ModifiedByPersonAliasId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>CreatedByPersonId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>CreatedByPersonName</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ModifiedByPersonId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ModifiedByPersonName</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ModifiedAuditValuesAlreadyUpdated</span> <span class=''lava-debug-value''> - False</span></li>
+                            <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - 66</span></li>
+                            <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - b91ba046-bc1e-400c-b85d-638c1f4e0ce2</span></li>
+                            <li><span class=''lava-debug-key''>UrlEncodedKey</span> <span class=''lava-debug-value''> - EAAAADG!2fS!2bIo1kulf51q3HQadEMGQcMP4zIsLpPn2y!...</span></li>
+                            <li>
+                                <span class=''lava-debug-key lava-debug-section level-2''>Attributes <p class=''attributes''>Below is a list of attributes that can be retrieved using <code>{{ CurrentPerson.ConnectionStatusValue | Attribute:''[AttributeKey]'' }}</code>.</p></span>
+                                <ul>
+                                    <li><span class=''lava-debug-key''>Color</span> <span class=''lava-debug-value''> - #afd074</span></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                    <li><span class=''lava-debug-key''>ReviewReasonValue</span> <span class=''lava-debug-value''> - </span></li>
+                    <li>
+                        <span class=''lava-debug-key lava-debug-section level-1''>RecordStatusValue</span>
+                        <ul>
+                            <li><span class=''lava-debug-key''>IsSystem</span> <span class=''lava-debug-value''> - True</span></li>
+                            <li><span class=''lava-debug-key''>DefinedTypeId</span> <span class=''lava-debug-value''> - 2</span></li>
+                            <li><span class=''lava-debug-key''>Order</span> <span class=''lava-debug-value''> - 0</span></li>
+                            <li><span class=''lava-debug-key''>Value</span> <span class=''lava-debug-value''> - Active</span></li>
+                            <li><span class=''lava-debug-key''>Description</span> <span class=''lava-debug-value''> - Denotes an individual that is actively...</span></li>
+                            <li><span class=''lava-debug-key''>CreatedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ModifiedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>CreatedByPersonAliasId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ModifiedByPersonAliasId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>CreatedByPersonId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>CreatedByPersonName</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ModifiedByPersonId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ModifiedByPersonName</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ModifiedAuditValuesAlreadyUpdated</span> <span class=''lava-debug-value''> - False</span></li>
+                            <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - 3</span></li>
+                            <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - 618f906c-c33d-4fa3-8aef-e58cb7b63f1e</span></li>
+                            <li><span class=''lava-debug-key''>UrlEncodedKey</span> <span class=''lava-debug-value''> - EAAAAItfQizA3mcKyJC!2bB!2f2YlJaOfBG2LMCizX8O6KO...</span></li>
+                        </ul>
+                    </li>
+                    <li><span class=''lava-debug-key''>RecordStatusReasonValue</span> <span class=''lava-debug-value''> - </span></li>
+                    <li>
+                        <span class=''lava-debug-key lava-debug-section level-1''>RecordTypeValue</span>
+                        <ul>
+                            <li><span class=''lava-debug-key''>IsSystem</span> <span class=''lava-debug-value''> - True</span></li>
+                            <li><span class=''lava-debug-key''>DefinedTypeId</span> <span class=''lava-debug-value''> - 1</span></li>
+                            <li><span class=''lava-debug-key''>Order</span> <span class=''lava-debug-value''> - 0</span></li>
+                            <li><span class=''lava-debug-key''>Value</span> <span class=''lava-debug-value''> - Person</span></li>
+                            <li><span class=''lava-debug-key''>Description</span> <span class=''lava-debug-value''> - A Person Record</span></li>
+                            <li><span class=''lava-debug-key''>CreatedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ModifiedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>CreatedByPersonAliasId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ModifiedByPersonAliasId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>CreatedByPersonId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>CreatedByPersonName</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ModifiedByPersonId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ModifiedByPersonName</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ModifiedAuditValuesAlreadyUpdated</span> <span class=''lava-debug-value''> - False</span></li>
+                            <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - 1</span></li>
+                            <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - 36cf10d6-c695-413d-8e7c-4546efef385e</span></li>
+                            <li><span class=''lava-debug-key''>UrlEncodedKey</span> <span class=''lava-debug-value''> - EAAAAMMbKe6lWUpR59cAX4KU!2f9!2bJyy!2buG4crphOwj...</span></li>
+                        </ul>
+                    </li>
+                    <li><span class=''lava-debug-key''>SuffixValue</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>TitleValue</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>Photo</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>BirthDate</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>DaysUntilBirthday</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>Age</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>NextBirthDay</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>DaysToBirthday</span> <span class=''lava-debug-value''> - 2147483647</span></li>
+                    <li><span class=''lava-debug-key''>NextAnniversary</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>GradeOffset</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>HasGraduated</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>GradeFormatted</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ImpersonationParameter</span> <span class=''lava-debug-value''> - rckipid=EAAAAP7cZijPF3Y0ngFMvJB34A%2bPTXBhA1NAH...</span></li>
+                    <li><span class=''lava-debug-key''>CreatedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ModifiedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>CreatedByPersonAliasId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ModifiedByPersonAliasId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>CreatedByPersonId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>CreatedByPersonName</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ModifiedByPersonId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ModifiedByPersonName</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ModifiedAuditValuesAlreadyUpdated</span> <span class=''lava-debug-value''> - False</span></li>
+                    <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - 1</span></li>
+                    <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - ad28da19-4af1-408f-9090-2672f8376f27</span></li>
+                    <li><span class=''lava-debug-key''>UrlEncodedKey</span> <span class=''lava-debug-value''> - EAAAAO7h9JfpfR4MVe!2fAOoDjzZk6a2b5jtL6dg8QevCMx...</span></li>
+                    <li>
+                        <span class=''lava-debug-key lava-debug-section level-1''>Attributes <p class=''attributes''>Below is a list of attributes that can be retrieved using <code>{{ CurrentPerson | Attribute:''[AttributeKey]'' }}</code>.</p></span>
+                        <ul>
+                            <li><span class=''lava-debug-key''>BaptismDate</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>AbilityLevel</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>Allergy</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>BaptizedHere</span> <span class=''lava-debug-value''> - No</span></li>
+                            <li><span class=''lava-debug-key''>LegalNotes</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>PreviousChurch</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>FirstVisit</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>SecondVisit</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>SourceofVisit</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>School</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>Employer</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>Position</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>MembershipDate</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>Facebook</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>Twitter</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>Instagram</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>AdaptiveD</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>AdaptiveI</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>AdaptiveS</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>AdaptiveC</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>NaturalD</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>NaturalI</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>NaturalS</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>NaturalC</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>LastSaveDate</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>BackgroundChecked</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>BackgroundCheckDate</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>BackgroundCheckResult</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>BackgroundCheckDocument</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>PersonalityType</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>com.sparkdevnetwork.DLNumber</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>LastDiscRequestDate</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>core_CurrentlyAnEra</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>core_EraStartDate</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>core_EraEndDate</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>core_EraFirstCheckin</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>core_EraLastCheckin</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>core_EraLastGave</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>core_EraFirstGave</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>core_TimesCheckedIn16Wks</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>core_EraTimesGiven52Wks</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>core_EraTimesGiven6Wks</span> <span class=''lava-debug-value''> - </span></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div><div class=''panel panel-default panel-lavadebug''>
+        <div class=''panel-heading clearfix collapsed'' data-toggle=''collapse'' data-target=''#collapse-82d76f0a-c373-4f52-8f76-f8013b76a6a8''><h5 class=''panel-title pull-left''>Campuses</h5> <div class=''pull-right''><i class=''fa fa-chevron-up''></i></div></div><div id=''collapse-82d76f0a-c373-4f52-8f76-f8013b76a6a8'' class=''panel-collapse collapse''>
+            <div class=''panel-body''>
+                <p>Campuses properties can be accessed by <code>{% for campus in Campuses %}{{ campus.[PropertyKey] }}{% endfor %}</code>.</p>
+                {<ul>
+                    <li>
+                        [0]
+                        <ul>
+                            <li><span class=''lava-debug-key''>IsSystem</span> <span class=''lava-debug-value''> - False</span></li>
+                            <li><span class=''lava-debug-key''>Name</span> <span class=''lava-debug-value''> - Main Campus</span></li>
+                            <li><span class=''lava-debug-key''>Description</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>IsActive</span> <span class=''lava-debug-value''> - True</span></li>
+                            <li><span class=''lava-debug-key''>ShortCode</span> <span class=''lava-debug-value''> - MAIN</span></li>
+                            <li><span class=''lava-debug-key''>Url</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>LocationId</span> <span class=''lava-debug-value''> - 2</span></li>
+                            <li>
+                                <span class=''lava-debug-key lava-debug-section level-1''>Location</span>
+                                <ul>
+                                    <li><span class=''lava-debug-key''>Street1</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>Street2</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>City</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>State</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>PostalCode</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>Country</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>Latitude</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>Longitude</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>ImageUrl</span> <span class=''lava-debug-value''> - </span></li>
+                                </ul>
+                            </li>
+                            <li><span class=''lava-debug-key''>PhoneNumber</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>LeaderPersonAliasId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>RawServiceTimes</span> <span class=''lava-debug-value''> - </span></li>
+                            <li>
+                                <span class=''lava-debug-key lava-debug-section level-1''>ServiceTimes</span>
+                                {<ul></ul>}
+                            </li>
+                            <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - 1</span></li>
+                            <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - 76882ae3-1ce8-42a6-a2b6-8c0b29cf8cf8</span></li>
+                            <li><span class=''lava-debug-key''>ForeignId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ForeignGuid</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ForeignKey</span> <span class=''lava-debug-value''> - </span></li>
+                        </ul>
+                    </li>
+                </ul>}
+            </div>
+        </div>
+    </div><div class=''panel panel-default panel-lavadebug''>
+        <div class=''panel-heading clearfix collapsed'' data-toggle=''collapse'' data-target=''#collapse-2b289b0d-a81f-4728-8397-9f76af96cd48''><h5 class=''panel-title pull-left''>Location</h5> <div class=''pull-right''><i class=''fa fa-chevron-up''></i></div></div><div id=''collapse-2b289b0d-a81f-4728-8397-9f76af96cd48'' class=''panel-collapse collapse''>
+            <div class=''panel-body''>
+                <p>Location properties can be accessed by <code>{{ Location.[PropertyKey] }}</code>.</p>
+                <ul>
+                    <li><span class=''lava-debug-key''>LastCheckIn</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>Locations</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ParentLocationId</span> <span class=''lava-debug-value''> - 3</span></li>
+                    <li><span class=''lava-debug-key''>Name</span> <span class=''lava-debug-value''> - Bobcats Room</span></li>
+                    <li><span class=''lava-debug-key''>IsActive</span> <span class=''lava-debug-value''> - True</span></li>
+                    <li><span class=''lava-debug-key''>LocationTypeValueId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>GeoPoint</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>GeoFence</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>Street1</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>Street2</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>City</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>County</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>State</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>Country</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>PostalCode</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>Barcode</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>AssessorParcelId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>StandardizeAttemptedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>StandardizeAttemptedServiceType</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>StandardizeAttemptedResult</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>StandardizedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>GeocodeAttemptedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>GeocodeAttemptedServiceType</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>GeocodeAttemptedResult</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>GeocodedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>IsGeoPointLocked</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>PrinterDeviceId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ImageId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>SoftRoomThreshold</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>FirmRoomThreshold</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>IsNamedLocation</span> <span class=''lava-debug-value''> - True</span></li>
+                    <li><span class=''lava-debug-key''>LocationTypeValue</span> <span class=''lava-debug-value''> - </span></li>
+                    <li>
+                        <span class=''lava-debug-key lava-debug-section level-1''>ChildLocations</span>
+                        {<ul></ul>}
+                    </li>
+                    <li><span class=''lava-debug-key''>PrinterDevice</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>Image</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>FormattedAddress</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>FormattedHtmlAddress</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>Latitude</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>Longitude</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>GeoFenceCoordinates</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>CampusId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>Distance</span> <span class=''lava-debug-value''> - 0</span></li>
+                    <li><span class=''lava-debug-key''>CreatedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ModifiedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>CreatedByPersonAliasId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ModifiedByPersonAliasId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>CreatedByPersonId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>CreatedByPersonName</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ModifiedByPersonId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ModifiedByPersonName</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ModifiedAuditValuesAlreadyUpdated</span> <span class=''lava-debug-value''> - False</span></li>
+                    <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - 8</span></li>
+                    <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - e847e31e-aba2-415b-a0e1-770ff1b64425</span></li>
+                    <li><span class=''lava-debug-key''>UrlEncodedKey</span> <span class=''lava-debug-value''> - EAAAAFCOaWly!2fD!2fJkxt0eupgrgr!2fXcd7XEIPq!2f4...</span></li>
+                </ul>
+            </div>
+        </div>
+    </div><div class=''panel panel-default panel-lavadebug''>
+        <div class=''panel-heading clearfix collapsed'' data-toggle=''collapse'' data-target=''#collapse-486b3c69-5b6b-45e8-ac80-70ce4dfa29af''><h5 class=''panel-title pull-left''>Group</h5> <div class=''pull-right''><i class=''fa fa-chevron-up''></i></div></div><div id=''collapse-486b3c69-5b6b-45e8-ac80-70ce4dfa29af'' class=''panel-collapse collapse''>
+            <div class=''panel-body''>
+                <p>Group properties can be accessed by <code>{{ Group.[PropertyKey] }}</code>.</p>
+                <ul>
+                    <li><span class=''lava-debug-key''>LastCheckIn</span> <span class=''lava-debug-value''> - </span></li>
+                    <li>
+                        <span class=''lava-debug-key lava-debug-section level-1''>Locations</span>
+                        {<ul>
+                            <li>
+                                [0]
+                                <ul>
+                                    <li><span class=''lava-debug-key''>LastCheckIn</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>Locations</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>ParentLocationId</span> <span class=''lava-debug-value''> - 3</span></li>
+                                    <li><span class=''lava-debug-key''>Name</span> <span class=''lava-debug-value''> - Bobcats Room</span></li>
+                                    <li><span class=''lava-debug-key''>IsActive</span> <span class=''lava-debug-value''> - True</span></li>
+                                    <li><span class=''lava-debug-key''>LocationTypeValueId</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>GeoPoint</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>GeoFence</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>Street1</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>Street2</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>City</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>County</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>State</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>Country</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>PostalCode</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>Barcode</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>AssessorParcelId</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>StandardizeAttemptedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>StandardizeAttemptedServiceType</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>StandardizeAttemptedResult</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>StandardizedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>GeocodeAttemptedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>GeocodeAttemptedServiceType</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>GeocodeAttemptedResult</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>GeocodedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>IsGeoPointLocked</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>PrinterDeviceId</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>ImageId</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>SoftRoomThreshold</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>FirmRoomThreshold</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>IsNamedLocation</span> <span class=''lava-debug-value''> - True</span></li>
+                                    <li><span class=''lava-debug-key''>LocationTypeValue</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li>
+                                        <span class=''lava-debug-key lava-debug-section level-1''>ChildLocations</span>
+                                        {<ul></ul>}
+                                    </li>
+                                    <li><span class=''lava-debug-key''>PrinterDevice</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>Image</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>FormattedAddress</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>FormattedHtmlAddress</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>Latitude</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>Longitude</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>GeoFenceCoordinates</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>CampusId</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>Distance</span> <span class=''lava-debug-value''> - 0</span></li>
+                                    <li><span class=''lava-debug-key''>CreatedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>ModifiedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>CreatedByPersonAliasId</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>ModifiedByPersonAliasId</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>CreatedByPersonId</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>CreatedByPersonName</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>ModifiedByPersonId</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>ModifiedByPersonName</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>ModifiedAuditValuesAlreadyUpdated</span> <span class=''lava-debug-value''> - False</span></li>
+                                    <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - 8</span></li>
+                                    <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - e847e31e-aba2-415b-a0e1-770ff1b64425</span></li>
+                                    <li><span class=''lava-debug-key''>UrlEncodedKey</span> <span class=''lava-debug-value''> - EAAAAJnacD02ODH!2fAXnp34N1YFEcFLTswnP1s!2fyTVHG...</span></li>
+                                </ul>
+                            </li>
+                        </ul>}
+                    </li>
+                    <li><span class=''lava-debug-key''>IsSystem</span> <span class=''lava-debug-value''> - False</span></li>
+                    <li><span class=''lava-debug-key''>ParentGroupId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>GroupTypeId</span> <span class=''lava-debug-value''> - 20</span></li>
+                    <li><span class=''lava-debug-key''>CampusId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ScheduleId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>Name</span> <span class=''lava-debug-value''> - Grades 2-3</span></li>
+                    <li><span class=''lava-debug-key''>Description</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>IsSecurityRole</span> <span class=''lava-debug-value''> - False</span></li>
+                    <li><span class=''lava-debug-key''>IsActive</span> <span class=''lava-debug-value''> - True</span></li>
+                    <li><span class=''lava-debug-key''>Order</span> <span class=''lava-debug-value''> - 5</span></li>
+                    <li><span class=''lava-debug-key''>AllowGuests</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>WelcomeSystemEmailId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ExitSystemEmailId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>SyncDataViewId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>AddUserAccountsDuringSync</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>MustMeetRequirementsToAddMember</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>IsPublic</span> <span class=''lava-debug-value''> - True</span></li>
+                    <li><span class=''lava-debug-key''>GroupCapacity</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>GroupType</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>Campus</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>Schedule</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>WelcomeSystemEmail</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ExitSystemEmail</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>SyncDataView</span> <span class=''lava-debug-value''> - </span></li>
+                    <li>
+                        <span class=''lava-debug-key lava-debug-section level-1''>Groups</span>
+                        {<ul></ul>}
+                    </li>
+                    <li>
+                        <span class=''lava-debug-key lava-debug-section level-1''>Members</span>
+                        {<ul></ul>}
+                    </li>
+                    <li>
+                        <span class=''lava-debug-key lava-debug-section level-1''>GroupLocations</span>
+                        {<ul></ul>}
+                    </li>
+                    <li>
+                        <span class=''lava-debug-key lava-debug-section level-1''>GroupRequirements</span>
+                        {<ul></ul>}
+                    </li>
+                    <li><span class=''lava-debug-key''>CreatedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ModifiedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>CreatedByPersonAliasId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ModifiedByPersonAliasId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>CreatedByPersonId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>CreatedByPersonName</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ModifiedByPersonId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ModifiedByPersonName</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ModifiedAuditValuesAlreadyUpdated</span> <span class=''lava-debug-value''> - False</span></li>
+                    <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - 29</span></li>
+                    <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - 24901861-14cf-474f-9fce-7ba1d6c84bff</span></li>
+                    <li><span class=''lava-debug-key''>UrlEncodedKey</span> <span class=''lava-debug-value''> - EAAAAJelKKxqVz!2bfXWWqS6LE0Epa5jZedjcckPPXtBSK!...</span></li>
+                </ul>
+            </div>
+        </div>
+    </div><div class=''panel panel-default panel-lavadebug''>
+        <div class=''panel-heading clearfix collapsed'' data-toggle=''collapse'' data-target=''#collapse-3a723c8b-61ed-4be0-8aea-1ca2a9da4982''><h5 class=''panel-title pull-left''>Person</h5> <div class=''pull-right''><i class=''fa fa-chevron-up''></i></div></div><div id=''collapse-3a723c8b-61ed-4be0-8aea-1ca2a9da4982'' class=''panel-collapse collapse''>
+            <div class=''panel-body''>
+                <p>Person properties can be accessed by <code>{{ Person.[PropertyKey] }}</code>.</p>
+                <ul>
+                    <li><span class=''lava-debug-key''>FamilyMember</span> <span class=''lava-debug-value''> - True</span></li>
+                    <li><span class=''lava-debug-key''>LastCheckIn</span> <span class=''lava-debug-value''> - 5/17/2016 10:24:55 AM</span></li>
+                    <li><span class=''lava-debug-key''>FirstTime</span> <span class=''lava-debug-value''> - False</span></li>
+                    <li><span class=''lava-debug-key''>SecurityCode</span> <span class=''lava-debug-value''> - HFC</span></li>
+                    <li><span class=''lava-debug-key''>IsSystem</span> <span class=''lava-debug-value''> - False</span></li>
+                    <li><span class=''lava-debug-key''>RecordTypeValueId</span> <span class=''lava-debug-value''> - 1</span></li>
+                    <li><span class=''lava-debug-key''>RecordStatusValueId</span> <span class=''lava-debug-value''> - 3</span></li>
+                    <li><span class=''lava-debug-key''>RecordStatusLastModifiedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>RecordStatusReasonValueId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ConnectionStatusValueId</span> <span class=''lava-debug-value''> - 146</span></li>
+                    <li><span class=''lava-debug-key''>ReviewReasonValueId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>IsDeceased</span> <span class=''lava-debug-value''> - False</span></li>
+                    <li><span class=''lava-debug-key''>TitleValueId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>FirstName</span> <span class=''lava-debug-value''> - Alexis</span></li>
+                    <li><span class=''lava-debug-key''>NickName</span> <span class=''lava-debug-value''> - Alex</span></li>
+                    <li><span class=''lava-debug-key''>MiddleName</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>LastName</span> <span class=''lava-debug-value''> - Decker</span></li>
+                    <li><span class=''lava-debug-key''>SuffixValueId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>PhotoId</span> <span class=''lava-debug-value''> - 48</span></li>
+                    <li><span class=''lava-debug-key''>BirthDay</span> <span class=''lava-debug-value''> - 10</span></li>
+                    <li><span class=''lava-debug-key''>BirthMonth</span> <span class=''lava-debug-value''> - 2</span></li>
+                    <li><span class=''lava-debug-key''>BirthYear</span> <span class=''lava-debug-value''> - 2009</span></li>
+                    <li><span class=''lava-debug-key''>Gender</span> <span class=''lava-debug-value''> - Female</span></li>
+                    <li><span class=''lava-debug-key''>MaritalStatusValueId</span> <span class=''lava-debug-value''> - 144</span></li>
+                    <li><span class=''lava-debug-key''>AnniversaryDate</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>GraduationYear</span> <span class=''lava-debug-value''> - 2026</span></li>
+                    <li><span class=''lava-debug-key''>GivingGroupId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>GivingId</span> <span class=''lava-debug-value''> - P6</span></li>
+                    <li><span class=''lava-debug-key''>GivingLeaderId</span> <span class=''lava-debug-value''> - 0</span></li>
+                    <li><span class=''lava-debug-key''>Email</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>IsEmailActive</span> <span class=''lava-debug-value''> - True</span></li>
+                    <li><span class=''lava-debug-key''>EmailNote</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>EmailPreference</span> <span class=''lava-debug-value''> - EmailAllowed</span></li>
+                    <li><span class=''lava-debug-key''>ReviewReasonNote</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>InactiveReasonNote</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>SystemNote</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ViewedCount</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>PrimaryAlias</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>PrimaryAliasId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>FullName</span> <span class=''lava-debug-value''> - Alex Decker</span></li>
+                    <li><span class=''lava-debug-key''>BirthdayDayOfWeek</span> <span class=''lava-debug-value''> - Wednesday</span></li>
+                    <li><span class=''lava-debug-key''>BirthdayDayOfWeekShort</span> <span class=''lava-debug-value''> - Wed</span></li>
+                    <li><span class=''lava-debug-key''>PhotoUrl</span> <span class=''lava-debug-value''> - /GetImage.ashx?id=48</span></li>
+                    <li>
+                        <span class=''lava-debug-key lava-debug-section level-1''>Users</span>
+                        {<ul></ul>}
+                    </li>
+                    <li>
+                        <span class=''lava-debug-key lava-debug-section level-1''>PhoneNumbers</span>
+                        {<ul></ul>}
+                    </li>
+                    <li><span class=''lava-debug-key''>MaritalStatusValue</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ConnectionStatusValue</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ReviewReasonValue</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>RecordStatusValue</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>RecordStatusReasonValue</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>RecordTypeValue</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>SuffixValue</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>TitleValue</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>Photo</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>BirthDate</span> <span class=''lava-debug-value''> - 2/10/2009 12:00:00 AM</span></li>
+                    <li><span class=''lava-debug-key''>DaysUntilBirthday</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>Age</span> <span class=''lava-debug-value''> - 7</span></li>
+                    <li><span class=''lava-debug-key''>NextBirthDay</span> <span class=''lava-debug-value''> - 2/10/2017 12:00:00 AM</span></li>
+                    <li><span class=''lava-debug-key''>DaysToBirthday</span> <span class=''lava-debug-value''> - 262</span></li>
+                    <li><span class=''lava-debug-key''>NextAnniversary</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>GradeOffset</span> <span class=''lava-debug-value''> - 10</span></li>
+                    <li><span class=''lava-debug-key''>HasGraduated</span> <span class=''lava-debug-value''> - False</span></li>
+                    <li><span class=''lava-debug-key''>GradeFormatted</span> <span class=''lava-debug-value''> - 2nd Grade</span></li>
+                    <li><span class=''lava-debug-key''>ImpersonationParameter</span> <span class=''lava-debug-value''> - rckipid=EAAAAHD3FoHwhq73An9lOfPKSi16F4aLILu6KQy...</span></li>
+                    <li><span class=''lava-debug-key''>CreatedDateTime</span> <span class=''lava-debug-value''> - 5/23/2016 4:08:34 PM</span></li>
+                    <li><span class=''lava-debug-key''>ModifiedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>CreatedByPersonAliasId</span> <span class=''lava-debug-value''> - 10</span></li>
+                    <li><span class=''lava-debug-key''>ModifiedByPersonAliasId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>CreatedByPersonId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>CreatedByPersonName</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ModifiedByPersonId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ModifiedByPersonName</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ModifiedAuditValuesAlreadyUpdated</span> <span class=''lava-debug-value''> - False</span></li>
+                    <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - 6</span></li>
+                    <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - 27919690-3cce-4fa6-95c4-cd21419eb51f</span></li>
+                    <li><span class=''lava-debug-key''>UrlEncodedKey</span> <span class=''lava-debug-value''> - EAAAAMo3E0AT6rBh3X7jTXvh83RSSF9rGC3JSYPZuKuoQOU...</span></li>
+                </ul>
+            </div>
+        </div>
+    </div><div class=''panel panel-default panel-lavadebug''>
+        <div class=''panel-heading clearfix collapsed'' data-toggle=''collapse'' data-target=''#collapse-6c47ed41-952f-47d0-ae23-0a41ebbbf866''><h5 class=''panel-title pull-left''>People</h5> <div class=''pull-right''><i class=''fa fa-chevron-up''></i></div></div><div id=''collapse-6c47ed41-952f-47d0-ae23-0a41ebbbf866'' class=''panel-collapse collapse''>
+            <div class=''panel-body''>
+                <p>People properties can be accessed by <code>{% for person in People %}{{ person.[PropertyKey] }}{% endfor %}</code>.</p>
+                {<ul>
+                    <li>
+                        [0]
+                        <ul>
+                            <li><span class=''lava-debug-key''>FamilyMember</span> <span class=''lava-debug-value''> - True</span></li>
+                            <li><span class=''lava-debug-key''>LastCheckIn</span> <span class=''lava-debug-value''> - 5/17/2016 10:24:55 AM</span></li>
+                            <li><span class=''lava-debug-key''>FirstTime</span> <span class=''lava-debug-value''> - False</span></li>
+                            <li><span class=''lava-debug-key''>SecurityCode</span> <span class=''lava-debug-value''> - BNK</span></li>
+                            <li><span class=''lava-debug-key''>IsSystem</span> <span class=''lava-debug-value''> - False</span></li>
+                            <li><span class=''lava-debug-key''>RecordTypeValueId</span> <span class=''lava-debug-value''> - 1</span></li>
+                            <li><span class=''lava-debug-key''>RecordStatusValueId</span> <span class=''lava-debug-value''> - 3</span></li>
+                            <li><span class=''lava-debug-key''>RecordStatusLastModifiedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>RecordStatusReasonValueId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ConnectionStatusValueId</span> <span class=''lava-debug-value''> - 146</span></li>
+                            <li><span class=''lava-debug-key''>ReviewReasonValueId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>IsDeceased</span> <span class=''lava-debug-value''> - False</span></li>
+                            <li><span class=''lava-debug-key''>TitleValueId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>FirstName</span> <span class=''lava-debug-value''> - Noah</span></li>
+                            <li><span class=''lava-debug-key''>NickName</span> <span class=''lava-debug-value''> - Noah</span></li>
+                            <li><span class=''lava-debug-key''>MiddleName</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>LastName</span> <span class=''lava-debug-value''> - Decker</span></li>
+                            <li><span class=''lava-debug-key''>SuffixValueId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>PhotoId</span> <span class=''lava-debug-value''> - 47</span></li>
+                            <li><span class=''lava-debug-key''>BirthDay</span> <span class=''lava-debug-value''> - 10</span></li>
+                            <li><span class=''lava-debug-key''>BirthMonth</span> <span class=''lava-debug-value''> - 3</span></li>
+                            <li><span class=''lava-debug-key''>BirthYear</span> <span class=''lava-debug-value''> - 2006</span></li>
+                            <li><span class=''lava-debug-key''>Gender</span> <span class=''lava-debug-value''> - Male</span></li>
+                            <li><span class=''lava-debug-key''>MaritalStatusValueId</span> <span class=''lava-debug-value''> - 144</span></li>
+                            <li><span class=''lava-debug-key''>AnniversaryDate</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>GraduationYear</span> <span class=''lava-debug-value''> - 2023</span></li>
+                            <li><span class=''lava-debug-key''>GivingGroupId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>GivingId</span> <span class=''lava-debug-value''> - P5</span></li>
+                            <li><span class=''lava-debug-key''>GivingLeaderId</span> <span class=''lava-debug-value''> - 0</span></li>
+                            <li><span class=''lava-debug-key''>Email</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>IsEmailActive</span> <span class=''lava-debug-value''> - True</span></li>
+                            <li><span class=''lava-debug-key''>EmailNote</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>EmailPreference</span> <span class=''lava-debug-value''> - EmailAllowed</span></li>
+                            <li><span class=''lava-debug-key''>ReviewReasonNote</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>InactiveReasonNote</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>SystemNote</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ViewedCount</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>PrimaryAlias</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>PrimaryAliasId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>FullName</span> <span class=''lava-debug-value''> - Noah Decker</span></li>
+                            <li><span class=''lava-debug-key''>BirthdayDayOfWeek</span> <span class=''lava-debug-value''> - Thursday</span></li>
+                            <li><span class=''lava-debug-key''>BirthdayDayOfWeekShort</span> <span class=''lava-debug-value''> - Thu</span></li>
+                            <li><span class=''lava-debug-key''>PhotoUrl</span> <span class=''lava-debug-value''> - /GetImage.ashx?id=47</span></li>
+                            <li>
+                                <span class=''lava-debug-key lava-debug-section level-1''>Users</span>
+                                {<ul></ul>}
+                            </li>
+                            <li>
+                                <span class=''lava-debug-key lava-debug-section level-1''>PhoneNumbers</span>
+                                {<ul></ul>}
+                            </li>
+                            <li><span class=''lava-debug-key''>MaritalStatusValue</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ConnectionStatusValue</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ReviewReasonValue</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>RecordStatusValue</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>RecordStatusReasonValue</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>RecordTypeValue</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>SuffixValue</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>TitleValue</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>Photo</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>BirthDate</span> <span class=''lava-debug-value''> - 3/10/2006 12:00:00 AM</span></li>
+                            <li><span class=''lava-debug-key''>DaysUntilBirthday</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>Age</span> <span class=''lava-debug-value''> - 10</span></li>
+                            <li><span class=''lava-debug-key''>NextBirthDay</span> <span class=''lava-debug-value''> - 3/10/2017 12:00:00 AM</span></li>
+                            <li><span class=''lava-debug-key''>DaysToBirthday</span> <span class=''lava-debug-value''> - 290</span></li>
+                            <li><span class=''lava-debug-key''>NextAnniversary</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>GradeOffset</span> <span class=''lava-debug-value''> - 7</span></li>
+                            <li><span class=''lava-debug-key''>HasGraduated</span> <span class=''lava-debug-value''> - False</span></li>
+                            <li><span class=''lava-debug-key''>GradeFormatted</span> <span class=''lava-debug-value''> - 5th Grade</span></li>
+                            <li><span class=''lava-debug-key''>ImpersonationParameter</span> <span class=''lava-debug-value''> - rckipid=EAAAAPs3yZQ9UP0gvXtq1yDsSBHZpn5xSUiI4V%...</span></li>
+                            <li><span class=''lava-debug-key''>CreatedDateTime</span> <span class=''lava-debug-value''> - 5/23/2016 4:08:34 PM</span></li>
+                            <li><span class=''lava-debug-key''>ModifiedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>CreatedByPersonAliasId</span> <span class=''lava-debug-value''> - 10</span></li>
+                            <li><span class=''lava-debug-key''>ModifiedByPersonAliasId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>CreatedByPersonId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>CreatedByPersonName</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ModifiedByPersonId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ModifiedByPersonName</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ModifiedAuditValuesAlreadyUpdated</span> <span class=''lava-debug-value''> - False</span></li>
+                            <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - 5</span></li>
+                            <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - 32aab9e4-970d-4551-a17e-385e66113bd5</span></li>
+                            <li><span class=''lava-debug-key''>UrlEncodedKey</span> <span class=''lava-debug-value''> - EAAAADSKnBBeHTdwjp4BlxvZlrPyFdnWP5e1NNCYTt8dgIA...</span></li>
+                        </ul>
+                    </li>
+                    <li>
+                        [1]
+                        <ul>
+                            <li><span class=''lava-debug-key''>FamilyMember</span> <span class=''lava-debug-value''> - True</span></li>
+                            <li><span class=''lava-debug-key''>LastCheckIn</span> <span class=''lava-debug-value''> - 5/17/2016 10:24:55 AM</span></li>
+                            <li><span class=''lava-debug-key''>FirstTime</span> <span class=''lava-debug-value''> - False</span></li>
+                            <li><span class=''lava-debug-key''>SecurityCode</span> <span class=''lava-debug-value''> - HFC</span></li>
+                            <li><span class=''lava-debug-key''>IsSystem</span> <span class=''lava-debug-value''> - False</span></li>
+                            <li><span class=''lava-debug-key''>RecordTypeValueId</span> <span class=''lava-debug-value''> - 1</span></li>
+                            <li><span class=''lava-debug-key''>RecordStatusValueId</span> <span class=''lava-debug-value''> - 3</span></li>
+                            <li><span class=''lava-debug-key''>RecordStatusLastModifiedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>RecordStatusReasonValueId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ConnectionStatusValueId</span> <span class=''lava-debug-value''> - 146</span></li>
+                            <li><span class=''lava-debug-key''>ReviewReasonValueId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>IsDeceased</span> <span class=''lava-debug-value''> - False</span></li>
+                            <li><span class=''lava-debug-key''>TitleValueId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>FirstName</span> <span class=''lava-debug-value''> - Alexis</span></li>
+                            <li><span class=''lava-debug-key''>NickName</span> <span class=''lava-debug-value''> - Alex</span></li>
+                            <li><span class=''lava-debug-key''>MiddleName</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>LastName</span> <span class=''lava-debug-value''> - Decker</span></li>
+                            <li><span class=''lava-debug-key''>SuffixValueId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>PhotoId</span> <span class=''lava-debug-value''> - 48</span></li>
+                            <li><span class=''lava-debug-key''>BirthDay</span> <span class=''lava-debug-value''> - 10</span></li>
+                            <li><span class=''lava-debug-key''>BirthMonth</span> <span class=''lava-debug-value''> - 2</span></li>
+                            <li><span class=''lava-debug-key''>BirthYear</span> <span class=''lava-debug-value''> - 2009</span></li>
+                            <li><span class=''lava-debug-key''>Gender</span> <span class=''lava-debug-value''> - Female</span></li>
+                            <li><span class=''lava-debug-key''>MaritalStatusValueId</span> <span class=''lava-debug-value''> - 144</span></li>
+                            <li><span class=''lava-debug-key''>AnniversaryDate</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>GraduationYear</span> <span class=''lava-debug-value''> - 2026</span></li>
+                            <li><span class=''lava-debug-key''>GivingGroupId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>GivingId</span> <span class=''lava-debug-value''> - P6</span></li>
+                            <li><span class=''lava-debug-key''>GivingLeaderId</span> <span class=''lava-debug-value''> - 0</span></li>
+                            <li><span class=''lava-debug-key''>Email</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>IsEmailActive</span> <span class=''lava-debug-value''> - True</span></li>
+                            <li><span class=''lava-debug-key''>EmailNote</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>EmailPreference</span> <span class=''lava-debug-value''> - EmailAllowed</span></li>
+                            <li><span class=''lava-debug-key''>ReviewReasonNote</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>InactiveReasonNote</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>SystemNote</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ViewedCount</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>PrimaryAlias</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>PrimaryAliasId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>FullName</span> <span class=''lava-debug-value''> - Alex Decker</span></li>
+                            <li><span class=''lava-debug-key''>BirthdayDayOfWeek</span> <span class=''lava-debug-value''> - Wednesday</span></li>
+                            <li><span class=''lava-debug-key''>BirthdayDayOfWeekShort</span> <span class=''lava-debug-value''> - Wed</span></li>
+                            <li><span class=''lava-debug-key''>PhotoUrl</span> <span class=''lava-debug-value''> - /GetImage.ashx?id=48</span></li>
+                            <li>
+                                <span class=''lava-debug-key lava-debug-section level-1''>Users</span>
+                                {<ul></ul>}
+                            </li>
+                            <li>
+                                <span class=''lava-debug-key lava-debug-section level-1''>PhoneNumbers</span>
+                                {<ul></ul>}
+                            </li>
+                            <li><span class=''lava-debug-key''>MaritalStatusValue</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ConnectionStatusValue</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ReviewReasonValue</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>RecordStatusValue</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>RecordStatusReasonValue</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>RecordTypeValue</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>SuffixValue</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>TitleValue</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>Photo</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>BirthDate</span> <span class=''lava-debug-value''> - 2/10/2009 12:00:00 AM</span></li>
+                            <li><span class=''lava-debug-key''>DaysUntilBirthday</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>Age</span> <span class=''lava-debug-value''> - 7</span></li>
+                            <li><span class=''lava-debug-key''>NextBirthDay</span> <span class=''lava-debug-value''> - 2/10/2017 12:00:00 AM</span></li>
+                            <li><span class=''lava-debug-key''>DaysToBirthday</span> <span class=''lava-debug-value''> - 262</span></li>
+                            <li><span class=''lava-debug-key''>NextAnniversary</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>GradeOffset</span> <span class=''lava-debug-value''> - 10</span></li>
+                            <li><span class=''lava-debug-key''>HasGraduated</span> <span class=''lava-debug-value''> - False</span></li>
+                            <li><span class=''lava-debug-key''>GradeFormatted</span> <span class=''lava-debug-value''> - 2nd Grade</span></li>
+                            <li><span class=''lava-debug-key''>ImpersonationParameter</span> <span class=''lava-debug-value''> - rckipid=EAAAANyezkn%2bjZUmiU1Vh34VqDzuoYZXSgwDb...</span></li>
+                            <li><span class=''lava-debug-key''>CreatedDateTime</span> <span class=''lava-debug-value''> - 5/23/2016 4:08:34 PM</span></li>
+                            <li><span class=''lava-debug-key''>ModifiedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>CreatedByPersonAliasId</span> <span class=''lava-debug-value''> - 10</span></li>
+                            <li><span class=''lava-debug-key''>ModifiedByPersonAliasId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>CreatedByPersonId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>CreatedByPersonName</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ModifiedByPersonId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ModifiedByPersonName</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ModifiedAuditValuesAlreadyUpdated</span> <span class=''lava-debug-value''> - False</span></li>
+                            <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - 6</span></li>
+                            <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - 27919690-3cce-4fa6-95c4-cd21419eb51f</span></li>
+                            <li><span class=''lava-debug-key''>UrlEncodedKey</span> <span class=''lava-debug-value''> - EAAAABg517P4N18QOQSywaweyHrvea5oV!2bBFl7YmACRx0...</span></li>
+                        </ul>
+                    </li>
+                </ul>}
+            </div>
+        </div>
+    </div><div class=''panel panel-default panel-lavadebug''>
+        <div class=''panel-heading clearfix collapsed'' data-toggle=''collapse'' data-target=''#collapse-4ad46515-0cf9-465d-b703-5ec63ba9b3d6''><h5 class=''panel-title pull-left''>Group Type</h5> <div class=''pull-right''><i class=''fa fa-chevron-up''></i></div></div><div id=''collapse-4ad46515-0cf9-465d-b703-5ec63ba9b3d6'' class=''panel-collapse collapse''>
+            <div class=''panel-body''>
+                <p>GroupType properties can be accessed by <code>{{ GroupType.[PropertyKey] }}</code>.</p>
+                <ul>
+                    <li><span class=''lava-debug-key''>LastCheckIn</span> <span class=''lava-debug-value''> - 5/17/2016 10:24:55 AM</span></li>
+                    <li>
+                        <span class=''lava-debug-key lava-debug-section level-1''>Groups</span>
+                        {<ul>
+                            <li>
+                                [0]
+                                <ul>
+                                    <li><span class=''lava-debug-key''>LastCheckIn</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li>
+                                        <span class=''lava-debug-key lava-debug-section level-1''>Locations</span>
+                                        {<ul>
+                                            <li>
+                                                [0]
+                                                <ul>
+                                                    <li><span class=''lava-debug-key''>LastCheckIn</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Locations</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ParentLocationId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Name</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>IsActive</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>LocationTypeValueId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>GeoPoint</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>GeoFence</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Street1</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Street2</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>City</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>County</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>State</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Country</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>PostalCode</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Barcode</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>AssessorParcelId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>StandardizeAttemptedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>StandardizeAttemptedServiceType</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>StandardizeAttemptedResult</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>StandardizedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>GeocodeAttemptedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>GeocodeAttemptedServiceType</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>GeocodeAttemptedResult</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>GeocodedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>IsGeoPointLocked</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>PrinterDeviceId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ImageId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>SoftRoomThreshold</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>FirmRoomThreshold</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>IsNamedLocation</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>LocationTypeValue</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ChildLocations</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>PrinterDevice</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Image</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>FormattedAddress</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>FormattedHtmlAddress</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Latitude</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Longitude</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>GeoFenceCoordinates</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>CampusId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Distance</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>CreatedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ModifiedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>CreatedByPersonAliasId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ModifiedByPersonAliasId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>CreatedByPersonId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>CreatedByPersonName</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ModifiedByPersonId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ModifiedByPersonName</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ModifiedAuditValuesAlreadyUpdated</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>UrlEncodedKey</span> <span class=''lava-debug-value''> - </span></li>
+                                                </ul>
+                                            </li>
+                                        </ul>}
+                                    </li>
+                                    <li><span class=''lava-debug-key''>IsSystem</span> <span class=''lava-debug-value''> - False</span></li>
+                                    <li><span class=''lava-debug-key''>ParentGroupId</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>GroupTypeId</span> <span class=''lava-debug-value''> - 20</span></li>
+                                    <li><span class=''lava-debug-key''>CampusId</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>ScheduleId</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>Name</span> <span class=''lava-debug-value''> - Grades 2-3</span></li>
+                                    <li><span class=''lava-debug-key''>Description</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>IsSecurityRole</span> <span class=''lava-debug-value''> - False</span></li>
+                                    <li><span class=''lava-debug-key''>IsActive</span> <span class=''lava-debug-value''> - True</span></li>
+                                    <li><span class=''lava-debug-key''>Order</span> <span class=''lava-debug-value''> - 5</span></li>
+                                    <li><span class=''lava-debug-key''>AllowGuests</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>WelcomeSystemEmailId</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>ExitSystemEmailId</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>SyncDataViewId</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>AddUserAccountsDuringSync</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>MustMeetRequirementsToAddMember</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>IsPublic</span> <span class=''lava-debug-value''> - True</span></li>
+                                    <li><span class=''lava-debug-key''>GroupCapacity</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>GroupType</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>Campus</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>Schedule</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>WelcomeSystemEmail</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>ExitSystemEmail</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>SyncDataView</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li>
+                                        <span class=''lava-debug-key lava-debug-section level-1''>Groups</span>
+                                        {<ul></ul>}
+                                    </li>
+                                    <li>
+                                        <span class=''lava-debug-key lava-debug-section level-1''>Members</span>
+                                        {<ul></ul>}
+                                    </li>
+                                    <li>
+                                        <span class=''lava-debug-key lava-debug-section level-1''>GroupLocations</span>
+                                        {<ul></ul>}
+                                    </li>
+                                    <li>
+                                        <span class=''lava-debug-key lava-debug-section level-1''>GroupRequirements</span>
+                                        {<ul></ul>}
+                                    </li>
+                                    <li><span class=''lava-debug-key''>CreatedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>ModifiedDateTime</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>CreatedByPersonAliasId</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>ModifiedByPersonAliasId</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>CreatedByPersonId</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>CreatedByPersonName</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>ModifiedByPersonId</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>ModifiedByPersonName</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>ModifiedAuditValuesAlreadyUpdated</span> <span class=''lava-debug-value''> - False</span></li>
+                                    <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - 29</span></li>
+                                    <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - 24901861-14cf-474f-9fce-7ba1d6c84bff</span></li>
+                                    <li><span class=''lava-debug-key''>UrlEncodedKey</span> <span class=''lava-debug-value''> - EAAAAIG27LDlHWCOlEiRM0G2znFnTV0jIcM4SsRS77YJ9QM...</span></li>
+                                </ul>
+                            </li>
+                        </ul>}
+                    </li>
+                    <li><span class=''lava-debug-key''>IsSystem</span> <span class=''lava-debug-value''> - False</span></li>
+                    <li><span class=''lava-debug-key''>Name</span> <span class=''lava-debug-value''> - Elementary Area</span></li>
+                    <li><span class=''lava-debug-key''>Description</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>GroupTerm</span> <span class=''lava-debug-value''> - Group</span></li>
+                    <li><span class=''lava-debug-key''>GroupMemberTerm</span> <span class=''lava-debug-value''> - Member</span></li>
+                    <li><span class=''lava-debug-key''>DefaultGroupRoleId</span> <span class=''lava-debug-value''> - 39</span></li>
+                    <li><span class=''lava-debug-key''>AllowedScheduleTypes</span> <span class=''lava-debug-value''> - None</span></li>
+                    <li><span class=''lava-debug-key''>AllowMultipleLocations</span> <span class=''lava-debug-value''> - True</span></li>
+                    <li><span class=''lava-debug-key''>ShowInGroupList</span> <span class=''lava-debug-value''> - False</span></li>
+                    <li><span class=''lava-debug-key''>ShowInNavigation</span> <span class=''lava-debug-value''> - False</span></li>
+                    <li><span class=''lava-debug-key''>IconCssClass</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>TakesAttendance</span> <span class=''lava-debug-value''> - True</span></li>
+                    <li><span class=''lava-debug-key''>SendAttendanceReminder</span> <span class=''lava-debug-value''> - False</span></li>
+                    <li><span class=''lava-debug-key''>AttendanceRule</span> <span class=''lava-debug-value''> - None</span></li>
+                    <li><span class=''lava-debug-key''>AttendancePrintTo</span> <span class=''lava-debug-value''> - Default</span></li>
+                    <li><span class=''lava-debug-key''>Order</span> <span class=''lava-debug-value''> - 2</span></li>
+                    <li><span class=''lava-debug-key''>InheritedGroupTypeId</span> <span class=''lava-debug-value''> - 17</span></li>
+                    <li>
+                        <span class=''lava-debug-key lava-debug-section level-1''>InheritedGroupType</span>
+                        <ul>
+                            <li><span class=''lava-debug-key''>IsSystem</span> <span class=''lava-debug-value''> - False</span></li>
+                            <li><span class=''lava-debug-key''>Name</span> <span class=''lava-debug-value''> - Check in by Grade</span></li>
+                            <li><span class=''lava-debug-key''>Description</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>GroupTerm</span> <span class=''lava-debug-value''> - Group</span></li>
+                            <li><span class=''lava-debug-key''>GroupMemberTerm</span> <span class=''lava-debug-value''> - Member</span></li>
+                            <li><span class=''lava-debug-key''>DefaultGroupRoleId</span> <span class=''lava-debug-value''> - 36</span></li>
+                            <li><span class=''lava-debug-key''>AllowedScheduleTypes</span> <span class=''lava-debug-value''> - None</span></li>
+                            <li><span class=''lava-debug-key''>AllowMultipleLocations</span> <span class=''lava-debug-value''> - False</span></li>
+                            <li><span class=''lava-debug-key''>ShowInGroupList</span> <span class=''lava-debug-value''> - False</span></li>
+                            <li><span class=''lava-debug-key''>ShowInNavigation</span> <span class=''lava-debug-value''> - False</span></li>
+                            <li><span class=''lava-debug-key''>IconCssClass</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>TakesAttendance</span> <span class=''lava-debug-value''> - False</span></li>
+                            <li><span class=''lava-debug-key''>SendAttendanceReminder</span> <span class=''lava-debug-value''> - False</span></li>
+                            <li><span class=''lava-debug-key''>AttendanceRule</span> <span class=''lava-debug-value''> - None</span></li>
+                            <li><span class=''lava-debug-key''>AttendancePrintTo</span> <span class=''lava-debug-value''> - Default</span></li>
+                            <li><span class=''lava-debug-key''>Order</span> <span class=''lava-debug-value''> - 0</span></li>
+                            <li><span class=''lava-debug-key''>InheritedGroupTypeId</span> <span class=''lava-debug-value''> - 15</span></li>
+                            <li>
+                                <span class=''lava-debug-key lava-debug-section level-2''>InheritedGroupType</span>
+                                <ul>
+                                    <li><span class=''lava-debug-key''>IsSystem</span> <span class=''lava-debug-value''> - False</span></li>
+                                    <li><span class=''lava-debug-key''>Name</span> <span class=''lava-debug-value''> - Check in by Age</span></li>
+                                    <li><span class=''lava-debug-key''>Description</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>GroupTerm</span> <span class=''lava-debug-value''> - Group</span></li>
+                                    <li><span class=''lava-debug-key''>GroupMemberTerm</span> <span class=''lava-debug-value''> - Member</span></li>
+                                    <li><span class=''lava-debug-key''>DefaultGroupRoleId</span> <span class=''lava-debug-value''> - 34</span></li>
+                                    <li><span class=''lava-debug-key''>AllowedScheduleTypes</span> <span class=''lava-debug-value''> - None</span></li>
+                                    <li><span class=''lava-debug-key''>AllowMultipleLocations</span> <span class=''lava-debug-value''> - False</span></li>
+                                    <li><span class=''lava-debug-key''>ShowInGroupList</span> <span class=''lava-debug-value''> - False</span></li>
+                                    <li><span class=''lava-debug-key''>ShowInNavigation</span> <span class=''lava-debug-value''> - False</span></li>
+                                    <li><span class=''lava-debug-key''>IconCssClass</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>TakesAttendance</span> <span class=''lava-debug-value''> - False</span></li>
+                                    <li><span class=''lava-debug-key''>SendAttendanceReminder</span> <span class=''lava-debug-value''> - False</span></li>
+                                    <li><span class=''lava-debug-key''>AttendanceRule</span> <span class=''lava-debug-value''> - None</span></li>
+                                    <li><span class=''lava-debug-key''>AttendancePrintTo</span> <span class=''lava-debug-value''> - Default</span></li>
+                                    <li><span class=''lava-debug-key''>Order</span> <span class=''lava-debug-value''> - 0</span></li>
+                                    <li><span class=''lava-debug-key''>InheritedGroupTypeId</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>InheritedGroupType</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>LocationSelectionMode</span> <span class=''lava-debug-value''> - None</span></li>
+                                    <li><span class=''lava-debug-key''>EnableLocationSchedules</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>EnableAlternatePlacements</span> <span class=''lava-debug-value''> - False</span></li>
+                                    <li><span class=''lava-debug-key''>GroupTypePurposeValueId</span> <span class=''lava-debug-value''> - 145</span></li>
+                                    <li>
+                                        <span class=''lava-debug-key lava-debug-section level-3''>GroupTypePurposeValue</span>
+                                        <ul>
+                                            <li><span class=''lava-debug-key''>IsSystem</span> <span class=''lava-debug-value''> - True</span></li>
+                                            <li><span class=''lava-debug-key''>DefinedTypeId</span> <span class=''lava-debug-value''> - 31</span></li>
+                                            <li><span class=''lava-debug-key''>Order</span> <span class=''lava-debug-value''> - 1</span></li>
+                                            <li><span class=''lava-debug-key''>Value</span> <span class=''lava-debug-value''> - Check-in Filter</span></li>
+                                            <li><span class=''lava-debug-key''>Description</span> <span class=''lava-debug-value''> - A Group Type where the purpose is for check-in...</span></li>
+                                            <li>
+                                                <span class=''lava-debug-key lava-debug-section level-4''>DefinedType</span>
+                                                <ul>
+                                                    <li><span class=''lava-debug-key''>IsSystem</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>FieldTypeId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Order</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>CategoryId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Name</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Description</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Category</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>FieldType</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>DefinedValues</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ForeignId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ForeignGuid</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ForeignKey</span> <span class=''lava-debug-value''> - </span></li>
+                                                </ul>
+                                            </li>
+                                            <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - 145</span></li>
+                                            <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - 6bced84c-69ad-4f5a-9197-5c0f9c02dd34</span></li>
+                                            <li><span class=''lava-debug-key''>ForeignId</span> <span class=''lava-debug-value''> - </span></li>
+                                            <li><span class=''lava-debug-key''>ForeignGuid</span> <span class=''lava-debug-value''> - </span></li>
+                                            <li><span class=''lava-debug-key''>ForeignKey</span> <span class=''lava-debug-value''> - </span></li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <span class=''lava-debug-key lava-debug-section level-3''>Roles</span>
+                                        {<ul>
+                                            <li>[0] <span class=''lava-debug-value''> - Member</span></li>
+                                        </ul>}
+                                    </li>
+                                    <li>
+                                        <span class=''lava-debug-key lava-debug-section level-3''>GroupScheduleExclusions</span>
+                                        {<ul></ul>}
+                                    </li>
+                                    <li>
+                                        <span class=''lava-debug-key lava-debug-section level-3''>ChildGroupTypes</span>
+                                        {<ul></ul>}
+                                    </li>
+                                    <li>
+                                        <span class=''lava-debug-key lava-debug-section level-3''>ParentGroupTypes</span>
+                                        {<ul>
+                                            <li>
+                                                [0]
+                                                <ul>
+                                                    <li><span class=''lava-debug-key''>IsSystem</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Name</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Description</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>GroupTerm</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>GroupMemberTerm</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>DefaultGroupRoleId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>AllowedScheduleTypes</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>AllowMultipleLocations</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ShowInGroupList</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ShowInNavigation</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>IconCssClass</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>TakesAttendance</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>SendAttendanceReminder</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>AttendanceRule</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>AttendancePrintTo</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Order</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>InheritedGroupTypeId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>InheritedGroupType</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>LocationSelectionMode</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>EnableLocationSchedules</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>EnableAlternatePlacements</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>GroupTypePurposeValueId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>GroupTypePurposeValue</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Roles</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>GroupScheduleExclusions</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ChildGroupTypes</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ParentGroupTypes</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>LocationTypeValues</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ForeignId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ForeignGuid</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ForeignKey</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li>
+                                                        <span class=''lava-debug-key lava-debug-section level-1''>Attributes <p class=''attributes''>Below is a list of attributes that can be retrieved using <code>{{ GroupType.InheritedGroupType.InheritedGroupType.ParentGroupTypes | Attribute:''[AttributeKey]'' }}</code>.</p></span>
+                                                        <ul>
+                                                            <li><span class=''lava-debug-key''>core_checkin_CheckInType</span> <span class=''lava-debug-value''> - Family</span></li>
+                                                            <li><span class=''lava-debug-key''>core_checkin_EnableManagerOption</span> <span class=''lava-debug-value''> - Yes</span></li>
+                                                            <li><span class=''lava-debug-key''>core_checkin_EnableOverride</span> <span class=''lava-debug-value''> - Yes</span></li>
+                                                            <li><span class=''lava-debug-key''>core_checkin_SecurityCodeLength</span> <span class=''lava-debug-value''> - 3</span></li>
+                                                            <li><span class=''lava-debug-key''>core_checkin_ReuseSameCode</span> <span class=''lava-debug-value''> - No</span></li>
+                                                            <li><span class=''lava-debug-key''>core_checkin_UseSameOptions</span> <span class=''lava-debug-value''> - Yes</span></li>
+                                                            <li><span class=''lava-debug-key''>core_checkin_SearchType</span> <span class=''lava-debug-value''> - Phone Number</span></li>
+                                                            <li><span class=''lava-debug-key lava-debug-section level-2''>core_checkin_RegularExpressionFilter</span> </li>
+                                                            <li><span class=''lava-debug-key''>core_checkin_MaxSearchResults</span> <span class=''lava-debug-value''> - 100</span></li>
+                                                            <li><span class=''lava-debug-key''>core_checkin_MinimumPhoneSearchLength</span> <span class=''lava-debug-value''> - 4</span></li>
+                                                            <li><span class=''lava-debug-key''>core_checkin_MaximumPhoneSearchLength</span> <span class=''lava-debug-value''> - 10</span></li>
+                                                            <li><span class=''lava-debug-key''>core_checkin_PhoneSearchType</span> <span class=''lava-debug-value''> - Ends With</span></li>
+                                                            <li><span class=''lava-debug-key''>core_checkin_RefreshInterval</span> <span class=''lava-debug-value''> - 10</span></li>
+                                                            <li><span class=''lava-debug-key''>core_checkin_AgeRequired</span> <span class=''lava-debug-value''> - Yes</span></li>
+                                                            <li><span class=''lava-debug-key''>core_checkin_DisplayLocationCount</span> <span class=''lava-debug-value''> - Yes</span></li>
+                                                            <li><span class=''lava-debug-key''>core_checkin_AutoSelectDaysBack</span> <span class=''lava-debug-value''> - 10</span></li>
+                                                        </ul>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                        </ul>}
+                                    </li>
+                                    <li>
+                                        <span class=''lava-debug-key lava-debug-section level-3''>LocationTypeValues</span>
+                                        {<ul></ul>}
+                                    </li>
+                                    <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - 15</span></li>
+                                    <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - 0572a5fe-20a4-4bf1-95cd-c71db5281392</span></li>
+                                    <li><span class=''lava-debug-key''>ForeignId</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>ForeignGuid</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>ForeignKey</span> <span class=''lava-debug-value''> - </span></li>
+                                </ul>
+                            </li>
+                            <li><span class=''lava-debug-key''>LocationSelectionMode</span> <span class=''lava-debug-value''> - None</span></li>
+                            <li><span class=''lava-debug-key''>EnableLocationSchedules</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>EnableAlternatePlacements</span> <span class=''lava-debug-value''> - False</span></li>
+                            <li><span class=''lava-debug-key''>GroupTypePurposeValueId</span> <span class=''lava-debug-value''> - 145</span></li>
+                            <li>
+                                <span class=''lava-debug-key lava-debug-section level-2''>GroupTypePurposeValue</span>
+                                <ul>
+                                    <li><span class=''lava-debug-key''>IsSystem</span> <span class=''lava-debug-value''> - True</span></li>
+                                    <li><span class=''lava-debug-key''>DefinedTypeId</span> <span class=''lava-debug-value''> - 31</span></li>
+                                    <li><span class=''lava-debug-key''>Order</span> <span class=''lava-debug-value''> - 1</span></li>
+                                    <li><span class=''lava-debug-key''>Value</span> <span class=''lava-debug-value''> - Check-in Filter</span></li>
+                                    <li><span class=''lava-debug-key''>Description</span> <span class=''lava-debug-value''> - A Group Type where the purpose is for check-in...</span></li>
+                                    <li>
+                                        <span class=''lava-debug-key lava-debug-section level-3''>DefinedType</span>
+                                        <ul>
+                                            <li><span class=''lava-debug-key''>IsSystem</span> <span class=''lava-debug-value''> - True</span></li>
+                                            <li><span class=''lava-debug-key''>FieldTypeId</span> <span class=''lava-debug-value''> - 1</span></li>
+                                            <li><span class=''lava-debug-key''>Order</span> <span class=''lava-debug-value''> - 16</span></li>
+                                            <li><span class=''lava-debug-key''>CategoryId</span> <span class=''lava-debug-value''> - 150</span></li>
+                                            <li><span class=''lava-debug-key''>Name</span> <span class=''lava-debug-value''> - Group Type Purpose</span></li>
+                                            <li><span class=''lava-debug-key''>Description</span> <span class=''lava-debug-value''> - Determines the role (check-in template,...</span></li>
+                                            <li>
+                                                <span class=''lava-debug-key lava-debug-section level-4''>Category</span>
+                                                <ul>
+                                                    <li><span class=''lava-debug-key''>IsSystem</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ParentCategoryId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>EntityTypeId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>EntityTypeQualifierColumn</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>EntityTypeQualifierValue</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Name</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Description</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Order</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>IconCssClass</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>HighlightColor</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ParentCategory</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Categories</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ForeignId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ForeignGuid</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ForeignKey</span> <span class=''lava-debug-value''> - </span></li>
+                                                </ul>
+                                            </li>
+                                            <li>
+                                                <span class=''lava-debug-key lava-debug-section level-4''>FieldType</span>
+                                                <ul>
+                                                    <li><span class=''lava-debug-key''>IsSystem</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Name</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Description</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Assembly</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Class</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Field</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ForeignId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ForeignGuid</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ForeignKey</span> <span class=''lava-debug-value''> - </span></li>
+                                                </ul>
+                                            </li>
+                                            <li>
+                                                <span class=''lava-debug-key lava-debug-section level-4''>DefinedValues</span>
+                                                {<ul>
+                                                    <li>[0] <span class=''lava-debug-value''> - </span></li>
+                                                    <li>[1] <span class=''lava-debug-value''> - </span></li>
+                                                    <li>[2] <span class=''lava-debug-value''> - ...</span></li>
+                                                </ul>}
+                                            </li>
+                                            <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - 31</span></li>
+                                            <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - b23f1e45-bc26-4e82-beb3-9b191fe5ccc3</span></li>
+                                            <li><span class=''lava-debug-key''>ForeignId</span> <span class=''lava-debug-value''> - </span></li>
+                                            <li><span class=''lava-debug-key''>ForeignGuid</span> <span class=''lava-debug-value''> - </span></li>
+                                            <li><span class=''lava-debug-key''>ForeignKey</span> <span class=''lava-debug-value''> - </span></li>
+                                        </ul>
+                                    </li>
+                                    <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - 145</span></li>
+                                    <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - 6bced84c-69ad-4f5a-9197-5c0f9c02dd34</span></li>
+                                    <li><span class=''lava-debug-key''>ForeignId</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>ForeignGuid</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>ForeignKey</span> <span class=''lava-debug-value''> - </span></li>
+                                </ul>
+                            </li>
+                            <li>
+                                <span class=''lava-debug-key lava-debug-section level-2''>Roles</span>
+                                {<ul>
+                                    <li>[0] <span class=''lava-debug-value''> - Member</span></li>
+                                </ul>}
+                            </li>
+                            <li>
+                                <span class=''lava-debug-key lava-debug-section level-2''>GroupScheduleExclusions</span>
+                                {<ul></ul>}
+                            </li>
+                            <li>
+                                <span class=''lava-debug-key lava-debug-section level-2''>ChildGroupTypes</span>
+                                {<ul></ul>}
+                            </li>
+                            <li>
+                                <span class=''lava-debug-key lava-debug-section level-2''>ParentGroupTypes</span>
+                                {<ul>
+                                    <li>
+                                        [0]
+                                        <ul>
+                                            <li><span class=''lava-debug-key''>IsSystem</span> <span class=''lava-debug-value''> - False</span></li>
+                                            <li><span class=''lava-debug-key''>Name</span> <span class=''lava-debug-value''> - Weekly Service Check-in Area</span></li>
+                                            <li><span class=''lava-debug-key''>Description</span> <span class=''lava-debug-value''> - </span></li>
+                                            <li><span class=''lava-debug-key''>GroupTerm</span> <span class=''lava-debug-value''> - Group</span></li>
+                                            <li><span class=''lava-debug-key''>GroupMemberTerm</span> <span class=''lava-debug-value''> - Member</span></li>
+                                            <li><span class=''lava-debug-key''>DefaultGroupRoleId</span> <span class=''lava-debug-value''> - 33</span></li>
+                                            <li><span class=''lava-debug-key''>AllowedScheduleTypes</span> <span class=''lava-debug-value''> - None</span></li>
+                                            <li><span class=''lava-debug-key''>AllowMultipleLocations</span> <span class=''lava-debug-value''> - False</span></li>
+                                            <li><span class=''lava-debug-key''>ShowInGroupList</span> <span class=''lava-debug-value''> - False</span></li>
+                                            <li><span class=''lava-debug-key''>ShowInNavigation</span> <span class=''lava-debug-value''> - False</span></li>
+                                            <li><span class=''lava-debug-key''>IconCssClass</span> <span class=''lava-debug-value''> - fa fa-child</span></li>
+                                            <li><span class=''lava-debug-key''>TakesAttendance</span> <span class=''lava-debug-value''> - False</span></li>
+                                            <li><span class=''lava-debug-key''>SendAttendanceReminder</span> <span class=''lava-debug-value''> - False</span></li>
+                                            <li><span class=''lava-debug-key''>AttendanceRule</span> <span class=''lava-debug-value''> - None</span></li>
+                                            <li><span class=''lava-debug-key''>AttendancePrintTo</span> <span class=''lava-debug-value''> - Default</span></li>
+                                            <li><span class=''lava-debug-key''>Order</span> <span class=''lava-debug-value''> - 0</span></li>
+                                            <li><span class=''lava-debug-key''>InheritedGroupTypeId</span> <span class=''lava-debug-value''> - </span></li>
+                                            <li><span class=''lava-debug-key''>InheritedGroupType</span> <span class=''lava-debug-value''> - </span></li>
+                                            <li><span class=''lava-debug-key''>LocationSelectionMode</span> <span class=''lava-debug-value''> - None</span></li>
+                                            <li><span class=''lava-debug-key''>EnableLocationSchedules</span> <span class=''lava-debug-value''> - </span></li>
+                                            <li><span class=''lava-debug-key''>EnableAlternatePlacements</span> <span class=''lava-debug-value''> - False</span></li>
+                                            <li><span class=''lava-debug-key''>GroupTypePurposeValueId</span> <span class=''lava-debug-value''> - 142</span></li>
+                                            <li>
+                                                <span class=''lava-debug-key lava-debug-section level-1''>GroupTypePurposeValue</span>
+                                                <ul>
+                                                    <li><span class=''lava-debug-key''>IsSystem</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>DefinedTypeId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Order</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Value</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Description</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>DefinedType</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ForeignId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ForeignGuid</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ForeignKey</span> <span class=''lava-debug-value''> - </span></li>
+                                                </ul>
+                                            </li>
+                                            <li>
+                                                <span class=''lava-debug-key lava-debug-section level-1''>Roles</span>
+                                                {<ul>
+                                                    <li>[0] <span class=''lava-debug-value''> - </span></li>
+                                                </ul>}
+                                            </li>
+                                            <li>
+                                                <span class=''lava-debug-key lava-debug-section level-1''>GroupScheduleExclusions</span>
+                                                {<ul></ul>}
+                                            </li>
+                                            <li>
+                                                <span class=''lava-debug-key lava-debug-section level-1''>ChildGroupTypes</span>
+                                                {<ul>
+                                                    <li>[0] <span class=''lava-debug-value''> - </span></li>
+                                                    <li>[1] <span class=''lava-debug-value''> - </span></li>
+                                                    <li>[2] <span class=''lava-debug-value''> - ...</span></li>
+                                                </ul>}
+                                            </li>
+                                            <li>
+                                                <span class=''lava-debug-key lava-debug-section level-1''>ParentGroupTypes</span>
+                                                {<ul></ul>}
+                                            </li>
+                                            <li>
+                                                <span class=''lava-debug-key lava-debug-section level-1''>LocationTypeValues</span>
+                                                {<ul></ul>}
+                                            </li>
+                                            <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - 14</span></li>
+                                            <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - fedd389a-616f-4a53-906c-63d8255631c5</span></li>
+                                            <li><span class=''lava-debug-key''>ForeignId</span> <span class=''lava-debug-value''> - </span></li>
+                                            <li><span class=''lava-debug-key''>ForeignGuid</span> <span class=''lava-debug-value''> - </span></li>
+                                            <li><span class=''lava-debug-key''>ForeignKey</span> <span class=''lava-debug-value''> - </span></li>
+                                            <li>
+                                                <span class=''lava-debug-key lava-debug-section level-1''>Attributes <p class=''attributes''>Below is a list of attributes that can be retrieved using <code>{{ GroupType.InheritedGroupType.ParentGroupTypes | Attribute:''[AttributeKey]'' }}</code>.</p></span>
+                                                <ul>
+                                                    <li><span class=''lava-debug-key''>core_checkin_CheckInType</span> <span class=''lava-debug-value''> - Family</span></li>
+                                                    <li><span class=''lava-debug-key''>core_checkin_EnableManagerOption</span> <span class=''lava-debug-value''> - Yes</span></li>
+                                                    <li><span class=''lava-debug-key''>core_checkin_EnableOverride</span> <span class=''lava-debug-value''> - Yes</span></li>
+                                                    <li><span class=''lava-debug-key''>core_checkin_SecurityCodeLength</span> <span class=''lava-debug-value''> - 3</span></li>
+                                                    <li><span class=''lava-debug-key''>core_checkin_ReuseSameCode</span> <span class=''lava-debug-value''> - No</span></li>
+                                                    <li><span class=''lava-debug-key''>core_checkin_UseSameOptions</span> <span class=''lava-debug-value''> - Yes</span></li>
+                                                    <li><span class=''lava-debug-key''>core_checkin_SearchType</span> <span class=''lava-debug-value''> - Phone Number</span></li>
+                                                    <li><span class=''lava-debug-key lava-debug-section level-2''>core_checkin_RegularExpressionFilter</span> </li>
+                                                    <li><span class=''lava-debug-key''>core_checkin_MaxSearchResults</span> <span class=''lava-debug-value''> - 100</span></li>
+                                                    <li><span class=''lava-debug-key''>core_checkin_MinimumPhoneSearchLength</span> <span class=''lava-debug-value''> - 4</span></li>
+                                                    <li><span class=''lava-debug-key''>core_checkin_MaximumPhoneSearchLength</span> <span class=''lava-debug-value''> - 10</span></li>
+                                                    <li><span class=''lava-debug-key''>core_checkin_PhoneSearchType</span> <span class=''lava-debug-value''> - Ends With</span></li>
+                                                    <li><span class=''lava-debug-key''>core_checkin_RefreshInterval</span> <span class=''lava-debug-value''> - 10</span></li>
+                                                    <li><span class=''lava-debug-key''>core_checkin_AgeRequired</span> <span class=''lava-debug-value''> - Yes</span></li>
+                                                    <li><span class=''lava-debug-key''>core_checkin_DisplayLocationCount</span> <span class=''lava-debug-value''> - Yes</span></li>
+                                                    <li><span class=''lava-debug-key''>core_checkin_AutoSelectDaysBack</span> <span class=''lava-debug-value''> - 10</span></li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>}
+                            </li>
+                            <li>
+                                <span class=''lava-debug-key lava-debug-section level-2''>LocationTypeValues</span>
+                                {<ul></ul>}
+                            </li>
+                            <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - 17</span></li>
+                            <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - 4f9565a7-dd5a-41c3-b4e8-13f0b872b10b</span></li>
+                            <li><span class=''lava-debug-key''>ForeignId</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ForeignGuid</span> <span class=''lava-debug-value''> - </span></li>
+                            <li><span class=''lava-debug-key''>ForeignKey</span> <span class=''lava-debug-value''> - </span></li>
+                        </ul>
+                    </li>
+                    <li><span class=''lava-debug-key''>LocationSelectionMode</span> <span class=''lava-debug-value''> - None</span></li>
+                    <li><span class=''lava-debug-key''>EnableLocationSchedules</span> <span class=''lava-debug-value''> - True</span></li>
+                    <li><span class=''lava-debug-key''>EnableAlternatePlacements</span> <span class=''lava-debug-value''> - False</span></li>
+                    <li><span class=''lava-debug-key''>GroupTypePurposeValueId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>GroupTypePurposeValue</span> <span class=''lava-debug-value''> - </span></li>
+                    <li>
+                        <span class=''lava-debug-key lava-debug-section level-1''>Roles</span>
+                        {<ul>
+                            <li>[0] <span class=''lava-debug-value''> - Member</span></li>
+                        </ul>}
+                    </li>
+                    <li>
+                        <span class=''lava-debug-key lava-debug-section level-1''>GroupScheduleExclusions</span>
+                        {<ul></ul>}
+                    </li>
+                    <li>
+                        <span class=''lava-debug-key lava-debug-section level-1''>ChildGroupTypes</span>
+                        {<ul></ul>}
+                    </li>
+                    <li>
+                        <span class=''lava-debug-key lava-debug-section level-1''>ParentGroupTypes</span>
+                        {<ul>
+                            <li>
+                                [0]
+                                <ul>
+                                    <li><span class=''lava-debug-key''>IsSystem</span> <span class=''lava-debug-value''> - False</span></li>
+                                    <li><span class=''lava-debug-key''>Name</span> <span class=''lava-debug-value''> - Weekly Service Check-in Area</span></li>
+                                    <li><span class=''lava-debug-key''>Description</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>GroupTerm</span> <span class=''lava-debug-value''> - Group</span></li>
+                                    <li><span class=''lava-debug-key''>GroupMemberTerm</span> <span class=''lava-debug-value''> - Member</span></li>
+                                    <li><span class=''lava-debug-key''>DefaultGroupRoleId</span> <span class=''lava-debug-value''> - 33</span></li>
+                                    <li><span class=''lava-debug-key''>AllowedScheduleTypes</span> <span class=''lava-debug-value''> - None</span></li>
+                                    <li><span class=''lava-debug-key''>AllowMultipleLocations</span> <span class=''lava-debug-value''> - False</span></li>
+                                    <li><span class=''lava-debug-key''>ShowInGroupList</span> <span class=''lava-debug-value''> - False</span></li>
+                                    <li><span class=''lava-debug-key''>ShowInNavigation</span> <span class=''lava-debug-value''> - False</span></li>
+                                    <li><span class=''lava-debug-key''>IconCssClass</span> <span class=''lava-debug-value''> - fa fa-child</span></li>
+                                    <li><span class=''lava-debug-key''>TakesAttendance</span> <span class=''lava-debug-value''> - False</span></li>
+                                    <li><span class=''lava-debug-key''>SendAttendanceReminder</span> <span class=''lava-debug-value''> - False</span></li>
+                                    <li><span class=''lava-debug-key''>AttendanceRule</span> <span class=''lava-debug-value''> - None</span></li>
+                                    <li><span class=''lava-debug-key''>AttendancePrintTo</span> <span class=''lava-debug-value''> - Default</span></li>
+                                    <li><span class=''lava-debug-key''>Order</span> <span class=''lava-debug-value''> - 0</span></li>
+                                    <li><span class=''lava-debug-key''>InheritedGroupTypeId</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>InheritedGroupType</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>LocationSelectionMode</span> <span class=''lava-debug-value''> - None</span></li>
+                                    <li><span class=''lava-debug-key''>EnableLocationSchedules</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>EnableAlternatePlacements</span> <span class=''lava-debug-value''> - False</span></li>
+                                    <li><span class=''lava-debug-key''>GroupTypePurposeValueId</span> <span class=''lava-debug-value''> - 142</span></li>
+                                    <li>
+                                        <span class=''lava-debug-key lava-debug-section level-1''>GroupTypePurposeValue</span>
+                                        <ul>
+                                            <li><span class=''lava-debug-key''>IsSystem</span> <span class=''lava-debug-value''> - True</span></li>
+                                            <li><span class=''lava-debug-key''>DefinedTypeId</span> <span class=''lava-debug-value''> - 31</span></li>
+                                            <li><span class=''lava-debug-key''>Order</span> <span class=''lava-debug-value''> - 0</span></li>
+                                            <li><span class=''lava-debug-key''>Value</span> <span class=''lava-debug-value''> - Check-in Template</span></li>
+                                            <li><span class=''lava-debug-key''>Description</span> <span class=''lava-debug-value''> - A Group Type where the purpose is for check-in...</span></li>
+                                            <li>
+                                                <span class=''lava-debug-key lava-debug-section level-2''>DefinedType</span>
+                                                <ul>
+                                                    <li><span class=''lava-debug-key''>IsSystem</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>FieldTypeId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Order</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>CategoryId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Name</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Description</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Category</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>FieldType</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>DefinedValues</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ForeignId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ForeignGuid</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ForeignKey</span> <span class=''lava-debug-value''> - </span></li>
+                                                </ul>
+                                            </li>
+                                            <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - 142</span></li>
+                                            <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - 4a406cb0-495b-4795-b788-52bdfde00b01</span></li>
+                                            <li><span class=''lava-debug-key''>ForeignId</span> <span class=''lava-debug-value''> - </span></li>
+                                            <li><span class=''lava-debug-key''>ForeignGuid</span> <span class=''lava-debug-value''> - </span></li>
+                                            <li><span class=''lava-debug-key''>ForeignKey</span> <span class=''lava-debug-value''> - </span></li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <span class=''lava-debug-key lava-debug-section level-1''>Roles</span>
+                                        {<ul>
+                                            <li>[0] <span class=''lava-debug-value''> - Member</span></li>
+                                        </ul>}
+                                    </li>
+                                    <li>
+                                        <span class=''lava-debug-key lava-debug-section level-1''>GroupScheduleExclusions</span>
+                                        {<ul></ul>}
+                                    </li>
+                                    <li>
+                                        <span class=''lava-debug-key lava-debug-section level-1''>ChildGroupTypes</span>
+                                        {<ul>
+                                            <li>
+                                                [0]
+                                                <ul>
+                                                    <li><span class=''lava-debug-key''>IsSystem</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Name</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Description</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>GroupTerm</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>GroupMemberTerm</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>DefaultGroupRoleId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>AllowedScheduleTypes</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>AllowMultipleLocations</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ShowInGroupList</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ShowInNavigation</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>IconCssClass</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>TakesAttendance</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>SendAttendanceReminder</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>AttendanceRule</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>AttendancePrintTo</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Order</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>InheritedGroupTypeId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>InheritedGroupType</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>LocationSelectionMode</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>EnableLocationSchedules</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>EnableAlternatePlacements</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>GroupTypePurposeValueId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>GroupTypePurposeValue</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Roles</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>GroupScheduleExclusions</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ChildGroupTypes</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ParentGroupTypes</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>LocationTypeValues</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ForeignId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ForeignGuid</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ForeignKey</span> <span class=''lava-debug-value''> - </span></li>
+                                                </ul>
+                                            </li>
+                                            <li>
+                                                [1]
+                                                <ul>
+                                                    <li><span class=''lava-debug-key''>IsSystem</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Name</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Description</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>GroupTerm</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>GroupMemberTerm</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>DefaultGroupRoleId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>AllowedScheduleTypes</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>AllowMultipleLocations</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ShowInGroupList</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ShowInNavigation</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>IconCssClass</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>TakesAttendance</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>SendAttendanceReminder</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>AttendanceRule</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>AttendancePrintTo</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Order</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>InheritedGroupTypeId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>InheritedGroupType</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>LocationSelectionMode</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>EnableLocationSchedules</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>EnableAlternatePlacements</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>GroupTypePurposeValueId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>GroupTypePurposeValue</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Roles</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>GroupScheduleExclusions</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ChildGroupTypes</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ParentGroupTypes</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>LocationTypeValues</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ForeignId</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ForeignGuid</span> <span class=''lava-debug-value''> - </span></li>
+                                                    <li><span class=''lava-debug-key''>ForeignKey</span> <span class=''lava-debug-value''> - </span></li>
+                                                </ul>
+                                            </li>
+                                            <li>[2] <span class=''lava-debug-value''> - ...</span></li>
+                                        </ul>}
+                                    </li>
+                                    <li>
+                                        <span class=''lava-debug-key lava-debug-section level-1''>ParentGroupTypes</span>
+                                        {<ul></ul>}
+                                    </li>
+                                    <li>
+                                        <span class=''lava-debug-key lava-debug-section level-1''>LocationTypeValues</span>
+                                        {<ul></ul>}
+                                    </li>
+                                    <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - 14</span></li>
+                                    <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - fedd389a-616f-4a53-906c-63d8255631c5</span></li>
+                                    <li><span class=''lava-debug-key''>ForeignId</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>ForeignGuid</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li><span class=''lava-debug-key''>ForeignKey</span> <span class=''lava-debug-value''> - </span></li>
+                                    <li>
+                                        <span class=''lava-debug-key lava-debug-section level-1''>Attributes <p class=''attributes''>Below is a list of attributes that can be retrieved using <code>{{ GroupType.ParentGroupTypes | Attribute:''[AttributeKey]'' }}</code>.</p></span>
+                                        <ul>
+                                            <li><span class=''lava-debug-key''>core_checkin_CheckInType</span> <span class=''lava-debug-value''> - Family</span></li>
+                                            <li><span class=''lava-debug-key''>core_checkin_EnableManagerOption</span> <span class=''lava-debug-value''> - Yes</span></li>
+                                            <li><span class=''lava-debug-key''>core_checkin_EnableOverride</span> <span class=''lava-debug-value''> - Yes</span></li>
+                                            <li><span class=''lava-debug-key''>core_checkin_SecurityCodeLength</span> <span class=''lava-debug-value''> - 3</span></li>
+                                            <li><span class=''lava-debug-key''>core_checkin_ReuseSameCode</span> <span class=''lava-debug-value''> - No</span></li>
+                                            <li><span class=''lava-debug-key''>core_checkin_UseSameOptions</span> <span class=''lava-debug-value''> - Yes</span></li>
+                                            <li><span class=''lava-debug-key''>core_checkin_SearchType</span> <span class=''lava-debug-value''> - Phone Number</span></li>
+                                            <li><span class=''lava-debug-key lava-debug-section level-2''>core_checkin_RegularExpressionFilter</span> </li>
+                                            <li><span class=''lava-debug-key''>core_checkin_MaxSearchResults</span> <span class=''lava-debug-value''> - 100</span></li>
+                                            <li><span class=''lava-debug-key''>core_checkin_MinimumPhoneSearchLength</span> <span class=''lava-debug-value''> - 4</span></li>
+                                            <li><span class=''lava-debug-key''>core_checkin_MaximumPhoneSearchLength</span> <span class=''lava-debug-value''> - 10</span></li>
+                                            <li><span class=''lava-debug-key''>core_checkin_PhoneSearchType</span> <span class=''lava-debug-value''> - Ends With</span></li>
+                                            <li><span class=''lava-debug-key''>core_checkin_RefreshInterval</span> <span class=''lava-debug-value''> - 10</span></li>
+                                            <li><span class=''lava-debug-key''>core_checkin_AgeRequired</span> <span class=''lava-debug-value''> - Yes</span></li>
+                                            <li><span class=''lava-debug-key''>core_checkin_DisplayLocationCount</span> <span class=''lava-debug-value''> - Yes</span></li>
+                                            <li><span class=''lava-debug-key''>core_checkin_AutoSelectDaysBack</span> <span class=''lava-debug-value''> - 10</span></li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>}
+                    </li>
+                    <li>
+                        <span class=''lava-debug-key lava-debug-section level-1''>LocationTypeValues</span>
+                        {<ul></ul>}
+                    </li>
+                    <li><span class=''lava-debug-key''>Id</span> <span class=''lava-debug-value''> - 20</span></li>
+                    <li><span class=''lava-debug-key''>Guid</span> <span class=''lava-debug-value''> - e3c8f7d6-5ceb-43bb-802f-66c3e734049e</span></li>
+                    <li><span class=''lava-debug-key''>ForeignId</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ForeignGuid</span> <span class=''lava-debug-value''> - </span></li>
+                    <li><span class=''lava-debug-key''>ForeignKey</span> <span class=''lava-debug-value''> - </span></li>
+                </ul>
+            </div>
+        </div>
+    </div><div class=''panel panel-default panel-lavadebug''>
+        <div class=''panel-heading clearfix collapsed'' data-toggle=''collapse'' data-target=''#collapse-f20faa42-181f-4d44-84fe-118c530d4db1''><h5 class=''panel-title pull-left''>Group Members</h5> <div class=''pull-right''><i class=''fa fa-chevron-up''></i></div></div><div id=''collapse-f20faa42-181f-4d44-84fe-118c530d4db1'' class=''panel-collapse collapse''>
+            <div class=''panel-body''>
+                <p>GroupMembers properties can be accessed by <code>{% for groupmember in GroupMembers %}{{ groupmember.[PropertyKey] }}{% endfor %}</code>.</p>
+                {<ul></ul>}
+            </div>
+        </div>
+    </div></div>
+
+
+</div>
+'
+WHERE [GUID] = 'E4D289A9-70FA-4381-913E-2A757AD11147'
