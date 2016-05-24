@@ -438,6 +438,8 @@ namespace Rock.Communication.Transport
                             message.To.Clear();
                             message.To.Add( to );
 
+                            message.Headers.Clear();
+
                             string subject = template.Subject.ResolveMergeFields( recipientData.MergeFields );
                             string body = Regex.Replace( template.Body.ResolveMergeFields( recipientData.MergeFields ), @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
 
