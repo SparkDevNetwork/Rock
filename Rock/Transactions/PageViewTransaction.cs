@@ -169,9 +169,9 @@ namespace Rock.Transactions
                 PageView pageView = new PageView();
                 pageViewService.Add( pageView );
 
-                // obscate rock magic token
-                Regex rgx = new Regex( @"rockipid=([^&]*)" );
-                string cleanUrl = rgx.Replace( this.Url, "rockipid=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
+                // obfuscate rock magic token
+                Regex rgx = new Regex( @"rckipid=([^&]*)" );
+                string cleanUrl = rgx.Replace( this.Url, "rckipid=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
 
                 pageView.PageId = this.PageId;
                 pageView.SiteId = this.SiteId;
