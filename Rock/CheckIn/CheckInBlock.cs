@@ -87,7 +87,7 @@ namespace Rock.CheckIn
         private CheckinType _currentCheckinType;
 
         /// <summary>
-        /// Gets a value indicating whether this instance is override.
+        /// Gets a value indicating whether check-in is currently in override mode
         /// </summary>
         /// <value>
         /// <c>true</c> if this instance is override; otherwise, <c>false</c>.
@@ -277,7 +277,7 @@ namespace Rock.CheckIn
                         {
                             CurrentWorkflow = Rock.Model.Workflow.Activate( workflowType, CurrentCheckInState.Kiosk.Device.Name, rockContext );
                             
-                            if (Request["Override"] != null && Request["Override"].AsBoolean() )
+                            if ( IsOverride )
                             {
                                 CurrentWorkflow.SetAttributeValue( "Override", "True" );
                             }
@@ -489,7 +489,7 @@ namespace Rock.CheckIn
         /// <param name="queryParams">The query parameters.</param>
         protected Dictionary<string, string> CheckForOverride( Dictionary<string, string> queryParams = null )
         {
-            if ( Request["Override"] != null && Request["Override"].AsBoolean() )
+            if ( IsOverride )
             {
                 if ( queryParams == null )
                 {
