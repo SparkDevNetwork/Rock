@@ -147,9 +147,18 @@ namespace RockWeb.Plugins.church_ccv.Core
                 if ( person != null )
                 {
                     lName.Text = string.Format( "<span class='first-word'>{0}</span> {1}", person.NickName, person.LastName );
-                    lAge.Text = person.Age.ToString() + " yrs old";
+
+                    if ( person.Age != null )
+                    {
+                        lAge.Text = person.Age.ToString() + " yrs old";
+                    }
+                    
                     lGender.Text = person.Gender.ToString();
-                    lConnectionStatus.Text = person.ConnectionStatusValue.ToString();
+
+                    if ( person.ConnectionStatusValue != null)
+                    {
+                        lConnectionStatus.Text = person.ConnectionStatusValue.ToString();
+                    }  
                 }
 
                 pnlDetails.Visible = true;
