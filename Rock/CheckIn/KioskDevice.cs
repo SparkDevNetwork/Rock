@@ -120,7 +120,7 @@ namespace Rock.CheckIn
         /// </value>
         public bool HasActiveLocations(List<int> configuredGroupTypes)
         {
-            return ActiveGroupTypes( configuredGroupTypes ).SelectMany( t => t.KioskGroups ).Any( g => g.KioskLocations.Any( l => l.IsCheckInActive && l.Location.IsActive ) );
+            return ActiveGroupTypes( configuredGroupTypes ).SelectMany( t => t.KioskGroups ).Any( g => g.KioskLocations.Any( l => l.IsCheckInActive && l.IsActiveAndNotFull ) );
         }
 
         /// <summary>

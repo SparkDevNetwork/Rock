@@ -28,11 +28,11 @@ namespace Rock.CheckIn
     /// <summary>
     /// A RockBlock specific to check-in
     /// </summary>
-    [LinkedPage( "Home Page" )]
-    [LinkedPage( "Next Page" )]
-    [LinkedPage( "Previous Page" )]
-    [WorkflowTypeField( "Workflow Type", "The workflow type to activate for check-in" )]
-    [TextField( "Workflow Activity", "The name of the workflow activity to run on selection.", false, "" )]
+    [WorkflowTypeField( "Workflow Type", "The workflow type to activate for check-in", false, false, "", "", 0 )]
+    [TextField( "Workflow Activity", "The name of the workflow activity to run on selection.", false, "", "", 1 )]
+    [LinkedPage( "Home Page", "", false, "", "", 2 )]
+    [LinkedPage( "Previous Page", "", false, "", "", 3 )]
+    [LinkedPage( "Next Page", "", false, "", "", 4 )]
     public abstract class CheckInBlock : RockBlock
     {
 
@@ -85,6 +85,20 @@ namespace Rock.CheckIn
             }
         }
         private CheckinType _currentCheckinType;
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is override.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is override; otherwise, <c>false</c>.
+        /// </value>
+        protected bool IsOverride
+        {
+            get
+            {
+                return Request["Override"] != null && Request["Override"].AsBoolean();
+            }
+        }
 
         /// <summary>
         /// The current group type ids
@@ -166,6 +180,37 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Gets the person schedule sub title.
+        /// </summary>
+        /// <returns></returns>
+        protected string GetPersonScheduleSubTitle()
+        {
+            if ( CurrentCheckInState != null )
+            {
+                var person = CurrentCheckInState.CheckIn.CurrentPerson;
+                if ( person != null )
+                {
+                    var schedule = person.CurrentSchedule;
+                    if ( schedule != null )
+                    {
+                        // If check-in is not configured to automatically select same options for each service
+                        // or option was not available (i.e. not first service ) then show name/service
+                        if ( !CurrentCheckInState.CheckInType.UseSameOptions ||
+                            ( schedule.Schedule.Id != person.SelectedSchedules.First().Schedule.Id ) )
+                        {
+                            string.Format( "{0} @ {1}", person, schedule );
+                        }
+                    }
+
+                    return person.ToString();
+
+                }
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
         /// Returns the locations for this Kiosk for the configured group types
         /// </summary>
         /// <value>
@@ -232,14 +277,10 @@ namespace Rock.CheckIn
                         {
                             CurrentWorkflow = Rock.Model.Workflow.Activate( workflowType, CurrentCheckInState.Kiosk.Device.Name, rockContext );
                             
-                            if (Request["Override"] != null)
+                            if (Request["Override"] != null && Request["Override"].AsBoolean() )
                             {
-                                if ( Request["Override"].ToString() == "True" )
-                                {
-                                    CurrentWorkflow.SetAttributeValue( "Override", "True" );
-                                }
+                                CurrentWorkflow.SetAttributeValue( "Override", "True" );
                             }
-                            
                         }
 
                         var activityType = workflowType.ActivityTypes.Where( a => a.Name == activityName ).FirstOrDefault();
@@ -398,7 +439,7 @@ namespace Rock.CheckIn
         /// <summary>
         /// Cancels the check-in.
         /// </summary>
-        protected void CancelCheckin()
+        protected virtual void CancelCheckin()
         {
             NavigateToHomePage();
         }
@@ -406,7 +447,7 @@ namespace Rock.CheckIn
         /// <summary>
         /// Navigates to the check-in home page.
         /// </summary>
-        protected void NavigateToHomePage()
+        protected virtual void NavigateToHomePage()
         {
             NavigateToLinkedPage( "HomePage" );
         }
@@ -414,26 +455,57 @@ namespace Rock.CheckIn
         /// <summary>
         /// Navigates to next page.
         /// </summary>
-        protected void NavigateToNextPage()
+        protected virtual void NavigateToNextPage()
         {
-            NavigateToLinkedPage( "NextPage" );
+            NavigateToNextPage( null );
         }
 
         /// <summary>
         /// Navigates to next page.
         /// </summary>
-        protected void NavigateToNextPage( Dictionary<string, string> queryParams )
+        /// <param name="queryParams">The query parameters.</param>
+        protected virtual void NavigateToNextPage( Dictionary<string, string> queryParams )
         {
+            queryParams = CheckForOverride( queryParams );
             NavigateToLinkedPage( "NextPage", queryParams );
         }
 
         /// <summary>
         /// Navigates to previous page.
         /// </summary>
-        protected void NavigateToPreviousPage()
+        protected virtual void NavigateToPreviousPage()
         {
             var queryParams = new Dictionary<string, string>();
             queryParams.Add( "back", "true" );
+
+            queryParams = CheckForOverride( queryParams );
+
+            NavigateToPreviousPage( queryParams );
+        }
+
+        /// <summary>
+        /// Checks the override.
+        /// </summary>
+        /// <param name="queryParams">The query parameters.</param>
+        protected Dictionary<string, string> CheckForOverride( Dictionary<string, string> queryParams = null )
+        {
+            if ( Request["Override"] != null && Request["Override"].AsBoolean() )
+            {
+                if ( queryParams == null )
+                {
+                    queryParams = new Dictionary<string, string>();
+                }
+                queryParams.AddOrReplace( "Override", "True" );
+            }
+            return queryParams;
+        }
+
+        /// <summary>
+        /// Navigates to previous page.
+        /// </summary>
+        /// <param name="queryParams">The query parameters.</param>
+        protected virtual void NavigateToPreviousPage( Dictionary<string, string> queryParams )
+        {
             NavigateToLinkedPage( "PreviousPage", queryParams );
         }
 

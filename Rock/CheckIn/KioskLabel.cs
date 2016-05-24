@@ -45,6 +45,22 @@ namespace Rock.CheckIn
         public Guid Guid { get; set; }
 
         /// <summary>
+        /// Gets or sets the type of the label.
+        /// </summary>
+        /// <value>
+        /// The type of the label.
+        /// </value>
+        public KioskLabelType LabelType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        public int Order { get; set; }
+
+        /// <summary>
         /// Gets or sets the URL.
         /// </summary>
         /// <value>
@@ -104,13 +120,15 @@ namespace Rock.CheckIn
                     if ( file != null )
                     {
                         label = new KioskLabel();
-
                         label.Guid = file.Guid;
                         label.Url = string.Format( "{0}GetFile.ashx?id={1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), file.Id );
                         label.MergeFields = new Dictionary<string, string>();
                         label.FileContent = file.ContentsToString();
 
                         file.LoadAttributes( rockContext );
+
+                        label.LabelType = file.GetAttributeValue( "core_LabelType" ).ConvertToEnum<KioskLabelType>();
+
                         string attributeValue = file.GetAttributeValue( "MergeCodes" );
                         if ( !string.IsNullOrWhiteSpace( attributeValue ) )
                         {
@@ -160,5 +178,26 @@ namespace Rock.CheckIn
         }
 
         #endregion
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public enum KioskLabelType
+    {
+        /// <summary>
+        /// The family
+        /// </summary>
+        Family = 0,
+
+        /// <summary>
+        /// The person
+        /// </summary>
+        Person = 1,
+
+        /// <summary>
+        /// The location
+        /// </summary>
+        Location = 2
     }
 }

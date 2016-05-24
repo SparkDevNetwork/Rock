@@ -49,31 +49,28 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     ClearSelection();
 
-                    CheckInPerson person = null;
-                    List<CheckInGroupType> groupTypes = null;
-
-                    person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
-                        .SelectMany( f => f.People.Where( p => p.Selected ) )
-                        .FirstOrDefault();
-
-                    if ( person != null )
+                    var person = CurrentCheckInState.CheckIn.CurrentPerson;
+                    if ( person == null )
                     {
-                        groupTypes = person.GroupTypes.Where( t => t.Selected ).ToList();
+                        GoBack();
                     }
 
+                    var schedule = person.CurrentSchedule;
+
+                    var groupTypes = person.SelectedGroupTypes( schedule );
                     if ( groupTypes == null || !groupTypes.Any() )
                     {
                         GoBack();
                     }
 
-                    lTitle.Text = person.ToString();
+                    lTitle.Text = GetPersonScheduleSubTitle();
+
                     lSubTitle.Text = groupTypes
                         .Where( t => t.GroupType != null )
                         .Select( t => t.GroupType.Name )
                         .ToList().AsDelimited( ", " );
 
-                    var availGroups = groupTypes
-                        .SelectMany( t => t.Groups.Where( g => !g.ExcludedByFilter) ).ToList();
+                    var availGroups = groupTypes.SelectMany( t => t.GetAvailableGroups( schedule ) ).ToList();
                     if ( availGroups.Count == 1 )
                     {
                         if ( UserBackedUp )
@@ -82,8 +79,17 @@ namespace RockWeb.Blocks.CheckIn
                         }
                         else
                         {
-                            availGroups.FirstOrDefault().Selected = true;
-                            ProcessSelection();
+                            var group = availGroups.First();
+                            if ( schedule == null )
+                            {
+                                group.Selected = true;
+                            }
+                            else
+                            {
+                                group.SelectedForSchedule.Add( schedule.Schedule.Id );
+                            }
+
+                            ProcessSelection( person, schedule );
                         }
                     }
                     else
@@ -103,16 +109,16 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void ClearSelection()
         {
-            foreach ( var family in CurrentCheckInState.CheckIn.Families )
+            var person = CurrentCheckInState.CheckIn.CurrentPerson;
+            if ( person != null )
             {
-                foreach ( var person in family.People )
+                var schedule = person.CurrentSchedule;
+                foreach ( var groupType in person.SelectedGroupTypes( schedule ) )
                 {
-                    foreach ( var groupType in person.GroupTypes )
+                    foreach( var group in groupType.SelectedGroups( schedule ) )
                     {
-                        foreach ( var group in groupType.Groups )
-                        {
-                            group.Selected = false;
-                        }
+                        group.Selected = false;
+                        group.SelectedForSchedule = new List<int>();
                     }
                 }
             }
@@ -122,27 +128,49 @@ namespace RockWeb.Blocks.CheckIn
         {
             if ( KioskCurrentlyActive )
             {
-                var groupTypes = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
-                    .SelectMany( f => f.People.Where( p => p.Selected )
-                        .SelectMany( p => p.GroupTypes.Where( t => t.Selected ) ) )
-                            .ToList();
-
-                if ( groupTypes != null && groupTypes.Any() )
+                var person = CurrentCheckInState.CheckIn.CurrentPerson;
+                if ( person != null )
                 {
-                    int id = Int32.Parse( e.CommandArgument.ToString() );
-                    var group = groupTypes.SelectMany( t => t.Groups)
-                        .Where( g => g.Group.Id == id ).FirstOrDefault();
+                    var schedule = person.CurrentSchedule;
 
-                    // deselect any group types that don't contain the group
-                    foreach ( var groupType in groupTypes )
+                    var groupTypes = person.SelectedGroupTypes( schedule );
+                    if ( groupTypes != null && groupTypes.Any() )
                     {
-                        groupType.Selected = groupType.Groups.Contains(group);
-                    }
+                        int id = Int32.Parse( e.CommandArgument.ToString() );
+                        var group = groupTypes
+                            .SelectMany( t => t.Groups )
+                            .Where( g => g.Group.Id == id )
+                            .FirstOrDefault();
 
-                    if ( group != null )
-                    {
-                        group.Selected = true;
-                        ProcessSelection();
+                        // deselect any group types that don't contain the group
+                        foreach ( var groupType in groupTypes )
+                        {
+                            if ( schedule == null )
+                            {
+                                groupType.Selected = groupType.Groups.Contains( group );
+                            }
+                            else
+                            {
+                                if ( !groupType.SelectedForSchedule.Contains( schedule.Schedule.Id ) )
+                                {
+                                    groupType.SelectedForSchedule.Remove( schedule.Schedule.Id );
+                                }
+                            }
+                        }
+
+                        if ( group != null )
+                        {
+                            if ( schedule == null )
+                            {
+                                group.Selected = true;
+                            }
+                            else
+                            {
+                                group.SelectedForSchedule.Add( schedule.Schedule.Id );
+                            }
+
+                            ProcessSelection( person, schedule );
+                        }
                     }
                 }
             }
@@ -158,15 +186,21 @@ namespace RockWeb.Blocks.CheckIn
             CancelCheckin();
         }
 
-        protected void ProcessSelection()
+        protected void ProcessSelection( CheckInPerson person, CheckInSchedule schedule )
         {
-            ProcessSelection( maWarning, () => CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
-                .SelectMany( f => f.People.Where( p => p.Selected )
-                    .SelectMany( p => p.GroupTypes.Where( t => t.Selected )
-                        .SelectMany( t => t.Groups.Where( g => g.Selected ) 
-                            .SelectMany( g => g.Locations.Where( l => !l.ExcludedByFilter ) ) ) ) )
-                .Count() <= 0,
-                "<p>Sorry, based on your selection, there are currently not any available locations that can be checked into.</p>" );
+            if ( person != null )
+            {
+                if ( !ProcessSelection(
+                    maWarning,
+                    () => person.SelectedGroupTypes( schedule )
+                        .SelectMany( t => t.SelectedGroups( schedule )
+                            .SelectMany( g => g.Locations.Where( l => !l.ExcludedByFilter ) ) )
+                        .Count() <= 0,
+                    "<p>Sorry, based on your selection, there are currently not any available locations that can be checked into.</p>" ) )
+                {
+                    ClearSelection();
+                }
+            }
         }
     }
 }

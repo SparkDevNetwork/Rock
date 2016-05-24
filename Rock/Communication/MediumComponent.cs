@@ -60,7 +60,7 @@ namespace Rock.Communication
         /// <summary>
         /// Initializes a new instance of the <see cref="MediumComponent" /> class.
         /// </summary>
-        public MediumComponent()
+        public MediumComponent() : base( false )
         {
             this.LoadAttributes();
         }

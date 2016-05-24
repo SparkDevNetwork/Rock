@@ -49,9 +49,9 @@ namespace Rock.Follow
         /// <summary>
         /// Initializes a new instance of the <see cref="EventComponent" /> class.
         /// </summary>
-        public EventComponent()
+        public EventComponent() : base( false )
         {
-            // Override default constructor of Component that loads attributes (not needed for event components, needs to be done by each following event)
+            // Override default constructor if Component that loads attributes (not needed for event components, needs to be done by each following event)
         }
 
         /// <summary>

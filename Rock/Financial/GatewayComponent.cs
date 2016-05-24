@@ -50,7 +50,7 @@ namespace Rock.Financial
         /// <summary>
         /// Initializes a new instance of the <see cref="GatewayComponent" /> class.
         /// </summary>
-        public GatewayComponent()
+        public GatewayComponent() : base( false )
         {
             // Override default constructor of Component that loads attributes (not needed for gateway components, needs to be done by each financial gateway)
         }

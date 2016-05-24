@@ -30,6 +30,15 @@ namespace Rock.CheckIn
     public class CheckInLabel 
     {
         /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        [DataMember]
+        public int Order { get; set; }
+
+        /// <summary>
         /// Gets or sets the printer device id.
         /// </summary>
         /// <value>
@@ -113,10 +122,11 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="kioskLabel">The label.</param>
         /// <param name="mergeObjects">The merge objects.</param>
-        public CheckInLabel( KioskLabel kioskLabel, Dictionary<string, object> mergeObjects )
+        public CheckInLabel( KioskLabel kioskLabel, Dictionary<string, object> mergeObjects, List<int> scheduleIds )
         {
             LabelKey = kioskLabel.Guid.ToString();
             LabelFile = kioskLabel.Url;
+            Order = kioskLabel.Order;
 
             MergeFields = new Dictionary<string, string>();
             foreach ( var item in kioskLabel.MergeFields )

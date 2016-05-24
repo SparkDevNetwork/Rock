@@ -1648,5 +1648,23 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201605180005401_ScheduledTxnSource_ContributionStatementQuery", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- Rename a workflow setting attribute
+        ///UPDATE [Attribute] SET
+        ///    [Name] = &apos;Use Same Options&apos;,
+        ///    [Key] = &apos;core_checkin_UseSameOptions&apos;
+        ///WHERE [Guid] = &apos;EC7FA927-95D0-44A8-8AB3-2D74A9FA2F26&apos;
+        ///
+        ///-- Fix the ordering of the Person Search workflow activity
+        ///DECLARE @ActivityTypeId int = ( SELECT TOP 1 [Id] FROM [WorkflowActivityType] WHERE [Guid] = &apos;EB744DF1-E454-482C-B111-80A54EF8A674&apos; )
+        ///
+        ///DECLARE @EntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = &apos;Rock.Workflow.Action.CheckIn.LoadLo [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201605232234462_FamilyCheckinType {
+            get {
+                return ResourceManager.GetString("_201605232234462_FamilyCheckinType", resourceCulture);
+            }
+        }
     }
 }

@@ -81,6 +81,9 @@ namespace Rock.CheckIn
         [DataMember]
         public bool Selected { get; set; }
 
+        [DataMember]
+        public bool Processed { get; set; }
+
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
