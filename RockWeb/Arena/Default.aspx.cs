@@ -76,7 +76,7 @@ public partial class Arena_Default : System.Web.UI.Page
         _redirectRules.Add( new RedirectRule( "/Arena/default.aspx?page=18735", "/youngadults", false ) );
 
         // get the current request
-        var requestPath = Request.Url.PathAndQuery;
+        var requestPath = Request.Url.PathAndQuery.ToLower();
 
         foreach ( var rule in _redirectRules )
         {
@@ -108,7 +108,7 @@ public partial class Arena_Default : System.Web.UI.Page
 
         public RedirectRule( string oldAddress, string newAddress, bool ReplaceString )
         {
-            this.OldAddress = oldAddress;
+            this.OldAddress = oldAddress.ToLower();
             this.NewAddress = newAddress;
             this.ReplaceString = ReplaceString;
         }
