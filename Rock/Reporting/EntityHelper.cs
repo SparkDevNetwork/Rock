@@ -188,6 +188,15 @@ namespace Rock.Reporting
                                 a.EntityTypeQualifierColumn == string.Empty ||
                                 a.EntityTypeQualifierColumn == "ContentChannelTypeId" );
                     }
+                    else if ( entityType == typeof( Rock.Model.Workflow ) )
+                    {
+                        // in the case of Workflow, show attributes that are entity global, but also ones that are qualified by WorkflowTypeId
+                        qryAttributes = qryAttributes
+                            .Where( a =>
+                                a.EntityTypeQualifierColumn == null ||
+                                a.EntityTypeQualifierColumn == string.Empty ||
+                                a.EntityTypeQualifierColumn == "WorkflowTypeId" );
+                    }
                     else
                     {
                         qryAttributes = qryAttributes.Where( a => a.EntityTypeQualifierColumn == string.Empty && a.EntityTypeQualifierValue == string.Empty );
@@ -331,6 +340,20 @@ namespace Rock.Reporting
                         {
                             // Append the Qualifier to the title
                             entityField.Title = string.Format( "{0} ({1})", attribute.Name, contentChannelType.Name );
+                        }
+                    }
+                }
+
+                // Special processing for Entity Type "Workflow" to handle sub-types that are distinguished by WorkflowTypeId.
+                if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( Rock.Model.Workflow ) ) && attribute.EntityTypeQualifierColumn == "WorkflowTypeId" )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var workflowType = new WorkflowTypeService( rockContext ).Get( attribute.EntityTypeQualifierValue.AsInteger() );
+                        if ( workflowType != null )
+                        {
+                            // Append the Qualifier to the title
+                            entityField.Title = string.Format( "{0} ({1})", attribute.Name, workflowType.Name );
                         }
                     }
                 }
