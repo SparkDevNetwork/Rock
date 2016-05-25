@@ -73,6 +73,12 @@ namespace RockWeb.Plugins.church_ccv.Podcast
             
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "WeekendSeries", podcastSeriesList );
+
+            Dictionary<string, object> linkedPages = new Dictionary<string, object>();
+            linkedPages.Add("SeriesDetailPage", LinkedPageUrl("SeriesDetailPage", null));
+            linkedPages.Add("MessageDetailPage", LinkedPageUrl("MessageDetailPage", null));
+            linkedPages.Add("WatchPage", LinkedPageUrl("WatchPage", null));
+            mergeFields.Add("LinkedPages", linkedPages);
     
             string template = GetAttributeValue( "LavaTemplate" );
             
