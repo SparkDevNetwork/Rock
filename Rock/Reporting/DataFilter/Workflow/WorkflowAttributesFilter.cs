@@ -98,7 +98,7 @@ namespace Rock.Reporting.DataFilter.Workflow
         /// <returns></returns>
         public override string FormatSelection( Type entityType, string selection )
         {
-            string result = "Worklflow Property";
+            string result = "Workflow Property";
 
             // First value is workflow type, second value is attribute, remaining values are the field type's filter values
             var values = JsonConvert.DeserializeObject<List<string>>( selection );
