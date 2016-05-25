@@ -77,11 +77,6 @@ namespace RockWeb
             var currentUser = UserLoginService.GetCurrentUser();
             Person currentPerson = currentUser != null ? currentUser.Person : null;
 
-            if ( !context.User.Identity.IsAuthenticated )
-            {
-                throw new Rock.Web.FileUploadException( "Must be logged in", System.Net.HttpStatusCode.Forbidden );
-            }
-
             try
             {
                 HttpFileCollection hfc = context.Request.Files;
@@ -98,11 +93,18 @@ namespace RockWeb
 
                 if ( isBinaryFile )
                 {
-                    ProcessBinaryFile( context, uploadedFile );
+                    ProcessBinaryFile( context, uploadedFile, currentPerson );
                 }
                 else
                 {
-                    ProcessContentFile( context, uploadedFile );
+                    if ( !context.User.Identity.IsAuthenticated )
+                    {
+                        throw new Rock.Web.FileUploadException( "Must be logged in", System.Net.HttpStatusCode.Forbidden );
+                    }
+                    else
+                    {
+                        ProcessContentFile( context, uploadedFile );
+                    }
                 }
             }
             catch ( Rock.Web.FileUploadException fex )
@@ -189,7 +191,7 @@ namespace RockWeb
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="uploadedFile">The uploaded file.</param>
-        private void ProcessBinaryFile( HttpContext context, HttpPostedFile uploadedFile )
+        private void ProcessBinaryFile( HttpContext context, HttpPostedFile uploadedFile, Person currentPerson )
         {
             // get BinaryFileType info
             Guid fileTypeGuid = context.Request.QueryString["fileTypeGuid"].AsGuid();
@@ -203,9 +205,6 @@ namespace RockWeb
             }
             else
             {
-                var currentUser = UserLoginService.GetCurrentUser();
-                Person currentPerson = currentUser != null ? currentUser.Person : null;
-
                 if ( !binaryFileType.IsAuthorized( Authorization.EDIT, currentPerson ) )
                 {
                     throw new Rock.Web.FileUploadException( "Not authorized to upload this type of file", System.Net.HttpStatusCode.Forbidden );

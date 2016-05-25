@@ -98,19 +98,19 @@
 
                 <fieldset id="fieldsetViewDetails" runat="server">
 
-                    <p class="description"><asp:Literal ID="lWorkflowTypeDescription" runat="server"></asp:Literal></p>
+                    <p class="description"><asp:Literal ID="lWorkflowTypeDescription" runat="server" EnableViewState="false"></asp:Literal></p>
 
-                    <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+                    <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" EnableViewState="false" />
 
                     <div class="row">
                         <div class="col-md-12">
                             <a class="workflow-activities-readonly-header" href="#" onclick="javascript: toggleReadOnlyActivitiesList();">
-                                <asp:Label ID="lblActivitiesReadonlyHeaderLabel" runat="server" Text="Activities" />
+                                <asp:Label ID="lblActivitiesReadonlyHeaderLabel" runat="server" Text="Activities" EnableViewState="false"/>
                                 <b class="fa fa-caret-down"></b>
                             </a>
 
                             <div class="workflow-activities-readonly-list" style="display: none">
-                                <asp:Literal ID="lblWorkflowActivitiesReadonly" runat="server" />
+                                <asp:Literal ID="lblWorkflowActivitiesReadonly" runat="server" EnableViewState="false" />
                             </div>
                         </div>
                     </div>
