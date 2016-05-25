@@ -144,7 +144,7 @@ namespace Rock.Web.UI.Controls
 
             string script = string.Format( scriptFormat, _btnShowPageRoutePicker.ClientID, _btnSelectPageRoute.ClientID, _btnCancelPageRoute.ClientID, this.ClientID );
 
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "page-route-picker-script_" + this.ID, script, true );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "page-route-picker-script_" + this.ClientID, script, true );
 
             var sm = ScriptManager.GetCurrent( this.Page );
             EnsureChildControls();
