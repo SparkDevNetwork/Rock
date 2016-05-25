@@ -287,6 +287,49 @@ namespace Rock
         }
 
         /// <summary>
+        /// Attempts to convert string to an dictionary using the |/comma and ^ delimter Key/Value syntax.  Returns an empty dictionary if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        [System.Diagnostics.DebuggerStepThrough()]
+        public static System.Collections.Generic.Dictionary<string, string> AsDictionary(this string str)
+        {
+            var dictionary = new System.Collections.Generic.Dictionary<string, string>();
+            string[] nameValues = str.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+            // If we haven't found any pipes, check for commas
+            if (nameValues.Count() == 1)
+            {
+                nameValues = str.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            }
+            foreach (string nameValue in nameValues)
+            {
+                string[] nameAndValue = nameValue.Split(new char[] { '^' }, 2);
+                if (nameAndValue.Count() == 2)
+                {
+                    dictionary[nameAndValue[0]] = nameAndValue[1];
+                }
+            }
+            return dictionary;
+        }
+
+        /// <summary>
+        /// Attempts to convert string to an dictionary using the |/comma and ^ delimter Key/Value syntax.  Returns null if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        [System.Diagnostics.DebuggerStepThrough()]
+        public static System.Collections.Generic.Dictionary<string, string> AsDictionaryOrNull(this string str)
+        {
+            var dictionary = AsDictionary(str);
+            if (dictionary.Count() > 0)
+            {
+                return dictionary;
+            }
+            return null;
+        }
+
+
+        /// <summary>
         /// Attempts to convert string to integer.  Returns 0 if unsuccessful.
         /// </summary>
         /// <param name="str">The STR.</param>
