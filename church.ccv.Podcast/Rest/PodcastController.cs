@@ -31,6 +31,7 @@ using Rock.Security;
 using Rock.Web.Cache;
 using church.ccv.Podcast;
 using Newtonsoft.Json;
+using System.Globalization;
 
 namespace chuch.ccv.Podcast.Rest
 {
@@ -46,7 +47,7 @@ namespace chuch.ccv.Podcast.Rest
         {
             // first, what platform are we handling?
             StringContent restContent = null;
-            switch( platform )
+            switch( platform.ToLower( ) )
             {
                 case "mobile_app":
                 {
@@ -88,6 +89,18 @@ namespace chuch.ccv.Podcast.Rest
                     }
 
                     restContent = new StringContent( response, Encoding.UTF8, "application/json" );
+                    break;
+                }
+
+                case "itunes_video":
+                {
+                    restContent = Retrieve_iTunesRSS( version, true );
+                    break;
+                }
+
+                case "itunes_audio":
+                {
+                    restContent = Retrieve_iTunesRSS( version, false );
                     break;
                 }
             }
@@ -293,6 +306,252 @@ namespace chuch.ccv.Podcast.Rest
             return null;
         }
 
+        // Ok, ideally this part would be data driven, but this is just for CCV, so who cares.
+        const string iTunesRSS_VideoTitle = "CCV Video Messages (Christ's Church of the Valley)";
+        const string iTunesRSS_AudioTitle = "CCV Audio Messages (Christ's Church of the Valley)";
+        const string iTunesRSS_Copyright = "{0} Christ's Church of the Valley";
+        const string iTunesRSS_Description = "At CCV it is our mission to WIN people to Jesus Christ, TRAIN believers to become disciples, and SEND disciples out to impact the world. The contemporary worship services are designed to encourage and inspire you with relevant music and messages.";
+        const string iTunesRSS_Subtitle = "CCV";
+        const string iTunesRSS_Author = "Christ's Church of the Valley";
+        const string iTunesRSS_Summary = "CCV (Christ's Church of the Valley) is a nondenominational church with multiple locations in the Phoenix area.";
+        const string iTunesRSS_Image = "http://media.ccvonline.com/images/itunes/messages.png";
+        const string iTunesRSS_OwnerName = "Christ's Church of the Valley";
+        const string iTunesRSS_OwnerEmail = "communications@ccv.church";
+        const string iTunesRSS_Keywords = "CCV,Christs,Church,valley,Don,Wilson";
+        const int MaxNumPodcasts = 50;
+
+        StringContent Retrieve_iTunesRSS( int version, bool wantVideo )
+        {
+            using ( StringWriter stringWriter = new StringWriterWithEncoding(Encoding.UTF8) )
+            {
+                string publicApplicationRoot = string.Empty;
+
+                XmlWriterSettings settings = new XmlWriterSettings();
+                settings.Indent = true;
+                settings.IndentChars = "\t";
+                settings.NewLineOnAttributes = true;
+                settings.Encoding = System.Text.Encoding.UTF8;
+               
+                using ( XmlWriter writer = XmlWriter.Create( stringWriter, settings) )
+                {
+                    // first, get the public application root
+                    RockContext rockContext = new RockContext( );
+                    var attribQuery = new AttributeService( rockContext ).Queryable( ).Where( a => a.Key == "PublicApplicationRoot" ).SingleOrDefault( );
+                    publicApplicationRoot = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.AttributeId == attribQuery.Id ).SingleOrDefault( ).Value;
+
+                    // since we're using the same function for video or audio, setup the values that differ.
+                    string rssTitle = wantVideo == true ? iTunesRSS_VideoTitle : iTunesRSS_AudioTitle;
+                    string mediaType = wantVideo == true ? "video/mp4" : "audio/mpeg";
+                    string mediaKindKey = wantVideo == true ? "HostedVideoUrl" : "AudioUrl";
+                    string mediaLengthKey = wantVideo == true ? "HostedVideoLength" : "AudioLength";
+                    string mediaFilesizeKey = wantVideo == true ? "HostedVideoFilesize" : "AudioFilesize";
+                    string mediaUrl = wantVideo == true ? "itunes_video" : "itunes_audio";
+
+                    // start with the root node and header info
+                    string iTunesNamespace = "http://www.itunes.com/dtds/podcast-1.0.dtd";
+                    string atomNamespace = "http://www.w3.org/2005/Atom";
+                    string rssSource = publicApplicationRoot + string.Format( "api/Podcast/Retrieve/{0}/{1}/0", mediaUrl, version );
+
+                    writer.WriteStartDocument( true );
+                    writer.WriteStartElement( "rss" );
+                    writer.WriteAttributeString( "xmlns", "itunes", null, iTunesNamespace );
+                    writer.WriteAttributeString( "version", "2.0" );
+
+                    // start our RSS channel
+                    writer.WriteStartElement( "channel" );
+                    writer.WriteAttributeString( "xmlns", "atom", null, atomNamespace );
+
+                    writer.WriteStartElement( "atom", "link", atomNamespace );
+                    writer.WriteAttributeString( "href", rssSource );
+                    writer.WriteAttributeString( "rel", "self" );
+                    writer.WriteAttributeString( "type", "application/rss+xml" );
+                    writer.WriteEndElement( );
+
+                    writer.WriteStartElement( "title" );
+                    writer.WriteValue( rssTitle );
+                    writer.WriteEndElement( );
+                    
+                    writer.WriteStartElement( "link" );
+                    writer.WriteValue( rssSource );
+                    writer.WriteEndElement( );
+
+                    writer.WriteStartElement( "language" );
+                    writer.WriteValue( "en-us" );
+                    writer.WriteEndElement( );
+
+                    writer.WriteStartElement( "copyright" );
+                    writer.WriteValue( string.Format( iTunesRSS_Copyright, DateTime.Now.Year.ToString( ) ) );
+                    writer.WriteEndElement( );
+
+                    writer.WriteStartElement( "description" );
+                    writer.WriteValue( iTunesRSS_Description );
+                    writer.WriteEndElement( );
+
+                    writer.WriteStartElement( "itunes", "subtitle", iTunesNamespace );
+                    writer.WriteValue( iTunesRSS_Subtitle );
+                    writer.WriteEndElement( );
+
+                    writer.WriteStartElement( "itunes", "author", iTunesNamespace );
+                    writer.WriteValue( iTunesRSS_Author );
+                    writer.WriteEndElement( );
+
+                    writer.WriteStartElement( "itunes", "summary", iTunesNamespace );
+                    writer.WriteValue( iTunesRSS_Summary );
+                    writer.WriteEndElement( );
+
+                    writer.WriteStartElement( "itunes", "image", iTunesNamespace );
+                    writer.WriteAttributeString( "href", iTunesRSS_Image );
+                    writer.WriteEndElement( );
+
+                    writer.WriteStartElement( "itunes", "owner", iTunesNamespace );
+                        writer.WriteStartElement( "itunes", "name", iTunesNamespace );
+                        writer.WriteValue( iTunesRSS_OwnerName );
+                        writer.WriteEndElement( );
+
+                        writer.WriteStartElement( "itunes", "email", iTunesNamespace );
+                        writer.WriteValue( iTunesRSS_OwnerEmail );
+                        writer.WriteEndElement( );
+                    writer.WriteEndElement( );
+
+
+                    writer.WriteStartElement( "itunes", "explicit", iTunesNamespace );
+                    writer.WriteValue( "no" );
+                    writer.WriteEndElement( );
+
+                    writer.WriteStartElement( "itunes", "keywords", iTunesNamespace );
+                    writer.WriteValue( iTunesRSS_Keywords );
+                    writer.WriteEndElement( );
+
+                    writer.WriteStartElement( "itunes", "category", iTunesNamespace );
+                    writer.WriteAttributeString( "text", "Religion & Spirituality" );
+
+                        writer.WriteStartElement( "itunes", "category", iTunesNamespace );
+                        writer.WriteAttributeString( "text", "Christianity" );    
+                        writer.WriteEndElement( );
+
+                    writer.WriteEndElement( );
+
+                    // get all content channel types in the "Weekend Series" podcast
+                    IQueryable<ContentChannel> seriesContentChannels = GetPodcastsByCategory( PodcastUtil.WeekendVideos_CategoryId );
+                    IQueryable<AttributeValue> attribValueQuery = new AttributeValueService( new RockContext( ) ).Queryable( );
+
+                    int numPodcastsAdded = 0;
+            
+                    foreach( ContentChannel series in seriesContentChannels )
+                    {
+                        // pull in all this series' attributes
+                        List<AttributeValue> contentChannelAttribValList = attribValueQuery.Where( av => av.EntityId == series.Id && 
+                                                                                                    av.Attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" ).ToList( );
+
+                        // don't inlude series that aren't active
+                        bool activeValue = contentChannelAttribValList.Where( av => av.AttributeKey == "Active" ).SingleOrDefault( ).Value == "True" ? true : false;
+                        if( activeValue )
+                        {
+                            // Now each message of the series
+                            foreach( ContentChannelItem message in series.Items )
+                            {
+                                // only include items whose start date has already begun and that have been approved
+                                if( message.StartDateTime < DateTime.Now && message.Status == ContentChannelItemStatus.Approved )
+                                {
+                                    // get this message's attributes
+                                    List<AttributeValue> itemAttribValList = attribValueQuery.Where( av => av.EntityId == message.Id && 
+                                                                                                           av.Attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" ).ToList( );
+
+                                    // there _must_ be a mediaURL and length in order for us to generate the podcast entry
+                                    AttributeValue mediaUrlAV = itemAttribValList.Where( av => av.AttributeKey == mediaKindKey ).SingleOrDefault( );
+                                    AttributeValue mediaLengthAV = itemAttribValList.Where( av => av.AttributeKey == mediaLengthKey ).SingleOrDefault( );
+                                    AttributeValue mediaFilesizeAV = itemAttribValList.Where( av => av.AttributeKey == mediaFilesizeKey ).SingleOrDefault( );
+                                    
+                                    if( mediaUrlAV != null && string.IsNullOrWhiteSpace( mediaUrlAV.Value ) == false && 
+                                        mediaLengthAV != null && string.IsNullOrWhiteSpace( mediaLengthAV.Value) == false &&
+                                        mediaFilesizeAV != null && string.IsNullOrWhiteSpace( mediaFilesizeAV.Value) == false)
+                                    {
+                                        writer.WriteStartElement( "item" );
+
+                                        // Put required elements
+                                        writer.WriteStartElement( "title" );
+                                        writer.WriteValue( message.Title );
+                                        writer.WriteEndElement( );
+
+                                        writer.WriteStartElement( "pubDate" );
+                                        writer.WriteValue( message.StartDateTime.ToString( "r" ) );
+                                        writer.WriteEndElement( );
+
+                                        writer.WriteStartElement( "itunes", "author", iTunesNamespace );
+                                        writer.WriteValue( iTunesRSS_Author );
+                                        writer.WriteEndElement( );
+
+                                        writer.WriteStartElement( "itunes", "image", iTunesNamespace );
+                                        writer.WriteAttributeString( "href", iTunesRSS_Image );
+                                        writer.WriteEndElement( );
+
+                                        writer.WriteStartElement( "itunes", "summary", iTunesNamespace );
+                                        writer.WriteValue( series.Description );
+                                        writer.WriteEndElement( );
+
+                                        writer.WriteStartElement( "itunes", "subtitle", iTunesNamespace );
+                                        writer.WriteValue( iTunesRSS_Subtitle );
+                                        writer.WriteEndElement( );
+                                        
+                                        writer.WriteStartElement( "enclosure" );
+                                            writer.WriteAttributeString( "url", mediaUrlAV.Value );
+                                            writer.WriteAttributeString( "length", mediaFilesizeAV.Value );
+                                            writer.WriteAttributeString( "type", mediaType );
+                                        writer.WriteEndElement( );
+
+                                        writer.WriteStartElement( "guid" );
+                                        writer.WriteValue( mediaUrlAV.Value );
+                                        writer.WriteEndElement( );
+
+                                        writer.WriteStartElement( "itunes", "duration", iTunesNamespace );
+                                        writer.WriteValue( mediaLengthAV.Value );
+                                        writer.WriteEndElement( );
+                                        
+                                        writer.WriteStartElement( "itunes", "keywords", iTunesNamespace );
+                                        writer.WriteValue( iTunesRSS_Keywords );
+                                        writer.WriteEndElement( );
+
+                                        // close the message
+                                        writer.WriteEndElement();
+
+                                        // now see if we should stop iterating because we hit our limit
+                                        numPodcastsAdded++;
+                                    } 
+                                } 
+
+                                // fall out of messages if we hit our limit
+                                if( numPodcastsAdded >= MaxNumPodcasts )
+                                {
+                                    break;
+                                }
+                            } // End Message Loop
+                        }
+
+                        // fall out of series as well
+                        if( numPodcastsAdded >= MaxNumPodcasts )
+                        {
+                            break;
+                        }
+
+                    } //End Series Loop
+
+                    // close the channel
+                    writer.WriteEndElement( );
+
+                    
+                    // close out the root node 'rss'
+                    writer.WriteEndElement( );
+                    writer.WriteEndDocument( );
+
+                    // dump to the stringWriter's stream
+                    writer.Flush();
+                }
+
+                // return the XML
+                return new StringContent( stringWriter.ToString(), Encoding.UTF8, "application/xml" );
+            }
+        }
+
         // eventually it'd be better to replace the mobile app endpoint with one that uses json like the rest. Until then..
         StringContent Retrieve_MobileApp( int version )
         {
@@ -426,10 +685,10 @@ namespace chuch.ccv.Podcast.Rest
                                     // close the message
                                     writer.WriteEndElement();
                                 }
-
-                                // close the series
-                                writer.WriteEndElement();
                             }
+
+                            // close the series
+                            writer.WriteEndElement();
                         }
                     }
 
@@ -450,8 +709,7 @@ namespace chuch.ccv.Podcast.Rest
             }
         }
     }
-       
-
+    
     // Inherit StringWriter so we can set the encoding, which is protected
     public sealed class StringWriterWithEncoding : StringWriter
     {
