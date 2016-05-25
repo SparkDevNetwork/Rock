@@ -709,13 +709,45 @@ namespace RockWeb.Plugins.church_ccv.Steps
 
                     lMeasureCampusSumValue.Text = string.Format( "<div class='value-tip' data-toggle='tooltip' data-placement='top' title='{0:#,0} individuals have taken this step'>{0:#,0}</div>", combinedValues.Sum( m => m.MeasureValue ));
                     lMeasureBackgroundColor.Text = combinedValues.FirstOrDefault().MeasureColorBackground;
-                    lMeasureBarPercent.Text = combinedValues.Average( m => m.Percentage ).ToString();
-                    int measurePercent = Convert.ToInt16(Math.Round( combinedValues.Average( m => m.Percentage ) ));
-                    lMeasureBarTextPercent.Text = measurePercent.ToString();
-                    lMeasureColor.Text = combinedValues.FirstOrDefault().MeasureColor;
-                    int historicalPercent = Convert.ToInt16( Math.Round( combinedValues.Average( m => m.HistoricalPercentage ) ) );
-                    lMeasureBarHistoricalPercent.Text = historicalPercent.ToString();
 
+                    lMeasureColor.Text = combinedValues.FirstOrDefault().MeasureColor;
+
+                    // show a summary of All Campuses at top
+                    if ( DashboardView.WeekendAttendance == DashboardViewState )
+                    {
+                        // if we're looking at weekend attendance, use the campus averages
+
+                        // current
+                        lMeasureBarPercent.Text = combinedValues.Average( m => m.Percentage ).ToString();
+                        int measurePercent = Convert.ToInt16(Math.Round( combinedValues.Average( m => m.Percentage ) ));
+                        lMeasureBarTextPercent.Text = measurePercent.ToString();
+
+
+                        // historical
+                        int historicalPercent = Convert.ToInt16( Math.Round( combinedValues.Average( m => m.HistoricalPercentage ) ) );
+                        lMeasureBarHistoricalPercent.Text = historicalPercent.ToString();
+                    }
+                    else
+                    {
+                        // here we want to show the church-wide percentage of people who have taken this step. So, sum up and then average the steps taken vs against the total eligable people.
+                        int measureValueSum = combinedValues.Sum( m => m.MeasureValue ) * 100;
+                        int measureCompareValueSum = combinedValues.Sum( m => m.MeasureCompareValue.HasValue ? m.MeasureCompareValue.Value : 0 );
+
+                        int measurePercent = measureValueSum / Math.Max( measureCompareValueSum, 1 );
+                    
+                        lMeasureBarPercent.Text = measurePercent.ToString( );
+                        lMeasureBarTextPercent.Text = measurePercent.ToString();
+
+
+                        // historical
+                        int historicalValueSum = combinedValues.Sum( m => m.HistoricalValue.HasValue ? m.HistoricalValue.Value : 0 ) * 100;
+                        int historicalCompareValueSum = combinedValues.Sum( m => m.HistoricalCompareValue.HasValue ? m.HistoricalCompareValue.Value : 0 );
+
+                        int historicalPercent = historicalValueSum / Math.Max( historicalCompareValueSum, 1 );
+                    
+                        lMeasureBarHistoricalPercent.Text = historicalPercent.ToString();
+                    }
+                    
                     rptMeasuresByCampus.DataSource = combinedValues;
                     rptMeasuresByCampus.DataBind();
                 }
