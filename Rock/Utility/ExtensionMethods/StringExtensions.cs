@@ -287,7 +287,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Attempts to convert string to an dictionary using the |/comma and ^ delimter Key/Value syntax.  Returns an empty dictionary if unsuccessful.
+        /// Attempts to convert string to an dictionary using the |/comma and ^ delimiter Key/Value syntax.  Returns an empty dictionary if unsuccessful.
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
@@ -313,7 +313,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Attempts to convert string to an dictionary using the |/comma and ^ delimter Key/Value syntax.  Returns null if unsuccessful.
+        /// Attempts to convert string to an dictionary using the |/comma and ^ delimiter Key/Value syntax.  Returns null if unsuccessful.
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
