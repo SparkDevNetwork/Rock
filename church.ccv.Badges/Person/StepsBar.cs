@@ -25,6 +25,7 @@ namespace church.ccv.Badges.Person
     [IntegerField( "Serving GroupType Id", "The id of the group type to be used for determine the serve badge." )]
     [LinkedPage("Serving Connection Page", "The page to use for creating new serving connections.")]
     [LinkedPage( "Young Adult Group Registration Page", "The page to link to for registering for a young adult group." )]
+    [LinkedPage( "Next Gen Group Registration Page", "The page to link to for registering for a next gen group." )]
     public class StepsBar : Rock.PersonProfile.BadgeComponent
     {
         /// <summary>
@@ -36,6 +37,7 @@ namespace church.ccv.Badges.Person
         {
             int baptismRegistrationPageId = GetPageIdFromLinkedPageAttribute( "BaptismRegistrationPage", badge);
             int connectionGroupRegistrationPageId = GetPageIdFromLinkedPageAttribute( "ConnectionGroupRegistrationPage", badge );
+            int nextGenGroupRegistrationPageId = GetPageIdFromLinkedPageAttribute( "NextGenGroupRegistrationPage", badge );
             int nextStepGroupRegistrationPageId = GetPageIdFromLinkedPageAttribute( "NextStepGroupRegistrationPage", badge );
             int servingConnectionPageId = GetPageIdFromLinkedPageAttribute( "ServingConnectionPage", badge );
             int groupDetailsPageId = GetPageIdFromLinkedPageAttribute( "GroupDetailsPage", badge );
@@ -95,6 +97,7 @@ namespace church.ccv.Badges.Person
     var groupListPageId = '{9}';
     var nextStepGroupRegistrationPage = '{10}';
     var youngAdultGroupRegistrationPage = '{11}';
+    var nextGenGroupRegistrationPage = '{12}';
 
     $.ajax({{
         type: 'GET',
@@ -178,8 +181,9 @@ namespace church.ccv.Badges.Person
                 }}
 
                 var popoverContent = popoverContent + ""<p class='margin-b-none'><a href='/page/"" + connectionGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find NH Group</a></p>"";
-                var popoverContent = popoverContent + ""<p class='margin-b-none margin-t-sm'><a href='/page/"" + nextStepGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find NS Group</a></p>"";
-                var popoverContent = popoverContent + ""<p class='margin-b-none margin-t-sm'><a href='/page/"" + youngAdultGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find YA Group</a></p>"";
+                var popoverContent = popoverContent + ""<p class='margin-b-none margin-t-sm'><a href='/page/"" + nextGenGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find Students Group</a></p>"";
+                //var popoverContent = popoverContent + ""<p class='margin-b-none margin-t-sm'><a href='/page/"" + nextStepGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find NS Group</a></p>"";
+                //var popoverContent = popoverContent + ""<p class='margin-b-none margin-t-sm'><a href='/page/"" + youngAdultGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find YA Group</a></p>"";
 
                 if (data.ConnectionResult.ConnectionStatus == 2) {{
                     $badge.find('.badge-connect').addClass('step-partial');
@@ -391,7 +395,8 @@ namespace church.ccv.Badges.Person
                  groupDetailsPageId, // 8
                  groupListPageId, // 9
                  nextStepGroupRegistrationPageId, // 10
-                 youngAdultGroupRegistrationPageId // 11
+                 youngAdultGroupRegistrationPageId, // 11
+                 nextGenGroupRegistrationPageId //12
             ));
         }
 
