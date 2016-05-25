@@ -101,24 +101,14 @@ namespace RockWeb.Plugins.church_ccv.Steps
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );          
+            base.OnLoad( e );
 
             if ( !Page.IsPostBack )
             {
                 drpDateRange.SlidingDateRangeMode = SlidingDateRangePicker.SlidingDateRangeType.Current;
                 drpDateRange.TimeUnit = SlidingDateRangePicker.TimeUnitType.Year;
 
-                if ( Session["StepsTakenDateRange"] != null )
-                {
-                    DateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( Session["StepsTakenDateRange"].ToString() );
-                    drpDateRange.DelimitedValues = Session["StepsTakenDateRange"].ToString();
-                    SetDateLabel();
-                }
-                else
-                {
-                    DateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpDateRange.DelimitedValues );
-                    SetDateLabel();
-                }
+                DateRange = GetDateRange();
 
                 LoadCampuses();
                 LoadStepTypes();
@@ -246,7 +236,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 {
                     var campusId = cpCampusCampus.SelectedValue.AsIntegerOrNull();
 
-                    var chartData = GetChartData( DateRange, measureId: item.Id, campusId: campusId ).ToList();
+                    var chartData = GetChartData( GetDateRange(), measureId: item.Id, campusId: campusId ).ToList();
 
                     // ensure there is at least one last year date to ensure 2 series
                     if ( !chartData.Any( d => d.SeriesId == "Previous Year" ) && chartData.Count > 0 )
@@ -330,7 +320,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 {
                     var pastorId = ddlPastor.SelectedValue.AsIntegerOrNull();
 
-                    var chartData = GetChartData( DateRange, measureId: item.Id, pastorId: pastorId ).ToList();
+                    var chartData = GetChartData( GetDateRange(), measureId: item.Id, pastorId: pastorId ).ToList();
 
                     // ensure there is at least one last year date to ensure 2 series
                     if ( !chartData.Any( d => d.SeriesId == "Previous Year" ) && chartData.Count > 0 )
@@ -411,7 +401,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 LineChart lcChart = (LineChart)e.Item.FindControl( "lcMeasure" );
                 Literal lChartValue = (Literal)e.Item.FindControl( "lChartValue" );
                                
-                var chartData = GetChartData( DateRange, measureId: CurrentMeasure.Id, campusId: item.Id ).ToList();
+                var chartData = GetChartData( GetDateRange(), measureId: CurrentMeasure.Id, campusId: item.Id ).ToList();
 
                 // ensure there is at least one last year date to ensure 2 series
                 if ( !chartData.Any( d => d.SeriesId == "Previous Year" ) && chartData.Count > 0 )
@@ -476,7 +466,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 LineChart lcChart = (LineChart)e.Item.FindControl( "lcMeasure" );
                 Literal lChartValue = (Literal)e.Item.FindControl( "lChartValue" );
 
-                var chartData = GetChartData( DateRange, measureId: CurrentMeasure.Id, pastorId: item.PersonId ).ToList();
+                var chartData = GetChartData( GetDateRange(), measureId: CurrentMeasure.Id, pastorId: item.PersonId ).ToList();
 
                 // ensure there is at least one last year date to ensure 2 series
                 if ( !chartData.Any( d => d.SeriesId == "Previous Year" ) && chartData.Count > 0 )
@@ -698,7 +688,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 lAdultsCampus.Text = string.Format( "{0} Campus", cpAdultsCampus.SelectedItem.Text );
             }
 
-            var adultCountResult = GetTotals( DateRange, rockContext, cpAdultsCampus.SelectedValue.AsIntegerOrNull() );
+            var adultCountResult = GetTotals( GetDateRange(), rockContext, cpAdultsCampus.SelectedValue.AsIntegerOrNull() );
 
             int uniqueAdults = adultCountResult.UniqueAdults;
             int totalSteps = adultCountResult.TotalSteps;
@@ -753,7 +743,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     rowBackgroundColor = "transparent";
                 }
 
-                var totalResult = GetTotals( DateRange, rockContext, campus.Id );
+                var totalResult = GetTotals( GetDateRange(), rockContext, campus.Id );
 
                 averageSteps = 0;
 
@@ -814,7 +804,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 rptPastorSingleMeasure.DataBind();
 
                 // get chart data for the top chart
-                var chartData = GetChartData( DateRange, measureId: CurrentMeasure.Id, campusId: null ).ToList();
+                var chartData = GetChartData( GetDateRange(), measureId: CurrentMeasure.Id, campusId: null ).ToList();
 
                 // ensure there is at least one last year date to ensure 2 series
                 if ( !chartData.Any( d => d.SeriesId == "Previous Year" ) && chartData.Count > 0 )
@@ -910,7 +900,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 rptAdultSingleMeasure.DataBind();
 
                 // get chart data for the top chart
-                var chartData = GetChartData( DateRange, measureId: CurrentMeasure.Id, campusId: null ).ToList();
+                var chartData = GetChartData( GetDateRange(), measureId: CurrentMeasure.Id, campusId: null ).ToList();
 
                 // ensure there is at least one last year date to ensure 2 series
                 if ( !chartData.Any( d => d.SeriesId == "Previous Year" ) && chartData.Count > 0 )
@@ -986,7 +976,10 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 {
                     query = query.Where( s => s.CampusId == campusId.Value );
                 }
-                
+
+                // load date range
+                DateRange = GetDateRange();
+
                 if ( DateRange != null && DateRange.Start.HasValue )
                 {
                     query = query.Where( s => s.DateTaken >= DateRange.Start.Value );
@@ -1252,6 +1245,28 @@ namespace RockWeb.Plugins.church_ccv.Steps
             result.TotalSteps = joinedQuery.Where(j => j.Datamart.FamilyRole == "Adult").Count();
 
             return result;
+        }
+
+        private DateRange GetDateRange()
+        {
+            // ensure there is a date range
+            if ( DateRange == null )
+            {
+                if ( Session["StepsTakenDateRange"] != null )
+                {
+                    DateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( Session["StepsTakenDateRange"].ToString() );
+                    drpDateRange.DelimitedValues = Session["StepsTakenDateRange"].ToString();
+
+                }
+                else
+                {
+                    DateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpDateRange.DelimitedValues );
+                    Session["StepsTakenDateRange"] = drpDateRange.DelimitedValues;
+                }
+                SetDateLabel();
+            }
+
+            return DateRange;
         }
         #endregion
     }
