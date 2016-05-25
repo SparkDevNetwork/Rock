@@ -170,6 +170,7 @@ namespace church.ccv.Steps
                                                 .Where( p => 
                                                         p.IsBaptized == true 
                                                         && p.BaptismDate >= baptismSearchDate 
+                                                        && p.BaptismDate <= RockDateTime.Now
                                                         && !baptismStepPersonIds.Contains(p.PersonId))
                                                  .GroupBy( p => p.PersonId) // currently the era person table has duplicates for the same person id :(
                                                  .Select( g => g.FirstOrDefault())
@@ -233,6 +234,7 @@ namespace church.ccv.Steps
                                                 .Where( a =>
                                                     a.AttributeId == membershipDateAttribute.Id 
                                                     && a.ValueAsDateTime >= membershipSearchDate
+                                                    && a.ValueAsDateTime <= RockDateTime.Now
                                                     && a.EntityId != null
                                                     && !membershipStepPersonIds.Contains( a.EntityId.Value ) )
                                                 .ToList();
@@ -570,7 +572,7 @@ namespace church.ccv.Steps
 
             if ( stepCounter > 0 )
             {
-                _resultMessages.Append( string.Format( "Group Type ({1}) Steps {0},", stepCounter, groupTypes.ToString() ) );
+                _resultMessages.Append( string.Format( "Group Type ({1}) Steps {0},", stepCounter, string.Join( ",", groupTypes.Select( n => n.ToString() ).ToArray() ) ) );
             }
         }
     }
