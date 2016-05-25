@@ -1009,32 +1009,53 @@ namespace Rock.Model
             return null;
         }
 
-
         /// <summary>
         /// Formats the age with unit (year, month, day) suffix depending on the age of the individual. 
         /// </summary>
         /// <param name="condensed">if set to <c>true</c> age in years is returned without a unit suffix.</param>
         /// <returns></returns>
-        public string FormatAge( bool condensed = false)
+        public string FormatAge(bool condensed = false)
         {
             var age = Age;
-            if (age != null && age > 0 )
+            if (age != null)
             {
                 if (condensed)
                 {
                     return age.ToString();
                 }
-                return age  + (age == 1 ? " yr old " : " yrs old ");
+                if (age > 0)
+                {
+                    return age + (age == 1 ? " yr old " : " yrs old ");
+                }
             }
+
             var today = RockDateTime.Today;
-            if (BirthMonth != null && BirthMonth < today.Month)
+            if (BirthYear != null && BirthMonth != null)
             {
                 int months = today.Month - BirthMonth.Value;
-                return months + (months == 1 ? " mo old " : " mos old ");
+                if (BirthYear < today.Year)
+                {
+                    months = months + 12;
+                }
+                if (BirthDay > today.Day)
+                {
+                    months--;
+                }
+                if (months > 0)
+                {
+                    return months + (months == 1 ? " mo old " : " mos old ");
+                }
             }
-            if (BirthDay != null)
+
+            if (BirthYear != null && BirthMonth != null && BirthDay != null)
             {
                 int days = today.Day - BirthDay.Value;
+                if (days < 0)
+                {
+                    // Add the number of days in the birth month
+                    var birthMonth = new DateTime(BirthYear.Value, BirthMonth.Value, 1);
+                    days = days + birthMonth.AddMonths(1).AddDays(-1).Day;
+                }
                 return days + (days == 1 ? " day old " : " days old ");
             }
             return string.Empty;
