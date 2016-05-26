@@ -231,6 +231,10 @@
     <Compile Include="Migrations\201605232234462_FamilyCheckinType.Designer.cs">
       <DependentUpon>201605232234462_FamilyCheckinType.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201605261851378_CampusContextAlignment.cs" />
+    <Compile Include="Migrations\201605261851378_CampusContextAlignment.Designer.cs">
+      <DependentUpon>201605261851378_CampusContextAlignment.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.cs" />
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.Designer.cs">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
@@ -2247,6 +2251,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201605232234462_FamilyCheckinType.resx">
       <DependentUpon>201605232234462_FamilyCheckinType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201605261851378_CampusContextAlignment.resx">
+      <DependentUpon>201605261851378_CampusContextAlignment.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.resx">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
