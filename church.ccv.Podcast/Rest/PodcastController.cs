@@ -627,13 +627,13 @@ namespace chuch.ccv.Podcast.Rest
 
                             // The images will be Guids with the GetImage path prefixed (we'll also fix the resolution since that what the mobile app expects)
                             writer.WriteStartElement( "BillboardUrl" );
-                            string billboardUrl = publicApplicationRoot + GetImageEndpoint + contentChannelAttribValList.Where( av => av.AttributeKey == "16_9_Image" ).SingleOrDefault( ).Value;
+                            string billboardUrl = publicApplicationRoot + GetImageEndpoint + contentChannelAttribValList.Where( av => av.AttributeKey == "Image_16_9" ).SingleOrDefault( ).Value;
                             billboardUrl += "&width=750&height=422";
                             writer.WriteValue( billboardUrl );
                             writer.WriteEndElement( );
 
                             writer.WriteStartElement( "ThumbnailUrl" );
-                            string thumbnailUrl = publicApplicationRoot + GetImageEndpoint + contentChannelAttribValList.Where( av => av.AttributeKey == "1_1_Image" ).SingleOrDefault( ).Value;
+                            string thumbnailUrl = publicApplicationRoot + GetImageEndpoint + contentChannelAttribValList.Where( av => av.AttributeKey == "Image_1_1" ).SingleOrDefault( ).Value;
                             thumbnailUrl += "&width=140&height=140";
                             writer.WriteValue( thumbnailUrl );
                             writer.WriteEndElement( );
