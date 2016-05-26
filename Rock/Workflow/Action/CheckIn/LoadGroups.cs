@@ -70,6 +70,7 @@ namespace Rock.Workflow.Action.CheckIn
                                         validGroup = new GroupMemberService( rockContext ).Queryable()
                                             .Any( m =>
                                                 m.GroupId == kioskGroup.Group.Id &&
+                                                m.GroupMemberStatus == GroupMemberStatus.Active &&
                                                 m.PersonId == person.Person.Id );
                                     }
 
