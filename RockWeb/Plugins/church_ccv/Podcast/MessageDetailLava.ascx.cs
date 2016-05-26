@@ -39,9 +39,8 @@ namespace RockWeb.Plugins.church_ccv.Podcast
     [Category( "CCV > Podcast" )]
     [Description( "Presents the given Podcast Message Detail" )]
     [CodeEditorField( "Lava Template", "The lava template to use to format the page.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true)]
-    [LinkedPage( "Browse Weekend Series Page" )]
+    [LinkedPage( "Series List Page" )]
     [LinkedPage( "Series Detail Page" )]
-    [LinkedPage( "Watch Page" )]
     public partial class MessageDetailLava : Rock.Web.UI.RockBlock
     {        
         /// <summary>
@@ -73,35 +72,16 @@ namespace RockWeb.Plugins.church_ccv.Podcast
             
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "PodcastMessage", podcastMessage );
+
+            Dictionary<string, object> linkedPages = new Dictionary<string, object>();
+            linkedPages.Add("SeriesListPage", LinkedPageUrl("SeriesListPage", null));
+            linkedPages.Add("SeriesDetailPage", LinkedPageUrl("SeriesDetailPage", null));
+            mergeFields.Add("LinkedPages", linkedPages);
     
             string template = GetAttributeValue( "LavaTemplate" );
             
             // now set the main HTML, including lava merge fields.
             lContent.Text = template.ResolveMergeFields( mergeFields );
-        }
-
-        protected void NavigateToBrowseWeekendSeriesPage( int seriesId )
-        {
-            var qryParams = new Dictionary<string, string>();
-            qryParams.Add( "SeriesId", seriesId.ToString() );
-
-            NavigateToLinkedPage( "BrowseWeekendSeriesPage", qryParams );
-        }
-
-        protected void NavigateToSeriesDetailPage( int seriesId )
-        {
-            var qryParams = new Dictionary<string, string>();
-            qryParams.Add( "SeriesId", seriesId.ToString() );
-
-            NavigateToLinkedPage( "SeriesDetailPage", qryParams );
-        }
-
-        protected void NavigateToWatchPage( int messageId )
-        {
-            var qryParams = new Dictionary<string, string>();
-            qryParams.Add( "MessageId", messageId.ToString() );
-
-            NavigateToLinkedPage( "WatchPage", qryParams );
         }
         #endregion
     }

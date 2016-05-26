@@ -35,14 +35,13 @@ namespace RockWeb.Plugins.church_ccv.Podcast
     /// <summary>
     /// Template block for developers to use to start a new block.
     /// </summary>
-    [DisplayName( "Watch Lava" )]
+    [DisplayName( "Series List Lava" )]
     [Category( "CCV > Podcast" )]
-    [Description( "Presents the given Podcast Message Detail" )]
+    [Description( "Presents the available Podcasts in the Weekend Series Category" )]
     [CodeEditorField( "Lava Template", "The lava template to use to format the page.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true)]
-    [LinkedPage( "Browse Weekend Series Page" )]
     [LinkedPage( "Series Detail Page" )]
     [LinkedPage( "Message Detail Page" )]
-    public partial class WatchLava : Rock.Web.UI.RockBlock
+    public partial class SeriesListLava : Rock.Web.UI.RockBlock
     {        
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -52,7 +51,7 @@ namespace RockWeb.Plugins.church_ccv.Podcast
         {
             base.OnInit( e );
 
-            ShowDetail( PageParameter( "MessageId" ).AsInteger() );
+            ShowDetail( );
         }
         
         /// <summary>
@@ -67,41 +66,21 @@ namespace RockWeb.Plugins.church_ccv.Podcast
         
         /// Displays the view group  using a lava template
         /// 
-        protected void ShowDetail( int messageId )
+        protected void ShowDetail( )
         {
-            PodcastUtil.PodcastMessage podcastMessage = PodcastUtil.GetMessage( messageId);
+            PodcastUtil.PodcastCategory podcastSeriesList = PodcastUtil.PodcastsAsModel( PodcastUtil.WeekendVideos_CategoryId );
             
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-            mergeFields.Add( "PodcastMessage", podcastMessage );
+            mergeFields.Add( "WeekendSeries", podcastSeriesList );
+
+            Dictionary<string, object> linkedPages = new Dictionary<string, object>();
+            linkedPages.Add("SeriesDetailPage", LinkedPageUrl("SeriesDetailPage", null));
+            linkedPages.Add("MessageDetailPage", LinkedPageUrl("MessageDetailPage", null));
+            mergeFields.Add("LinkedPages", linkedPages);
     
             string template = GetAttributeValue( "LavaTemplate" );
             
-            // now set the main HTML, including lava merge fields.
             lContent.Text = template.ResolveMergeFields( mergeFields );
-        }
-
-        protected void NavigateToBrowseWeekendSeriesPage( int seriesId )
-        {
-            var qryParams = new Dictionary<string, string>();
-            qryParams.Add( "SeriesId", seriesId.ToString() );
-
-            NavigateToLinkedPage( "BrowseWeekendSeriesPage", qryParams );
-        }
-
-        protected void NavigateToSeriesDetailPage( int seriesId )
-        {
-            var qryParams = new Dictionary<string, string>();
-            qryParams.Add( "SeriesId", seriesId.ToString() );
-
-            NavigateToLinkedPage( "SeriesDetailPage", qryParams );
-        }
-
-        protected void NavigateToMessageDetailPage( int messageId )
-        {
-            var qryParams = new Dictionary<string, string>();
-            qryParams.Add( "MessageId", messageId.ToString() );
-
-            NavigateToLinkedPage( "MessageDetailPage", qryParams );
         }
         #endregion
     }
