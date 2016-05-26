@@ -343,9 +343,8 @@ namespace chuch.ccv.Podcast.Rest
                     // since we're using the same function for video or audio, setup the values that differ.
                     string rssTitle = wantVideo == true ? iTunesRSS_VideoTitle : iTunesRSS_AudioTitle;
                     string mediaType = wantVideo == true ? "video/mp4" : "audio/mpeg";
-                    string mediaKindKey = wantVideo == true ? "HostedVideoUrl" : "AudioUrl";
-                    string mediaLengthKey = wantVideo == true ? "HostedVideoLength" : "AudioLength";
-                    string mediaFilesizeKey = wantVideo == true ? "HostedVideoFilesize" : "AudioFilesize";
+                    string mediaKindKey = wantVideo == true ? "HostedVideoUrl" : "HostedAudioUrl";
+                    string mediaLengthKey = wantVideo == true ? "HostedVideoLength" : "HostedAudioLength";
                     string mediaUrl = wantVideo == true ? "itunes_video" : "itunes_audio";
 
                     // start with the root node and header info
@@ -413,8 +412,7 @@ namespace chuch.ccv.Podcast.Rest
                         writer.WriteValue( iTunesRSS_OwnerEmail );
                         writer.WriteEndElement( );
                     writer.WriteEndElement( );
-
-
+                    
                     writer.WriteStartElement( "itunes", "explicit", iTunesNamespace );
                     writer.WriteValue( "no" );
                     writer.WriteEndElement( );
@@ -685,7 +683,7 @@ namespace chuch.ccv.Podcast.Rest
                                         writer.WriteEndElement();
                                     }
 
-                                    string audioUrlValue = itemAttribValList.Where( av => av.AttributeKey == "AudioUrl" ).SingleOrDefault( ).Value;
+                                    string audioUrlValue = itemAttribValList.Where( av => av.AttributeKey == "HostedAudioUrl" ).SingleOrDefault( ).Value;
                                     if( string.IsNullOrEmpty( audioUrlValue ) == false )
                                     {
                                         writer.WriteStartElement( "AudioUrl" );
