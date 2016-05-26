@@ -350,16 +350,18 @@ namespace chuch.ccv.Podcast.Rest
                     // start with the root node and header info
                     string iTunesNamespace = "http://www.itunes.com/dtds/podcast-1.0.dtd";
                     string atomNamespace = "http://www.w3.org/2005/Atom";
+                    string contentNamespace = "http://purl.org/rss/1.0/modules/content/";
                     string rssSource = publicApplicationRoot + string.Format( "api/Podcast/Retrieve/{0}/{1}/0", mediaUrl, version );
 
                     writer.WriteStartDocument( true );
                     writer.WriteStartElement( "rss" );
                     writer.WriteAttributeString( "xmlns", "itunes", null, iTunesNamespace );
+                    writer.WriteAttributeString( "xmlns", "content", null, contentNamespace );
+                    writer.WriteAttributeString( "xmlns", "atom", null, atomNamespace );
                     writer.WriteAttributeString( "version", "2.0" );
 
                     // start our RSS channel
                     writer.WriteStartElement( "channel" );
-                    writer.WriteAttributeString( "xmlns", "atom", null, atomNamespace );
 
                     writer.WriteStartElement( "atom", "link", atomNamespace );
                     writer.WriteAttributeString( "href", rssSource );
@@ -478,6 +480,61 @@ namespace chuch.ccv.Podcast.Rest
                                                 writer.WriteValue( message.Title );
                                                 writer.WriteEndElement( );
 
+
+                                                // setup the summary and extra details. These will be the message's if it has them, and otherwise the series'.
+                                                string itemSummary = string.Empty;
+                                                string itemExtraDetails = string.Empty;
+
+                                                // Summary
+                                                // does the message have a summary?
+                                                if( string.IsNullOrWhiteSpace( message.Content ) == false )
+                                                {
+                                                    itemSummary = message.Content;
+                                                }
+                                                else
+                                                {
+                                                    itemSummary = series.Description;
+                                                }
+                                                
+                                                // does the message have an extra details value?
+                                                AttributeValue messageExtraDetailsAV = itemAttribValList.Where( av => av.AttributeKey == "ExtraDetails" ).SingleOrDefault( );
+                                                if( messageExtraDetailsAV != null && string.IsNullOrWhiteSpace( messageExtraDetailsAV.Value ) == false )
+                                                {
+                                                    itemExtraDetails += messageExtraDetailsAV.Value;
+                                                }
+                                                else
+                                                {
+                                                    // then does the series?
+                                                    AttributeValue seriesExtraDetailsAV = contentChannelAttribValList.Where( av => av.AttributeKey == "ExtraDetails" ).SingleOrDefault( );
+                                                    if( seriesExtraDetailsAV != null && string.IsNullOrWhiteSpace( seriesExtraDetailsAV.Value ) == false )
+                                                    {
+                                                        itemExtraDetails += seriesExtraDetailsAV.Value;
+                                                    }
+                                                }
+
+                                                writer.WriteStartElement( "description" );
+                                                writer.WriteValue( itemSummary );
+                                                writer.WriteEndElement( );
+
+                                                // if there WAS item extra details, format it properly
+                                                if( string.IsNullOrWhiteSpace( itemExtraDetails ) == false )
+                                                {
+                                                    itemExtraDetails = "<![CDATA[" + itemSummary + itemExtraDetails + "]]>";
+
+                                                    writer.WriteStartElement( "content", "encoded", contentNamespace );
+                                                    writer.WriteValue( itemExtraDetails );
+                                                    writer.WriteEndElement( );
+                                                }
+
+                                                writer.WriteStartElement( "itunes", "summary", iTunesNamespace );
+                                                writer.WriteValue( itemSummary );
+                                                writer.WriteEndElement( );
+
+                                                writer.WriteStartElement( "itunes", "subtitle", iTunesNamespace );
+                                                writer.WriteValue( iTunesRSS_Subtitle );
+                                                writer.WriteEndElement( );
+
+
                                                 writer.WriteStartElement( "pubDate" );
                                                 writer.WriteValue( message.StartDateTime.ToString( "r" ) );
                                                 writer.WriteEndElement( );
@@ -488,14 +545,6 @@ namespace chuch.ccv.Podcast.Rest
 
                                                 writer.WriteStartElement( "itunes", "image", iTunesNamespace );
                                                 writer.WriteAttributeString( "href", iTunesRSS_Image );
-                                                writer.WriteEndElement( );
-
-                                                writer.WriteStartElement( "itunes", "summary", iTunesNamespace );
-                                                writer.WriteValue( series.Description );
-                                                writer.WriteEndElement( );
-
-                                                writer.WriteStartElement( "itunes", "subtitle", iTunesNamespace );
-                                                writer.WriteValue( iTunesRSS_Subtitle );
                                                 writer.WriteEndElement( );
                                         
                                                 writer.WriteStartElement( "enclosure" );
