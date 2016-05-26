@@ -32,6 +32,7 @@ using Rock.Web.Cache;
 using church.ccv.Podcast;
 using Newtonsoft.Json;
 using System.Globalization;
+using System.Net;
 
 namespace chuch.ccv.Podcast.Rest
 {
@@ -206,7 +207,7 @@ namespace chuch.ccv.Podcast.Rest
             // Build the Category Nodes (Not the Category ITEMS, which will be Content Channel Items)
             foreach ( var category in categoryList )
             {
-                if ( category.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                if ( category.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
                 {
                     var categoryItem = new CategoryItem();
                     categoryItem.Id = category.Id.ToString();
@@ -229,7 +230,7 @@ namespace chuch.ccv.Podcast.Rest
 
                 foreach ( var categorizedItem in itemsList.OrderBy( i => i.Name ) )
                 {
-                    if ( categorizedItem != null && categorizedItem.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                    if ( categorizedItem != null && categorizedItem.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
                     {
                         var categoryItem = new CategoryItem();
                         categoryItem.Id = categorizedItem.Id.ToString();
@@ -251,7 +252,7 @@ namespace chuch.ccv.Podcast.Rest
 
                     foreach ( var childCategory in Get().Where( c => c.ParentCategoryId == parentId ) )
                     {
-                        if ( childCategory.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                        if ( childCategory.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
                         {
                             g.HasChildren = true;
                             break;
@@ -265,7 +266,7 @@ namespace chuch.ccv.Podcast.Rest
                         {
                             foreach ( var categorizedItem in childItems )
                             {
-                                if ( categorizedItem != null && categorizedItem.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                                if ( categorizedItem != null && categorizedItem.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
                                 {
                                     g.HasChildren = true;
                                     break;
@@ -460,62 +461,70 @@ namespace chuch.ccv.Podcast.Rest
                                     // there _must_ be a mediaURL and length in order for us to generate the podcast entry
                                     AttributeValue mediaUrlAV = itemAttribValList.Where( av => av.AttributeKey == mediaKindKey ).SingleOrDefault( );
                                     AttributeValue mediaLengthAV = itemAttribValList.Where( av => av.AttributeKey == mediaLengthKey ).SingleOrDefault( );
-                                    AttributeValue mediaFilesizeAV = itemAttribValList.Where( av => av.AttributeKey == mediaFilesizeKey ).SingleOrDefault( );
                                     
                                     if( mediaUrlAV != null && string.IsNullOrWhiteSpace( mediaUrlAV.Value ) == false && 
-                                        mediaLengthAV != null && string.IsNullOrWhiteSpace( mediaLengthAV.Value) == false &&
-                                        mediaFilesizeAV != null && string.IsNullOrWhiteSpace( mediaFilesizeAV.Value) == false)
+                                        mediaLengthAV != null && string.IsNullOrWhiteSpace( mediaLengthAV.Value) == false)
                                     {
-                                        writer.WriteStartElement( "item" );
+                                        // before anything else, get the length of this content
+                                        WebRequest webReq = HttpWebRequest.Create( mediaUrlAV.Value );
+                                        webReq.Method = "HEAD";
+                                        using ( WebResponse webResponse = webReq.GetResponse() )
+                                        {
+                                            string contentLength = webResponse.Headers["Content-Length"];
+                                            if( string.IsNullOrWhiteSpace( contentLength ) == false  )
+                                            {
+                                                writer.WriteStartElement( "item" );
 
-                                        // Put required elements
-                                        writer.WriteStartElement( "title" );
-                                        writer.WriteValue( message.Title );
-                                        writer.WriteEndElement( );
+                                                // Put required elements
+                                                writer.WriteStartElement( "title" );
+                                                writer.WriteValue( message.Title );
+                                                writer.WriteEndElement( );
 
-                                        writer.WriteStartElement( "pubDate" );
-                                        writer.WriteValue( message.StartDateTime.ToString( "r" ) );
-                                        writer.WriteEndElement( );
+                                                writer.WriteStartElement( "pubDate" );
+                                                writer.WriteValue( message.StartDateTime.ToString( "r" ) );
+                                                writer.WriteEndElement( );
 
-                                        writer.WriteStartElement( "itunes", "author", iTunesNamespace );
-                                        writer.WriteValue( iTunesRSS_Author );
-                                        writer.WriteEndElement( );
+                                                writer.WriteStartElement( "itunes", "author", iTunesNamespace );
+                                                writer.WriteValue( iTunesRSS_Author );
+                                                writer.WriteEndElement( );
 
-                                        writer.WriteStartElement( "itunes", "image", iTunesNamespace );
-                                        writer.WriteAttributeString( "href", iTunesRSS_Image );
-                                        writer.WriteEndElement( );
+                                                writer.WriteStartElement( "itunes", "image", iTunesNamespace );
+                                                writer.WriteAttributeString( "href", iTunesRSS_Image );
+                                                writer.WriteEndElement( );
 
-                                        writer.WriteStartElement( "itunes", "summary", iTunesNamespace );
-                                        writer.WriteValue( series.Description );
-                                        writer.WriteEndElement( );
+                                                writer.WriteStartElement( "itunes", "summary", iTunesNamespace );
+                                                writer.WriteValue( series.Description );
+                                                writer.WriteEndElement( );
 
-                                        writer.WriteStartElement( "itunes", "subtitle", iTunesNamespace );
-                                        writer.WriteValue( iTunesRSS_Subtitle );
-                                        writer.WriteEndElement( );
+                                                writer.WriteStartElement( "itunes", "subtitle", iTunesNamespace );
+                                                writer.WriteValue( iTunesRSS_Subtitle );
+                                                writer.WriteEndElement( );
                                         
-                                        writer.WriteStartElement( "enclosure" );
-                                            writer.WriteAttributeString( "url", mediaUrlAV.Value );
-                                            writer.WriteAttributeString( "length", mediaFilesizeAV.Value );
-                                            writer.WriteAttributeString( "type", mediaType );
-                                        writer.WriteEndElement( );
+                                                writer.WriteStartElement( "enclosure" );
+                                                    writer.WriteAttributeString( "url", mediaUrlAV.Value );
+                                                    writer.WriteAttributeString( "length", contentLength );
+                                                    writer.WriteAttributeString( "type", mediaType );
+                                                writer.WriteEndElement( );
 
-                                        writer.WriteStartElement( "guid" );
-                                        writer.WriteValue( mediaUrlAV.Value );
-                                        writer.WriteEndElement( );
+                                                writer.WriteStartElement( "guid" );
+                                                writer.WriteValue( mediaUrlAV.Value );
+                                                writer.WriteEndElement( );
 
-                                        writer.WriteStartElement( "itunes", "duration", iTunesNamespace );
-                                        writer.WriteValue( mediaLengthAV.Value );
-                                        writer.WriteEndElement( );
+                                                writer.WriteStartElement( "itunes", "duration", iTunesNamespace );
+                                                writer.WriteValue( mediaLengthAV.Value );
+                                                writer.WriteEndElement( );
                                         
-                                        writer.WriteStartElement( "itunes", "keywords", iTunesNamespace );
-                                        writer.WriteValue( iTunesRSS_Keywords );
-                                        writer.WriteEndElement( );
+                                                writer.WriteStartElement( "itunes", "keywords", iTunesNamespace );
+                                                writer.WriteValue( iTunesRSS_Keywords );
+                                                writer.WriteEndElement( );
 
-                                        // close the message
-                                        writer.WriteEndElement();
+                                                // close the message
+                                                writer.WriteEndElement();
 
-                                        // now see if we should stop iterating because we hit our limit
-                                        numPodcastsAdded++;
+                                                // now see if we should stop iterating because we hit our limit
+                                                numPodcastsAdded++;
+                                            }
+                                        }
                                     } 
                                 } 
 

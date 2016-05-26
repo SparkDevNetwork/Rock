@@ -395,12 +395,12 @@ namespace church.ccv.Podcast
             //
         }
 
-        public class PodcastMessage
+        public class PodcastMessage : IPodcastNode
         {
             public int Id { get; set; }
             public string Name { get; set; }
             public string Description { get; set; }
-            public DateTime Date { get; set; }
+            public DateTime? Date { get; set; }
             public Dictionary<string, string> Attributes { get; set; }
             public bool Approved { get; set; }
 
