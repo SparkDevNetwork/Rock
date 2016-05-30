@@ -62,7 +62,6 @@ namespace Rock.Jobs
 
             if ( groupGuid.HasValue && systemEmailGuid.HasValue )
             {
-
                 var exceptionMsgs = new List<string>();
 
                 using ( var rockContext = new RockContext() )
@@ -173,73 +172,74 @@ namespace Rock.Jobs
                             Type entityType = itemEntityType.GetEntityType();
                             if ( entityType != null )
                             {
-                                // Get generic queryable method and query all the entities that are being followed
-                                Type[] modelType = { entityType };
-                                Type genericServiceType = typeof( Rock.Data.Service<> );
-                                Type modelServiceType = genericServiceType.MakeGenericType( modelType );
-                                Rock.Data.IService serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { rockContext } ) as IService;
-                                MethodInfo qryMethod = serviceInstance.GetType().GetMethod( "Queryable", new Type[] { } );
-                                var entityQry = qryMethod.Invoke( serviceInstance, new object[] { } ) as IQueryable<IEntity>;
-                                var entityList = entityQry.Where( q => keyVal.Value.Contains( q.Id ) ).ToList();
-
-                                // If there are any followed entities of this type 
-                                if ( entityList.Any() )
+                                var dbContext = Reflection.GetDbContextForEntityType( entityType );
+                                if ( dbContext != null )
                                 {
-                                    // Get the active event types for this entity type
-                                    foreach ( var eventType in eventTypes.Where( e => e.FollowedEntityTypeId == keyVal.Key ) )
+                                    var serviceInstance = Reflection.GetServiceForEntityType( entityType, dbContext );
+                                    if ( serviceInstance != null )
                                     {
-                                        try
+                                        MethodInfo qryMethod = serviceInstance.GetType().GetMethod( "Queryable", new Type[] { } );
+                                        var entityQry = qryMethod.Invoke( serviceInstance, new object[] { } ) as IQueryable<IEntity>;
+                                        var entityList = entityQry.Where( q => keyVal.Value.Contains( q.Id ) ).ToList();
+
+                                        // If there are any followed entities of this type 
+                                        if ( entityList.Any() )
                                         {
-
-                                            // Get the component
-                                            var eventComponent = eventType.GetEventComponent();
-                                            if ( eventComponent != null )
+                                            // Get the active event types for this entity type
+                                            foreach ( var eventType in eventTypes.Where( e => e.FollowedEntityTypeId == keyVal.Key ) )
                                             {
-                                                // Get the previous notificatoins for this event type
-                                                var previousNotifications = followingEventNotificationService
-                                                    .Queryable()
-                                                    .Where( n => n.FollowingEventTypeId == eventType.Id )
-                                                    .ToList();
-
-                                                // check each entity that is followed (by anyone)
-                                                foreach ( IEntity entity in entityList )
+                                                try
                                                 {
-                                                    var previousNotification = previousNotifications
-                                                        .Where( n => n.EntityId == entity.Id )
-                                                        .FirstOrDefault();
-                                                    DateTime? lastNotification = previousNotification != null ? previousNotification.LastNotified : (DateTime?)null;
-
-                                                    // if the event happened
-                                                    if ( eventComponent.HasEventHappened( eventType, entity, lastNotification ) )
+                                                    // Get the component
+                                                    var eventComponent = eventType.GetEventComponent();
+                                                    if ( eventComponent != null )
                                                     {
-                                                        // Store the event type id and the entity for later processing of notifications
-                                                        eventsThatHappened.AddOrIgnore( eventType.Id, new Dictionary<int, string>() );
-                                                        eventsThatHappened[eventType.Id].Add( entity.Id, eventComponent.FormatEntityNotification( eventType, entity ) );
+                                                        // Get the previous notificatoins for this event type
+                                                        var previousNotifications = followingEventNotificationService
+                                                            .Queryable()
+                                                            .Where( n => n.FollowingEventTypeId == eventType.Id )
+                                                            .ToList();
 
-                                                        if ( previousNotification == null )
+                                                        // check each entity that is followed (by anyone)
+                                                        foreach ( IEntity entity in entityList )
                                                         {
-                                                            previousNotification = new FollowingEventNotification();
-                                                            previousNotification.FollowingEventTypeId = eventType.Id;
-                                                            previousNotification.EntityId = entity.Id;
-                                                            followingEventNotificationService.Add( previousNotification );
+                                                            var previousNotification = previousNotifications
+                                                                .Where( n => n.EntityId == entity.Id )
+                                                                .FirstOrDefault();
+                                                            DateTime? lastNotification = previousNotification != null ? previousNotification.LastNotified : (DateTime?)null;
+
+                                                            // if the event happened
+                                                            if ( eventComponent.HasEventHappened( eventType, entity, lastNotification ) )
+                                                            {
+                                                                // Store the event type id and the entity for later processing of notifications
+                                                                eventsThatHappened.AddOrIgnore( eventType.Id, new Dictionary<int, string>() );
+                                                                eventsThatHappened[eventType.Id].Add( entity.Id, eventComponent.FormatEntityNotification( eventType, entity ) );
+
+                                                                if ( previousNotification == null )
+                                                                {
+                                                                    previousNotification = new FollowingEventNotification();
+                                                                    previousNotification.FollowingEventTypeId = eventType.Id;
+                                                                    previousNotification.EntityId = entity.Id;
+                                                                    followingEventNotificationService.Add( previousNotification );
+                                                                }
+                                                                previousNotification.LastNotified = timestamp;
+                                                            }
                                                         }
-                                                        previousNotification.LastNotified = timestamp;
+
+                                                        rockContext.SaveChanges();
                                                     }
+
+                                                    eventType.LastCheckDateTime = RockDateTime.Now;
                                                 }
 
-                                                rockContext.SaveChanges();
+                                                catch ( Exception ex )
+                                                {
+                                                    exceptionMsgs.Add( string.Format( "An exception occurred calculating events for the '{0}' suggestion type:{1}    {2}", eventType.Name, Environment.NewLine, ex.Messages().AsDelimited( Environment.NewLine + "   " ) ) );
+                                                    ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
+                                                }
                                             }
-
-                                            eventType.LastCheckDateTime = RockDateTime.Now;
-                                        }
-
-                                        catch ( Exception ex )
-                                        {
-                                            exceptionMsgs.Add( string.Format( "An exception occurred calculating events for the '{0}' suggestion type:{1}    {2}", eventType.Name, Environment.NewLine, ex.Messages().AsDelimited( Environment.NewLine + "   " ) ) );
-                                            ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
                                         }
                                     }
-
                                 }
                             }
                         }
