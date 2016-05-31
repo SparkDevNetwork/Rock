@@ -2043,7 +2043,10 @@ Sys.Application.add_load(function () {
 
             foreach ( string param in Request.QueryString.Keys )
             {
-                parameters.Add( param, Request.QueryString[param] );
+                if ( param != null )
+                {
+                    parameters.Add( param, Request.QueryString[param] );
+                }
             }
 
             return parameters;

@@ -52,7 +52,7 @@ namespace Rock.Workflow.Action.CheckIn
                 DateTime sixMonthsAgo = RockDateTime.Today.AddMonths( -6 );
                 var attendanceService = new AttendanceService( rockContext );
 
-                foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ) )
+                foreach ( var family in checkInState.CheckIn.GetFamilies( true ) )
                 {
                     foreach ( var person in family.People )
                     {

@@ -128,5 +128,25 @@ namespace Rock.Workflow
             base.Refresh();
             _categories = null;
         }
+
+        /// <summary>
+        /// Updates the attributes.
+        /// </summary>
+        public void UpdateAttributes()
+        {
+            var entityType = EntityTypeCache.Read<Rock.Model.WorkflowActionType>( false );
+            if ( entityType != null )
+            {
+                foreach ( var component in this.Components )
+                {
+                    using ( var rockContext = new Rock.Data.RockContext() )
+                    {
+                        var actionComponent = component.Value.Value;
+                        var type = actionComponent.GetType();
+                        Rock.Attribute.Helper.UpdateAttributes( type, entityType.Id, "EntityTypeId", Rock.Web.Cache.EntityTypeCache.GetId( type.FullName ).ToString(), rockContext );
+                    }
+                }
+            }
+        }
     }
 }

@@ -38,11 +38,13 @@ namespace Rock.Workflow.Action
 
     [WorkflowAttribute("Person", "Workflow attribute that contains the person to update.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Type", "The type of phone numer to update.", true, false, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME, "", 1 )]
-    [WorkflowTextOrAttribute( "Phone Number", "Attribute Value", "The value or attribute value to set the phone number to. <span class='tip tip-lava'></span>", false, "", "", 2, "PhoneNumber" )]
-    [WorkflowTextOrAttribute( "Unlisted", "Attribute Value", "The value or attribute value to indicate if number should be unlisted. Only valid values are 'True' or 'False' any other value will be ignored. <span class='tip tip-lava'></span>", false, "", "", 3, "Unlisted" )]
-    [WorkflowTextOrAttribute( "Messaging Enabled", "Attribute Value", "The value or attribute value to indicate if messaging (SMS) should be enabled for phone. Only valid values are 'True' or 'False' any other value will be ignored. <span class='tip tip-lava'></span>", false, "", "", 4, "MessagingEnabled" )]
-    [BooleanField("Ignore Blank Values", "If a value is blank should it be ignored, or should it be used to wipe out the current phone number?", true, order: 5)]
+    [WorkflowAttribute( "Phone Type (From Attribute)", "The attribute that contains the phone number type to update.", false, "", "", 1, "PhoneTypeAttribute",
+        new string[] { "Rock.Field.Types.DefinedValueFieldType" } )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Type", "The type of phone numer to update (if attribute is not specified or is an invalid value).", true, false, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME, "", 2 )]
+    [WorkflowTextOrAttribute( "Phone Number", "Attribute Value", "The value or attribute value to set the phone number to. <span class='tip tip-lava'></span>", false, "", "", 3, "PhoneNumber" )]
+    [WorkflowTextOrAttribute( "Unlisted", "Attribute Value", "The value or attribute value to indicate if number should be unlisted. Only valid values are 'True' or 'False' any other value will be ignored. <span class='tip tip-lava'></span>", false, "", "", 4, "Unlisted" )]
+    [WorkflowTextOrAttribute( "Messaging Enabled", "Attribute Value", "The value or attribute value to indicate if messaging (SMS) should be enabled for phone. Only valid values are 'True' or 'False' any other value will be ignored. <span class='tip tip-lava'></span>", false, "", "", 5, "MessagingEnabled" )]
+    [BooleanField("Ignore Blank Values", "If a value is blank should it be ignored, or should it be used to wipe out the current phone number?", true, order: 6)]
     public class PersonPhoneUpdate : ActionComponent
     {
         /// <summary>
@@ -94,9 +96,18 @@ namespace Rock.Workflow.Action
             }
 
             // determine the phone type to edit
-            var phoneType = DefinedValueCache.Read( GetAttributeValue( action, "PhoneType" ).AsGuid() );
-            if ( phoneType == null )
+            DefinedValueCache phoneType = null;
+            var phoneTypeAttributeValue = action.GetWorklowAttributeValue( GetAttributeValue( action, "PhoneTypeAttribute" ).AsGuid() );
+            if ( phoneTypeAttributeValue != null )
             {
+                phoneType = DefinedValueCache.Read( phoneTypeAttributeValue.AsGuid() );
+            }
+            if ( phoneType == null )
+            { 
+                phoneType = DefinedValueCache.Read( GetAttributeValue( action, "PhoneType" ).AsGuid() );
+            }
+            if ( phoneType == null )
+            { 
                 errorMessages.Add( "The phone type to be updated was not selected." );
                 return false;
             }

@@ -75,5 +75,11 @@ namespace Rock.SystemGuid
         /// Organization Unit group type guid
         /// </summary>
         public const string GROUPTYPE_ORGANIZATION_UNIT = "AAB2E9F4-E828-4FEE-8467-73DC9DAB784C";
+
+        /// <summary>
+        /// Organization Unit group type guid
+        /// </summary>
+        public const string GROUPTYPE_WEEKLY_SERVICE_CHECKIN_AREA = "FEDD389A-616F-4A53-906C-63D8255631C5";
+
     }
 }

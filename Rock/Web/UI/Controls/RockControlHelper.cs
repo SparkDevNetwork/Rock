@@ -146,6 +146,11 @@ namespace Rock.Web.UI.Controls
 
                 writer.RenderEndTag();
 
+                if ( rockControl is IRockControlAdditionalRendering )
+                {
+                    ( (IRockControlAdditionalRendering)rockControl ).RenderAfterLabel( writer );
+                }
+
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-wrapper" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
             }
