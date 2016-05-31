@@ -140,7 +140,7 @@ namespace Rock.Security.Authentication
         /// <returns></returns>
         private string EncodePassword( UserLogin user, string password, byte[] encryptionKey )
         {
-            switch ( GetEncryptionMethod(  ) )
+            switch ( GetEncryptionMethod() )
             {
                 case EncryptionMethod.BCrypt:
                     return EncodeBcrypt( password );
