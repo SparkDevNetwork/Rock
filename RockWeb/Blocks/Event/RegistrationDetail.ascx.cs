@@ -499,32 +499,47 @@ namespace RockWeb.Blocks.Event
                 // add current registration instance name
                 lCurrentRegistrationInstance.Text = Registration.RegistrationInstance.Name;
 
-                // list other registration instances
-                using ( var rockContext = new RockContext() )
-                {
-                    var otherRegistrationInstances = new RegistrationInstanceService( rockContext ).Queryable()
-                            .Where( i =>
-                                i.RegistrationTemplateId == Registration.RegistrationInstance.RegistrationTemplateId
-                                && i.IsActive == true
-                                && i.Id != Registration.RegistrationInstanceId
-                                && (i.EndDateTime >= RockDateTime.Now || i.EndDateTime == null) )
-                            .Select( i => new
-                            {
-                                Value = i.Id,
-                                Text = i.Name
-                            } )
-                            .ToList();
-                    ddlNewRegistrationInstance.DataValueField = "Value";
-                    ddlNewRegistrationInstance.DataTextField = "Text";
-                    ddlNewRegistrationInstance.DataSource = otherRegistrationInstances;
-                    ddlNewRegistrationInstance.DataBind();
+                BindOtherInstances();
 
-                    ddlNewRegistrationInstance.Items.Insert( 0, new ListItem( String.Empty, String.Empty ) );
-                    ddlNewRegistrationInstance.SelectedIndex = 0;
-
-                }
                 mdMoveRegistration.Show();
             }
+        }
+
+        protected void cbShowAll_CheckedChanged( object sender, EventArgs e )
+        {
+            BindOtherInstances();
+        }
+
+
+        protected void ddlNewRegistrationInstance_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            ddlMoveGroup.Items.Clear();
+
+            int? instanceId = ddlNewRegistrationInstance.SelectedValueAsInt();
+            if ( instanceId.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var instance = new RegistrationInstanceService( rockContext ).Get( instanceId.Value );
+                    if ( instance != null )
+                    {
+                        var groups = instance.Linkages
+                            .Where( l => l.Group != null )
+                            .Select( l => new
+                            {
+                                Value = l.Group.Id,
+                                Text = l.Group.Name
+                            } )
+                            .ToList();
+
+                        ddlMoveGroup.DataSource = groups;
+                        ddlMoveGroup.DataBind();
+                        ddlMoveGroup.Items.Insert( 0, new ListItem( String.Empty, String.Empty ) );
+                    }
+                }
+            }
+
+            ddlMoveGroup.Visible = ddlMoveGroup.Items.Count > 0;
         }
 
         protected void btnMoveRegistration_Click( object sender, EventArgs e )
@@ -533,17 +548,97 @@ namespace RockWeb.Blocks.Event
             using ( var rockContext = new RockContext() )
             {
                 var registrationService = new RegistrationService( rockContext );
+                var groupMemberService = new GroupMemberService( rockContext );
 
                 var registration = registrationService.Get( Registration.Id );
                 registration.RegistrationInstanceId = ddlNewRegistrationInstance.SelectedValue.AsInteger();
-                rockContext.SaveChanges();
+
+                // Move registrants to new group
+                int? groupId = ddlMoveGroup.SelectedValueAsInt();
+                if ( groupId.HasValue )
+                {
+                    registration.GroupId = groupId;
+                    rockContext.SaveChanges();
+
+                    var group = new GroupService( rockContext ).Get( groupId.Value );
+                    if ( group != null )
+                    {
+                        int? groupRoleId = null;
+                        var template = registration.RegistrationInstance.RegistrationTemplate;
+                        if ( group.GroupTypeId == template.GroupTypeId && template.GroupMemberRoleId.HasValue )
+                        {
+                            groupRoleId = template.GroupMemberRoleId.Value;
+                        }
+                        if ( !groupRoleId.HasValue )
+                        {
+                            groupRoleId = group.GroupType.DefaultGroupRoleId;
+                        }
+                        if ( !groupRoleId.HasValue )
+                        {
+                            groupRoleId = group.GroupType.Roles.OrderBy( r => r.Order ).Select( r => r.Id ).FirstOrDefault();
+                        }
+
+                        if ( groupRoleId.HasValue )
+                        {
+                            foreach ( var registrant in registration.Registrants.Where( r => r.PersonAlias != null ) )
+                            {
+                                var newGroupMembers = groupMemberService.GetByGroupIdAndPersonId( groupId.Value, registrant.PersonAlias.PersonId );
+                                if ( !newGroupMembers.Any() )
+                                {
+                                    // Get any existing group member attribute values
+                                    var existingAttributeValues = new Dictionary<string, string>();
+                                    if ( registrant.GroupMemberId.HasValue )
+                                    {
+                                        var existingGroupMember = groupMemberService.Get( registrant.GroupMemberId.Value );
+                                        if ( existingGroupMember != null )
+                                        {
+                                            existingGroupMember.LoadAttributes( rockContext );
+                                            foreach ( var attributeValue in existingGroupMember.AttributeValues )
+                                            {
+                                                existingAttributeValues.Add( attributeValue.Key, attributeValue.Value.Value );
+                                            }
+                                        }
+
+                                        registrant.GroupMember = null;
+                                        groupMemberService.Delete( existingGroupMember );
+                                    }
+
+
+                                    var newGroupMember = new GroupMember();
+                                    groupMemberService.Add( newGroupMember );
+                                    newGroupMember.Group = group;
+                                    newGroupMember.PersonId = registrant.PersonAlias.PersonId;
+                                    newGroupMember.GroupRoleId = groupRoleId.Value;
+                                    rockContext.SaveChanges();
+
+                                    newGroupMember = groupMemberService.Get( newGroupMember.Id );
+                                    newGroupMember.LoadAttributes();
+
+                                    foreach( var attr in newGroupMember.Attributes )
+                                    {
+                                        if ( existingAttributeValues.ContainsKey( attr.Key ) )
+                                        {
+                                            newGroupMember.SetAttributeValue( attr.Key, existingAttributeValues[attr.Key] );
+                                        }
+                                    }
+                                    newGroupMember.SaveAttributeValues( rockContext );
+
+                                    registrant.GroupMember = newGroupMember;
+                                    rockContext.SaveChanges();
+
+                                }
+                            }
+                        }
+                    }
+                }
 
                 // Reload registration
                 Registration = GetRegistration( Registration.Id );
 
                 lWizardInstanceName.Text = Registration.RegistrationInstance.Name;
+                ShowReadonlyDetails( Registration );
             }
-            
+
             mdMoveRegistration.Hide();
         }
 
@@ -1621,6 +1716,46 @@ namespace RockWeb.Blocks.Event
 
         #endregion
 
+        #region Registration Detail Methods
+
+        private void BindOtherInstances()
+        {
+            int? currentValue = ddlNewRegistrationInstance.SelectedValueAsInt();
+
+            // list other registration instances
+            using ( var rockContext = new RockContext() )
+            {
+                var otherRegistrationInstances = new RegistrationInstanceService( rockContext ).Queryable()
+                        .Where( i =>
+                            i.RegistrationTemplateId == Registration.RegistrationInstance.RegistrationTemplateId
+                            && i.Id != Registration.RegistrationInstanceId );
+
+                if ( !cbShowAll.Checked )
+                {
+                    otherRegistrationInstances = otherRegistrationInstances
+                        .Where( i =>
+                            i.IsActive == true
+                            && ( i.EndDateTime >= RockDateTime.Now || i.EndDateTime == null ) );
+                }
+
+                var instances = otherRegistrationInstances
+                        .Select( i => new
+                            {
+                                Value = i.Id,
+                                Text = i.Name
+                            } )
+                        .ToList();
+
+                ddlNewRegistrationInstance.DataSource = instances;
+                ddlNewRegistrationInstance.DataBind();
+
+                ddlNewRegistrationInstance.Items.Insert( 0, new ListItem( String.Empty, String.Empty ) );
+                ddlNewRegistrationInstance.SetValue( currentValue );
+            }
+        }
+
+        #endregion
+
         #region Dynamic Controls
 
         private void BuildFeeTable( Registration registration )
@@ -2061,5 +2196,6 @@ namespace RockWeb.Blocks.Event
         #endregion
 
         #endregion
+
     }
 }
