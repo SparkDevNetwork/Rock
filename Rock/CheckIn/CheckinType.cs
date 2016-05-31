@@ -36,7 +36,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The type of checkin.
         /// </value>
-        public TypeOfCheckin TypeOfCheckin { get { return GetSetting( "core_checkin_CheckInType" ) == "Family" ? TypeOfCheckin.Family : TypeOfCheckin.Individual; } }
+        public TypeOfCheckin TypeOfCheckin { get { return GetSetting( "core_checkin_CheckInType" ) == "1" ? TypeOfCheckin.Family : TypeOfCheckin.Individual; } }
 
         /// <summary>
         /// Gets a value indicating whether [enable manager option].
@@ -71,12 +71,12 @@ namespace Rock.CheckIn
         public bool ReuseSameCode { get { return GetSetting( "core_checkin_ReuseSameCode" ).AsBoolean( false ); } }
 
         /// <summary>
-        /// Gets a value indicating whether [one parent label].
+        /// Gets a value indicating whether [use same options].
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [one parent label]; otherwise, <c>false</c>.
+        ///   <c>true</c> if [use same options]; otherwise, <c>false</c>.
         /// </value>
-        public bool OneParentLabel { get { return GetSetting( "core_checkin_OneParentLabel" ).AsBoolean( false ); } }
+        public bool UseSameOptions { get { return GetSetting( "core_checkin_UseSameOptions" ).AsBoolean( false ); } }
 
         /// <summary>
         /// Gets the type of the search.
@@ -124,7 +124,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The type of the phone search.
         /// </value>
-        public PhoneSearchType PhoneSearchType { get { return GetSetting( "core_checkin_PhoneSearchType" ) == "Contains" ? PhoneSearchType.Contains : PhoneSearchType.EndsWith; } }
+        public PhoneSearchType PhoneSearchType { get { return GetSetting( "core_checkin_PhoneSearchType" ) == "0" ? PhoneSearchType.Contains : PhoneSearchType.EndsWith; } }
 
         /// <summary>
         /// Gets the refresh interval.

@@ -21,6 +21,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.CheckIn;
 using Rock.Data;
 
 namespace Rock.Workflow.Action.CheckIn
@@ -50,7 +51,7 @@ namespace Rock.Workflow.Action.CheckIn
             var checkInState = GetCheckInState( entity, out errorMessages );
             if ( checkInState != null )
             {
-                var family = checkInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
+                var family = checkInState.CheckIn.CurrentFamily;
                 if ( family != null )
                 {
                     var remove = GetAttributeValue( action, "Remove" ).AsBoolean();
@@ -63,7 +64,7 @@ namespace Rock.Workflow.Action.CheckIn
                             {
                                 foreach ( var location in group.Locations.ToList() )
                                 {
-                                    if ( !location.Location.IsActive )
+                                    if ( !location.IsActiveAndNotFull )
                                     {
                                         if ( remove )
                                         {
@@ -85,5 +86,6 @@ namespace Rock.Workflow.Action.CheckIn
 
             return false;
         }
+
     }
 }

@@ -84,6 +84,35 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Gets a value indicating whether [active and not full].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [active and not full]; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsActiveAndNotFull
+        {
+            get
+            {
+                if ( Location != null )
+                {
+                    if ( Location.IsActive )
+                    {
+                        if ( Location.FirmRoomThreshold.HasValue &&
+                            Location.FirmRoomThreshold.Value <= KioskLocationAttendance.Read( Location.Id ).CurrentCount )
+                        {
+                            return false;
+                        }
+                        else
+                        {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="KioskLocation" /> class.
         /// </summary>
         public KioskLocation()

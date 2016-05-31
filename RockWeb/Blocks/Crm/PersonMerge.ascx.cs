@@ -27,6 +27,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -199,7 +200,7 @@ namespace RockWeb.Blocks.Crm
                         .ToList();
 
                     // Create the data structure used to build grid
-                    MergeData = new MergeData( people, headingKeys );
+                    MergeData = new MergeData( people, headingKeys, CurrentPerson );
                     MergeData.EntitySetId = setId.Value;
                     BuildColumns();
                     BindGrid();
@@ -256,7 +257,7 @@ namespace RockWeb.Blocks.Crm
                     .ToList();
 
                 // Rebuild mergdata, columns, and grid
-                MergeData = new MergeData( people, headingKeys );
+                MergeData = new MergeData( people, headingKeys, CurrentPerson );
                 BuildColumns();
                 BindGrid();
             }
@@ -285,7 +286,7 @@ namespace RockWeb.Blocks.Crm
                     .ToList();
 
                 // Rebuild mergdata, columns, and grid
-                MergeData = new MergeData( people, headingKeys );
+                MergeData = new MergeData( people, headingKeys, CurrentPerson );
                 BuildColumns();
                 BindGrid();
             }
@@ -898,7 +899,7 @@ namespace RockWeb.Blocks.Crm
         /// Initializes a new instance of the <see cref="MergeData"/> class.
         /// </summary>
         /// <param name="people">The people.</param>
-        public MergeData( List<Person> people, List<string> headingKeys )
+        public MergeData( List<Person> people, List<string> headingKeys, Person currentPerson )
         {
             People = new List<MergePerson>();
             Properties = new List<PersonProperty>();
@@ -934,10 +935,13 @@ namespace RockWeb.Blocks.Crm
                 person.LoadAttributes();
                 foreach ( var attribute in person.Attributes.OrderBy( a => a.Value.Order ) )
                 {
-                    string value = person.GetAttributeValue( attribute.Key );
-                    bool condensed = attribute.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName;
-                    string formattedValue = attribute.Value.FieldType.Field.FormatValue( null, value, attribute.Value.QualifierValues, condensed );
-                    AddProperty( "attr_" + attribute.Key, attribute.Value.Name, person.Id, value, formattedValue );
+                    if ( attribute.Value.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                    {
+                        string value = person.GetAttributeValue( attribute.Key );
+                        bool condensed = attribute.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName;
+                        string formattedValue = attribute.Value.FieldType.Field.FormatValue( null, value, attribute.Value.QualifierValues, condensed );
+                        AddProperty( "attr_" + attribute.Key, attribute.Value.Name, person.Id, value, formattedValue );
+                    }
                 }
             }
 

@@ -119,10 +119,10 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets the <see cref="Rock.Workflow.ActionComponent"/>
+        /// Gets the badge component.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Workflow.ActionComponent"/>
+        /// The badge component.
         /// </value>
         public virtual BadgeComponent BadgeComponent
         {

@@ -206,13 +206,21 @@ namespace Rock.Extension
         /// </summary>
         public Component()
         {
-            var type = this.GetType();
-            using ( var rockContext = new RockContext() )
+            UpdateAttributes();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Component" /> class.
+        /// </summary>
+        /// <param name="updateAttributes">if set to <c>true</c> [update attributes].</param>
+        public Component( bool updateAttributes )
+        {
+            if (updateAttributes )
             {
-                Rock.Attribute.Helper.UpdateAttributes( type, Rock.Web.Cache.EntityTypeCache.GetId( type.FullName ), rockContext );
-                this.LoadAttributes( rockContext );
+                UpdateAttributes();
             }
         }
+
 
         /// <summary>
         /// Gets the type of the entity.
@@ -355,5 +363,16 @@ namespace Rock.Extension
         {
             Security.Authorization.MakeUnPrivate( this, action, person, rockContext );
         }
+
+        private void UpdateAttributes()
+        {
+            var type = this.GetType();
+            using ( var rockContext = new RockContext() )
+            {
+                Rock.Attribute.Helper.UpdateAttributes( type, Rock.Web.Cache.EntityTypeCache.GetId( type.FullName ), rockContext );
+                this.LoadAttributes( rockContext );
+            }
+        }
+
     }
 }

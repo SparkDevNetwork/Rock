@@ -331,4 +331,10 @@
   <data name="_201605180005401_ScheduledTxnSource_ContributionStatementQuery" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201605180005401_scheduledtxnsource_contributionstatementquery.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_201605232234462_FamilyCheckinType" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201605232234462_familycheckintype.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201605311330117_GivingAnalyticsLastGift" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201605311330117_givinganalyticslastgift.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>

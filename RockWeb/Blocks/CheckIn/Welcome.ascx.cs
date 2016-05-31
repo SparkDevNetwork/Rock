@@ -34,8 +34,9 @@ namespace RockWeb.Blocks.CheckIn
     [DisplayName( "Welcome" )]
     [Category( "Check-in" )]
     [Description( "Welcome screen for check-in." )]
-    [LinkedPage( "Family Select Page" )]
-    [LinkedPage( "Scheduled Locations Page" )]
+
+    [LinkedPage( "Family Select Page", "", false, "", "", 5 )]
+    [LinkedPage( "Scheduled Locations Page", "", false, "", "", 6 )]
     public partial class Welcome : CheckInBlock
     {
         protected override void OnInit( EventArgs e )

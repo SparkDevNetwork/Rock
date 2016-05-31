@@ -85,7 +85,7 @@ namespace Rock.Workflow.Action.CheckIn
                     return true;
                 }
 
-                var family = checkInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
+                var family = checkInState.CheckIn.CurrentFamily;
                 if ( family != null )
                 {
                     var groupMemberService = new GroupMemberService( rockContext );

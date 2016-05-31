@@ -90,7 +90,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// <c>true</c> if attributes have already been verified; otherwise, <c>false</c>.
         /// </value>
-        public bool IsInstancePropertiesVerified { get; internal set; }
+        public bool IsInstancePropertiesVerified { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [checked security actions].
