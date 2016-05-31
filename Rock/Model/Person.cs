@@ -1020,24 +1020,44 @@ namespace Rock.Model
             var age = Age;
             if (age != null)
             {
-                if (age > 0)
-                // Age in years
+                if (condensed)
                 {
-                    if (condensed)
-                    {
-                        return age.ToString();
-                    }
+                    return age.ToString();
+                }
+                if (age > 0)
+                {
                     return age + (age == 1 ? " yr old " : " yrs old ");
                 }
+            }
 
-                var daysOld = (RockDateTime.Today - BirthDate.Value).TotalDays;
-
-                if (daysOld > 31)
+            var today = RockDateTime.Today;
+            if (BirthYear != null && BirthMonth != null)
+            {
+                int months = today.Month - BirthMonth.Value;
+                if (BirthYear < today.Year)
                 {
-                    var months = Math.Floor(daysOld / (365.2425 / 12));
-                    return months + (months == 1.0 ? " mo old " : " mos old ");
+                    months = months + 12;
                 }
-                return daysOld + (daysOld == 1 ? " day old " : " days old ");
+                if (BirthDay > today.Day)
+                {
+                    months--;
+                }
+                if (months > 0)
+                {
+                    return months + (months == 1 ? " mo old " : " mos old ");
+                }
+            }
+
+            if (BirthYear != null && BirthMonth != null && BirthDay != null)
+            {
+                int days = today.Day - BirthDay.Value;
+                if (days < 0)
+                {
+                    // Add the number of days in the birth month
+                    var birthMonth = new DateTime(BirthYear.Value, BirthMonth.Value, 1);
+                    days = days + birthMonth.AddMonths(1).AddDays(-1).Day;
+                }
+                return days + (days == 1 ? " day old " : " days old ");
             }
             return string.Empty;
         }

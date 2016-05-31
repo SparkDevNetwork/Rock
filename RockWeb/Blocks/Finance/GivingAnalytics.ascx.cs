@@ -116,6 +116,7 @@ namespace RockWeb.Blocks.Finance
             gGiversGifts.DataKeyNames = new string[] { "Id" };
             gGiversGifts.PersonIdField = "Id";
             gGiversGifts.GridRebind += gGiversGifts_GridRebind;
+            gGiversGifts.EntityTypeId = EntityTypeCache.GetId<Rock.Model.Person>();
 
             pnlTotal = new Panel();
             gGiversGifts.Actions.AddCustomActionControl( pnlTotal );
