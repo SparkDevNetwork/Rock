@@ -581,6 +581,7 @@
     <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinAreaRow.cs" />
     <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinGroup.cs" />
     <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinGroupRow.cs" />
+    <Compile Include="Web\UI\Controls\IRockControlAdditionalRendering.cs" />
     <Compile Include="Web\UI\RockTheme.cs" />
     <Compile Include="Utility\SettingsStringBase.cs" />
     <Compile Include="Web\Cache\AttributeValueCache.cs" />
