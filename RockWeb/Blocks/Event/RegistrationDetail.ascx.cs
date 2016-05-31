@@ -644,6 +644,15 @@ namespace RockWeb.Blocks.Event
         {
             if ( Registration != null )
             {
+                if ( Registration.PersonAlias != null && Registration.PersonAlias.Person != null )
+                {
+                    ppPayee.SetValue( Registration.PersonAlias.Person );
+                }
+                else
+                {
+                    ppPayee.SetValue( null );
+                }
+
                 using ( var rockContext = new RockContext() )
                 {
                     ddlCurrencyType.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid(), rockContext ), true );
@@ -688,12 +697,22 @@ namespace RockWeb.Blocks.Event
                     if ( Registration.PersonAlias != null && Registration.PersonAlias.Person != null )
                     {
                         var person = Registration.PersonAlias.Person;
+
+                        ppPayee.SetValue( person );
                         txtCardFirstName.Text = person.FirstName;
                         txtCardLastName.Text = person.LastName;
                         txtCardName.Text = person.FullName;
 
                         var location = person.GetHomeLocation();
                         acBillingAddress.SetValues( location );
+                    }
+                    else
+                    {
+                        ppPayee.SetValue( null );
+                        txtCardFirstName.Text = string.Empty;
+                        txtCardLastName.Text = string.Empty;
+                        txtCardName.Text = string.Empty;
+                        acBillingAddress.SetValues( null );
                     }
 
                     pnlCosts.Visible = false;
@@ -708,16 +727,23 @@ namespace RockWeb.Blocks.Event
 
         protected void lbSubmitPayment_Click( object sender, EventArgs e )
         {
+            int? personAliasId = ppPayee.PersonAliasId;
+
             decimal pmtAmount = cbPaymentAmount.Text.AsDecimal();
             if ( Registration != null && Registration.BalanceDue >= pmtAmount && pmtAmount > 0 )
             {
+                if ( !personAliasId.HasValue && Registration.PersonAliasId.HasValue )
+                {
+                    personAliasId = Registration.PersonAliasId;
+                }
+
                 try
                 {
                     var rockContext = new RockContext();
                     rockContext.WrapTransaction( () =>
                     {
                         string errorMessage = string.Empty;
-                        if ( !ProcessPayment( phCCDetails.Visible, rockContext, Registration, pmtAmount, out errorMessage ) )
+                        if ( !ProcessPayment( phCCDetails.Visible, rockContext, Registration, personAliasId, pmtAmount, out errorMessage ) )
                         {
                             throw new Exception( errorMessage );
                         }
@@ -1308,11 +1334,14 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// Processes the payment.
         /// </summary>
+        /// <param name="submitToGateway">if set to <c>true</c> [submit to gateway].</param>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="registration">The registration.</param>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="amount">The amount.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        private bool ProcessPayment( bool submitToGateway, RockContext rockContext, Registration registration, decimal amount, out string errorMessage )
+        private bool ProcessPayment( bool submitToGateway, RockContext rockContext, Registration registration, int? personAliasId, decimal amount, out string errorMessage )
         {
             FinancialTransaction transaction = null;
 
@@ -1397,7 +1426,7 @@ namespace RockWeb.Blocks.Event
                 
                 History.EvaluateChange( txnChanges, "Transaction Code", string.Empty, transaction.TransactionCode );
 
-                transaction.AuthorizedPersonAliasId = registration.PersonAliasId;
+                transaction.AuthorizedPersonAliasId = personAliasId;
 
                 transaction.TransactionDateTime = RockDateTime.Now;
                 History.EvaluateChange( txnChanges, "Date/Time", null, transaction.TransactionDateTime );
