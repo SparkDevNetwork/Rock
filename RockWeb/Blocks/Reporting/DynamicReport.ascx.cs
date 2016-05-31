@@ -356,13 +356,17 @@ namespace RockWeb.Blocks.Reporting
                     {
                         string selectionUserPreference = null;
                         bool? checkedUserPreference = null;
-                        if ( setSelection && filterIsVisible && filterIsConfigurable )
+                        if ( setSelection && filterIsVisible )
                         {
-                            selectionUserPreference = this.GetUserPreference( string.Format( "{0}_{1}_Selection", GetReportDataKeyPrefix(), filterControl.DataViewFilterGuid.ToString( "N" ) ) );
-                        }
-                        else if ( setSelection && filterIsVisible && !filterIsConfigurable )
-                        {
-                            checkedUserPreference = this.GetUserPreference( string.Format( "{0}_{1}_Checked", GetReportDataKeyPrefix(), filterControl.DataViewFilterGuid.ToString( "N" ) ) ).AsBooleanOrNull();
+                            if ( filterIsConfigurable )
+                            {
+                                selectionUserPreference = this.GetUserPreference( string.Format( "{0}_{1}_Selection", GetReportDataKeyPrefix(), filterControl.DataViewFilterGuid.ToString( "N" ) ) );
+                            }
+
+                            if ( filterControl.ShowCheckbox )
+                            {
+                                checkedUserPreference = this.GetUserPreference( string.Format( "{0}_{1}_Checked", GetReportDataKeyPrefix(), filterControl.DataViewFilterGuid.ToString( "N" ) ) ).AsBooleanOrNull();
+                            }
                         }
 
                         if ( checkedUserPreference.HasValue )
@@ -379,16 +383,16 @@ namespace RockWeb.Blocks.Reporting
                                 {
                                     selection = ( component as Rock.Reporting.DataFilter.PropertyFilter ).UpdateSelectionFromUserPreferenceSelection( selection, selectionUserPreference );
                                 }
-                                
-                                selection = selectionUserPreference;
+                                else
+                                {
+                                    selection = selectionUserPreference;
+                                }
                             }
 
                             if ( component is Rock.Reporting.DataFilter.IUpdateSelectionFromPageParameters )
                             {
                                 selection = ( component as Rock.Reporting.DataFilter.IUpdateSelectionFromPageParameters ).UpdateSelectionFromPageParameters( selection, this );
                             }
-
-                            filterControl.SetSelection( selection );
 
                             try
                             {
