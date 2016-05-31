@@ -18,7 +18,6 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using System;
-using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
@@ -26,6 +25,7 @@ using System.Configuration;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web;
 
 namespace Rock.Security.Authentication
@@ -34,13 +34,14 @@ namespace Rock.Security.Authentication
     /// Authenticates a username/password using the Rock database
     /// </summary>
     [Description( "Database Authentication Provider" )]
-    [Export(typeof(AuthenticationComponent))]
-    [ExportMetadata("ComponentName", "Database")]
-    [CustomDropdownListField("Encryption Method", "Which hashing algorithm should be used to store passwords in the database", "BCrypt,HMAC-SHA-1", true, "HMAC-SHA-1")]
-    [IntegerField("BCrypt Cost Factor", "The higher this number, the more secure BCrypt can be. However it also will be slower.", false, 11)]
+    [Export( typeof( AuthenticationComponent ) )]
+    [ExportMetadata( "ComponentName", "Database" )]
+    [CustomDropdownListField( "Encryption Method", "Which hashing algorithm should be used to store passwords in the database", "BCrypt,HMAC-SHA-1", true, "HMAC-SHA-1" )]
+    [IntegerField( "BCrypt Cost Factor", "The higher this number, the more secure BCrypt can be. However it also will be slower.", false, 11 )]
     public class Database : AuthenticationComponent
     {
-        private enum EncryptionMethod {
+        private enum EncryptionMethod
+        {
             HMACSHA1,
             BCrypt
         };
@@ -57,8 +58,8 @@ namespace Rock.Security.Authentication
         public override AuthenticationServiceType ServiceType
         {
             get { return AuthenticationServiceType.Internal; }
-        }        
-        
+        }
+
         /// <summary>
         /// Determines if user is directed to another site (i.e. Facebook, Gmail, Twitter, etc) to confirm approval of using
         /// that site's credentials for authentication.
@@ -107,12 +108,12 @@ namespace Rock.Security.Authentication
         {
             try
             {
-                if (IsBcryptHash(user.Password))
+                if ( IsBcryptHash( user.Password ) )
                 {
-                    return AuthenticateBcrypt(user, password);
+                    return AuthenticateBcrypt( user, password );
                 }
 
-                return AuthenticateSha1(user, password);
+                return AuthenticateSha1( user, password );
             }
             catch { }
 
@@ -139,15 +140,17 @@ namespace Rock.Security.Authentication
         /// <returns></returns>
         private string EncodePassword( UserLogin user, string password, byte[] encryptionKey )
         {
-            switch(GetEncryptionMethod())
+            switch ( GetEncryptionMethod(  ) )
             {
                 case EncryptionMethod.BCrypt:
-                    return EncodeBcrypt(password);
+                    return EncodeBcrypt( password );
+
                 case EncryptionMethod.HMACSHA1:
-                    return EncodeSha1(user.Guid, password, encryptionKey);
+                    return EncodeSha1( user.Guid, password, encryptionKey );
+
                 default:
-                    throw new NotImplementedException("The encryption method is not implemented");
-            }            
+                    throw new NotImplementedException( "The encryption method is not implemented" );
+            }
         }
 
         /// <summary>
@@ -256,7 +259,7 @@ namespace Rock.Security.Authentication
         public static string GenerateUsername( string firstName, string lastName, int tryCount = 0 )
         {
             // create username
-            string username = (firstName.Substring( 0, 1 ) + lastName).ToLower();
+            string username = ( firstName.Substring( 0, 1 ) + lastName ).ToLower();
 
             if ( tryCount != 0 )
             {
@@ -276,76 +279,99 @@ namespace Rock.Security.Authentication
             }
         }
 
+        /// <summary>
+        /// Gets the bcrypt cost factor setting or the default value
+        /// </summary>
+        /// <returns></returns>
         private int GetBCryptCostFactor()
         {
-            var factor = GetAttributeValue("BCryptCostFactor").AsIntegerOrNull();
+            var factor = GetAttributeValue( "BCryptCostFactor" ).AsIntegerOrNull();
             return factor.HasValue ? factor.Value : 11;
         }
 
+        /// <summary>
+        /// Gets the encryption method setting or the default value
+        /// </summary>
+        /// <returns></returns>
         private EncryptionMethod GetEncryptionMethod()
         {
-            var method = GetAttributeValue("EncryptionMethod");
+            var method = GetAttributeValue( "EncryptionMethod" );
 
-            switch(method.ToLower())
+            switch ( method.ToLower() )
             {
                 case "bcrypt":
                     return EncryptionMethod.BCrypt;
+
                 default:
                     return EncryptionMethod.HMACSHA1;
             }
         }
 
-        private bool AuthenticateSha1(UserLogin user, string password)
+        /// <summary>
+        /// Returns true if the password matches the stored SHA1 hash. If the password matches and the encryption method is not set to
+        /// SHA1, the password is rehashed according to the chosen encryption method.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="password"></param>
+        /// <returns></returns>
+        private bool AuthenticateSha1( UserLogin user, string password )
         {
             bool matches = false;
             bool usesLatestKey = false;
 
             try
             {
-                matches = EncodeSha1(user.Guid, password, _encryptionKey) == user.Password;
+                matches = EncodeSha1( user.Guid, password, _encryptionKey ) == user.Password;
 
-                if(matches)
+                if ( matches )
                 {
                     usesLatestKey = true;
                 }
             }
             catch { }
 
-            if (!matches)
+            if ( !matches )
             {
-                foreach (var encryptionKey in _oldEncryptionKeys)
+                foreach ( var encryptionKey in _oldEncryptionKeys )
                 {
                     try
                     {
-                        if (EncodeSha1(user.Guid, password, encryptionKey) == user.Password)
+                        if ( EncodeSha1( user.Guid, password, encryptionKey ) == user.Password )
                         {
-                            matches = true;                   
+                            matches = true;
                         }
                     }
                     catch { }
                 }
             }
 
-            if(matches && (GetEncryptionMethod() != EncryptionMethod.HMACSHA1 || !usesLatestKey))
+            if ( matches && ( GetEncryptionMethod() != EncryptionMethod.HMACSHA1 || !usesLatestKey ) )
             {
-                SetNewPassword(user, password);
+                SetNewPassword( user, password );
             }
 
             return matches;
         }
 
-        private bool AuthenticateBcrypt(UserLogin user, string password)
+        /// <summary>
+        /// Returns true if the password matches the stored Bcrypt hash. If the password matches and the encryption method is not set to
+        /// Bcrypt, the password is rehashed according to the chosen encryption method.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="password"></param>
+        /// <returns></returns>
+        private bool AuthenticateBcrypt( UserLogin user, string password )
         {
             var hash = user.Password;
 
-            if(IsBcryptHash(hash))
+            if ( IsBcryptHash( hash ) )
             {
-                var currentCost = hash.Substring(4, 2).AsInteger();
-                var matches = BCrypt.Net.BCrypt.Verify(password, hash);
+                var currentCost = hash.Substring( 4, 2 ).AsInteger();
+                var matches = BCrypt.Net.BCrypt.Verify( password, hash );
 
-                if(matches && (currentCost != GetBCryptCostFactor() || GetEncryptionMethod() != EncryptionMethod.BCrypt))
+                if ( matches && ( currentCost != GetBCryptCostFactor() || GetEncryptionMethod() != EncryptionMethod.BCrypt ) )
                 {
-                    SetNewPassword(user, password);
+                    SetNewPassword( user, password );
                 }
 
                 return matches;
@@ -354,54 +380,78 @@ namespace Rock.Security.Authentication
             return false;
         }
 
-        private UserLogin SetNewPassword(UserLogin user, string rawPassword)
+        /// <summary>
+        /// Updates the user's database stored password hash according to the chosen encryption method
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="rawPassword"></param>
+        /// <returns></returns>
+        private UserLogin SetNewPassword( UserLogin user, string rawPassword )
         {
             string hash = null;
-            
-            switch(GetEncryptionMethod())
+
+            switch ( GetEncryptionMethod() )
             {
                 case EncryptionMethod.BCrypt:
-                    hash = EncodeBcrypt(rawPassword);
+                    hash = EncodeBcrypt( rawPassword );
                     break;
+
                 case EncryptionMethod.HMACSHA1:
-                    hash = EncodeSha1(user.Guid, rawPassword, _encryptionKey);
+                    hash = EncodeSha1( user.Guid, rawPassword, _encryptionKey );
                     break;
             }
 
-            if(hash == null)
+            if ( hash == null )
             {
-                throw new NotImplementedException("The encryption method is not implemented");
+                throw new NotImplementedException( "The encryption method is not implemented" );
             }
 
             var context = new RockContext();
-            var userService = new UserLoginService(context);
-            var contextUser = userService.Get(user.Id);
+            var userService = new UserLoginService( context );
+            var contextUser = userService.Get( user.Id );
             contextUser.Password = hash;
             context.SaveChanges();
             return contextUser;
         }
 
-        private bool IsBcryptHash(string hash)
+        /// <summary>
+        /// Checks a password hash to see if it is a bcrypt hash
+        /// </summary>
+        /// <param name="hash"></param>
+        /// <returns></returns>
+        private bool IsBcryptHash( string hash )
         {
-            return Regex.IsMatch(hash, @"^\$2a\$\d{2}\$[\/\.a-zA-Z0-9]{53}$");
+            return Regex.IsMatch( hash, @"^\$2a\$\d{2}\$[\/\.a-zA-Z0-9]{53}$" );
         }
 
-        private string EncodeBcrypt(string password)
+        /// <summary>
+        /// Transforms a raw password into a new bcrypt hash
+        /// </summary>
+        /// <param name="password"></param>
+        /// <returns></returns>
+        private string EncodeBcrypt( string password )
         {
             var workFactor = GetBCryptCostFactor();
-            var salt = BCrypt.Net.BCrypt.GenerateSalt(workFactor);
-            return BCrypt.Net.BCrypt.HashPassword(password, salt);
+            var salt = BCrypt.Net.BCrypt.GenerateSalt( workFactor );
+            return BCrypt.Net.BCrypt.HashPassword( password, salt );
         }
 
-        private string EncodeSha1(Guid userGuid, string password, byte[] encryptionKey)
+        /// <summary>
+        /// Transforms a raw password into a new HMACSHA1 hash
+        /// </summary>
+        /// <param name="userGuid"></param>
+        /// <param name="password"></param>
+        /// <param name="encryptionKey"></param>
+        /// <returns></returns>
+        private string EncodeSha1( Guid userGuid, string password, byte[] encryptionKey )
         {
             var hash = new HMACSHA1();
             hash.Key = encryptionKey;
 
             var uniqueHash = new HMACSHA1();
-            uniqueHash.Key = Encryption.HexToByte(userGuid.ToString().Replace("-", ""));
+            uniqueHash.Key = Encryption.HexToByte( userGuid.ToString().Replace( "-", "" ) );
 
-            return Convert.ToBase64String(uniqueHash.ComputeHash(hash.ComputeHash(Encoding.Unicode.GetBytes(password))));
+            return Convert.ToBase64String( uniqueHash.ComputeHash( hash.ComputeHash( Encoding.Unicode.GetBytes( password ) ) ) );
         }
     }
 }
