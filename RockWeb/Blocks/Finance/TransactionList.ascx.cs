@@ -794,10 +794,18 @@ namespace RockWeb.Blocks.Finance
             BindDefinedTypeDropdown( ddlCreditCardType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE ), "Credit Card Type" );
             BindDefinedTypeDropdown( ddlSourceType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE ), "Source Type" );
 
-            var campusi = CampusCache.All();
-            campCampus.Campuses = campusi;
-            campCampus.Visible = campusi.Any();
-            campCampus.SetValue( gfTransactions.GetUserPreference( "Campus" ) );
+            if ( this.ContextEntity() == null )
+            {
+                var campusi = CampusCache.All();
+                campCampus.Campuses = campusi;
+                campCampus.Visible = campusi.Any();
+                campCampus.SetValue( gfTransactions.GetUserPreference( "Campus" ) );
+            }
+            else
+            {
+                campCampus.Visible = false;
+            }
+
         }
 
         /// <summary>
@@ -999,10 +1007,13 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 // Campus
-                var campus = CampusCache.Read( gfTransactions.GetUserPreference( "Campus" ).AsInteger() );
-                if ( campus != null )
+                if ( this.ContextEntity() == null )
                 {
-                    qry = qry.Where( b => b.Batch != null && b.Batch.CampusId == campus.Id );
+                    var campus = CampusCache.Read( gfTransactions.GetUserPreference( "Campus" ).AsInteger() );
+                    if ( campus != null )
+                    {
+                        qry = qry.Where( b => b.Batch != null && b.Batch.CampusId == campus.Id );
+                    }
                 }
             }
 
