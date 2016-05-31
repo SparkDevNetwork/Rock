@@ -312,6 +312,10 @@ namespace RockWeb.Blocks.Groups
                             a.ScheduleId.HasValue &&
                             a.ScheduleId.Value == scheduleId.Value );
                     }
+                    else
+                    {
+                        qry = qry.Where( a => !a.ScheduleId.HasValue );
+                    }
 
                     int? locationId = e.RowKeyValues["LocationId"] as int?;
                     if ( locationId.HasValue )
@@ -319,6 +323,10 @@ namespace RockWeb.Blocks.Groups
                         qry = qry.Where( a =>
                             a.LocationId.HasValue &&
                             a.LocationId.Value == locationId.Value );
+                    }
+                    else
+                    {
+                        qry = qry.Where( a => !a.LocationId.HasValue );
                     }
 
                     foreach ( var attendance in qry )
