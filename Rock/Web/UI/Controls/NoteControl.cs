@@ -569,6 +569,7 @@ namespace Rock.Web.UI.Controls
 
             _tbNote.ID = this.ID + "_tbNewNote";
             _tbNote.TextMode = TextBoxMode.MultiLine;
+            _tbNote.ValidateRequestMode = ValidateRequestMode.Disabled;
             Controls.Add(_tbNote);
 
             _cbAlert.ID = this.ID + "_cbAlert";
@@ -853,7 +854,10 @@ namespace Rock.Web.UI.Controls
                 }
 
                 note.NoteTypeId = NoteTypeId.Value;
-                note.Caption = IsPrivate ? "You - Personal Note" : string.Empty;
+                if ( string.IsNullOrWhiteSpace( note.Caption ) )
+                {
+                    note.Caption = IsPrivate ? "You - Personal Note" : string.Empty;
+                }
                 note.Text = Text;
                 note.IsAlert = IsAlert;
                 note.IsPrivateNote = IsPrivate;
