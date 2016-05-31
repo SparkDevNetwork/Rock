@@ -1084,6 +1084,8 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
+            bool batchEditAllowed = true;
+
             if ( txn == null )
             {
                 txn = new FinancialTransaction { Id = 0 };
@@ -1110,10 +1112,17 @@ namespace RockWeb.Blocks.Finance
                         txn.TransactionDetails.Add( txnDetail );
                     }
                 }
+
+
             }
             else
             {
                 gpPaymentGateway.Visible = true;
+
+                if ( txn.Batch != null && txn.Batch.Status == BatchStatus.Closed )
+                {
+                    batchEditAllowed = false;
+                }
             }
 
             hfTransactionId.Value = txn.Id.ToString();
@@ -1124,14 +1133,22 @@ namespace RockWeb.Blocks.Finance
 
             nbEditModeMessage.Text = string.Empty;
 
-            lbEdit.Visible = editAllowed;
-            lbRefund.Visible = editAllowed && txn.RefundDetails == null;
+            lbEdit.Visible = editAllowed && batchEditAllowed;
+            lbRefund.Visible = editAllowed && batchEditAllowed && txn.RefundDetails == null;
             lbAddTransaction.Visible = editAllowed && batch != null && batch.Status != BatchStatus.Closed;
 
             if ( !editAllowed )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( FinancialTransaction.FriendlyTypeName );
+            }
+            else
+            {
+                if ( !batchEditAllowed )
+                {
+                    readOnly = true;
+                    nbEditModeMessage.Text = string.Format( "<strong>Note</strong> Because this {0} belongs to a batch that is closed, editing is not enabled.", FinancialTransaction.FriendlyTypeName );
+                }
             }
 
             txn.LoadAttributes( rockContext );
