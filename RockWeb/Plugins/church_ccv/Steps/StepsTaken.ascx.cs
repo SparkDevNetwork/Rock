@@ -1255,7 +1255,11 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 if ( Session["StepsTakenDateRange"] != null )
                 {
                     DateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( Session["StepsTakenDateRange"].ToString() );
-                    drpDateRange.DelimitedValues = Session["StepsTakenDateRange"].ToString();
+
+                    if ( drpDateRange.DelimitedValues != Session["StepsTakenDateRange"].ToString() )
+                    {
+                        drpDateRange.DelimitedValues = Session["StepsTakenDateRange"].ToString();
+                    }
 
                 }
                 else
