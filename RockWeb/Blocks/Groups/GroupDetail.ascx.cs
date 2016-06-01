@@ -1452,7 +1452,7 @@ namespace RockWeb.Blocks.Groups
 
             
             // configure group capacity
-            if ( group.GroupType.GroupCapacityRule == GroupCapacityRule.None )
+            if ( group.GroupType == null || group.GroupType.GroupCapacityRule == GroupCapacityRule.None )
             {
                 nbGroupCapacity.Visible = false;
             }
@@ -1469,7 +1469,7 @@ namespace RockWeb.Blocks.Groups
                         nbGroupCapacityMessage.Text = string.Format( "This group is over capacity by {0}.", "individual".ToQuantity((activeGroupMemberCount - group.GroupCapacity.Value)) );
                         nbGroupCapacityMessage.Visible = true;
 
-                        if ( group.GroupType.GroupCapacityRule == GroupCapacityRule.Hard )
+                        if ( group.GroupType != null && group.GroupType.GroupCapacityRule == GroupCapacityRule.Hard )
                         {
                             nbGroupCapacityMessage.NotificationBoxType = NotificationBoxType.Danger;
                         }
