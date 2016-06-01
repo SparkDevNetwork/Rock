@@ -28,16 +28,16 @@
 
                         <h1>Rock Relationship Management System License</h1>
 
-                        <h3>Apache 2.0 License</h3>
+                        <h3>Rock Community License</h3>
                         <p>Copyright 2016 Spark Development Network</p>
 
                         <p>
-                            Licensed under the Apache License, Version 2.0 (the "License");
+                            Licensed under the Rock Community License (the "License");
                             you may not use this file except in compliance with the License.
                             You may obtain a copy of the License at
                         </p>
 
-                        <p style="text-align: center;"><a href="http://www.apache.org/licenses/LICENSE-2.0.html">http://www.apache.org/licenses/LICENSE-2.0</a></p>
+                        <p style="text-align: center;"><a href="http://www.rockrms.com/license">http://www.rockrms.com/license</a></p>
 
                         <p>
                             Unless required by applicable law or agreed to in writing, software

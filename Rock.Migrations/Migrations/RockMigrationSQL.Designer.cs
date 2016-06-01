@@ -1618,5 +1618,35 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201605022007364_AttendanceBadgeSpUpdates_spCheckin_WeeksAttendedInDuration", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns the Mailing Addresses and any CustomMessages for the Contribution Statement, but not the actual transactions
+        ///		The StatementGenerator utility uses this procedure along with querying transactions thru REST to generate statements
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* PersonId
+        ///		* GroupId
+        ///		* AddressPersonNames
+        ///		* Street1
+        ///		* Street2
+        ///		* City
+        ///		* State
+        ///		* PostalCode
+        ///		* StartDate
+        ///		* EndDate
+        ///		* CustomMessage1
+        ///		* CustomMessage2
+        ///	&lt;/returns&gt;
+        ///	&lt;par [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201605180005401_ScheduledTxnSource_ContributionStatementQuery {
+            get {
+                return ResourceManager.GetString("_201605180005401_ScheduledTxnSource_ContributionStatementQuery", resourceCulture);
+            }
+        }
     }
 }

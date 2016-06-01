@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -47,11 +47,11 @@ namespace RockWeb.Blocks.Crm
     // Block Properties
 
     // Settings
-    [BooleanField( "Display Progress Bar", "", true, "CustomSetting" )]
+    [BooleanField( "Display Progress Bar", "Determines if the progress bar should be show if there is more than one form.", true, "CustomSetting" )]
     [CustomDropdownListField( "Save Values", "", "PAGE,END", true, "END", "CustomSetting" )]
-    [WorkflowTypeField( "Workflow", "", false, false, "", "CustomSetting" )]
-    [LinkedPage( "Done Page", "", false, "", "CustomSetting" )]
-    [TextField( "Forms", "", false, "", "CustomSetting" )]
+    [WorkflowTypeField( "Workflow", "The workflow to be launched when complete.", false, false, "", "CustomSetting" )]
+    [LinkedPage( "Done Page", "The page to redirect to when done.", false, "", "CustomSetting" )]
+    [TextField( "Forms", "The forms to show.", false, "", "CustomSetting" )]
 
     public partial class PersonAttributeForms : RockBlockCustomSettings
     {
@@ -635,7 +635,7 @@ namespace RockWeb.Blocks.Crm
                         }
                     }
                 }
-
+                
                 ProgressBarSteps = FormState.Count();
                 CurrentPageIndex = 0;
                 ShowPage();
@@ -643,7 +643,7 @@ namespace RockWeb.Blocks.Crm
             else
             {
                 nbMain.Title = "No Forms/Fields";
-                nbMain.Text = "There aren't any forms or fields that have been configured yet. Use the Block Configuration to add new forms and fields.";
+                nbMain.Text = "No forms or fields have been configured. Use the Block Configuration to add new forms and fields.";
                 nbMain.NotificationBoxType = NotificationBoxType.Warning;
                 nbMain.Visible = true;
             }
@@ -653,7 +653,7 @@ namespace RockWeb.Blocks.Crm
         {
             decimal currentStep = CurrentPageIndex + 1;
             PercentComplete = ( currentStep / ProgressBarSteps ) * 100.0m;
-            pnlProgressBar.Visible = GetAttributeValue( "DisplayProgressBar" ).AsBoolean();
+            pnlProgressBar.Visible = GetAttributeValue( "DisplayProgressBar" ).AsBoolean() && (FormState.Count > 1);
 
             BuildViewControls( true );
 

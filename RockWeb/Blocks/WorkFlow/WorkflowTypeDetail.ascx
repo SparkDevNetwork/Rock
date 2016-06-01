@@ -98,19 +98,19 @@
 
                 <fieldset id="fieldsetViewDetails" runat="server">
 
-                    <p class="description"><asp:Literal ID="lWorkflowTypeDescription" runat="server"></asp:Literal></p>
+                    <p class="description"><asp:Literal ID="lWorkflowTypeDescription" runat="server" EnableViewState="false"></asp:Literal></p>
 
-                    <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+                    <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" EnableViewState="false" />
 
                     <div class="row">
                         <div class="col-md-12">
                             <a class="workflow-activities-readonly-header" href="#" onclick="javascript: toggleReadOnlyActivitiesList();">
-                                <asp:Label ID="lblActivitiesReadonlyHeaderLabel" runat="server" Text="Activities" />
+                                <asp:Label ID="lblActivitiesReadonlyHeaderLabel" runat="server" Text="Activities" EnableViewState="false"/>
                                 <b class="fa fa-caret-down"></b>
                             </a>
 
                             <div class="workflow-activities-readonly-list" style="display: none">
-                                <asp:Literal ID="lblWorkflowActivitiesReadonly" runat="server" />
+                                <asp:Literal ID="lblWorkflowActivitiesReadonly" runat="server" EnableViewState="false" />
                             </div>
                         </div>
                     </div>
@@ -120,7 +120,7 @@
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                         <span class="pull-right">
-                            <asp:LinkButton ID="btnCopy" runat="server" Text="Copy" CssClass="btn btn-link" OnClick="btnCopy_Click" />
+                            <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm fa fa-clone" OnClick="btnCopy_Click" ToolTip="Copy Workflow"/>
                             <asp:LinkButton ID="lbLaunchWorkflow" runat="server" CssClass="btn btn-sm btn-default" OnClick="btnLaunch_Click" ToolTip="Launch Workflow"><i class="fa fa-play"></i></asp:LinkButton>
                             <asp:LinkButton ID="lbManage" runat="server" CssClass="btn btn-sm btn-default" OnClick="btnManage_Click" ToolTip="Manage Workflows"><i class="fa fa-list"></i></asp:LinkButton>
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
