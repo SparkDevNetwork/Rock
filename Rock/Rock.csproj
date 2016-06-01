@@ -503,6 +503,9 @@
     <Compile Include="PersonProfile\Badge\InGroupWithPurpose.cs" />
     <Compile Include="Plugin\HotFixes\001_FixPhoneCountryCode.cs" />
     <Compile Include="Reporting\ComparisonHelper.cs" />
+    <Compile Include="Reporting\Dashboard\LineBarPointsChartDashboardWidget.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="Reporting\DataFilter\NotInOtherDataViewFilter.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupMemberAttributeSelect.cs" />

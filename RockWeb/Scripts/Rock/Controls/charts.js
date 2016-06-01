@@ -143,7 +143,7 @@
             ///
             /// handles putting chart data into a piechart
             ///
-            plotPieChartData: function (chartData, chartOptions, plotSelector) {
+            plotPieChartData: function (chartData, chartOptions, plotSelector, getSeriesPartitionNameUrl) {
                 var pieData = [];
 
                 // populate the chartMeasurePoints data array with data from the REST result for pie data
@@ -168,17 +168,52 @@
             ///
             /// handles putting chart data into a bar chart
             ///
-            plotBarChartData: function (chartData, chartOptions, plotSelector) {
+            plotBarChartData: function (chartData, chartOptions, plotSelector, getSeriesPartitionNameUrl) {
                 var barData = [];
+                var combinedData = {};
                 var seriesLabels = [];
+                var seriesNameLookup = {};
 
-                // populate the chartMeasurePoints data array with data from the REST result for pie data
+                // populate the chartMeasurePoints data array with data from the REST result for bar chart data
                 for (var i = 0; i < chartData.length; i++) {
 
-                    var seriesCategory = chartData[i].MetricValuePartitionEntityIds || chartData[i].SeriesName;
-                    barData.push([seriesCategory, chartData[i].YValue])
-                    seriesLabels.push(seriesCategory);
+                    var seriesCategory = chartData[i].SeriesName;
+                    if (chartData[i].MetricValuePartitionEntityIds)
+                    {
+                        if (!seriesNameLookup[chartData[i].MetricValuePartitionEntityIds])
+                        {
+                            // MetricValuePartitionEntityIds is not blank so get the seriesName from the getSeriesPartitionNameUrl
+                            if (getSeriesPartitionNameUrl) {
+                                $.ajax({
+                                    url: getSeriesPartitionNameUrl + chartData[i].MetricValuePartitionEntityIds,
+                                    async: false
+                                })
+                                .done(function (data) {
+                                    seriesNameLookup[chartData[i].MetricValuePartitionEntityIds] = data;
+                                });
+                            }
+                        }
+
+                        seriesCategory = seriesNameLookup[chartData[i].MetricValuePartitionEntityIds] || seriesCategory;
+                    }
+
+                    if (!combinedData[seriesCategory])
+                    {
+                        combinedData[seriesCategory] = 0;
+                    }
+
+                    combinedData[seriesCategory] += chartData[i].YValue;
                 }
+
+                var seriesId = 0;
+                for (var combinedDataKey in combinedData) {
+
+                    barData.push([combinedDataKey, combinedData[combinedDataKey]]);
+                    seriesId++;
+                    seriesLabels.push(combinedDataKey);
+                }
+
+                seriesLabels.push(seriesCategory);
 
                 if (barData.length > 0) {
                     // plot the bar chart
