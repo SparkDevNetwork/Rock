@@ -52,6 +52,13 @@
     </div>
     <!-- Text input-->
     <div class="form-group">
+      <label class="control-label col-sm-3" for="HomeTown">Home Town</label>
+      <div class="col-sm-9">
+        <input id="HomeTown" name="StreetAddress" type="text" placeholder="Town Name, State" class="input-xlarge form-control">
+      </div>
+    </div>
+    <!-- Text input-->
+    <div class="form-group">
       <label class="control-label col-sm-3" for="BirthDate">Birth Date</label>
       <div class="col-sm-9">
         <input id="BirthDate" name="BirthDate" type="text" placeholder="Birth Date" class="input-xlarge form-control">
@@ -80,9 +87,9 @@
     </div>
     <!-- Text input-->
     <div class="form-group">
-      <label class="control-label col-sm-3" for="MaritalStatus">Marital Status</label>
+      <label class="control-label col-sm-3" for="RelationshipStatus">Relationship Status</label>
       <div class="col-sm-9">
-        <input id="MaritalStatus" name="MaritalStatus" type="text" placeholder="Marital Status" class="input-small form-control">
+        <input id="RelationshipStatus" name="RelationshipStatus" type="text" placeholder="Relationship Status" class="input-small form-control">
       </div>
     </div>
     <!-- Text input-->
@@ -236,23 +243,31 @@
         <textarea class="form-control" id="Ministry Experience" name="Ministry Experience" rows="5">Date, Church, Location, Responsibilities</textarea>
       </div>
     </div>
-    <!-- Textarea -->
-    <div class="form-group">
-      <label class="control-label col-sm-3" for="HowWillResidencyPrepare">How will the Residency prepare you for your vocational goals?</label>
-      <div class="col-sm-9">
-        <textarea class="form-control" id="HowWillResidencyPrepare" name="HowWillResidencyPrepare" rows="5"></textarea>
-      </div>
-    </div>
   </fieldset>
   <fieldset>
     <!-- Form Name -->
-    <legend>4. Life Story</legend>
-    <p>In a one page document, please submit a brief description of significant events in your life from childhood to present. Include how you came to know Jesus Christ and how you maintain your relationship with Him.</p>
+    <legend>4. About You</legend>
+    <!-- Text input-->
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="Hobbies">Hobbies</label>
+      <div class="col-sm-9">
+        <input id="Hobbies" name="Hobbies" type="text" placeholder="Hobbies" class="input-medium form-control">
+      </div>
+    </div>
     <!-- File Button -->
     <div class="form-group">
-      <label class="control-label col-sm-3" for="LifeStory">Upload Life Story</label>
+      <label class="control-label col-sm-3" for="LifeEvent">Life Event</label>
       <div class="col-sm-9">
-        <input id="LifeStory" name="LifeStory" class="input-file" type="file">
+        <input id="LifeEvent" name="LifeEvent" class="input-file" type="file">
+        <span class="help-block">In a one page document, please submit a brief description of a significant life event from childhood to present that impacted you the most and why.</span>
+      </div>
+    </div>
+    <!-- File Button -->
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="Photo">Current Photo of Yourself</label>
+      <div class="col-sm-9">
+        <input id="Photo" name="Photo" class="input-file" type="file">
+        <span class="help-block">Waist up or headshot, please</span>
       </div>
     </div>
   </fieldset>
