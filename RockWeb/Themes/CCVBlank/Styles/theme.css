@@ -9173,112 +9173,13 @@ a.aspNetDisabled {
 .form-horizontal .form-group {
   margin-right: 0;
 }
+.form-horizontal .form-group label {
+  float: left;
+  padding-right: 12px;
+}
 .form-horizontal .form-group .form-control-group,
 .form-horizontal .form-group .form-control {
   float: left;
-}
-.form-horizontal .form-group label {
-  position: relative;
-  min-height: 1px;
-  padding-left: 15px;
-  padding-right: 15px;
-}
-@media (min-width: 768px) {
-  .form-horizontal .form-group label {
-    text-align: right;
-    margin-bottom: 0;
-    padding-top: 7px;
-  }
-}
-@media (min-width: 768px) {
-  .form-horizontal .form-group label {
-    float: left;
-    width: 16.66666667%;
-  }
-}
-.form-horizontal .form-group .control-wrapper {
-  position: relative;
-  min-height: 1px;
-  padding-left: 15px;
-  padding-right: 15px;
-}
-@media (min-width: 768px) {
-  .form-horizontal .form-group .control-wrapper {
-    float: left;
-    width: 83.33333333%;
-  }
-}
-.form-horizontal.label-md .form-group label {
-  position: relative;
-  min-height: 1px;
-  padding-left: 15px;
-  padding-right: 15px;
-}
-@media (min-width: 768px) {
-  .form-horizontal.label-md .form-group label {
-    float: left;
-    width: 33.33333333%;
-  }
-}
-.form-horizontal.label-md .form-group .control-wrapper {
-  position: relative;
-  min-height: 1px;
-  padding-left: 15px;
-  padding-right: 15px;
-}
-@media (min-width: 768px) {
-  .form-horizontal.label-md .form-group .control-wrapper {
-    float: left;
-    width: 66.66666667%;
-  }
-}
-.form-horizontal.label-lg .form-group label {
-  position: relative;
-  min-height: 1px;
-  padding-left: 15px;
-  padding-right: 15px;
-}
-@media (min-width: 768px) {
-  .form-horizontal.label-lg .form-group label {
-    float: left;
-    width: 50%;
-  }
-}
-.form-horizontal.label-lg .form-group .control-wrapper {
-  position: relative;
-  min-height: 1px;
-  padding-left: 15px;
-  padding-right: 15px;
-}
-@media (min-width: 768px) {
-  .form-horizontal.label-lg .form-group .control-wrapper {
-    float: left;
-    width: 50%;
-  }
-}
-.form-horizontal.label-xl .form-group label {
-  position: relative;
-  min-height: 1px;
-  padding-left: 15px;
-  padding-right: 15px;
-}
-@media (min-width: 768px) {
-  .form-horizontal.label-xl .form-group label {
-    float: left;
-    width: 66.66666667%;
-  }
-}
-.form-horizontal.label-xl .form-group .control-wrapper {
-  position: relative;
-  min-height: 1px;
-  padding-left: 15px;
-  padding-right: 15px;
-}
-@media (min-width: 768px) {
-  .form-horizontal.label-xl .form-group .control-wrapper {
-    float: left;
-    width: 33.33333333%;
-  }
 }
 .controls .checkbox:first-child {
   margin-top: 0;
