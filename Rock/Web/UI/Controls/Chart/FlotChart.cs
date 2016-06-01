@@ -625,15 +625,15 @@ namespace Rock.Web.UI.Controls
             if ( this.GetType() == typeof( PieChart ) )
             {
                 scriptFormat.Append( @"
-                Rock.controls.charts.plotPieChartData(chartData, chartOptions, plotSelector);
+                Rock.controls.charts.plotPieChartData(chartData, chartOptions, plotSelector, getSeriesUrl);
                 
-");
+" );
             }
             else if ( this.GetType() == typeof( BarChart ) )
             {
                 scriptFormat.Append( @"
-                Rock.controls.charts.plotBarChartData(chartData, chartOptions, plotSelector);
-");
+                Rock.controls.charts.plotBarChartData(chartData, chartOptions, plotSelector, getSeriesUrl);
+" );
             }
             else
             {
