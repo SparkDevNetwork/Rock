@@ -166,7 +166,10 @@ namespace RockWeb.Plugins.com_centralaz.Finance
 
                         if ( txn != null )
                         {
-                            txn.FinancialPaymentDetail = oldTxn.FinancialPaymentDetail;
+                            var financialPaymentDetail = oldTxn.FinancialPaymentDetail.Clone(false);
+                            txn.FinancialPaymentDetail = financialPaymentDetail;
+                            txn.FinancialPaymentDetail.Id = 0;
+                            txn.FinancialPaymentDetail.Guid = Guid.NewGuid();
 
                             string newPerson = ( oldTxn.AuthorizedPersonAlias != null && oldTxn.AuthorizedPersonAlias.Person != null ) ?
                                         oldTxn.AuthorizedPersonAlias.Person.FullName : string.Empty;
@@ -177,8 +180,6 @@ namespace RockWeb.Plugins.com_centralaz.Finance
                             txn.SourceTypeValueId = oldTxn.SourceTypeValueId;
                             txn.FinancialGatewayId = oldTxn.FinancialGatewayId;
                             txn.TransactionCode = oldTxn.TransactionCode;
-                            txn.FinancialPaymentDetail.CurrencyTypeValueId = oldTxn.FinancialPaymentDetail.CurrencyTypeValueId;
-                            txn.FinancialPaymentDetail.CreditCardTypeValueId = oldTxn.FinancialPaymentDetail.CreditCardTypeValueId;
                             txn.Summary = oldTxn.Summary;
 
                             if ( oldTxn.RefundDetails != null )
