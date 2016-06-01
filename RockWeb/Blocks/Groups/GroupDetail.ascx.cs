@@ -999,6 +999,9 @@ namespace RockWeb.Blocks.Groups
                             if ( group.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                             {
                                 authorizedGroupTypes.Add( allowedGroupType );
+
+                                // they have EDIT auth to at least one GroupType, so they are allowed to try to add this group
+                                editAllowed = true;
                             }
                         }
 
@@ -1019,7 +1022,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             viewAllowed = editAllowed || group.IsAuthorized( Authorization.VIEW, CurrentPerson );
-            editAllowed = IsUserAuthorized( Authorization.EDIT ) || group.IsAuthorized( Authorization.EDIT, CurrentPerson );
+            editAllowed = editAllowed || group.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
             pnlDetails.Visible = viewAllowed;
 
