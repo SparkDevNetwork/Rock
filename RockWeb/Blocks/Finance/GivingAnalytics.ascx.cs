@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright by the Spark Development Network
+// Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -960,6 +960,24 @@ function(item) {
                 } );
 
 
+            // Add a column for the first gift date ( that matches criteria )
+            gGiversGifts.Columns.Add(
+                new DateField
+                {
+                    DataField = "LastGift",
+                    HeaderText = "Last Gift in Period",
+                    SortExpression = "LastGift"
+                } );
+
+            // Add a column for the last-ever gift date ( to any tax-deductible account )
+            gGiversGifts.Columns.Add(
+                new DateField
+                {
+                    DataField = "LastEverGift",
+                    HeaderText = "Last Gift Ever",
+                    SortExpression = "LastEverGift"
+                } );
+
             var transactionDetailService = new FinancialTransactionDetailService( _rockContext );
             var personService = new PersonService( _rockContext );
 
@@ -1024,22 +1042,28 @@ function(item) {
             // Get the results table
             DataTable dtResults = ds.Tables[0];
 
-            // Get the first-ever gift dates and load them into a dictionary for faster matching
+            // Get the first/last-ever gift dates and load them into a dictionary for faster matching
             DataTable dtFirstEver = ds.Tables[1];
             var firstEverVals = new Dictionary<int, DateTime>();
+            var lastEverVals = new Dictionary<int, DateTime>();
             foreach( DataRow row in ds.Tables[1].Rows )
             {
                 if ( !DBNull.Value.Equals( row["FirstEverGift"] ) )
                 {
                     firstEverVals.Add( (int)row["PersonId"], (DateTime)row["FirstEverGift"] );
                 }
+                if ( !DBNull.Value.Equals( row["LastEverGift"] ) )
+                {
+                    lastEverVals.Add( (int)row["PersonId"], (DateTime)row["LastEverGift"] );
+                }
             }
 
-            // Add columns to the result set for the first-ever data
+            // Add columns to the result set for the first/last-ever data
             dtResults.Columns.Add( new DataColumn( "IsFirstEverGift", typeof( bool ) ) );
             dtResults.Columns.Add( new DataColumn( "FirstEverGift", typeof( DateTime ) ) );
+            dtResults.Columns.Add( new DataColumn( "LastEverGift", typeof( DateTime ) ) );
 
-            foreach( DataRow row in dtResults.Rows )
+            foreach ( DataRow row in dtResults.Rows )
             {
                 bool rowValid = true;
 
@@ -1102,6 +1126,14 @@ function(item) {
                     {
                         row["IsFirstEverGift"] = isFirstEverGift;
                     }
+
+                    // Set the last ever information for each row
+                    if ( lastEverVals.ContainsKey( personId ) )
+                    {
+                        DateTime lastEverGift = lastEverVals[personId];
+                        row["LastEverGift"] = lastEverGift;
+                    }
+
                 }
 
                 if ( !rowValid )
@@ -1130,6 +1162,12 @@ function(item) {
                         .Select( f => f.Value )
                         .FirstOrDefault();
 
+                    // Check for a last ever gift date
+                    var lastEverGiftDate = lastEverVals
+                        .Where( f => f.Key == person.Id )
+                        .Select( f => f.Value )
+                        .FirstOrDefault();
+
                     DataRow row = dtResults.NewRow();
                     row["Id"] = person.Id;
                     row["Guid"] = person.Guid;
@@ -1139,6 +1177,7 @@ function(item) {
                     row["Email"] = person.Email;
                     row["IsFirstEverGift"] = false;
                     row["FirstEverGift"] = firstEverGiftDate;
+                    row["LastEverGift"] = lastEverGiftDate;
                     dtResults.Rows.Add( row );
                 }
             }

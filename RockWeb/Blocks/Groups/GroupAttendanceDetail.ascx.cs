@@ -324,7 +324,15 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
-                NavigateToParentPage( new Dictionary<string, string> { { "GroupId", _group.Id.ToString() } } );
+                var qryParams = new Dictionary<string, string> { { "GroupId", _group.Id.ToString() } };
+
+                var groupTypeIds = PageParameter( "GroupTypeIds" );
+                if ( !string.IsNullOrWhiteSpace( groupTypeIds ) )
+                {
+                    qryParams.Add( "GroupTypeIds", groupTypeIds );
+                }
+
+                NavigateToParentPage( qryParams );
             }
         }
 
@@ -337,7 +345,15 @@ namespace RockWeb.Blocks.Groups
         {
             if ( _group != null )
             {
-                NavigateToParentPage( new Dictionary<string, string> { { "GroupId", _group.Id.ToString() } } );
+                var qryParams = new Dictionary<string, string> { { "GroupId", _group.Id.ToString() } };
+
+                var groupTypeIds = PageParameter( "GroupTypeIds" );
+                if ( !string.IsNullOrWhiteSpace( groupTypeIds ) )
+                {
+                    qryParams.Add( "GroupTypeIds", groupTypeIds );
+                }
+
+                NavigateToParentPage( qryParams );
             }
         }
 
