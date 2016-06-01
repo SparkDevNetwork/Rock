@@ -11,6 +11,11 @@
             <asp:LinkButton ID="lbEditPreferences" runat="server" CssClass="btn btn-primary btn-xs" OnClick="lbEditPreferences_Click"><i class="fa fa-pencil"></i> Edit Subscription Preferences</asp:LinkButton>
         </asp:Panel>
         <asp:Panel ID="pnlEditPreferences" runat="server" Visible="false">
+            <Rock:ModalDialog ID="mdConfirmUnsubscribe" CssClass="subscription-popup" runat="server" OnSaveClick="mdConfirmUnsubscribe_SaveClick" OnCancelScript="clearDialog();" SaveButtonText="Yes">
+                <Content>
+                    <asp:Literal ID="lWarning" runat="server" />
+                </Content>
+            </Rock:ModalDialog>
             <Rock:NotificationBox ID="nbFail" runat="server" Visible="false" NotificationBoxType="Danger" Text="Hmmm...something went wrong and your preference was not saved. If it happens again please let us know."></Rock:NotificationBox>
             <Rock:RockCheckBoxList ID="cblPreference" runat="server" RepeatDirection="Vertical" />
             <div class="actions">
