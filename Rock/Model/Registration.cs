@@ -949,6 +949,7 @@ Registration By: {0} Total Cost/Fees:{1}
                             }
                         case RegistrationPersonFieldType.Email: return person.Email;
                         case RegistrationPersonFieldType.Birthdate: return person.BirthDate;
+                        case RegistrationPersonFieldType.Grade: return person.GraduationYear;
                         case RegistrationPersonFieldType.Gender: return person.Gender;
                         case RegistrationPersonFieldType.MaritalStatus: return person.MaritalStatusValueId;
                         case RegistrationPersonFieldType.MobilePhone:
@@ -1132,6 +1133,7 @@ Registration By: {0} Total Cost/Fees:{1}
                     {
                         case RegistrationPersonFieldType.Campus:
                         case RegistrationPersonFieldType.MaritalStatus:
+                        case RegistrationPersonFieldType.Grade:
                                 return typeof( int? );
 
                         case RegistrationPersonFieldType.Address:

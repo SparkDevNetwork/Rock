@@ -2144,6 +2144,13 @@ namespace RockWeb.Blocks.Event
                                 break;
                             }
 
+                        case RegistrationPersonFieldType.Grade:
+                            {
+                                int? graduationYear = fieldValue.ToString().AsIntegerOrNull();
+                                rlField.Text = Person.GradeFormattedFromGraduationYear( graduationYear );
+                                break;
+                            }
+
                         case RegistrationPersonFieldType.Gender:
                             {
                                 var gender = fieldValue.ToString().ConvertToEnumOrNull<Gender>() ?? Gender.Unknown;
