@@ -150,103 +150,105 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
         /// </summary>
         private void LoadList()
         {
-            //try
-            //{
-            // Build qry
-            ParameterState.AddOrReplace( "DetailSource", RockPage.Guid.ToString() );
-
-            int smallGroupTypeId = GroupTypeCache.Read( "7F76AE15-C5C4-490E-BF3A-50FB0591A60F" ).Id;
-            RockContext rockContext = new RockContext();
-            AttributeValueService attributeValueService = new AttributeValueService( rockContext );
-            var qry = new GroupService( rockContext ).Queryable()
-                .Where( g => smallGroupTypeId == g.GroupTypeId );
-
-            qry = qry.Where( g => g.IsPublic && g.IsActive && g.Members.Any( m => m.GroupRole.IsLeader == true ) );
-
-            // You can't call the AsIntegerOrNull extension method in a LINQ query.
-            var campusId = ParameterState["Campus"].AsIntegerOrNull();
-            if ( campusId != null )
+            try
             {
-                qry = qry.Where( g => g.CampusId == campusId );
-            }
+                // Build qry
+                ParameterState.AddOrReplace( "DetailSource", RockPage.Guid.ToString() );
 
-            if ( !String.IsNullOrWhiteSpace( ParameterState["Days"] ) )
-            {
-                List<DayOfWeek> daysList = ParameterState["Days"].Split( ';' ).ToList().Select( i => (DayOfWeek)( i.AsInteger() ) ).ToList();
-                if ( daysList.Any() )
+                int smallGroupTypeId = GroupTypeCache.Read( "7F76AE15-C5C4-490E-BF3A-50FB0591A60F" ).Id;
+                RockContext rockContext = new RockContext();
+                AttributeValueService attributeValueService = new AttributeValueService( rockContext );
+                var qry = new GroupService( rockContext ).Queryable()
+                    .Where( g => smallGroupTypeId == g.GroupTypeId );
+
+                qry = qry.Where( g => g.IsPublic && g.IsActive && g.Members.Any( m => m.GroupRole.IsLeader == true ) );
+
+                // You can't call the AsIntegerOrNull extension method in a LINQ query.
+                var campusId = ParameterState["Campus"].AsIntegerOrNull();
+                if ( campusId != null )
                 {
-                    qry = qry.Where( g => daysList.Contains( g.Schedule.WeeklyDayOfWeek.Value ) );
+                    qry = qry.Where( g => g.CampusId == campusId );
+                }
+
+                if ( !String.IsNullOrWhiteSpace( ParameterState["Days"] ) )
+                {
+                    List<DayOfWeek> daysList = ParameterState["Days"].Split( ';' ).ToList().Select( i => (DayOfWeek)( i.AsInteger() ) ).ToList();
+                    if ( daysList.Any() )
+                    {
+                        qry = qry.Where( g => daysList.Contains( g.Schedule.WeeklyDayOfWeek.Value ) );
+                    }
+                }
+
+                if ( !String.IsNullOrWhiteSpace( ParameterState["Children"] ) )
+                {
+                    List<int> childrenIdList = ParameterState["Children"].Split( ';' ).AsIntegerList();
+                    List<Guid> childrenGuidList = new DefinedValueService( rockContext ).GetByIds( childrenIdList ).Select( dv => dv.Guid ).ToList();
+                    var attributeChildValues = attributeValueService.Queryable().Where( v =>
+                        v.Attribute.Key == "HasChildren" &&
+                        childrenGuidList.Any( c => ( "," + v.Value + "," ).Contains( "," + c + "," ) )
+                        );
+                    qry = qry.Where( g => attributeChildValues.Any( v => v.EntityId == g.Id ) );
+                }
+
+                // Order by distance to person
+                Location personLocation = GetPersonLocation( rockContext );
+                qry = qry.Where( g => g.GroupLocations.FirstOrDefault() != null && g.GroupLocations.FirstOrDefault().Location.GeoPoint != null );
+                qry = qry.OrderBy( g => g.GroupLocations.FirstOrDefault().Location.GeoPoint.Distance( personLocation.GeoPoint ) ).ThenBy( g => g.Name ); ;
+                int offset = PageParameter( "Offset" ).AsIntegerOrNull() ?? 0;
+                int numberOfResults = PageParameter( "Results" ).AsIntegerOrNull() ?? 20;
+                qry = qry.Skip( offset ).Take( numberOfResults );
+                if ( offset > 0 )
+                {
+                    btnBack.Visible = true;
+                }
+
+                // Construct List            
+                var lifeGroupSummaries = new List<LifeGroupSummary>();
+                foreach ( Group group in qry )
+                {
+                    // {{ group.Image }}
+                    GroupMember leader = group.Members.FirstOrDefault( m => m.GroupRole.IsLeader == true );
+
+                    group.LoadAttributes();
+                    lifeGroupSummaries.Add( new LifeGroupSummary
+                    {
+                        Id = group.Id,
+                        Name = group.Name,
+                        LeaderImageUrl = group.GetAttributeValue( "MainPhoto" ) ?? "",
+                        Distance = GetDistance( group, personLocation ),
+                        HasKids = group.GetAttributeValues( "HasChildren" ).Any(),
+                        Crossroads = group.GetAttributeValue( "Crossroads" ) ?? "",
+                        ListDescription = group.GetAttributeValue( "ListDescription" ) != null && group.GetAttributeValue( "ListDescription" ) != "" ? group.GetAttributeValue( "ListDescription" ) : group.Description,
+                        Schedule = group.Schedule != null ? group.Schedule.ToString() : "No Schedule"
+                    } );
+                }
+
+                var mergeFields = new Dictionary<string, object>();
+                mergeFields.Add( "DetailPage", LinkedPageUrl( "DetailPage", null ) );
+                mergeFields.Add( "Groups", lifeGroupSummaries );
+                mergeFields.Add( "CurrentPerson", CurrentPerson );
+                lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
+
+                // show debug info
+                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Rock.Security.Authorization.EDIT ) )
+                {
+                    lDebug.Visible = true;
+                    lDebug.Text = mergeFields.lavaDebugInfo();
+                }
+                else
+                {
+                    lDebug.Visible = false;
+                    lDebug.Text = string.Empty;
                 }
             }
-
-            if ( !String.IsNullOrWhiteSpace( ParameterState["Children"] ) )
+            catch ( Exception ex )
             {
-                List<int> childrenIdList = ParameterState["Children"].Split( ';' ).AsIntegerList();
-                List<Guid> childrenGuidList = new DefinedValueService( rockContext ).GetByIds( childrenIdList ).Select( dv => dv.Guid ).ToList();
-                var attributeChildValues = attributeValueService.Queryable().Where( v =>
-                    v.Attribute.Key == "HasChildren" &&
-                    childrenGuidList.Any( c => ( "," + v.Value + "," ).Contains( "," + c + "," ) )
-                    );
-                qry = qry.Where( g => attributeChildValues.Any( v => v.EntityId == g.Id ) );
+                nbError.Visible = true;
+                nbError.Text = "Sorry, something went wrong. We've recorded the details to our logs for future reference.";
+                LogException( ex );
+                System.Threading.Thread.Sleep( 10000 );
+                NavigateToParentPage();
             }
-
-            Location personLocation = GetPersonLocation( rockContext );
-           
-            qry = qry.Where( g => g.GroupLocations.FirstOrDefault() != null && g.GroupLocations.FirstOrDefault().Location.GeoPoint != null );
-            qry = qry.OrderBy( g => g.GroupLocations.FirstOrDefault().Location.GeoPoint.Distance( personLocation.GeoPoint ) ).ThenBy( g => g.Name );;
-            int offset = PageParameter( "Offset" ).AsIntegerOrNull() ?? 0;
-            int numberOfResults = PageParameter( "Results" ).AsIntegerOrNull() ?? 20;
-            qry = qry.Skip( offset ).Take( numberOfResults );
-            if ( offset > 0 )
-            {
-                btnBack.Visible = true;
-            }
-
-            // Construct List            
-            var lifeGroupSummaries = new List<LifeGroupSummary>();
-            foreach ( Group group in qry )
-            {
-                // {{ group.Image }}
-                GroupMember leader = group.Members.FirstOrDefault( m => m.GroupRole.IsLeader == true );
-
-                group.LoadAttributes();
-                lifeGroupSummaries.Add( new LifeGroupSummary
-                {
-                    Id = group.Id,
-                    Name = group.Name,
-                    LeaderImageUrl = group.GetAttributeValue( "MainPhoto" ) ?? "",
-                    Distance = GetDistance( group, personLocation ),
-                    HasKids = group.GetAttributeValues( "HasChildren" ).Any(),
-                    Crossroads = group.GetAttributeValue( "Crossroads" ) ?? "",
-                    ListDescription = group.GetAttributeValue( "ListDescription" ) != null && group.GetAttributeValue( "ListDescription" ) != "" ? group.GetAttributeValue( "ListDescription" ) : group.Description,
-                    Schedule = group.Schedule != null ? group.Schedule.ToString() : "No Schedule"
-                } );
-            }
-
-            var mergeFields = new Dictionary<string, object>();
-            mergeFields.Add( "DetailPage", LinkedPageUrl( "DetailPage", null ) );
-            mergeFields.Add( "Groups", lifeGroupSummaries );
-            mergeFields.Add( "CurrentPerson", CurrentPerson );
-            lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
-
-            // show debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Rock.Security.Authorization.EDIT ) )
-            {
-                lDebug.Visible = true;
-                lDebug.Text = mergeFields.lavaDebugInfo();
-            }
-            else
-            {
-                lDebug.Visible = false;
-                lDebug.Text = string.Empty;
-            }
-            //}
-            //catch (Exception ex)
-            //{
-            //    nbError.Visible = true;
-            //    nbError.Text = "Sorry, something went wrong. We've recorded the details to our logs for future reference.";
-            //    LogException( ex );
-            //}
         }
 
         private Location GetPersonLocation( RockContext rockContext )
