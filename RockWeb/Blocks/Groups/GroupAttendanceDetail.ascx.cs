@@ -324,7 +324,15 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
-                NavigateToParentPage( new Dictionary<string, string> { { "GroupId", _group.Id.ToString() } } );
+                var qryParams = new Dictionary<string, string> { { "GroupId", _group.Id.ToString() } };
+
+                var groupTypeIds = PageParameter( "GroupTypeIds" );
+                if ( !string.IsNullOrWhiteSpace( groupTypeIds ) )
+                {
+                    qryParams.Add( "GroupTypeIds", groupTypeIds );
+                }
+
+                NavigateToParentPage( qryParams );
             }
         }
 
@@ -337,7 +345,15 @@ namespace RockWeb.Blocks.Groups
         {
             if ( _group != null )
             {
-                NavigateToParentPage( new Dictionary<string, string> { { "GroupId", _group.Id.ToString() } } );
+                var qryParams = new Dictionary<string, string> { { "GroupId", _group.Id.ToString() } };
+
+                var groupTypeIds = PageParameter( "GroupTypeIds" );
+                if ( !string.IsNullOrWhiteSpace( groupTypeIds ) )
+                {
+                    qryParams.Add( "GroupTypeIds", groupTypeIds );
+                }
+
+                NavigateToParentPage( qryParams );
             }
         }
 
@@ -515,7 +531,7 @@ namespace RockWeb.Blocks.Groups
 
             List<int> scheduleIds = new List<int>();
             int? scheduleId = PageParameter( "ScheduleId" ).AsIntegerOrNull();
-            scheduleIds.Add( locationId ?? 0 );
+            scheduleIds.Add( scheduleId ?? 0 );
 
             if ( Page.IsPostBack && _allowAdd )
             {
@@ -527,13 +543,13 @@ namespace RockWeb.Blocks.Groups
                 if ( !locationIds.Any( l => l != 0 ) && ddlLocation.SelectedValueAsInt().HasValue )
                 {
                     locationId = ddlLocation.SelectedValueAsInt().Value;
-                    locationIds.Add( locationId.Value );
+                    locationIds = new List<int> { locationId.Value };
                 }
 
                 if ( !scheduleIds.Any( s => s != 0 ) && ddlSchedule.SelectedValueAsInt().HasValue )
                 {
                     scheduleId = ddlSchedule.SelectedValueAsInt().Value;
-                    scheduleIds.Add( scheduleId.Value );
+                    scheduleIds = new List<int> { scheduleId.Value };
                 }
             }
 
