@@ -121,25 +121,32 @@ namespace RockWeb.Blocks.Reporting
                         if ( entityTypeCache != null && entityTypeCache.SingleValueFieldType != null )
                         {
                             var fieldType = entityTypeCache.SingleValueFieldType;
-                            var entityTypeEditControl = fieldType.Field.EditControl( new Dictionary<string, Rock.Field.ConfigurationValue>(), string.Format( "metricPartition{0}_entityTypeEditControl", metricPartition.Id ) );
-                            var panelCol4 = new Panel { CssClass = "col-md-4" };
-                            panelCol4.Controls.Add( entityTypeEditControl );
-                            phMetricValuePartitions.Controls.Add( panelCol4 );
-                            if ( entityTypeEditControl is IRockControl )
-                            {
-                                var entityTypeRockControl = ( entityTypeEditControl as IRockControl );
-                                if ( !string.IsNullOrEmpty( metricPartition.EntityTypeQualifierColumn ) )
-                                {
-                                    // TODO: Rock doesn't have a way to filter Pickers based on EntityTypeQualifierColumn yet
-                                }
 
+                            Dictionary<string, Rock.Field.ConfigurationValue> configurationValues;
+                            if ( fieldType.Field is IEntityQualifierFieldType )
+                            {
+                                configurationValues = ( fieldType.Field as IEntityQualifierFieldType ).GetConfigurationValuesFromEntityQualifier( metricPartition.EntityTypeQualifierColumn, metricPartition.EntityTypeQualifierValue );
+                            }
+                            else
+                            {
+                                configurationValues = new Dictionary<string, ConfigurationValue>();
+                            }
+
+                            var entityTypeEditControl = fieldType.Field.EditControl( configurationValues, string.Format( "metricPartition{0}_entityTypeEditControl", metricPartition.Id ) );
+                            var panelCol4 = new Panel { CssClass = "col-md-4" };
+                            if ( entityTypeEditControl != null && entityTypeEditControl is IRockControl)
+                            {
+                                panelCol4.Controls.Add( entityTypeEditControl );
+                                phMetricValuePartitions.Controls.Add( panelCol4 );
+                                
+                                var entityTypeRockControl = ( entityTypeEditControl as IRockControl );
                                 entityTypeRockControl.Label = metricPartition.Label;
                                 if ( entityTypeEditControl is WebControl )
                                 {
                                     ( entityTypeEditControl as WebControl ).Enabled = !readOnly;
                                 }
 
-                                if ( setValues )
+                                if ( setValues && metricValue.MetricValuePartitions != null )
                                 {
                                     var metricValuePartition = metricValue.MetricValuePartitions.FirstOrDefault( a => a.MetricPartitionId == metricPartition.Id );
                                     if ( metricValuePartition != null )
@@ -150,6 +157,12 @@ namespace RockWeb.Blocks.Reporting
                                         }
                                     }
                                 }
+                            }
+                            else
+                            {
+                                var errorControl = new LiteralControl();
+                                errorControl.Text = string.Format( "<span class='label label-danger'>Unable to create Partition control for {0}. Verify that the metric partition settings are set correctly</span>", metricPartition.Label );
+                                phMetricValuePartitions.Controls.Add( errorControl );
                             }
                         }
                     }

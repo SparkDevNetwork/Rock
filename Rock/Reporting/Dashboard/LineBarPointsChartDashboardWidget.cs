@@ -47,6 +47,8 @@ namespace Rock.Reporting.Dashboard
     [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", false, Order = 9 )]
 
     [TextField( "Metric", "NOTE: Weird storage due to backwards compatible", false, "", "CustomSetting" )]
+
+    // The metric value partitions as a position sensitive comma-delimited list of EntityTypeId|EntityId
     [TextField( "MetricEntityTypeEntityIds", "", false, "", "CustomSetting" )]
 
     [CustomCheckboxListField( "Metric Value Types", "Select which metric value types to display in the chart", "Goal,Measure", false, "Measure", "CustomSetting", Order = 4 )]
@@ -280,30 +282,39 @@ namespace Rock.Reporting.Dashboard
 
             cbCombineValues.Checked = this.CombineValues;
 
-            var entityTypeEntityList = ( GetAttributeValue( "MetricEntityTypeEntityIds" ) ?? string.Empty ).Split( ',' ).Select( a => a.Split( '|' ) ).Where( a => a.Length == 2 ).Select( a => new
-            {
-                EntityTypeId = a[0].AsIntegerOrNull(),
-                EntityId = a[1].AsIntegerOrNull()
-            } ).ToList();
+            rblSelectOrContext_SelectedIndexChanged( null, null );
 
             if ( metricCategory != null )
             {
+                var entityTypeEntityIds = ( GetAttributeValue( "MetricEntityTypeEntityIds" ) ?? string.Empty ).Split( ',' ).Select( a => a.Split( '|' ) ).Where( a => a.Length == 2 ).Select( a => new
+                {
+                    EntityTypeId = a[0].AsIntegerOrNull(),
+                    EntityId = a[1].AsIntegerOrNull()
+                } ).ToList();
+
+                int position = 0;
                 foreach ( var metricPartition in metricCategory.Metric.MetricPartitions.OrderBy( a => a.Order ) )
                 {
                     var metricPartitionEntityType = EntityTypeCache.Read( metricPartition.EntityTypeId ?? 0 );
                     var controlId = string.Format( "metricPartition{0}_entityTypeEditControl", metricPartition.Id );
                     Control entityTypeEditControl = phMetricValuePartitions.FindControl( controlId );
 
-                    int? entityId = entityTypeEntityList.Where( a => a.EntityTypeId == metricPartition.EntityTypeId ).Select( a => a.EntityId ).FirstOrDefault();
-
-                    if ( metricPartitionEntityType != null && metricPartitionEntityType.SingleValueFieldType != null && metricPartitionEntityType.SingleValueFieldType.Field is IEntityFieldType )
+                    if ( entityTypeEntityIds.Count() > position )
                     {
-                        ( metricPartitionEntityType.SingleValueFieldType.Field as IEntityFieldType ).SetEditValueFromEntityId( entityTypeEditControl, new Dictionary<string, ConfigurationValue>(), entityId );
+                        var entry = entityTypeEntityIds[position];
+
+                        if ( metricPartitionEntityType != null && metricPartitionEntityType.SingleValueFieldType != null && metricPartitionEntityType.SingleValueFieldType.Field is IEntityFieldType )
+                        {
+                            if ( entry != null && entry.EntityTypeId == metricPartitionEntityType.Id)
+                            {
+                                ( metricPartitionEntityType.SingleValueFieldType.Field as IEntityFieldType ).SetEditValueFromEntityId( entityTypeEditControl, new Dictionary<string, ConfigurationValue>(), entry.EntityId );
+                            }
+                        }
                     }
+
+                    position++;
                 }
             }
-
-            rblSelectOrContext_SelectedIndexChanged( null, null );
 
             drpSlidingDateRange.DelimitedValues = GetAttributeValue( "SlidingDateRange" );
 
@@ -327,7 +338,7 @@ namespace Rock.Reporting.Dashboard
             var metricAttributeValue = string.Format( "{0}|{1}|{2}|{3}|{4}", metricGuid, null, rblSelectOrContext.SelectedValue == "1", cbCombineValues.Checked, metricCategoryGuid );
             SetAttributeValue( "Metric", metricAttributeValue );
 
-            var entityTypeEntityFilters = new Dictionary<int, int?>();
+            var entityTypeEntityFilters = new List<string>();
             if ( metricCategory != null )
             {
                 foreach ( var metricPartition in metricCategory.Metric.MetricPartitions.OrderBy( a => a.Order ) )
@@ -342,12 +353,12 @@ namespace Rock.Reporting.Dashboard
                     {
                         entityId = ( metricPartitionEntityType.SingleValueFieldType.Field as IEntityFieldType ).GetEditValueAsEntityId( entityTypeEditControl, new Dictionary<string, ConfigurationValue>() );
 
-                        entityTypeEntityFilters.AddOrIgnore( metricPartitionEntityType.Id, entityId );
+                        entityTypeEntityFilters.Add( string.Format( "{0}|{1}", metricPartitionEntityType.Id, entityId ) );
                     }
                 }
             }
 
-            string metricEntityTypeEntityIdsValue = entityTypeEntityFilters.Select( a => string.Format( "{0}|{1}", a.Key, a.Value ) ).ToList().AsDelimited( "," );
+            string metricEntityTypeEntityIdsValue = entityTypeEntityFilters.ToList().AsDelimited( "," );
             SetAttributeValue( "MetricEntityTypeEntityIds", metricEntityTypeEntityIdsValue );
 
             SetAttributeValue( "SlidingDateRange", drpSlidingDateRange.DelimitedValues);
@@ -377,14 +388,34 @@ namespace Rock.Reporting.Dashboard
                         if ( entityTypeCache != null && entityTypeCache.SingleValueFieldType != null )
                         {
                             var fieldType = entityTypeCache.SingleValueFieldType;
-                            var entityTypeEditControl = fieldType.Field.EditControl( new Dictionary<string, Rock.Field.ConfigurationValue>(), string.Format( "metricPartition{0}_entityTypeEditControl", metricPartition.Id ) );
+
+                            Dictionary<string, Rock.Field.ConfigurationValue> configurationValues;
+                            if ( fieldType.Field is IEntityQualifierFieldType )
+                            {
+                                configurationValues = ( fieldType.Field as IEntityQualifierFieldType ).GetConfigurationValuesFromEntityQualifier( metricPartition.EntityTypeQualifierColumn, metricPartition.EntityTypeQualifierValue );
+                            }
+                            else
+                            {
+                                configurationValues = new Dictionary<string, ConfigurationValue>();
+                            }
+
+                            var entityTypeEditControl = fieldType.Field.EditControl( configurationValues, string.Format( "metricPartition{0}_entityTypeEditControl", metricPartition.Id ) );
                             var panelCol4 = new Panel { CssClass = "col-md-4" };
 
-                            phMetricValuePartitions.Controls.Add( entityTypeEditControl );
-                            if ( entityTypeEditControl is IRockControl )
+                            if ( entityTypeEditControl != null )
                             {
-                                var entityTypeRockControl = ( entityTypeEditControl as IRockControl );
-                                entityTypeRockControl.Label = metricPartition.Label;
+                                phMetricValuePartitions.Controls.Add( entityTypeEditControl );
+                                if ( entityTypeEditControl is IRockControl )
+                                {
+                                    var entityTypeRockControl = ( entityTypeEditControl as IRockControl );
+                                    entityTypeRockControl.Label = metricPartition.Label;
+                                }
+                            }
+                            else
+                            {
+                                var errorControl = new LiteralControl();
+                                errorControl.Text = string.Format( "<span class='label label-danger'>Unable to create Partition control for {0}. Verify that the metric partition settings are set correctly</span>", metricPartition.Label );
+                                phMetricValuePartitions.Controls.Add( errorControl );
                             }
                         }
                     }

@@ -756,6 +756,8 @@ namespace Rock.Web.UI.Controls
                             filterParams.Add( string.Format( "MetricValuePartitions/any(metricValuePartition: metricValuePartition/EntityId eq {0} and metricValuePartition/MetricPartitionId eq {1})", entry.EntityId.Value, metricPartition.Id ) );
                         }
                     }
+                    
+                    position++;
                 }
             }
             else if ( this.legacyEntityId.HasValue )
