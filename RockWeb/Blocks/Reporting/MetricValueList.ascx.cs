@@ -174,14 +174,34 @@ namespace RockWeb.Blocks.Reporting
                         if ( entityTypeCache != null && entityTypeCache.SingleValueFieldType != null )
                         {
                             var fieldType = entityTypeCache.SingleValueFieldType;
-                            var entityTypeEditControl = fieldType.Field.EditControl( new Dictionary<string, Rock.Field.ConfigurationValue>(), string.Format( "metricPartition{0}_entityTypeEditControl", metricPartition.Id ) );
+
+                            Dictionary<string, Rock.Field.ConfigurationValue> configurationValues;
+                            if ( fieldType.Field is IEntityQualifierFieldType )
+                            {
+                                configurationValues = ( fieldType.Field as IEntityQualifierFieldType ).GetConfigurationValuesFromEntityQualifier( metricPartition.EntityTypeQualifierColumn, metricPartition.EntityTypeQualifierValue );
+                            }
+                            else
+                            {
+                                configurationValues = new Dictionary<string, ConfigurationValue>();
+                            }
+
+                            var entityTypeEditControl = fieldType.Field.EditControl( configurationValues, string.Format( "metricPartition{0}_entityTypeEditControl", metricPartition.Id ) );
                             var panelCol4 = new Panel { CssClass = "col-md-4" };
 
-                            phMetricValuePartitions.Controls.Add( entityTypeEditControl );
-                            if ( entityTypeEditControl is IRockControl )
+                            if ( entityTypeEditControl != null )
                             {
-                                var entityTypeRockControl = ( entityTypeEditControl as IRockControl );
-                                entityTypeRockControl.Label = metricPartition.Label;
+                                phMetricValuePartitions.Controls.Add( entityTypeEditControl );
+                                if ( entityTypeEditControl is IRockControl )
+                                {
+                                    var entityTypeRockControl = ( entityTypeEditControl as IRockControl );
+                                    entityTypeRockControl.Label = metricPartition.Label;
+                                }
+                            }
+                            else
+                            {
+                                var errorControl = new LiteralControl();
+                                errorControl.Text = string.Format("<span class='label label-danger'>Unable to create Partition control for {0}. Verify that the metric partition settings are set correctly</span>", metricPartition.Label);
+                                phMetricValuePartitions.Controls.Add( errorControl );
                             }
                         }
                     }

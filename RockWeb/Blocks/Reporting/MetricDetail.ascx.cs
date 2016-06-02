@@ -824,14 +824,22 @@ The SQL can include Lava merge fields:";
                     var entityTypeCache = EntityTypeCache.Read( singlePartition.EntityTypeId.Value );
                     if ( entityTypeCache != null )
                     {
-                        descriptionListMain.Add( "Partitioned by ", entityTypeCache.FriendlyName );
+                        descriptionListMain.Add( "Partitioned by ", singlePartition.Label ?? entityTypeCache.FriendlyName );
                     }
                 }
             }
             else if ( metric.MetricPartitions.Count() > 1 )
             {
-                var partitionEntityList = metric.MetricPartitions.OrderBy( a => a.Order ).ThenBy( a => a.Label ).Where( a => a.EntityTypeId.HasValue ).Select( a => EntityTypeCache.Read( a.EntityTypeId.Value ) );
-                descriptionListMain.Add( "Partitioned by ", partitionEntityList.Where( a => a != null ).Select( a => a.FriendlyName ).ToList().AsDelimited( ", ", " and " ) );
+                var partitionNameList = metric.MetricPartitions.OrderBy( a => a.Order ).ThenBy( a => a.Label ).Where( a => a.EntityTypeId.HasValue ).ToList().Select( a => {
+                    var entityTypeCache = EntityTypeCache.Read( a.EntityTypeId.Value );
+                    return new
+                    {
+                        Label = a.Label,
+                        EntityTypeFriendlyName = entityTypeCache != null ? entityTypeCache.FriendlyName : string.Empty
+                    };
+                });
+
+                descriptionListMain.Add( "Partitioned by ", partitionNameList.Where( a => a != null ).Select( a => a.Label ?? a.EntityTypeFriendlyName ).ToList().AsDelimited( ", ", " and " ) );
             }
 
             // only show LastRun and Schedule label if SourceValueType is not Manual

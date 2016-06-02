@@ -268,6 +268,7 @@
     <Compile Include="Data\Udf\GetAddressStoreFunctionInjectionConvention.cs" />
     <Compile Include="Data\Udf\DbMetadataExtensions.cs" />
     <Compile Include="Data\Udf\RockUdfHelper.cs" />
+    <Compile Include="Field\IEntityQualifierFieldType.cs" />
     <Compile Include="Field\Types\DataViewFieldType.cs" />
     <Compile Include="Field\Types\BinaryFileTypesFieldType.cs" />
     <Compile Include="Field\Types\MergeTemplateFieldType.cs" />
