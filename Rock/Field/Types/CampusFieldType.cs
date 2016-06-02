@@ -34,6 +34,79 @@ namespace Rock.Field.Types
     /// </summary>
     public class CampusFieldType : FieldType, IEntityFieldType
     {
+        #region Configuration
+
+        private const string ONLY_ACTIVE = "onlyactive";
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            var configKeys = base.ConfigurationKeys();
+            configKeys.Add( ONLY_ACTIVE );
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            var controls = base.ConfigurationControls();
+
+            // Add checkbox for deciding if inactive campuses should be shown
+            var cb = new RockCheckBox();
+            controls.Add( cb );
+            cb.AutoPostBack = true;
+            cb.CheckedChanged += OnQualifierUpdated;
+            cb.Label = "Only Active";
+            cb.Text = "Yes";
+            cb.Help = "When set, only active campuses can be picked from.";
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( ONLY_ACTIVE, new ConfigurationValue( "Only Active", "Only show active campuses", string.Empty ) );
+
+            if ( controls != null )
+            {
+                if ( controls.Count > 0 && controls[0] != null && controls[0] is CheckBox )
+                {
+                    configurationValues[ONLY_ACTIVE].Value = ( ( CheckBox ) controls[0] ).Checked.ToString();
+                }
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && configurationValues != null )
+            {
+                if ( controls.Count > 0 && controls[0] != null && controls[0] is CheckBox && configurationValues.ContainsKey( ONLY_ACTIVE ) )
+                {
+                    ( ( CheckBox ) controls[0] ).Checked = configurationValues[ONLY_ACTIVE].Value.AsBoolean();
+                }
+            }
+        }
+
+        #endregion
 
         #region Formatting
 
@@ -79,6 +152,11 @@ namespace Rock.Field.Types
 
             var campusList = CampusCache.All();
 
+            if ( ( configurationValues != null && configurationValues.ContainsKey( ONLY_ACTIVE ) && configurationValues[ONLY_ACTIVE].Value.AsBoolean() ) )
+            {
+                campusList = campusList.Where( c => c.IsActive == true ).ToList();
+            }
+
             if ( campusList.Any() )
             {
                 campusPicker.Campuses = campusList;
@@ -102,10 +180,10 @@ namespace Rock.Field.Types
             if ( campusPicker != null )
             {
                 int? campusId = campusPicker.SelectedCampusId;
-                if (campusId.HasValue)
+                if ( campusId.HasValue )
                 {
                     var campus = CampusCache.Read( campusId.Value );
-                    if (campus != null )
+                    if ( campus != null )
                     {
                         return campus.Guid.ToString();
                     }
@@ -154,10 +232,10 @@ namespace Rock.Field.Types
             lbl.ID = string.Format( "{0}_lIs", id );
             lbl.AddCssClass( "data-view-filter-label" );
             lbl.Text = "Is";
-            
+
             // hide the compare control when in SimpleFilter mode
             lbl.Visible = filterMode != FilterMode.SimpleFilter;
-            
+
             return lbl;
         }
 
@@ -177,6 +255,12 @@ namespace Rock.Field.Types
             cbList.RepeatDirection = RepeatDirection.Horizontal;
 
             var campusList = CampusCache.All();
+
+            if ( ( configurationValues != null && configurationValues.ContainsKey( ONLY_ACTIVE ) && configurationValues[ONLY_ACTIVE].Value.AsBoolean() ) )
+            {
+                campusList = campusList.Where( c => c.IsActive == true ).ToList();
+            }
+
             if ( campusList.Any() )
             {
                 foreach ( var campus in campusList )
@@ -228,7 +312,7 @@ namespace Rock.Field.Types
 
             if ( control != null && control is CheckBoxList )
             {
-                CheckBoxList cbl = (CheckBoxList)control;
+                CheckBoxList cbl = ( CheckBoxList ) control;
                 foreach ( ListItem li in cbl.Items )
                 {
                     if ( li.Selected )
@@ -262,7 +346,7 @@ namespace Rock.Field.Types
             {
                 var values = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
 
-                CheckBoxList cbl = (CheckBoxList)control;
+                CheckBoxList cbl = ( CheckBoxList ) control;
                 foreach ( ListItem li in cbl.Items )
                 {
                     li.Selected = values.Contains( li.Value );
@@ -307,7 +391,7 @@ namespace Rock.Field.Types
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
             var item = CampusCache.Read( guid );
-            return item != null ? item.Id : (int?)null;
+            return item != null ? item.Id : ( int? ) null;
         }
 
         /// <summary>
