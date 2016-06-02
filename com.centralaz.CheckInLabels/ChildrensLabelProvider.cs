@@ -1,76 +1,19 @@
-﻿/**********************************************************************
-* Description:	Class that handles printing check-in labels for children
-*               who check in to a class.
-* Created By:   Jason Offutt @ Central Christian Church of the East Valley
-* Date Created:	2009-01-06
-*
-* $Workfile: CccevPrintLabel.cs $
-* $Revision: 19 $ 
-* $Header: /trunk/Arena.Custom.Cccev/Arena.Custom.Cccev.CheckIn/Entity/CccevPrintLabel.cs   19   2013-11-13 11:24:35-07:00   nicka $
-* 
-* $Log: /trunk/Arena.Custom.Cccev/Arena.Custom.Cccev.CheckIn/Entity/CccevPrintLabel.cs $
-*  
-*  Revision: 19   Date: 2013-11-13 18:24:35Z   User: nicka 
-*  Added new EpiPen flag/symbol that appears on attendance labels and nametags 
-*  if the "Cccev.EpiPenReleaseAttributeID" org setting is tied to an attribute 
-*  of type Document and a document is attached to the person. 
-*  
-*  Revision: 18   Date: 2013-04-29 22:37:35Z   User: nicka 
-*  If both the Cccev.DisplayRoomNameOnNameTag and 
-*  Cccev.UseTagNameInsteadOfRoomName organization settings are true, it will 
-*  print the linked tag name (if any) in place of the room name on the 
-*  name-tag label. 
-*  
-*  Revision: 17   Date: 2012-11-26 23:30:25Z   User: nicka 
-*  Only try to print to kiosk (instead of location) if the kiosk has a printer 
-*  (line 97). 
-*  
-*  Revision: 16   Date: 2010-01-19 23:17:48Z   User: JasonO 
-*  
-*  Revision: 15   Date: 2009-10-29 16:35:34Z   User: JasonO 
-*  Adding enhanced support for at kiosk/at location printing via 
-*  OccurrenceTypeReports. 
-*  
-*  Revision: 14   Date: 2009-10-27 17:16:46Z   User: JasonO 
-*  
-*  Revision: 13   Date: 2009-10-08 17:18:18Z   User: JasonO 
-*  Merging/updating to make changes for 1.2 release. 
-*  
-*  Revision: 12   Date: 2009-09-16 15:32:00Z   User: JasonO 
-*  
-*  Revision: 11   Date: 2009-09-15 23:38:17Z   User: JasonO 
-*  Implementing R# recommendations. 
-*  
-*  Revision: 10   Date: 2009-06-18 22:46:04Z   User: nicka 
-*  
-*  Revision: 9   Date: 2009-06-18 22:45:33Z   User: nicka 
-*  DanielH|HDC patch 
-*  
-*  Revision: 8   Date: 2009-06-18 17:43:42Z   User: nicka 
-*  Changes to handle new IPrintLabel that requires kiosk as discussed here: 
-*  http://checkinwizard.codeplex.com/Thread/View.aspx?ThreadId=57675 
-*  
-*  Revision: 7   Date: 2009-03-05 15:36:26Z   User: nicka 
-*  use nick name only if available else use first name 
-*  
-*  Revision: 6   Date: 2009-03-05 02:01:53Z   User: nicka 
-*  Change label to use Nick name instead of First name 
-*  
-*  Revision: 5   Date: 2009-01-27 13:43:20Z   User: nicka 
-*  change health notes to show until 1st grade 
-*  
-*  Revision: 4   Date: 2009-01-07 02:41:12Z   User: nicka 
-*  Added logic to change Age Group based on age and or grade. Also only show 
-*  Health Notes details if person under 2 years old. 
-*  
-*  Revision: 3   Date: 2009-01-07 00:21:01Z   User: JasonO 
-*  
-*  Revision: 2   Date: 2009-01-06 22:14:13Z   User: JasonO 
-*  Sprint completion! 
-*  
-*  Revision: 1   Date: 2009-01-06 17:35:18Z   User: JasonO 
-**********************************************************************/
-
+﻿// <copyright>
+// Copyright by Central Christian Church
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System;
 using System.Collections.Generic;
 using System.Linq;
