@@ -255,20 +255,18 @@ namespace RockWeb.Plugins.church_ccv.Core
             var attributeValueService = new AttributeValueService( rockContext );
             var personService = new PersonService( rockContext );
 
-            List<int> dataViewPersonIds = new List<int>();
+            IQueryable<int> dataViewPersonIdQry = null;
 
-            // get a list of people already processed
-            var processedPeople = attributeValueService
+            // get a qry of people already processed
+            var processedPeopleQry = attributeValueService
                 .GetByAttributeId( AttributeCache.Read( _photoProcessedAttribute.Value ).Id )
                 .Where( a => a.Value == "True" )
-                .Select( a => a.EntityId )
-                .ToList();
+                .Select( a => a.EntityId );
 
             // get a list of people from data view
             var dataViewId = dvpDataView.SelectedValueAsInt();
             if ( dataViewId.HasValue )
             {
-                dataViewPersonIds = new List<int>();
                 var dataView = new DataViewService( rockContext ).Get( dataViewId.Value );
                 if ( dataView != null )
                 {
@@ -277,12 +275,10 @@ namespace RockWeb.Plugins.church_ccv.Core
                     ParameterExpression paramExpression = dvPersonService.ParameterExpression;
                     Expression whereExpression = dataView.GetExpression( dvPersonService, paramExpression, out errorMessages );
 
-                    var dataViewPersonIdQry = dvPersonService
+                    dataViewPersonIdQry = dvPersonService
                         .Queryable().AsNoTracking()
                         .Where( paramExpression, whereExpression )
                         .Select( p => p.Id );
-
-                    dataViewPersonIds = dataViewPersonIdQry.ToList();
                 }
             }
 
@@ -290,12 +286,12 @@ namespace RockWeb.Plugins.church_ccv.Core
             var qryPerson = personService
                 .Queryable().AsNoTracking()
                 .Where( p => p.PhotoId != null )
-                .Where( p => !processedPeople.Contains( p.Id ) );
+                .Where( p => !processedPeopleQry.Contains( p.Id ) );
 
             // if data view is selected, then filter the results
-            if ( dataViewPersonIds.Any() || ( !dataViewPersonIds.Any() && dataViewId.HasValue ) )
+            if ( dataViewPersonIdQry != null )
             {
-                qryPerson = qryPerson.Where( p => dataViewPersonIds.Contains( p.Id ) );
+                qryPerson = qryPerson.Where( p => dataViewPersonIdQry.Contains( p.Id ) );
             }
 
             var personIdList = qryPerson.Select( p => p.Id ).ToList();
