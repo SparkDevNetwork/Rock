@@ -507,6 +507,8 @@
     <Compile Include="Plugin\HotFixes\001_FixPhoneCountryCode.cs" />
     <Compile Include="Reporting\ComparisonHelper.cs" />
     <Compile Include="Reporting\DataFilter\NotInOtherDataViewFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Workflow\WorkflowTypeFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Workflow\WorkflowAttributesFilter.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupMemberAttributeSelect.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupStatusSelect.cs" />
