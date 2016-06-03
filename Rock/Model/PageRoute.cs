@@ -16,9 +16,11 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
-
+using System.Web.Routing;
 using Newtonsoft.Json;
 
 using Rock.Data;
@@ -87,6 +89,24 @@ namespace Rock.Model
         #endregion
 
         #region Methods
+
+        public override void PreSaveChanges( DbContext dbContext, DbEntityEntry entry )
+        {
+            if ( entry.State == System.Data.Entity.EntityState.Deleted )
+            {
+                var routes = RouteTable.Routes;
+                if ( routes != null )
+                {
+                    var existingRoute = routes.OfType<Route>().FirstOrDefault( a => a.RouteId() == this.Id );
+                    if ( existingRoute != null )
+                    {
+                        RouteTable.Routes.Remove( existingRoute );
+                    }
+                }
+            }
+
+            base.PreSaveChanges( dbContext, entry );
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> containing the Route and represents this PageRoute
