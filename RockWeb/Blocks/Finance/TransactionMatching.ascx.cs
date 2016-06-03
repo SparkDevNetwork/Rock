@@ -789,7 +789,7 @@ namespace RockWeb.Blocks.Finance
                 var campus = person.GetCampus();
                 lCampus.Text = campus != null ? string.Format( "<p><strong>Campus: </strong>{0}</p>", campus.Name ) : string.Empty;
                 
-                rptrAddresses.DataSource = person.GetFamilies().SelectMany( a => a.GroupLocations ).ToList();
+                rptrAddresses.DataSource = person.GetFamilies().SelectMany( a => a.GroupLocations ).OrderBy( l => l.GroupLocationTypeValue.Order ).ToList();
                 rptrAddresses.DataBind();
             }
         }

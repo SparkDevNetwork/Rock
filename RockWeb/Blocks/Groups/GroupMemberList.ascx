@@ -50,6 +50,8 @@
                                     </Rock:RockTemplateFieldUnselected>
                                     <Rock:RockBoundField DataField="GroupRole" HeaderText="Role" SortExpression="GroupRole.Name" />
                                     <Rock:RockBoundField DataField="GroupMemberStatus" HeaderText="Member Status" SortExpression="GroupMemberStatus" />
+                                    <Rock:DateField DataField="FirstAttended" HeaderText="First Attended" SortExpression="FirstAttended" />
+                                    <Rock:DateField DataField="LastAttended" HeaderText="Last Attended" SortExpression="LastAttended" />
                                 </Columns>
                             </Rock:Grid>
                         </div>

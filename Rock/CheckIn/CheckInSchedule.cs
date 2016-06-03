@@ -81,6 +81,12 @@ namespace Rock.CheckIn
         [DataMember]
         public bool Selected { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="CheckInSchedule"/> is processed.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if processed; otherwise, <c>false</c>.
+        /// </value>
         [DataMember]
         public bool Processed { get; set; }
 

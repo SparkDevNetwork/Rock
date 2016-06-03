@@ -1852,6 +1852,15 @@ namespace RockWeb.Blocks.Event
                                         break;
                                     }
 
+                                case RegistrationPersonFieldType.Grade:
+                                    {
+                                        var newGraduationYear = fieldValue.ToString().AsIntegerOrNull();
+                                        History.EvaluateChange( personChanges, "Graduation Year", person.GraduationYear, newGraduationYear );
+                                        person.GraduationYear = newGraduationYear;
+
+                                        break;
+                                    }
+
                                 case RegistrationPersonFieldType.Gender:
                                     {
                                         var newGender = fieldValue.ToString().ConvertToEnumOrNull<Gender>() ?? Gender.Unknown;
@@ -3529,6 +3538,27 @@ namespace RockWeb.Blocks.Event
                         break;
                     }
 
+                case RegistrationPersonFieldType.Grade:
+                    {
+                        var gpGrade = new GradePicker();
+                        gpGrade.ID = "gpGrade";
+                        gpGrade.Label = "Grade";
+                        gpGrade.Required = field.IsRequired;
+                        gpGrade.ValidationGroup = BlockValidationGroup;
+                        gpGrade.UseAbbreviation = true;
+                        gpGrade.UseGradeOffsetAsValue = true;
+                        gpGrade.CssClass = "input-width-md";
+                        phRegistrantControls.Controls.Add( gpGrade );
+
+                        if ( setValue && fieldValue != null )
+                        {
+                            var value = fieldValue.ToString().AsIntegerOrNull();
+                            gpGrade.SetValue( Person.GradeOffsetFromGraduationYear( value ) );
+                        }
+
+                        break;
+                    }
+
                 case RegistrationPersonFieldType.Gender:
                     {
                         var ddlGender = new RockDropDownList();
@@ -3912,6 +3942,12 @@ namespace RockWeb.Blocks.Event
                     {
                         var bpBirthday = phRegistrantControls.FindControl( "bpBirthday" ) as BirthdayPicker;
                         return bpBirthday != null ? bpBirthday.SelectedDate : null;
+                    }
+
+                case RegistrationPersonFieldType.Grade:
+                    {
+                        var gpGrade = phRegistrantControls.FindControl( "gpGrade" ) as GradePicker;
+                        return gpGrade != null ? Person.GraduationYearFromGradeOffset( gpGrade.SelectedValueAsInt() ) : null;
                     }
 
                 case RegistrationPersonFieldType.Gender:

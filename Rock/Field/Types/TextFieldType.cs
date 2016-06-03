@@ -251,9 +251,16 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetFilterCompareValue( Control control, FilterMode filterMode )
         {
-            if ( filterMode == FilterMode.SimpleFilter )
+            bool filterValueControlVisible = true;
+            var filterField = control.FirstParentControlOfType<FilterField>();
+            if ( filterField != null && filterField.HideFilterCriteria )
             {
-                // hard code to Contains when in SimpleFilter mode (the comparison control is not visible)
+                filterValueControlVisible = false;
+            }
+
+            if ( filterMode == FilterMode.SimpleFilter && filterValueControlVisible )
+            {
+                // hard code to Contains when in SimpleFilter mode and the FilterValue control is visible
                 return ComparisonType.Contains.ConvertToInt().ToString();
             }
             else
