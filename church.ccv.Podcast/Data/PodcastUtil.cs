@@ -196,9 +196,9 @@ namespace church.ccv.Podcast
             return message;
         }
 
-        public static PodcastCategory PodcastsAsModel( int podcastCategory )
+        public static PodcastCategory PodcastsAsModel( int podcastCategory, bool keepHierarchy = false, int numSeries = int.MaxValue )
         {
-            return GetPodcastsByCategory( podcastCategory );
+            return GetPodcastsByCategory( podcastCategory, keepHierarchy, numSeries );
         }
 
         public static PodcastSeries GetSeries( int seriesId )
