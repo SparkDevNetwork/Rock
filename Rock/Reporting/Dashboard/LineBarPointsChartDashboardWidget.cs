@@ -260,6 +260,7 @@ namespace Rock.Reporting.Dashboard
         /// </summary>
         protected void ShowSettings()
         {
+            flotChart.Visible = false;
             pnlEditModel.Visible = true;
 
             var rockContext = new RockContext();
@@ -647,6 +648,7 @@ namespace Rock.Reporting.Dashboard
         /// </summary>
         public void LoadChart()
         {
+            flotChart.Visible = true;
             var flotChartControl = flotChart;
             flotChartControl.StartDate = this.DateRange.Start;
             flotChartControl.EndDate = this.DateRange.End;

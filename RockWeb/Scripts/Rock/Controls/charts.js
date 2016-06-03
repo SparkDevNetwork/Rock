@@ -35,12 +35,14 @@
                         if (!lookupKey || lookupKey == '') {
                             lookupKey = chartData[i].SeriesName;
                         }
-                        
+
                         if (!chartSeriesLookup[lookupKey]) {
 
                             // If SeriesName is specified, that can be the name of the series if MetricValuePartitionEntityIds is blank
                             var seriesName = chartData[i].SeriesName;
-                            if (chartData[i].MetricValuePartitionEntityIds && chartData[i].MetricValuePartitionEntityIds != '')
+
+                            // if we aren't combining values, we'll have to lookup the series name based on MetricValuePartitionEntityIds
+                            if (chartData[i].MetricValuePartitionEntityIds && chartData[i].MetricValuePartitionEntityIds != '' && !combineValues)
                             {
                                 // MetricValuePartitionEntityIds is not blank so get the seriesName from the getSeriesPartitionNameUrl
                                 if (getSeriesPartitionNameUrl) {

@@ -525,15 +525,17 @@ namespace RockWeb.Blocks.Reporting
         {
             int? sourceValueTypeId = ddlSourceType.SelectedValueAsId();
             var sourceValueType = DefinedValueCache.Read( sourceValueTypeId ?? 0 );
-            ceSourceSql.Visible = false;
-            ddlDataView.Visible = false;
+            pnlSQLSourceType.Visible = false;
+            pnlDataviewSourceType.Visible = false;
             if ( sourceValueType != null )
             {
-                ceSourceSql.Visible = sourceValueType.Guid == Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_SQL.AsGuid();
-                ddlDataView.Visible = sourceValueType.Guid == Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_DATAVIEW.AsGuid();
+                pnlSQLSourceType.Visible = sourceValueType.Guid == Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_SQL.AsGuid();
+                pnlDataviewSourceType.Visible = sourceValueType.Guid == Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_DATAVIEW.AsGuid();
 
                 // only show LastRun label if SourceValueType is not Manual
-                ltLastRunDateTime.Visible = sourceValueType.Guid != Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_MANUAL.AsGuid();
+                bool isManual = sourceValueType.Guid != Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_MANUAL.AsGuid();
+                ltLastRunDateTime.Visible = isManual;
+                rcwSchedule.Visible = isManual;
             }
         }
 
@@ -684,9 +686,62 @@ namespace RockWeb.Blocks.Reporting
             ppMetricChampionPerson.SetValue( metric.MetricChampionPersonAlias != null ? metric.MetricChampionPersonAlias.Person : null );
             ppAdminPerson.SetValue( metric.AdminPersonAlias != null ? metric.AdminPersonAlias.Person : null );
             ceSourceSql.Text = metric.SourceSql;
-            ceSourceSql.Help = @"Specify the SQL that will return the Y Value for each scheduled Date. Example: <pre>SELECT COUNT(*) FROM [Attendance] </pre> 
-If this is a metric is partitioned, the 2nd column will be the EntityId value. Example: <pre>SELECT COUNT(*), [CampusId] FROM [Attendance] GROUP BY [CampusId] </pre>
+            ceSourceSql.Help = @"There are several ways to design your SQL to populate the Metric Values. If you use the 'SQL' source type option, the results will be stored with the date of the date when the Calculation is scheduled.
+<br />
+<br />
+<h4>Example #1</h4> 
+Simple metric with the default partition
+<ul>
+  <li>The 1st Column will be the YValue </li>
+</ul>
+
+<pre>
+SELECT COUNT(*) 
+FROM [Attendance] 
+WHERE DidAttend = 1
+  AND StartDateTime >= '{{ RunDateTime | Date:'MM/dd/yyyy' }}' 
+  AND StartDateTime < '{{ RunDateTime | DateAdd:1,'d' | Date:'MM/dd/yyyy' }}' 
+</pre>
+
+<br />
+<h4>Example #2</h4> 
+Simple metric with GroupId as the Partition.
+<ul>
+  <li>The 1st Column will be the YValue </li>
+  <li>The 2nd Column will be the EntityId of the Partition </li>
+</ul>
+
+<pre>
+SELECT COUNT(*), [GroupId]
+FROM [Attendance] 
+WHERE DidAttend = 1
+  AND StartDateTime >= '{{ RunDateTime | Date:'MM/dd/yyyy' }}' 
+  AND StartDateTime < '{{ RunDateTime | DateAdd:1,'d' | Date:'MM/dd/yyyy' }}' 
+GROUP BY [GroupId]
+</pre>
+
+<br />
+<h4>Example #3</h4> 
+A metric with multiple partitions.
+<ul>
+    <li>The 1st Column will be the YValue </li>
+    <li>The 2nd Column will be the EntityId of the 1st Partition </li>
+    <li>The 3rd Column will be the EntityId of the 2nd Partition </li>
+    <li>... </li>
+    <li>The Nth Column will be the EntityId of the (N-1)th Partition </li>
+</ul>
+<pre>
+SELECT COUNT(*), [GroupId], [CampusId], [ScheduleId]
+FROM [Attendance] 
+WHERE DidAttend = 1
+  AND StartDateTime >= '{{ RunDateTime | Date:'MM/dd/yyyy' }}' 
+  AND StartDateTime < '{{ RunDateTime | DateAdd:1,'d' | Date:'MM/dd/yyyy' }}' 
+GROUP BY [GroupId], [CampusId], [ScheduleId]
+</pre>
+<hr>
 The SQL can include Lava merge fields:";
+
+
             ceSourceSql.Help += metric.GetMergeObjects( RockDateTime.Now ).lavaDebugInfo();
 
             if ( metric.Schedule != null )
@@ -1137,28 +1192,6 @@ The SQL can include Lava merge fields:";
 
             metricPartition.Label = tbMetricPartitionLabel.Text;
 
-            var origEntityType = metricPartition.EntityTypeId.HasValue ? EntityTypeCache.Read( metricPartition.EntityTypeId.Value ) : null;
-            var newEntityType = etpMetricPartitionEntityType.SelectedEntityTypeId.HasValue ? EntityTypeCache.Read( etpMetricPartitionEntityType.SelectedEntityTypeId.Value ) : null;
-
-            if ( origEntityType != null )
-            {
-                if ( newEntityType == null || newEntityType.Id != origEntityType.Id )
-                {
-                    // if the EntityTypeId of this metricpartition has changed to NULL or to another EntityType, warn about the EntityId values being wrong
-                    bool hasEntityValues = metricValueService.Queryable().Any( a => a.MetricValuePartitions.Any( x => x.MetricPartitionId == metricPartition.Id && x.EntityId.HasValue ) );
-
-                    if ( hasEntityValues )
-                    {
-                        nbEntityTypeChanged.Text = string.Format(
-                            "Warning: You can't change this series partition to {0} when there are values associated with {1}.",
-                            newEntityType != null ? newEntityType.FriendlyName : "<none>",
-                            origEntityType.FriendlyName );
-                        nbEntityTypeChanged.Visible = true;
-                        return;
-                    }
-                }
-            }
-
             metricPartition.EntityTypeId = etpMetricPartitionEntityType.SelectedEntityTypeId;
             metricPartition.IsRequired = cbMetricPartitionIsRequired.Checked;
             metricPartition.EntityTypeQualifierColumn = tbMetricPartitionEntityTypeQualifierColumn.Text;
@@ -1207,6 +1240,7 @@ The SQL can include Lava merge fields:";
             tbMetricPartitionEntityTypeQualifierColumn.ReadOnly = false;
             tbMetricPartitionEntityTypeQualifierValue.Visible = true;
             pwMetricPartitionAdvanced.Visible = etpMetricPartitionEntityType.SelectedEntityTypeId.HasValue;
+            
             if ( etpMetricPartitionEntityType.SelectedEntityTypeId.HasValue )
             {
                 var entityTypeCache = EntityTypeCache.Read( etpMetricPartitionEntityType.SelectedEntityTypeId.Value );
@@ -1221,6 +1255,8 @@ The SQL can include Lava merge fields:";
                     }
                 }
             }
+
+            pwMetricPartitionAdvanced.Expanded = !string.IsNullOrEmpty( tbMetricPartitionEntityTypeQualifierColumn.Text );
         }
 
         #endregion
