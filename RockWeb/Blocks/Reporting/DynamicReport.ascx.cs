@@ -356,13 +356,17 @@ namespace RockWeb.Blocks.Reporting
                     {
                         string selectionUserPreference = null;
                         bool? checkedUserPreference = null;
-                        if ( setSelection && filterIsVisible && filterIsConfigurable )
+                        if ( setSelection && filterIsVisible )
                         {
-                            selectionUserPreference = this.GetUserPreference( string.Format( "{0}_{1}_Selection", GetReportDataKeyPrefix(), filterControl.DataViewFilterGuid.ToString( "N" ) ) );
-                        }
-                        else if ( setSelection && filterIsVisible && !filterIsConfigurable )
-                        {
-                            checkedUserPreference = this.GetUserPreference( string.Format( "{0}_{1}_Checked", GetReportDataKeyPrefix(), filterControl.DataViewFilterGuid.ToString( "N" ) ) ).AsBooleanOrNull();
+                            if ( filterIsConfigurable )
+                            {
+                                selectionUserPreference = this.GetUserPreference( string.Format( "{0}_{1}_Selection", GetReportDataKeyPrefix(), filterControl.DataViewFilterGuid.ToString( "N" ) ) );
+                            }
+
+                            if ( filterControl.ShowCheckbox )
+                            {
+                                checkedUserPreference = this.GetUserPreference( string.Format( "{0}_{1}_Checked", GetReportDataKeyPrefix(), filterControl.DataViewFilterGuid.ToString( "N" ) ) ).AsBooleanOrNull();
+                            }
                         }
 
                         if ( checkedUserPreference.HasValue )
@@ -370,64 +374,43 @@ namespace RockWeb.Blocks.Reporting
                             filterControl.SetCheckBoxChecked( checkedUserPreference.Value );
                         }
 
-                        if ( filterIsVisible && !filterIsConfigurable )
+                        if ( setSelection )
+                        {
+                            var selection = filter.Selection;
+                            if ( !string.IsNullOrWhiteSpace( selectionUserPreference ) )
+                            {
+                                if ( component is Rock.Reporting.DataFilter.PropertyFilter )
+                                {
+                                    selection = ( component as Rock.Reporting.DataFilter.PropertyFilter ).UpdateSelectionFromUserPreferenceSelection( selection, selectionUserPreference );
+                                }
+                                else
+                                {
+                                    selection = selectionUserPreference;
+                                }
+                            }
+
+                            if ( component is Rock.Reporting.DataFilter.IUpdateSelectionFromPageParameters )
+                            {
+                                selection = ( component as Rock.Reporting.DataFilter.IUpdateSelectionFromPageParameters ).UpdateSelectionFromPageParameters( selection, this );
+                            }
+
+                            try
+                            {
+                                filterControl.SetSelection( selection );
+                            }
+                            catch ( Exception ex )
+                            {
+                                this.LogException( new Exception( "Exception setting selection for DataViewFilter: " + filter.Guid, ex ) );
+                            }
+                        }
+
+                        if (!filterIsConfigurable )
                         {
                             // not configurable so just label it with the selection summary
                             filterControl.Label = component.FormatSelection( reportEntityTypeModel, filter.Selection );
                         }
-                        else if ( component is Rock.Reporting.DataFilter.PropertyFilter )
-                        {
-                            // a configurable property filter
-                            var propertyFilter = component as Rock.Reporting.DataFilter.PropertyFilter;
-                            if ( setSelection )
-                            {
-                                var selection = filter.Selection;
-
-                                if ( !string.IsNullOrWhiteSpace( selectionUserPreference ) )
-                                {
-                                    selection = propertyFilter.UpdateSelectionFromUserPreferenceSelection( selection, selectionUserPreference );
-                                }
-
-                                selection = propertyFilter.UpdateSelectionFromPageParameters( selection, this );
-
-                                try
-                                {
-                                    filterControl.SetSelection( selection );
-                                }
-                                catch ( Exception ex )
-                                {
-                                    this.LogException( new Exception( "Exception setting selection for DataViewFilter: " + filter.Guid, ex ) );
-                                }
-                            }
-                        }
                         else
                         {
-                            if ( setSelection )
-                            {
-                                var selection = filter.Selection;
-                                if ( !string.IsNullOrWhiteSpace( selectionUserPreference ) )
-                                {
-                                    selection = selectionUserPreference;
-                                }
-
-                                if ( component is Rock.Reporting.DataFilter.IUpdateSelectionFromPageParameters )
-                                {
-                                    selection = ( component as Rock.Reporting.DataFilter.IUpdateSelectionFromPageParameters ).UpdateSelectionFromPageParameters( selection, this );
-                                }
-
-                                filterControl.SetSelection( selection );
-
-                                try
-                                {
-                                    filterControl.SetSelection( selection );
-                                }
-                                catch ( Exception ex )
-                                {
-                                    this.LogException( new Exception( "Exception setting selection for DataViewFilter: " + filter.Guid, ex ) );
-                                }
-                            }
-
-                            // a configurable data filter
                             filterControl.Label = component.GetTitle( reportEntityTypeModel );
                         }
                     }

@@ -1020,24 +1020,44 @@ namespace Rock.Model
             var age = Age;
             if (age != null)
             {
-                if (age > 0)
-                // Age in years
+                if (condensed)
                 {
-                    if (condensed)
-                    {
-                        return age.ToString();
-                    }
+                    return age.ToString();
+                }
+                if (age > 0)
+                {
                     return age + (age == 1 ? " yr old " : " yrs old ");
                 }
+            }
 
-                var daysOld = (RockDateTime.Today - BirthDate.Value).TotalDays;
-
-                if (daysOld > 31)
+            var today = RockDateTime.Today;
+            if (BirthYear != null && BirthMonth != null)
+            {
+                int months = today.Month - BirthMonth.Value;
+                if (BirthYear < today.Year)
                 {
-                    var months = Math.Floor(daysOld / (365.2425 / 12));
-                    return months + (months == 1.0 ? " mo old " : " mos old ");
+                    months = months + 12;
                 }
-                return daysOld + (daysOld == 1 ? " day old " : " days old ");
+                if (BirthDay > today.Day)
+                {
+                    months--;
+                }
+                if (months > 0)
+                {
+                    return months + (months == 1 ? " mo old " : " mos old ");
+                }
+            }
+
+            if (BirthYear != null && BirthMonth != null && BirthDay != null)
+            {
+                int days = today.Day - BirthDay.Value;
+                if (days < 0)
+                {
+                    // Add the number of days in the birth month
+                    var birthMonth = new DateTime(BirthYear.Value, BirthMonth.Value, 1);
+                    days = days + birthMonth.AddMonths(1).AddDays(-1).Day;
+                }
+                return days + (days == 1 ? " day old " : " days old ");
             }
             return string.Empty;
         }
@@ -1206,15 +1226,7 @@ namespace Rock.Model
         {
             get
             {
-                if ( !GraduationYear.HasValue )
-                {
-                    return null;
-                }
-                else
-                {
-                    var globalAttributes = GlobalAttributesCache.Read();
-                    return GraduationYear.Value - globalAttributes.CurrentGraduationYear;
-                }
+                return GradeOffsetFromGraduationYear( GraduationYear );
             }
 
             set
@@ -1235,12 +1247,7 @@ namespace Rock.Model
         {
             get
             {
-                if ( GradeOffset.HasValue )
-                {
-                    return GradeOffset < 0;
-                }
-
-                return null;
+                return HasGraduatedFromGradeOffset( GradeOffset );
             }
 
             private set
@@ -1262,23 +1269,7 @@ namespace Rock.Model
         {
             get
             {
-                int? gradeOffset = GradeOffset;
-
-                if ( gradeOffset.HasValue && gradeOffset >= 0 )
-                {
-                    var schoolGrades = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
-                    if ( schoolGrades != null )
-                    {
-                        var sortedGradeValues = schoolGrades.DefinedValues.OrderBy( a => a.Value.AsInteger() );
-                        var schoolGradeValue = sortedGradeValues.Where( a => a.Value.AsInteger() >= gradeOffset.Value ).FirstOrDefault();
-                        if ( schoolGradeValue != null )
-                        {
-                            return schoolGradeValue.Description;
-                        }
-                    }
-                }
-
-                return string.Empty;
+                return GradeFormattedFromGradeOffset( GradeOffset );
             }
 
             private set
@@ -2272,6 +2263,74 @@ namespace Rock.Model
             }
 
             return null;
+        }
+
+
+        /// <summary>
+        /// Given a graduation year returns the grade offset
+        /// </summary>
+        /// <param name="graduationYear">The graduation year.</param>
+        /// <returns></returns>
+        public static int? GradeOffsetFromGraduationYear( int? graduationYear )
+        {
+            if ( !graduationYear.HasValue )
+            {
+                return null;
+            }
+            else
+            {
+                var globalAttributes = GlobalAttributesCache.Read();
+                return graduationYear.Value - globalAttributes.CurrentGraduationYear;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether person has graduated based on grade offset
+        /// </summary>
+        /// <param name="gradeOffset">The grade offset.</param>
+        /// <returns></returns>
+        public static bool? HasGraduatedFromGradeOffset( int? gradeOffset )
+        {
+            if ( gradeOffset.HasValue )
+            {
+                return gradeOffset < 0;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Formats the grade based on graduation year
+        /// </summary>
+        /// <param name="graduationYear">The graduation year.</param>
+        /// <returns></returns>
+        public static string GradeFormattedFromGraduationYear( int? graduationYear )
+        {
+            return GradeFormattedFromGradeOffset( GradeOffsetFromGraduationYear( graduationYear ) );
+        }
+
+        /// <summary>
+        /// Formats the grade based on grade offset
+        /// </summary>
+        /// <param name="gradeOffset">The grade offset.</param>
+        /// <returns></returns>
+        public static string GradeFormattedFromGradeOffset( int? gradeOffset )
+        {
+            if ( gradeOffset.HasValue && gradeOffset >= 0 )
+            {
+                var schoolGrades = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+                if ( schoolGrades != null )
+                {
+                    var sortedGradeValues = schoolGrades.DefinedValues.OrderBy( a => a.Value.AsInteger() );
+                    var schoolGradeValue = sortedGradeValues.Where( a => a.Value.AsInteger() >= gradeOffset.Value ).FirstOrDefault();
+                    if ( schoolGradeValue != null )
+                    {
+                        return schoolGradeValue.Description;
+                    }
+                }
+            }
+
+            return string.Empty;
         }
 
         #endregion

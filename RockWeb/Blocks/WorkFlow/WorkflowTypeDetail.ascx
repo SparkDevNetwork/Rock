@@ -50,8 +50,8 @@
                                 <Rock:RockTextBox ID="tbIconCssClass" runat="server" Label="Icon CSS Class" Help="The Icon to use when displaying this type of workflow." />
                             </div>
                                 <div class="col-md-6">
-                                <Rock:DataTextBox ID="tbProcessingInterval" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="ProcessingIntervalSeconds" Label="Processing Interval (seconds)"
-                                    Help="The minimum length of time, in seconds, that must pass before the same persisted workflow instance of this type can be processed again.  If blank, active workflows will be processed each time that the workflow job is run." />
+                                <Rock:RockTextBox ID="tbProcessingInterval" runat="server" Label="Processing Interval (minutes)"
+                                    Help="The minimum length of time, in minutes, that must pass before the same persisted workflow instance of this type can be processed again.  If blank, active workflows will be processed each time that the workflow job is run." />
                                 <Rock:RockDropDownList ID="ddlLoggingLevel" Help="The level you would like to audit.  Start and stop times can be logged for each workflow, workflow activity, or activity action." runat="server" Label="Logging Level" />
                             </div>
                         </div>

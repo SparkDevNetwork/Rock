@@ -24,6 +24,8 @@ namespace Rock.Attribute
     /// </summary>
     public class ConnectionOpportunityFieldAttribute: FieldAttribute
     {
+        private const string INCLUDE_INACTIVE_KEY = "includeInactive";
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DefinedValueFieldAttribute" /> class.
         /// </summary>
@@ -34,9 +36,11 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public ConnectionOpportunityFieldAttribute( string name = "", string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
+        public ConnectionOpportunityFieldAttribute( string name = "", string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null, bool includeInactive = false )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.ConnectionOpportunityFieldType ).FullName )
         {
+            var includeInactiveConfigValue = new Field.ConfigurationValue( includeInactive.ToString() );
+            FieldConfigurationValues.Add( INCLUDE_INACTIVE_KEY, includeInactiveConfigValue );
         }
     }
 }

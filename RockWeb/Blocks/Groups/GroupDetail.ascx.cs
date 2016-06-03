@@ -999,6 +999,9 @@ namespace RockWeb.Blocks.Groups
                             if ( group.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                             {
                                 authorizedGroupTypes.Add( allowedGroupType );
+
+                                // they have EDIT auth to at least one GroupType, so they are allowed to try to add this group
+                                editAllowed = true;
                             }
                         }
 
@@ -1019,7 +1022,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             viewAllowed = editAllowed || group.IsAuthorized( Authorization.VIEW, CurrentPerson );
-            editAllowed = IsUserAuthorized( Authorization.EDIT ) || group.IsAuthorized( Authorization.EDIT, CurrentPerson );
+            editAllowed = editAllowed || group.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
             pnlDetails.Visible = viewAllowed;
 
@@ -1452,7 +1455,7 @@ namespace RockWeb.Blocks.Groups
 
             
             // configure group capacity
-            if ( group.GroupType.GroupCapacityRule == GroupCapacityRule.None )
+            if ( group.GroupType == null || group.GroupType.GroupCapacityRule == GroupCapacityRule.None )
             {
                 nbGroupCapacity.Visible = false;
             }
@@ -1469,7 +1472,7 @@ namespace RockWeb.Blocks.Groups
                         nbGroupCapacityMessage.Text = string.Format( "This group is over capacity by {0}.", "individual".ToQuantity((activeGroupMemberCount - group.GroupCapacity.Value)) );
                         nbGroupCapacityMessage.Visible = true;
 
-                        if ( group.GroupType.GroupCapacityRule == GroupCapacityRule.Hard )
+                        if ( group.GroupType != null && group.GroupType.GroupCapacityRule == GroupCapacityRule.Hard )
                         {
                             nbGroupCapacityMessage.NotificationBoxType = NotificationBoxType.Danger;
                         }

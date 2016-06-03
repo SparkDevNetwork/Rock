@@ -45,9 +45,9 @@ namespace RockWeb
     [HubName( "rockMessageHub" )]
     public class RockMessageHub : Hub
     {
-        public void Send(string message)
+        public void Send( string name, string message )
         {
-            Clients.All.receiveNotification( message );
+            Clients.All.receiveNotification( name, message );
         }
     }
 }
