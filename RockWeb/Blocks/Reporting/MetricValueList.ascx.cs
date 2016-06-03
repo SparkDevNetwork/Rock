@@ -514,8 +514,7 @@ namespace RockWeb.Blocks.Reporting
                     {
                         if ( entityTypeCache.GetEntityType() == typeof( Rock.Model.Group ) )
                         {
-                            // special case for Group since there could be a very large number (especially if you include families), so limit to GroupType.ShowInGroupList
-                            _entityTypeEntityLookupQry[entityTypeCache.Id] = new GroupService( rockContext ).Queryable().Where( a => a.GroupType.ShowInGroupList );
+                            _entityTypeEntityLookupQry[entityTypeCache.Id] = new GroupService( rockContext ).Queryable();
                         }
                         else
                         {
