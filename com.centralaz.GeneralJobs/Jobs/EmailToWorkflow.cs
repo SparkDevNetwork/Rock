@@ -37,9 +37,9 @@ using Rock.Communication;
 namespace com.centralaz.GeneralJobs.Jobs
 {
     /// <summary>
-    /// Creates Workflows from emails in a POP3 inbox.
+    /// Creates Workflows from emails in a POP3 inbox.  See https://github.com/CentralAZ/Rock-CentralAZ/wiki/Jobs for details.
     /// </summary>
-    [WorkflowTypeField( "Workflow", "Type to use when creating workflows", false, true, "51FE9641-FB8F-41BF-B09E-235900C3E53E", "", 0 )]
+    [WorkflowTypeField( "Workflow", "Type to use when creating workflows.  The Workflow should have the following attributes: Summary (type: Text), Details (type: Text), Requester (type Person), Notes (type: Text).", false, true, "51FE9641-FB8F-41BF-B09E-235900C3E53E", "", 0 )]
     [TextField( "Mailserver", "Hostname of the mail server", true, "", "", 1 )]
     [TextField( "Mail Username", "POP3 account to login to", true, "", "", 2 )]
     [TextField( "Mail Password", "Password of the POP3 account", true, "", "", 3, isPassword:true )]
@@ -56,10 +56,7 @@ namespace com.centralaz.GeneralJobs.Jobs
         private int _inboxCount = 0;
         private int _messageBatchSize = 0;
         private Guid _workflowType = Guid.Empty;
-        WorkflowAction _action;
-        WorkflowActionType _actionType;
-        int? _actionTypeId;
-        WorkflowActivity _activity;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SendCommunications"/> class.
         /// </summary>
@@ -76,8 +73,7 @@ namespace com.centralaz.GeneralJobs.Jobs
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 
             String root = System.Web.Hosting.HostingEnvironment.MapPath( "~/App_Data/Logs/" );
-            String now = DateTime.Now.ToString( "yyyy-MM-dd-HH-mm-ss" );
-            String pathName = String.Format( "{0}{1}-EmailToWorkflow.log", root, now );
+            String pathName = Path.Combine( root, "EmailToWorkflow.log" );
 
             //Get Mail
             try
@@ -116,6 +112,7 @@ namespace com.centralaz.GeneralJobs.Jobs
                         {
                             _messageBatchSize = _inboxCount;
                         }
+
                         if ( _loggingActive )
                         {
                             LogToFile( String.Format( "Batch size set to {0}", _messageBatchSize ), pathName );
@@ -136,6 +133,7 @@ namespace com.centralaz.GeneralJobs.Jobs
                                     msg = pop3Client.GetMessage( i );
                                     LogToFile( String.Format( "read message {0}  Subject:\"{1}\"", i, msg.Headers.Subject ), pathName );
                                     String body;
+
                                     if ( msg.MessagePart.IsText == false )
                                     {
                                         body = msg.FindFirstHtmlVersion().GetBodyAsText().SanitizeHtml( strict: false );
@@ -144,6 +142,7 @@ namespace com.centralaz.GeneralJobs.Jobs
                                     {
                                         body = msg.MessagePart.GetBodyAsText();
                                     }
+
                                     if ( MakeWorkflow( msg.Headers.From.MailAddress, msg.Headers.Subject, body, pathName, dataMap.Get( "AnonymousSender" ).ToString() ) )
                                     {
                                         //Delete Message
@@ -209,82 +208,13 @@ namespace com.centralaz.GeneralJobs.Jobs
             {
                 var rockContext = new RockContext();
                 var workflowType = new WorkflowTypeService( rockContext ).Get( _workflowType );
-                int? workflowId;
+                var workflowService = new Rock.Model.WorkflowService( rockContext );
 
                 if ( workflowType != null )
                 {
-                    var workflow = Workflow.Activate( workflowType, "Workflow" );
+                    var workflow = Workflow.Activate( workflowType, "Email To Workflow" );
                     workflow.Name = emailSubject;
                     workflow.Status = "Active";
-
-                    var workflowService = new Rock.Model.WorkflowService( rockContext );
-                    List<string> errorMessages;
-                    if ( workflowService.Process( workflow, out errorMessages ) )
-                    {
-                        // If the workflow type is persisted, save the workflow
-                        if ( workflow.IsPersisted || workflowType.IsPersisted )
-                        {
-                            workflowService.Add( workflow );
-
-                            rockContext.SaveChanges();
-                            workflow.SaveAttributeValues( rockContext );
-                            foreach ( var activity in workflow.Activities )
-                            {
-                                activity.SaveAttributeValues( rockContext );
-                            }
-
-                            workflowId = workflow.Id;
-                        }
-                    }
-
-                    //HydrateObjects code
-                    if ( workflow.IsActive )
-                    {
-                        // Find first active action form
-                        foreach ( var activity in workflow.Activities
-                            .Where( a =>
-                                a.IsActive
-                            )
-                            .OrderBy( a => a.ActivityType.Order ) )
-                        {
-
-                            foreach ( var action in activity.ActiveActions )
-                            {
-                                if ( action.ActionType.WorkflowForm != null && action.IsCriteriaValid )
-                                {
-                                    _activity = activity;
-                                    _activity.LoadAttributes();
-
-                                    _action = action;
-                                    _actionType = _action.ActionType;
-                                    _actionTypeId = _actionType.Id;
-                                }
-                            }
-
-                        }
-                    }
-
-                    //CompleteFormAction onLoad code
-                    Guid activityTypeGuid = Guid.Empty;
-                    foreach ( var action in _actionType.WorkflowForm.Actions.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) )
-                    {
-                        var actionDetails = action.Split( new char[] { '^' } );
-                        if ( actionDetails.Length > 0 && actionDetails[0] == "Submit" )
-                        {
-                            if ( actionDetails.Length > 2 )
-                            {
-                                activityTypeGuid = actionDetails[2].AsGuid();
-                            }
-                            break;
-                        }
-                    }
-                    _action.MarkComplete();
-                    _action.AddLogEntry( "Form Action Selected: " + _action.FormAction );
-
-                    if ( _action.ActionType.IsActivityCompletedOnSuccess )
-                    {
-                        _action.Activity.MarkComplete();
-                    }
 
                     //Try to find the person from the email
                     Person entity = null;
@@ -306,10 +236,9 @@ namespace com.centralaz.GeneralJobs.Jobs
                         entity = new PersonService( rockContext ).GetByFullName( fullName, false ).FirstOrDefault();
                     }
 
-                    workflow.LoadAttributes();
                     //Set each attribute from the email
-                    workflow.SetAttributeValue( "Summary", emailSubject );
-                    workflow.SetAttributeValue( "Details", emailBody );
+                    workflow.SetAttributeValue( "Summary", emailSubject.SanitizeHtml( true ) );
+                    workflow.SetAttributeValue( "Details", emailBody.SanitizeHtml( true ) );
 
                     if ( entity != null )
                     {
@@ -321,48 +250,14 @@ namespace com.centralaz.GeneralJobs.Jobs
                         workflow.SetAttributeValue( "Notes", String.Format( "From: {0}, {1}", fromAddress.DisplayName, fromAddress.Address ) );
                     }
 
-                    if ( !activityTypeGuid.IsEmpty() )
+                    var errorMessages = new List<string>();
+                    if ( !workflowService.Process( workflow, out errorMessages ) && _loggingActive )
                     {
-                        var activityType = workflowType.ActivityTypes.Where( a => a.Guid.Equals( activityTypeGuid ) ).FirstOrDefault();
-                        if ( activityType != null )
-                        {
-                            WorkflowActivity.Activate( activityType, workflow );
-                        }
-                    }
-
-                    errorMessages = new List<string>();
-                    if ( workflowService.Process( workflow, out errorMessages ) )
-                    {
-                        if ( workflow.IsPersisted || workflowType.IsPersisted )
-                        {
-                            if ( workflow.Id == 0 )
-                            {
-                                workflowService.Add( workflow );
-                            }
-
-                            rockContext.WrapTransaction( () =>
-                            {
-                                rockContext.SaveChanges();
-                                workflow.SaveAttributeValues( rockContext );
-                                foreach ( var activity in workflow.Activities )
-                                {
-                                    activity.SaveAttributeValues( rockContext );
-                                }
-                            } );
-                        }
-
-                        int? previousActionId = null;
-                        if ( _action != null )
-                        {
-                            previousActionId = _action.Id;
-                        }
-
-                        _actionTypeId = null;
-                        _action = null;
-                        _actionType = null;
-                        _activity = null;
+                       // Log errors
+                       LogToFile( string.Format( "Errors occurred trying to process the workflow: {0}", String.Join( ", ", errorMessages.ToArray() ) ), pathName );
                     }
                 }
+
                 return true;
             }
             catch ( Exception ex )
@@ -383,29 +278,13 @@ namespace com.centralaz.GeneralJobs.Jobs
         /// <param name="pathName">Name of the path.</param>
         protected void LogToFile( String message, String pathName )
         {
+            String now = DateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss" );
+
             using ( var str = new StreamWriter( pathName, true ) )
             {
-                str.WriteLine( message );
+                str.WriteLine( string.Format( "{0} {1}", now, message ) );
                 str.Flush();
             }
-        }
-
-        /// <summary>
-        /// Activates the workflow action.
-        /// </summary>
-        /// <param name="actionType">Type of the action.</param>
-        /// <param name="activity">The activity.</param>
-        /// <returns></returns>
-        protected WorkflowAction ActivateWorkflowAction( WorkflowActionType actionType, WorkflowActivity activity )
-        {
-            var action = new WorkflowAction();
-            action.Activity = activity;
-            action.ActionType = actionType;
-            action.LoadAttributes();
-
-            action.AddLogEntry( "Activated" );
-
-            return action;
         }
     }
 }
