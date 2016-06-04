@@ -16,7 +16,7 @@
                         </h1>
 
                         <div class="panel-labels">
-                            <Rock:HighlightLabel ID="hlSyncStatus" runat="server" LabelType="Info" Visible="false" Text="<i class='fa fa-exchange'></i>" /> &nbsp;
+                            <asp:HyperLink ID="hlSyncSource" runat="server"><Rock:HighlightLabel ID="hlSyncStatus" runat="server" LabelType="Info" Visible="false" Text="<i class='fa fa-exchange'></i>" /></asp:HyperLink> &nbsp;
                         </div>
                     </div>
 
