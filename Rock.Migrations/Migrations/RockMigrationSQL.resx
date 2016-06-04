@@ -245,96 +245,96 @@
     <value>version 4.0\version 1.4.0\201511182310362_protectmyministry.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
   </data>
   <data name="_201602041745307_TuneDuplicateFinder" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201602041745307_tuneduplicatefinder.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+    <value>version 5.0\version 1.5.0\201602041745307_tuneduplicatefinder.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
   </data>
   <data name="_201602161036322_AttendanceAnalyticsQuery_AttendeeDates" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201602161036322_attendanceanalyticsquery_attendeedates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+    <value>version 5.0\version 1.5.0\201602161036322_attendanceanalyticsquery_attendeedates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201602161036322_AttendanceAnalyticsQuery_AttendeeFirstDates" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201602161036322_attendanceanalyticsquery_attendeefirstdates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+    <value>version 5.0\version 1.5.0\201602161036322_attendanceanalyticsquery_attendeefirstdates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201602161036322_AttendanceAnalyticsQuery_AttendeeLastAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201602161036322_attendanceanalyticsquery_attendeelastattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+    <value>version 5.0\version 1.5.0\201602161036322_attendanceanalyticsquery_attendeelastattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201602161036322_AttendanceAnalyticsQuery_Attendees" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201602161036322_attendanceanalyticsquery_attendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+    <value>version 5.0\version 1.5.0\201602161036322_attendanceanalyticsquery_attendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201602161036322_AttendanceAnalyticsQuery_GroupTypeAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201602161036322_attendanceanalyticsquery_grouptypeattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+    <value>version 5.0\version 1.5.0\201602161036322_attendanceanalyticsquery_grouptypeattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201602161036322_AttendanceAnalyticsQuery_Indexes" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201602161036322_attendanceanalyticsquery_indexes.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+    <value>version 5.0\version 1.5.0\201602161036322_attendanceanalyticsquery_indexes.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201602161036322_AttendanceAnalyticsQuery_NonAttendees" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201602161036322_attendanceanalyticsquery_nonattendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+    <value>version 5.0\version 1.5.0\201602161036322_attendanceanalyticsquery_nonattendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201603142139542_FamilyAnalytics_spCrm_FamilyAnalyticsAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201603142139542_FamilyAnalytics_spCrm_FamilyAnalyticsAttendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+    <value>version 5.0\version 1.5.0\201603142139542_familyanalytics_spcrm_familyanalyticsattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
   </data>
   <data name="_201603142139542_FamilyAnalytics_spCrm_FamilyAnalyticsEraDataset" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201603142139542_FamilyAnalytics_spCrm_FamilyAnalyticsEraDataset.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+    <value>version 5.0\version 1.5.0\201603142139542_familyanalytics_spcrm_familyanalyticseradataset.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
   </data>
   <data name="_201603142139542_FamilyAnalytics_spCrm_FamilyAnalyticsGiving" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201603142139542_FamilyAnalytics_spCrm_FamilyAnalyticsGiving.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+    <value>version 5.0\version 1.5.0\201603142139542_familyanalytics_spcrm_familyanalyticsgiving.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
   </data>
   <data name="_201603241157527_AttendanceAnalyticsScheduleFilter_AttendeeDates" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201603241157527_attendanceanalyticsschedulefilter_attendeedates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 5.0\version 1.5.0\201603241157527_attendanceanalyticsschedulefilter_attendeedates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201603241157527_AttendanceAnalyticsScheduleFilter_AttendeeFirstDates" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201603241157527_attendanceanalyticsschedulefilter_attendeefirstdates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 5.0\version 1.5.0\201603241157527_attendanceanalyticsschedulefilter_attendeefirstdates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201603241157527_AttendanceAnalyticsScheduleFilter_AttendeeLastAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201603241157527_attendanceanalyticsschedulefilter_attendeelastattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 5.0\version 1.5.0\201603241157527_attendanceanalyticsschedulefilter_attendeelastattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201603241157527_AttendanceAnalyticsScheduleFilter_Attendees" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201603241157527_attendanceanalyticsschedulefilter_attendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 5.0\version 1.5.0\201603241157527_attendanceanalyticsschedulefilter_attendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201603241157527_AttendanceAnalyticsScheduleFilter_NonAttendees" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201603241157527_attendanceanalyticsschedulefilter_nonattendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 5.0\version 1.5.0\201603241157527_attendanceanalyticsschedulefilter_nonattendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201603241157527_spCrm_PersonMerge" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201603241157527_spcrm_personmerge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 5.0\version 1.5.0\201603241157527_spcrm_personmerge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201603241157527_UpdateIndexes" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201603241157527_updateindexes.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 5.0\version 1.5.0\201603241157527_updateindexes.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201604251529438_CheckinEnhancement" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201604251529438_checkinenhancement.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 5.0\version 1.5.0\201604251529438_checkinenhancement.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201604251529438_UpdateLegacyLava" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201604251529438_updatelegacylava.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 5.0\version 1.5.0\201604251529438_updatelegacylava.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201604281205403_AttendanceAnalyticsGroupTypes_AttendeeFirstDates" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201604281205403_attendanceanalyticsgrouptypes_attendeefirstdates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
-  <data name="_201604281205403_AttendanceAnalyticsGroupTypes_NonAttendee" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201604281205403_attendanceanalyticsgrouptypes_nonattendee.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 5.0\version 1.5.0\201604281205403_attendanceanalyticsgrouptypes_attendeefirstdates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201604281205403_AttendanceAnalyticsGroupTypes_GroupTypeAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201604281205403_attendanceanalyticsgrouptypes_grouptypeattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 5.0\version 1.5.0\201604281205403_attendanceanalyticsgrouptypes_grouptypeattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201604281205403_AttendanceAnalyticsGroupTypes_NonAttendee" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>version 5.0\version 1.5.0\201604281205403_attendanceanalyticsgrouptypes_nonattendee.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201605021826400_FamilyAnalyticsUpdates_spCrm_FamilyAnalyticsEraDataset" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201605021826400_FamilyAnalyticsUpdates_spCrm_FamilyAnalyticsEraDataset.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 5.0\version 1.5.0\201605021826400_familyanalyticsupdates_spcrm_familyanalyticseradataset.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201605021826400_FamilyAnalyticsUpdates_spCrm_spCrm_FamilyAnalyticsAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201605021826400_FamilyAnalyticsUpdates_spCrm_spCrm_FamilyAnalyticsAttendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 5.0\version 1.5.0\201605021826400_familyanalyticsupdates_spcrm_spcrm_familyanalyticsattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201605021826400_FamilyAnalyticsUpdates_spCrm_spCrm_FamilyAnalyticsUpdateVisitDates" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201605021826400_FamilyAnalyticsUpdates_spCrm_spCrm_FamilyAnalyticsUpdateVisitDates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 5.0\version 1.5.0\201605021826400_familyanalyticsupdates_spcrm_spcrm_familyanalyticsupdatevisitdates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201605022007364_AttendanceBadgeSpUpdates_spCheckin_BadgeAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201605022007364_AttendanceBadgeSpUpdates_spCheckin_BadgeAttendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 5.0\version 1.5.0\201605022007364_attendancebadgespupdates_spcheckin_badgeattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201605022007364_AttendanceBadgeSpUpdates_spCheckin_WeeksAttendedInDuration" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201605022007364_AttendanceBadgeSpUpdates_spCheckin_WeeksAttendedInDuration.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 5.0\version 1.5.0\201605022007364_attendancebadgespupdates_spcheckin_weeksattendedinduration.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201605180005401_ScheduledTxnSource_ContributionStatementQuery" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201605180005401_scheduledtxnsource_contributionstatementquery.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 5.0\version 1.5.0\201605180005401_scheduledtxnsource_contributionstatementquery.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201605232234462_FamilyCheckinType" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201605232234462_familycheckintype.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 5.0\version 1.5.0\201605232234462_familycheckintype.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201605311330117_GivingAnalyticsLastGift" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201605311330117_givinganalyticslastgift.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 5.0\version 1.5.0\201605311330117_givinganalyticslastgift.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
 </root>
