@@ -239,6 +239,10 @@
     <Compile Include="Migrations\201605311330117_GivingAnalyticsLastGift.Designer.cs">
       <DependentUpon>201605311330117_GivingAnalyticsLastGift.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201606041830258_ClearPreviousMigrations5.cs" />
+    <Compile Include="Migrations\201606041830258_ClearPreviousMigrations5.Designer.cs">
+      <DependentUpon>201606041830258_ClearPreviousMigrations5.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.cs" />
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.Designer.cs">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
@@ -2262,6 +2266,9 @@
     <EmbeddedResource Include="Migrations\201605311330117_GivingAnalyticsLastGift.resx">
       <DependentUpon>201605311330117_GivingAnalyticsLastGift.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201606041830258_ClearPreviousMigrations5.resx">
+      <DependentUpon>201606041830258_ClearPreviousMigrations5.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.resx">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
     </EmbeddedResource>
@@ -3738,6 +3745,9 @@
     <Content Include="Migrations\Version 4.0\Version 1.4.0\201510141725294_GroupTypeShowConnectionStatus_spCheckin_WeeksAttendedInDuration.sql" />
     <Content Include="Migrations\Version 4.0\Version 1.4.0\201511162216129_RecentRegistrationsLava_MergeTemplateUpdates.sql" />
     <Content Include="Migrations\Version 4.0\Version 1.4.0\201511182310362_ProtectMyMinistry.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Migrations\Version 5.0\Version 1.5.0\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
