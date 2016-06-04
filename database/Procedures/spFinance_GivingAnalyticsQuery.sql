@@ -93,6 +93,7 @@ BEGIN
 			[GivingLeaderId],
 			[AccountId],
 			MIN( [TransactionDateTime] ) AS [FirstGift],
+			MAX( [TransactionDateTime] ) AS [LastGift],
 			COUNT( DISTINCT [Id] ) AS [NumberGifts],
 			SUM( [Amount] ) AS [Amount]
 		FROM CTE0
@@ -134,6 +135,7 @@ BEGIN
 		FROM (
 			SELECT [GivingLeaderId],
 			MIN( [TransactionDateTime] ) AS [FirstGift],
+			MAX( [TransactionDateTime] ) AS [LastGift],
 			COUNT( DISTINCT [Id] ) AS [NumberGifts],
 			SUM( [Amount] ) AS [TotalAmount]
 			FROM CTE0
@@ -221,6 +223,7 @@ BEGIN
 
 	SET @Sql = @Sql + '
 		MIN( CTE4.[FirstGift] ) AS [FirstGift],
+		MAX( CTE4.[LastGift] ) AS [LastGift],
 		SUM( CTE4.[NumberGifts] ) AS [NumberGifts],
 		SUM( CTE4.[TotalAmount] ) AS [TotalAmount]
 	FROM CTE4
@@ -258,7 +261,8 @@ BEGIN
 	SET @Sql = @Sql + '
 	SELECT 
 		[p2].[Id] AS [PersonId],
-		MIN([ft].[TransactionDateTime]) AS [FirstEverGift]
+		MIN([ft].[TransactionDateTime]) AS [FirstEverGift],
+		MAX([ft].[TransactionDateTime]) AS [LastEverGift]
 	FROM [FinancialTransactionDetail] [ftd] WITH (NOLOCK)
 	INNER JOIN [FinancialAccount] [fa] WITH (NOLOCK)
 		ON [fa].[id] = [ftd].[AccountId]

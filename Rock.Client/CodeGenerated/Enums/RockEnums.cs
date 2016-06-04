@@ -403,6 +403,7 @@ namespace Rock.Client.Enums
         MobilePhone = 0x8,
         HomePhone = 0x9,
         WorkPhone = 0xa,
+        Grade = 0xb,
     }
 
     /// <summary>
