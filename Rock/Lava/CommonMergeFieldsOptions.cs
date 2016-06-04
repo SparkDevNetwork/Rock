@@ -32,6 +32,7 @@ namespace Rock.Lava
             this.GetCampuses = true;
             this.GetDeviceFamily = false;
             this.GetOSFamily = false;
+            this.GetLegacyGlobalMergeFields = true;
         }
 
         /// <summary>
@@ -81,5 +82,16 @@ namespace Rock.Lava
         ///   <c>true</c> if [get os family]; otherwise, <c>false</c>.
         /// </value>
         public bool GetOSFamily { get; set; }
+
+        /// <summary>
+        /// If this is True (the default), get the GlobalAttribute merge fields when in LegacyMode
+        /// Set to False to never get the Legacy Global Merges fields, even when in Legacy Mode
+        /// </summary>
+        /// <value>
+        /// The get global attributes.
+        /// </value>
+        public bool GetLegacyGlobalMergeFields { get; set; }
     }
+
+     
 }
