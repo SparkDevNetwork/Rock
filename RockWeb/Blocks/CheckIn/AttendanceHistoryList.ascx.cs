@@ -351,7 +351,7 @@ namespace RockWeb.Blocks.Checkin
             if ( drpDates.UpperValue.HasValue )
             {
                 DateTime upperDate = drpDates.UpperValue.Value.Date.AddDays( 1 );
-                qryAttendance = qryAttendance.Where( t => t.EndDateTime < upperDate );
+                qryAttendance = qryAttendance.Where( t => t.StartDateTime < upperDate );
             }
 
             // Filter by Schedule

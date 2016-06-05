@@ -27,6 +27,7 @@ CHECK-IN
 + Added birthdate as field that is included when exporting Attendance Analytics.
 + Added schedule as an additional optional filter in Attendance Analytics block
 + Fixed issues with attendance history filters not persisting
++ Updated Attendance History block to only consider check-in start date when using a date-range filter (Fixes #1524).
 
 CMS
 + Added a new 'Link List Lava' block that makes it easy to add/edit/secure and format a list of links.
