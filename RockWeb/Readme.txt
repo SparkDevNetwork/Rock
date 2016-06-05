@@ -208,6 +208,7 @@ MISC
 + Added new Address Field Type.
 + Added new Address Attribute.
 + Fixed issue with radio button lists automatically selecting first value when they are set using an empty/null value (fixes #1334).
++ Updated KeyValueList field type to display values correctly when not using a defined type (fixes #1522).
 + Added 'Warning' property to Rock Controls similar to 'Help' Property.
 + Noted individuals who are inactive on the person picker search.
 + Added new Markdown Field Attribute that can be used to render Markdown into HTML (see http://commonmark.org).
