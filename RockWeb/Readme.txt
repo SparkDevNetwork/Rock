@@ -190,6 +190,7 @@ MISC
 + Added "Campuses" and "Context" as available merge fields for Doc and HTML Merge Templates.
 + Fixed copying of existing communication so that the recipient's additional merge values are copied as well.
 + Updated the Communication block's support for additional merge fields (Lava) to support objects in addition to just string values.
++ Update Communication Entry block so that if a different template is selected, the From, From Email, etc fields are not cleared.
 + Updated the Transaction Entry and Registration Entry blocks to validate new passwords against configured pattern when user is creating a new login in order to save their payment account information (Fixes #1371).
 + Added the ability to copy and share selected filter criteria for the giving and attendance analytics blocks.
 + Improved performance of the Person Duplicate Finder.
