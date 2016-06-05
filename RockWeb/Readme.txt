@@ -187,7 +187,7 @@ MISC
 + Added new option for requiring a user login to change their password on next visit.
 + Added new search service that allows searching for businesses.
 + Added the ability to bulk update Tags.
-+ Fixed issue in Merge Templates that was causing Header, Footer, and any remaining global lava fields in the Body not to get merged (fixes #1396).
++ Fixed issue in Merge Templates that was causing Header, Footer, and any remaining global lava fields in the Body not to get merged (Fixes #1396).
 + Added "Campuses" and "Context" as available merge fields for Doc and HTML Merge Templates.
 + Fixed copying of existing communication so that the recipient's additional merge values are copied as well.
 + Updated the Communication block's support for additional merge fields (Lava) to support objects in addition to just string values.
@@ -198,7 +198,7 @@ MISC
 + Increased the query timeout values for attendance and giving analytic reports.
 + Updated the FileSystem binary file type provider to save the relative path to file when saving a new binary file using this provider.
 + Added logic to check for any new person names or addresses being entered with all lower or all upper case characters and if so, fix casing so that first character is uppercased and remaining characters are lowercased.
-+ Updated following notifications to exclude deceased people (fixes #1558).
++ Updated following notifications to exclude deceased people (Fixes #1558).
 + Added new SendGroupEmail Job.
 + Added setting to Group Sync job to enable forced password resets on new logins that are created during the sync.
 + Updated the address verification process to preserve first service's standardization results even if second service is used for geocoding.
@@ -208,8 +208,8 @@ MISC
 + Added new Phone Number field type.
 + Added new Address Field Type.
 + Added new Address Attribute.
-+ Fixed issue with radio button lists automatically selecting first value when they are set using an empty/null value (fixes #1334).
-+ Updated KeyValueList field type to display values correctly when not using a defined type (fixes #1522).
++ Fixed issue with radio button lists automatically selecting first value when they are set using an empty/null value (Fixes #1334).
++ Updated KeyValueList field type to display values correctly when not using a defined type (Fixes #1522).
 + Added 'Warning' property to Rock Controls similar to 'Help' Property.
 + Noted individuals who are inactive on the person picker search.
 + Added new Markdown Field Attribute that can be used to render Markdown into HTML (see http://commonmark.org).
@@ -266,6 +266,7 @@ Rock McKinley 4.4
 + Changed the ConnectionRequestDetail block to allow a request to be Connected even if there is no placement group. 
 + Fixed Communication Entry block so that the Subject is cleared if a selected template does not specify a subject (Fixes #1393).
 + Fixed issue where creating a new communication from a dataview caused the block to timeout before the configured database timeout occurred. (Fixes #909).
++ Update communication send job so that it ignores any inactive mediums and/or transports (Fixes #1527).
 + Fixed issue when trying to add group attendance and location filter is set to a parent location (i.e. campus/building) vs. an actual room location.
 + Fixed Registration Entry so that it does not create person notes until registration and payment was successful.
 + Updated the Group Attendance Detail block so that if adding attendance for a particular schedule, the attendance record gets created with the correct start time.
@@ -323,7 +324,7 @@ Rock McKinley 4.1
 
 + Updated communication entry block so that binary file attachments are not stored as temporary files (and possibly deleted up before an email is sent in the future).
 + Fixed issue with payment details getting cleared when a scheduled transaction is updated.
-+ Fixed issue with a reporting lava column being blank when exporting to excel (fixes #1349).
++ Fixed issue with a reporting lava column being blank when exporting to excel (Fixes #1349).
 + Updated the cache timeout on check-in location attendance counts. Was previously changed from 1 min to an hour, but an hour is too long to accurately reflect current attendance in a location.
 + Fixed the Defined Value field type filter when the option to display multiple values is enabled.
 + Updated REST methods so they do not pass their rockcontext object (without proxy creation enabled) to the cache methods that rely on being able to use navigation properties to load child collection properties.
@@ -400,7 +401,7 @@ Rock McKinley 4.0
 + Updated grid export to excel to export numeric values correctly (not as text values).
 + Fixed Dynamic Data Report issue when Selection URL contained more than one column name (Fixes #1238).
 + Renamed the ForeignId field to ForeignKey (string field) and added new ForeignId (int field) and ForeignGuid (Guid field) fields to every table/model.
-+ Added column (and filter) to Attendance History block to indicate whether a person attended the group or not (fixes #1184).
++ Added column (and filter) to Attendance History block to indicate whether a person attended the group or not (Fixes #1184).
 + Updated SMS communications to require From and Message values (Fixes #1171).
 + Updated Bulk Update to allow selecting the note type when adding a new note for people (Fixes #1165).
 + Updated the processing of scheduled payments to also update the status (Fixes #1145).
@@ -619,7 +620,7 @@ Rock McKinley 3.2
 + Updated communicaiton processing so that communication job will not send duplicate emails to same recipients.
 + Fixed issue with occasional deadlocks.
 + Added job for processing scheduled metrics.
-+ Fixed attribute block to escape HTML in the values column (fixes #965).
++ Fixed attribute block to escape HTML in the values column (Fixes #965).
 + Added access keys to edit the individual (Alt+I) and family (Alt+O) on the person details page.
 + Changed the access key for edit from Alt+E to Alt+M (modify) since Chrome already used Alt+E. (Fixes #946).
 
