@@ -124,10 +124,13 @@ namespace Rock.Client
         public long DateTimeStamp { get; set; }
 
         /// <summary />
+        public string MetricValuePartitionEntityIds { get; set; }
+
+        /// <summary />
         public ICollection<MetricValuePartition> MetricValuePartitions { get; set; }
 
         /// <summary />
-        public string SeriesId { get; set; }
+        public string SeriesName { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
