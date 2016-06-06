@@ -30,6 +30,22 @@ namespace Rock.Migrations
         public override void Up()
         {
             Sql( @"
+    DROP INDEX[IX_ValueAsNumeric] ON[AttributeValue]
+    ALTER TABLE AttributeValue DROP COLUMN ValueAsNumeric
+    ALTER TABLE AttributeValue ADD ValueAsNumeric AS(
+        CASE
+            WHEN len([value] ) < ( 100 )
+                THEN CASE
+                        WHEN(
+                                isnumeric([value] ) = ( 1 )
+                                AND NOT[value] LIKE '%[^0-9.]%'
+                                )
+                            THEN TRY_CAST([value] AS[decimal]( 29, 4 ))
+                        END
+            END
+        ) PERSISTED
+    CREATE NONCLUSTERED INDEX[IX_ValueAsNumeric] ON[AttributeValue]([ValueAsNumeric] )
+
     UPDATE [__MigrationHistory] SET [Model] = 0x
 " );
         }

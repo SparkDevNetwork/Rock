@@ -29,11 +29,14 @@ namespace Rock.Migrations.HotFixMigrations
         /// </summary>
         public override void Up()
         {
+// NOTE: This was included in normal migration with v4.0
+/*
             Sql( @"
     UPDATE [SystemEmail]
     SET [Body] = REPLACE( [Body], '?GroupId={{ Group.Id }}&Occurrence=', '?{{ Person.ImpersonationParameter }}&GroupId={{ Group.Id }}&Occurrence=' )
     WHERE [Guid] = 'ED567FDE-A3B4-4827-899D-C2740DF3E5DA'
 " );
+*/
         }
 
         /// <summary>

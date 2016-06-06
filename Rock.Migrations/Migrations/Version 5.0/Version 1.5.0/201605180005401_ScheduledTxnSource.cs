@@ -34,6 +34,7 @@ namespace Rock.Migrations
             AddForeignKey("dbo.FinancialScheduledTransaction", "SourceTypeValueId", "dbo.DefinedValue", "Id");
 
             // MP: Fix Statement Generator when Individual Selected
+            Sql( MigrationSQL._201605180005401_ScheduledTxnSource_GetFamilyTitle );
             Sql( MigrationSQL._201605180005401_ScheduledTxnSource_ContributionStatementQuery );
 
             // NA: SampleData block setting for new 5.0 feature

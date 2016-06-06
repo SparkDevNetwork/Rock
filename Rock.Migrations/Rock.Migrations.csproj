@@ -3682,6 +3682,7 @@
   <ItemGroup>
     <Content Include="Migrations\Version 5.0\Version 1.5.0\201604281205403_AttendanceAnalyticsGroupTypes_AttendeeFirstDates.sql" />
     <Content Include="Migrations\Version 5.0\Version 1.5.0\201604281205403_AttendanceAnalyticsGroupTypes_GroupTypeAttendance.sql" />
+    <Content Include="Migrations\Version 5.0\Version 1.5.0\201605180005401_ScheduledTxnSource_GetFamilyTitle.sql" />
     <Content Include="Migrations\Version 5.0\Version 1.5.0\201605180005401_ScheduledTxnSource_ContributionStatementQuery.sql" />
     <Content Include="Migrations\Version 5.0\Version 1.5.0\201605022007364_AttendanceBadgeSpUpdates_spCheckin_BadgeAttendance.sql" />
     <Content Include="Migrations\Version 5.0\Version 1.5.0\201605022007364_AttendanceBadgeSpUpdates_spCheckin_WeeksAttendedInDuration.sql" />
