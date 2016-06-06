@@ -442,6 +442,34 @@ namespace Rock.Web
             return base.ToString();
         }
 
+        /// <summary>
+        /// If this is reference to a PageRoute, this will return the Route, otherwise it will return the normal URL of the page
+        /// </summary>
+        /// <value>
+        /// The route.
+        /// </value>
+        public string Route
+        {
+            get 
+            {
+                var pageCache = PageCache.Read( this.PageId );
+                if ( pageCache != null )
+                {
+                    var pageRoute = pageCache.PageRoutes.FirstOrDefault( a=> a.Id == this.RouteId);
+                    if (pageRoute != null)
+                    {
+                        return pageRoute.Route;
+                    }
+                    else
+                    {
+                        return this.BuildUrl();
+                    }
+                }
+
+                return null;
+            }
+        }
+
         #endregion
 
         #region Public Static Methods

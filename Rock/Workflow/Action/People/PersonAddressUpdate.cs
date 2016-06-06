@@ -38,12 +38,14 @@ namespace Rock.Workflow.Action
 
     [WorkflowAttribute("Person", "Workflow attribute that contains the person to update.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE, "Location Type", "The type of location to update.", true, false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 1 )]
-    [LocationField("Location", "The location to use for updating person's record.", false, "", "", 2 )]
-    [WorkflowAttribute("Location Attribute", "A location attribute to use for updating person's record. This will be used if a value is not entered for the Location field above.", false, "", "", 3, "LocationAttribute",
+    [WorkflowAttribute( "Location Type (From Attribute)", "The attribute that contains the the location type to update.", false, "", "", 1, "LocationTypeAttribute",
+        new string[] { "Rock.Field.Types.DefinedValueFieldType" } )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE, "Location Type", "The type of location to update (if attribute is not specified or is an invalid value).", true, false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 2 )]
+    [LocationField("Location", "The location to use for updating person's record.", false, "", "", 3 )]
+    [WorkflowAttribute("Location (From Attribute)", "A location attribute to use for updating person's record. This will be used if a value is not entered for the Location field above.", false, "", "", 4, "LocationAttribute",
         new string[] { "Rock.Field.Types.LocationFieldType" } )]
-    [WorkflowTextOrAttribute( "Is Mailing Location", "Attribute Value", "The value or attribute value to indicate if the location is the mailing address. Only valid values are 'True' or 'False' any other value will be ignored. <span class='tip tip-lava'></span>", false, "", "", 4, "IsMailing" )]
-    [WorkflowTextOrAttribute( "Is Mapped Location", "Attribute Value", "The value or attribute value to indicate if the location should be mapped location. Only valid values are 'True' or 'False' any other value will be ignored. <span class='tip tip-lava'></span>", false, "", "", 5, "IsMapped" )]
+    [WorkflowTextOrAttribute( "Is Mailing Location", "Attribute Value", "The value or attribute value to indicate if the location is the mailing address. Only valid values are 'True' or 'False' any other value will be ignored. <span class='tip tip-lava'></span>", false, "", "", 5, "IsMailing" )]
+    [WorkflowTextOrAttribute( "Is Mapped Location", "Attribute Value", "The value or attribute value to indicate if the location should be mapped location. Only valid values are 'True' or 'False' any other value will be ignored. <span class='tip tip-lava'></span>", false, "", "", 6, "IsMapped" )]
     public class PersonAddressUpdate : ActionComponent
     {
         /// <summary>
@@ -95,7 +97,16 @@ namespace Rock.Workflow.Action
             }
 
             // determine the location type to edit
-            var locationType = DefinedValueCache.Read( GetAttributeValue( action, "LocationType" ).AsGuid() );
+            DefinedValueCache locationType = null;
+            var locationTypeAttributeValue = action.GetWorklowAttributeValue( GetAttributeValue( action, "LocationTypeAttribute" ).AsGuid() );
+            if ( locationTypeAttributeValue != null )
+            {
+                locationType = DefinedValueCache.Read( locationTypeAttributeValue.AsGuid() );
+            }
+            if ( locationType == null )
+            {
+                locationType = DefinedValueCache.Read( GetAttributeValue( action, "LocationType" ).AsGuid() );
+            }
             if ( locationType == null )
             {
                 errorMessages.Add( "The location type to be updated was not selected." );

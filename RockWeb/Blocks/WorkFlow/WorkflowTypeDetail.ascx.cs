@@ -517,7 +517,17 @@ namespace RockWeb.Blocks.WorkFlow
             workflowType.CategoryId = cpCategory.SelectedValueAsInt();
             workflowType.Order = 0;
             workflowType.WorkTerm = tbWorkTerm.Text;
-            workflowType.ProcessingIntervalSeconds = tbProcessingInterval.Text.AsIntegerOrNull();
+
+            int? mins = tbProcessingInterval.Text.AsIntegerOrNull();
+            if ( mins.HasValue )
+            {
+                workflowType.ProcessingIntervalSeconds = mins.Value * 60;
+            }
+            else
+            {
+                workflowType.ProcessingIntervalSeconds = null;
+            }
+
             workflowType.IsPersisted = cbIsPersisted.Checked;
             workflowType.LoggingLevel = ddlLoggingLevel.SelectedValueAsEnum<WorkflowLoggingLevel>();
             workflowType.IconCssClass = tbIconCssClass.Text;
@@ -1175,7 +1185,8 @@ namespace RockWeb.Blocks.WorkFlow
                 workflowType.CategoryId = parentCategoryId;
                 workflowType.IconCssClass = "fa fa-list-ol";
                 workflowType.ActivityTypes.Add( new WorkflowActivityType { Guid = Guid.NewGuid(), IsActive = true, IsActivatedWithWorkflow = true } );
-                workflowType.WorkTerm = "Work";            
+                workflowType.WorkTerm = "Work";
+                workflowType.ProcessingIntervalSeconds = 28800; // Default to every 8 hours
             }
             else
             {
@@ -1315,7 +1326,16 @@ namespace RockWeb.Blocks.WorkFlow
             tbDescription.Text = workflowType.Description;
             cpCategory.SetValue( workflowType.CategoryId );
             tbWorkTerm.Text = workflowType.WorkTerm;
-            tbProcessingInterval.Text = workflowType.ProcessingIntervalSeconds != null ? workflowType.ProcessingIntervalSeconds.ToString() : string.Empty;
+
+            if ( workflowType.ProcessingIntervalSeconds.HasValue )
+            {
+                int mins = workflowType.ProcessingIntervalSeconds.Value / 60;
+                tbProcessingInterval.Text = mins.ToString( "N0" );
+            }
+            else
+            {
+                tbProcessingInterval.Text = string.Empty;
+            }
             cbIsPersisted.Checked = workflowType.IsPersisted;
             ddlLoggingLevel.SetValue( (int)workflowType.LoggingLevel );
             tbIconCssClass.Text = workflowType.IconCssClass;

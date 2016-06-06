@@ -400,7 +400,7 @@ $(document).ready(function() {
             pageRef.Parameters.AddOrReplace( "Page", "PageNum" );
 
             Dictionary<string, object> linkedPages = new Dictionary<string, object>();
-            linkedPages.Add( "DetailPage", LinkedPageUrl( "DetailPage", null ) );
+            linkedPages.Add( "DetailPage", LinkedPageRoute( "DetailPage" ) );
 
             var errorMessages = new List<string>();
             List<ContentChannelItem> content;

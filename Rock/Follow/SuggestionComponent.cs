@@ -48,7 +48,7 @@ namespace Rock.Follow
         /// <summary>
         /// Initializes a new instance of the <see cref="SuggestionComponent" /> class.
         /// </summary>
-        public SuggestionComponent()
+        public SuggestionComponent() : base( false )
         {
             // Override default constructor of Component that loads attributes (not needed for suggestion components, needs to be done by each following suggestion)
         }

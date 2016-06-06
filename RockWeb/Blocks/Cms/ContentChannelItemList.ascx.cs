@@ -326,13 +326,16 @@ namespace RockWeb.Blocks.Cms
 
             // Add attribute columns
             int entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentChannelItem ) ).Id;
-            string qualifier = _typeId.ToString();
             foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
                 .Where( a =>
                     a.EntityTypeId == entityTypeId &&
-                    a.IsGridColumn &&
-                    a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                    a.EntityTypeQualifierValue.Equals( qualifier ) )
+                    a.IsGridColumn && ( (
+                        a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierValue.Equals( _typeId.ToString() )
+                    ) || (
+                        a.EntityTypeQualifierColumn.Equals( "ContentChannelId", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierValue.Equals( _channelId.ToString() )
+                    ) ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name ) )
             {

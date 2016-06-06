@@ -408,7 +408,15 @@ namespace Rock.Field
             var ddlCompare = control as RockDropDownList;
             if ( ddlCompare != null )
             {
-                if ( !ddlCompare.Visible )
+                bool filterValueControlVisible = true;
+                var filterField = control.FirstParentControlOfType<FilterField>();
+                if ( filterField != null && filterField.HideFilterCriteria )
+                {
+                    filterValueControlVisible = false;
+                }
+
+                // if the CompareControl is hidden, but the ValueControl is visible, pick the appropriate ComparisonType
+                if ( !ddlCompare.Visible && filterValueControlVisible )
                 {
                     if ( FilterComparisonType == ComparisonHelper.BinaryFilterComparisonTypes && filterMode == FilterMode.SimpleFilter )
                     {

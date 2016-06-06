@@ -14,6 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
+
 namespace Rock.Chart
 {
     /// <summary>
@@ -38,11 +41,29 @@ namespace Rock.Chart
         decimal? YValue { get; }
 
         /// <summary>
-        /// Gets the series identifier.
+        /// Gets the series identifier (obsolete)
+        /// NOTE: Use MetricValuePartitionEntityIds if you are populating this with a EntityTypeId|EntityId list, or use SeriesName for a static series name
         /// </summary>
         /// <value>
         /// The series identifier.
         /// </value>
-        string SeriesId { get;  }
+        [Obsolete( "Use MetricValuePartitionEntityIds if you are populating this with a EntityTypeId|EntityId list, or use SeriesName for a static series name" )]
+        string SeriesId { get; }
+
+        /// <summary>
+        /// Gets or sets the name of the series. This will be the default name of the series if MetricValuePartitionEntityIds can't be resolved
+        /// </summary>
+        /// <value>
+        /// The name of the series.
+        /// </value>
+        string SeriesName { get; }
+
+        /// <summary>
+        /// Gets the metric value partitions as a comma-delimited list of EntityTypeId|EntityId
+        /// </summary>
+        /// <value>
+        /// The metric value entityTypeId,EntityId partitions
+        /// </value>
+        string MetricValuePartitionEntityIds { get; }
     }
 }

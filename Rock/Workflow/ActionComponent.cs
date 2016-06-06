@@ -49,14 +49,8 @@ namespace Rock.Workflow
         /// <summary>
         /// Initializes a new instance of the <see cref="ActionComponent" /> class.
         /// </summary>
-        public ActionComponent()
+        public ActionComponent() : base( false )
         {
-            var type = this.GetType();
-            using ( var rockContext = new RockContext() )
-            {
-                int? actionTypeEntityTypeId = EntityTypeCache.Read( typeof( WorkflowActionType ) ).Id;
-                Rock.Attribute.Helper.UpdateAttributes( this.GetType(), actionTypeEntityTypeId, "EntityTypeId", Rock.Web.Cache.EntityTypeCache.GetId( type.FullName ).ToString(), rockContext );
-            }
         }
 
         /// <summary>

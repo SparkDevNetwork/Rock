@@ -105,7 +105,7 @@ namespace Rock.PersonProfile
         /// <summary>
         /// Initializes a new instance of the <see cref="BadgeComponent" /> class.
         /// </summary>
-        public BadgeComponent()
+        public BadgeComponent() : base( false )
         {
             // Override default constructor of Component that loads attributes (needs to be done by each instance)
         }

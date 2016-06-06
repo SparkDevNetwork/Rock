@@ -110,6 +110,8 @@
     <Compile Include="Constraints\ValidControllerNameConstraint.cs" />
     <Compile Include="Controllers\AttendancesController.partial.cs" />
     <Compile Include="Controllers\CodeGenerated\BackgroundChecksController.cs" />
+    <Compile Include="Controllers\CodeGenerated\MetricPartitionsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\MetricValuePartitionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\PageViewSessionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\PageViewUserAgentsController.cs" />
     <Compile Include="Controllers\BinaryFilesController.Partial.cs" />

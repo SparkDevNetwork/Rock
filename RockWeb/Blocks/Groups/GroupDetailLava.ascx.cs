@@ -637,10 +637,10 @@ namespace RockWeb.Blocks.Groups
 
                 // add linked pages
                 Dictionary<string, object> linkedPages = new Dictionary<string, object>();
-                linkedPages.Add( "PersonDetailPage", LinkedPageUrl( "PersonDetailPage", null ) );
-                linkedPages.Add( "RosterPage", LinkedPageUrl( "RosterPage", null ) );
-                linkedPages.Add( "AttendancePage", LinkedPageUrl( "AttendancePage", null ) );
-                linkedPages.Add( "CommunicationPage", LinkedPageUrl( "CommunicationPage", null ) );
+                linkedPages.Add( "PersonDetailPage", LinkedPageRoute( "PersonDetailPage" ) );
+                linkedPages.Add( "RosterPage", LinkedPageRoute( "RosterPage" ) );
+                linkedPages.Add( "AttendancePage", LinkedPageRoute( "AttendancePage" ) );
+                linkedPages.Add( "CommunicationPage", LinkedPageRoute( "CommunicationPage" ) );
                 mergeFields.Add( "LinkedPages", linkedPages );
 
                 // add collection of allowed security actions

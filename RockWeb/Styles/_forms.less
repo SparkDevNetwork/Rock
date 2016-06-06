@@ -64,9 +64,8 @@ a.aspNetDisabled {
     .form-group {
         margin-right: 0; // fighting with bootstrap, this may be a bad idea... 4/3/14 JME
         label {
-            float: left;
-            //width: 120px; commented out 4/24/14 to fix the checkbox at the top of the new family control
-            padding-right: 12px;
+            //float: left; // commented out in adding horiztonal support to controls JME 5/9/2016
+            //padding-right: 12px; // commented out in adding horiztonal support to controls JME 5/9/2016
         }
 
         .form-control-group,
@@ -76,12 +75,70 @@ a.aspNetDisabled {
     }
 }
 
+.form-horizontal {
+    &[class*="label-"] {
+        .form-group {
+            label {
+                position: relative;
+                min-height: 1px;
+                padding-left: 15px;
+                padding-right: 15px;
+                
+                @media (min-width: @screen-sm-min) {
+                    text-align: right;
+                    margin-bottom: 0;
+                    padding-top: 7px;
+                }
+                
+                .make-sm-column(2);
+            }
+
+            .control-wrapper {
+                .make-sm-column(10);
+            }
+        }
+    }
+
+    &.label-md {
+        .form-group {
+            label {
+                .make-sm-column(4);
+            }
+            .control-wrapper {
+                .make-sm-column(8);
+            }
+        }
+    }
+
+    &.label-lg {
+        .form-group {
+            label {
+                .make-sm-column(6);
+            }
+            .control-wrapper {
+                .make-sm-column(6);
+            }
+        }
+    }
+
+    &.label-xl {
+        .form-group {
+            label {
+                .make-sm-column(8);
+            }
+            .control-wrapper {
+                .make-sm-column(4);
+            }
+        }
+    }
+}
+
+
 .controls {
 
     .checkbox:first-child {
         margin-top: 0;
     }
-
 }
 
 
