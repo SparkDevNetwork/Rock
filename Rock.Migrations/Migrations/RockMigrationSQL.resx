@@ -340,4 +340,7 @@
   <data name="_201606061302147_PledgeAnalyticsChildAccounts" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>version 5.0\version 1.5.0\201606061302147_pledgeanalyticschildaccounts.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_201605180005401_ScheduledTxnSource_GetFamilyTitle" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>version 5.0\version 1.5.0\201605180005401_scheduledtxnsource_getfamilytitle.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>

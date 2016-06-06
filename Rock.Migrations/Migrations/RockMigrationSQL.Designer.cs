@@ -1650,6 +1650,22 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns either the FullName of the specified Person or a list of names of family members
+        ///        In the case of a group (family), it will return the names of the adults of the family. If there are no adults in the family, the names of the non-adults will be listed
+        ///        Example1 (specific person): Bob Smith 
+        ///        Example2 (family with kids): Bill and Sally Jones
+        ///        Example3 (different lastnames): Jim Jackson and Betty Sanders
+        ///        Example4 (just kids): J [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201605180005401_ScheduledTxnSource_GetFamilyTitle {
+            get {
+                return ResourceManager.GetString("_201605180005401_ScheduledTxnSource_GetFamilyTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to -- Rename a workflow setting attribute
         ///UPDATE [Attribute] SET
         ///    [Name] = &apos;Use Same Options&apos;,
