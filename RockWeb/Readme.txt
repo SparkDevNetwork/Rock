@@ -80,6 +80,7 @@ FINACIAL
 + Updated Giving Analytics block to hide the 'Is First Gift' and 'First Gift' columns when viewing first time givers.
 + Updated Giving Analytics block so that when creating a merge document from list of people, the documents are created correctly (with data).
 + Added Last Gift dates to Giving Analytics.
++ Updated Pledge Analytics block to include any child accounts when calculating contributions made to an account.
 
 GROUPS
 + Added option to Group Tree so show child group counts or member counts.

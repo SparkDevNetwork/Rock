@@ -1691,5 +1691,30 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201605311330117_GivingAnalyticsLastGift", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spFinance_PledgeAnalyticsQuery]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spFinance_PledgeAnalyticsQuery]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns data used by the pledge analytics block
+        ///	&lt;/summary&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///CREATE PROCEDURE [dbo].[spFinance_PledgeAnalyticsQuery]
+        ///	  @AccountId int
+        ///	, @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @MinAmountPledged decimal(18,2) = NULL
+        ///	, @MaxAmountP [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201606061302147_PledgeAnalyticsChildAccounts {
+            get {
+                return ResourceManager.GetString("_201606061302147_PledgeAnalyticsChildAccounts", resourceCulture);
+            }
+        }
     }
 }
