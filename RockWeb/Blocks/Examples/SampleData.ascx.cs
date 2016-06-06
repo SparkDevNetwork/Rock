@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -51,10 +51,10 @@ namespace RockWeb.Blocks.Examples
     [Category( "Examples" )]
     [Description( "Loads the Rock Solid Church sample data into your Rock system." )]
 
-    [TextField( "XML Document URL", "The URL for the input sample data XML document.", false, "http://storage.rockrms.com/sampledata/sampledata.xml", "", 1 )]
+    [TextField( "XML Document URL", @"The URL for the input sample data XML document. You can also use a local Windows file path (e.g. C:\Rock\Documentation\sampledata_1_5_0.xml) if you want to test locally with your own fake data.  The file format is loosly defined on the <a target='blank' href='https://github.com/SparkDevNetwork/Rock/wiki/z.-Rock-Solid-Demo-Church-Specification-(sample-data)'>Rock Solid Demo Church Specification</a> wiki.", false, "http://storage.rockrms.com/sampledata/sampledata.xml", "", 1 )]
     [BooleanField( "Fabricate Attendance", "If true, then fake attendance data will be fabricated (if the right parameters are in the xml)", true, "", 2 )]
     [BooleanField( "Enable Stopwatch", "If true, a stopwatch will be used to time each of the major operations.", false, "", 3 )]
-    [BooleanField( "Enable Giving", "If true, the giving data will not be loaded.", true, "", 4 )]
+    [BooleanField( "Enable Giving", "If true, the giving data will be loaded otherwise it will be skipped.", true, "", 4 )]
     public partial class SampleData : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -2633,6 +2633,9 @@ namespace RockWeb.Blocks.Examples
                 if ( person == null )
                 {
                     person = new Person();
+                    person.CreatedByPersonAliasId = CurrentPersonAliasId;
+                    person.CreatedDateTime = RockDateTime.Now;
+                    
                     person.Guid = guid;
                     person.FirstName = personElem.Attribute( "firstName" ).Value.Trim();
                     if ( personElem.Attribute( "suffix") != null )

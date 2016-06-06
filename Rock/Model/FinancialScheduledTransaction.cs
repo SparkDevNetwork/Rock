@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -51,6 +51,16 @@ namespace Rock.Model
         [DataMember]
         public int AuthorizedPersonAliasId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the source type value identifier.
+        /// </summary>
+        /// <value>
+        /// The source type value identifier.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE )]
+        public int? SourceTypeValueId { get; set; }
+        
         /// <summary>
         /// Gets or sets the DefinedValueId of the transaction frequency <see cref="Rock.Model.DefinedValue"/> that represents the frequency that this 
         /// transaction will occur.
@@ -198,6 +208,15 @@ namespace Rock.Model
         public virtual PersonAlias AuthorizedPersonAlias { get; set; }
 
         /// <summary>
+        /// Gets or sets the source type <see cref="Rock.Model.DefinedValue"/> indicating where the transaction originated from; the source of the transaction.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.DefinedValue"/> indicating where the transaction originated from; the source of the transaction.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue SourceTypeValue { get; set; }
+
+        /// <summary>
         /// Gets or sets the gateway.
         /// </summary>
         /// <value>
@@ -224,6 +243,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual DefinedValue TransactionFrequencyValue { get; set; }
+
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.FinancialScheduledTransactionDetail">transaction details</see> for this scheduled transaction.
@@ -286,6 +306,7 @@ namespace Rock.Model
         public FinancialScheduledTransactionConfiguration()
         {
             this.HasRequired( t => t.AuthorizedPersonAlias ).WithMany().HasForeignKey( t => t.AuthorizedPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.SourceTypeValue ).WithMany().HasForeignKey( t => t.SourceTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.FinancialGateway ).WithMany().HasForeignKey( t => t.FinancialGatewayId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.FinancialPaymentDetail ).WithMany().HasForeignKey( t => t.FinancialPaymentDetailId ).WillCascadeOnDelete( false );
             this.HasRequired( t => t.TransactionFrequencyValue ).WithMany().HasForeignKey( t => t.TransactionFrequencyValueId ).WillCascadeOnDelete( false );

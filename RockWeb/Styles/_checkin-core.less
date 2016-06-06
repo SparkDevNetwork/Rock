@@ -89,6 +89,12 @@ body {
 // 4. Components
 // -------------------------
 
+// main body
+.body-content{
+    height: 100vh;
+    position: relative;
+}
+
 // checkin header items
 
 .checkin-header
@@ -152,6 +158,10 @@ body {
   bottom: 0;
   margin-bottom: 12px;
   margin-top: 6px;
+  right: 0;
+  left: 0;
+  padding-left: 15px;
+  padding-right: 15px;
 }
 
 .checkin-actions {
@@ -245,6 +255,23 @@ body {
     background-color: transparent;
 }
 
+// round photos
+.photo-round {
+    background-size: cover;
+    background-repeat: no-repeat;
+
+    &.photo-round-md {
+        height: 70px;
+        width: 70px;
+        border-radius: 50%;
+    }
+}
+
+// dim no photo images
+img[src*="no-photo"] {
+    opacity: .4;
+}
+
 // 5. Specific Page Styles
 // -------------------------
 
@@ -329,6 +356,11 @@ input.namesearch{
   @media @md {
     padding-left: 2em;
   }
+}
+
+// family select - select person
+.family-personselect {
+    padding-top: 20px;
 }
 
 

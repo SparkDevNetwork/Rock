@@ -225,6 +225,18 @@
     <Compile Include="Migrations\201605042128481_OnlineContributionStatementPages.Designer.cs">
       <DependentUpon>201605042128481_OnlineContributionStatementPages.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201605180005401_ScheduledTxnSource.cs" />
+    <Compile Include="Migrations\201605180005401_ScheduledTxnSource.Designer.cs">
+      <DependentUpon>201605180005401_ScheduledTxnSource.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201605232234462_FamilyCheckinType.cs" />
+    <Compile Include="Migrations\201605232234462_FamilyCheckinType.Designer.cs">
+      <DependentUpon>201605232234462_FamilyCheckinType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201605261851378_CampusContextAlignment.cs" />
+    <Compile Include="Migrations\201605261851378_CampusContextAlignment.Designer.cs">
+      <DependentUpon>201605261851378_CampusContextAlignment.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.cs" />
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.Designer.cs">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
@@ -2236,6 +2248,15 @@
     <EmbeddedResource Include="Migrations\201605042128481_OnlineContributionStatementPages.resx">
       <DependentUpon>201605042128481_OnlineContributionStatementPages.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201605180005401_ScheduledTxnSource.resx">
+      <DependentUpon>201605180005401_ScheduledTxnSource.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201605232234462_FamilyCheckinType.resx">
+      <DependentUpon>201605232234462_FamilyCheckinType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201605261851378_CampusContextAlignment.resx">
+      <DependentUpon>201605261851378_CampusContextAlignment.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.resx">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
     </EmbeddedResource>
@@ -3642,6 +3663,7 @@
   <ItemGroup>
     <Content Include="Migrations\201604281205403_AttendanceAnalyticsGroupTypes_AttendeeFirstDates.sql" />
     <Content Include="Migrations\201604281205403_AttendanceAnalyticsGroupTypes_GroupTypeAttendance.sql" />
+    <Content Include="Migrations\201605180005401_ScheduledTxnSource_ContributionStatementQuery.sql" />
     <Content Include="Migrations\201605022007364_AttendanceBadgeSpUpdates_spCheckin_BadgeAttendance.sql" />
     <Content Include="Migrations\201605022007364_AttendanceBadgeSpUpdates_spCheckin_WeeksAttendedInDuration.sql" />
     <Content Include="Migrations\201605021826400_FamilyAnalyticsUpdates_spCrm_spCrm_FamilyAnalyticsUpdateVisitDates.sql" />
@@ -3668,6 +3690,7 @@
     <Content Include="Migrations\201603241157527_UpdateIndexes.sql" />
     <Content Include="Migrations\201604251529438_UpdateLegacyLava.sql" />
     <Content Include="Migrations\201604251529438_CheckinEnhancement.sql" />
+    <Content Include="Migrations\201605232234462_FamilyCheckinType.sql" />
     <Content Include="Migrations\Version 4.0\Version 1.4.0\201506051749054_AddSampleMergeDocs.sql" />
     <Content Include="Migrations\Version 4.0\Version 1.4.0\201506112030400_PersonDaysUntilBirthday.sql" />
     <Content Include="Migrations\Version 4.0\Version 1.4.0\201506281615197_GivingAnalyticsEmail_1.sql" />

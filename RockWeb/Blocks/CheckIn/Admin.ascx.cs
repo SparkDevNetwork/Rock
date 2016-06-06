@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -37,10 +37,10 @@ namespace RockWeb.Blocks.CheckIn
     [DisplayName( "Administration" )]
     [Category( "Check-in" )]
     [Description( "Check-in Administration block" )]
-    [BooleanField( "Allow Manual Setup", "If enabled, the block will allow the kiosk to be setup manually if it was not set via other means.", true )]
-    [BooleanField( "Enable Location Sharing", "If enabled, the block will attempt to determine the kiosk's location via location sharing geocode.", false, "Geo Location", 0 )]
-    [IntegerField( "Time to Cache Kiosk GeoLocation", "Time in minutes to cache the coordinates of the kiosk. A value of zero (0) means cache forever. Default 20 minutes.", false, 20, "Geo Location", 1 )]
-    [BooleanField( "Enable Kiosk Match By Name", "Enable a kiosk match by computer name by doing reverseIP lookup to get computer name based on IP address", false, "", 2, "EnableReverseLookup" )]
+    [BooleanField( "Allow Manual Setup", "If enabled, the block will allow the kiosk to be setup manually if it was not set via other means.", true, "", 5 )]
+    [BooleanField( "Enable Location Sharing", "If enabled, the block will attempt to determine the kiosk's location via location sharing geocode.", false, "Geo Location", 6 )]
+    [IntegerField( "Time to Cache Kiosk GeoLocation", "Time in minutes to cache the coordinates of the kiosk. A value of zero (0) means cache forever. Default 20 minutes.", false, 20, "Geo Location", 7 )]
+    [BooleanField( "Enable Kiosk Match By Name", "Enable a kiosk match by computer name by doing reverseIP lookup to get computer name based on IP address", false, "", 8, "EnableReverseLookup" )]
     public partial class Admin : CheckInBlock
     {
         protected override void OnLoad( EventArgs e )
@@ -55,7 +55,7 @@ namespace RockWeb.Blocks.CheckIn
                 bool themeRedirect = PageParameter( "ThemeRedirect" ).AsBoolean( false );
 
                 CurrentKioskId = PageParameter( "KioskId" ).AsIntegerOrNull();
-                CurrentCheckinTypeId = PageParameter( "CheckinTypeId" ).AsIntegerOrNull();
+                CurrentCheckinTypeId = PageParameter( "CheckinConfigId" ).AsIntegerOrNull();
                 CurrentGroupTypeIds = ( PageParameter( "GroupTypeIds" ) ?? "" )
                     .Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries )
                     .ToList()
@@ -549,6 +549,14 @@ namespace RockWeb.Blocks.CheckIn
                     {
                         ddlCheckinType.SetValue( CurrentCheckinTypeId );
                     }
+                    else
+                    {
+                        var groupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_WEEKLY_SERVICE_CHECKIN_AREA.AsGuid() );
+                        if ( groupType != null  )
+                        {
+                            ddlCheckinType.SetValue( groupType.Id );
+                        }
+                    }
                 }
             }
         }
@@ -734,7 +742,7 @@ namespace RockWeb.Blocks.CheckIn
             pageRef.Parameters = new Dictionary<string, string>();
             pageRef.Parameters.Add( "theme", theme );
             pageRef.Parameters.Add( "KioskId", ddlKiosk.SelectedValue );
-            pageRef.Parameters.Add( "CheckinTypeId", ddlCheckinType.SelectedValue );
+            pageRef.Parameters.Add( "CheckinConfigId", ddlCheckinType.SelectedValue );
 
             var groupTypeIds = new List<string>();
             foreach ( ListItem item in cblPrimaryGroupTypes.Items )
