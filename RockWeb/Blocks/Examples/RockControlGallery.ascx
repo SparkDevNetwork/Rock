@@ -447,11 +447,6 @@
                         <Rock:MergeFieldPicker ID="mfpExample" runat="server" Label="Rock:MergeFieldPicker" />
                     </div>
 
-                    <a id="MetricEntityPicker"></a>
-                    <div runat="server" class="r-example">
-                        <Rock:MetricEntityPicker ID="mepExample" runat="server" Label="Rock:MetricEntityPicker" />
-                    </div>
-
                     <h2 runat="server">BinaryFilePicker, BinaryFileTypePicker</h2>
 
                     <a id="BinaryFileTypePicker"></a>

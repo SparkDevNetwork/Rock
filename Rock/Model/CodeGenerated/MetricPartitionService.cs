@@ -7,11 +7,11 @@
 // <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Rock Community License (the "License");
+// Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.rockrms.com/license
+// http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// MetricValue Service class
+    /// MetricPartition Service class
     /// </summary>
-    public partial class MetricValueService : Service<MetricValue>
+    public partial class MetricPartitionService : Service<MetricPartition>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="MetricValueService"/> class
+        /// Initializes a new instance of the <see cref="MetricPartitionService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public MetricValueService(RockContext context) : base(context)
+        public MetricPartitionService(RockContext context) : base(context)
         {
         }
 
@@ -48,15 +48,9 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( MetricValue item, out string errorMessage )
+        public bool CanDelete( MetricPartition item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<MetricValuePartition>( Context ).Queryable().Any( a => a.MetricValueId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", MetricValue.FriendlyTypeName, MetricValuePartition.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
@@ -64,44 +58,45 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class MetricValueExtensionMethods
+    public static partial class MetricPartitionExtensionMethods
     {
         /// <summary>
-        /// Clones this MetricValue object to a new MetricValue object
+        /// Clones this MetricPartition object to a new MetricPartition object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static MetricValue Clone( this MetricValue source, bool deepCopy )
+        public static MetricPartition Clone( this MetricPartition source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as MetricValue;
+                return source.Clone() as MetricPartition;
             }
             else
             {
-                var target = new MetricValue();
+                var target = new MetricPartition();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another MetricValue object to this MetricValue object
+        /// Copies the properties from another MetricPartition object to this MetricPartition object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this MetricValue target, MetricValue source )
+        public static void CopyPropertiesFrom( this MetricPartition target, MetricPartition source )
         {
             target.Id = source.Id;
+            target.EntityTypeId = source.EntityTypeId;
+            target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
+            target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.IsRequired = source.IsRequired;
+            target.Label = source.Label;
             target.MetricId = source.MetricId;
-            target.MetricValueDateTime = source.MetricValueDateTime;
-            target.MetricValueType = source.MetricValueType;
-            target.Note = source.Note;
-            target.XValue = source.XValue;
-            target.YValue = source.YValue;
+            target.Order = source.Order;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
