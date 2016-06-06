@@ -59,6 +59,14 @@
     <Compile Include="HotFixMigrations\005_ValueAsNumeric.cs" />
     <Compile Include="HotFixMigrations\006_StatementProcs.cs" />
     <Compile Include="HotFixMigrations\004_FixBaptismBadge.cs" />
+    <Compile Include="Migrations\Version 5.0\Version 1.5.0\201606061308109_ClearPreviousMigrations5.cs" />
+    <Compile Include="Migrations\Version 5.0\Version 1.5.0\201606061308109_ClearPreviousMigrations5.Designer.cs">
+      <DependentUpon>201606061308109_ClearPreviousMigrations5.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 5.0\Version 1.5.0\201606061302147_PledgeAnalyticsChildAccounts.cs" />
+    <Compile Include="Migrations\Version 5.0\Version 1.5.0\201606061302147_PledgeAnalyticsChildAccounts.Designer.cs">
+      <DependentUpon>201606061302147_PledgeAnalyticsChildAccounts.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 5.0\Version 1.5.0\201511231524340_GroupPlacement.cs" />
     <Compile Include="Migrations\Version 5.0\Version 1.5.0\201511231524340_GroupPlacement.Designer.cs">
       <DependentUpon>201511231524340_GroupPlacement.cs</DependentUpon>
@@ -238,10 +246,6 @@
     <Compile Include="Migrations\Version 5.0\Version 1.5.0\201605311330117_GivingAnalyticsLastGift.cs" />
     <Compile Include="Migrations\Version 5.0\Version 1.5.0\201605311330117_GivingAnalyticsLastGift.Designer.cs">
       <DependentUpon>201605311330117_GivingAnalyticsLastGift.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\Version 5.0\Version 1.5.0\201606041830258_ClearPreviousMigrations5.cs" />
-    <Compile Include="Migrations\Version 5.0\Version 1.5.0\201606041830258_ClearPreviousMigrations5.Designer.cs">
-      <DependentUpon>201606041830258_ClearPreviousMigrations5.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.cs" />
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.Designer.cs">
@@ -2131,6 +2135,12 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\Version 5.0\Version 1.5.0\201606061308109_ClearPreviousMigrations5.resx">
+      <DependentUpon>201606061308109_ClearPreviousMigrations5.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 5.0\Version 1.5.0\201606061302147_PledgeAnalyticsChildAccounts.resx">
+      <DependentUpon>201606061302147_PledgeAnalyticsChildAccounts.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 5.0\Version 1.5.0\201511231524340_GroupPlacement.resx">
       <DependentUpon>201511231524340_GroupPlacement.cs</DependentUpon>
     </EmbeddedResource>
@@ -2265,9 +2275,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 5.0\Version 1.5.0\201605311330117_GivingAnalyticsLastGift.resx">
       <DependentUpon>201605311330117_GivingAnalyticsLastGift.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\Version 5.0\Version 1.5.0\201606041830258_ClearPreviousMigrations5.resx">
-      <DependentUpon>201606041830258_ClearPreviousMigrations5.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.resx">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
@@ -3702,6 +3709,7 @@
     <Content Include="Migrations\Version 5.0\Version 1.5.0\201603241157527_UpdateIndexes.sql" />
     <Content Include="Migrations\Version 5.0\Version 1.5.0\201604251529438_UpdateLegacyLava.sql" />
     <Content Include="Migrations\Version 5.0\Version 1.5.0\201604251529438_CheckinEnhancement.sql" />
+    <Content Include="Migrations\Version 5.0\Version 1.5.0\201606061302147_PledgeAnalyticsChildAccounts.sql" />
     <Content Include="Migrations\Version 5.0\Version 1.5.0\201605311330117_GivingAnalyticsLastGift.sql" />
     <Content Include="Migrations\Version 5.0\Version 1.5.0\201605232234462_FamilyCheckinType.sql" />
     <Content Include="Migrations\Version 4.0\Version 1.4.0\201506051749054_AddSampleMergeDocs.sql" />
