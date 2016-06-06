@@ -34,11 +34,11 @@ using Rock.Attribute;
 namespace RockWeb.Plugins.com_centralaz.Utility
 {
     /// <summary>
-    /// Allows you to pick a person, group, or workflow instance entity and test your lava.
+    /// Allows you to pick a person, group, workflow instance, or registration entity and test your lava.
     /// </summary>
     [DisplayName( "Lava Tester" )]
     [Category( "com_centralaz > Utility" )]
-    [Description( "Allows you to pick a person, group, or workflow instance entity to test your lava." )]
+    [Description( "Allows you to pick a person, group, workflow instance, or registration entity and test your lava." )]
     public partial class LavaTester : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -48,11 +48,15 @@ namespace RockWeb.Plugins.com_centralaz.Utility
         private readonly string _USER_PREF_KEY = "MyLavaTestText";
         private readonly string _USER_PREF_PERSON = "MyLavaTest:Person";
         private readonly string _USER_PREF_GROUP = "MyLavaTest:Group";
+        private readonly string _USER_PREF_REGISTRATION_INSTANCE = "MyLavaTest:RegistrationInstance";
+        private readonly string _USER_PREF_REGISTRATION = "MyLavaTest:Registration";
         private readonly string _USER_PREF_WORKFLOWTYPE = "MyLavaTest:WorkflowTYPE";
         private readonly string _USER_PREF_WORKFLOW = "MyLavaTest:Workflow";
         private readonly string _USER_PREF_EDITORHEIGHT = "MyLavaTestEditorHeight";
         private readonly string _EMPTY_SAVED_SLOT = "empty saved slot";
         private readonly string _TEXT_MUTED = "text-muted";
+
+        private readonly int MAX_SAVE_SLOTS = 10;
         #endregion
 
         #region Properties
@@ -94,6 +98,7 @@ namespace RockWeb.Plugins.com_centralaz.Utility
                 ceLava.MergeFields.Add( "Person^Rock.Model.Person|Selected \"Person\"" );
                 ceLava.MergeFields.Add( "Group^Rock.Model.Group|Selected \"Group\"" );
                 ceLava.MergeFields.Add( "Workflow^Rock.Model.Workflow|Selected \"Workflow\"" );
+                ceLava.MergeFields.Add( "Registration^Rock.Model.Registration|Selected \"Registration\"" );
 
                 ceLava.MergeFields.Add( "GlobalAttribute" );
                 ceLava.MergeFields.Add( "CurrentPerson^Rock.Model.Person|Current Person" );
@@ -208,14 +213,14 @@ namespace RockWeb.Plugins.com_centralaz.Utility
         private void BindData()
         {
             var savedLava = string.Empty;
-            for ( int i = 0; i < 5; i++ )
+            for ( int i = 0; i < MAX_SAVE_SLOTS; i++ )
             {
                 savedLava = GetUserPreference( string.Format( "{0}:{1}", _USER_PREF_KEY, i ) );
 
                 if ( string.IsNullOrWhiteSpace( savedLava ) )
                 {
                     AddCssClass( ddlSaveSlot.Items[i], _TEXT_MUTED );
-                    savedLava = _EMPTY_SAVED_SLOT;
+                    savedLava = string.Format( "{0} {1}", _EMPTY_SAVED_SLOT, i+1 );
                 }
                 else
                 {
@@ -245,6 +250,16 @@ namespace RockWeb.Plugins.com_centralaz.Utility
                 {
                     wfpWorkflowType.SetValue( workflowTypeId );
                     BindWorkflowsUsingWorkflowType( workflowTypeId, setUserPreference: false );
+                }
+
+                var registrationInstanceId = GetUserPreference( _USER_PREF_REGISTRATION_INSTANCE ).AsIntegerOrNull();
+                if ( registrationInstanceId != null )
+                {
+                    BindRegistrationInstances( rockContext, registrationInstanceId );
+                }
+                else
+                {
+                    BindRegistrationInstances( rockContext, -1 );
                 }
             }
         }
@@ -324,6 +339,28 @@ namespace RockWeb.Plugins.com_centralaz.Utility
                         }
                     }
 
+                    if ( ddlRegistrations != null && ddlRegistrations.Items.Count > 0 && ddlRegistrations.SelectedValueAsInt().HasValue )
+                    {
+                        if ( mergeFields.ContainsKey( "RegistrationInstance" ) )
+                        {
+                            mergeFields.Remove( "RegistrationInstance" );
+                        }
+
+                        if ( mergeFields.ContainsKey( "Registration" ) )
+                        {
+                            mergeFields.Remove( "RegistrationInstance" );
+                        }
+
+                        RegistrationService registrationService = new RegistrationService( rockContext );
+
+                        if ( ddlRegistrations.SelectedValueAsInt() != null )
+                        {
+                            var registration = registrationService.Get( ddlRegistrations.SelectedValueAsInt() ?? -1 );
+                            mergeFields.Add( "RegistrationInstance", registration.RegistrationInstance );
+                            mergeFields.Add( "Registration", registration );
+                        }
+                    }
+
                     ResolveLava();
                 }
             }
@@ -349,7 +386,7 @@ namespace RockWeb.Plugins.com_centralaz.Utility
             }
             else
             {
-                ddlWorkflows.SetValue( "" );
+                ddlWorkflows.SetValue( "-1" );
                 ddlWorkflows.SelectedIndex = -1;
                 ddlWorkflows.Visible = false;
                 ddlWorkflows.Items.Clear();
@@ -395,6 +432,101 @@ namespace RockWeb.Plugins.com_centralaz.Utility
         }
 
         /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlRegistrationInstances control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlRegistrationInstances_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            int? registrationInstanceId = ddlRegistrationInstances.SelectedValueAsInt();
+            if ( registrationInstanceId.HasValue && registrationInstanceId.Value != -1 )
+            {
+                SetUserPreference( _USER_PREF_REGISTRATION_INSTANCE, registrationInstanceId.Value.ToStringSafe() );
+                BindRegistrationsUsingRegistrationInstances( registrationInstanceId.Value );
+            }
+            else
+            {
+                ddlRegistrations.SetValue( "-1" );
+                ddlRegistrations.SelectedIndex = -1;
+                ddlRegistrations.Visible = false;
+                ddlRegistrations.Items.Clear();
+                SetUserPreference( _USER_PREF_REGISTRATION_INSTANCE, string.Empty );
+                SetUserPreference( _USER_PREF_REGISTRATION, string.Empty );
+                mergeFields.Remove( "RegistrationInstance" );
+                mergeFields.Remove( "Registration" );
+                ResolveLava();
+            }
+        }
+
+        /// <summary>
+        /// Binds the Registrations (people who registered) using the RegistrationInstances.
+        /// </summary>
+        /// <param name="rockContext">The RockContext.</param>
+        /// <param name="registrationInstanceId">The id of a RegistrationInstance.</param>
+        /// <param name="setUserPreference">Set to true if you want to remember the item in the users preferences</param>
+        private void BindRegistrationInstances( RockContext rockContext, int? registrationInstanceId )
+        {
+            RegistrationInstanceService registrationInstanceService = new RegistrationInstanceService( rockContext );
+
+            var registrationInstances = registrationInstanceService.Queryable().AsNoTracking().ToList();
+            ddlRegistrationInstances.DataSource = registrationInstances;
+            RegistrationInstance emptyRegistrationInstance = new RegistrationInstance { Id = -1, Name = "" };
+            registrationInstances.Insert( 0, emptyRegistrationInstance );
+            ddlRegistrationInstances.DataBind();
+
+            // Select the given registrationInstanceId if it still exists in the list
+            if ( ddlRegistrationInstances.Items.FindByValue( registrationInstanceId.ToStringSafe() ) != null )
+            {
+                ddlRegistrationInstances.SelectedValue = registrationInstanceId.ToStringSafe();
+            }
+
+            if ( registrationInstances.Count >= 1 )
+            {
+                BindRegistrationsUsingRegistrationInstances( registrationInstanceId );
+            }
+        }
+
+        /// <summary>
+        /// Binds the Registrations (people who registered) using the RegistrationInstances.
+        /// </summary>
+        private void BindRegistrationsUsingRegistrationInstances( int? registrationInstanceId )
+        {
+            if ( registrationInstanceId == -1 )
+            {
+                return;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                RegistrationService registrationService = new RegistrationService( rockContext );
+
+                var registrations = registrationService.Queryable().AsNoTracking().Where( r => r.RegistrationInstanceId == registrationInstanceId.Value ).ToList();
+                Registration emptyRegistration = new Registration { Id = -1, FirstName = "" };
+                registrations.Insert( 0, emptyRegistration );
+                ddlRegistrations.DataSource = registrations;
+                ddlRegistrations.Visible = true;
+                ddlRegistrations.DataBind();
+
+                if ( registrations.Count > 0 )
+                {
+                    var registrationId = GetUserPreference( _USER_PREF_REGISTRATION ).AsIntegerOrNull();
+                    if ( registrationId != null )
+                    {
+                        ddlRegistrations.SetValue( registrationId );
+                        var registration = registrations.Where( r => r.Id == registrationId ).FirstOrDefault();
+                        if ( registration != null )
+                        {
+                            mergeFields.AddOrReplace( "RegistrationInstance", registration.RegistrationInstance );
+                            mergeFields.AddOrReplace( "Registration", registration );
+                        }
+                    }
+
+                    ResolveLava();
+                }
+            }
+        }
+
+        /// <summary>
         /// Handles the SelectedIndexChanged event of the ddlWorkflows control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -405,6 +537,31 @@ namespace RockWeb.Plugins.com_centralaz.Utility
             WorkflowService workflowService = new WorkflowService( rockContext );
             mergeFields.Add( "Workflow", workflowService.Get( ddlWorkflows.SelectedValueAsInt() ?? -1 ) );
             SetUserPreference( _USER_PREF_WORKFLOW, ddlWorkflows.SelectedValue );
+
+            ResolveLava();
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlRegistrations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlRegistrations_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            RockContext rockContext = new RockContext();
+            RegistrationService registrationService = new RegistrationService( rockContext );
+            var registration = registrationService.Get( ddlRegistrations.SelectedValueAsInt() ?? -1 );
+            if ( registration != null )
+            {
+                mergeFields.AddOrReplace( "RegistrationInstance", registration.RegistrationInstance );
+                mergeFields.Add( "Registration", registration );
+            }
+            else
+            {
+                mergeFields.Remove( "Registration" );
+            }
+
+            SetUserPreference( _USER_PREF_REGISTRATION, ddlRegistrations.SelectedValue );
 
             ResolveLava();
         }

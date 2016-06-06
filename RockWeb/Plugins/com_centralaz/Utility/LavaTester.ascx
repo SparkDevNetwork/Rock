@@ -8,7 +8,7 @@
             <div class="panel-heading">
                 <h1 class="panel-title">Lava Tester <small><a href="http://rockrms.com/Lava" target="_blank">view Lava documentation</a></small></h1>
                 <div class="panel-labels">
-                    <Rock:RockCheckBox ID="cbEnableDebug" runat="server" Checked="false" Text="Enable Debug?" CssClass="pull-right" Help="If enabled, extra Lava debug information will be included at the bottom but it will slow down tremendously. You can also use the <a href='http://www.churchitnetwork.com/ModelMap'>ModelMap block</a> to see which properties exist on various entities."/>
+                    <Rock:RockCheckBox ID="cbEnableDebug" runat="server" Checked="false" Text="Enable Debug?" CssClass="pull-right" Help="If enabled, extra Lava debug information will be included at the bottom but it will slow down quite a bit. You can also use the <a href='http://www.churchitnetwork.com/ModelMap'>ModelMap block</a> to see which properties exist on various entities."/>
                 </div>
             </div>
             <div class="panel-body form-group">
@@ -34,6 +34,14 @@
                     </div>
                     <div class="row">
                         <div class="col-md-12">
+                            <div class="row">
+                                <div class="col-md-6"><Rock:DataDropDownList ID="ddlRegistrationInstances" runat="server" Label="Registration (instances)" Help="The item you choose will be set to a Lava object called 'RegistrationInstance'." SourceTypeName="Rock.Model.RegistrationInstance, Rock" Required="false" DataTextField="Name" DataValueField="Id" PropertyName="Name" Visible="true" AutoPostBack="true" OnSelectedIndexChanged="ddlRegistrationInstances_SelectedIndexChanged" /></div>
+                                <div class="col-md-6"><Rock:DataDropDownList ID="ddlRegistrations" runat="server" Label="Registration" Help="The item you choose will be set to a Lava object called 'Registration'." SourceTypeName="Rock.Model.Registration, Rock"  Required="false" DataTextField="FirstName" DataValueField="Id" PropertyName="FirstName" Visible="false" AutoPostBack="true" OnSelectedIndexChanged="ddlRegistrations_SelectedIndexChanged" /></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
                             <Rock:CodeEditor ID="ceLava" runat="server" Label="Lava" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" Placeholder="test" />
                         </div>
                     </div>
@@ -44,11 +52,16 @@
                         </div>
                         <div class="col-md-4">
                             <asp:DropDownList ID="ddlSaveSlot" runat="server" CssClass="form-control input-sm">
-                                <asp:ListItem Text="empty save slot" Value="0"></asp:ListItem>
-                                <asp:ListItem Text="empty save slot" Value="1"></asp:ListItem>
-                                <asp:ListItem Text="empty save slot" Value="2"></asp:ListItem>
-                                <asp:ListItem Text="empty save slot" Value="3"></asp:ListItem>
-                                <asp:ListItem Text="empty save slot" Value="4"></asp:ListItem>
+                                <asp:ListItem Text="empty save slot 1" Value="0"></asp:ListItem>
+                                <asp:ListItem Text="empty save slot 2" Value="1"></asp:ListItem>
+                                <asp:ListItem Text="empty save slot 3" Value="2"></asp:ListItem>
+                                <asp:ListItem Text="empty save slot 4" Value="3"></asp:ListItem>
+                                <asp:ListItem Text="empty save slot 5" Value="4"></asp:ListItem>
+                                <asp:ListItem Text="empty save slot 6" Value="5"></asp:ListItem>
+                                <asp:ListItem Text="empty save slot 7" Value="6"></asp:ListItem>
+                                <asp:ListItem Text="empty save slot 8" Value="7"></asp:ListItem>
+                                <asp:ListItem Text="empty save slot 9" Value="8"></asp:ListItem>
+                                <asp:ListItem Text="empty save slot 10" Value="9"></asp:ListItem>
                             </asp:DropDownList>
                         </div>
                         <div class="col-md-1">
