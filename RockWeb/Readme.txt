@@ -205,6 +205,7 @@ MISC
 + Updated the address verification process to preserve first service's standardization results even if second service is used for geocoding.
 + Updated the address verification job to correctly retry previously failed verifications and to differentiate between an error calling a service and a non-match returned by the service.
 + Updated Smarty Streets address verification to save the barcode value.
++ Update cleanup job so that it does not delete unconfirmed logins.
 + Updated Campus, Campuses, and Connection Opportunity attributes/fields to exclude inactive items, and added optional config option to include inactive items (Fixes #1413, Fixes #1540).
 + Added new Phone Number field type.
 + Added new Address Field Type.
