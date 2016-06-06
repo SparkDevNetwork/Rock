@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -194,7 +194,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            Location location;
+            Location location = null;
 
             var rockContext = new RockContext();
             LocationService locationService = new LocationService( rockContext );
@@ -203,16 +203,19 @@ namespace RockWeb.Blocks.Core
 
             int locationId = int.Parse( hfLocationId.Value );
 
-            if ( locationId == 0 )
-            {
-                location = new Location();
-                location.Name = string.Empty;
-            }
-            else
+            if ( locationId != 0 )
             {
                 location = locationService.Get( locationId );
                 FlushCampus( locationId );
             }
+
+            if ( location == null )
+            { 
+                location = new Location();
+                location.Name = string.Empty;
+            }
+
+            string previousName = location.Name;
 
             int? orphanedImageId = null;
             if ( location.ImageId != imgImage.BinaryFileId )
@@ -291,6 +294,13 @@ namespace RockWeb.Blocks.Core
 
             } );
 
+            // If this is a names location (or was previouisly)
+            if ( !string.IsNullOrWhiteSpace( location.Name ) || ( previousName ?? string.Empty ) != (location.Name ?? string.Empty ) )
+            {
+                // flush the checkin config
+                Rock.CheckIn.KioskDevice.FlushAll();
+            }
+
             if ( _personId.HasValue )
             {
                 NavigateToParentPage( new Dictionary<string, string> { { "PersonId", _personId.Value.ToString() } } );
@@ -368,6 +378,8 @@ namespace RockWeb.Blocks.Core
             acAddress.GetValues( location );
 
             service.Verify( location, true );
+
+            rockContext.SaveChanges();
 
             acAddress.SetValues( location );
             geopPoint.SetValue( location.GeoPoint );

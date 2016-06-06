@@ -22,7 +22,7 @@
                             <div class="alert alert-warning">
                                 <strong>Note</strong><br />
                                 <p>
-                                    The installation of many plugins will cause Rock to restart. You may consider
+                                    The installation of plugins may cause Rock to restart. You may want to consider
                                     installing during off-peak times.
                                 </p>
                             </div>

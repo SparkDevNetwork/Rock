@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -1682,6 +1682,12 @@ namespace RockWeb.Blocks.Event
 
             }
 
+            // if this registration was marked as temporary (started from another page, then specified in the url), set IsTemporary to False now that we are done
+            if ( registration.IsTemporary )
+            {
+                registration.IsTemporary = false;
+            }
+
             // Save the registration ( so we can get an id )
             rockContext.SaveChanges();
             RegistrationState.RegistrationId = registration.Id;
@@ -1914,6 +1920,17 @@ namespace RockWeb.Blocks.Event
                                 string newValue = fieldValue.ToString();
                                 person.SetAttributeValue( attribute.Key, fieldValue.ToString() );
 
+                                // DateTime values must be stored in ISO8601 format as http://www.rockrms.com/Rock/Developer/BookContent/16/16#datetimeformatting
+                                if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE.AsGuid() ) ||
+                                    attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE_TIME.AsGuid() ) )
+                                {
+                                    DateTime aDateTime;
+                                    if ( DateTime.TryParse( newValue, out aDateTime ) )
+                                    {
+                                        newValue = aDateTime.ToString( "o" );
+                                    }
+                                }
+
                                 if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
                                 {
                                     string formattedOriginalValue = string.Empty;
@@ -2039,6 +2056,17 @@ namespace RockWeb.Blocks.Event
                                 string originalValue = registrant.GetAttributeValue( attribute.Key );
                                 string newValue = fieldValue.ToString();
                                 registrant.SetAttributeValue( attribute.Key, fieldValue.ToString() );
+
+                                // DateTime values must be stored in ISO8601 format as http://www.rockrms.com/Rock/Developer/BookContent/16/16#datetimeformatting
+                                if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE.AsGuid() ) ||
+                                    attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE_TIME.AsGuid() ) )
+                                {
+                                    DateTime aDateTime;
+                                    if ( DateTime.TryParse( fieldValue.ToString(), out aDateTime ) )
+                                    {
+                                        newValue = aDateTime.ToString( "o" );
+                                    }
+                                }
 
                                 if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
                                 {
@@ -4289,8 +4317,11 @@ namespace RockWeb.Blocks.Event
                     nbAmountPaid.Text = ( RegistrationState.PaymentAmount ?? 0.0m ).ToString( "N2" );
 
                     // If a previous payment was made, or partial payment is allowed, show the amount remaining after selected payment amount
-                    lRemainingDue.Visible = allowPartialPayment || RegistrationState.PreviousPaymentTotal != 0.0m;
+                    lRemainingDue.Visible = allowPartialPayment;
                     lRemainingDue.Text = ( RegistrationState.DiscountedCost - ( RegistrationState.PreviousPaymentTotal + ( RegistrationState.PaymentAmount ?? 0.0m ) ) ).FormatAsCurrency();
+
+                    lAmountDue.Visible = !allowPartialPayment;
+                    lAmountDue.Text = ( RegistrationState.PaymentAmount ?? 0.0m ).FormatAsCurrency();
 
                     // Set payment options based on gateway settings
                     if ( balanceDue > 0 && RegistrationTemplate.FinancialGateway != null )

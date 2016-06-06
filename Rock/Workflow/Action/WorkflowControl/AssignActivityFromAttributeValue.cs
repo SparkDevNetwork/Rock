@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -33,7 +33,7 @@ namespace Rock.Workflow.Action
     [ActionCategory( "Workflow Control" )]
     [Description( "Assigns Activity to a Person or Group attribute value." )]
     [Export(typeof(ActionComponent))]
-    [ExportMetadata( "ComponentName", "Activity Assign from Attribute Value." )]
+    [ExportMetadata( "ComponentName", "Activity Assign from Attribute Value" )]
 
     [WorkflowAttribute("Attribute", "The person or group attribute value to assign this activity to.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType" } )]

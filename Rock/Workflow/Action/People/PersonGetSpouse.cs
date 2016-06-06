@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -38,7 +38,7 @@ namespace Rock.Workflow.Action
     [ExportMetadata( "ComponentName", "Person Get Spouse" )]
 
     [WorkflowAttribute("Person", "Workflow attribute that contains the person to add the note to.", true, "", "", 0, null, new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [WorkflowAttribute( "Spouse Attribuute", "The workflow attribute to assign the spouse to. Spouse is deemed to be the other adult on the family.", true, "", "", 1, null, new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [WorkflowAttribute( "Spouse Attribute", "The workflow attribute to assign the spouse to. Spouse is deemed to be the other adult on the family.", true, "", "", 1, null, new string[] { "Rock.Field.Types.PersonFieldType" } )]
     public class PersonGetSpouse : ActionComponent
     {
         /// <summary>
@@ -62,7 +62,7 @@ namespace Rock.Workflow.Action
             var person = GetPersonAliasFromActionAttribute("Person", rockContext, action, errorMessages);
             if (person != null)
             {
-                string spouseAttributeValue = GetAttributeValue( action, "SpouseAttribuute" );
+                string spouseAttributeValue = GetAttributeValue( action, "SpouseAttribute" );
                 Guid? spouseGuid = spouseAttributeValue.AsGuidOrNull();
                 if ( spouseGuid.HasValue )
                 {
