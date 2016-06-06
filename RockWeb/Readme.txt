@@ -4,7 +4,7 @@ API
 + Added two new REST Endpoints: ~/api/Groups/ByLocation and ~api/Groups/ByLatLong.
 + Added file upload REST endpoint for BinaryFilesController.
 
-CALANDAR
+CALENDAR
 + Added ability to group event occurrences in the calendar by event.
 + Added ability to follow an Event Item.
 + Updated core Calendar.lava and EventItemList.lava to display the date range of an Event instead of just the first date/time if the event occurrence spans multiple days.
@@ -50,7 +50,7 @@ CMS
 + Updated FontAwesome to v 4.6.1
 + Upgraded google analytics tracker to latest.
 
-CONECTION OPPORTUNITIES
+CONNECTION OPPORTUNITIES
 + Added ability to add comment to a new Connection Request.
 + Added 'Days Until Request Idle' property to ConnectionTypes so that each one can have its own idle time.
 + Added feature that will scroll the screen to the connections grid when a connection type is selected and the grid is not visible.
@@ -65,7 +65,7 @@ CONECTION OPPORTUNITIES
 CONTENT CHANNELS
 + Fixed Content Channel Item List to show attribute columns when attribute is associated with the channel (vs just the channel type).
 
-FINACIAL
+FINANCIAL
 + Updated Rock to support using a three-step payment gateway (NMI) for registration and transaction entry.
 + Added the ability to filter transactions by campus.
 + Added option to transaction list on person profile to allow reassigning transactions to another person.
@@ -143,7 +143,7 @@ REGISTRATION
 + Added the ability to follow a Registration Instance.
 + Fixed an issue preventing Email, Campus and Fee columns from not exporting into Excel.
 + Added Group Placement functionality to registration instance that allows for easily adding registrants to a set of child groups.
-+ Added checkbox to registration entry summary that allows a logged-in user to specify whether the email on their account should be updated with the confirmation email adress that they enter when registering.
++ Added checkbox to registration entry summary that allows a logged-in user to specify whether the email on their account should be updated with the confirmation email address that they enter when registering.
 
 REPORTING
 + Added new dataview filters and report fields to help create dataviews and reports off of the workflow table.
@@ -151,7 +151,7 @@ REPORTING
 + Added additional 'Date Added' criteria to the In Group(s) Person Data Filter.
 + Added 'Not In Other Dataview' filter.
 + Fixed date filters to be inclusive of the entire day of the upper and lower limit.
-+ Added Report Field 'LastLogin.
++ Added Report Field 'LastLogin'.
 + Added Report Field 'Parent's Email Address'.
 + Added Parent's Email data select.
 + Updated Total Giving Amount report select, Giving Amount datafilter, and First Contribution datafilter to use a Sliding Date Range picker instead of a regular date picker.
