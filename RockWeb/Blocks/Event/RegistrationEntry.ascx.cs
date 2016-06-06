@@ -1597,7 +1597,8 @@ namespace RockWeb.Blocks.Event
 
                     // If email that logged in user used is different than their stored email address, update their stored value
                     if ( !string.IsNullOrWhiteSpace( registration.ConfirmationEmail ) &&
-                        !registration.ConfirmationEmail.Trim().Equals( CurrentPerson.Email.Trim(), StringComparison.OrdinalIgnoreCase ) )
+                        !registration.ConfirmationEmail.Trim().Equals( CurrentPerson.Email.Trim(), StringComparison.OrdinalIgnoreCase ) &&
+                        ( !cbUpdateEmail.Visible || cbUpdateEmail.Checked ) )
                     {
                         var person = personService.Get( CurrentPerson.Id );
                         if ( person != null )
@@ -4120,6 +4121,7 @@ namespace RockWeb.Blocks.Event
 
         private void CreateSummaryControls( bool setValues )
         {
+            lRegistrationTerm.Text = RegistrationTerm;
             lDiscountCodeLabel.Text = DiscountCodeTerm;
 
             if ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask )
@@ -4176,6 +4178,8 @@ namespace RockWeb.Blocks.Event
                         tbConfirmationEmail.Text = string.Empty;
                     }
                 }
+
+                cbUpdateEmail.Visible = CurrentPerson != null && !string.IsNullOrWhiteSpace( CurrentPerson.Email );
 
                 rblRegistrarFamilyOptions.SetValue( RegistrationState.FamilyGuid.ToString() );
 

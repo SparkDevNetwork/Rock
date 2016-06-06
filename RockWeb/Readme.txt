@@ -142,6 +142,7 @@ REGISTRATION
 + Added the ability to follow a Registration Instance.
 + Fixed an issue preventing Email, Campus and Fee columns from not exporting into Excel.
 + Added Group Placement functionality to registration instance that allows for easily adding registrants to a set of child groups.
++ Added checkbox to registration entry summary that allows a logged-in user to specify whether the email on their account should be updated with the confirmation email adress that they enter when registering.
 
 REPORTING
 + Added new dataview filters and report fields to help create dataviews and reports off of the workflow table.
