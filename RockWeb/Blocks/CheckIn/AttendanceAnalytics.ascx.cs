@@ -428,14 +428,10 @@ function(item) {
                 var singleDateTime = chartData.GroupBy( a => a.DateTimeStamp ).Count() == 1;
                 if ( singleDateTime )
                 {
-                    bcAttendance.Visible = true;
-                    lcAttendance.Visible = false;
                     bcAttendance.ChartData = chartDataJson;
                 }
                 else
                 {
-                    bcAttendance.Visible = false;
-                    lcAttendance.Visible = true;
                     lcAttendance.ChartData = chartDataJson;
                 }
                 bcAttendance.Visible = singleDateTime;
@@ -882,7 +878,7 @@ function(item) {
             var allAttendeeDates = new Dictionary<int, AttendeeDates>();
             var allResults = new List<AttendeeResult>();
 
-            // Collection of async queries to run before assembling date
+            // Collection of async queries to run before assembling data
             var qryTasks = new List<Task>();
 
             DataTable dtAttendeeLastAttendance = null;

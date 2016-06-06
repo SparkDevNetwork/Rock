@@ -164,6 +164,7 @@ namespace RockWeb.Blocks.Cms
             // are assumed to be intentional.
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml( newContent );
+
             if ( doc.ParseErrors.Count() > 0 && !nbInvalidHtml.Visible )
             {
                 var reasons = doc.ParseErrors.Select( r => r.Reason ).ToList();
