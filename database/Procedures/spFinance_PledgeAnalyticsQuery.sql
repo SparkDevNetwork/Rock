@@ -29,7 +29,16 @@ BEGIN
 	DECLARE @Sql varchar(max)
 
 	SET @Sql = '
-	;WITH CTE
+	;WITH CTE_ACCOUNTS AS (
+		SELECT [Id]
+		FROM [FinancialAccount] WHERE Id = ' + CAST(@AccountId as varchar) + '
+		UNION ALL
+		SELECT A.[Id]
+		FROM [FinancialAccount] A
+		INNER JOIN [CTE_ACCOUNTS] CTE ON CTE.[Id] = A.[ParentAccountId]
+	),
+
+	CTE
 	AS
 	(
 		SELECT 
@@ -81,10 +90,10 @@ BEGIN
 			[ftd].[Amount] AS [GiftAmount],
 			1 AS [GiftCount]
 		FROM [FinancialTransactionDetail] [ftd]
+		INNER JOIN [CTE_ACCOUNTS] [a] ON [a].[Id] = [ftd].[AccountId]
 		INNER JOIN [FinancialTransaction] [ft] ON [ft].[Id] = [ftd].[TransactionId]
 		INNER JOIN [PersonAlias] [pa] ON [pa].[Id] = [ft].[AuthorizedPersonAliasId]
 		INNER JOIN [Person] [p] ON [p].[Id] = [pa].[PersonId]
-		WHERE [ftd].[AccountId] = ' + CAST(@AccountId as varchar) + '
 	),
 
 	CTE1

@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -317,7 +317,10 @@ namespace Rock.Model
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
             var groupRole = this.GroupRole ?? new GroupTypeRoleService( rockContext ).Get( this.GroupRoleId );
 
-            var existingGroupMembership = groupMemberService.GetByGroupIdAndPersonId( this.GroupId, this.PersonId );
+            // load group including members to save queries in group member validation
+            var group = this.Group ?? new GroupService( rockContext ).Queryable("Members").Where(g => g.Id == this.GroupId ).FirstOrDefault();
+
+            var existingGroupMembership = group.Members.Where(m => m.PersonId == this.PersonId);
 
             // check to see if the person is already a member of the group/role
             bool allowDuplicateGroupMembers = ConfigurationManager.AppSettings["AllowDuplicateGroupMembers"].AsBoolean();
@@ -340,12 +343,11 @@ namespace Rock.Model
 
             var databaseRecord = existingGroupMembership.FirstOrDefault( a => a.Id == this.Id );
 
-            int memberCountInRole = new GroupMemberService( rockContext ).Queryable()
-                .Where( m =>
-                    m.GroupId == this.GroupId &&
-                    m.GroupRoleId == this.GroupRoleId &&
-                    m.GroupMemberStatus == GroupMemberStatus.Active )
-                .Count();
+            int memberCountInRole = group.Members
+                                        .Where( m => 
+                                            m.GroupRoleId == this.GroupRoleId 
+                                            && m.GroupMemberStatus == GroupMemberStatus.Active )
+                                        .Count();
 
             bool roleMembershipAboveMax = false;
 
@@ -381,10 +383,10 @@ namespace Rock.Model
                 return false;
             }
 
+            
             // if the GroupMember is getting Added (or if Person or Role is different), and if this Group has requirements that must be met before the person is added, check those
             if ( this.IsNewOrChangedGroupMember( rockContext ) )
             {
-                var group = this.Group ?? new GroupService( rockContext ).Get( this.GroupId );
                 if ( group.MustMeetRequirementsToAddMember ?? false )
                 {
                     var requirementStatuses = group.PersonMeetsGroupRequirements( this.PersonId, this.GroupRoleId );
@@ -397,6 +399,27 @@ namespace Rock.Model
                             .Select( a => string.Format( "{0}", a.GroupRequirement.GroupRequirementType ) )
                             .ToList().AsDelimited( ", " );
 
+                        return false;
+                    }
+                }
+            }
+
+            // check group capacity
+            if ( group.GroupType.GroupCapacityRule == GroupCapacityRule.Hard && group.GroupCapacity.HasValue )
+            {
+                var currentActiveGroupMemberCount = group.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active ).Count();
+
+                // check if this would be adding an active group member (new active group member or changing existing group member status to active)
+                if ( 
+                    (this.Id.Equals( 0 ) && this.GroupMemberStatus == GroupMemberStatus.Active) 
+                    || (!this.Id.Equals(0) 
+                            && existingGroupMembership.Where(m => m.Id == this.Id && m.GroupMemberStatus != GroupMemberStatus.Active).Any() 
+                            && this.GroupMemberStatus == GroupMemberStatus.Active)
+                   )
+                {
+                    if ( currentActiveGroupMemberCount + 1 > group.GroupCapacity )
+                    {
+                        errorMessage = "Adding this individual would put the group over capacity.";
                         return false;
                     }
                 }

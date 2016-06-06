@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -48,5 +48,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion( "1.4.2.0" )]
-[assembly: AssemblyFileVersion( "1.4.2.0" )]
+[assembly: AssemblyVersion( "1.5.0.0" )]
+[assembly: AssemblyFileVersion( "1.5.0.0" )]

@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Web.UI;
+using Newtonsoft.Json.Linq;
 using Rock;
 using Rock.Data;
 using Rock.MergeTemplates;
@@ -408,6 +409,14 @@ namespace RockWeb.Blocks.Core
                         IEntity mergeEntity = ( mergeObject as IEntity );
                         mergeEntity.AdditionalLavaFields = mergeEntity.AdditionalLavaFields ?? new Dictionary<string, object>();
                         object mergeValueObject = additionalMergeValue.Value;
+
+                        // if the mergeValueObject is a JArray (JSON Object), convert it into an ExpandoObject or List<ExpandoObject> so that Lava will work on it
+                        if ( mergeValueObject is JArray)
+                        {
+                            var jsonOfObject = mergeValueObject.ToJson();
+                            mergeValueObject = Rock.Lava.RockFilters.FromJSON( jsonOfObject );
+                        }
+
                         mergeEntity.AdditionalLavaFields.AddOrIgnore( additionalMergeValue.Key, mergeValueObject );
                     }
                     else if ( mergeObject is IDictionary<string, object> )

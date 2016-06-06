@@ -41,8 +41,8 @@
                                 <div class="col-md-6">
                                     <Rock:RockDropDownList ID="ddlType" runat="server" Label="Check-in Type" AutoPostBack="true" OnSelectedIndexChanged="ddlType_SelectedIndexChanged"
                                         Help="The type of check-in experience to use for this type. Family check-in allows more than one person in the family to be checked in at a time.">
-                                        <asp:ListItem Text="Individual" />
-                                        <asp:ListItem Text="Family" />
+                                        <asp:ListItem Text="Individual" Value="0" />
+                                        <asp:ListItem Text="Family" Value="1" />
                                     </Rock:RockDropDownList>
                                     <Rock:NumberBox ID="nbSecurityCodeLength" runat="server" Label="Security Code Length" MinimumValue="3" MaximumValue="10" NumberType="Integer" 
                                         Help="The number of characters that should be used when generating a unique security code for labels (minimum is 3)." />
@@ -57,8 +57,8 @@
                                         within this number of days, they will automatically be selected during the Family check-in process." />
                                     <Rock:RockCheckBox ID="cbReuseCode" runat="server" Label="Use Same Code for Family" Text="Yes"
                                         Help="Should the same security code be used for each person from the same family that is checking in at the same time?" />
-                                    <Rock:RockCheckBox ID="cbOneParentLabel" runat="server" Label="Print One Parent Label" Text="Yes"
-                                        Help="Should only one parent label be printed for all of the people in the same family that check-in at the same time (vs. a parent label for each person checking in)?" />
+                                    <Rock:RockCheckBox ID="cbUseSameOptions" runat="server" Label="Use Same Service Options" Text="Yes"
+                                        Help="If family member(s) is checking into more than one service, should the same options for additional services be automatically selected that were selected for first service?" />
                                 </div>
                             </div>
 
@@ -78,8 +78,8 @@
                                         Help="The maximum number of digits that can to be entered for a phone number search (default is 10)." />
                                     <Rock:RockDropDownList ID="ddlPhoneSearchType" runat="server" Label="Phone Search Type" 
                                         Help="Controls how a person's phone number should be compared to the digits that were entered by person when checking in.">
-                                        <asp:ListItem Text="Contains" />
-                                        <asp:ListItem Text="Ends With" />
+                                        <asp:ListItem Text="Contains" Value="0" />
+                                        <asp:ListItem Text="Ends With" Value="1" />
                                     </Rock:RockDropDownList>
                                 </div>
                             </div>
@@ -122,6 +122,14 @@
                         </div>
 
                         <asp:Literal ID="lblMainDetails" runat="server" />
+                        <div class="row ">
+                            <div class="col-sm-6">
+                                <asp:Literal ID="lblLeftDetails" runat="server" />
+                            </div>
+                            <div class="col-sm-6">
+                                <asp:Literal ID="lblRightDetails" runat="server" />
+                            </div>
+                        </div>
 
                         <div class="actions">
                             <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />

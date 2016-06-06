@@ -1618,5 +1618,103 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201605022007364_AttendanceBadgeSpUpdates_spCheckin_WeeksAttendedInDuration", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns the Mailing Addresses and any CustomMessages for the Contribution Statement, but not the actual transactions
+        ///		The StatementGenerator utility uses this procedure along with querying transactions thru REST to generate statements
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* PersonId
+        ///		* GroupId
+        ///		* AddressPersonNames
+        ///		* Street1
+        ///		* Street2
+        ///		* City
+        ///		* State
+        ///		* PostalCode
+        ///		* StartDate
+        ///		* EndDate
+        ///		* CustomMessage1
+        ///		* CustomMessage2
+        ///	&lt;/returns&gt;
+        ///	&lt;par [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201605180005401_ScheduledTxnSource_ContributionStatementQuery {
+            get {
+                return ResourceManager.GetString("_201605180005401_ScheduledTxnSource_ContributionStatementQuery", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- Rename a workflow setting attribute
+        ///UPDATE [Attribute] SET
+        ///    [Name] = &apos;Use Same Options&apos;,
+        ///    [Key] = &apos;core_checkin_UseSameOptions&apos;
+        ///WHERE [Guid] = &apos;EC7FA927-95D0-44A8-8AB3-2D74A9FA2F26&apos;
+        ///
+        ///-- Fix the ordering of the Person Search workflow activity
+        ///DECLARE @ActivityTypeId int = ( SELECT TOP 1 [Id] FROM [WorkflowActivityType] WHERE [Guid] = &apos;EB744DF1-E454-482C-B111-80A54EF8A674&apos; )
+        ///
+        ///DECLARE @EntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = &apos;Rock.Workflow.Action.CheckIn.LoadLo [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201605232234462_FamilyCheckinType {
+            get {
+                return ResourceManager.GetString("_201605232234462_FamilyCheckinType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spFinance_GivingAnalyticsQuery]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns data used by the giving analytics block
+        ///	&lt;/summary&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///CREATE PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery]
+        ///	  @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @MinAmount decimal(18,2) = NULL
+        ///	, @MaxAmount decimal(18,2) = NULL
+        ///	, @ [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201605311330117_GivingAnalyticsLastGift {
+            get {
+                return ResourceManager.GetString("_201605311330117_GivingAnalyticsLastGift", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spFinance_PledgeAnalyticsQuery]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spFinance_PledgeAnalyticsQuery]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns data used by the pledge analytics block
+        ///	&lt;/summary&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///CREATE PROCEDURE [dbo].[spFinance_PledgeAnalyticsQuery]
+        ///	  @AccountId int
+        ///	, @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @MinAmountPledged decimal(18,2) = NULL
+        ///	, @MaxAmountP [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201606061302147_PledgeAnalyticsChildAccounts {
+            get {
+                return ResourceManager.GetString("_201606061302147_PledgeAnalyticsChildAccounts", resourceCulture);
+            }
+        }
     }
 }

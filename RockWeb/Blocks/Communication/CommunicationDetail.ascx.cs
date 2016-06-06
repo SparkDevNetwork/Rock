@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -455,7 +455,6 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void ShowDetail( Rock.Model.Communication communication )
         {
-
             ShowStatus( communication );
             lTitle.Text = ( communication.Subject ?? "Communication" ).FormatAsHtmlTitle();
 
@@ -482,6 +481,11 @@ namespace RockWeb.Blocks.Communication
                         lDetails.Text = medium.GetMessageDetails( communication );
                     }
                 } 
+            }
+
+            if ( communication.MediumData != null && communication.MediumData.ContainsKey( "UrlReferrer" ) )
+            {
+                lDetails.Text += string.Format( "<small>Originated from <a href='{0}'>this page</a></small>", communication.MediumData["UrlReferrer"] );
             }
 
             BindRecipients();

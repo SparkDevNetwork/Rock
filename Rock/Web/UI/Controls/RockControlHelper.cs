@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -145,9 +145,22 @@ namespace Rock.Web.UI.Controls
                 }
 
                 writer.RenderEndTag();
+
+                if ( rockControl is IRockControlAdditionalRendering )
+                {
+                    ( (IRockControlAdditionalRendering)rockControl ).RenderAfterLabel( writer );
+                }
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-wrapper" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
             }
 
             rockControl.RenderBaseControl( writer );
+
+            if ( renderLabel )
+            {
+                writer.RenderEndTag();
+            }
 
             if ( !renderLabel && renderHelp )
             {
@@ -198,6 +211,11 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();  // label
 
                 control.RenderControl( writer );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-wrapper" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                control.RenderControl( writer );
+                writer.RenderEndTag();
 
                 writer.RenderEndTag();  // form-group
             }

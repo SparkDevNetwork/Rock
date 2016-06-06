@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Event
     [Description( "Block that takes a calendar item and displays occurrences for it using Lava." )]
     
     [EventItemField("Event Item", "The event item to use to display occurrences for.", order: 0)]
-    [CampusesField("Campuses", "List of which campuses to show occurrences for. This setting will be ignored in the 'Use Campus Context' is enabled.", order:1)]
+    [CampusesField("Campuses", "List of which campuses to show occurrences for. This setting will be ignored in the 'Use Campus Context' is enabled.", order:1, includeInactive:true)]
     [BooleanField("Use Campus Context", "Determine if the campus should be read from the campus context of the page.", order: 2)]
     [SlidingDateRangeField("Date Range", "Optional date range to filter the occurrences on.", false, enabledSlidingDateRangeTypes: "Next,Upcoming,Current", order:3)]
     [IntegerField("Max Occurrences", "The maximum number of occurrences to show.", false, 100, order: 4)]

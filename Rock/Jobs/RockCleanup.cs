@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,7 +28,6 @@ namespace Rock.Jobs
     /// <summary>
     /// Job that executes routine cleanup tasks on Rock
     /// </summary>
-    [IntegerField( "Hours to Keep Unconfirmed Accounts", "The number of hours to keep user accounts that have not been confirmed (default is 48 hours.)", false, 48, "General", 0, "HoursKeepUnconfirmedAccounts" )]
     [IntegerField( "Days to Keep Exceptions in Log", "The number of days to keep exceptions in the exception log (default is 14 days.)", false, 14, "General", 1, "DaysKeepExceptions" )]
     [IntegerField( "Audit Log Expiration Days", "The number of days to keep items in the audit log (default is 14 days.)", false, 14, "General", 2, "AuditLogExpirationDays" )]
     [IntegerField( "Days to Keep Cached Files", "The number of days to keep cached files in the cache folder (default is 14 days.)", false, 14, "General", 3, "DaysKeepCachedFiles" )]
@@ -63,15 +62,6 @@ namespace Rock.Jobs
             List<Exception> rockCleanupExceptions = new List<Exception>();
 
             int databaseRowsDeleted = 0;
-
-            try
-            {
-                databaseRowsDeleted += CleanupUnconfirmedUserLogins( dataMap );
-            }
-            catch ( Exception ex )
-            {
-                rockCleanupExceptions.Add( new Exception( "Exception in CleanupUnconfirmedUserLogins", ex ) );
-            }
 
             try
             {
@@ -345,40 +335,6 @@ namespace Rock.Jobs
                     try
                     {
                         int rowsDeleted = exceptionLogRockContext.Database.ExecuteSqlCommand( @"DELETE TOP (1000) FROM [ExceptionLog] WHERE [CreatedDateTime] < @createdDateTime", new SqlParameter( "createdDateTime", exceptionExpireDate ) );
-                        keepDeleting = rowsDeleted > 0;
-                        totalRowsDeleted += rowsDeleted;
-                    }
-                    finally
-                    {
-                        dbTransaction.Commit();
-                    }
-                }
-            }
-
-            return totalRowsDeleted;
-        }
-
-        /// <summary>
-        /// Cleanups the unconfirmed user logins that have not been confirmed in X hours
-        /// </summary>
-        /// <param name="dataMap">The data map.</param>
-        private int CleanupUnconfirmedUserLogins( JobDataMap dataMap )
-        {
-            int? userExpireHours = dataMap.GetString( "HoursKeepUnconfirmedAccounts" ).AsIntegerOrNull();
-            int totalRowsDeleted = 0;
-            if ( userExpireHours.HasValue )
-            {
-                var userLoginRockContext = new Rock.Data.RockContext();
-                DateTime userAccountExpireDate = RockDateTime.Now.Add( new TimeSpan( userExpireHours.Value * -1, 0, 0 ) );
-
-                // delete in chunks (see http://dba.stackexchange.com/questions/1750/methods-of-speeding-up-a-huge-delete-from-table-with-no-clauses)
-                bool keepDeleting = true;
-                while ( keepDeleting )
-                {
-                    var dbTransaction = userLoginRockContext.Database.BeginTransaction();
-                    try
-                    {
-                        int rowsDeleted = userLoginRockContext.Database.ExecuteSqlCommand( @"DELETE TOP (1000) FROM [UserLogin] WHERE [IsConfirmed] = 0 AND ([CreatedDateTime] is null OR [CreatedDateTime] < @createdDateTime )", new SqlParameter( "createdDateTime", userAccountExpireDate ) );
                         keepDeleting = rowsDeleted > 0;
                         totalRowsDeleted += rowsDeleted;
                     }

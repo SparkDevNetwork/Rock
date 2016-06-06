@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -251,9 +251,16 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetFilterCompareValue( Control control, FilterMode filterMode )
         {
-            if ( filterMode == FilterMode.SimpleFilter )
+            bool filterValueControlVisible = true;
+            var filterField = control.FirstParentControlOfType<FilterField>();
+            if ( filterField != null && filterField.HideFilterCriteria )
             {
-                // hard code to Contains when in SimpleFilter mode (the comparison control is not visible)
+                filterValueControlVisible = false;
+            }
+
+            if ( filterMode == FilterMode.SimpleFilter && filterValueControlVisible )
+            {
+                // hard code to Contains when in SimpleFilter mode and the FilterValue control is visible
                 return ComparisonType.Contains.ConvertToInt().ToString();
             }
             else

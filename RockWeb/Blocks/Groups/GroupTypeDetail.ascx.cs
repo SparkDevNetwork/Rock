@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -430,6 +430,7 @@ namespace RockWeb.Blocks.Groups
             groupType.AttendanceCountsAsWeekendService = cbWeekendService.Checked;
             groupType.SendAttendanceReminder = cbSendAttendanceReminder.Checked;
             groupType.AttendanceRule = ddlAttendanceRule.SelectedValueAsEnum<AttendanceRule>();
+            groupType.GroupCapacityRule = ddlGroupCapacityRule.SelectedValueAsEnum<GroupCapacityRule>();
             groupType.AttendancePrintTo = ddlPrintTo.SelectedValueAsEnum<PrintTo>();
             groupType.AllowedScheduleTypes = allowedScheduleTypes;
             groupType.LocationSelectionMode = locationSelectionMode;
@@ -680,6 +681,8 @@ namespace RockWeb.Blocks.Groups
             ddlGroupTypePurpose.Enabled = !groupType.IsSystem;
             ddlGroupTypePurpose.SetValue( groupType.GroupTypePurposeValueId );
 
+            ddlGroupCapacityRule.SetValue( (int)groupType.GroupCapacityRule );
+
             ChildGroupTypesList = new List<int>();
             groupType.ChildGroupTypes.ToList().ForEach( a => ChildGroupTypesList.Add( a.Id ) );
             BindChildGroupTypesGrid();
@@ -827,6 +830,8 @@ namespace RockWeb.Blocks.Groups
         private void LoadDropDowns( int? groupTypeId )
         {
             ddlAttendanceRule.BindToEnum<Rock.Model.AttendanceRule>();
+
+            ddlGroupCapacityRule.BindToEnum<GroupCapacityRule>();
 
             cblScheduleTypes.Items.Clear();
             cblScheduleTypes.Items.Add( new ListItem( "Weekly", "1" ) );

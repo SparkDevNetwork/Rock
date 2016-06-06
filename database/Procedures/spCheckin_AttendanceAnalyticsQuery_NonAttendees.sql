@@ -8,7 +8,7 @@
 		* PersonId 
 		* SundayDate - Last time attended
 	</returns>
-	<param name='GroupTypeId' datatype='int'>The Check-in Area Group Type Id (only attendance for this are will be included</param>
+	<param name='GroupTypeIds' datatype='varchar(max)'>The Group Type Ids (only attendance for these group types will be included</param>
 	<param name='StartDateTime' datatype='datetime'>Beginning date range filter</param>
 	<param name='GroupIds' datatype='varchar(max)'>Optional list of group ids to limit attendance to</param>
 	<param name='CampusIds' datatype='varchar(max)'>Optional list of campus ids to limit attendance to</param>
@@ -22,7 +22,7 @@
 */
 
 ALTER PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_NonAttendees]
-	  @GroupTypeId int
+	  @GroupTypeIds varchar(max)
 	, @GroupIds varchar(max)
 	, @StartDate datetime = NULL
 	, @EndDate datetime = NULL
@@ -169,7 +169,7 @@ BEGIN
         FROM (
             SELECT DISTINCT [StartDate]
 		    FROM [vCheckin_GroupTypeAttendance] A
-		    WHERE A.[GroupTypeId] = @GroupTypeId
+		    WHERE A.[GroupTypeId] in ( SELECT * FROM ufnUtility_CsvToTable( @GroupTypeIds ) )
 		    AND A.[PersonId] = P.[Id]
         ) S
 	) D

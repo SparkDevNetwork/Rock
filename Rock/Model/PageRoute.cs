@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,9 +16,11 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
-
+using System.Web.Routing;
 using Newtonsoft.Json;
 
 using Rock.Data;
@@ -87,6 +89,29 @@ namespace Rock.Model
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <param name="entry"></param>
+        public override void PreSaveChanges( DbContext dbContext, DbEntityEntry entry )
+        {
+            if ( entry.State == System.Data.Entity.EntityState.Deleted )
+            {
+                var routes = RouteTable.Routes;
+                if ( routes != null )
+                {
+                    var existingRoute = routes.OfType<Route>().FirstOrDefault( a => a.RouteId() == this.Id );
+                    if ( existingRoute != null )
+                    {
+                        RouteTable.Routes.Remove( existingRoute );
+                    }
+                }
+            }
+
+            base.PreSaveChanges( dbContext, entry );
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> containing the Route and represents this PageRoute

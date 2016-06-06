@@ -7,11 +7,11 @@
 // <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -79,6 +79,9 @@ namespace Rock.Client
         public int? NumberOfPayments { get; set; }
 
         /// <summary />
+        public int? SourceTypeValueId { get; set; }
+
+        /// <summary />
         public DateTime StartDate { get; set; }
 
         /// <summary />
@@ -134,6 +137,7 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.NextPaymentDate = source.NextPaymentDate;
             this.NumberOfPayments = source.NumberOfPayments;
+            this.SourceTypeValueId = source.SourceTypeValueId;
             this.StartDate = source.StartDate;
             this.TransactionCode = source.TransactionCode;
             this.TransactionFrequencyValueId = source.TransactionFrequencyValueId;
@@ -160,6 +164,9 @@ namespace Rock.Client
 
         /// <summary />
         public ICollection<FinancialScheduledTransactionDetail> ScheduledTransactionDetails { get; set; }
+
+        /// <summary />
+        public DefinedValue SourceTypeValue { get; set; }
 
         /// <summary />
         public DefinedValue TransactionFrequencyValue { get; set; }

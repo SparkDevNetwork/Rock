@@ -50,8 +50,8 @@
                                 <Rock:RockTextBox ID="tbIconCssClass" runat="server" Label="Icon CSS Class" Help="The Icon to use when displaying this type of workflow." />
                             </div>
                                 <div class="col-md-6">
-                                <Rock:DataTextBox ID="tbProcessingInterval" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="ProcessingIntervalSeconds" Label="Processing Interval (seconds)"
-                                    Help="The minimum length of time, in seconds, that must pass before the same persisted workflow instance of this type can be processed again.  If blank, active workflows will be processed each time that the workflow job is run." />
+                                <Rock:RockTextBox ID="tbProcessingInterval" runat="server" Label="Processing Interval (minutes)"
+                                    Help="The minimum length of time, in minutes, that must pass before the same persisted workflow instance of this type can be processed again.  If blank, active workflows will be processed each time that the workflow job is run." />
                                 <Rock:RockDropDownList ID="ddlLoggingLevel" Help="The level you would like to audit.  Start and stop times can be logged for each workflow, workflow activity, or activity action." runat="server" Label="Logging Level" />
                             </div>
                         </div>
@@ -98,22 +98,20 @@
 
                 <fieldset id="fieldsetViewDetails" runat="server">
 
-                    <p class="description"><asp:Literal ID="lWorkflowTypeDescription" runat="server"></asp:Literal></p>
+                    <p class="description"><asp:Literal ID="lWorkflowTypeDescription" runat="server" EnableViewState="false"></asp:Literal></p>
 
-                    <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+                    <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" EnableViewState="false" />
 
                     <div class="row">
-                        <div class="col-md-6">
-                            <a class="workflow-activities-readonly-header" href="#" onclick="javascxript: toggleReadOnlyActivitiesList();">
-                                <asp:Label ID="lblActivitiesReadonlyHeaderLabel" runat="server" Text="Activities" />
+                        <div class="col-md-12">
+                            <a class="workflow-activities-readonly-header" href="#" onclick="javascript: toggleReadOnlyActivitiesList();">
+                                <asp:Label ID="lblActivitiesReadonlyHeaderLabel" runat="server" Text="Activities" EnableViewState="false"/>
                                 <b class="fa fa-caret-down"></b>
                             </a>
-                        
+
                             <div class="workflow-activities-readonly-list" style="display: none">
-                                <asp:Literal ID="lblWorkflowActivitiesReadonly" runat="server" />
+                                <asp:Literal ID="lblWorkflowActivitiesReadonly" runat="server" EnableViewState="false" />
                             </div>
-                        </div>
-                        <div class="col-md-6">
                         </div>
                     </div>
 
@@ -122,7 +120,7 @@
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                         <span class="pull-right">
-                            <asp:LinkButton ID="btnCopy" runat="server" Text="Copy" CssClass="btn btn-link" OnClick="btnCopy_Click" />
+                            <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm fa fa-clone" OnClick="btnCopy_Click" ToolTip="Copy Workflow"/>
                             <asp:LinkButton ID="lbLaunchWorkflow" runat="server" CssClass="btn btn-sm btn-default" OnClick="btnLaunch_Click" ToolTip="Launch Workflow"><i class="fa fa-play"></i></asp:LinkButton>
                             <asp:LinkButton ID="lbManage" runat="server" CssClass="btn btn-sm btn-default" OnClick="btnManage_Click" ToolTip="Manage Workflows"><i class="fa fa-list"></i></asp:LinkButton>
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />

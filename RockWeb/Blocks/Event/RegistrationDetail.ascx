@@ -180,6 +180,7 @@
 
                                     <Rock:NotificationBox ID="nbPaymentError" runat="server" NotificationBoxType="Danger" Visible="true" />
 
+                                    <Rock:PersonPicker ID="ppPayee" runat="server" Label="Payee" Required="true" ValidationGroup="Payment" Help="The person who is making the payment." />
                                     <Rock:CurrencyBox ID="cbPaymentAmount" runat="server" Label="Payment Amount" Required="true" ValidationGroup="Payment" ></Rock:CurrencyBox>
 
                                     <asp:PlaceHolder ID="phManualDetails" runat="server">
@@ -281,7 +282,20 @@
                         <Rock:RockLiteral ID="lCurrentRegistrationInstance" runat="server" Label="Current Registration Instance" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlNewRegistrationInstance" runat="server" Label="New Registration Instance" ValidationGroup="vgMoveRegistration" Required="true" />
+                        <div class="row">
+                            <div class="col-sm-7">
+                                <Rock:RockDropDownList ID="ddlNewRegistrationInstance" runat="server" Label="New Registration Instance" ValidationGroup="vgMoveRegistration" Required="true"
+                                    DataValueField="Value" DataTextField="Text" AutoPostBack="true" OnSelectedIndexChanged="ddlNewRegistrationInstance_SelectedIndexChanged" />
+                            </div>
+                            <div class="col-sm-5">
+                                <Rock:RockCheckBox ID="cbShowAll" runat="server" Label="Show All Instances" ValidationGroup="vgMoveRegistration"
+                                    help="By default, only active instances are listed. Select this option to show all instances."
+                                    AutoPostBack="true" OnCheckedChanged="cbShowAll_CheckedChanged" />
+                            </div>
+                        </div>
+                        <Rock:RockDropDownList ID="ddlMoveGroup" runat="server" Label="Move Registrants To Group" ValidationGroup="vgMoveRegistration" Required="false" Visible="false"
+                            Help="Select a group here to remove all the registrants from their existing associated group, and add them to this group."
+                            DataValueField="Value" DataTextField="Text" />
                     </div>
                 </div>
                 <br />

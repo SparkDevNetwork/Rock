@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -372,6 +372,19 @@ namespace RockWeb.Blocks.Finance
                     }
 
                     break;
+
+                case "Campus":
+                    var campus = CampusCache.Read( e.Value.AsInteger() );
+                    if ( campus != null )
+                    {
+                        e.Value = campus.Name;
+                    }
+                    else
+                    {
+                        e.Value = string.Empty;
+                    }
+
+                    break;
             }
         }
 
@@ -390,6 +403,7 @@ namespace RockWeb.Blocks.Finance
             gfTransactions.SaveUserPreference( "Currency Type", ddlCurrencyType.SelectedValue != All.Id.ToString() ? ddlCurrencyType.SelectedValue : string.Empty );
             gfTransactions.SaveUserPreference( "Credit Card Type", ddlCreditCardType.SelectedValue != All.Id.ToString() ? ddlCreditCardType.SelectedValue : string.Empty );
             gfTransactions.SaveUserPreference( "Source Type", ddlSourceType.SelectedValue != All.Id.ToString() ? ddlSourceType.SelectedValue : string.Empty );
+            gfTransactions.SaveUserPreference( "Campus", campCampus.SelectedValue );
 
             BindGrid();
         }
@@ -779,6 +793,19 @@ namespace RockWeb.Blocks.Finance
             BindDefinedTypeDropdown( ddlCurrencyType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE ), "Currency Type" );
             BindDefinedTypeDropdown( ddlCreditCardType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE ), "Credit Card Type" );
             BindDefinedTypeDropdown( ddlSourceType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE ), "Source Type" );
+
+            if ( this.ContextEntity() == null )
+            {
+                var campusi = CampusCache.All();
+                campCampus.Campuses = campusi;
+                campCampus.Visible = campusi.Any();
+                campCampus.SetValue( gfTransactions.GetUserPreference( "Campus" ) );
+            }
+            else
+            {
+                campCampus.Visible = false;
+            }
+
         }
 
         /// <summary>
@@ -977,6 +1004,16 @@ namespace RockWeb.Blocks.Finance
                 if ( int.TryParse( gfTransactions.GetUserPreference( "Source Type" ), out sourceTypeId ) )
                 {
                     qry = qry.Where( t => t.SourceTypeValueId == sourceTypeId );
+                }
+
+                // Campus
+                if ( this.ContextEntity() == null )
+                {
+                    var campus = CampusCache.Read( gfTransactions.GetUserPreference( "Campus" ).AsInteger() );
+                    if ( campus != null )
+                    {
+                        qry = qry.Where( b => b.Batch != null && b.Batch.CampusId == campus.Id );
+                    }
                 }
             }
 
