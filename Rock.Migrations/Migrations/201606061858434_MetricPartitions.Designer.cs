@@ -13,7 +13,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201605022343109_MetricPartitions"; }
+            get { return "201606061858434_MetricPartitions"; }
         }
         
         string IMigrationMetadata.Source
