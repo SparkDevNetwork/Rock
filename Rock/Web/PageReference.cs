@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -440,6 +440,34 @@ namespace Rock.Web
             }
 
             return base.ToString();
+        }
+
+        /// <summary>
+        /// If this is reference to a PageRoute, this will return the Route, otherwise it will return the normal URL of the page
+        /// </summary>
+        /// <value>
+        /// The route.
+        /// </value>
+        public string Route
+        {
+            get 
+            {
+                var pageCache = PageCache.Read( this.PageId );
+                if ( pageCache != null )
+                {
+                    var pageRoute = pageCache.PageRoutes.FirstOrDefault( a=> a.Id == this.RouteId);
+                    if (pageRoute != null)
+                    {
+                        return pageRoute.Route;
+                    }
+                    else
+                    {
+                        return this.BuildUrl();
+                    }
+                }
+
+                return null;
+            }
         }
 
         #endregion

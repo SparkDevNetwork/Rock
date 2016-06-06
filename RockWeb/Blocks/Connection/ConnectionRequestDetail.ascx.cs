@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -230,12 +230,54 @@ namespace RockWeb.Blocks.Connection
         }
 
         /// <summary>
+        /// Handles the SelectPerson event of the ppRequestor control checking for possible duplicate records.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void ppRequestor_SelectPerson( object sender, EventArgs e )
+        {
+            if ( ppRequestor.PersonId.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    ConnectionRequestService connectionRequestService = new ConnectionRequestService( rockContext );
+
+                    int connectionOpportunityId = hfConnectionOpportunityId.ValueAsInt();
+
+                    // Check if this person already has a connection request for this opportunity.
+                    var connectionRequest = connectionRequestService.Queryable()
+                        .Where( r => r.PersonAliasId == ppRequestor.PersonAliasId.Value && r.ConnectionOpportunityId == connectionOpportunityId &&
+                            ( r.ConnectionState == ConnectionState.Active || r.ConnectionState == ConnectionState.FutureFollowUp ) )
+                        .FirstOrDefault();
+
+                    if ( connectionRequest != null )
+                    {
+                        nbWarningMessage.Visible = true;
+                        nbWarningMessage.Title = "Possible Duplicate: ";
+                        nbWarningMessage.Text = string.Format( "There is already an active (or future follow up) request in the '{0}' opportunity for {1}. Are you sure you want to save this request?"
+                            , connectionRequest.ConnectionOpportunity.PublicName, ppRequestor.PersonName.TrimEnd() );
+                    }
+                    else
+                    {
+                        nbWarningMessage.Visible = false;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            if ( ! ppRequestor.PersonAliasId.HasValue )
+            {
+                ShowErrorMessage( "Incomplete", "You must select a person to save a request." );
+                return;
+            }
+
             if ( Page.IsValid )
             {
                 using ( var rockContext = new RockContext() )

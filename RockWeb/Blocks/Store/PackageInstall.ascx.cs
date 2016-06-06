@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -129,28 +129,35 @@ namespace RockWeb.Blocks.Store
         {
             StoreService storeService = new StoreService();
 
-            var installResponse = storeService.Purchase( txtUsername.Text, txtPassword.Text, packageId );
-
-            switch ( installResponse.PurchaseResult )
+            string errorResponse = string.Empty;
+            var installResponse = storeService.Purchase( txtUsername.Text, txtPassword.Text, packageId, out errorResponse );
+            if ( installResponse != null )
             {
-                case PurchaseResult.AuthenicationFailed:
-                    lMessages.Text = string.Format("<div class='alert alert-warning margin-t-md'><strong>Could Not Authenicate</strong> {0}</div>", installResponse.Message);
-                    break;
-                case PurchaseResult.Error:
-                    lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>An Error Occurred</strong> {0}</div>", installResponse.Message );
-                    break;
-                case PurchaseResult.NoCardOnFile:
-                    lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>No Card On File</strong> No credit card is on file for your organization. Please add a card from your <a href='{0}'>Account Page</a>.</div>", ResolveRockUrl("~/RockShop/Account") );
-                    break;
-                case PurchaseResult.NotAuthorized:
-                    lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Unauthorized</strong> You are not currently authorized to make purchased for this organization. Please see your organization's primary contact to enable your account for purchases.</div>" );
-                    break;
-                case PurchaseResult.PaymentFailed:
-                    lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Payment Error</strong> An error occurred will processing the credit card on file for your organization. The error was: {0}. Please update your card's information from your <a href='{1}'>Account Page</a>.</div>", installResponse.Message, ResolveRockUrl("~/RockShop/Account") );
-                    break;
-                case PurchaseResult.Success:
-                    ProcessInstall( installResponse );
-                    break;
+                switch ( installResponse.PurchaseResult )
+                {
+                    case PurchaseResult.AuthenicationFailed:
+                        lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Could Not Authenticate</strong> {0}</div>", installResponse.Message );
+                        break;
+                    case PurchaseResult.Error:
+                        lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>An Error Occurred</strong> {0}</div>", installResponse.Message );
+                        break;
+                    case PurchaseResult.NoCardOnFile:
+                        lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>No Card On File</strong> No credit card is on file for your organization. Please add a card from your <a href='{0}'>Account Page</a>.</div>", ResolveRockUrl( "~/RockShop/Account" ) );
+                        break;
+                    case PurchaseResult.NotAuthorized:
+                        lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Unauthorized</strong> You are not currently authorized to make purchases for this organization. Please see your organization's primary contact to enable your account for purchases.</div>" );
+                        break;
+                    case PurchaseResult.PaymentFailed:
+                        lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Payment Error</strong> An error occurred while processing the credit card on file for your organization. The error was: {0}. Please update your card's information from your <a href='{1}'>Account Page</a>.</div>", installResponse.Message, ResolveRockUrl( "~/RockShop/Account" ) );
+                        break;
+                    case PurchaseResult.Success:
+                        ProcessInstall( installResponse );
+                        break;
+                }
+            }
+            else
+            {
+                lMessages.Text = string.Format( "<div class='alert alert-danger margin-t-md'><strong>Install Error</strong> An error occurred while attempting to authenticate your install of this package. The error was: {0}.</div>", ( string.IsNullOrWhiteSpace( errorResponse ) ? "Unknown" : errorResponse ) );
             }
         }
 

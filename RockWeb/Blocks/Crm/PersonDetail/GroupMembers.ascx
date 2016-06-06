@@ -26,7 +26,7 @@
                                             <a href='<%# FormatPersonLink(Eval("PersonId").ToString()) %>'>
                                                 <div class="person-image" id="divPersonImage" runat="server"></div>
                                                 <div class="person-info">
-                                                    <h4><%# FormatPersonName(Eval("Person.NickName").ToString(), Eval("Person.LastName").ToString()) %></h4>
+                                                    <h4><%# FormatPersonName(Eval("Person.NickName") as string, Eval("Person.LastName") as string) %></h4>
                                                     <small><%# FormatPersonDetails( Container.DataItem ) %></small>
                                                 </div>
                                             </a>

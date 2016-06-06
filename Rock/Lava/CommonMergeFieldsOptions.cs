@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -32,6 +32,7 @@ namespace Rock.Lava
             this.GetCampuses = true;
             this.GetDeviceFamily = false;
             this.GetOSFamily = false;
+            this.GetLegacyGlobalMergeFields = true;
         }
 
         /// <summary>
@@ -81,5 +82,16 @@ namespace Rock.Lava
         ///   <c>true</c> if [get os family]; otherwise, <c>false</c>.
         /// </value>
         public bool GetOSFamily { get; set; }
+
+        /// <summary>
+        /// If this is True (the default), get the GlobalAttribute merge fields when in LegacyMode
+        /// Set to False to never get the Legacy Global Merges fields, even when in Legacy Mode
+        /// </summary>
+        /// <value>
+        /// The get global attributes.
+        /// </value>
+        public bool GetLegacyGlobalMergeFields { get; set; }
     }
+
+     
 }

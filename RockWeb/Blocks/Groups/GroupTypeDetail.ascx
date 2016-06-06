@@ -79,6 +79,7 @@
                                             Help="Check this option if attendance in groups of this type should be counted towards attending a weekend service." />
                                         <Rock:RockCheckBox ID="cbSendAttendanceReminder" runat="server" Label="Send Attendance Reminder" Text="Yes"
                                             Help="Check this option if an email should be sent to the group leaders of these group types reminding them to enter attendance information." />
+                                        <Rock:RockDropDownList ID="ddlGroupCapacityRule" runat="server" Label="Group Capacity Rule" Help="Does this group type support group capacity and if so how is it enforced." />
                                     </div>
                                     <div class="col-xs-6">
                                         <Rock:RockCheckBoxList ID="cblScheduleTypes" runat="server" Label="Group Schedule Options"

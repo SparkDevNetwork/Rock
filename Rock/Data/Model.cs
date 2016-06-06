@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -428,6 +428,11 @@ namespace Rock.Data
                             var attribute = this.Attributes[attributeKey];
                             if ( attribute.IsAuthorized( Authorization.VIEW, null ) )
                             {
+                                if ( lavaSupportLevel == Lava.LavaSupportLevel.LegacyWithWarning )
+                                {
+                                    Rock.Model.ExceptionLogService.LogException( new Rock.Lava.LegacyLavaSyntaxDetectedException( this.GetType().GetFriendlyTypeName(), attributeKey ), System.Web.HttpContext.Current );
+                                }
+
                                 if ( unformatted )
                                 {
                                     return GetAttributeValueAsType( attribute.Key );
@@ -439,12 +444,6 @@ namespace Rock.Data
                                 if ( url && field is Rock.Field.ILinkableFieldType )
                                 {
                                     return ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.QualifierValues );
-                                }
-
-                                if ( lavaSupportLevel == Lava.LavaSupportLevel.LegacyWithWarning )
-
-                                {
-                                    Rock.Model.ExceptionLogService.LogException( new Rock.Lava.LegacyLavaSyntaxDetectedException( this.GetType().GetFriendlyTypeName(), attributeKey ), System.Web.HttpContext.Current );
                                 }
 
                                 return field.FormatValue( null, value, attribute.QualifierValues, false );

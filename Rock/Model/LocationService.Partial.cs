@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -218,6 +218,7 @@ namespace Rock.Model
             string state = location.State;
             string country = location.Country;
             string postalCode = location.PostalCode;
+            string barcode = location.Barcode;
             DbGeography geoPoint = location.GeoPoint;
 
             // Try each of the verification services that were found through MEF
@@ -260,6 +261,7 @@ namespace Rock.Model
                             state = location.State;
                             country = location.Country;
                             postalCode = location.PostalCode;
+                            barcode = location.Barcode;
                         }
                     }
                     else
@@ -272,6 +274,7 @@ namespace Rock.Model
                         location.State = state;
                         location.Country = country;
                         location.PostalCode = postalCode;
+                        location.Barcode = barcode;
                     }
 
                     if ( !geocoded && component.SupportsGeocoding )

@@ -31,7 +31,7 @@
 			* Group Role - Child: C8B1814F-6AA7-4055-B2D7-48FE20429CB9
 	</remarks>
 	<code>
-		EXEC [dbo].[spFinance_ContributionStatementQuery] '01-01-2014', '01-01-2015', null, null, 0, 1 -- year 2014 statements for all persons that have a mailing address
+		EXEC [dbo].[spFinance_ContributionStatementQuery] '01-01-2015', '01-01-2016', null, null, 0, 1 -- year 2015 statements for all persons that have a mailing address
         EXEC [dbo].[spFinance_ContributionStatementQuery] '01-01-2014', '01-01-2015', null, null, 1, 1 -- year 2014 statements for all persons regardless of mailing address
         EXEC [dbo].[spFinance_ContributionStatementQuery] '01-01-2014', '01-01-2015', null, 2, 1, 1  -- year 2014 statements for Ted Decker
 	</code>
@@ -70,13 +70,15 @@ BEGIN
 	AS
 	(
 		SELECT  
-			[pa].[PersonId] 
+			[p].[GivingId]
 		FROM 
 			[FinancialTransaction] [ft]
 		INNER JOIN 
 			[FinancialTransactionDetail] [ftd] ON [ft].[Id] = [ftd].[TransactionId]
 		INNER JOIN 
 			[PersonAlias] [pa] ON [pa].[id] = [ft].[AuthorizedPersonAliasId]
+		INNER JOIN 
+			[Person] [p] ON [p].[id] = [pa].[PersonId]
 		WHERE 
 			([TransactionDateTime] >= @StartDate and [TransactionDateTime] < @EndDate)
         AND
@@ -121,7 +123,7 @@ BEGIN
 			([p].[Id] = @personId)
 		)
         AND
-			[p].[Id] in (SELECT * FROM tranListCTE)
+			[p].GivingId in (SELECT GivingId FROM tranListCTE)
 		UNION
 		-- Get Persons and their GroupId(s) that do not have GivingGroupId and have transactions that match the filter.        
 		-- These are the persons that give as individuals vs as part of a group. We need the Groups (families they belong to) in order 
@@ -149,7 +151,7 @@ BEGIN
 		OR 
 			([p].[Id] = @personId)
 		)
-		AND [p].[Id] IN (SELECT * FROM tranListCTE)
+		AND [p].GivingId IN (SELECT GivingId FROM tranListCTE)
 	) [pg]
 	CROSS APPLY 
 		[ufnCrm_GetFamilyTitle]([pg].[PersonId], [pg].[GroupId], default, default) [pn]

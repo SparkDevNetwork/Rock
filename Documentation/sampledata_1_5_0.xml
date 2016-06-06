@@ -232,6 +232,10 @@
         personGuid="20A2C167-D16E-43B3-A5B0-80CE912589AF">
       </giving>
       
+      <giving startGiving="12/31/2015" frequency="onetime" endGiving="12/31/2015"
+        accountAmount="General Fund:500" personGuid="20A2C167-D16E-43B3-A5B0-80CE912589AF">
+      </giving>
+      
     </family>
 
     <!-- Alisha Marble, who is the Rock administrator at the church, is married to Bill. They are in 
@@ -270,11 +274,19 @@
 
       </members>
 
+      <giving startGiving="12/31/2014" frequency="onetime" endGiving="12/31/2014"
+        accountAmount="General Fund:1000" personGuid="1EA811BB-3118-42D1-B020-32A82BC8081A">
+      </giving>
+      
       <giving startGiving="1/5/2014" frequency="weekly" endingGivingWeeksAgo="0" 
         percentGive="85" accountAmount="General Fund:100,Mission Fund:50" growRatePercent="5"
         growFrequencyWeeks="52" specialGiftPercent="50" 
         personGuid="1EA811BB-3118-42D1-B020-32A82BC8081A"
         imageUrls="http://storage.rockrms.com/sampledata/check-images/marble-01.png,http://storage.rockrms.com/sampledata/check-images/marble-02.png,http://storage.rockrms.com/sampledata/check-images/marble-03.png,http://storage.rockrms.com/sampledata/check-images/marble-04.png,http://storage.rockrms.com/sampledata/check-images/marble-05.png">
+      </giving>
+
+      <giving startGiving="12/31/2015" frequency="onetime" endGiving="12/31/2015"
+        accountAmount="General Fund:800" personGuid="1EA811BB-3118-42D1-B020-32A82BC8081A">
       </giving>
       
     </family>
@@ -952,8 +964,8 @@
   <registrationInstances>
     <registrationInstance guid="abd46c03-7f71-4c43-a6bd-38b19047b6a6" name="Summer Camp 2016"
       templateGuid="FF8AE77B-D5AF-490A-9ECE-B47039681C2E" 
-      registrationStarts="{{ 'Now' | DateAdd:7,'d' | Date:'M/d/yyyy'}} 12:00AM" registrationEnds="{{ 'Now' | DateAdd:70,'d' | Date:'M/d/yyyy' }} 12:00AM"
-      maxAttendees="200" sendReminderDate="{{ 'Now' | DateAdd:88,'d' | Date:'M/d/yyyy' }} 9:00AM"
+      registrationStarts="{{ 'Now' | DateAdd:7,'d' | Date:'yyyy-M-dd'}} 12:00AM" registrationEnds="{{ 'Now' | DateAdd:70,'d' | Date:'yyyy-M-dd' }} 12:00AM"
+      maxAttendees="200" sendReminderDate="{{ 'Now' | DateAdd:88,'d' | Date:'yyyy-M-dd' }} 9:00AM"
       account="Event Registration" contactPersonGuid="82309081-A110-496F-8295-CE6A4720D7A8"
       contactPhone="(602) 555-3245" contactEmail="jenny@rocksolidchurchdemo.com"
       additionalReminderDetails="Camp starts on {{ 'Now' | DateAdd:90,'d' | Date:'MMMM dd'  }}. We will be leaving from the church at 7am so please don't be late.&lt;br&gt;&lt;br&gt;Be sure to read our &lt;a href=&quot;http://google.com&quot;&gt;What To Bring To Camp&lt;/a&gt; guide for details on packing for camp."

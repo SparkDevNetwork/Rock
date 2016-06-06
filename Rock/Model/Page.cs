@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,8 +19,9 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
-
+using System.Web.Routing;
 using Newtonsoft.Json;
 
 using Rock.Data;
@@ -469,6 +470,20 @@ namespace Rock.Model
                 Dictionary<string, object> parameters = new Dictionary<string, object>();
                 parameters.Add( "PageId", this.Id );
                 Rock.Data.DbService.ExecuteCommand( "spCore_PageViewNullPageId", System.Data.CommandType.StoredProcedure, parameters );
+
+                // since routes have a cascade delete relationship (their presave won't get called), delete routes from route table
+                var routes = RouteTable.Routes;
+                if ( routes != null )
+                {
+                    foreach ( var pageRoute in new PageRouteService( dbContext as RockContext ).Queryable().Where( r => r.PageId == this.Id ) )
+                    {
+                        var existingRoute = routes.OfType<Route>().FirstOrDefault( a => a.RouteId() == pageRoute.Id );
+                        if ( existingRoute != null )
+                        {
+                            RouteTable.Routes.Remove( existingRoute );
+                        }
+                    }
+                }
             }
         }
 

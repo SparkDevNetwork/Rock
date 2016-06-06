@@ -17,7 +17,7 @@
     <Rock:ModalAlert ID="maWarning" runat="server" />
 
     <div class="checkin-header">
-        <h1>Check-in Configuration</h1>
+        <h1>Check-in Options</h1>
     </div>
     
     <asp:Panel runat="server" CssClass="checkin-body" ID="pnlManualConfig" Visible="false">
@@ -27,7 +27,7 @@
                 
                 <Rock:RockDropDownList ID="ddlTheme" runat="server" CssClass="input-xlarge" Label="Theme" OnSelectedIndexChanged="ddlTheme_SelectedIndexChanged" AutoPostBack="true" />
                 <Rock:RockDropDownList ID="ddlKiosk" runat="server" CssClass="input-xlarge" Label="Kiosk Device" OnSelectedIndexChanged="ddlKiosk_SelectedIndexChanged" AutoPostBack="true" DataTextField="Name" DataValueField="Id" />
-                <Rock:RockDropDownList ID="ddlCheckinType" runat="server" CssClass="input-xlarge" Label="Check-in Type" OnSelectedIndexChanged="ddlCheckinType_SelectedIndexChanged" AutoPostBack="true" DataTextField="Name" DataValueField="Id"/>
+                <Rock:RockDropDownList ID="ddlCheckinType" runat="server" CssClass="input-xlarge" Label="Check-in Configuration" OnSelectedIndexChanged="ddlCheckinType_SelectedIndexChanged" AutoPostBack="true" DataTextField="Name" DataValueField="Id"/>
 
                 <div class="row">
                     <div class="col-md-6">

@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -48,7 +48,7 @@ namespace Rock.Follow
         /// <summary>
         /// Initializes a new instance of the <see cref="SuggestionComponent" /> class.
         /// </summary>
-        public SuggestionComponent()
+        public SuggestionComponent() : base( false )
         {
             // Override default constructor of Component that loads attributes (not needed for suggestion components, needs to be done by each following suggestion)
         }

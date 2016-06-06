@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -371,6 +371,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             _ddlCriteriaAttribute = new RockDropDownList();
             Controls.Add( _ddlCriteriaAttribute );
             _ddlCriteriaAttribute.ID = this.ID + "_ddlCriteriaAttribute";
+            _ddlCriteriaAttribute.EnableViewState = false;
             _ddlCriteriaAttribute.CssClass = "js-conditional-run-criteria";
             _ddlCriteriaAttribute.Label = "Run If";
             _ddlCriteriaAttribute.Help = "Optional criteria to prevent the action from running.  If the criteria is not met, this action will be skipped when this activity is processed.";
@@ -378,6 +379,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             _ddlCriteriaComparisonType = new RockDropDownList();
             Controls.Add( _ddlCriteriaComparisonType );
             _ddlCriteriaComparisonType.ID = this.ID + "_ddlCriteriaComparisonType";
+            _ddlCriteriaComparisonType.EnableViewState = false;
             _ddlCriteriaComparisonType.CssClass = "js-action-criteria-comparison";
             _ddlCriteriaComparisonType.BindToEnum<ComparisonType>();
             _ddlCriteriaComparisonType.Label = "&nbsp;";
@@ -385,6 +387,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             _tbddlCriteriaValue = new RockTextOrDropDownList();
             Controls.Add( _tbddlCriteriaValue );
             _tbddlCriteriaValue.ID = this.ID + "_tbddlCriteriaValue";
+            _tbddlCriteriaValue.EnableViewState = false; 
             _tbddlCriteriaValue.TextBox.Label = "Text Value";
             _tbddlCriteriaValue.DropDownList.Label = "Attribute Value";
 
@@ -564,10 +567,11 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-lg-8" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
+            EntityTypeCache entityType = null;
             int? entityTypeId = _wfatpEntityType.SelectedValueAsInt();
             if ( entityTypeId.HasValue )
             {
-                var entityType = EntityTypeCache.Read( entityTypeId.Value );
+                entityType = EntityTypeCache.Read( entityTypeId.Value );
                 if ( entityType != null )
                 {
                     var component = ActionContainer.GetComponent( entityType.Name );
@@ -592,9 +596,11 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
 
             writer.RenderEndTag();  // row
 
-
-            _formEditor.ValidationGroup = ValidationGroup;
-            _formEditor.RenderControl( writer );
+            if ( entityType != null && entityType.Name == typeof( Rock.Workflow.Action.UserEntryForm ).FullName )
+            {
+                _formEditor.ValidationGroup = ValidationGroup;
+                _formEditor.RenderControl( writer );
+            }
 
             _phActionAttributes.RenderControl( writer );
 

@@ -18,7 +18,7 @@ Jump over to our [Rock website](http://www.rockrms.com/) to find out more. Keep 
 * [Subscribing to our newsletter](http://www.rockrms.com/Rock/Subscribe)
 
 ## License
-Rock released under the [Apache 2.0 license](http://www.apache.org/licenses/LICENSE-2.0.html).
+Rock released under the [Rock Community License](http://www.rockrms.com/license).
 
 ## Crafted By
 

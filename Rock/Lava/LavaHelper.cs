@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -63,13 +63,16 @@ namespace Rock.Lava
                 }
             }
 
-            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
-            if ( globalAttributes.LavaSupportLevel != Lava.LavaSupportLevel.NoLegacy )
+            if ( options.GetLegacyGlobalMergeFields )
             {
-                var legacyGlobalAttributeMergeFields = Rock.Web.Cache.GlobalAttributesCache.GetLegacyMergeFields( currentPerson );
-                foreach ( var legacyGlobalAttributeMergeField in legacyGlobalAttributeMergeFields )
+                var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                if ( globalAttributes.LavaSupportLevel != Lava.LavaSupportLevel.NoLegacy )
                 {
-                    mergeFields.Add( legacyGlobalAttributeMergeField.Key, legacyGlobalAttributeMergeField.Value );
+                    var legacyGlobalAttributeMergeFields = Rock.Web.Cache.GlobalAttributesCache.GetLegacyMergeFields( currentPerson );
+                    foreach ( var legacyGlobalAttributeMergeField in legacyGlobalAttributeMergeFields )
+                    {
+                        mergeFields.Add( legacyGlobalAttributeMergeField.Key, legacyGlobalAttributeMergeField.Value );
+                    }
                 }
             }
 
@@ -95,14 +98,9 @@ namespace Rock.Lava
                 }
             }
 
-            if ( options.GetPageParameters && rockPage != null )
+            HttpRequest request = null;
+            try
             {
-                mergeFields.Add( "PageParameter", rockPage.PageParameters() );
-            }
-
-            if ( options.GetOSFamily || options.GetDeviceFamily )
-            {
-                HttpRequest request = null;
                 if ( rockPage != null )
                 {
                     request = rockPage.Request;
@@ -111,7 +109,19 @@ namespace Rock.Lava
                 {
                     request = HttpContext.Current.Request;
                 }
+            }
+            catch
+            {
+                // intentionally ignore exception (.Request will throw an exception instead of simply returning null if it isn't available)
+            }
 
+            if ( options.GetPageParameters && rockPage != null && request != null)
+            {
+                mergeFields.Add( "PageParameter", rockPage.PageParameters() );
+            }
+
+            if ( options.GetOSFamily || options.GetDeviceFamily )
+            {
                 if ( request != null && !string.IsNullOrEmpty( request.UserAgent ) )
                 {
                     Parser uaParser = Parser.GetDefault();

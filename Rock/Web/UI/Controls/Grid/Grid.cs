@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -1301,6 +1301,11 @@ namespace Rock.Web.UI.Controls
                         communication.SenderPersonAliasId = rockPage.CurrentPersonAliasId;
                     }
 
+                    if ( rockPage.Request != null && rockPage.Request.Url != null )
+                    {
+                        communication.MediumData.AddOrReplace( "UrlReferrer", rockPage.Request.Url.AbsoluteUri );
+                    }
+
                     communicationService.Add( communication );
 
                     // save communication to get Id
@@ -1657,7 +1662,7 @@ namespace Rock.Web.UI.Controls
                         if ( lavaFields.Any() )
                         {
                             var mergeFieldName = prop.Name;
-                            lavaDataFields.Add( mergeFieldName, new LiquidFieldTemplate.DataFieldInfo { PropertyInfo = prop, GridField = null } );
+                            lavaDataFields.AddOrIgnore( mergeFieldName, new LiquidFieldTemplate.DataFieldInfo { PropertyInfo = prop, GridField = null } );
                         }
 
                         worksheet.Cells[3, columnCounter].Value = prop.Name.SplitCase();
@@ -2447,8 +2452,24 @@ namespace Rock.Web.UI.Controls
         {
             var entitySet = new Rock.Model.EntitySet();
 
-            // the datasource is a DataTable so there isn't an EntityTypeId
-            entitySet.EntityTypeId = null;
+            // if the EntityTypeId was set for the Grid, use that, otherwise, we don't know since this is a DataTable
+            if ( this.EntityTypeId.HasValue )
+            {
+                entitySet.EntityTypeId = this.EntityTypeId;
+            }
+            else
+            {
+                entitySet.EntityTypeId = null;
+            }
+            
+            bool isPersonEntitySet = this.EntityTypeId == EntityTypeCache.GetId<Rock.Model.Person>();
+            string dataKeyField = this.DataKeyNames.FirstOrDefault() ?? "Id";
+            if ( isPersonEntitySet && !string.IsNullOrEmpty(this.PersonIdField) )
+            {
+                dataKeyField = this.PersonIdField;
+            }
+
+            DataColumn dataKeyColumn = this.DataSourceAsDataTable.Columns.OfType<DataColumn>().FirstOrDefault( a => a.ColumnName == dataKeyField );
 
             entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
 
@@ -2459,8 +2480,16 @@ namespace Rock.Web.UI.Controls
                 {
                     var item = new Rock.Model.EntitySetItem();
 
-                    // the datasource is a DataTable (not an Entity), so just set it to zero.  The entire datarow will be put into AdditionalMergeValues
-                    item.EntityId = 0;
+                    if ( entitySet.EntityTypeId.HasValue && dataKeyColumn != null )
+                    {
+                        // we know the EntityTypeId, so set the EntityId to the dataKeyColumn value
+                        item.EntityId = ( row[dataKeyColumn] as int? ) ?? 0;
+                    }
+                    else
+                    {
+                        // the datasource is a DataTable (not an Entity), so just set it to zero.  The entire datarow will be put into AdditionalMergeValues
+                        item.EntityId = 0;
+                    }
 
                     item.Order = itemOrder++;
                     item.AdditionalMergeValues = new Dictionary<string, object>();

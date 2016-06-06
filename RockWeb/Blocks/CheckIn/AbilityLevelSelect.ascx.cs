@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -32,11 +32,18 @@ namespace RockWeb.Blocks.CheckIn
     [DisplayName("Ability Level Select")]
     [Category("Check-in")]
     [Description( "Check-in Ability Level Select block" )]
+
+    [LinkedPage( "Repeat Page (Family Check-in)", "The page to navigate back to if there are peopl or schedules already processed.", false, "", "", 3, "FamilyRepeatPage" )]
+    [LinkedPage( "Previous Page (Family Check-in)", "The page to navigate back to if none of the people and schedules have been processed.", false, "", "", 4, "FamilyPreviousPage" )]
     public partial class AbilityLevelSelect : CheckInBlock
     {
         private string _personAbilityLevelGuid;
         private bool _shouldLowlight = true;
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
@@ -52,43 +59,7 @@ namespace RockWeb.Blocks.CheckIn
             {
                 if ( !Page.IsPostBack )
                 {
-                    var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
-                        .SelectMany( f => f.People.Where( p => p.Selected ) )
-                        .FirstOrDefault();
-
-                    if ( person == null )
-                    {
-                        GoBack();
-                    }
-
-                    lPersonName.Text = person.ToString();
-
-                    person.ClearFilteredExclusions();
-
-                    var availGroupTypes = person.GroupTypes.Where( t => !t.ExcludedByFilter ).ToList();
-                    if ( NoConfiguredAbilityLevels( availGroupTypes ) )
-                    {
-                        if ( UserBackedUp )
-                        {
-                            GoBack();
-                        }
-                        else
-                        {
-                            ProcessSelection();
-                        }
-                    }
-                    else
-                    {
-                        person.Person.LoadAttributes();
-                        _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" ).ToUpper();
-
-                        var abilityLevelDType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL_TYPE.AsGuid() );
-                        if ( abilityLevelDType != null )
-                        {
-                            rSelection.DataSource = abilityLevelDType.DefinedValues.ToList();
-                            rSelection.DataBind();
-                        }
-                    }
+                    ProcessPerson();
                 }
             }
         }
@@ -125,14 +96,16 @@ namespace RockWeb.Blocks.CheckIn
             return true;
         }
 
+        /// <summary>
+        /// Handles the ItemCommand event of the rSelection control.
+        /// </summary>
+        /// <param name="source">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
         protected void rSelection_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             if ( KioskCurrentlyActive )
             {
-                var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
-                    .SelectMany( f => f.People.Where( p => p.Selected ) )
-                    .FirstOrDefault();
-
+                var person = CurrentCheckInState.CheckIn.CurrentPerson;
                 if ( person != null )
                 {
                     string selectedAbilityLevelGuid = e.CommandArgument.ToString();
@@ -162,16 +135,31 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbBack control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbBack_Click( object sender, EventArgs e )
         {
             GoBack();
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbCancel_Click( object sender, EventArgs e )
         {
             CancelCheckin();
         }
 
+        /// <summary>
+        /// Handles the ItemDataBound event of the rSelection control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rSelection_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             var dvalue = e.Item.DataItem as CachedModel<DefinedValue>;
@@ -200,29 +188,127 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
+        /// <summary>
+        /// Processes the person.
+        /// </summary>
+        protected void ProcessPerson()
+        {
+            var person = CurrentCheckInState.CheckIn.CurrentPerson;
+            if ( person == null )
+            {
+                CancelCheckin();
+            }
+
+            lPersonName.Text = person.ToString();
+
+            if ( IsOverride || NoConfiguredAbilityLevels( person.GroupTypes ) )
+            {
+                if ( UserBackedUp )
+                {
+                    GoBack();
+                }
+                else
+                {
+                    NavigateToNextPage();
+                }
+            }
+            else
+            {
+                person.Person.LoadAttributes();
+                _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" ).ToUpper();
+
+                var abilityLevelDType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL_TYPE.AsGuid() );
+                if ( abilityLevelDType != null )
+                {
+                    rSelection.DataSource = abilityLevelDType.DefinedValues.ToList();
+                    rSelection.DataBind();
+                }
+            }
+
+        }
+
+        /// <summary>
+        /// Processes the selection.
+        /// </summary>
         protected void ProcessSelection()
         {
-            if ( !ProcessSelection( maWarning, () => CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
-                .SelectMany( f => f.People.Where( p => p.Selected )
-                    .SelectMany( p => p.GroupTypes.Where( t => !t.ExcludedByFilter ) ) )
-                .Count() <= 0,
+            if ( !ProcessSelection( 
+                maWarning, 
+                () => CurrentCheckInState.CheckIn.CurrentPerson.GroupTypes
+                    .Where( t => !t.ExcludedByFilter ) 
+                    .Count() <= 0,
                 "<p>Sorry, based on your selection, there are currently not any available locations that can be checked into.</p>" ) ) 
             {
                 // Clear any filtered items so that user can select another option
-                var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
-                    .SelectMany( f => f.People.Where( p => p.Selected ) )
-                    .FirstOrDefault();
-                if ( person != null )
+                var person = CurrentCheckInState.CheckIn.CurrentPerson;
+                if ( person == null )
+                {
+                    CancelCheckin();
+                }
+                else
                 {
                     person.ClearFilteredExclusions();
-                    person.Person.LoadAttributes();
-                    _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" ).ToUpper();
 
-                    var abilityLevelDType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL_TYPE.AsGuid() );
-                    if ( abilityLevelDType != null )
+                    if ( !NoConfiguredAbilityLevels( person.GroupTypes ) )
                     {
-                        rSelection.DataSource = abilityLevelDType.DefinedValues.ToList();
-                        rSelection.DataBind();
+                        person.Person.LoadAttributes();
+                        _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" ).ToUpper();
+
+                        var abilityLevelDType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL_TYPE.AsGuid() );
+                        if ( abilityLevelDType != null )
+                        {
+                            rSelection.DataSource = abilityLevelDType.DefinedValues.ToList();
+                            rSelection.DataBind();
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Navigates to previous page.
+        /// </summary>
+        /// <param name="queryParams">The query parameters.</param>
+        protected override void NavigateToPreviousPage( Dictionary<string, string> queryParams )
+        {
+            queryParams = CheckForOverride( queryParams );
+
+            // First check for first unprocessed person
+            var currentPerson = CurrentCheckInState.CheckIn.CurrentPerson;
+            if ( currentPerson != null )
+            {
+                if ( currentPerson.PossibleSchedules.Any( p => p.Processed ) )
+                {
+                    // The current person has one or more processed schedules, mark last as unprocessed, and return
+                    var lastSchedule = currentPerson.PossibleSchedules.Where( p => p.Processed ).Last();
+                    lastSchedule.Processed = false;
+                    SaveState();
+                    NavigateToLinkedPage( "FamilyRepeatPage", queryParams );
+                }
+                else
+                {
+                    // If the current person did not have any processed schedules, then this would be the first person
+                    // and we should navigate to previous page (person selection)
+                    NavigateToLinkedPage( "FamilyPreviousPage", queryParams );
+                }
+            }
+            else
+            {
+                // All people have been processed, mark last person and their last schedule as not processed.
+                var family = CurrentCheckInState.CheckIn.CurrentFamily;
+                if ( family != null )
+                {
+                    var lastPerson = family.People.Where( p => p.Processed ).LastOrDefault();
+                    if ( lastPerson != null )
+                    {
+                        lastPerson.Processed = false;
+                        var lastSchedule = lastPerson.PossibleSchedules.Where( p => p.Processed ).LastOrDefault();
+                        if ( lastSchedule != null )
+                        {
+                            lastSchedule.Processed = false;
+                            SaveState();
+                            NavigateToLinkedPage( "FamilyRepeatPage", queryParams );
+                        }
                     }
                 }
             }

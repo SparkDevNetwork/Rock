@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,6 +28,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -71,7 +72,7 @@ namespace RockWeb.Blocks.WorkFlow
             }
             else
             {
-                AttributesState = JsonConvert.DeserializeObject<List<Attribute>>( json );
+                AttributesState = RockJsonTextReader.DeserializeObjectInSimpleMode<List<Attribute>>( json );
             }
 
             json = ViewState["ActivityTypesState"] as string;
@@ -81,7 +82,7 @@ namespace RockWeb.Blocks.WorkFlow
             }
             else
             {
-                ActivityTypesState = JsonConvert.DeserializeObject<List<WorkflowActivityType>>( json );
+                ActivityTypesState = RockJsonTextReader.DeserializeObjectInSimpleMode<List<WorkflowActivityType>>( json );
             }
 
             json = ViewState["ActivityAttributesState"] as string;
@@ -91,7 +92,7 @@ namespace RockWeb.Blocks.WorkFlow
             }
             else
             {
-                ActivityAttributesState = JsonConvert.DeserializeObject<Dictionary<Guid, List<Attribute>>>( json );
+                ActivityAttributesState = RockJsonTextReader.DeserializeObjectInSimpleMode<Dictionary<Guid, List<Attribute>>>( json );
             }
 
             ExpandedActivities = ViewState["ExpandedActivities"] as List<Guid>;
@@ -130,6 +131,8 @@ namespace RockWeb.Blocks.WorkFlow
             gAttributes.Actions.AddClick += gAttributes_Add;
             gAttributes.GridRebind += gAttributes_GridRebind;
             gAttributes.GridReorder += gAttributes_GridReorder;
+
+            LoadDropDowns();
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'This will also delete all the workflows of this type!');", WorkflowType.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.WorkflowType ) ).Id;
@@ -195,15 +198,16 @@ namespace RockWeb.Blocks.WorkFlow
         /// </returns>
         protected override object SaveViewState()
         {
-            var jsonSetting = new JsonSerializerSettings 
-            { 
+            var jsonSetting = new JsonSerializerSettings
+            {
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
+                ContractResolver = new Rock.Utility.BlockStateContractResolver(),
             };
 
-            ViewState["AttributesState"] = JsonConvert.SerializeObject( AttributesState, Formatting.None, jsonSetting );
-            ViewState["ActivityTypesState"] = JsonConvert.SerializeObject( ActivityTypesState, Formatting.None, jsonSetting );
-            ViewState["ActivityAttributesState"] = JsonConvert.SerializeObject( ActivityAttributesState, Formatting.None, jsonSetting );
+            ViewState["AttributesState"] = RockJsonTextWriter.SerializeObjectInSimpleMode( AttributesState, Formatting.None, jsonSetting );
+            var activityTypesState = RockJsonTextWriter.SerializeObjectInSimpleMode( ActivityTypesState, Formatting.None, jsonSetting );
+            ViewState["ActivityTypesState"] = activityTypesState;
+            ViewState["ActivityAttributesState"] = RockJsonTextWriter.SerializeObjectInSimpleMode( ActivityAttributesState, Formatting.None, jsonSetting );
             ViewState["ExpandedActivities"] = ExpandedActivities;
             ViewState["ExpandedActivityAttributes"] = ExpandedActivityAttributes;
             ViewState["ExpandedActions"] = ExpandedActions;
@@ -213,15 +217,15 @@ namespace RockWeb.Blocks.WorkFlow
 
         #endregion
 
-        #region Events
+            #region Events
 
-        #region Edit  events
+            #region Edit  events
 
-        /// <summary>
-        /// Handles the Click event of the btnEdit control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+            /// <summary>
+            /// Handles the Click event of the btnEdit control.
+            /// </summary>
+            /// <param name="sender">The source of the event.</param>
+            /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
@@ -513,7 +517,17 @@ namespace RockWeb.Blocks.WorkFlow
             workflowType.CategoryId = cpCategory.SelectedValueAsInt();
             workflowType.Order = 0;
             workflowType.WorkTerm = tbWorkTerm.Text;
-            workflowType.ProcessingIntervalSeconds = tbProcessingInterval.Text.AsIntegerOrNull();
+
+            int? mins = tbProcessingInterval.Text.AsIntegerOrNull();
+            if ( mins.HasValue )
+            {
+                workflowType.ProcessingIntervalSeconds = mins.Value * 60;
+            }
+            else
+            {
+                workflowType.ProcessingIntervalSeconds = null;
+            }
+
             workflowType.IsPersisted = cbIsPersisted.Checked;
             workflowType.LoggingLevel = ddlLoggingLevel.SelectedValueAsEnum<WorkflowLoggingLevel>();
             workflowType.IconCssClass = tbIconCssClass.Text;
@@ -1171,7 +1185,8 @@ namespace RockWeb.Blocks.WorkFlow
                 workflowType.CategoryId = parentCategoryId;
                 workflowType.IconCssClass = "fa fa-list-ol";
                 workflowType.ActivityTypes.Add( new WorkflowActivityType { Guid = Guid.NewGuid(), IsActive = true, IsActivatedWithWorkflow = true } );
-                workflowType.WorkTerm = "Work";            
+                workflowType.WorkTerm = "Work";
+                workflowType.ProcessingIntervalSeconds = 28800; // Default to every 8 hours
             }
             else
             {
@@ -1306,14 +1321,21 @@ namespace RockWeb.Blocks.WorkFlow
 
             SetEditMode( true );
 
-            LoadDropDowns();
-
             cbIsActive.Checked = workflowType.IsActive ?? false;
             tbName.Text = workflowType.Name;
             tbDescription.Text = workflowType.Description;
             cpCategory.SetValue( workflowType.CategoryId );
             tbWorkTerm.Text = workflowType.WorkTerm;
-            tbProcessingInterval.Text = workflowType.ProcessingIntervalSeconds != null ? workflowType.ProcessingIntervalSeconds.ToString() : string.Empty;
+
+            if ( workflowType.ProcessingIntervalSeconds.HasValue )
+            {
+                int mins = workflowType.ProcessingIntervalSeconds.Value / 60;
+                tbProcessingInterval.Text = mins.ToString( "N0" );
+            }
+            else
+            {
+                tbProcessingInterval.Text = string.Empty;
+            }
             cbIsPersisted.Checked = workflowType.IsPersisted;
             ddlLoggingLevel.SetValue( (int)workflowType.LoggingLevel );
             tbIconCssClass.Text = workflowType.IconCssClass;
@@ -1362,9 +1384,7 @@ namespace RockWeb.Blocks.WorkFlow
 <div>
     <ol>";
 
-                foreach ( var activityType in workflowType.ActivityTypes.OrderBy( a => a.Order ) )
-                {
-                    string activityTypeTextFormat = @"
+                string activityTypeTextFormat = @"
         <li>
             <strong>{0}</strong>
             {1}
@@ -1375,7 +1395,8 @@ namespace RockWeb.Blocks.WorkFlow
             </ol>
         </li>
 ";
-
+                foreach ( var activityType in workflowType.ActivityTypes.OrderBy( a => a.Order ) )
+                {
                     string actionTypeText = string.Empty;
 
                     foreach ( var actionType in activityType.ActionTypes.OrderBy( a => a.Order ) )

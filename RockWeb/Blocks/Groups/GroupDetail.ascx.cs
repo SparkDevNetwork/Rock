@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,6 +21,7 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Humanizer;
 using Newtonsoft.Json;
 
 using Rock;
@@ -553,6 +554,7 @@ namespace RockWeb.Blocks.Groups
             group.CampusId = ddlCampus.SelectedValueAsInt();
             group.GroupTypeId = CurrentGroupTypeId;
             group.ParentGroupId = gpParentGroup.SelectedValueAsInt();
+            group.GroupCapacity = nbGroupCapacity.Text.AsIntegerOrNull();
             group.IsSecurityRole = cbIsSecurityRole.Checked;
             group.IsActive = cbIsActive.Checked;
             group.IsPublic = cbIsPublic.Checked;
@@ -997,6 +999,9 @@ namespace RockWeb.Blocks.Groups
                             if ( group.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                             {
                                 authorizedGroupTypes.Add( allowedGroupType );
+
+                                // they have EDIT auth to at least one GroupType, so they are allowed to try to add this group
+                                editAllowed = true;
                             }
                         }
 
@@ -1017,7 +1022,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             viewAllowed = editAllowed || group.IsAuthorized( Authorization.VIEW, CurrentPerson );
-            editAllowed = IsUserAuthorized( Authorization.EDIT ) || group.IsAuthorized( Authorization.EDIT, CurrentPerson );
+            editAllowed = editAllowed || group.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
             pnlDetails.Visible = viewAllowed;
 
@@ -1141,6 +1146,7 @@ namespace RockWeb.Blocks.Groups
 
             tbName.Text = group.Name;
             tbDescription.Text = group.Description;
+            nbGroupCapacity.Text = group.GroupCapacity.ToString();
             cbIsSecurityRole.Checked = group.IsSecurityRole;
             cbIsActive.Checked = group.IsActive;
             cbIsPublic.Checked = group.IsPublic;
@@ -1445,6 +1451,35 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 hlCampus.Visible = false;
+            }
+
+            
+            // configure group capacity
+            if ( group.GroupType == null || group.GroupType.GroupCapacityRule == GroupCapacityRule.None )
+            {
+                nbGroupCapacity.Visible = false;
+            }
+            else
+            {
+                nbGroupCapacity.Visible = true;
+
+                // check if we're over capacity and if so show warning
+                if ( group.GroupCapacity.HasValue )
+                {
+                    int activeGroupMemberCount = group.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active ).Count();
+                    if ( activeGroupMemberCount > group.GroupCapacity )
+                    {
+                        nbGroupCapacityMessage.Text = string.Format( "This group is over capacity by {0}.", "individual".ToQuantity((activeGroupMemberCount - group.GroupCapacity.Value)) );
+                        nbGroupCapacityMessage.Visible = true;
+
+                        if ( group.GroupType != null && group.GroupType.GroupCapacityRule == GroupCapacityRule.Hard )
+                        {
+                            nbGroupCapacityMessage.NotificationBoxType = NotificationBoxType.Danger;
+                        }
+                    }
+
+                    descriptionList.Add( "Capacity", group.GroupCapacity.ToString() );
+                }
             }
 
             lblMainDetails.Text = descriptionList.Html;

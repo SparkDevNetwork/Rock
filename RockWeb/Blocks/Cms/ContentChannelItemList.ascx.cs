@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -83,6 +83,8 @@ namespace RockWeb.Blocks.Cms
             _channelId = PageParameter( "contentChannelId" ).AsIntegerOrNull();
             if ( _channelId != null )
             {
+                upnlContent.Visible = true;
+
                 string cssIcon = "fa fa-bullhorn";
                 var contentChannel = new ContentChannelService( new RockContext() ).Get( _channelId.Value );
                 if ( contentChannel != null )
@@ -158,6 +160,10 @@ namespace RockWeb.Blocks.Cms
                 // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
                 this.BlockUpdated += Block_BlockUpdated;
                 this.AddConfigurationUpdateTrigger( upnlContent );
+            }
+            else
+            {
+                upnlContent.Visible = false;
             }
         }
 
@@ -320,13 +326,16 @@ namespace RockWeb.Blocks.Cms
 
             // Add attribute columns
             int entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentChannelItem ) ).Id;
-            string qualifier = _typeId.ToString();
             foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
                 .Where( a =>
                     a.EntityTypeId == entityTypeId &&
-                    a.IsGridColumn &&
-                    a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                    a.EntityTypeQualifierValue.Equals( qualifier ) )
+                    a.IsGridColumn && ( (
+                        a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierValue.Equals( _typeId.ToString() )
+                    ) || (
+                        a.EntityTypeQualifierColumn.Equals( "ContentChannelId", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierValue.Equals( _channelId.ToString() )
+                    ) ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name ) )
             {

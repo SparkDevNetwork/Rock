@@ -7,11 +7,11 @@
 // <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -54,6 +54,9 @@ namespace Rock.Client
 
         /// <summary />
         public string ForeignKey { get; set; }
+
+        /// <summary />
+        public int? GroupCapacity { get; set; }
 
         /// <summary />
         public int GroupTypeId { get; set; }
@@ -136,6 +139,7 @@ namespace Rock.Client
             this.ExitSystemEmailId = source.ExitSystemEmailId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.GroupCapacity = source.GroupCapacity;
             this.GroupTypeId = source.GroupTypeId;
             this.IsActive = source.IsActive;
             this.IsPublic = source.IsPublic;

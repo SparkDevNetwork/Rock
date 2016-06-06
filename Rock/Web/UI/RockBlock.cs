@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -664,6 +664,16 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// If this Attribute is a reference to a PageRoute, this will return the Route, otherwise it will return the normal URL
+        /// </summary>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <returns></returns>
+        public string LinkedPageRoute( string attributeKey  )
+        {
+            return new PageReference( GetAttributeValue( attributeKey ) ).Route;
+        }
+
+        /// <summary>
         /// Navigate to a linked <see cref="Rock.Model.Page"/>.
         /// </summary>
         /// <param name="attributeKey">A <see cref="System.String"/> representing the name of the linked <see cref="Rock.Model.Page"/> attribute key.</param>
@@ -705,6 +715,22 @@ namespace Rock.Web.UI
             }
 
             return NavigateToLinkedPage( attributeKey, queryParams );
+        }
+
+        /// <summary>
+        /// Navigates to current page.
+        /// </summary>
+        /// <param name="queryString">The query string.</param>
+        /// <returns></returns>
+        public bool NavigateToCurrentPage( Dictionary<string, string> queryString = null )
+        {
+            var pageCache = PageCache.Read( RockPage.PageId );
+            if ( pageCache != null )
+            {
+                return NavigateToPage( pageCache.Guid, queryString );
+            }
+
+            return false;
         }
 
         /// <summary>
