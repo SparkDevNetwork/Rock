@@ -98,7 +98,16 @@ namespace RockWeb.Plugins.church_ccv.Core
                     var dataViewVal = this.GetBlockUserPreference( "DataView" );
                     dvpDataView.SetValue( dataViewVal );
 
-                    UpdatePhotoList();
+                    int? specificPersonId = this.PageParameter( "PersonId" ).AsIntegerOrNull();
+                    if (specificPersonId.HasValue)
+                    {
+                        hfPersonIds.Value = specificPersonId.ToString();
+                    }
+                    else
+                    {
+                        UpdatePhotoList();
+                    }
+                    
 
                     ShowPersonDetail( hfPersonIds.Value.SplitDelimitedValues().FirstOrDefault().AsIntegerOrNull() );
                 }
@@ -146,19 +155,19 @@ namespace RockWeb.Plugins.church_ccv.Core
 
                 if ( person != null )
                 {
-                    lName.Text = string.Format( "<span class='first-word'>{0}</span> {1}", person.NickName, person.LastName );
+                    lName.Text = string.Format( "<span class='first-word'>{0}</span> {1} <a href='/person/{2}' target='_blank' class='btn btn-default btn-xs'><i class='fa fa-user'></i></a>", person.NickName, person.LastName, person.Id );
 
                     if ( person.Age != null )
                     {
                         lAge.Text = person.Age.ToString() + " yrs old";
                     }
-                    
+
                     lGender.Text = person.Gender.ToString();
 
-                    if ( person.ConnectionStatusValue != null)
+                    if ( person.ConnectionStatusValue != null )
                     {
                         lConnectionStatus.Text = person.ConnectionStatusValue.ToString();
-                    }  
+                    }
                 }
 
                 pnlDetails.Visible = true;
@@ -320,13 +329,20 @@ namespace RockWeb.Plugins.church_ccv.Core
                     .Where( p => p.Id == CurrentPhotoPersonId )
                     .FirstOrDefault();
 
+            var changes = new List<string>();
+
             // set photo processed attribute so we know that this photo is done
             Helper.SaveAttributeValue( person, AttributeCache.Read( _photoProcessedAttribute.Value ), "True", rockContext );
 
             if ( person.PhotoId != imgPhoto.BinaryFileId )
             {
                 // note Person PreSave changes ensures that BinaryPhoto.IsTemporary is set to False
+                changes.Add( "Bulk Updated Photo and Set Photo Processed Attribute" );
                 person.PhotoId = imgPhoto.BinaryFileId;
+            }
+            else
+            {
+                changes.Add( "Updated Photo Processed Attribute without changing Photo" );
             }
 
             BinaryFileService binaryFileService = new BinaryFileService( rockContext );
@@ -336,7 +352,7 @@ namespace RockWeb.Plugins.church_ccv.Core
             {
                 if ( imgPhoto.CropBinaryFileId != person.PhotoId )
                 {
-                    
+
                     var binaryFile = binaryFileService.Get( imgPhoto.CropBinaryFileId.Value );
                     if ( binaryFile != null && binaryFile.IsTemporary )
                     {
@@ -364,6 +380,16 @@ namespace RockWeb.Plugins.church_ccv.Core
             }
 
             rockContext.SaveChanges();
+
+            if ( changes.Any() )
+            {
+                HistoryService.SaveChanges(
+                    rockContext,
+                    typeof( Person ),
+                    Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                    person.Id,
+                    changes );
+            }
 
 
             SkipCounter += 1;
