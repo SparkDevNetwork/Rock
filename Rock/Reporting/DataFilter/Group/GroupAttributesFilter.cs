@@ -282,7 +282,7 @@ namespace Rock.Reporting.DataFilter.Group
                     var groupType = GroupTypeCache.Read( groupTypePicker.SelectedGroupTypeId ?? 0 );
                     if ( groupType != null )
                     {
-                        if ( containerControl.Controls.Count == 1 )
+                        if ( containerControl.Controls.Count == 1 || filterMode == FilterMode.SimpleFilter )
                         {
                             groupTypePicker_SelectedIndexChanged( groupTypePicker, new EventArgs() );
                         }
