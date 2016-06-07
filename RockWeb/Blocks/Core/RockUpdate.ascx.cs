@@ -323,7 +323,7 @@ namespace RockWeb.Blocks.Core
                 CheckForManualFileMoves( version );
 
                 nbSuccess.Text = ConvertToHtmlLiWrappedUl( update.ReleaseNotes ).ConvertCrLfToHtmlBr();
-                lSuccessVersion.Text = update.Title;
+                lSuccessVersion.Text = GetRockVersion( update.Version );
 
                 // Record the current version to the database
                 Rock.Web.SystemSettings.SetValue( SystemSettingKeys.ROCK_INSTANCE_ID, version );
@@ -380,6 +380,32 @@ namespace RockWeb.Blocks.Core
         {
             lRockVersion.Text = string.Format( "<b>Current Version: </b> {0}", VersionInfo.GetRockProductVersionFullName() );
             lNoUpdateVersion.Text = VersionInfo.GetRockProductVersionFullName();
+        }
+
+        protected string GetRockVersion( object version )
+        {
+            var semanticVersion = version as SemanticVersion;
+            if ( semanticVersion == null )
+            {
+                semanticVersion = new SemanticVersion( version.ToString() );
+            }
+
+            if ( semanticVersion != null )
+            {
+                return "Rock " + RockVersion( semanticVersion );
+            }
+            else
+
+            return string.Empty;
+        }
+
+        protected string RockVersion( SemanticVersion version )
+        {
+            switch ( version.Version.Major )
+            {
+                case 1: return string.Format( "McKinley {0}.{1}", version.Version.Minor, version.Version.Build );
+                default: return string.Format( "{0}.{1}.{2}", version.Version.Major, version.Version.Minor, version.Version.Build );
+            }
         }
 
         /// <summary>
@@ -755,6 +781,7 @@ namespace RockWeb.Blocks.Core
                 nbErrors.Text = string.Format( "...actually, I'm not sure what happened here: {0}", ex.Message );
             }
         }
+
         #endregion
     }
 
