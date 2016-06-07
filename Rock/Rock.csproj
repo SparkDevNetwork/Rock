@@ -161,6 +161,7 @@
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\Bing.cs" />
     <Compile Include="Attribute\AddressFieldAttribute.cs" />
+    <Compile Include="Attribute\ContentChannelTypesFieldAttribute.cs" />
     <Compile Include="Attribute\PhoneNumberFieldAttribute.cs" />
     <Compile Include="Attribute\DataViewFieldAttribute.cs" />
     <Compile Include="Attribute\BinaryFileTypesFieldAttribute.cs" />
@@ -271,6 +272,7 @@
     <Compile Include="Data\Udf\DbMetadataExtensions.cs" />
     <Compile Include="Data\Udf\RockUdfHelper.cs" />
     <Compile Include="Field\Types\AddressFieldType.cs" />
+    <Compile Include="Field\Types\ContentChannelTypesFieldType.cs" />
     <Compile Include="Field\Types\PhoneNumberFieldType.cs" />
     <Compile Include="Field\Types\DataViewFieldType.cs" />
     <Compile Include="Field\Types\BinaryFileTypesFieldType.cs" />
@@ -1177,6 +1179,10 @@
     <Compile Include="Web\UI\IDetailBlock.cs" />
     <Compile Include="Web\UI\ISecondaryBlock.cs" />
     <Compile Include="Web\Utilities\HtmlSanitizer.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterLocationsBySchedule.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterLocationsByThreshold.cs" />
+    <Compile Include="Workflow\Action\CheckIn\PreSelectRecentAttendance.cs" />
+    <Compile Include="Workflow\Action\CheckIn\SetAvailableSchedules.cs" />
     <Compile Include="Workflow\Action\People\PersonAddressUpdate.cs" />
     <Compile Include="Workflow\Action\People\PersonPhoneUpdate.cs" />
     <Compile Include="Workflow\Action\People\PersonGetSpouse.cs" />

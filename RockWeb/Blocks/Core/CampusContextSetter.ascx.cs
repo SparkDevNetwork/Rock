@@ -43,7 +43,8 @@ namespace RockWeb.Blocks.Core
     [TextField( "Clear Selection Text", "The text displayed when a campus can be unselected. This will not display when the text is empty.", false, "", order: 4 )]
     [BooleanField( "Display Query Strings", "Select to always display query strings. Default behavior will only display the query string when it's passed to the page.", false, "", order: 5 )]
     [BooleanField("Include Inactive Campuses", "Should inactive campuses be listed as well?", false, "", order: 6)]
-    [BooleanField("Default To Current User's Campus", "Will use the campus of the current user if no context is provided.", key:"DefaultToCurrentUser")]
+    [BooleanField("Default To Current User's Campus", "Will use the campus of the current user if no context is provided.", order: 7, key:"DefaultToCurrentUser")]
+    [CustomDropdownListField("Alignment", "Determines the alignment of the dropdown.", "1^Left,2^Right", true, "1", order: 8)]
     public partial class CampusContextSetter : RockBlock
     {
         #region Base Control Methods
@@ -70,6 +71,11 @@ namespace RockWeb.Blocks.Core
             base.OnLoad( e );
 
             LoadDropdowns();
+
+            if (GetAttributeValue("Alignment") == "2" )
+            {
+                ulDropdownMenu.AddCssClass( "dropdown-menu-right" );
+            }
         }
 
         /// <summary>

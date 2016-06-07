@@ -49,13 +49,13 @@ namespace Rock.Workflow.Action.CheckIn
             var checkInState = GetCheckInState( entity, out errorMessages );
             if ( checkInState != null )
             {
-                foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ).ToList() )
+                foreach ( var family in checkInState.CheckIn.GetFamilies( true ) )
                 {
                     foreach ( var person in family.People )
                     {
                         foreach ( var kioskGroupType in checkInState.Kiosk.ActiveGroupTypes( checkInState.ConfiguredGroupTypes ) )
                         {
-                            if ( kioskGroupType.KioskGroups.SelectMany( g => g.KioskLocations ).Any( l => l.IsCheckInActive && l.Location.IsActive ) )
+                            if ( kioskGroupType.KioskGroups.SelectMany( g => g.KioskLocations ).Any( l => l.IsCheckInActive && l.IsActiveAndNotFull ) )
                             {
                                 if ( !person.GroupTypes.Any( g => g.GroupType.Id == kioskGroupType.GroupType.Id ) )
                                 {

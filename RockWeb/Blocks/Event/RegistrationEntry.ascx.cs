@@ -4317,8 +4317,11 @@ namespace RockWeb.Blocks.Event
                     nbAmountPaid.Text = ( RegistrationState.PaymentAmount ?? 0.0m ).ToString( "N2" );
 
                     // If a previous payment was made, or partial payment is allowed, show the amount remaining after selected payment amount
-                    lRemainingDue.Visible = allowPartialPayment || RegistrationState.PreviousPaymentTotal != 0.0m;
+                    lRemainingDue.Visible = allowPartialPayment;
                     lRemainingDue.Text = ( RegistrationState.DiscountedCost - ( RegistrationState.PreviousPaymentTotal + ( RegistrationState.PaymentAmount ?? 0.0m ) ) ).FormatAsCurrency();
+
+                    lAmountDue.Visible = !allowPartialPayment;
+                    lAmountDue.Text = ( RegistrationState.PaymentAmount ?? 0.0m ).FormatAsCurrency();
 
                     // Set payment options based on gateway settings
                     if ( balanceDue > 0 && RegistrationTemplate.FinancialGateway != null )

@@ -279,6 +279,11 @@ namespace RockWeb
                 throw ( new Exception( "Error occurred during application startup", ex ) );
             }
 
+            // Update attributes for new workflow actions
+            new Thread( () =>
+            {
+                Rock.Workflow.ActionContainer.Instance.UpdateAttributes();
+            } ).Start();
             
             // compile less files
             new Thread( () =>

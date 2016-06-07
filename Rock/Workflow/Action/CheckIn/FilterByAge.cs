@@ -50,7 +50,7 @@ namespace Rock.Workflow.Action.CheckIn
             var checkInState = GetCheckInState( entity, out errorMessages );
             if ( checkInState != null )
             {
-                var family = checkInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
+                var family = checkInState.CheckIn.CurrentFamily;
                 if ( family != null )
                 {
                     var remove = GetAttributeValue( action, "Remove" ).AsBoolean();

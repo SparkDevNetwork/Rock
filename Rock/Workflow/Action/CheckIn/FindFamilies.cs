@@ -50,7 +50,7 @@ namespace Rock.Workflow.Action.CheckIn
         public override bool Execute( RockContext rockContext, Model.WorkflowAction action, Object entity, out List<string> errorMessages )
         {
             var checkInState = GetCheckInState( entity, out errorMessages );
-            if ( checkInState != null )
+            if ( checkInState != null && checkInState.CheckIn.SearchType != null )
             {
                 var personService = new PersonService( rockContext );
                 var memberService = new GroupMemberService( rockContext );

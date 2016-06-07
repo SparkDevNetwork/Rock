@@ -53,13 +53,16 @@ namespace Rock.Workflow.Action.CheckIn
             {
                 bool loadAll = GetAttributeValue( action, "LoadAll" ).AsBoolean();
 
-                foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ).ToList() )
+                foreach ( var family in checkInState.CheckIn.GetFamilies( true ) )
                 {
-                    foreach ( var person in family.People.Where( p => p.Selected || loadAll ).ToList() )
+                    foreach ( var person in family.GetPeople( !loadAll ) )
                     {
-                        foreach ( var groupType in person.GroupTypes.Where( g => g.Selected || loadAll ).ToList() )
+                        foreach ( var groupType in person.GetGroupTypes( !loadAll ) )
                         {
-                            var kioskGroupType = checkInState.Kiosk.ActiveGroupTypes( checkInState.ConfiguredGroupTypes ).Where( g => g.GroupType.Id == groupType.GroupType.Id ).FirstOrDefault();
+                            var kioskGroupType = checkInState.Kiosk.ActiveGroupTypes( checkInState.ConfiguredGroupTypes )
+                                .Where( g => g.GroupType.Id == groupType.GroupType.Id )
+                                .FirstOrDefault();
+
                             if ( kioskGroupType != null )
                             {
                                 foreach ( var kioskGroup in kioskGroupType.KioskGroups.Where( g => g.IsCheckInActive ) )
