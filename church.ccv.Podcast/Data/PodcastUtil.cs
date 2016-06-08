@@ -145,9 +145,8 @@ namespace church.ccv.Podcast
                 series.Attributes.Add( attribValue.AttributeKey, attribValue.Value );
             }
 
-            // use the series' DateRange attribute to set the series' date.
-            string[] dateTime = series.Attributes["DateRange"].Split( ',' );
-            series.Date = DateTime.Parse( dateTime[ 0 ] );
+            // use the created dateTime as the series' date.
+            series.Date = contentChannel.CreatedDateTime;
     
             // only add messages if 'expandSeries' is set to true. This allows requesters to opt-out and
             // only get a list of series, which is faster.
