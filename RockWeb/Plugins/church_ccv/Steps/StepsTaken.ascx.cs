@@ -239,10 +239,10 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     var chartData = GetChartData( GetDateRange(), measureId: item.Id, campusId: campusId ).ToList();
 
                     // ensure there is at least one last year date to ensure 2 series
-                    if ( !chartData.Any( d => d.SeriesId == "Previous Year" ) && chartData.Count > 0 )
+                    if ( !chartData.Any( d => d.SeriesName == "Previous Year" ) && chartData.Count > 0 )
                     {
                         SummaryData blankItem = new SummaryData();
-                        blankItem.SeriesId = "Previous Year";
+                        blankItem.SeriesName = "Previous Year";
                         blankItem.YValue = 0;
                         blankItem.DateTimeStamp = chartData.OrderBy( d => d.DateTimeStamp ).FirstOrDefault().DateTimeStamp;
 
@@ -250,7 +250,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     }
 
                     // sort data
-                    chartData = chartData.OrderByDescending( c => c.SeriesId ).ThenBy( c => c.DateTimeStamp ).ToList();
+                    chartData = chartData.OrderByDescending( c => c.SeriesName ).ThenBy( c => c.DateTimeStamp ).ToList();
 
                     if ( chartData.Count() > 0 )
                     {
@@ -283,7 +283,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                         lcChart.Visible = false;
                     }
 
-                    lChartValue.Text = string.Format( "{0:n0}", chartData.Where( d => d.SeriesId == "Current Year" ).Sum( d => d.YValue ));
+                    lChartValue.Text = string.Format( "{0:n0}", chartData.Where( d => d.SeriesName == "Current Year" ).Sum( d => d.YValue ) );
                 } else
                 {
                     lcChart.Visible = false;
@@ -323,10 +323,10 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     var chartData = GetChartData( GetDateRange(), measureId: item.Id, pastorId: pastorId ).ToList();
 
                     // ensure there is at least one last year date to ensure 2 series
-                    if ( !chartData.Any( d => d.SeriesId == "Previous Year" ) && chartData.Count > 0 )
+                    if ( !chartData.Any( d => d.SeriesName == "Previous Year" ) && chartData.Count > 0 )
                     {
                         SummaryData blankItem = new SummaryData();
-                        blankItem.SeriesId = "Previous Year";
+                        blankItem.SeriesName = "Previous Year";
                         blankItem.YValue = 0;
                         blankItem.DateTimeStamp = chartData.OrderBy( d => d.DateTimeStamp ).FirstOrDefault().DateTimeStamp;
 
@@ -334,7 +334,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     }
 
                     // sort data
-                    chartData = chartData.OrderByDescending( c => c.SeriesId ).ThenBy( c => c.DateTimeStamp ).ToList();
+                    chartData = chartData.OrderByDescending( c => c.SeriesName ).ThenBy( c => c.DateTimeStamp ).ToList();
 
                     if ( chartData.Count() > 0 )
                     {
@@ -367,7 +367,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                         lcChart.Visible = false;
                     }
 
-                    lChartValue.Text = string.Format( "{0:n0}", chartData.Where( d => d.SeriesId == "Current Year" ).Sum( d => d.YValue ) );
+                    lChartValue.Text = string.Format( "{0:n0}", chartData.Where( d => d.SeriesName == "Current Year" ).Sum( d => d.YValue ) );
                 }
                 else
                 {
@@ -404,10 +404,10 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 var chartData = GetChartData( GetDateRange(), measureId: CurrentMeasure.Id, campusId: item.Id ).ToList();
 
                 // ensure there is at least one last year date to ensure 2 series
-                if ( !chartData.Any( d => d.SeriesId == "Previous Year" ) && chartData.Count > 0 )
+                if ( !chartData.Any( d => d.SeriesName == "Previous Year" ) && chartData.Count > 0 )
                 {
                     SummaryData blankItem = new SummaryData();
-                    blankItem.SeriesId = "Previous Year";
+                    blankItem.SeriesName = "Previous Year";
                     blankItem.YValue = 0;
                     blankItem.DateTimeStamp = chartData.OrderBy( d => d.DateTimeStamp ).FirstOrDefault().DateTimeStamp;
 
@@ -415,7 +415,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 }
 
                 // sort data
-                chartData = chartData.OrderByDescending( c => c.SeriesId ).ThenBy( c => c.DateTimeStamp ).ToList();
+                chartData = chartData.OrderByDescending( c => c.SeriesName ).ThenBy( c => c.DateTimeStamp ).ToList();
 
                 if ( chartData.Count() > 0 )
                 {
@@ -447,7 +447,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     lcChart.Visible = false;
                 }
 
-                lChartValue.Text = string.Format( "{0:n0}", chartData.Where( d => d.SeriesId == "Current Year" ).Sum( d => d.YValue ) );
+                lChartValue.Text = string.Format( "{0:n0}", chartData.Where( d => d.SeriesName == "Current Year" ).Sum( d => d.YValue ) );
                 
             }
         }
@@ -469,10 +469,10 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 var chartData = GetChartData( GetDateRange(), measureId: CurrentMeasure.Id, pastorId: item.PersonId ).ToList();
 
                 // ensure there is at least one last year date to ensure 2 series
-                if ( !chartData.Any( d => d.SeriesId == "Previous Year" ) && chartData.Count > 0 )
+                if ( !chartData.Any( d => d.SeriesName == "Previous Year" ) && chartData.Count > 0 )
                 {
                     SummaryData blankItem = new SummaryData();
-                    blankItem.SeriesId = "Previous Year";
+                    blankItem.SeriesName = "Previous Year";
                     blankItem.YValue = 0;
                     blankItem.DateTimeStamp = chartData.OrderBy( d => d.DateTimeStamp ).FirstOrDefault().DateTimeStamp;
 
@@ -480,7 +480,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 }
 
                 // sort data
-                chartData = chartData.OrderByDescending( c => c.SeriesId ).ThenBy( c => c.DateTimeStamp ).ToList();
+                chartData = chartData.OrderByDescending( c => c.SeriesName ).ThenBy( c => c.DateTimeStamp ).ToList();
 
                 if ( chartData.Count() > 0 )
                 {
@@ -512,7 +512,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     lcChart.Visible = false;
                 }
 
-                lChartValue.Text = string.Format( "{0:n0}", chartData.Where( d => d.SeriesId == "Current Year" ).Sum( d => d.YValue ) );
+                lChartValue.Text = string.Format( "{0:n0}", chartData.Where( d => d.SeriesName == "Current Year" ).Sum( d => d.YValue ) );
 
             }
         }
@@ -807,10 +807,10 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 var chartData = GetChartData( GetDateRange(), measureId: CurrentMeasure.Id, campusId: null ).ToList();
 
                 // ensure there is at least one last year date to ensure 2 series
-                if ( !chartData.Any( d => d.SeriesId == "Previous Year" ) && chartData.Count > 0 )
+                if ( !chartData.Any( d => d.SeriesName == "Previous Year" ) && chartData.Count > 0 )
                 {
                     SummaryData blankItem = new SummaryData();
-                    blankItem.SeriesId = "Previous Year";
+                    blankItem.SeriesName = "Previous Year";
                     blankItem.YValue = 0;
                     blankItem.DateTimeStamp = chartData.OrderBy( d => d.DateTimeStamp ).FirstOrDefault().DateTimeStamp;
 
@@ -818,7 +818,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 }
 
                 // sort data
-                chartData = chartData.OrderByDescending( c => c.SeriesId ).ThenBy( c => c.DateTimeStamp ).ToList();
+                chartData = chartData.OrderByDescending( c => c.SeriesName ).ThenBy( c => c.DateTimeStamp ).ToList();
 
                 if ( chartData.Count() > 0 )
                 {
@@ -850,7 +850,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     lcPastorSingleMeasure.Visible = false;
                 }
 
-                lPastorSingleChartValue.Text = string.Format( "{0:n0}", chartData.Where( d => d.SeriesId == "Current Year" ).Sum( d => d.YValue ) );
+                lPastorSingleChartValue.Text = string.Format( "{0:n0}", chartData.Where( d => d.SeriesName == "Current Year" ).Sum( d => d.YValue ) );
             }
         }
 
@@ -903,10 +903,10 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 var chartData = GetChartData( GetDateRange(), measureId: CurrentMeasure.Id, campusId: null ).ToList();
 
                 // ensure there is at least one last year date to ensure 2 series
-                if ( !chartData.Any( d => d.SeriesId == "Previous Year" ) && chartData.Count > 0 )
+                if ( !chartData.Any( d => d.SeriesName == "Previous Year" ) && chartData.Count > 0 )
                 {
                     SummaryData blankItem = new SummaryData();
-                    blankItem.SeriesId = "Previous Year";
+                    blankItem.SeriesName = "Previous Year";
                     blankItem.YValue = 0;
                     blankItem.DateTimeStamp = chartData.OrderBy( d => d.DateTimeStamp ).FirstOrDefault().DateTimeStamp;
 
@@ -914,7 +914,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 }
 
                 // sort data
-                chartData = chartData.OrderByDescending( c => c.SeriesId ).ThenBy( c => c.DateTimeStamp ).ToList();
+                chartData = chartData.OrderByDescending( c => c.SeriesName ).ThenBy( c => c.DateTimeStamp ).ToList();
 
                 if ( chartData.Count() > 0 )
                 {
@@ -946,7 +946,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     lcAdultsSingleMeasure.Visible = false;
                 }
 
-                lAdultSingleChartValue.Text = string.Format( "{0:n0}", chartData.Where( d => d.SeriesId == "Current Year" ).Sum( d => d.YValue ) );
+                lAdultSingleChartValue.Text = string.Format( "{0:n0}", chartData.Where( d => d.SeriesName == "Current Year" ).Sum( d => d.YValue ) );
             }
         }
 
@@ -1170,7 +1170,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                             {
                                 DateTimeStamp = c.DateKey.ToJavascriptMilliseconds(),
                                 DateTime = c.DateKey,
-                                SeriesId = "Current Year",
+                                SeriesName = "Current Year",
                                 YValue = c.Count
                             } ).ToList();
 
@@ -1187,7 +1187,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                             {
                                 DateTimeStamp = c.DateKey.AddYears(1).ToJavascriptMilliseconds(),
                                 DateTime = c.DateKey.AddYears(1),
-                                SeriesId = "Previous Year",
+                                SeriesName = "Previous Year",
                                 YValue = c.Count
                             } ).ToList();
 
