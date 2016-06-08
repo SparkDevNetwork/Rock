@@ -676,6 +676,8 @@ namespace RockWeb.Plugins.church_ccv.Steps
         /// </summary>
         private void ShowTotals(int? campusId = null)
         {
+            lTotalsByCampus.Text = string.Empty;
+
             RockContext rockContext = new RockContext();
 
             if ( cpAdultsCampus.SelectedCampusId == null )
