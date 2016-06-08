@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -127,6 +127,26 @@ namespace Rock.Workflow
         {
             base.Refresh();
             _categories = null;
+        }
+
+        /// <summary>
+        /// Updates the attributes.
+        /// </summary>
+        public void UpdateAttributes()
+        {
+            var entityType = EntityTypeCache.Read<Rock.Model.WorkflowActionType>( false );
+            if ( entityType != null )
+            {
+                foreach ( var component in this.Components )
+                {
+                    using ( var rockContext = new Rock.Data.RockContext() )
+                    {
+                        var actionComponent = component.Value.Value;
+                        var type = actionComponent.GetType();
+                        Rock.Attribute.Helper.UpdateAttributes( type, entityType.Id, "EntityTypeId", Rock.Web.Cache.EntityTypeCache.GetId( type.FullName ).ToString(), rockContext );
+                    }
+                }
+            }
         }
     }
 }

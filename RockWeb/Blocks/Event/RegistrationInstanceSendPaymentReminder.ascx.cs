@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -130,24 +130,27 @@ namespace RockWeb.Blocks.Event
             if ( registrationsSelected.Any() )
             {
                 var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "ExternalApplicationRoot" );
-
-                using ( RockContext rockContext = new RockContext() )
+                
+                if ( _registrationInstance == null )
                 {
-                    if ( _registrationInstance == null )
-                    {
-                        int? registrationInstanceId = PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull();
+                    int? registrationInstanceId = PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull();
 
+                    using ( RockContext rockContext = new RockContext() )
+                    {
                         RegistrationInstanceService registrationInstanceService = new RegistrationInstanceService( rockContext );
                         _registrationInstance = registrationInstanceService.Queryable( "RegistrationTemplate" ).AsNoTracking()
-                                                    .Where( r => r.Id == registrationInstanceId ).FirstOrDefault();
+                                                .Where( r => r.Id == registrationInstanceId ).FirstOrDefault();
+                    }
 
-
-                        foreach(var registrationId in registrationsSelected )
+                    foreach( var registrationId in registrationsSelected )
+                    {
+                        // use a new rockContext for each registration so that ChangeTracker doesn't get bogged down
+                        using ( RockContext rockContext = new RockContext() )
                         {
                             var registrationService = new RegistrationService( rockContext );
 
                             var registration = registrationService.Get( registrationId );
-                            if (registration != null && !string.IsNullOrWhiteSpace(registration.ConfirmationEmail) )
+                            if ( registration != null && !string.IsNullOrWhiteSpace(registration.ConfirmationEmail) )
                             {
                                 var recipients = new List<string>();
 

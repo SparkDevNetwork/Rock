@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -282,6 +282,8 @@ namespace RockWeb.Blocks.Finance
                     .Add( "End Date", txn.EndDate.HasValue ? txn.EndDate.Value.ToShortDateString() : string.Empty )
                     .Add( "Next Payment Date", txn.NextPaymentDate.HasValue ? txn.NextPaymentDate.Value.ToShortDateString() : string.Empty )
                     .Add( "Last Status Refresh", txn.LastStatusUpdateDateTime.HasValue ? txn.LastStatusUpdateDateTime.Value.ToString( "g" ) : string.Empty );
+
+                detailsLeft.Add( "Source", txn.SourceTypeValue != null ? txn.SourceTypeValue.Value : string.Empty );
 
                 if ( txn.FinancialPaymentDetail != null && txn.FinancialPaymentDetail.CurrencyTypeValue != null )
                 {

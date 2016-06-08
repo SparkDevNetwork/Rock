@@ -964,8 +964,8 @@
   <registrationInstances>
     <registrationInstance guid="abd46c03-7f71-4c43-a6bd-38b19047b6a6" name="Summer Camp 2016"
       templateGuid="FF8AE77B-D5AF-490A-9ECE-B47039681C2E" 
-      registrationStarts="{{ 'Now' | DateAdd:7,'d' | Date:'M/d/yyyy'}} 12:00AM" registrationEnds="{{ 'Now' | DateAdd:70,'d' | Date:'M/d/yyyy' }} 12:00AM"
-      maxAttendees="200" sendReminderDate="{{ 'Now' | DateAdd:88,'d' | Date:'M/d/yyyy' }} 9:00AM"
+      registrationStarts="{{ 'Now' | DateAdd:7,'d' | Date:'yyyy-M-dd'}} 12:00AM" registrationEnds="{{ 'Now' | DateAdd:70,'d' | Date:'yyyy-M-dd' }} 12:00AM"
+      maxAttendees="200" sendReminderDate="{{ 'Now' | DateAdd:88,'d' | Date:'yyyy-M-dd' }} 9:00AM"
       account="Event Registration" contactPersonGuid="82309081-A110-496F-8295-CE6A4720D7A8"
       contactPhone="(602) 555-3245" contactEmail="jenny@rocksolidchurchdemo.com"
       additionalReminderDetails="Camp starts on {{ 'Now' | DateAdd:90,'d' | Date:'MMMM dd'  }}. We will be leaving from the church at 7am so please don't be late.&lt;br&gt;&lt;br&gt;Be sure to read our &lt;a href=&quot;http://google.com&quot;&gt;What To Bring To Camp&lt;/a&gt; guide for details on packing for camp."
