@@ -43,7 +43,8 @@
 @import "_global-variables.less";
 @import "_helpers.less";
 
-@import "_ck-editor.less";
+// import as less files so they are concatenated properly
+@import (less) "./summernote/summernote.css";
 
 @import "./Bootstrap/mixins.less";
 
