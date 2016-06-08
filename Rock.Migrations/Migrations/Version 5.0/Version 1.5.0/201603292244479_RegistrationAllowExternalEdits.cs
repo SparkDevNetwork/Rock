@@ -36,7 +36,7 @@ namespace Rock.Migrations
             Sql( "UPDATE [AttributeValue] set [Value] = 'http://storage.rockrms.com/externalapplications/sparkdevnetwork/jobscheduler/1.5.0/jobscheduler.exe' where [Guid] = '7FBC4397-6BFD-451D-A6B9-83D7B7265641'" );
 
             // add admin checklist item for Family Analytics
-            RockMigrationHelper.AddDefinedValue( "4BF34677-37E9-4E71-BD03-252B66C9373D", "Enable Family Analytics", @"<a href='http://www.rockrms.com/Rock/BookContent/5#personfamilyanalytics'>Read up on the Family Analytics features</a> an enable the job that supports them.", "8CCE4657-409D-0998-445A-CA6DC2F43096" );
+            RockMigrationHelper.AddDefinedValue( "4BF34677-37E9-4E71-BD03-252B66C9373D", "Enable Family Analytics", @"<a href='http://www.rockrms.com/Rock/BookContent/5#personfamilyanalytics'>Read up on the Family Analytics features</a> and enable the job that supports them.", "8CCE4657-409D-0998-445A-CA6DC2F43096" );
         }
         
         /// <summary>
