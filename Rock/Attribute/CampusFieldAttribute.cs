@@ -39,13 +39,31 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        public CampusFieldAttribute( string name = "Campus", string description = "", bool required = true, string defaultCampusId = "", string category = "", int order = 0, string key = null )
+            : base( name, description, required, defaultCampusId, category, order, key, typeof( Rock.Field.Types.CampusFieldType ).FullName )
+        {
+            var includeInactiveConfigValue = new Field.ConfigurationValue( "False" );
+            FieldConfigurationValues.Add( INCLUDE_INACTIVE_KEY, includeInactiveConfigValue );
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CampusFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="defaultCampusId">The default campus identifier.</param>
         /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
-        public CampusFieldAttribute( string name = "Campus", string description = "", bool required = true, string defaultCampusId = "", string category = "", int order = 0, string key = null, bool includeInactive = false )
+        /// <param name="category">The category.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="key">The key.</param>
+        public CampusFieldAttribute( string name = "Campus", string description = "", bool required = true, string defaultCampusId = "", bool includeInactive = false, string category = "", int order = 0, string key = null )
             : base( name, description, required, defaultCampusId, category, order, key, typeof( Rock.Field.Types.CampusFieldType ).FullName )
         {
             var includeInactiveConfigValue = new Field.ConfigurationValue( includeInactive.ToString() );
             FieldConfigurationValues.Add( INCLUDE_INACTIVE_KEY, includeInactiveConfigValue );
         }
+
 
     }
 }
