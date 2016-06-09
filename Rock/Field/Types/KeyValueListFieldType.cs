@@ -294,7 +294,7 @@ namespace Rock.Field.Types
         {
             List<KeyValuePair<string, object>> values = new List<KeyValuePair<string, object>>();
 
-            bool isDefinedType = configurationValues != null && configurationValues.ContainsKey( "definedtype" ) && configurationValues["definedtype"].Value.AsBoolean();
+            bool isDefinedType = configurationValues != null && configurationValues.ContainsKey( "definedtype" ) && configurationValues["definedtype"].Value.AsIntegerOrNull().HasValue;
 
             string[] nameValues = value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
             foreach ( string nameValue in nameValues )
