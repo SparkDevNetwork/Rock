@@ -28,8 +28,28 @@ using Rock.Model;
 using Rock.Utility;
 using Rock.Workflow;
 
+using InteractivePreGeneratedViews;
+
 namespace Rock.Data
 {
+    /// <summary>
+    /// Helper class to set view cache
+    /// </summary>
+    public static class RockInteractiveViews
+    {
+        /// <summary>
+        /// Sets the view factory.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        public static void SetViewFactory( string path )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                InteractiveViews.SetViewCacheFactory( rockContext, new FileViewCacheFactory( path ) );
+            }
+        }
+    }
+
     /// <summary>
     /// Entity Framework Context
     /// </summary>
