@@ -573,6 +573,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                                 }
 
                                 rockContext.SaveChanges();
+
+                                Rock.CheckIn.KioskLocationAttendance.Flush( itemId.Value );
                             }
 
                             int? campusId = CurrentCampusId.AsIntegerOrNull();
