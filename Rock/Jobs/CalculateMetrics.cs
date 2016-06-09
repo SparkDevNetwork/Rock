@@ -95,7 +95,10 @@ namespace Rock.Jobs
                                     }
                                     else
                                     {
-                                        resultValues.Add( new ResultValue { Value = qry.Count() } );
+                                        var resultValue = new ResultValue();
+                                        resultValue.Value = Convert.ToDecimal( qry.Count() );
+                                        resultValue.Partitions = new List<ResultValuePartition>();
+                                        resultValues.Add( resultValue );
                                     }
                                 }
                             }
@@ -146,17 +149,33 @@ namespace Rock.Jobs
                                     metricValue.YValue = resultValue.Value;
                                     metricValue.MetricValuePartitions = new List<MetricValuePartition>();
                                     var metricPartitionsByPosition = metric.MetricPartitions.OrderBy(a => a.Order).ToList();
-                                    foreach (var partitionResult in resultValue.Partitions)
+
+
+                                    if ( !resultValue.Partitions.Any() && metricPartitionsByPosition.Count() == 1 && !metricPartitionsByPosition[0].EntityTypeId.HasValue )
                                     {
-                                        if ( metricPartitionsByPosition.Count > partitionResult.PartitionPosition )
+                                        // a metric with just the default partition (not partitioned by Entity)
+                                        var metricPartition = metricPartitionsByPosition[0];
+                                        var metricValuePartition = new MetricValuePartition();
+                                        metricValuePartition.MetricPartition = metricPartition;
+                                        metricValuePartition.MetricPartitionId = metricPartition.Id;
+                                        metricValuePartition.MetricValue = metricValue;
+                                        metricValuePartition.EntityId = null;
+                                        metricValue.MetricValuePartitions.Add( metricValuePartition );
+                                    }
+                                    else
+                                    {
+                                        foreach ( var partitionResult in resultValue.Partitions )
                                         {
-                                            var metricPartition = metricPartitionsByPosition[partitionResult.PartitionPosition];
-                                            var metricValuePartition = new MetricValuePartition();
-                                            metricValuePartition.MetricPartition = metricPartition;
-                                            metricValuePartition.MetricPartitionId = metricPartition.Id;
-                                            metricValuePartition.MetricValue = metricValue;
-                                            metricValuePartition.EntityId = partitionResult.EntityId;
-                                            metricValue.MetricValuePartitions.Add( metricValuePartition );
+                                            if ( metricPartitionsByPosition.Count > partitionResult.PartitionPosition )
+                                            {
+                                                var metricPartition = metricPartitionsByPosition[partitionResult.PartitionPosition];
+                                                var metricValuePartition = new MetricValuePartition();
+                                                metricValuePartition.MetricPartition = metricPartition;
+                                                metricValuePartition.MetricPartitionId = metricPartition.Id;
+                                                metricValuePartition.MetricValue = metricValue;
+                                                metricValuePartition.EntityId = partitionResult.EntityId;
+                                                metricValue.MetricValuePartitions.Add( metricValuePartition );
+                                            }
                                         }
                                     }
 
