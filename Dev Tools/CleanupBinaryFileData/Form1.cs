@@ -41,14 +41,13 @@ namespace CleanupBinaryFileData
             var convenantPdfQuery = binaryFileService.Queryable().Where( a => a.BinaryFileTypeId == binaryFileTypeCovenantId && a.MimeType == "application/pdf" );
             var convenantPdfList = convenantPdfQuery.Select( a => new
             {
-                SizeKB = SqlFunctions.DataLength( a.DatabaseData.Content ) / 1024,
                 a.Id
             } ).OrderBy( a => a ).ToList();
             totalCount = convenantPdfList.Count();
             
             Parallel.ForEach( convenantPdfList, ( convenantPdf ) =>
             {
-                string mergedFileName = string.Format( "C:\\output\\merged_resized\\{0}_mergedImages_origsizeKB_{1}.jpg", convenantPdf.Id, convenantPdf.SizeKB );
+                string mergedFileName = string.Format( "C:\\output\\merged_resized\\{0}_mergedImages.jpg", convenantPdf.Id);
                 if ( !File.Exists(mergedFileName))
                 {
                     try
@@ -85,6 +84,9 @@ namespace CleanupBinaryFileData
             
             var binaryFileDataService = new BinaryFileDataService( new RockContext() );
             var content = binaryFileDataService.Queryable().Where( a => a.Id == convenantPdfId ).Select( a => a.Content ).FirstOrDefault();
+
+            var origPdf = string.Format( "C:\\output\\orig_pdfs\\{0}.pdf", convenantPdfId );
+            File.WriteAllBytes( origPdf, content );
             var reader = new PdfReader( content );
             PdfReaderContentParser parser = new PdfReaderContentParser( reader );
             MyImageRenderListener listener = new MyImageRenderListener();
