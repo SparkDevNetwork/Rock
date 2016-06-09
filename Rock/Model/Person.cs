@@ -1475,6 +1475,19 @@ namespace Rock.Model
                 this.Aliases.Add( new PersonAlias { AliasPerson = this, AliasPersonGuid = this.Guid, Guid = Guid.NewGuid() } );
             }
 
+            if ( this.AnniversaryDate.HasValue )
+            {
+                var dbPropertyEntry = entry.Property( "AnniversaryDate" );
+                if ( dbPropertyEntry != null && dbPropertyEntry.IsModified )
+                {
+                    var spouse = this.GetSpouse( (RockContext)dbContext );
+                    if ( spouse != null && spouse.AnniversaryDate != this.AnniversaryDate )
+                    {
+                        spouse.AnniversaryDate = this.AnniversaryDate;
+                    }
+                }
+            }
+
             var transaction = new Rock.Transactions.SaveMetaphoneTransaction( this );
             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
         }
