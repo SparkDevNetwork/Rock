@@ -190,7 +190,7 @@ public class SendGrid : IHttpHandler
                         }
                         if (!string.IsNullOrEmpty(item.Email))
                         {
-                            Rock.Communication.Email.ProcessBounce(item.Email, Rock.Communication.BounceType.HardBounce, failDescription, item.TimeStamp);
+                            Rock.Communication.Email.ProcessBounce(item.Email, Rock.Communication.BounceType.HardBounce, failDescription.Truncate(200), item.TimeStamp);
                         }
                     }
                 }

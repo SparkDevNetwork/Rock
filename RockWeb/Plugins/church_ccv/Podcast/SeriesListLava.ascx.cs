@@ -51,7 +51,10 @@ namespace RockWeb.Plugins.church_ccv.Podcast
         {
             base.OnInit( e );
 
-            ShowDetail( );
+            int pageNum = PageParameter( "PageNum" ).AsInteger( );
+            int numPerPage = PageParameter( "NumPerPage" ).AsInteger( );
+
+            ShowDetail( pageNum, numPerPage != 0 ? numPerPage : 12 );
         }
         
         /// <summary>
@@ -66,12 +69,18 @@ namespace RockWeb.Plugins.church_ccv.Podcast
         
         /// Displays the view group  using a lava template
         /// 
-        protected void ShowDetail( )
+        protected void ShowDetail( int pageNum, int numPerPage )
         {
-            PodcastUtil.PodcastCategory podcastSeriesList = PodcastUtil.PodcastsAsModel( PodcastUtil.WeekendVideos_CategoryId );
+            // to improve performance, get the minimum number of series required to fulfill this request, which would be (pageNum + 1) * numPerPage
+            int numSeries = (pageNum + 1) * numPerPage;
+
+            PodcastUtil.PodcastCategory podcastSeriesList = PodcastUtil.PodcastsAsModel( PodcastUtil.WeekendVideos_CategoryId, false, numSeries );
+
+            PodcastUtil.PodcastCategory pagedPodcastList = new PodcastUtil.PodcastCategory( podcastSeriesList.Name, podcastSeriesList.Id );
+            pagedPodcastList.Children = podcastSeriesList.Children.Skip( pageNum * numPerPage ).Take( numPerPage ).ToList( );
             
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-            mergeFields.Add( "WeekendSeries", podcastSeriesList );
+            mergeFields.Add( "WeekendSeries", pagedPodcastList );
 
             Dictionary<string, object> linkedPages = new Dictionary<string, object>();
             linkedPages.Add("SeriesDetailPage", LinkedPageUrl("SeriesDetailPage", null));

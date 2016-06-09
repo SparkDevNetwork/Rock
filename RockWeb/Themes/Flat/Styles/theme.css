@@ -775,33 +775,33 @@ a.aspNetDisabled {
 .form-horizontal .form-group .form-control {
   float: left;
 }
-.form-horizontal .form-group label {
+.form-horizontal[class*="label-"] .form-group label {
   position: relative;
   min-height: 1px;
   padding-left: 15px;
   padding-right: 15px;
 }
 @media (min-width: 768px) {
-  .form-horizontal .form-group label {
+  .form-horizontal[class*="label-"] .form-group label {
     text-align: right;
     margin-bottom: 0;
     padding-top: 7px;
   }
 }
 @media (min-width: 768px) {
-  .form-horizontal .form-group label {
+  .form-horizontal[class*="label-"] .form-group label {
     float: left;
     width: 16.66666667%;
   }
 }
-.form-horizontal .form-group .control-wrapper {
+.form-horizontal[class*="label-"] .form-group .control-wrapper {
   position: relative;
   min-height: 1px;
   padding-left: 15px;
   padding-right: 15px;
 }
 @media (min-width: 768px) {
-  .form-horizontal .form-group .control-wrapper {
+  .form-horizontal[class*="label-"] .form-group .control-wrapper {
     float: left;
     width: 83.33333333%;
   }

@@ -18,9 +18,9 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="com.minecartstudio.PCOSync.Model.Account, com.minecartstudio.PCOSync" PropertyName="Name" Required="true" />
-                            <Rock:DataTextBox ID="tbApplicationId" runat="server" SourceTypeName="com.minecartstudio.PCOSync.Model.Account, com.minecartstudio.PCOSync" PropertyName="ApplicationId" Label="PCO Application Id" Required="true" />
-                            <Rock:DataTextBox ID="tbSecret" runat="server" SourceTypeName="com.minecartstudio.PCOSync.Model.Account, com.minecartstudio.PCOSync" PropertyName="Secret" Label="PCO Secret" Required="true" />
+                            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="com.minecartstudio.PCOSync.Model.PCOAccount, com.minecartstudio.PCOSync" PropertyName="Name" Required="true" />
+                            <Rock:DataTextBox ID="tbApplicationId" runat="server" SourceTypeName="com.minecartstudio.PCOSync.Model.PCOAccount, com.minecartstudio.PCOSync" PropertyName="ApplicationId" Label="PCO Application Id" Required="true" />
+                            <Rock:DataTextBox ID="tbSecret" runat="server" SourceTypeName="com.minecartstudio.PCOSync.Model.PCOAccount, com.minecartstudio.PCOSync" PropertyName="Secret" Label="PCO Secret" Required="true" />
                             <Rock:RockCheckBox ID="cbPermissionDowngrade" runat="server" Label="Allow Permission Downgrade" Text="Yes" 
                                 Help="Should the PCO Sync downgrade a person's permission in PCO if they are moved to a group in Rock with less privileges (e.g. Editor group to Viewer group)?" />
                         </div>

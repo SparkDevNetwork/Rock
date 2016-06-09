@@ -304,6 +304,11 @@ namespace Rock.SystemGuid
         public const string REMOTE_AUTHS = "ECA90666-E7A0-4406-8559-0153DCB908FD";
 
         /// <summary>
+        /// Schedule field type
+        /// </summary>
+        public const string SCHEDULE = "E9C12C59-98EA-4977-8318-647435BE9A9C";
+
+        /// <summary>
         /// Schedules field type
         /// </summary>
         public const string SCHEDULES = "EC6A5CAF-F6A2-47A4-9CBA-6E1C53D7E59B";

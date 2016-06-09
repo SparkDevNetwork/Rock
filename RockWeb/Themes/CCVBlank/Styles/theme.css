@@ -6,8 +6,8 @@
  * -------------------------- */
 @font-face {
   font-family: 'FontAwesome';
-  src: url('../../../Assets/Fonts/FontAwesome/fontawesome-webfont.eot?v=4.6.1');
-  src: url('../../../Assets/Fonts/FontAwesome/fontawesome-webfont.eot?#iefix&v=4.6.1') format('embedded-opentype'), url('../../../Assets/Fonts/FontAwesome/fontawesome-webfont.woff2?v=4.6.1') format('woff2'), url('../../../Assets/Fonts/FontAwesome/fontawesome-webfont.woff?v=4.6.1') format('woff'), url('../../../Assets/Fonts/FontAwesome/fontawesome-webfont.ttf?v=4.6.1') format('truetype'), url('../../../Assets/Fonts/FontAwesome/fontawesome-webfont.svg?v=4.6.1#fontawesomeregular') format('svg');
+  src: url('../../Assets/Fonts/FontAwesome/fontawesome-webfont.eot?v=4.6.1');
+  src: url('../../Assets/Fonts/FontAwesome/fontawesome-webfont.eot?#iefix&v=4.6.1') format('embedded-opentype'), url('../../Assets/Fonts/FontAwesome/fontawesome-webfont.woff2?v=4.6.1') format('woff2'), url('../../Assets/Fonts/FontAwesome/fontawesome-webfont.woff?v=4.6.1') format('woff'), url('../../Assets/Fonts/FontAwesome/fontawesome-webfont.ttf?v=4.6.1') format('truetype'), url('../../Assets/Fonts/FontAwesome/fontawesome-webfont.svg?v=4.6.1#fontawesomeregular') format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -9177,33 +9177,33 @@ a.aspNetDisabled {
 .form-horizontal .form-group .form-control {
   float: left;
 }
-.form-horizontal .form-group label {
+.form-horizontal[class*="label-"] .form-group label {
   position: relative;
   min-height: 1px;
   padding-left: 15px;
   padding-right: 15px;
 }
 @media (min-width: 768px) {
-  .form-horizontal .form-group label {
+  .form-horizontal[class*="label-"] .form-group label {
     text-align: right;
     margin-bottom: 0;
     padding-top: 7px;
   }
 }
 @media (min-width: 768px) {
-  .form-horizontal .form-group label {
+  .form-horizontal[class*="label-"] .form-group label {
     float: left;
     width: 16.66666667%;
   }
 }
-.form-horizontal .form-group .control-wrapper {
+.form-horizontal[class*="label-"] .form-group .control-wrapper {
   position: relative;
   min-height: 1px;
   padding-left: 15px;
   padding-right: 15px;
 }
 @media (min-width: 768px) {
-  .form-horizontal .form-group .control-wrapper {
+  .form-horizontal[class*="label-"] .form-group .control-wrapper {
     float: left;
     width: 83.33333333%;
   }

@@ -33,7 +33,7 @@ namespace church.ccv.Podcast
         // This is Rock's Weekend Videos podcast category, and will also never change.
         public const int WeekendVideos_CategoryId = 452;
 
-        public static PodcastCategory GetPodcastsByCategory( int categoryId, bool keepCategoryHierarchy = true )
+        public static PodcastCategory GetPodcastsByCategory( int categoryId, bool keepCategoryHierarchy = true, int maxSeries = int.MaxValue, bool expandSeries = true )
         {
             // if they pass in 0, accept that as the Root
             if ( categoryId == 0 )
@@ -58,35 +58,32 @@ namespace church.ccv.Podcast
             PodcastCategory rootPodcast = new PodcastCategory( category.Name, category.Id );
                         
             // see if this category has any podcasts to add.
-            Internal_GetPodcastsByCategory( category, rootPodcast, categoryContentChannelItems, keepCategoryHierarchy );
+            Internal_GetPodcastsByCategory( category, rootPodcast, categoryContentChannelItems, maxSeries, keepCategoryHierarchy, expandSeries );
     
             return rootPodcast;
         }
 
-        static void Internal_GetPodcastsByCategory( Category category, PodcastCategory rootPodcast, IQueryable<ContentChannelWithAttribs> categoryContentChannelItems, bool keepCategoryHierarchy = true )
+        static int Internal_GetPodcastsByCategory( Category category, PodcastCategory rootPodcast, IQueryable<ContentChannelWithAttribs> categoryContentChannelItems, int numSeriesToAdd, bool keepCategoryHierarchy = true, bool expandSeries = true )
         {
-            // Get all Content Channels that are immediate children of the provided category.
-            var podcastsForCategory = categoryContentChannelItems.Where( cci => cci.CategoryAttribValue.Value.Contains( category.Guid.ToString( ) ) ).Select( cci => cci.ContentChannel );
-
+            // Get all Content Channels that are immediate children of the provided category. Sort them by date, and then take 'numPodcastsToAdd', since 
+            // this is recursive and we might not need anymore.
+            var podcastsForCategory = categoryContentChannelItems.Where( cci => cci.CategoryAttribValue.Value.Contains( category.Guid.ToString( ) ) )
+                                                                 .Select( cci => cci.ContentChannel )
+                                                                 .OrderByDescending( cc => cc.CreatedDateTime )
+                                                                 .Take( numSeriesToAdd );
+            
             // Convert all the content channel items into PodcastSeries and add them as children.
+            // (We're safe to do this because we KNOW we've only added PodcastSeries at this point)
             foreach( ContentChannel contentChannel in podcastsForCategory )
             {
-                PodcastSeries podcastSeries = ContentChannelToPodcastSeries( contentChannel );
+                PodcastSeries podcastSeries = ContentChannelToPodcastSeries( contentChannel, expandSeries );
 
                 rootPodcast.Children.Add( podcastSeries );
             }
-            
-            // now sort all series based on their first message's date.
-            // (We're safe to do this because we KNOW we've only added PodcastSeries at this point)
-            rootPodcast.Children.Sort( delegate( IPodcastNode a, IPodcastNode b )
-            {
-                if( a.Date > b.Date )
-                {
-                    return -1;
-                }
-                return 1;
-            });
 
+            // store the number of podcasts added
+            int seriesAdded = podcastsForCategory.Count( );
+            
             // now recursively handle all child categories
             foreach ( Category childCategory in category.ChildCategories )
             {
@@ -111,12 +108,19 @@ namespace church.ccv.Podcast
                     podcastCategory = rootPodcast;
                 }
 
-                // now recursively call this so it can add its children
-                Internal_GetPodcastsByCategory( childCategory, podcastCategory, categoryContentChannelItems, keepCategoryHierarchy );
+
+                // if there are more podcasts to add
+                if( seriesAdded < numSeriesToAdd )
+                {
+                    // recursively call this so it can add its children
+                    seriesAdded += Internal_GetPodcastsByCategory( childCategory, podcastCategory, categoryContentChannelItems, numSeriesToAdd - seriesAdded, keepCategoryHierarchy );
+                }
             }
+
+            return seriesAdded;
         }
 
-        static PodcastSeries ContentChannelToPodcastSeries( ContentChannel contentChannel )
+        static PodcastSeries ContentChannelToPodcastSeries( ContentChannel contentChannel, bool expandSeries )
         {
             // Given a content channel in the database, this will convert it into our Podcast model.
 
@@ -140,34 +144,24 @@ namespace church.ccv.Podcast
             {
                 series.Attributes.Add( attribValue.AttributeKey, attribValue.Value );
             }
-                
-            series.Messages = new List<PodcastMessage>( );
-            foreach( ContentChannelItem contentChannelItem in contentChannel.Items )
-            {
-                // convert each contentChannelItem into a PodcastMessage, and add it to our list
-                PodcastMessage message = ContentChannelItemToPodcastMessage( contentChannelItem );
-                series.Messages.Add( message );
-            }
 
-            // if there are messages, sort them by date
-            if( series.Messages.Count > 0 )
+            // use the created dateTime as the series' date.
+            series.Date = contentChannel.CreatedDateTime;
+    
+            // only add messages if 'expandSeries' is set to true. This allows requesters to opt-out and
+            // only get a list of series, which is faster.
+            series.Messages = new List<PodcastMessage>( );
+            if ( expandSeries )
             {
                 // sort the messages by date
-                series.Messages.Sort( delegate( PodcastMessage a, PodcastMessage b )
-                {
-                    if( a.Date > b.Date )
-                    {
-                        return -1;
-                    }
-                    return 1;
-                });
+                var orderedContentChannelItems = contentChannel.Items.OrderByDescending( i => i.CreatedDateTime );
 
-                // then set the series' date to the first message's (earliest)
-                series.Date = series.Messages[0].Date;
-            }
-            else
-            {
-                series.Date = null;
+                foreach( ContentChannelItem contentChannelItem in orderedContentChannelItems )
+                {
+                    // convert each contentChannelItem into a PodcastMessage, and add it to our list
+                    PodcastMessage message = ContentChannelItemToPodcastMessage( contentChannelItem );
+                    series.Messages.Add( message );
+                }
             }
 
             return series;
@@ -202,12 +196,12 @@ namespace church.ccv.Podcast
             return message;
         }
 
-        public static PodcastCategory PodcastsAsModel( int podcastCategory )
+        public static PodcastCategory PodcastsAsModel( int podcastCategory, bool keepHierarchy = false, int numSeries = int.MaxValue )
         {
-            return GetPodcastsByCategory( podcastCategory );
+            return GetPodcastsByCategory( podcastCategory, keepHierarchy, numSeries );
         }
 
-        public static PodcastSeries GetSeries( int seriesId )
+        public static PodcastSeries GetSeries( int seriesId, bool expandSeries )
         {
             // try to get the content channel that represents this series
             RockContext rockContext = new RockContext( );
@@ -217,7 +211,7 @@ namespace church.ccv.Podcast
             if( seriesContentChannel != null )
             {
                 // convert it to a PodcastSeries and return it
-                PodcastSeries series = ContentChannelToPodcastSeries( seriesContentChannel );
+                PodcastSeries series = ContentChannelToPodcastSeries( seriesContentChannel, expandSeries );
                 return series;
             }
             
@@ -395,12 +389,12 @@ namespace church.ccv.Podcast
             //
         }
 
-        public class PodcastMessage
+        public class PodcastMessage : IPodcastNode
         {
             public int Id { get; set; }
             public string Name { get; set; }
             public string Description { get; set; }
-            public DateTime Date { get; set; }
+            public DateTime? Date { get; set; }
             public Dictionary<string, string> Attributes { get; set; }
             public bool Approved { get; set; }
 

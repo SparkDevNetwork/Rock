@@ -302,6 +302,11 @@ namespace Rock.Model
         /// The work phone
         /// </summary>
         WorkPhone = 10,
+
+        /// <summary>
+        /// The grade
+        /// </summary>
+        Grade = 11,
     }
 
     #endregion

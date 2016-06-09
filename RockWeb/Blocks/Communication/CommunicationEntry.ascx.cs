@@ -290,6 +290,7 @@ namespace RockWeb.Blocks.Communication
 
         protected void ddlTemplate_SelectedIndexChanged( object sender, EventArgs e )
         {
+            GetMediumData();
             int? templateId = ddlTemplate.SelectedValue.AsIntegerOrNull();
             if ( templateId.HasValue )
             {

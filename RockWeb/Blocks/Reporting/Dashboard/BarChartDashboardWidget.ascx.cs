@@ -29,38 +29,13 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     [Description( "Bar Chart Dashboard Widget" )]
     public partial class BarChartDashboardWidget : LineBarPointsChartDashboardWidget
     {
-        /// <summary>
-        /// Gets the flot chart control.
-        /// </summary>
-        /// <value>
-        /// The flot chart control.
-        /// </value>
-        public override FlotChart FlotChartControl
+        protected override void OnInit( System.EventArgs e )
         {
-            get { return bcChart; }
-        }
+            base.OnInit( e );
 
-        /// <summary>
-        /// Gets the metric warning control.
-        /// </summary>
-        /// <value>
-        /// The metric warning control.
-        /// </value>
-        public override Rock.Web.UI.Controls.NotificationBox MetricWarningControl
-        {
-            get { return nbMetricWarning; }
-        }
-
-        /// <summary>
-        /// Loads the chart.
-        /// </summary>
-        public override void LoadChart()
-        {
-            base.LoadChart();
-            pnlDashboardTitle.Visible = !string.IsNullOrEmpty( this.Title );
-            pnlDashboardSubtitle.Visible = !string.IsNullOrEmpty( this.Subtitle );
-            lDashboardTitle.Text = this.Title;
-            lDashboardSubtitle.Text = this.Subtitle;
+            flotChart.Options.xaxis = new AxisOptions { mode = AxisMode.categories, tickLength = 0 };
+            flotChart.Options.series.bars.barWidth = 0.6;
+            flotChart.Options.series.bars.align = "center";
         }
     }
 }

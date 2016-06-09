@@ -265,7 +265,8 @@ namespace Rock.Field.Types
             {
                 if ( control != null && control is RockDropDownList )
                 {
-                    ( (RockDropDownList)control ).SetValue( value );
+                    bool? booleanValue = value.AsBooleanOrNull();
+                    ( (RockDropDownList)control ).SetValue( booleanValue.HasValue ? booleanValue.ToString() : "" );
                 }
             }
         }

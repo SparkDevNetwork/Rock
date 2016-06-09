@@ -288,7 +288,9 @@ namespace RockWeb.Blocks.Finance
                 hfBusinessId.Value = business.Id.ToString();
             } );
 
-            ShowSummary( hfBusinessId.Value.AsInteger() );
+            var queryParams = new Dictionary<string, string>();
+            queryParams.Add( "businessId", hfBusinessId.Value );
+            NavigateToCurrentPage( queryParams );
         }
 
         /// <summary>

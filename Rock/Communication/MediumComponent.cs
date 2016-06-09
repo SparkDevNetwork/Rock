@@ -60,7 +60,7 @@ namespace Rock.Communication
         /// <summary>
         /// Initializes a new instance of the <see cref="MediumComponent" /> class.
         /// </summary>
-        public MediumComponent()
+        public MediumComponent() : base( false )
         {
             this.LoadAttributes();
         }
@@ -105,7 +105,7 @@ namespace Rock.Communication
         public virtual void Send( Rock.Model.Communication communication )
         {
             var transport = Transport;
-            if ( transport != null )
+            if ( transport != null && transport.IsActive )
             {
                 transport.Send( communication );
             }

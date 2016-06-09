@@ -14,27 +14,32 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Field.Types;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
 
 namespace Rock.Attribute
 {
     /// <summary>
-    /// value stored as pipe delimited: Metric (as Guid) | EntityId | GetEntityFromContext | CombineValues | Metric's Category (as Guid)
+    /// Field Attribute to select a Schedule
+    /// Stored as Schedule.Guid
     /// </summary>
-    public class MetricEntityFieldAttribute : FieldAttribute
+    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
+    public class ScheduleFieldAttribute : FieldAttribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="MetricEntityFieldAttribute"/> class.
+        /// Initializes a new instance of the <see cref="ScheduleFieldAttribute"/> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="defaultValue">The default value.</param>
+        /// <param name="defaultScheduleGuids">The default schedule guids.</param>
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public MetricEntityFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null ) : 
-            base( name, description, required, defaultValue, category, order, key, typeof( MetricEntityFieldType ).FullName )
+        public ScheduleFieldAttribute( string name = "Schedule", string description = "", bool required = true, string defaultScheduleGuids = "", string category = "", int order = 0, string key = null )
+            : base( name, description, required, defaultScheduleGuids, category, order, key, typeof( Rock.Field.Types.ScheduleFieldType ).FullName )
         {
         }
     }

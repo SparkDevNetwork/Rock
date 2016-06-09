@@ -213,8 +213,11 @@ namespace church.ccv.Steps
                 // check if the metrics we need exist, if not send warning email and stop
                 List<MetricValue> metricValues = new MetricValueService( rockContext ).Queryable().Where( m => m.MetricValueDateTime == sundayDate && m.MetricId == _attendanceMetricId ).ToList();
 
+                int entityTypeCampusId = EntityTypeCache.GetId<Campus>() ?? 0;
+                
                 // ensure that all campuses have metrics
-                if (!ContainsAllItems(_campusIds, metricValues.Select(m => m.EntityId.Value ).ToList() ) )
+                var metricCampusIds = metricValues.SelectMany(m => m.MetricValuePartitions ).Where(a => a.MetricPartition.EntityTypeId == entityTypeCampusId && a.EntityId.HasValue).Select(a => a.EntityId.Value).ToList();
+                if (!ContainsAllItems(_campusIds, metricCampusIds))
                 {
                     // send warning email
                     if ( !string.IsNullOrWhiteSpace( _warningEmailAddresses ) && _warningEmailTemplate != Guid.Empty)
@@ -784,6 +787,8 @@ namespace church.ccv.Steps
 
         private void SaveMetrics( int measureId, DateTime sundayDate, List<MetricValue> metricValues, List<CampusAdultCount> campusAdultCounts,  List<CampusStudentCount> campusStudentCounts, List<CampusMeasure> campusAllMeasures, List<CampusMeasure> campusAdultMeasures, List<CampusMeasure> campusStudentMeasures, List<AreaMeasure> areaMeasures )
         {
+            int entityTypeCampusId = EntityTypeCache.GetId<Campus>() ?? 0;
+
             using ( RockContext rockContext = new RockContext() )
             {
                 StepMeasureValueService stepMeasureValueService = new StepMeasureValueService( rockContext );
@@ -791,7 +796,8 @@ namespace church.ccv.Steps
                 foreach ( int campusId in _campusIds )
                 {
                     // get counts 
-                    int weekendAttendance = metricValues.Where( m => m.EntityId == campusId ).Select( m => m.YValue ).FirstOrDefault() != null ? Decimal.ToInt16( metricValues.Where( m => m.EntityId == campusId ).Select( m => m.YValue ).FirstOrDefault().Value ) : 0;
+                    int weekendAttendance = metricValues.Where( m => m.MetricValuePartitions.Any( x => x.MetricPartition.EntityTypeId == entityTypeCampusId && x.EntityId == campusId )).Select( m => m.YValue ).FirstOrDefault() != null ? 
+                        Decimal.ToInt16( metricValues.Where( m => m.MetricValuePartitions.Any( x => x.MetricPartition.EntityTypeId == entityTypeCampusId && x.EntityId == campusId )).Select( m => m.YValue ).FirstOrDefault().Value ) : 0;
                     int activeAdults = campusAdultCounts.Where( c => c.CampusId == campusId ).Select( c => c.AdultCount ).Count() != 0 ? campusAdultCounts.Where( c => c.CampusId == campusId ).Select( c => c.AdultCount ).FirstOrDefault() : 0;
                     int activeStudents = campusStudentCounts.Where( c => c.CampusId == campusId ).Select( c => c.StudentCount ).Count() != 0 ? campusStudentCounts.Where( c => c.CampusId == campusId ).Select( c => c.StudentCount ).FirstOrDefault() : 0;
                     int measureCountAll = campusAllMeasures.Where( b => b.CampusId == campusId ).Select( b => b.MeasureValue ).Count() != 0 ? campusAllMeasures.Where( b => b.CampusId == campusId ).Select( b => b.MeasureValue ).FirstOrDefault() : 0;

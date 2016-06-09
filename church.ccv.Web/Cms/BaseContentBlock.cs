@@ -151,6 +151,7 @@ namespace church.ccv.Web.Cms
             options.GetOSFamily = includeMergeFields.Contains( "OSFamily" );
             options.GetCurrentPerson = includeMergeFields.Contains( "CurrentPerson" );
             options.GetCampuses = includeMergeFields.Contains( "Campuses" );
+            options.GetLegacyGlobalMergeFields = includeMergeFields.Contains( "GlobalAttributes" ); ;
 
             Dictionary<string, object> mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, options );
             

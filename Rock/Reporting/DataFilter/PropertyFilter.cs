@@ -163,24 +163,47 @@ namespace Rock.Reporting.DataFilter
             // add Empty option first
             ddlEntityField.Items.Add( new ListItem() );
             var rockBlock = filterControl.RockBlock();
+            var entityTypeCache = EntityTypeCache.Read( entityType, true );
 
             this.entityFields = EntityHelper.GetEntityFields( entityType );
-            foreach ( var entityField in this.entityFields )
+            foreach ( var entityField in this.entityFields.OrderBy(a => !a.IsPreviewable).ThenBy(a => a.FieldKind != FieldKind.Property ).ThenBy(a => a.Title) )
             {
                 bool isAuthorized = true;
+                bool includeField = true;
                 if ( entityField.FieldKind == FieldKind.Attribute && entityField.AttributeGuid.HasValue)
                 {
+                    if ( entityType == typeof( Rock.Model.Workflow ) && !string.IsNullOrWhiteSpace(entityField.AttributeEntityTypeQualifierName) )
+                    {
+                        // Workflows can contain tons of Qualified Attributes, so let the WorkflowAttributeFilter take care of those
+                        includeField = false;
+                    }
+                    
                     var attribute = AttributeCache.Read( entityField.AttributeGuid.Value );
-                    if ( attribute != null && rockBlock != null )
+                    if ( includeField && attribute != null && rockBlock != null )
                     {
                         // only show the Attribute field in the drop down if they have VIEW Auth to it
                         isAuthorized = attribute.IsAuthorized( Rock.Security.Authorization.VIEW, rockBlock.CurrentPerson );
                     }
                 }
 
-                if ( isAuthorized )
+                if ( isAuthorized && includeField )
                 {
-                    ddlEntityField.Items.Add( new ListItem( entityField.Title, entityField.Name ) );
+                    var listItem = new ListItem( entityField.Title, entityField.Name );
+
+                    if ( entityField.IsPreviewable )
+                    {
+                        listItem.Attributes["optiongroup"] = "Common";
+                    }
+                    else if (entityField.FieldKind == FieldKind.Attribute)
+                    {
+                        listItem.Attributes["optiongroup"] = string.Format( "{0} Attributes", entityType.Name );
+                    }
+                    else
+                    {
+                        listItem.Attributes["optiongroup"] = string.Format( "{0} Fields", entityType.Name );
+                    }
+
+                    ddlEntityField.Items.Add( listItem  );
                 }
             }
             

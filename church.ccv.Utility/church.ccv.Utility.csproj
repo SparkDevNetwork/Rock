@@ -64,6 +64,7 @@
     <Compile Include="Group\ToolboxGroupMemberDetail.ascx.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
+    <Compile Include="Jobs\SendConnectionReport.cs" />
     <Compile Include="Jobs\CreateFirstVisitWorkflows.cs" />
     <Compile Include="Jobs\GroupMemberFollowUpNotifications.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

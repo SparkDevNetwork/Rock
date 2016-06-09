@@ -49,9 +49,7 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     ClearSelection();
 
-                    var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
-                        .FirstOrDefault();
-
+                    var family = CurrentCheckInState.CheckIn.CurrentFamily;
                     if ( family == null )
                     {
                         GoBack();
@@ -142,10 +140,11 @@ namespace RockWeb.Blocks.CheckIn
 
         protected void ProcessSelection()
         {
-            ProcessSelection( maWarning, () => CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
-                .SelectMany( f => f.People.Where( p => p.Selected )
-                    .SelectMany( p => p.GroupTypes.Where( t => !t.ExcludedByFilter ) ) )
-                .Count() <= 0,
+            ProcessSelection( 
+                maWarning, 
+                () => CurrentCheckInState.CheckIn.CurrentFamily.GetPeople( true )
+                    .SelectMany( p => p.GroupTypes.Where( t => !t.ExcludedByFilter ) )
+                    .Count() <= 0,
                 "<p>Sorry, based on your selection, there are currently not any available locations that can be checked into.</p>" );
         }
 
