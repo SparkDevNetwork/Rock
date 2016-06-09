@@ -101,6 +101,7 @@ GROUPS
 + Changed default date range for Group Attendance to 3 months instead of a year (date filter can still be changed per user).
 + Added campus filter to group attendance list. This will filter the attendance count and rate values by the people whose campus is the selected value.
 + Added an optional campus filter to the Group Attendance Detail block.
++ Fixed issue with Role specific Group Requirments still showing warning icon for members of group with a different role.
 
 LAVA
 + Added new SortByAttribute Lava filter.
@@ -125,6 +126,7 @@ PERSON/FAMILY
 + Update Person History block so that history items are not displayed for any category that current user does not have authorization to view.
 + Changed "Combine Giving With" to show the family name along with the list of names of the family members when editing a person
 + Allow the toggling of showing inactive campuses on the Add Family block using a block setting.
++ Updated saving of a person record to check if anniversary date was updated and if so make same update to spouse's record.
 
 PRAYER
 + The PrayerRequestEntry block's Save Success Text can now use Lava in order to display different messages based on the prayer request (or its Category) and the block can also initiate a Workflow with the PrayerRequest as the Entity if configured.
