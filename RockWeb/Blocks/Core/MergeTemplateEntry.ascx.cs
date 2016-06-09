@@ -414,7 +414,14 @@ namespace RockWeb.Blocks.Core
                         if ( mergeValueObject is JArray)
                         {
                             var jsonOfObject = mergeValueObject.ToJson();
-                            mergeValueObject = Rock.Lava.RockFilters.FromJSON( jsonOfObject );
+                            try
+                            {
+                                mergeValueObject = Rock.Lava.RockFilters.FromJSON( jsonOfObject );
+                            }
+                            catch ( Exception ex )
+                            {
+                                LogException( new Exception("MergeTemplateEntry couldn't do a FromJSON", ex) );
+                            }
                         }
 
                         mergeEntity.AdditionalLavaFields.AddOrIgnore( additionalMergeValue.Key, mergeValueObject );
