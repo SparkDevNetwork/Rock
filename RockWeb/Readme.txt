@@ -101,6 +101,7 @@ GROUPS
 + Changed default date range for Group Attendance to 3 months instead of a year (date filter can still be changed per user).
 + Added campus filter to group attendance list. This will filter the attendance count and rate values by the people whose campus is the selected value.
 + Added an optional campus filter to the Group Attendance Detail block.
++ Fixed issue with Role specific Group Requirments still showing warning icon for members of group with a different role.
 
 LAVA
 + Added new SortByAttribute Lava filter.
