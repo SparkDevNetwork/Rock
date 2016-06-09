@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.Entity.SqlServer;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -33,22 +34,26 @@ namespace CleanupBinaryFileData
 
         private void button1_Click( object sender, EventArgs e )
         {
-            settings.MaxWidth = 450;
+            settings.MaxWidth = 600;
 
             var binaryFileService = new BinaryFileService( new RockContext() );
             
             var convenantPdfQuery = binaryFileService.Queryable().Where( a => a.BinaryFileTypeId == binaryFileTypeCovenantId && a.MimeType == "application/pdf" );
-            var convenantPdfIdList = convenantPdfQuery.Select( a =>  a.Id ).OrderBy(a => a).ToList();
-            totalCount = convenantPdfIdList.Count();
-            
-            Parallel.ForEach( convenantPdfIdList, ( convenantPdfId ) =>
+            var convenantPdfList = convenantPdfQuery.Select( a => new
             {
-                string mergedFileName = string.Format( "C:\\output\\merged_resized\\{0}_mergedImages.jpg", convenantPdfId );
+                SizeKB = SqlFunctions.DataLength( a.DatabaseData.Content ) / 1024,
+                a.Id
+            } ).OrderBy( a => a ).ToList();
+            totalCount = convenantPdfList.Count();
+            
+            Parallel.ForEach( convenantPdfList, ( convenantPdf ) =>
+            {
+                string mergedFileName = string.Format( "C:\\output\\merged_resized\\{0}_mergedImages_origsizeKB_{1}.jpg", convenantPdf.Id, convenantPdf.SizeKB );
                 if ( !File.Exists(mergedFileName))
                 {
                     try
                     {
-                        ExtractMergedJPG( convenantPdfId, mergedFileName );
+                        ExtractMergedJPG( convenantPdf.Id,  mergedFileName );
                     }
                     catch (OutOfMemoryException)
                     {
@@ -75,7 +80,7 @@ namespace CleanupBinaryFileData
             // EncoderParameter object in the array.
             EncoderParameters myEncoderParameters = new EncoderParameters( 1 );
 
-            EncoderParameter myEncoderParameter = new EncoderParameter( myEncoder, 80L );
+            EncoderParameter myEncoderParameter = new EncoderParameter( myEncoder, 50L );
             myEncoderParameters.Param[0] = myEncoderParameter;
             
             var binaryFileDataService = new BinaryFileDataService( new RockContext() );
