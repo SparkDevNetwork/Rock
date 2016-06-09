@@ -425,6 +425,7 @@ namespace church.ccv.Steps
                                                                          h.Caption == "Giving"
                                                                          && h.Verb == "STOPPED"
                                                                          && h.CreatedDateTime > lastYearDate
+                                                                         && h.EntityId == person.Id
                                                                    )
                                                                    .Any();
 
