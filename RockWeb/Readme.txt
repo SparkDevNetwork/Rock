@@ -125,6 +125,7 @@ PERSON/FAMILY
 + Update Person History block so that history items are not displayed for any category that current user does not have authorization to view.
 + Changed "Combine Giving With" to show the family name along with the list of names of the family members when editing a person
 + Allow the toggling of showing inactive campuses on the Add Family block using a block setting.
++ Updated saving of a person record to check if anniversary date was updated and if so make same update to spouse's record.
 
 PRAYER
 + The PrayerRequestEntry block's Save Success Text can now use Lava in order to display different messages based on the prayer request (or its Category) and the block can also initiate a Workflow with the PrayerRequest as the Entity if configured.
