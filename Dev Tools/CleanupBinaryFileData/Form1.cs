@@ -89,8 +89,8 @@ namespace CleanupBinaryFileData
             var binaryFileDataService = new BinaryFileDataService( new RockContext() );
             var content = binaryFileDataService.Queryable().Where( a => a.Id == convenantPdfId ).Select( a => a.Content ).FirstOrDefault();
 
-            var origPdf = string.Format( "C:\\output\\orig_pdfs\\{0}.pdf", convenantPdfId );
-            File.WriteAllBytes( origPdf, content );
+            //var origPdf = string.Format( "C:\\output\\orig_pdfs\\{0}.pdf", convenantPdfId );
+            //File.WriteAllBytes( origPdf, content );
             var reader = new PdfReader( content );
             PdfReaderContentParser parser = new PdfReaderContentParser( reader );
             MyImageRenderListener listener = new MyImageRenderListener( convenantPdfId, reader );
@@ -103,6 +103,7 @@ namespace CleanupBinaryFileData
             int mergedImageWidth = 0;
             int mergedImageHeight = 0;
             var imagesToMerge = new List<Bitmap>();
+            bool successfullyExtracted = listener.SuccessfullyExtracted;
 
             for ( int i = 0; i < listener.Images.Count; ++i )
             {
@@ -126,12 +127,13 @@ namespace CleanupBinaryFileData
                     }
                     catch ( Exception ex )
                     {
+                        successfullyExtracted = false;
                         Debug.WriteLine( string.Format( "C:\\output\\{0}_{1}_Orig.jpg {2}", convenantPdfId, i, ex ) );
                     }
                 }
             }
 
-            if ( imagesToMerge.Any() )
+            if ( imagesToMerge.Any() && successfullyExtracted )
             {
                 using ( Bitmap mergedImage = new Bitmap( mergedImageWidth, mergedImageHeight ) )
                 {
@@ -145,7 +147,19 @@ namespace CleanupBinaryFileData
                         }
                     }
 
-                    mergedImage.Save( mergedFileName, jpgEncoder, myEncoderParameters );
+                    var rockContext = new RockContext();
+                    
+                    
+                    using ( var imageStream = new MemoryStream() )
+                    {
+                        mergedImage.Save( imageStream, jpgEncoder, myEncoderParameters );
+
+                        var binaryFile = new BinaryFileService( rockContext ).Get( convenantPdfId );
+                        binaryFile.MimeType = jpgEncoder.MimeType;
+                        binaryFile.FileName = System.IO.Path.ChangeExtension( binaryFile.FileName, ".jpg" );
+                        binaryFile.ContentStream = imageStream;
+                        rockContext.SaveChanges();
+                    }
                 }
             }
 
@@ -199,11 +213,13 @@ namespace CleanupBinaryFileData
         public void EndTextBlock() { }
 
         public List<byte[]> Images = new List<byte[]>();
+        public bool SuccessfullyExtracted { get; set; }
         public void RenderImage( ImageRenderInfo renderInfo )
         {
 
             try
             {
+                SuccessfullyExtracted = false;
                 PdfImageObject image = renderInfo.GetImage();
 
                 if ( image == null ) return;
@@ -212,6 +228,7 @@ namespace CleanupBinaryFileData
                 using ( MemoryStream ms = new MemoryStream( image.GetImageAsBytes() ) )
                 {
                     Images.Add( ms.ToArray() );
+                    SuccessfullyExtracted = true;
                 }
             }
             catch ( IOException ex )
