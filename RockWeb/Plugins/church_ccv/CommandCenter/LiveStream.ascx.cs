@@ -18,7 +18,7 @@ namespace RockWeb.Plugins.church_ccv.CommandCenter
     [Category( "CCV > Command Center" )]
     [Description("Used for viewing live venue streams.")]
 
-    [CampusesField("Campus", "Only shows streams from selected campuses. If none are selected, all campuses will be shown.", false, order: 0)]
+    [CampusesField("Campus", "Only shows streams from selected campuses. If none are selected, all campuses will be shown.", false, "", "", 0)]
     [TextField("Venue", "Only shows streams for a specfic venue.", false, order: 1)]
     public partial class LiveStream : RockBlock
     {
