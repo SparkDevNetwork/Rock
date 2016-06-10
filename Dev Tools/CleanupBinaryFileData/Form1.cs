@@ -37,31 +37,35 @@ namespace CleanupBinaryFileData
             settings.MaxWidth = 600;
 
             var binaryFileService = new BinaryFileService( new RockContext() );
-            
+
             var convenantPdfQuery = binaryFileService.Queryable().Where( a => a.BinaryFileTypeId == binaryFileTypeCovenantId && a.MimeType == "application/pdf" );
             var convenantPdfList = convenantPdfQuery.Select( a => new
             {
                 a.Id
             } ).OrderBy( a => a ).ToList();
             totalCount = convenantPdfList.Count();
-            
-            Parallel.ForEach( convenantPdfList, ( convenantPdf ) =>
+
+            //Parallel.ForEach( convenantPdfList, ( convenantPdf ) =>
+            foreach ( var convenantPdf in convenantPdfList )
             {
-                string mergedFileName = string.Format( "C:\\output\\merged_resized\\{0}_mergedImages.jpg", convenantPdf.Id);
-                if ( !File.Exists(mergedFileName))
+                string mergedFileName = string.Format( "C:\\output\\merged_resized\\{0}_mergedImages.jpg", convenantPdf.Id );
+                if ( !File.Exists( mergedFileName ) )
                 {
                     try
                     {
-                        ExtractMergedJPG( convenantPdf.Id,  mergedFileName );
+                        ExtractMergedJPG( convenantPdf.Id, mergedFileName );
                     }
-                    catch (OutOfMemoryException)
+                    catch ( OutOfMemoryException )
                     {
                         GC.Collect();
                     }
                 }
-                
+
                 processedCount++;
-            } );
+            }
+            //);
+
+            MessageBox.Show( "Done!" );
         }
 
         private void ExtractMergedJPG( int convenantPdfId, string mergedFileName )
@@ -72,7 +76,7 @@ namespace CleanupBinaryFileData
             // for the Quality parameter category.
             System.Drawing.Imaging.Encoder myEncoder =
                 System.Drawing.Imaging.Encoder.Quality;
-            
+
             // Create an EncoderParameters object.
             // An EncoderParameters object has an array of EncoderParameter
             // objects. In this case, there is only one
@@ -81,7 +85,7 @@ namespace CleanupBinaryFileData
 
             EncoderParameter myEncoderParameter = new EncoderParameter( myEncoder, 50L );
             myEncoderParameters.Param[0] = myEncoderParameter;
-            
+
             var binaryFileDataService = new BinaryFileDataService( new RockContext() );
             var content = binaryFileDataService.Queryable().Where( a => a.Id == convenantPdfId ).Select( a => a.Content ).FirstOrDefault();
 
@@ -89,7 +93,7 @@ namespace CleanupBinaryFileData
             File.WriteAllBytes( origPdf, content );
             var reader = new PdfReader( content );
             PdfReaderContentParser parser = new PdfReaderContentParser( reader );
-            MyImageRenderListener listener = new MyImageRenderListener();
+            MyImageRenderListener listener = new MyImageRenderListener( convenantPdfId, reader );
 
             for ( int i = 1; i <= reader.NumberOfPages; i++ )
             {
@@ -141,7 +145,7 @@ namespace CleanupBinaryFileData
                         }
                     }
 
-                    mergedImage.Save( mergedFileName,jpgEncoder, myEncoderParameters );
+                    mergedImage.Save( mergedFileName, jpgEncoder, myEncoderParameters );
                 }
             }
 
@@ -150,7 +154,7 @@ namespace CleanupBinaryFileData
                 image.Dispose();
             }
 
-            
+
             var updatedPercentComplete = Math.Round( ( processedCount / totalCount ) * 100, 2 );
 
             if ( percentComplete != updatedPercentComplete )
@@ -182,6 +186,14 @@ namespace CleanupBinaryFileData
 
     public class MyImageRenderListener : IRenderListener
     {
+        public MyImageRenderListener( int convenantPdfId, PdfReader reader )
+        {
+            _convenantPdfId = convenantPdfId;
+            _reader = reader;
+        }
+
+        private int _convenantPdfId;
+        private PdfReader _reader;
         public void RenderText( TextRenderInfo renderInfo ) { }
         public void BeginTextBlock() { }
         public void EndTextBlock() { }
@@ -202,11 +214,9 @@ namespace CleanupBinaryFileData
                     Images.Add( ms.ToArray() );
                 }
             }
-            catch ( IOException )
+            catch ( IOException ex )
             {
-                /*
-                 * pass-through; image type not supported by iText[Sharp]; e.g. jbig2
-                */
+                Debug.WriteLine( string.Format( "Unable to extract image for convenantPdfId = {0} {1}", _convenantPdfId, ex.Message ) );
             }
         }
     }
