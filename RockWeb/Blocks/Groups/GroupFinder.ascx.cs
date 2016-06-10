@@ -487,7 +487,10 @@ namespace RockWeb.Blocks.Groups
                     group.LoadAttributes();
                     foreach ( var attribute in group.Attributes )
                     {
-                        cblAttributes.Items.Add( new ListItem( attribute.Value.Name, attribute.Value.Guid.ToString() ) );
+                        if ( attribute.Value.FieldType.Field.HasFilterControl() )
+                        {
+                            cblAttributes.Items.Add( new ListItem( attribute.Value.Name, attribute.Value.Guid.ToString() ) );
+                        }
                         cblGridAttributes.Items.Add( new ListItem( attribute.Value.Name, attribute.Value.Guid.ToString() ) );
                     }
                 }
@@ -596,10 +599,11 @@ namespace RockWeb.Blocks.Groups
                 if ( attributeGuid.HasValue )
                 {
                     var attribute = AttributeCache.Read( attributeGuid.Value );
-                    if ( attribute != null )
+                    if ( attribute != null && attribute.FieldType.Field.HasFilterControl() )
                     {
                         AttributeFilters.Add( attribute );
                     }
+
                 }
             }
 
@@ -647,7 +651,10 @@ namespace RockWeb.Blocks.Groups
                 foreach ( var attribute in AttributeFilters )
                 {
                     var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filter_" + attribute.Id.ToString(), false, Rock.Reporting.FilterMode.SimpleFilter );
-                    AddFilterControl( control, attribute.Name, attribute.Description );
+                    if ( control != null )
+                    {
+                        AddFilterControl( control, attribute.Name, attribute.Description );
+                    }
                 }
             }
 
