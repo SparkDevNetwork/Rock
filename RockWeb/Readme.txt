@@ -102,6 +102,8 @@ GROUPS
 + Added campus filter to group attendance list. This will filter the attendance count and rate values by the people whose campus is the selected value.
 + Added an optional campus filter to the Group Attendance Detail block.
 + Fixed issue with Role specific Group Requirments still showing warning icon for members of group with a different role.
++ Updated Group Finder to prevent adding attribute filters for attribute field types that do not support filtering (Fixes #1561).
++ Fixed display of Group Name when using option to display group path and selecting a specific group type (Fixes #1525).
 
 LAVA
 + Added new SortByAttribute Lava filter.
