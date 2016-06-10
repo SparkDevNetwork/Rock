@@ -1,15 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Data.Entity.SqlServer;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using ImageResizer;
 using iTextSharp.text.pdf;
@@ -17,8 +12,15 @@ using iTextSharp.text.pdf.parser;
 using Rock.Data;
 using Rock.Model;
 
+/// <summary>
+/// 
+/// </summary>
 namespace CleanupBinaryFileData
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="System.Windows.Forms.Form" />
     public partial class Form1 : Form
     {
         const int binaryFileTypeCovenantId = 11;
@@ -27,11 +29,19 @@ namespace CleanupBinaryFileData
         double percentComplete = 0;
         ResizeSettings settings = new ResizeSettings();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Form1"/> class.
+        /// </summary>
         public Form1()
         {
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Handles the Click event of the button1 control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void button1_Click( object sender, EventArgs e )
         {
             settings.MaxWidth = 600;
@@ -68,6 +78,11 @@ namespace CleanupBinaryFileData
             MessageBox.Show( "Done!" );
         }
 
+        /// <summary>
+        /// Extracts the merged JPG.
+        /// </summary>
+        /// <param name="convenantPdfId">The convenant PDF identifier.</param>
+        /// <param name="mergedFileName">Name of the merged file.</param>
         private void ExtractMergedJPG( int convenantPdfId, string mergedFileName )
         {
             ImageCodecInfo jpgEncoder = GetEncoder( ImageFormat.Jpeg );
@@ -148,8 +163,8 @@ namespace CleanupBinaryFileData
                     }
 
                     var rockContext = new RockContext();
-                    
-                    
+
+
                     using ( var imageStream = new MemoryStream() )
                     {
                         mergedImage.Save( imageStream, jpgEncoder, myEncoderParameters );
@@ -180,6 +195,11 @@ namespace CleanupBinaryFileData
 
         }
 
+        /// <summary>
+        /// Gets the encoder.
+        /// </summary>
+        /// <param name="format">The format.</param>
+        /// <returns></returns>
         private ImageCodecInfo GetEncoder( ImageFormat format )
         {
 
@@ -198,6 +218,10 @@ namespace CleanupBinaryFileData
     }
 
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="iTextSharp.text.pdf.parser.IRenderListener" />
     public class MyImageRenderListener : IRenderListener
     {
         public MyImageRenderListener( int convenantPdfId, PdfReader reader )
