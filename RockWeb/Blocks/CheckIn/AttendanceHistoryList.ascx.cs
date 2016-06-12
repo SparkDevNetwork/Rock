@@ -192,7 +192,7 @@ namespace RockWeb.Blocks.Checkin
                         e.Value = "Did Not Attend";
                     }
                     else
-                    {   
+                    {
                         e.Value = null;
                     }
 
@@ -297,7 +297,6 @@ namespace RockWeb.Blocks.Checkin
             if ( string.IsNullOrEmpty( filterValue ) && filterAttendance )
             {
                 filterValue = "1";
-                //rFilter.
             }
 
 
