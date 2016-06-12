@@ -297,7 +297,7 @@ namespace RockWeb.Blocks.Checkin
             if ( string.IsNullOrEmpty( filterValue ) && filterAttendance )
             {
                 filterValue = "1";
-                rFilter.SaveUserPreference( "Attended", ddlDidAttend.SelectedValue );
+                rFilter.SaveUserPreference( "Attended", filterValue );
             }
 
 
