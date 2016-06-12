@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Data;
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -37,6 +38,7 @@ namespace RockWeb.Blocks.Checkin
     [DisplayName( "Attendance History" )]
     [Category( "Checkin" )]
     [Description( "Block for displaying the attendance history of a person or a group." )]
+    [BooleanField( "Filter Attendance By Default", "Sets the default display of Attended to Did Attend instead of [All]", false)]
     [ContextAware]
     public partial class AttendanceHistoryList : RockBlock
     {
@@ -190,7 +192,7 @@ namespace RockWeb.Blocks.Checkin
                         e.Value = "Did Not Attend";
                     }
                     else
-                    {
+                    {   
                         e.Value = null;
                     }
 
@@ -290,7 +292,16 @@ namespace RockWeb.Blocks.Checkin
 
             spSchedule.SetValue( rFilter.GetUserPreference( "Schedule" ).AsIntegerOrNull() );
 
-            ddlDidAttend.SetValue( rFilter.GetUserPreference( "Attended" ) );
+            string filterValue = rFilter.GetUserPreference( "Attended" );
+            var filterAttendance = GetAttributeValue( "FilterAttendanceByDefault" ).AsBoolean();
+            if ( string.IsNullOrEmpty( filterValue ) && filterAttendance )
+            {
+                filterValue = "1";
+                //rFilter.
+            }
+
+
+            ddlDidAttend.SetValue( filterValue );
         }
 
         private List<GroupTypePath> _groupTypePaths;
