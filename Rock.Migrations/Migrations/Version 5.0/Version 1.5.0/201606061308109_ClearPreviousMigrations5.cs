@@ -29,6 +29,35 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
+            // Create the attribute value trigger if it does not exist
+            Sql( @"
+    IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[tgrAttributeValue_InsertUpdate]') AND type = 'TR' )
+    BEGIN
+
+        CREATE TRIGGER [dbo].[tgrAttributeValue_InsertUpdate]
+           ON  [dbo].[AttributeValue]
+           AFTER INSERT, UPDATE
+        AS 
+        BEGIN
+
+            UPDATE [AttributeValue] SET ValueAsDateTime = 
+		        CASE WHEN 
+			        LEN(value) < 50 and 
+			        ISNULL(value,'') != '' and 
+			        ISNUMERIC([value]) = 0 THEN
+				        CASE WHEN [value] LIKE '____-__-__T%__:__:%' THEN 
+					        ISNULL( TRY_CAST( TRY_CAST( LEFT([value],19) AS datetimeoffset ) as datetime) , TRY_CAST( value as datetime ))
+				        ELSE
+					        TRY_CAST( [value] as datetime )
+				        END
+		        END
+            WHERE [Id] IN ( SELECT [Id] FROM INSERTED )    
+
+        END
+
+    END
+" );
+
             Sql( @"
     DROP INDEX[IX_ValueAsNumeric] ON[AttributeValue]
     ALTER TABLE AttributeValue DROP COLUMN ValueAsNumeric
