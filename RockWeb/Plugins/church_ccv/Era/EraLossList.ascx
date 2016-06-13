@@ -39,6 +39,7 @@
                             <Rock:BoolField DataField="InNeighborhoodGroup" HeaderText="In Neighborhood Group" SortExpression="InNeighborhoodGroup" />
                         </Columns>
                     </Rock:Grid>
+                    <Rock:ModalAlert ID="maUpdatedMessage" runat="server" />
                 </div>
 
             </div>

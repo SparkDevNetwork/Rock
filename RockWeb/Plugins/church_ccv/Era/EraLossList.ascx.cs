@@ -107,6 +107,8 @@ namespace RockWeb.Plugins.church_ccv.Era
                 }
             }
 
+            maUpdatedMessage.Show( "'Processed' and 'Send Email' statuses updated successfully.", ModalAlertType.Information );
+
             BindGrid();
         }
 
