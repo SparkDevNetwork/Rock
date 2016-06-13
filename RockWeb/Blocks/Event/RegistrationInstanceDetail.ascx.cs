@@ -1912,15 +1912,14 @@ namespace RockWeb.Blocks.Event
                     {
                         // Get all the registrant costs
                         var rCosts = new Dictionary<int, decimal>();
-                        qry
+                        qry.ToList()
                             .Select( r => new
                             {
                                 RegistrationId = r.Id,
-                                Costs = r.Registrants.Sum( p => p.Cost ),
-                                Fees = r.Registrants.SelectMany( p => p.Fees ).Sum( f => f.Cost )
+                                DiscountCosts = r.Registrants.Sum( p => (decimal?)( p.DiscountedCost( r.DiscountPercentage, r.DiscountAmount) ) ) ?? 0.0m,
                             } ).ToList()
                             .ForEach( c =>
-                                rCosts.AddOrReplace( c.RegistrationId, c.Costs + c.Fees ) );
+                                rCosts.AddOrReplace( c.RegistrationId, c.DiscountCosts ) );
 
                         var rPayments = new Dictionary<int, decimal>();
                         new FinancialTransactionDetailService( rockContext )
