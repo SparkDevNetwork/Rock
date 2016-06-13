@@ -23,6 +23,8 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web;
+
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 
@@ -34,6 +36,7 @@ namespace Rock.Security.Authentication
     [Description( "Database Authentication Provider" )]
     [Export(typeof(AuthenticationComponent))]
     [ExportMetadata("ComponentName", "Database")]
+    [IntegerField( "BCrypt Cost Factor", "The higher this number, the more secure BCrypt can be. However it also will be slower.", false, 11 )]
     public class Database : AuthenticationComponent
     {
         private static byte[] _encryptionKey;
@@ -96,31 +99,20 @@ namespace Rock.Security.Authentication
         /// <returns></returns>
         public override Boolean Authenticate( UserLogin user, string password )
         {
-            bool authenticated = false;
-
             try
             {
-                authenticated = EncodePassword( user, password ) == user.Password;
-                if ( authenticated || !_oldEncryptionKeys.Any() )
+                if ( AuthenticateBcrypt( user, password ) )
                 {
-                    return authenticated;
+                    return true;
                 }
-            }
-            catch { }
 
-            foreach( var encryptionKey in _oldEncryptionKeys )
+                return AuthenticateSha1( user, password );
+            }
+            catch
             {
-                try
-                {
-                    if ( EncodePassword( user, password, encryptionKey ) == user.Password )
-                    {
-                        return true;
-                    }
-                }
-                catch { }
+                return false;
             }
 
-            return false;
         }
 
         /// <summary>
@@ -143,13 +135,7 @@ namespace Rock.Security.Authentication
         /// <returns></returns>
         private string EncodePassword( UserLogin user, string password, byte[] encryptionKey )
         {
-            HMACSHA1 hash = new HMACSHA1();
-            hash.Key = encryptionKey;
-
-            HMACSHA1 uniqueHash = new HMACSHA1();
-            uniqueHash.Key = Encryption.HexToByte( user.Guid.ToString().Replace( "-", "" ) );
-
-            return Convert.ToBase64String( uniqueHash.ComputeHash( hash.ComputeHash( Encoding.Unicode.GetBytes( password ) ) ) );
+            return EncodeBcrypt( password );
         }
 
         /// <summary>
@@ -277,6 +263,91 @@ namespace Rock.Security.Authentication
                 return Database.GenerateUsername( firstName, lastName, tryCount + 1 );
             }
         }
+
+        private bool AuthenticateBcrypt( UserLogin user, string password )
+        {
+            try {
+                var hash = user.Password;
+                var currentCost = hash.Substring( 4, 2 ).AsInteger();
+                var matches = BCrypt.Net.BCrypt.Verify( password, hash );
+
+                if ( matches && ( currentCost != ( GetAttributeValue( "BCryptCostFactor" ).AsIntegerOrNull() ?? 11 ) ) )
+                {
+                    SetNewPassword( user, password );
+                }
+
+                return matches;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private bool AuthenticateSha1( UserLogin user, string password )
+        {
+            try
+            {
+                if ( EncodeSha1( user.Guid, password, _encryptionKey ) == user.Password )
+                {
+                    SetNewPassword( user, password );
+                    return true;
+                }
+            }
+            catch { }
+
+            foreach ( var encryptionKey in _oldEncryptionKeys )
+            {
+                try
+                {
+                    if ( EncodeSha1( user.Guid, password, encryptionKey ) == user.Password )
+                    {
+                        SetNewPassword( user, password );
+                        return true;
+                    }
+                }
+                catch { }
+            }
+
+            return false;
+        }
+
+        private string EncodeBcrypt( string password )
+        {
+            var workFactor = ( GetAttributeValue( "BCryptCostFactor" ).AsIntegerOrNull() ?? 11 );
+            var salt = BCrypt.Net.BCrypt.GenerateSalt( workFactor );
+            return BCrypt.Net.BCrypt.HashPassword( password, salt );
+        }
+
+        private string EncodeSha1( Guid userGuid, string password, byte[] encryptionKey )
+        {
+            var hash = new HMACSHA1();
+            hash.Key = encryptionKey;
+
+            var uniqueHash = new HMACSHA1();
+            uniqueHash.Key = Encryption.HexToByte( userGuid.ToString().Replace( "-", "" ) );
+
+            return Convert.ToBase64String( uniqueHash.ComputeHash( hash.ComputeHash( Encoding.Unicode.GetBytes( password ) ) ) );
+        }
+
+        private UserLogin SetNewPassword( UserLogin user, string rawPassword )
+        {
+            string hash =  EncodeBcrypt( rawPassword );
+            if ( hash == null )
+            {
+                throw new NotImplementedException( "Could not generate hash from password." );
+            }
+
+            using ( var context = new RockContext() )
+            {
+                var userService = new UserLoginService( context );
+                var contextUser = userService.Get( user.Id );
+                contextUser.Password = hash;
+                context.SaveChanges();
+                return contextUser;
+            }
+        }
+
 
     }
 }
