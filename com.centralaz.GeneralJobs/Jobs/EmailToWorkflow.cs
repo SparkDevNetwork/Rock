@@ -136,7 +136,12 @@ namespace com.centralaz.GeneralJobs.Jobs
 
                                     if ( msg.MessagePart.IsText == false )
                                     {
-                                        body = msg.FindFirstHtmlVersion().GetBodyAsText().SanitizeHtml( strict: false );
+                                        var bodyText = msg.FindFirstHtmlVersion().GetBodyAsText();
+                                        if ( _loggingActive )
+                                        {
+                                            LogToFile( String.Format( "body: {0}", i ), bodyText );
+                                        }
+                                        body = bodyText.SanitizeHtml( strict: false );
                                     }
                                     else
                                     {
