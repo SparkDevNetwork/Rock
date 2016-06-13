@@ -29,6 +29,37 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
+            // DeleteEventGroupType the attribute value trigger if exists
+            Sql( @"
+    IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[tgrAttributeValue_InsertUpdate]') AND type = 'TR' )
+    DROP TRIGGER [dbo].[tgrAttributeValue_InsertUpdate]
+" );
+
+
+            // Reqcreate the trigger
+            Sql( @"
+    CREATE TRIGGER [dbo].[tgrAttributeValue_InsertUpdate]
+       ON  [dbo].[AttributeValue]
+       AFTER INSERT, UPDATE
+    AS 
+    BEGIN
+
+        UPDATE [AttributeValue] SET ValueAsDateTime = 
+		    CASE WHEN 
+			    LEN(value) < 50 and 
+			    ISNULL(value,'') != '' and 
+			    ISNUMERIC([value]) = 0 THEN
+				    CASE WHEN [value] LIKE '____-__-__T%__:__:%' THEN 
+					    ISNULL( TRY_CAST( TRY_CAST( LEFT([value],19) AS datetimeoffset ) as datetime) , TRY_CAST( value as datetime ))
+				    ELSE
+					    TRY_CAST( [value] as datetime )
+				    END
+		    END
+        WHERE [Id] IN ( SELECT [Id] FROM INSERTED )    
+
+    END
+" );
+
             Sql( @"
     DROP INDEX[IX_ValueAsNumeric] ON[AttributeValue]
     ALTER TABLE AttributeValue DROP COLUMN ValueAsNumeric
