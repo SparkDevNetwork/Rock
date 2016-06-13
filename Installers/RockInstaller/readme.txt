@@ -64,7 +64,7 @@ ___ 6. Click 'Next' until you see the screen with the 'Advanced' button.
 ___ 7. Save the file as 'sql-install.sql'
 
 ___ 8. Click the 'Advanced' button and change the setting for 'Types of data to script' to 
-       'schema and data'.
+       'schema and data', and change the 'Script Triggers' option to 'True'.
 
 ___ 9. Click 'Next' then 'Finished'
 
