@@ -517,6 +517,8 @@ namespace RockWeb.Blocks.WorkFlow
             workflowType.CategoryId = cpCategory.SelectedValueAsInt();
             workflowType.Order = 0;
             workflowType.WorkTerm = tbWorkTerm.Text;
+            workflowType.ModifiedByPersonAliasId = CurrentPersonAliasId;
+            workflowType.ModifiedDateTime = RockDateTime.Now;
 
             int? mins = tbProcessingInterval.Text.AsIntegerOrNull();
             if ( mins.HasValue )

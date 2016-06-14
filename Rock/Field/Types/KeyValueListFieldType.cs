@@ -154,7 +154,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            bool isDefinedType = configurationValues != null && configurationValues.ContainsKey( "definedtype" ) && configurationValues["definedtype"].Value.AsBoolean();
+            bool isDefinedType = configurationValues != null && configurationValues.ContainsKey( "definedtype" ) && configurationValues["definedtype"].Value.AsIntegerOrNull().HasValue;
 
             var values = new List<string>();
             string[] nameValues = value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
@@ -294,7 +294,7 @@ namespace Rock.Field.Types
         {
             List<KeyValuePair<string, object>> values = new List<KeyValuePair<string, object>>();
 
-            bool isDefinedType = configurationValues != null && configurationValues.ContainsKey( "definedtype" ) && configurationValues["definedtype"].Value.AsBoolean();
+            bool isDefinedType = configurationValues != null && configurationValues.ContainsKey( "definedtype" ) && configurationValues["definedtype"].Value.AsIntegerOrNull().HasValue;
 
             string[] nameValues = value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
             foreach ( string nameValue in nameValues )

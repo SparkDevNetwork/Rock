@@ -2350,8 +2350,16 @@ namespace Rock.Lava
             }
             catch
             {
-                // if it didn't deserialize as straight ExpandoObject, try it as a List of ExpandoObjects
-                contentObject = JsonConvert.DeserializeObject<List<ExpandoObject>>( value, converter );
+                try
+                {
+                    // if it didn't deserialize as straight ExpandoObject, try it as a List of ExpandoObjects
+                    contentObject = JsonConvert.DeserializeObject<List<ExpandoObject>>( value, converter );
+                }
+                catch
+                {
+                    // if it didn't deserialize as a List of ExpandoObject, try it as a List of plain objects
+                    contentObject = JsonConvert.DeserializeObject<List<object>>( value, converter );
+                }
             }
 
             return contentObject;
