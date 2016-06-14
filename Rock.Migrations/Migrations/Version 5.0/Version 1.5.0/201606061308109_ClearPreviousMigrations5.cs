@@ -29,12 +29,11 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            // DeleteEventGroupType the attribute value trigger if exists
+            // Delete the attribute value trigger if exists
             Sql( @"
     IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[tgrAttributeValue_InsertUpdate]') AND type = 'TR' )
     DROP TRIGGER [dbo].[tgrAttributeValue_InsertUpdate]
 " );
-
 
             // Reqcreate the trigger
             Sql( @"
@@ -60,6 +59,34 @@ namespace Rock.Migrations
     END
 " );
 
+            // Add content channels to the public calendar if none already exist
+            Sql( @"
+    DECLARE @EventCalendarId int = ( SELECT TOP 1 [Id] FROM [EventCalendar] WHERE [Guid] = '8A444668-19AF-4417-9C74-09F842572974' )
+
+    IF @EventCalendarId IS NOT NULL
+    BEGIN
+	    IF NOT EXISTS ( SELECT [ContentChannelId] FROM [EventCalendarContentChannel] WHERE [EventCalendarId] = @EventCalendarId )
+	    BEGIN
+
+		    DECLARE @ContentChannelId int = ( SELECT TOP 1 [Id] FROM [ContentChannel] WHERE [Guid] = '8E213BB1-9E6F-40C1-B468-B3F8A60D5D24' )
+		    IF @ContentChannelId IS NOT NULL
+		    BEGIN
+			    INSERT INTO [EventCalendarContentChannel] ( [EventCalendarId], [ContentChannelId], [Guid] )
+			    VALUES ( @EventCalendarId, @ContentChannelId, NEWID() )
+		    END
+
+		    SET @ContentChannelId = ( SELECT TOP 1 [Id] FROM [ContentChannel] WHERE [Guid] = '3CBD6C7A-30B4-4CF5-B1B9-4216C4EEF371' )
+		    IF @ContentChannelId IS NOT NULL
+		    BEGIN
+			    INSERT INTO [EventCalendarContentChannel] ( [EventCalendarId], [ContentChannelId], [Guid] )
+			    VALUES ( @EventCalendarId, @ContentChannelId, NEWID() )
+		    END
+
+	    END
+    END
+" );
+
+            // Update ValueAsNumeric column to return decimal with correct size
             Sql( @"
     DROP INDEX[IX_ValueAsNumeric] ON[AttributeValue]
     ALTER TABLE AttributeValue DROP COLUMN ValueAsNumeric
