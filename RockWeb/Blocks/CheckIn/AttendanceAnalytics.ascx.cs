@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -1044,121 +1044,170 @@ function(item) {
             // Wait for all the queries to finish
             Task.WaitAll( qryTasks.ToArray() );
 
-            var attendees = allAttendeeVisits.AsQueryable();
-
-            // If dataview filter was included remove anyone not in that dataview
-            if ( dataViewPersonIds != null )
+            if ( !showNonAttenders )
             {
-                attendees = attendees.Where( p => dataViewPersonIds.Contains( p.Key ) );
-            }
+                var attendees = allAttendeeVisits.AsQueryable();
 
-            // If filter for number missed was included, remove anyone who did not match that filter
-            if ( personIdsWhoDidNotMiss != null )
-            {
-                attendees = attendees.Where( p => !personIdsWhoDidNotMiss.Contains( p.Key ) );
-            }
-
-            // If filtering by minimum times attended
-            if ( attendedMinCount.HasValue )
-            {
-                attendees = attendees.Where( p => p.Value.AttendanceSummary.Count() >= attendedMinCount );
-            }
-
-            // Force filter application
-            allAttendeeVisits = attendees.ToDictionary( k => k.Key, v => v.Value );
-
-            // Add the First Visit information
-            foreach ( DataRow row in dtAttendeeFirstDates.Rows )
-            {
-                int personId = (int)row["PersonId"];
-                if ( allAttendeeVisits.ContainsKey( personId ) )
+                // If dataview filter was included remove anyone not in that dataview
+                if ( dataViewPersonIds != null )
                 {
-                    allAttendeeVisits[personId].FirstVisits.Add( (DateTime)row["StartDate"] );
+                    attendees = attendees.Where( p => dataViewPersonIds.Contains( p.Key ) );
                 }
-            }
 
-            // If filtering based on visit time, only include those who visited the selected time during the date range
-            if ( byNthVisit.HasValue && byNthVisit.Value > 0 )
-            {
-                int skipCount = byNthVisit.Value - 1;
-                allAttendeeVisits = allAttendeeVisits
-                    .Where( p => p.Value.FirstVisits.Skip( skipCount ).Take( 1 ).Any( d => d >= start && d < end ) )
-                    .ToDictionary( k => k.Key, v => v.Value );
-            }
+                // If filter for number missed was included, remove anyone who did not match that filter
+                if ( personIdsWhoDidNotMiss != null )
+                {
+                    attendees = attendees.Where( p => !personIdsWhoDidNotMiss.Contains( p.Key ) );
+                }
 
-            // Add the Last Attended information
-            if ( dtAttendeeLastAttendance != null )
-            {
-                foreach ( DataRow row in dtAttendeeLastAttendance.Rows )
+                // If filtering by minimum times attended
+                if ( attendedMinCount.HasValue )
+                {
+                    attendees = attendees.Where( p => p.Value.AttendanceSummary.Count() >= attendedMinCount );
+                }
+
+                // Force filter application
+                allAttendeeVisits = attendees.ToDictionary( k => k.Key, v => v.Value );
+
+                // Add the First Visit information
+                foreach ( DataRow row in dtAttendeeFirstDates.Rows )
                 {
                     int personId = (int)row["PersonId"];
                     if ( allAttendeeVisits.ContainsKey( personId ) )
                     {
-                        var result = allAttendeeVisits[personId];
-                        if ( result.LastVisit == null )
+                        allAttendeeVisits[personId].FirstVisits.Add( (DateTime)row["StartDate"] );
+                    }
+                }
+
+                // If filtering based on visit time, only include those who visited the selected time during the date range
+                if ( byNthVisit.HasValue )
+                {
+                    int skipCount = byNthVisit.Value - 1;
+                    allAttendeeVisits = allAttendeeVisits
+                        .Where( p => p.Value.FirstVisits.Skip( skipCount ).Take( 1 ).Any( d => d >= start && d < end ) )
+                        .ToDictionary( k => k.Key, v => v.Value );
+                }
+
+                // Add the Last Attended information
+                if ( dtAttendeeLastAttendance != null )
+                {
+                    foreach ( DataRow row in dtAttendeeLastAttendance.Rows )
+                    {
+                        int personId = (int)row["PersonId"];
+                        if ( allAttendeeVisits.ContainsKey( personId ) )
                         {
-                            var lastAttendance = new PersonLastAttendance();
-                            lastAttendance.CampusId = row["CampusId"] as int?;
-                            lastAttendance.GroupId = row["GroupId"] as int?;
-                            lastAttendance.GroupName = row["GroupName"].ToString();
-                            lastAttendance.RoleName = row["RoleName"].ToString();
-                            lastAttendance.InGroup = !string.IsNullOrWhiteSpace( lastAttendance.RoleName );
-                            lastAttendance.ScheduleId = row["ScheduleId"] as int?;
-                            lastAttendance.StartDateTime = (DateTime)row["StartDateTime"];
-                            lastAttendance.LocationId = row["LocationId"] as int?;
-                            lastAttendance.LocationName = row["LocationName"].ToString();
-                            result.LastVisit = lastAttendance;
+                            var result = allAttendeeVisits[personId];
+                            if ( result.LastVisit == null )
+                            {
+                                var lastAttendance = new PersonLastAttendance();
+                                lastAttendance.CampusId = row["CampusId"] as int?;
+                                lastAttendance.GroupId = row["GroupId"] as int?;
+                                lastAttendance.GroupName = row["GroupName"].ToString();
+                                lastAttendance.RoleName = row["RoleName"].ToString();
+                                lastAttendance.InGroup = !string.IsNullOrWhiteSpace( lastAttendance.RoleName );
+                                lastAttendance.ScheduleId = row["ScheduleId"] as int?;
+                                lastAttendance.StartDateTime = (DateTime)row["StartDateTime"];
+                                lastAttendance.LocationId = row["LocationId"] as int?;
+                                lastAttendance.LocationName = row["LocationName"].ToString();
+                                result.LastVisit = lastAttendance;
+                            }
+                        }
+                    }
+                }
+
+                // Add the Demographic information
+                if ( dtAttendees != null )
+                {
+                    var newResults = new Dictionary<int, AttendeeResult>();
+
+                    foreach ( DataRow row in dtAttendees.Rows )
+                    {
+                        int personId = (int)row["Id"];
+                        if ( allAttendeeVisits.ContainsKey( personId ) )
+                        {
+                            var result = new AttendeeResult( allAttendeeVisits[personId] );
+
+                            var person = new PersonInfo();
+                            person.NickName = row["NickName"].ToString();
+                            person.LastName = row["LastName"].ToString();
+                            person.Email = row["Email"].ToString();
+                            person.Birthdate = row["BirthDate"] as DateTime?;
+                            person.Age = Person.GetAge( person.Birthdate );
+                            person.ConnectionStatusValueId = row["ConnectionStatusValueId"] as int?;
+                            result.Person = person;
+
+                            if ( includeParents )
+                            {
+                                result.ParentId = (int)row["ParentId"];
+                                var parent = new PersonInfo();
+                                parent.NickName = row["ParentNickName"].ToString();
+                                parent.LastName = row["ParentLastName"].ToString();
+                                parent.Email = row["ParentEmail"].ToString();
+                                parent.Birthdate = row["ParentBirthDate"] as DateTime?;
+                                parent.Age = Person.GetAge( parent.Birthdate );
+                                result.Parent = parent;
+                            }
+
+                            if ( includeChildren )
+                            {
+                                var child = new PersonInfo();
+                                result.ChildId = (int)row["ChildId"];
+                                child.NickName = row["ChildNickName"].ToString();
+                                child.LastName = row["ChildLastName"].ToString();
+                                child.Email = row["ChildEmail"].ToString();
+                                child.Birthdate = row["ChildBirthDate"] as DateTime?;
+                                child.Age = Person.GetAge( child.Birthdate );
+                                result.Child = child;
+                            }
+
+                            allResults.Add( result );
                         }
                     }
                 }
             }
-
-            // Add the Demographic information
-            if ( dtAttendees != null )
+            else
             {
-                var newResults = new Dictionary<int, AttendeeResult>();
-
-                foreach ( DataRow row in dtAttendees.Rows )
+                // If dataview filter was included remove anyone not in that dataview
+                if ( dataViewPersonIds != null )
                 {
-                    int personId = (int)row["Id"];
-                    if ( allAttendeeVisits.ContainsKey( personId ) )
+                    allResults = allResults
+                        .Where( p => dataViewPersonIds.Contains( p.PersonId ) )
+                        .ToList();
+                }
+
+                // Add the first visit dates for people
+                foreach ( DataRow row in dtAttendeeFirstDates.Rows )
+                {
+                    int personId = (int)row["PersonId"];
+                    foreach ( var result in allResults.Where( r => r.PersonId == personId ) )
                     {
-                        var result = new AttendeeResult( allAttendeeVisits[personId] );
+                        result.FirstVisits.Add( (DateTime)row["StartDate"] );
+                    }
+                }
 
-                        var person = new PersonInfo();
-                        person.NickName = row["NickName"].ToString();
-                        person.LastName = row["LastName"].ToString();
-                        person.Email = row["Email"].ToString();
-                        person.Birthdate = row["BirthDate"] as DateTime?;
-                        person.Age = Person.GetAge( person.Birthdate );
-                        person.ConnectionStatusValueId = row["ConnectionStatusValueId"] as int?;
-                        result.Person = person;
-
-                        if ( includeParents )
+                // Add the Last Attended information
+                if ( dtAttendeeLastAttendance != null )
+                {
+                    foreach ( DataRow row in dtAttendeeLastAttendance.Rows )
+                    {
+                        int personId = (int)row["PersonId"];
+                        foreach ( var result in allResults.Where( r => r.PersonId == personId ) )
                         {
-                            result.ParentId = (int)row["ParentId"];
-                            var parent = new PersonInfo();
-                            parent.NickName = row["ParentNickName"].ToString();
-                            parent.LastName = row["ParentLastName"].ToString();
-                            parent.Email = row["ParentEmail"].ToString();
-                            parent.Birthdate = row["ParentBirthDate"] as DateTime?;
-                            parent.Age = Person.GetAge( parent.Birthdate );
-                            result.Parent = parent;
+                            if ( result.LastVisit == null )
+                            {
+                                var lastAttendance = new PersonLastAttendance();
+                                lastAttendance.CampusId = row["CampusId"] as int?;
+                                lastAttendance.GroupId = row["GroupId"] as int?;
+                                lastAttendance.GroupName = row["GroupName"].ToString();
+                                lastAttendance.RoleName = row["RoleName"].ToString();
+                                lastAttendance.InGroup = !string.IsNullOrWhiteSpace( lastAttendance.RoleName );
+                                lastAttendance.ScheduleId = row["ScheduleId"] as int?;
+                                lastAttendance.StartDateTime = (DateTime)row["StartDateTime"];
+                                lastAttendance.LocationId = row["LocationId"] as int?;
+                                lastAttendance.LocationName = row["LocationName"].ToString();
+                                result.LastVisit = lastAttendance;
+                            }
                         }
-
-                        if ( includeChildren )
-                        {
-                            var child = new PersonInfo();
-                            result.ChildId = (int)row["ChildId"];
-                            child.NickName = row["ChildNickName"].ToString();
-                            child.LastName = row["ChildLastName"].ToString();
-                            child.Email = row["ChildEmail"].ToString();
-                            child.Birthdate = row["ChildBirthDate"] as DateTime?;
-                            child.Age = Person.GetAge( child.Birthdate );
-                            result.Child = child;
-                        }
-
-                        allResults.Add( result );
                     }
                 }
             }
