@@ -12,6 +12,7 @@ CALENDAR
 + Added context object to EventItemListLava block.
 + Updated EventItemListLava block so that campuses is not required.
 + Updated calendar to no longer lose selected date when switching between view modes (Fixes #1392).
++ Added 'External Website Ads', and 'Service Bulletin' content channels to public calendar configuration if no content channels are already configured.
 
 CHECK-IN
 + Added 'Family' check-in functionality to allow checking in multiple family members at the same time.
