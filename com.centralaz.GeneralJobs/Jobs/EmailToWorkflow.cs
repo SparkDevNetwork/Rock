@@ -139,7 +139,7 @@ namespace com.centralaz.GeneralJobs.Jobs
                                         var bodyText = msg.FindFirstHtmlVersion().GetBodyAsText();
                                         if ( _loggingActive )
                                         {
-                                            LogToFile( String.Format( "body: {0}", i ), bodyText );
+                                            LogToFile( String.Format( "body: {0}", bodyText ), pathName );
                                         }
                                         body = bodyText.SanitizeHtml( strict: false );
                                     }
