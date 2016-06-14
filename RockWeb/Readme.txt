@@ -223,7 +223,7 @@ MISC
 + Added new Binary File Types Field Attribute and Field Type.
 + Updated person picker results to display a person's connection status.
 + Added option to the Person Attribute/FieldType so that the 'Enable Self Detection' option of the person picker can be enabled.
-
++ Added ability to set qualifier column/value on the Categories block to further filter entities that categories belong to.
 
 Rock McKinley 4.6
 
