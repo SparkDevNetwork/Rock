@@ -164,4 +164,9 @@
             </div>
         </ContentTemplate>
     </asp:UpdatePanel>
+
+    <div class="actions">
+        <a class="btn btn-primary js-select-file-button">OK</a>
+        <a class="btn btn-link js-cancel-file-button">Cancel</a>
+    </div>
 </div>
