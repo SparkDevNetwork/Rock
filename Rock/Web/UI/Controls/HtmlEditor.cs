@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -380,6 +381,7 @@ namespace Rock.Web.UI.Controls
             {
                 return ViewState["UserSpecificRoot"] as bool? ?? false;
             }
+
             set
             {
                 ViewState["UserSpecificRoot"] = value;
@@ -433,12 +435,12 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets any additional configuration settings for the CKEditor.  Should be in SettingName: SettingValue, ... format.  
-        /// For example: autoParagrapth: false, enterMode: 3,
+        /// Gets or sets the additional configurations.
         /// </summary>
         /// <value>
         /// The additional configurations.
         /// </value>
+        [Obsolete( "Doesn't do anything anymore" )]
         public string AdditionalConfigurations
         {
             get { return ViewState["AdditionalConfigurations"] as string ?? string.Empty; }
@@ -474,12 +476,14 @@ namespace Rock.Web.UI.Controls
             if ( this.Visible && !ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
             {
                 // if the codeeditor is .Visible and this isn't an Async, add ace.js to the page (If the codeeditor is made visible during an Async Post, RenderBaseControl will take care of adding ace.js)
-                RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/ace/ace.js" ) );
+                RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/ace/ace.js" ), true );
 
-                RockPage.AddScriptLink( Page, ( (RockPage)this.Page ).ResolveRockUrl( "~/Scripts/summernote/plugins/rockfilebrowser/RockFileBrowser.js", true ) );
-                RockPage.AddScriptLink( Page, ( (RockPage)this.Page ).ResolveRockUrl( "~/Scripts/summernote/plugins/rockfilebrowser/RockImageBrowser.js", true ) );
+                RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/summernote/plugins/rockfilebrowser/RockFileBrowser.js" ), true );
+                RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/summernote/plugins/rockfilebrowser/RockImageBrowser.js" ), true );
+                RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/summernote/plugins/rockmergefield/RockMergeField.js" ), true );
             }
         }
+
         /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
@@ -508,8 +512,6 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        private static string _fingerPrintVersion = null;
-
         /// <summary>
         /// Renders the base control.
         /// </summary>
@@ -526,34 +528,37 @@ if (!$('#summernoteJsLib').length) {{
 
 $('#{0}').summernote({{
     height: '{2}', //set editable area's height
-    toolbar: Rock.htmlEditor.toolbar_RockCustomConfig{12},
+    toolbar: Rock.htmlEditor.toolbar_RockCustomConfig{11},
+
+    callbacks: {{
+       {12} 
+    }},
 
     buttons: {{
         rockfilebrowser: RockFileBrowser,
-        rockimagebrowser: RockImageBrowser
+        rockimagebrowser: RockImageBrowser, 
+        rockmergefield: RockMergeField
     }},
 
     rockFileBrowserOptions: {{ 
+        enabled: {3},
         documentFolderRoot: '{4}', 
         imageFolderRoot: '{5}',
         imageFileTypeWhiteList: '{6}',
         fileTypeBlackList: '{7}'
     }},
 
-    rockMergeFieldOptions: {{ mergeFields: '{8}' }},
+    rockMergeFieldOptions: {{ 
+        enabled: {9},
+        mergeFields: '{8}' 
+    }},
     rockTheme: '{10}',
 }});
 ";
 
-
             string summernoteJsLib = ( (RockPage)this.Page ).ResolveRockUrl( "~/Scripts/summernote/summernote.js", true );
-
-            List<string> enabledPlugins = new List<string>();
-            enabledPlugins.Add( "justify" );
-            if ( MergeFields.Any() )
-            {
-                enabledPlugins.Add( "rockmergefield" );
-            }
+            bool rockMergeFieldEnabled = MergeFields.Any();
+            bool rockFileBrowserEnabled = false;
 
             // only show the File/Image plugin if they have Auth to the file browser page
             var fileBrowserPage = new Rock.Model.PageService( new RockContext() ).Get( Rock.SystemGuid.Page.CKEDITOR_ROCKFILEBROWSER_PLUGIN_FRAME.AsGuid() );
@@ -564,7 +569,7 @@ $('#{0}').summernote({{
                 {
                     if ( fileBrowserPage.IsAuthorized( Authorization.VIEW, currentPerson ) )
                     {
-                        enabledPlugins.Add( "rockfilebrowser" );
+                        rockFileBrowserEnabled = true;
                     }
                 }
             }
@@ -586,30 +591,41 @@ $('#{0}').summernote({{
                 }
             }
 
-            string summernoteInitScript = string.Format( summernoteInitScriptFormat, 
+            string callbacksOption = null;
+            if ( !string.IsNullOrEmpty( this.OnChangeScript ) )
+            {
+                callbacksOption = string.Format(
+@" onKeyup: function() {{  
+    {0}  
+}}",
+   this.OnChangeScript );
+            }
+
+            string summernoteInitScript = string.Format( 
+                summernoteInitScriptFormat,
                 this.ClientID,   // {0}
                 summernoteJsLib, // {1}
                 this.Height, // {2}
-                enabledPlugins.AsDelimited( "," ),                              // {3}
+                rockFileBrowserEnabled.ToTrueFalse().ToLower(),                 // {3}
                 Rock.Security.Encryption.EncryptString( documentFolderRoot ),   // {4} encrypt the folders so the folder can only be configured on the server
                 Rock.Security.Encryption.EncryptString( imageFolderRoot ),      // {5}
                 imageFileTypeWhiteList,                                         // {6}
                 fileTypeBlackList,                                              // {7}
                 this.MergeFields.AsDelimited( "," ),                            // {8}
-                this.AdditionalConfigurations,                                  // {9}
+                rockMergeFieldEnabled.ToTrueFalse().ToLower(),                  // {9} 
                 ( (RockPage)this.Page ).Site.Theme,                             // {10}
-                _fingerPrintVersion,                                            // {11}
-                this.Toolbar.ConvertToString()                                 // {12} 
-                );
-                
+                this.Toolbar.ConvertToString(),                                  // {11} 
+                callbacksOption );                                                // {12}
+
             ScriptManager.RegisterStartupScript( this, this.GetType(), "summernote_init_script_" + this.ClientID, summernoteInitScript, true );
 
             // add ace.js on demand only when there will be a codeeditor rendered
             if ( ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
             {
                 ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "ace-include", ResolveUrl( "~/Scripts/ace/ace.js" ) );
-                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "rock-file-browser-plugin", ( (RockPage)this.Page ).ResolveRockUrl( "~/Scripts/summernote/plugins/rockfilebrowser/RockFileBrowser.js", true  ) );
+                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "rock-file-browser-plugin", ( (RockPage)this.Page ).ResolveRockUrl( "~/Scripts/summernote/plugins/rockfilebrowser/RockFileBrowser.js", true ) );
                 ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "rock-image-browser-plugin", ( (RockPage)this.Page ).ResolveRockUrl( "~/Scripts/summernote/plugins/rockfilebrowser/RockImageBrowser.js", true ) );
+                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "rock-mergefield-plugin", ( (RockPage)this.Page ).ResolveRockUrl( "~/Scripts/summernote/plugins/rockmergefield/RockMergeField.js", true ) );
             }
 
             base.RenderControl( writer );
