@@ -25,7 +25,7 @@
                     var imageElement = document.createElement('img');
                     var url = Rock.settings.get('baseUrl') + resultParts[0];
                     var altText = resultParts[1];
-                    
+
                     // insert the image at 25% to get them started
                     context.invoke('editor.insertImage', url, function ($image) {
                         $image.css('width', '25%');
@@ -40,5 +40,10 @@
         }
     });
 
-    return button.render();   // return button as jquery object 
+    if (context.options.rockFileBrowserOptions.enabled) {
+        return button.render();   // return button as jquery object 
+    }
+    else {
+        return null;
+    }
 }
