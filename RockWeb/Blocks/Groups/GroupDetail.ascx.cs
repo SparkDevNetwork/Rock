@@ -2278,6 +2278,8 @@ namespace RockWeb.Blocks.Groups
 
             nbDuplicateGroupRequirement.Visible = false;
 
+            hfGroupRequirementGuid.Value = groupRequirementGuid.ToString();
+
             ShowDialog( "GroupRequirements", true );
         }
 
