@@ -749,7 +749,7 @@ namespace RockWeb.Blocks.Reporting
                 var listItems = new List<ListItem>();
 
                 // Add Fields for the EntityType
-                foreach ( var entityField in entityFields.OrderBy( a => !a.IsPreviewable ).ThenBy( a => a.Title ) )
+                foreach ( var entityField in entityFields.OrderBy( a => !a.IsPreviewable ).ThenBy( a => a.FieldKind != FieldKind.Property ).ThenBy( a => a.Title ) )
                 {
                     bool isAuthorizedForField = true;
                     var listItem = new ListItem();
@@ -777,6 +777,10 @@ namespace RockWeb.Blocks.Reporting
                     if ( entityField.IsPreviewable )
                     {
                         listItem.Attributes["optiongroup"] = "Common";
+                    }
+                    else if ( entityField.FieldKind == FieldKind.Attribute )
+                    {
+                        listItem.Attributes["optiongroup"] = string.Format( "{0} Attributes", entityType.Name );
                     }
                     else
                     {
@@ -819,7 +823,28 @@ namespace RockWeb.Blocks.Reporting
                     }
                 }
 
-                foreach ( var item in listItems.OrderByDescending( a => ( a.Attributes["optiongroup"] == "Common" ) ).ThenBy( a => a.Text ).ToArray() )
+                var commonFieldListItems = listItems.Where( a => a.Attributes["optiongroup"] == "Common" ).OrderBy( a => a.Text );
+                foreach ( var item in commonFieldListItems)
+                {
+                    ddlFields.Items.Add( item );
+                    listItems.Remove( item );
+                }
+
+                var normalFieldListItems = listItems.Where( a => a.Attributes["optiongroup"] == string.Format( "{0} Fields", entityType.Name ) ).OrderBy( a => a.Text );
+                foreach ( var item in normalFieldListItems )
+                {
+                    ddlFields.Items.Add( item );
+                    listItems.Remove( item );
+                }
+                
+                var attributeFieldListItems = listItems.Where( a => a.Attributes["optiongroup"] == string.Format( "{0} Attributes", entityType.Name ) ).OrderBy( a => a.Text );
+                foreach ( var item in attributeFieldListItems )
+                {
+                    ddlFields.Items.Add( item );
+                    listItems.Remove( item );
+                }
+                
+                foreach ( var item in listItems )
                 {
                     ddlFields.Items.Add( item );
                 }
@@ -1291,18 +1316,18 @@ namespace RockWeb.Blocks.Reporting
             RockDropDownList ddlFields = panelWidget.ControlsOfTypeRecursive<RockDropDownList>().FirstOrDefault( a => a.ID == panelWidget.ID + "_ddlFields" );
             if ( reportField.ReportFieldType == ReportFieldType.Attribute )
             {
-               var selectedValue = string.Format( "{0}|{1}", reportField.ReportFieldType, reportField.Selection );
-               if ( ddlFields.Items.OfType<ListItem>().Any( a => a.Value == selectedValue ) )
-               {
-                   ddlFields.SelectedValue = selectedValue;
-               }
-               else
-               {
-                   // if this EntityField is not available for the current person, but this reportField already has it configured, let them keep it
-                   var attribute = AttributeCache.Read( fieldSelection.AsGuid(), rockContext );
-                   ddlFields.Items.Add( new ListItem( attribute.Name, selectedValue ) );
-                   ddlFields.SelectedValue = selectedValue;
-               }
+                var selectedValue = string.Format( "{0}|{1}", reportField.ReportFieldType, reportField.Selection );
+                if ( ddlFields.Items.OfType<ListItem>().Any( a => a.Value == selectedValue ) )
+                {
+                    ddlFields.SelectedValue = selectedValue;
+                }
+                else
+                {
+                    // if this EntityField is not available for the current person, but this reportField already has it configured, let them keep it
+                    var attribute = AttributeCache.Read( fieldSelection.AsGuid(), rockContext );
+                    ddlFields.Items.Add( new ListItem( attribute.Name, selectedValue ) );
+                    ddlFields.SelectedValue = selectedValue;
+                }
             }
             else if ( reportField.ReportFieldType == ReportFieldType.Property )
             {

@@ -27,7 +27,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class SlidingDateRangePicker : CompositeControl, IRockControl
+    public class SlidingDateRangePicker : CompositeControl, IRockControlAdditionalRendering
     {
         #region IRockControl implementation
 
@@ -456,6 +456,22 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Renders content after the label.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public void RenderAfterLabel( HtmlTextWriter writer )
+        {
+            if ( this.PreviewLocation == SlidingDateRangePicker.DateRangePreviewLocation.Top )
+            {
+                // render a div that will get its text from ~api/Utility/CalculateSlidingDateRange (see slidingDateRangePicker.js)
+                writer.WriteLine();
+                writer.AddAttribute( "class", "label label-info js-slidingdaterange-info slidingdaterange-info" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.RenderEndTag();
+            }
+        }
+
+        /// <summary>
         /// Renders the base control.
         /// </summary>
         /// <param name="writer">The writer.</param>
@@ -476,16 +492,6 @@ namespace Rock.Web.UI.Controls
             _ddlTimeUnitTypeSingular.AutoPostBack = needsAutoPostBack;
             _ddlTimeUnitTypePlural.AutoPostBack = needsAutoPostBack;
 
-            // render a div that will get its text from ~api/Utility/CalculateSlidingDateRange (see slidingDateRangePicker.js)
-            Panel dateRangePreviewDiv = new Panel();
-            dateRangePreviewDiv.CssClass = "label label-info js-slidingdaterange-info slidingdaterange-info";
-
-            if ( this.PreviewLocation == SlidingDateRangePicker.DateRangePreviewLocation.Top )
-            {
-                writer.WriteLine();
-                dateRangePreviewDiv.RenderControl( writer );
-            }
-
             // render a hidden element that will get its text from ~api/Utility/GetSlidingDateRangeTextValue (see slidingDateRangePicker.js)
             writer.AddAttribute( "type", "hidden" );
             writer.AddAttribute( "class", "js-slidingdaterange-text-value" );
@@ -505,7 +511,9 @@ namespace Rock.Web.UI.Controls
             if ( this.PreviewLocation == SlidingDateRangePicker.DateRangePreviewLocation.Right )
             {
                 writer.WriteLine();
-                dateRangePreviewDiv.RenderControl( writer );
+                writer.AddAttribute( "class", "label label-info js-slidingdaterange-info slidingdaterange-info" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.RenderEndTag();
             }
 
             writer.RenderEndTag();
@@ -1004,6 +1012,7 @@ namespace Rock.Web.UI.Controls
 
             return helpHtml;
         }
+
     }
 
     /// <summary>

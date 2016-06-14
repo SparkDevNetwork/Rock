@@ -30,7 +30,7 @@ using Rock.Web.Cache;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Sends a birthday email
+    /// Sends out reminders to group leaders when group members do not meet all requirements.
     /// </summary>
     [SystemEmailField( "Notification Email Template", required: true, order: 0 )]
     [GroupTypesField( "Group Types", "Group types use to check the group requirements on.", order: 1 )]

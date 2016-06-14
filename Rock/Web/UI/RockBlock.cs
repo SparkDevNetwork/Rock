@@ -664,6 +664,16 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// If this Attribute is a reference to a PageRoute, this will return the Route, otherwise it will return the normal URL
+        /// </summary>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <returns></returns>
+        public string LinkedPageRoute( string attributeKey  )
+        {
+            return new PageReference( GetAttributeValue( attributeKey ) ).Route;
+        }
+
+        /// <summary>
         /// Navigate to a linked <see cref="Rock.Model.Page"/>.
         /// </summary>
         /// <param name="attributeKey">A <see cref="System.String"/> representing the name of the linked <see cref="Rock.Model.Page"/> attribute key.</param>
