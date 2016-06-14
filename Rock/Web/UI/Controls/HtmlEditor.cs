@@ -470,6 +470,15 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( System.EventArgs e )
         {
             base.OnInit( e );
+
+            if ( this.Visible && !ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
+            {
+                // if the codeeditor is .Visible and this isn't an Async, add ace.js to the page (If the codeeditor is made visible during an Async Post, RenderBaseControl will take care of adding ace.js)
+                RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/ace/ace.js" ) );
+
+                RockPage.AddScriptLink( Page, ( (RockPage)this.Page ).ResolveRockUrl( "~/Scripts/summernote/plugins/rockfilebrowser/RockFileBrowser.js", true ) );
+                RockPage.AddScriptLink( Page, ( (RockPage)this.Page ).ResolveRockUrl( "~/Scripts/summernote/plugins/rockfilebrowser/RockImageBrowser.js", true ) );
+            }
         }
         /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
@@ -508,28 +517,100 @@ namespace Rock.Web.UI.Controls
         public void RenderBaseControl( HtmlTextWriter writer )
         {
             string summernoteInitScriptFormat = @"
-
-debugger
 // ensure that summernote.js link is added to page
 if (!$('#summernoteJsLib').length) {{
     // by default, jquery adds a cache-busting parameter on dynamically added script tags. set the ajaxSetup cache:true to prevent this
     $.ajaxSetup({{ cache: true }});
     $('head').prepend(""<script id='summernoteJsLib' src='{1}' />"");
 }}
-  
 
-$('#{0}').summernote();
+$('#{0}').summernote({{
+    height: '{2}', //set editable area's height
+    toolbar: Rock.htmlEditor.toolbar_RockCustomConfig{12},
+
+    buttons: {{
+        rockfilebrowser: RockFileBrowser,
+        rockimagebrowser: RockImageBrowser
+    }},
+
+    rockFileBrowserOptions: {{ 
+        documentFolderRoot: '{4}', 
+        imageFolderRoot: '{5}',
+        imageFileTypeWhiteList: '{6}',
+        fileTypeBlackList: '{7}'
+    }},
+
+    rockMergeFieldOptions: {{ mergeFields: '{8}' }},
+    rockTheme: '{10}',
+}});
 ";
 
 
             string summernoteJsLib = ( (RockPage)this.Page ).ResolveRockUrl( "~/Scripts/summernote/summernote.js", true );
 
-            string summernoteInitScript = string.Format( summernoteInitScriptFormat,
+            List<string> enabledPlugins = new List<string>();
+            enabledPlugins.Add( "justify" );
+            if ( MergeFields.Any() )
+            {
+                enabledPlugins.Add( "rockmergefield" );
+            }
+
+            // only show the File/Image plugin if they have Auth to the file browser page
+            var fileBrowserPage = new Rock.Model.PageService( new RockContext() ).Get( Rock.SystemGuid.Page.CKEDITOR_ROCKFILEBROWSER_PLUGIN_FRAME.AsGuid() );
+            if ( fileBrowserPage != null )
+            {
+                var currentPerson = this.RockBlock().CurrentPerson;
+                if ( currentPerson != null )
+                {
+                    if ( fileBrowserPage.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                    {
+                        enabledPlugins.Add( "rockfilebrowser" );
+                    }
+                }
+            }
+
+            var globalAttributesCache = GlobalAttributesCache.Read();
+
+            string imageFileTypeWhiteList = globalAttributesCache.GetValue( "ContentImageFiletypeWhitelist" );
+            string fileTypeBlackList = globalAttributesCache.GetValue( "ContentFiletypeBlacklist" );
+
+            string documentFolderRoot = this.DocumentFolderRoot;
+            string imageFolderRoot = this.ImageFolderRoot;
+            if ( this.UserSpecificRoot )
+            {
+                var currentUser = this.RockBlock().CurrentUser;
+                if ( currentUser != null )
+                {
+                    documentFolderRoot = System.Web.VirtualPathUtility.Combine( documentFolderRoot.EnsureTrailingBackslash(), currentUser.UserName.ToString() );
+                    imageFolderRoot = System.Web.VirtualPathUtility.Combine( imageFolderRoot.EnsureTrailingBackslash(), currentUser.UserName.ToString() );
+                }
+            }
+
+            string summernoteInitScript = string.Format( summernoteInitScriptFormat, 
                 this.ClientID,   // {0}
-                summernoteJsLib // {1}
+                summernoteJsLib, // {1}
+                this.Height, // {2}
+                enabledPlugins.AsDelimited( "," ),                              // {3}
+                Rock.Security.Encryption.EncryptString( documentFolderRoot ),   // {4} encrypt the folders so the folder can only be configured on the server
+                Rock.Security.Encryption.EncryptString( imageFolderRoot ),      // {5}
+                imageFileTypeWhiteList,                                         // {6}
+                fileTypeBlackList,                                              // {7}
+                this.MergeFields.AsDelimited( "," ),                            // {8}
+                this.AdditionalConfigurations,                                  // {9}
+                ( (RockPage)this.Page ).Site.Theme,                             // {10}
+                _fingerPrintVersion,                                            // {11}
+                this.Toolbar.ConvertToString()                                 // {12} 
                 );
                 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "summernote_init_script_" + this.ClientID, summernoteInitScript, true );
+
+            // add ace.js on demand only when there will be a codeeditor rendered
+            if ( ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
+            {
+                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "ace-include", ResolveUrl( "~/Scripts/ace/ace.js" ) );
+                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "rock-file-browser-plugin", ( (RockPage)this.Page ).ResolveRockUrl( "~/Scripts/summernote/plugins/rockfilebrowser/RockFileBrowser.js", true  ) );
+                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "rock-image-browser-plugin", ( (RockPage)this.Page ).ResolveRockUrl( "~/Scripts/summernote/plugins/rockfilebrowser/RockImageBrowser.js", true ) );
+            }
 
             base.RenderControl( writer );
         }
