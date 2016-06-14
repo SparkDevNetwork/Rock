@@ -87,10 +87,26 @@ namespace Rock.Model
         /// <param name="endDate">The end date.</param>
         /// <param name="groupIds">The group ids.</param>
         /// <param name="campusIds">The campus ids. Include the keyword 'null' in the list to include CampusId is null</param>
+        /// <param name="dataViewId">The data view identifier.</param>
+        /// <returns></returns>
+        public IEnumerable<IChartData> GetChartData( ChartGroupBy groupBy, AttendanceGraphBy graphBy, DateTime? startDate, DateTime? endDate, string groupIds, string campusIds, int? dataViewId )
+        {
+            return GetChartData( groupBy, graphBy, startDate, endDate, groupIds, campusIds, dataViewId, null );
+        }
+
+        /// <summary>
+        /// Gets the chart data.
+        /// </summary>
+        /// <param name="groupBy">The group by.</param>
+        /// <param name="graphBy">The graph by.</param>
+        /// <param name="startDate">The start date.</param>
+        /// <param name="endDate">The end date.</param>
+        /// <param name="groupIds">The group ids.</param>
+        /// <param name="campusIds">The campus ids. Include the keyword 'null' in the list to include CampusId is null</param>
         /// <param name="scheduleIds">The schedule ids.</param>
         /// <param name="dataViewId">The data view identifier.</param>
         /// <returns></returns>
-        public IEnumerable<IChartData> GetChartData( ChartGroupBy groupBy = ChartGroupBy.Week, AttendanceGraphBy graphBy = AttendanceGraphBy.Total, DateTime? startDate = null, DateTime? endDate = null, string groupIds = null, string campusIds = null, string scheduleIds = null, int? dataViewId = null )
+        public IEnumerable<IChartData> GetChartData( ChartGroupBy groupBy = ChartGroupBy.Week, AttendanceGraphBy graphBy = AttendanceGraphBy.Total, DateTime? startDate = null, DateTime? endDate = null, string groupIds = null, string campusIds = null, int? dataViewId = null, string scheduleIds = null )
         {
             var qryAttendance = Queryable().AsNoTracking()
                 .Where( a =>
