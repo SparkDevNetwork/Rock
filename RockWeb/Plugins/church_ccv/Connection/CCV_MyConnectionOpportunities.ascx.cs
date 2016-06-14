@@ -18,11 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
+using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -31,20 +31,20 @@ using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Connection
+namespace RockWeb.Plugins.church_ccv.Connection
 {
     /// <summary>
     /// Block to display the connectionOpportunities that user is authorized to view, and the activities that are currently assigned to the user.
     /// </summary>
-    [DisplayName( "My Connection Opportunities" )]
-    [Category( "Connection" )]
+    [DisplayName( "CCV My Connection Opportunities" )]
+    [Category( "CCV > Connection" )]
     [Description( "Block to display the connection opportunities that user is authorized to view, and the opportunities that are currently assigned to the user." )]
 
     [LinkedPage( "Configuration Page", "Page used to modify and create connection opportunities.", true, "", "", 0 )]
     [LinkedPage( "Detail Page", "Page used to view details of an requests.", true, "", "", 1 )]
     [ConnectionTypesField("Connection Types", "Optional list of connection types to limit the display to (All will be displayed by default).", false, order:2 )]
     [BooleanField( "Show Last Activity Note", "If enabled, the block will show the last activity note for each request in the list.", false, order:3 )]
-    public partial class MyConnectionOpportunities : Rock.Web.UI.RockBlock
+    public partial class CCV_MyConnectionOpportunities : Rock.Web.UI.RockBlock
     {
         #region Fields
 
@@ -458,20 +458,23 @@ namespace RockWeb.Blocks.Connection
                     }
 
                     // Count number of idle requests (no activity in past X days)
-                    int idleCount = opportunity.ConnectionRequests
+
+                    var connectionRequestsQry = new ConnectionRequestService( rockContext ).Queryable().Where( a => a.ConnectionOpportunityId == opportunity.Id );
+                    var currentDateTime = RockDateTime.Now;
+                    int idleCount = connectionRequestsQry
                                         .Where( cr => 
                                             (
                                                 cr.ConnectionState == ConnectionState.Active 
                                                 || (cr.ConnectionState == ConnectionState.FutureFollowUp && cr.FollowupDate.HasValue && cr.FollowupDate.Value < _midnightToday)
                                             )
                                             && (
-                                                ( cr.ConnectionRequestActivities.Count() > 0 && cr.ConnectionRequestActivities.OrderByDescending( ra => ra.CreatedDateTime ).Select( ra => ra.CreatedDateTime ).FirstOrDefault() < RockDateTime.Now.AddDays( -cr.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle ) ) )
-                                                || ( cr.ConnectionRequestActivities.Count() == 0 && cr.CreatedDateTime < RockDateTime.Now.AddDays( -cr.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle ) )
+                                                ( cr.ConnectionRequestActivities.Any() && cr.ConnectionRequestActivities.Max(ra => ra.CreatedDateTime) < SqlFunctions.DateAdd( "day", -cr.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle, currentDateTime )) )
+                                                || ( !cr.ConnectionRequestActivities.Any() && cr.CreatedDateTime < SqlFunctions.DateAdd( "day", -cr.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle, currentDateTime ) )
                                                )
                                         .Count();
 
                     // Count the number requests that have a status that is considered critical.
-                    int criticalCount = opportunity.ConnectionRequests
+                    int criticalCount = connectionRequestsQry
                                             .Where( r => 
                                                 r.ConnectionStatus.IsCritical 
                                                 && (

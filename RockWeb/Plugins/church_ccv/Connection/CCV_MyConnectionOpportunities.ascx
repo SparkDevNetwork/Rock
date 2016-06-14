@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CCV_MyConnectionOpportunities.ascx.cs" Inherits="RockWeb.Blocks.Connection.MyConnectionOpportunities" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CCV_MyConnectionOpportunities.ascx.cs" Inherits="RockWeb.Plugins.church_ccv.Connection.CCV_MyConnectionOpportunities" %>
 <%@ Import namespace="Rock" %>
 <script>
     Sys.Application.add_load(function () {
