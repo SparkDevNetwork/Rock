@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -44,6 +45,27 @@ namespace RockWeb.Plugins.church_ccv.Connection
     [LinkedPage( "Detail Page", "Page used to view details of an requests.", true, "", "", 1 )]
     [ConnectionTypesField("Connection Types", "Optional list of connection types to limit the display to (All will be displayed by default).", false, order:2 )]
     [BooleanField( "Show Last Activity Note", "If enabled, the block will show the last activity note for each request in the list.", false, order:3 )]
+
+    [CodeEditorField( "StatusTemplate", "Lava Template that can be used to customize what is displayed in the status bar. Includes common merge fields plus ConnectionOpportunities, ConnectionTypes and the default IdleTooltip.", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue:
+@"<div class='pull-left badge-legend padding-r-md'>
+    <span class='pull-left badge badge-info js-legend-badge' data-toggle='tooltip' data-original-title='Assigned To You'>&nbsp;</span>
+    <span class='pull-left badge badge-warning js-legend-badge' data-toggle='tooltip' data-original-title='Unassigned Item'>&nbsp;</span>
+    <span class='pull-left badge badge-critical js-legend-badge' data-toggle='tooltip' data-original-title='Critical Status'>&nbsp;</span>
+    <span class='pull-left badge badge-danger js-legend-badge' data-toggle='tooltip' data-original-title='{{ IdleTooltip }}'>&nbsp;</span> 
+</div>", order:4
+)]
+
+    [CodeEditorField( "OpportunitySummaryTemplate", "Lava Template that can be used to customize what is displayed in each Opportunity Summary. Includes common merge fields plus the OpportunitySummary, ConnectionOpportunity, and its ConnectionRequests.", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue:
+@"<i class='{{ OpportunitySummary.IconCssClass }}'></i>
+<h3>{{ OpportunitySummary.Name }}</h3>
+<div class='status-list'>
+    <span class='badge badge-info'>{{ OpportunitySummary.AssignedToYou | Format:'#,###,###' }}</span>
+    <span class='badge badge-warning'>{{ OpportunitySummary.UnassignedCount | Format:'#,###,###' }}</span>
+    <span class='badge badge-critical'>{{ OpportunitySummary.CriticalCount | Format:'#,###,###' }}</span>
+    <span class='badge badge-danger'>{{ OpportunitySummary.IdleCount | Format:'#,###,###' }}</span>
+</div>
+", order: 5
+)]
     public partial class CCV_MyConnectionOpportunities : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -210,6 +232,27 @@ namespace RockWeb.Plugins.church_ccv.Connection
 
                 lConnectionTypeName.Text = String.Format( "<h4 class='block-title'>{0}</h4>", connectionType.Name );
             }
+        }
+
+        /// <summary>
+        /// Gets the opportunity summary HTML.
+        /// </summary>
+        /// <param name="opportunitySummaryId">The opportunity summary identifier.</param>
+        /// <returns></returns>
+        public string GetOpportunitySummaryHtml( int opportunitySummaryId  )
+        {
+            var template = this.GetAttributeValue( "OpportunitySummaryTemplate" );
+
+            var opportunitySummary = SummaryState.SelectMany( a => a.Opportunities ).FirstOrDefault( a => a.Id == opportunitySummaryId );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            mergeFields.Add( "OpportunitySummary", DotLiquid.Hash.FromAnonymousObject( opportunitySummary ) );
+            var connectionOpportunity = new ConnectionOpportunityService(new RockContext()).Get(opportunitySummaryId);
+            mergeFields.Add( "ConnectionOpportunity", connectionOpportunity );
+            mergeFields.Add( "ConnectionRequests", connectionOpportunity.ConnectionRequests );
+
+            var result = template.ResolveMergeFields( mergeFields );
+            
+            return result;
         }
 
         /// <summary>
@@ -560,8 +603,13 @@ namespace RockWeb.Plugins.church_ccv.Connection
                 }
                 sb.Append( "</ul>" );
             }
-            lIdleToolTip.Text = String.Format( "<span class='pull-left badge badge-danger js-legend-badge' data-toggle='tooltip' data-original-title=\"{0}\">&nbsp;</span>", sb.ToString() );
 
+            var statusTemplate = this.GetAttributeValue( "StatusTemplate" );
+            var statusMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields(this.RockPage);
+            statusMergeFields.Add( "ConnectionOpportunities", allOpportunities );
+            statusMergeFields.Add( "ConnectionTypes", connectionTypes );
+            statusMergeFields.Add( "IdleTooltip", sb.ToString() );
+            lStatusBarContent.Text = statusTemplate.ResolveMergeFields( statusMergeFields );
             BindSummaryData();
         }
 
