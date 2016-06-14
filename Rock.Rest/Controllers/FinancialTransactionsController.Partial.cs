@@ -256,7 +256,7 @@ namespace Rock.Rest.Controllers
                 {
                     d.AccountId,
                     AccountName = d.Account.Name,
-                    a.Summary,
+                    d.Summary,
                     d.Amount
                 } ).OrderBy( x => x.AccountName ),
             } ).OrderBy( a => a.TransactionDateTime );

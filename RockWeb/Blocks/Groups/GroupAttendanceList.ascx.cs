@@ -347,6 +347,11 @@ namespace RockWeb.Blocks.Groups
                     }
 
                     rockContext.SaveChanges();
+
+                    if ( locationId.HasValue )
+                    {
+                        Rock.CheckIn.KioskLocationAttendance.Flush( locationId.Value );
+                    }
                 }
             }
 

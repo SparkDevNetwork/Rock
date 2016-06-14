@@ -46,7 +46,11 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         protected override string FormatDataValue( object dataValue, bool encode )
         {
-            return string.Format( "{0}{1:N}", GlobalAttributesCache.Value( "CurrencySymbol" ), dataValue );
+            if ( dataValue != null )
+            {
+                return string.Format( "{0}{1:N}", GlobalAttributesCache.Value( "CurrencySymbol" ), dataValue );
+            }
+            return base.FormatDataValue( dataValue, encode );
         }
     }
 }

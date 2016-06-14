@@ -520,7 +520,6 @@ namespace Rock.Reporting.Dashboard
         /// <summary>
         /// Gets the primary partition entity identifier from context.
         /// </summary>
-        /// <param name="result">The result.</param>
         /// <returns></returns>
         private MetricPartitionEntityId GetPrimaryMetricPartitionEntityIdFromContext()
         {
@@ -566,7 +565,20 @@ namespace Rock.Reporting.Dashboard
         /// </summary>
         public class MetricPartitionEntityId
         {
+            /// <summary>
+            /// Gets or sets the metric partition.
+            /// </summary>
+            /// <value>
+            /// The metric partition.
+            /// </value>
             public MetricPartition MetricPartition { get; set; }
+
+            /// <summary>
+            /// Gets or sets the entity identifier.
+            /// </summary>
+            /// <value>
+            /// The entity identifier.
+            /// </value>
             public int? EntityId { get; set; }
         }
 

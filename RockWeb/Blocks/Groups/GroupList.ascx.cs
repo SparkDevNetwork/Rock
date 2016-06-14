@@ -524,7 +524,7 @@ namespace RockWeb.Blocks.Groups
             // hide the group type column if there's only one type; must come after DataBind()
             if ( _groupTypesCount == 1 )
             {
-                this.gGroups.Columns[1].Visible = false;
+                this.gGroups.Columns[2].Visible = false;
             }
         }
 
