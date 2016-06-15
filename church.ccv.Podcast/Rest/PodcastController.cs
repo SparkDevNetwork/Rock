@@ -115,6 +115,21 @@ namespace chuch.ccv.Podcast.Rest
 
         [HttpGet]
         [HttpHead]
+        [System.Web.Http.Route( "api/Podcast/Series/Count" )]
+        public HttpResponseMessage Series( )
+        {
+            // serialize it into json
+            StringContent restContent = new StringContent( PodcastUtil.NumSeriesAndMessages( ).ToString( ), Encoding.UTF8, "application/json" );
+
+            // return it.
+            return new HttpResponseMessage()
+            {
+                Content = restContent
+            };
+        }
+
+        [HttpGet]
+        [HttpHead]
         [System.Web.Http.Route( "api/Podcast/Series/{seriesId}" )]
         public HttpResponseMessage Series( int seriesId, bool expandSeries = true )
         {
@@ -268,7 +283,7 @@ namespace chuch.ccv.Podcast.Rest
             
             return JsonConvert.SerializeObject( rootCategory );
         }
-
+        
         string Retrieve_RootWithCategories( int version, int numSeries, bool expandSeries )
         {
             // we will provide the "Root" that they ask for (defiend by categoryId),

@@ -33,6 +33,24 @@ namespace church.ccv.Podcast
         // This is Rock's Weekend Videos podcast category, and will also never change.
         public const int WeekendVideos_CategoryId = 452;
 
+        const int ContentChannelTypeId_PodcastSeries = 8;
+
+        public static int NumSeriesAndMessages( )
+        {
+            // // get all Podcast Series content channels
+            RockContext rockContext = new RockContext( );
+            ContentChannelService contentChannelService = new ContentChannelService( rockContext );
+            var podcastSeries = contentChannelService.Queryable( ).Where( cc => cc.ContentChannelTypeId == ContentChannelTypeId_PodcastSeries );
+
+            // query and join the items associated
+            ContentChannelItemService contentChannelItemService = new ContentChannelItemService( rockContext );
+            int numItems = contentChannelItemService.Queryable( ).Join( podcastSeries, 
+                                                                        cci => cci.ContentChannelId, cc => cc.Id, ( cci, cc ) => new { CCI = cci, CC = cc } ).Count( );
+            
+            // the combined total is NumSeriesAndMessages
+            return podcastSeries.Count( ) + numItems;
+        }
+
         public static PodcastCategory GetPodcastsByCategory( int categoryId, bool keepCategoryHierarchy = true, int maxSeries = int.MaxValue, bool expandSeries = true )
         {
             // if they pass in 0, accept that as the Root
