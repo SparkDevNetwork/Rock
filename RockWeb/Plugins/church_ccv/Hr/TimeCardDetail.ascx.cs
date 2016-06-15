@@ -289,7 +289,7 @@ namespace RockWeb.Plugins.church_ccv.Hr
                 ddlSickHours.Items.Clear();
                 ddlSickHours.Items.Add( string.Empty );
 
-                for ( double hour = 0.25; hour <= 8; hour += 0.25 )
+                for ( double hour = 0.25; hour <= 12; hour += 0.25 )
                 {
                     ddlVacationHours.Items.Add( hour.ToString( "0.00" ) );
                     ddlHolidayHours.Items.Add( hour.ToString( "0.00" ) );
