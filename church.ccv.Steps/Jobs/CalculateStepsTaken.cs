@@ -136,6 +136,20 @@ namespace church.ccv.Steps
             ProcessGroupTypes( _connectionGroupTypeIds, _connectionMeasureId, false ); // connection
             ProcessGroupTypes( _coachingGroupTypeIds, _coachingMeasureId, true ); // coaching
 
+            // delete any duplicate steps (this can occur if the job failed mid-course in the past)
+            var dedupe = @"DELETE FROM [_church_ccv_Steps_StepTaken] WHERE [Id] IN(
+SELECT MIN(Id) FROM [_church_ccv_Steps_StepTaken] st
+INNER JOIN
+	(SELECT PersonAliasId, stepmeasureid FROM (
+		SELECT PersonAliasId, stepmeasureid, count(*) AS DUPECOUNT
+		  FROM [_church_ccv_Steps_StepTaken]
+		  group by PersonAliasId, stepmeasureid
+		  ) rs
+		WHERE rs.DUPECOUNT > 1) i ON i.PersonAliasId = st.PersonAliasId AND i.StepMeasureId = st.StepMeasureId
+GROUP BY st.PersonAliasId, st.stepmeasureid)";
+
+            new RockContext().Database.ExecuteSqlCommand( dedupe );
+
             // set lastrun to now
             Rock.Web.SystemSettings.SetValue( "church_ccv_StepsTakenLastUpdate", RockDateTime.Now.ToString() );
 
@@ -401,7 +415,7 @@ namespace church.ccv.Steps
                         using ( RockContext updateContext = new RockContext() )
                         {
                             var person = new PersonService( updateContext ).Get( itemStart.PersonId );
-                            if ( person.PrimaryAliasId.HasValue )
+                            if ( person != null && person.PrimaryAliasId.HasValue )
                             {
                                 HistoryService historyService = new HistoryService( updateContext );
                                 History history = new History();
