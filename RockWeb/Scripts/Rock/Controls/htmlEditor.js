@@ -10,7 +10,7 @@
             toolbar_RockCustomConfigLight:
 	            [
                     // [groupName, [list of button]]
-                    ['source_group',['codeview']],
+                    ['source_group',['rockcodeeditor']],
                     ['style_group1', ['bold', 'italic', 'underline', 'strikethrough', 'ol', 'ul', 'link']],
                     ['style_group2', ['undo', 'redo']],
                     ['style_group3', ['clear']],
@@ -25,7 +25,7 @@
             toolbar_RockCustomConfigFull:
                 [
                     // [groupName, [list of button]]
-                    ['source_group', ['codeview']],
+                    ['source_group', ['rockcodeeditor']],
                     ['style_group1', ['bold', 'italic', 'underline', 'strikethrough', 'ol', 'ul', 'link']],
                     ['style_group2', ['undo', 'redo']],
                     ['style_group3', ['clear']],
