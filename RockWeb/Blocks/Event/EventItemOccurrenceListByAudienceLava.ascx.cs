@@ -47,9 +47,10 @@ namespace RockWeb.Blocks.Event
     [BooleanField("Use Campus Context", "Determine if the campus should be read from the campus context of the page.", order: 3)]
     [SlidingDateRangeField("Date Range", "Optional date range to filter the occurrences on.", false, enabledSlidingDateRangeTypes: "Next,Upcoming,Current", order:4)]
     [IntegerField("Max Occurrences", "The maximum number of occurrences to show.", false, 100, order: 5)]
-    [LinkedPage( "Registration Page", "The page to use for registrations.", order: 6 )]
-    [CodeEditorField( "Lava Template", "The lava template to use for the results", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue: "{% include '~~/Assets/Lava/EventItemOccurrenceListByAudience.lava' %}", order: 7 )]
-    [BooleanField("Enable Debug", "Show the lava merge fields.", order: 8)]
+    [LinkedPage( "Event Detail Page", "The page to use for showing event details.", order: 6 )]
+    [LinkedPage( "Registration Page", "The page to use for registrations.", order: 7 )]
+    [CodeEditorField( "Lava Template", "The lava template to use for the results", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue: "{% include '~~/Assets/Lava/EventItemOccurrenceListByAudience.lava' %}", order: 8 )]
+    [BooleanField("Enable Debug", "Show the lava merge fields.", order: 9)]
     public partial class EventItemOccurrenceListByAudienceLava : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -199,6 +200,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 mergeFields.Add( "ListTitle", GetAttributeValue("ListTitle") );
+                mergeFields.Add( "EventDetailPage", LinkedPageUrl( "EventDetailPage", null ) );
                 mergeFields.Add( "RegistrationPage", LinkedPageUrl( "RegistrationPage", null ) );
                 mergeFields.Add( "EventItemOccurrences", itemOccurrences );
                
@@ -214,6 +216,7 @@ namespace RockWeb.Blocks.Event
                                         <li>List Title - The title to pass to lava.
                                         <li>EventItemOccurrences - A list of EventItemOccurrences. View the EvenItemOccurrence model for these properties.</li>
                                         <li>RegistrationPage  - String that contains the relative path to the registration page.</li>
+                                        <li>EventDetailPage  - String that contains the relative path to the event detail page.</li>
                                         <li>Global Attribute  - Access to the Global Attributes.</li>
                                     </ul>
                                     </div>";
