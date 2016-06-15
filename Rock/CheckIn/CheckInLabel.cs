@@ -122,8 +122,7 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="kioskLabel">The label.</param>
         /// <param name="mergeObjects">The merge objects.</param>
-        /// <param name="scheduleIds">The schedule ids.</param>
-        public CheckInLabel( KioskLabel kioskLabel, Dictionary<string, object> mergeObjects, List<int> scheduleIds )
+        public CheckInLabel( KioskLabel kioskLabel, Dictionary<string, object> mergeObjects )
         {
             LabelKey = kioskLabel.Guid.ToString();
             LabelFile = kioskLabel.Url;
