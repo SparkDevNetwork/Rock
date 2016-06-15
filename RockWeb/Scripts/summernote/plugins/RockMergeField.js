@@ -6,15 +6,14 @@
         contents: '{ }',
         tooltip: 'Merge Field',
         click: function () {
-            var contextInfo = context;
-
             var iframeUrl = Rock.settings.get('baseUrl') + "ckeditorplugins/RockMergeField?mergeFields=" + encodeURIComponent(context.options.rockMergeFieldOptions.mergeFields);
             iframeUrl += "&theme=" + context.options.rockTheme;
 
             Rock.controls.modal.show(context.layoutInfo.editor, iframeUrl);
 
-            $('body iframe').contents().on('click', '.js-select-mergefield-button', function () {
-                debugger
+            $modalPopupIFrame = Rock.controls.modal.getModalPopupIFrame();
+
+            $modalPopupIFrame.contents().on('click', '.js-select-mergefield-button', function () {
                 Rock.controls.modal.close();
 
                 var mergeFields = $('body iframe').contents().find('.js-mergefieldpicker-result input[type=hidden]').val();
@@ -29,7 +28,7 @@
                 });
             });
 
-            $('body iframe').contents().on('click', '.js-cancel-mergefield-button', function () {
+            $modalPopupIFrame.contents().on('click', '.js-cancel-mergefield-button', function () {
                 Rock.controls.modal.close();
             });
         }

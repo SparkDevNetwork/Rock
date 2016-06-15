@@ -15,7 +15,9 @@
 
             Rock.controls.modal.show(context.layoutInfo.editor, iframeUrl);
 
-            $('body iframe').contents().on('click', '.js-select-file-button', function () {
+            $modalPopupIFrame = Rock.controls.modal.getModalPopupIFrame();
+
+            $modalPopupIFrame.contents().on('click', '.js-select-file-button', function () {
                 Rock.controls.modal.close();
                 var fileResult = $('body iframe').contents().find('.js-filebrowser-result input[type=hidden]').val();
                 if (fileResult) {
@@ -31,7 +33,7 @@
                 }
             });
 
-            $('body iframe').contents().on('click', '.js-cancel-file-button', function () {
+            $modalPopupIFrame.contents().on('click', '.js-cancel-file-button', function () {
                 Rock.controls.modal.close();
             });
         }
