@@ -51,17 +51,20 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
 
             if ( ! Page.IsPostBack )
             {
-                 if ( PageParameter( "bookmark" ).AsBooleanOrNull() != null )
-                 {
-                     RedirectAfterPause();
-                     return;
-                 }
-                 else if ( Session["bookmark"] != null )
-                 {
-                     Session["bookmark"] = null;
-                     // Let the admin know they can now bookmark that page
-                     maWarning.Show( "You can now bookmark or add this page to the Home Screen.", ModalAlertType.Information );
-                     return;
+                // Set the check-in state from values passed on query string
+                bool themeRedirect = PageParameter( "ThemeRedirect" ).AsBoolean( false );
+                
+                if ( PageParameter( "bookmark" ).AsBooleanOrNull() != null )
+                {
+                    RedirectAfterPause();
+                    return;
+                }
+                else if ( Session["bookmark"] != null )
+                {
+                    Session["bookmark"] = null;
+                    // Let the admin know they can now bookmark that page
+                    maWarning.Show( "You can now bookmark or add this page to the Home Screen.", ModalAlertType.Information );
+                    return;
                 }
 
                 // If client is configured via server's device attributes
@@ -79,22 +82,39 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                 {
                     // Set the check-in state from values passed on query string
                     CurrentKioskId = PageParameter( "KioskId" ).AsIntegerOrNull();
-
+                    CurrentCheckinTypeId = PageParameter( "CheckinConfigId" ).AsIntegerOrNull();
                     CurrentGroupTypeIds = ( PageParameter( "GroupTypeIds" ) ?? "" )
                         .Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries )
                         .ToList()
                         .Select( s => s.AsInteger() )
                         .ToList();
+
+		                // If Kiosk and GroupTypes were passed, but not a checkin type, try to calculate it from the group types.
+		                if ( CurrentKioskId.HasValue && CurrentGroupTypeIds.Any() && !CurrentCheckinTypeId.HasValue )
+		                {
+		                    if ( !CurrentCheckinTypeId.HasValue )
+		                    {
+		                        foreach ( int groupTypeId in CurrentGroupTypeIds )
+		                        {
+		                            var checkinType = GetCheckinType( groupTypeId );
+		                            if ( checkinType != null )
+		                            {
+		                                CurrentCheckinTypeId = checkinType.Id;
+		                                break;
+		                            }
+		                        }
+		                    }
+		                }
                 }
 
                 // If valid parameters were used, set state and navigate to welcome page
-                if ( CurrentKioskId.HasValue && CurrentGroupTypeIds.Any() )
+                if ( CurrentKioskId.HasValue && CurrentGroupTypeIds.Any() && CurrentCheckinTypeId.HasValue && !themeRedirect )
                 {
                     // Save the check-in state
                     SaveState();
-                    
+
                     // Clear the previously configured theme session variable
-                    Session["IsThemeConfigured"] = null;
+					Session["IsThemeConfigured"] = null;
 
                     // Navigate to the check-in home (welcome) page
                     NavigateToNextPage();
@@ -116,25 +136,31 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                         AttemptKioskMatchByIpOrName();
                     }
 
-                    string script = string.Format( @"
-                    <script>
-                        $(document).ready(function (e) {{
-                            if (localStorage) {{
-                                if (localStorage.checkInKiosk) {{
-                                    $('[id$=""hfKiosk""]').val(localStorage.checkInKiosk);
-                                    if (localStorage.theme) {{
-                                        $('[id$=""hfTheme""]').val(localStorage.theme);
-                                    }}
-                                    if (localStorage.checkInGroupTypes) {{
-                                        $('[id$=""hfGroupTypes""]').val(localStorage.checkInGroupTypes);
-                                    }}
-                                    {0};
-                                }}
-                            }}
-                        }});
-                    </script>
-                ", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
-                    phScript.Controls.Add( new LiteralControl( script ) );
+                    if ( !themeRedirect )
+                    {
+		                    string script = string.Format( @"
+		                    <script>
+		                        $(document).ready(function (e) {{
+		                            if (localStorage) {{
+		                                if (localStorage.checkInKiosk) {{
+		                                    $('[id$=""hfKiosk""]').val(localStorage.checkInKiosk);
+		                                    if (localStorage.theme) {{
+		                                        $('[id$=""hfTheme""]').val(localStorage.theme);
+		                                    }}
+                                            if (localStorage.checkInType) {{
+                                                $('[id$=""hfCheckinType""]').val(localStorage.checkInType);
+                                            }}
+		                                    if (localStorage.checkInGroupTypes) {{
+		                                        $('[id$=""hfGroupTypes""]').val(localStorage.checkInGroupTypes);
+		                                    }}
+		                                    {0};
+		                                }}
+		                            }}
+		                        }});
+		                    </script>
+		                ", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
+		                    phScript.Controls.Add( new LiteralControl( script ) );
+                  	}
 
                     ddlTheme.Items.Clear();
                     DirectoryInfo di = new DirectoryInfo( this.Page.Request.MapPath( ResolveRockUrl( "~~" ) ) );
@@ -176,6 +202,7 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                         if ( item != null )
                         {
                             item.Selected = true;
+                            BindCheckinTypes();
                             BindGroupTypes();
                         }
                     }
@@ -233,6 +260,18 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                         CurrentTheme = theme;
                         CurrentKioskId = device.Id;
                         CurrentGroupTypeIds = GetAllKiosksGroupTypes( device, rockContext );
+		                    if ( !CurrentCheckinTypeId.HasValue )
+		                    {
+		                        foreach ( int groupTypeId in CurrentGroupTypeIds )
+		                        {
+		                            var checkinType = GetCheckinType( groupTypeId );
+		                            if ( checkinType != null )
+		                            {
+		                                CurrentCheckinTypeId = checkinType.Id;
+		                                break;
+		                            }
+		                        }
+		                    }
                     }
                 }
             }
@@ -257,6 +296,20 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                     ClearMobileCookie();
                     CurrentKioskId = device.Id;
                     CurrentGroupTypeIds = GetAllKiosksGroupTypes( device, rockContext ); ;
+
+                    if ( !CurrentCheckinTypeId.HasValue )
+                    {
+                        foreach ( int groupTypeId in CurrentGroupTypeIds )
+                        {
+                            var checkinType = GetCheckinType( groupTypeId );
+                            if ( checkinType != null )
+                            {
+                                CurrentCheckinTypeId = checkinType.Id;
+                                break;
+                            }
+                        }
+                    }
+
                     CurrentCheckInState = null;
                     CurrentWorkflow = null;
                     SaveState();
@@ -326,12 +379,8 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             }
             else
             {
-                ListItem item = ddlKiosk.Items.FindByValue( hfKiosk.Value );
-                if ( item != null )
-                {
-                    ddlKiosk.SelectedValue = item.Value;
-                }
-
+                ddlKiosk.SetValue( hfKiosk.Value );
+                BindCheckinTypes( hfCheckinType.Value.AsIntegerOrNull() );
                 BindGroupTypes( hfGroupTypes.Value );
             }
         }
@@ -364,6 +413,20 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                 {
                     CurrentGroupTypeIds = GetAllKiosksGroupTypes( kiosk, rockContext ); ;
                 }
+
+                if ( !CurrentCheckinTypeId.HasValue )
+                {
+                    foreach ( int groupTypeId in CurrentGroupTypeIds )
+                    {
+                        var checkinType = GetCheckinType( groupTypeId );
+                        if ( checkinType != null )
+                        {
+                            CurrentCheckinTypeId = checkinType.Id;
+                            break;
+                        }
+                    }
+                }
+
                 CurrentCheckInState = null;
                 CurrentWorkflow = null;
                 SaveState();
@@ -449,15 +512,21 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
 
         #region Manually Setting Kiosks related
 
-        protected void ddlKiosk_SelectedIndexChanged( object sender, EventArgs e )
-        {
-            BindGroupTypes();
-        }
-
         protected void ddlTheme_SelectedIndexChanged( object sender, EventArgs e )
         {
             CurrentTheme = ddlTheme.SelectedValue;
             RedirectToNewTheme( ddlTheme.SelectedValue );
+        }
+
+        protected void ddlKiosk_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            BindCheckinTypes();
+            BindGroupTypes();
+        }
+
+        protected void ddlCheckinType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            BindGroupTypes();
         }
 
         protected void lbOk_Click( object sender, EventArgs e )
@@ -469,7 +538,14 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             }
 
             var groupTypeIds = new List<int>();
-            foreach ( ListItem item in cblGroupTypes.Items )
+            foreach ( ListItem item in cblPrimaryGroupTypes.Items )
+            {
+                if ( item.Selected )
+                {
+                    groupTypeIds.Add( Int32.Parse( item.Value ) );
+                }
+            }
+            foreach ( ListItem item in cblAlternateGroupTypes.Items )
             {
                 if ( item.Selected )
                 {
@@ -479,7 +555,8 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
 
             ClearMobileCookie();
             CurrentTheme = ddlTheme.SelectedValue;
-            CurrentKioskId = Int32.Parse( ddlKiosk.SelectedValue );
+            CurrentKioskId = ddlKiosk.SelectedValueAsInt();
+            CurrentCheckinTypeId = ddlCheckinType.SelectedValueAsInt();
             CurrentGroupTypeIds = groupTypeIds;
             CurrentCheckInState = null;
             CurrentWorkflow = null;
@@ -523,30 +600,183 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                 .ToList();
         }
 
+        private void BindCheckinTypes()
+        {
+            BindCheckinTypes( ddlCheckinType.SelectedValueAsInt() );
+        }
+
+        private void BindCheckinTypes( int? selectedValue )
+        {
+            ddlCheckinType.Items.Clear();
+
+            if ( ddlKiosk.SelectedValue != None.IdValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var kioskCheckinTypes = new List<GroupType>();
+
+                    var kioskGroupTypes = GetDeviceGroupTypes( ddlKiosk.SelectedValueAsInt() ?? 0, rockContext );
+                    var kioskGroupTypeIds = kioskGroupTypes.Select( t => t.Id ).ToList();
+
+                    var groupTypeService = new GroupTypeService( rockContext );
+
+                    Guid templateTypeGuid = Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid();
+                    ddlCheckinType.DataSource = groupTypeService
+                        .Queryable().AsNoTracking()
+                        .Where( t =>
+                            t.GroupTypePurposeValue != null &&
+                            t.GroupTypePurposeValue.Guid == templateTypeGuid )
+                        .OrderBy( t => t.Name )
+                        .Select( t => new
+                        {
+                            t.Name,
+                            t.Id
+                        } )
+                        .ToList();
+                    ddlCheckinType.DataBind();
+                }
+
+                if ( selectedValue.HasValue )
+                {
+                    ddlCheckinType.SetValue( selectedValue );
+                }
+                else
+                {
+                    if ( CurrentCheckinTypeId.HasValue )
+                    {
+                        ddlCheckinType.SetValue( CurrentCheckinTypeId );
+                    }
+                    else
+                    {
+                        var groupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_WEEKLY_SERVICE_CHECKIN_AREA.AsGuid() );
+                        if ( groupType != null  )
+                        {
+                            ddlCheckinType.SetValue( groupType.Id );
+                        }
+                    }
+                }
+            }
+        }
+
+        private GroupTypeCache GetCheckinType( int? groupTypeId )
+        {
+            Guid templateTypeGuid = Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid();
+            var templateType = DefinedValueCache.Read( templateTypeGuid );
+            if ( templateType != null )
+            {
+                return GetCheckinType( GroupTypeCache.Read( groupTypeId.Value ), templateType.Id );
+            }
+
+            return null;
+        }
+
+        private GroupTypeCache GetCheckinType( GroupTypeCache groupType, int templateTypeId, List<int> recursionControl = null )
+        {
+            if ( groupType != null )
+            {
+                recursionControl = recursionControl ?? new List<int>();
+                if ( !recursionControl.Contains( groupType.Id ) )
+                {
+                    recursionControl.Add( groupType.Id );
+                    if ( groupType.GroupTypePurposeValueId.HasValue && groupType.GroupTypePurposeValueId == templateTypeId )
+                    {
+                        return groupType;
+                    }
+
+                    foreach ( var parentGroupType in groupType.ParentGroupTypes )
+                    {
+                        var checkinType = GetCheckinType( parentGroupType, templateTypeId, recursionControl );
+                        if ( checkinType != null )
+                        {
+                            return checkinType;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+
+        private List<GroupTypeCache> GetDescendentGroupTypes( GroupTypeCache groupType, List<int> recursionControl = null )
+        {
+            var results = new List<GroupTypeCache>();
+
+            if ( groupType != null )
+            {
+                recursionControl = recursionControl ?? new List<int>();
+                if ( !recursionControl.Contains( groupType.Id ) )
+                {
+                    recursionControl.Add( groupType.Id );
+                    results.Add( groupType );
+
+                    foreach ( var childGroupType in groupType.ChildGroupTypes )
+                    {
+                        var childResults = GetDescendentGroupTypes( childGroupType, recursionControl );
+                        childResults.ForEach( c => results.Add( c ) );
+                    }
+                }
+            }
+
+            return results;
+        }
+
         private void BindGroupTypes()
         {
-            BindGroupTypes( string.Empty );
+            var groupTypeIds = new List<string>();
+            foreach ( ListItem item in cblPrimaryGroupTypes.Items )
+            {
+                if ( item.Selected )
+                {
+                    groupTypeIds.Add( item.Value );
+                }
+            }
+            foreach ( ListItem item in cblAlternateGroupTypes.Items )
+            {
+                if ( item.Selected )
+                {
+                    groupTypeIds.Add( item.Value );
+                }
+            }
+
+            BindGroupTypes( groupTypeIds.AsDelimited(",") );
         }
 
         private void BindGroupTypes( string selectedValues )
         {
             var selectedItems = selectedValues.Split( ',' );
 
-            cblGroupTypes.Items.Clear();
+            cblPrimaryGroupTypes.Items.Clear();
+            cblAlternateGroupTypes.Items.Clear();
 
-            if ( ddlKiosk.SelectedValue != None.IdValue )
+            if ( ddlKiosk.SelectedValue != None.IdValue ) 
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    cblGroupTypes.DataSource = GetDeviceGroupTypes( ddlKiosk.SelectedValueAsInt() ?? 0, rockContext );
-                    cblGroupTypes.DataBind();
+                    var deviceGroupTypes = GetDeviceGroupTypes( ddlKiosk.SelectedValueAsInt() ?? 0, rockContext );
+
+                    var primaryGroupTypeIds = GetDescendentGroupTypes( GroupTypeCache.Read( ddlCheckinType.SelectedValueAsInt() ?? 0 ) ).Select( t => t.Id ).ToList();
+
+                    cblPrimaryGroupTypes.DataSource = deviceGroupTypes.Where( t => primaryGroupTypeIds.Contains( t.Id ) ).ToList();
+                    cblPrimaryGroupTypes.DataBind();
+                    cblPrimaryGroupTypes.Visible = cblPrimaryGroupTypes.Items.Count > 0;
+
+                    cblAlternateGroupTypes.DataSource = deviceGroupTypes.Where( t => !primaryGroupTypeIds.Contains( t.Id ) ).ToList();
+                    cblAlternateGroupTypes.DataBind();
+                    cblAlternateGroupTypes.Visible = cblPrimaryGroupTypes.Items.Count > 0;
                 }
 
                 if ( selectedValues != string.Empty )
                 {
                     foreach ( string id in selectedValues.Split( ',' ) )
                     {
-                        ListItem item = cblGroupTypes.Items.FindByValue( id );
+                        ListItem item = cblPrimaryGroupTypes.Items.FindByValue( id );
+                        if ( item != null )
+                        {
+                            item.Selected = true;
+                        }
+
+                        item = cblAlternateGroupTypes.Items.FindByValue( id );
                         if ( item != null )
                         {
                             item.Selected = true;
@@ -559,14 +789,26 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                     {
                         foreach ( int id in CurrentGroupTypeIds )
                         {
-                            ListItem item = cblGroupTypes.Items.FindByValue( id.ToString() );
+                            ListItem item = cblPrimaryGroupTypes.Items.FindByValue( id.ToString() );
                             if ( item != null )
                             {
                                 item.Selected = true;
                             }
+
+                            item = cblAlternateGroupTypes.Items.FindByValue( id.ToString() );
+                            if ( item != null )
+                            {
+                                item.Selected = true;
+                            }
+
                         }
                     }
                 }
+            }
+            else
+            {
+                cblPrimaryGroupTypes.Visible = false;
+                cblAlternateGroupTypes.Visible = false;
             }
         }
 
@@ -596,9 +838,31 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             pageRef.QueryString = new System.Collections.Specialized.NameValueCollection();
             pageRef.Parameters = new Dictionary<string, string>();
             pageRef.Parameters.Add( "theme", theme );
+            pageRef.Parameters.Add( "KioskId", ddlKiosk.SelectedValue );
+            pageRef.Parameters.Add( "CheckinConfigId", ddlCheckinType.SelectedValue );
+
+            var groupTypeIds = new List<string>();
+            foreach ( ListItem item in cblPrimaryGroupTypes.Items )
+            {
+                if ( item.Selected )
+                {
+                    groupTypeIds.Add( item.Value );
+                }
+            }
+            foreach ( ListItem item in cblAlternateGroupTypes.Items )
+            {
+                if ( item.Selected )
+                {
+                    groupTypeIds.Add( item.Value );
+                }
+            }
+            pageRef.Parameters.Add( "GroupTypeIds", groupTypeIds.AsDelimited( "," ) );
+            pageRef.Parameters.Add( "ThemeRedirect", "True" );
+
             Response.Redirect( pageRef.BuildUrl(), false );
         }
 
         #endregion
+
     }
 }
