@@ -492,12 +492,17 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            
+            // set this textbox hidden until we can run the js to attach summernote to it
+            this.Style[HtmlTextWriterStyle.Display] = "none";
+
             base.OnLoad( e );
-            
-            if ( _hfInCodeEditorMode.Value.AsBoolean() )
+
+            if ( this.Page.IsPostBack )
             {
-                this.Text = _ceEditor.Text;
+                if ( _hfInCodeEditorMode.Value.AsBoolean() )
+                {
+                    this.Text = _ceEditor.Text;
+                }
             }
         }
 
