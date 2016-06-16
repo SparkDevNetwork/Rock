@@ -239,19 +239,23 @@ namespace RockWeb.Plugins.church_ccv.Connection
         /// </summary>
         /// <param name="opportunitySummaryId">The opportunity summary identifier.</param>
         /// <returns></returns>
-        public string GetOpportunitySummaryHtml( int opportunitySummaryId  )
+        public string GetOpportunitySummaryHtml( OpportunitySummary opportunitySummary )
         {
             var template = this.GetAttributeValue( "OpportunitySummaryTemplate" );
 
-            var opportunitySummary = SummaryState.SelectMany( a => a.Opportunities ).FirstOrDefault( a => a.Id == opportunitySummaryId );
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
             mergeFields.Add( "OpportunitySummary", DotLiquid.Hash.FromAnonymousObject( opportunitySummary ) );
-            var connectionOpportunity = new ConnectionOpportunityService(new RockContext()).Get(opportunitySummaryId);
-            mergeFields.Add( "ConnectionOpportunity", connectionOpportunity );
-            mergeFields.Add( "ConnectionRequests", connectionOpportunity.ConnectionRequests );
 
-            var result = template.ResolveMergeFields( mergeFields );
-            
+            string result = null; 
+            using ( var rockContext = new RockContext() )
+            {
+                var connectionOpportunity = new ConnectionOpportunityService( rockContext ).Queryable().AsNoTracking().FirstOrDefault( a => a.Id == opportunitySummary.Id );
+                mergeFields.Add( "ConnectionOpportunity", connectionOpportunity );
+                mergeFields.Add( "ConnectionRequests", connectionOpportunity.ConnectionRequests );
+
+                result = template.ResolveMergeFields( mergeFields );
+            }
+
             return result;
         }
 

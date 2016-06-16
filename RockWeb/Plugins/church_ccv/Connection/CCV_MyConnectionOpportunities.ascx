@@ -44,7 +44,7 @@
                                     <ItemTemplate>
                                         <li class='<%# SelectedOpportunityId.HasValue && (int)Eval("Id") == SelectedOpportunityId.Value ? "active" : "" %> block-status'>
                                             <asp:LinkButton ID="lbConnectionOpportunity" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display">
-                                                <%# this.GetOpportunitySummaryHtml( (int)Eval( "Id" ) ) %>
+                                                <%# this.GetOpportunitySummaryHtml( Container.DataItem as OpportunitySummary ) %>
                                             </asp:LinkButton>
                                         </li>
                                     </ItemTemplate>
