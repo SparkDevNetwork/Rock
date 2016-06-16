@@ -12,6 +12,8 @@
             iframeUrl += "&browserMode=doc";
             iframeUrl += "&fileTypeBlackList=" + encodeURIComponent(context.options.rockFileBrowserOptions.fileTypeBlackList);
             iframeUrl += "&theme=" + context.options.rockTheme;
+            iframeUrl += "&modalMode=1";
+            iframeUrl += "&title=Select%20File";
 
             Rock.controls.modal.show(context.layoutInfo.editor, iframeUrl);
 

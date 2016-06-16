@@ -91,6 +91,11 @@ namespace RockWeb.Blocks.Utility
 
             if ( !this.IsPostBack )
             {
+
+                pnlModalHeader.Visible = PageParameter( "ModalMode" ).AsBoolean();
+                pnlModalFooterActions.Visible = PageParameter( "ModalMode" ).AsBoolean();
+                lTitle.Text = PageParameter( "Title" );
+                
                 BuildFolderTreeView();
             }
 
