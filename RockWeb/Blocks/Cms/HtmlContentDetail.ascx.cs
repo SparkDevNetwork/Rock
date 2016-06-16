@@ -155,7 +155,7 @@ namespace RockWeb.Blocks.Cms
             int version = hfVersion.ValueAsInt();
             HtmlContent htmlContent = htmlContentService.GetByBlockIdAndEntityValueAndVersion( this.BlockId, entityValue, version );
 
-            // get the content depending on which mode we are in (codeeditor or ckeditor)
+            // get the content depending on which mode we are in (codeeditor or htmleditor)
             string newContent = ceHtml.Visible ? ceHtml.Text : htmlEditor.Text;
 
             // check if the new content is valid
