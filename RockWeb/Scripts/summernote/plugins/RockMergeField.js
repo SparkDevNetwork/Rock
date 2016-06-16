@@ -8,6 +8,7 @@
         click: function () {
             var iframeUrl = Rock.settings.get('baseUrl') + "ckeditorplugins/RockMergeField?mergeFields=" + encodeURIComponent(context.options.rockMergeFieldOptions.mergeFields);
             iframeUrl += "&theme=" + context.options.rockTheme;
+            iframeUrl += "&modalMode=1";
 
             Rock.controls.modal.show(context.layoutInfo.editor, iframeUrl);
 

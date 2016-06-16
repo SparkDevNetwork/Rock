@@ -1,5 +1,12 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CkEditorFileBrowser.ascx.cs" Inherits="RockWeb.Blocks.Utility.CkEditorFileBrowser" %>
 
+<asp:Panel ID="pnlModalHeader" runat="server" Visible="false">
+    <h1>
+        <asp:Literal ID="lTitle" runat="server"></asp:Literal>
+    </h1>
+</asp:Panel>
+
+
 <div class="ck-folders">
     <%-- Folders - Separate UpdatePanel so that Tree doesn't get rebuilt on postbacks (unless the server explicity wants it to get rebuilt) --%>
     <asp:UpdatePanel ID="upnlFolders" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
@@ -30,7 +37,7 @@
                     </div>
                 </div>
             </div>
-            </div>
+
             <script type="text/javascript">
                 Sys.Application.add_load(function () {
 
@@ -124,17 +131,17 @@
         <ContentTemplate>
             <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" Text="Error..." Visible="true" Title="Error" Dismissable="true" />
 
-            <Rock:ModalDialog runat="server" Title="Rename Folder" ID="mdRenameFolder" OnSaveClick="mdRenameFolder_SaveClick" ValidationGroup="vgRenameFolder" ScrollbarEnabled="false" >
+            <Rock:ModalDialog runat="server" Title="Rename Folder" ID="mdRenameFolder" OnSaveClick="mdRenameFolder_SaveClick" ValidationGroup="vgRenameFolder" ScrollbarEnabled="false">
                 <Content>
                     <Rock:RockTextBox runat="server" ID="tbOrigFolderName" Label="Folder Name" ReadOnly="true" />
-                    <Rock:RockTextBox runat="server" ID="tbRenameFolderName" Label="New Folder Name" Required="true" ValidationGroup="vgRenameFolder"  />
+                    <Rock:RockTextBox runat="server" ID="tbRenameFolderName" Label="New Folder Name" Required="true" ValidationGroup="vgRenameFolder" />
                 </Content>
             </Rock:ModalDialog>
 
             <Rock:ModalDialog runat="server" Title="Create Folder" ID="mdCreateFolder" OnSaveClick="mdCreateFolder_SaveClick" ValidationGroup="vgCreateFolder" ScrollbarEnabled="false">
                 <Content>
                     <!-- prevent carriage return from making mdRenameFolder popup when you press enter( on FF and Chrome) -->
-                    <Rock:RockTextBox runat="server" ID="tbNewFolderName" Label="New Folder Name" Required="true" ValidationGroup="vgCreateFolder" onkeypress="if (event.keyCode == 13) { event.preventDefault(); }"  />
+                    <Rock:RockTextBox runat="server" ID="tbNewFolderName" Label="New Folder Name" Required="true" ValidationGroup="vgCreateFolder" onkeypress="if (event.keyCode == 13) { event.preventDefault(); }" />
                 </Content>
             </Rock:ModalDialog>
 
@@ -165,8 +172,13 @@
         </ContentTemplate>
     </asp:UpdatePanel>
 
-    <div class="actions">
-        <a class="btn btn-primary js-select-file-button">OK</a>
-        <a class="btn btn-link js-cancel-file-button">Cancel</a>
-    </div>
 </div>
+
+<asp:Panel ID="pnlModalFooterActions" runat="server" Visible="false">
+    <div class="row">
+        <div class="margin-all-md actions pull-right">
+            <a class="btn btn-primary js-select-file-button">OK</a>
+            <a class="btn btn-link js-cancel-file-button">Cancel</a>
+        </div>
+    </div>
+</asp:Panel>

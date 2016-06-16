@@ -12,6 +12,8 @@
             iframeUrl += "&fileTypeBlackList=" + encodeURIComponent(context.options.rockFileBrowserOptions.fileTypeBlackList);
             iframeUrl += "&imageFileTypeWhiteList=" + encodeURIComponent(context.options.rockFileBrowserOptions.imageFileTypeWhiteList);
             iframeUrl += "&theme=" + context.options.rockTheme;
+            iframeUrl += "&modalMode=1";
+            iframeUrl += "&title=Select%20Image";
 
             Rock.controls.modal.show(context.layoutInfo.editor, iframeUrl);
 
