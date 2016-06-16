@@ -300,7 +300,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the custom javascript that will get executed when the ckeditor 'on change' event occurs
+        /// Gets or sets the custom javascript that will get executed when the editor 'on change' event occurs
         /// </summary>
         /// <value>
         /// The custom on change press script.
