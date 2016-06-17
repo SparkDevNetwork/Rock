@@ -51,6 +51,7 @@ public class SendGrid : IHttpHandler
             var rockContext = new Rock.Data.RockContext();
 
             var communicationRecipientService = new CommunicationRecipientService(rockContext);
+            var communicationRecipientActivityService = new CommunicationRecipientActivityService( rockContext );
 
             var parser = new Sendgrid.Webhooks.Service.WebhookParser();
             var events = parser.ParseEvents(postedData);
@@ -114,17 +115,24 @@ public class SendGrid : IHttpHandler
                                                                                   "Unknown";
                                             var openActivity = new CommunicationRecipientActivity
                                             {
+                                                CommunicationRecipientId = communicationRecipient.Id,
                                                 ActivityType = "Opened",
                                                 ActivityDateTime = item.TimeStamp,
                                                 ActivityDetail =
-                                                    string.Format("Opened from {0} ({1})", openEvent.UserAgent ?? "unknown",
-                                                        openEvent.Ip).Truncate(2197)
+                                                    string.Format( "Opened from {0} ({1})", openEvent.UserAgent ?? "unknown",
+                                                        openEvent.Ip ).Truncate( 2197 )
                                             };
-                                            communicationRecipient.Activities.Add(openActivity);
+
+                                            communicationRecipientActivityService.Add( openActivity );
                                         }
                                         break;
                                     case WebhookEventType.Click:
-                                        var clickActivity = new CommunicationRecipientActivity { ActivityType = "Click" };
+                                        var clickActivity = new CommunicationRecipientActivity
+                                        {
+                                            CommunicationRecipientId = communicationRecipient.Id,
+                                            ActivityType = "Click" 
+                                        };
+                                        
                                         var clickEvent = item as ClickEvent;
                                         clickActivity.ActivityDateTime = item.TimeStamp;
                                         if (clickEvent != null)
@@ -133,7 +141,8 @@ public class SendGrid : IHttpHandler
                                                 string.Format("Clicked the address {0} from {1} using {2}", clickEvent.Url,
                                                     clickEvent.Ip, clickEvent.UserAgent).Truncate(2197);
                                         }
-                                        communicationRecipient.Activities.Add(clickActivity);
+                                        
+                                        communicationRecipientActivityService.Add( clickActivity );
                                         break;
                                     case WebhookEventType.Dropped:
                                         var dropEvent = item as DroppedEvent;
