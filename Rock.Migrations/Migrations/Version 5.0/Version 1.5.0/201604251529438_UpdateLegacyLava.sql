@@ -308,7 +308,7 @@ BEGIN
 		SET [Value] = '{% assign baptismDate = Person | Attribute:''BaptismDate'' %}
 
 {% if baptismDate != '''' -%}
-    <div class="badge badge - baptism" data-toggle="tooltip" data-original-title="{{ Person.NickName }} was baptized on {{ baptismDate }}.">
+    <div class="badge badge-baptism" data-toggle="tooltip" data-original-title="{{ Person.NickName }} was baptized on {{ baptismDate }}.">
 <i class="badge-icon fa fa-tint"></i>
     </div>
 {% else -%}
