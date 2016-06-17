@@ -6,7 +6,7 @@
         contents: '<i class="fa fa-file-text-o"/>',
         tooltip: 'File Browser',
         click: function () {
-            var contextInfo = context;
+            context.invoke('editor.saveRange');
             var iframeUrl = Rock.settings.get('baseUrl') + "ckeditorplugins/rockfilebrowser";
             iframeUrl += "?rootFolder=" + encodeURIComponent(context.options.rockFileBrowserOptions.documentFolderRoot);
             iframeUrl += "&browserMode=doc";
@@ -27,6 +27,7 @@
                     // iframe returns the result in the format "href|text"
                     var resultParts = fileResult.split('|');
 
+                    context.invoke('editor.restoreRange');
                     context.invoke('editor.createLink', {
                         text: resultParts[1],
                         url: Rock.settings.get('baseUrl') + resultParts[0],

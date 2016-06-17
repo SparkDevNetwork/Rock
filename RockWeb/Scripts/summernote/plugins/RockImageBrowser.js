@@ -6,6 +6,8 @@
         contents: '<i class="fa fa-picture-o"/>',
         tooltip: 'Image Browser',
         click: function () {
+
+            context.invoke('editor.saveRange');
             var iframeUrl = Rock.settings.get('baseUrl') + "ckeditorplugins/rockfilebrowser";
             iframeUrl += "?rootFolder=" + encodeURIComponent(context.options.rockFileBrowserOptions.imageFolderRoot);
             iframeUrl += "&browserMode=image";
@@ -30,6 +32,7 @@
                     var altText = resultParts[1];
 
                     // insert the image at 25% to get them started
+                    context.invoke('editor.restoreRange');
                     context.invoke('editor.insertImage', url, function ($image) {
                         $image.css('width', '25%');
                         $image.attr('alt', altText);

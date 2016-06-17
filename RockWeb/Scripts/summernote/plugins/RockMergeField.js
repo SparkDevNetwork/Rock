@@ -6,6 +6,7 @@
         contents: '{ }',
         tooltip: 'Merge Field',
         click: function () {
+            context.invoke('editor.saveRange');
             var iframeUrl = Rock.settings.get('baseUrl') + "ckeditorplugins/RockMergeField?mergeFields=" + encodeURIComponent(context.options.rockMergeFieldOptions.mergeFields);
             iframeUrl += "&theme=" + context.options.rockTheme;
             iframeUrl += "&modalMode=1";
@@ -23,7 +24,7 @@
                     {
                         var node = document.createElement('div');
                         node.innerHTML = data;
-
+                        context.invoke('editor.restoreRange');
                         context.invoke('editor.insertNode', node);
                     }
                 });

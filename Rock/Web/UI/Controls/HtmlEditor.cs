@@ -596,7 +596,7 @@ $('#{0}').summernote({{
 }});
 ";
 
-            string summernoteJsLib = ( (RockPage)this.Page ).ResolveRockUrl( "~/Scripts/summernote/summernote.js", true );
+            string summernoteJsLib = ( (RockPage)this.Page ).ResolveRockUrl( "~/Scripts/summernote/summernote.min.js", true );
             bool rockMergeFieldEnabled = MergeFields.Any();
             bool rockFileBrowserEnabled = false;
 
