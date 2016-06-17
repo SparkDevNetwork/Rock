@@ -13,6 +13,7 @@ CALENDAR
 + Updated EventItemListLava block so that campuses is not required.
 + Updated calendar to no longer lose selected date when switching between view modes (Fixes #1392).
 + Added 'External Website Ads', and 'Service Bulletin' content channels to public calendar configuration if no content channels are already configured.
++ Fixed exception that would occur when using the Event Item Occurrence List By Audience Lava block without a date range filter (and recurring events without an end date exist).
 
 CHECK-IN
 + Added 'Family' check-in functionality to allow checking in multiple family members at the same time.
