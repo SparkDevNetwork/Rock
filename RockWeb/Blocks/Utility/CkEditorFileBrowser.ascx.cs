@@ -46,6 +46,7 @@ namespace RockWeb.Blocks.Utility
         {
             base.OnInit( e );
 
+            // NOTE: this will return a Status 400 if a valid rootfolder is not specified in the URL
             fuprFileUpload.RootFolder = GetRootFolderPath();
 
             string submitScriptFormat = @"
@@ -90,6 +91,11 @@ namespace RockWeb.Blocks.Utility
 
             if ( !this.IsPostBack )
             {
+
+                pnlModalHeader.Visible = PageParameter( "ModalMode" ).AsBoolean();
+                pnlModalFooterActions.Visible = PageParameter( "ModalMode" ).AsBoolean();
+                lTitle.Text = PageParameter( "Title" );
+                
                 BuildFolderTreeView();
             }
 
