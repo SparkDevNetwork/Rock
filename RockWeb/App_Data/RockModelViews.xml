@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <views>
-  <mapping-views hash="e9d7c070cc4fe6110b2793f217c20fafb7260370bc808dc3fa9f1cc16001f908" conceptual-container="RockContext" store-container="CodeFirstDatabase">
+  <mapping-views hash="227c573ba1700510efe7e5098aaa3aac1171ede7dfd79d8171ec0eab1a90c889" conceptual-container="RockContext" store-container="CodeFirstDatabase">
     <view extent="CodeFirstDatabase.AttendanceCode"><![CDATA[
     SELECT VALUE -- Constructing AttendanceCode
         [CodeFirstDatabaseSchema.AttendanceCode](T1.AttendanceCode_Id, T1.AttendanceCode_IssueDateTime, T1.AttendanceCode_Code, T1.AttendanceCode_Guid, T1.AttendanceCode_ForeignId, T1.AttendanceCode_ForeignGuid, T1.AttendanceCode_ForeignKey)
@@ -2796,7 +2796,7 @@
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.Metric"><![CDATA[
     SELECT VALUE -- Constructing Metric
-        [CodeFirstDatabaseSchema.Metric](T1.Metric_Id, T1.Metric_IsSystem, T1.Metric_Title, T1.Metric_Subtitle, T1.Metric_Description, T1.Metric_IconCssClass, T1.Metric_IsCumulative, T1.Metric_SourceValueTypeId, T1.Metric_SourceSql, T1.Metric_DataViewId, T1.Metric_XAxisLabel, T1.Metric_YAxisLabel, T1.Metric_MetricChampionPersonAliasId, T1.Metric_AdminPersonAliasId, T1.Metric_ScheduleId, T1.Metric_LastRunDateTime, T1.Metric_EntityTypeId, T1.Metric_CreatedDateTime, T1.Metric_ModifiedDateTime, T1.Metric_CreatedByPersonAliasId, T1.Metric_ModifiedByPersonAliasId, T1.Metric_Guid, T1.Metric_ForeignId, T1.Metric_ForeignGuid, T1.Metric_ForeignKey)
+        [CodeFirstDatabaseSchema.Metric](T1.Metric_Id, T1.Metric_IsSystem, T1.Metric_Title, T1.Metric_Subtitle, T1.Metric_Description, T1.Metric_IconCssClass, T1.Metric_IsCumulative, T1.Metric_SourceValueTypeId, T1.Metric_SourceSql, T1.Metric_DataViewId, T1.Metric_XAxisLabel, T1.Metric_YAxisLabel, T1.Metric_MetricChampionPersonAliasId, T1.Metric_AdminPersonAliasId, T1.Metric_ScheduleId, T1.Metric_LastRunDateTime, T1.Metric_CreatedDateTime, T1.Metric_ModifiedDateTime, T1.Metric_CreatedByPersonAliasId, T1.Metric_ModifiedByPersonAliasId, T1.Metric_Guid, T1.Metric_ForeignId, T1.Metric_ForeignGuid, T1.Metric_ForeignKey)
     FROM (
         SELECT 
             T.Id AS Metric_Id, 
@@ -2815,7 +2815,6 @@
             T.AdminPersonAliasId AS Metric_AdminPersonAliasId, 
             T.ScheduleId AS Metric_ScheduleId, 
             T.LastRunDateTime AS Metric_LastRunDateTime, 
-            T.EntityTypeId AS Metric_EntityTypeId, 
             T.CreatedDateTime AS Metric_CreatedDateTime, 
             T.ModifiedDateTime AS Metric_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS Metric_CreatedByPersonAliasId, 
@@ -2827,20 +2826,42 @@
             True AS _from0
         FROM RockContext.Metrics AS T
     ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.MetricPartition"><![CDATA[
+    SELECT VALUE -- Constructing MetricPartition
+        [CodeFirstDatabaseSchema.MetricPartition](T1.MetricPartition_Id, T1.MetricPartition_MetricId, T1.MetricPartition_Label, T1.MetricPartition_EntityTypeId, T1.MetricPartition_IsRequired, T1.MetricPartition_Order, T1.MetricPartition_EntityTypeQualifierColumn, T1.MetricPartition_EntityTypeQualifierValue, T1.MetricPartition_CreatedDateTime, T1.MetricPartition_ModifiedDateTime, T1.MetricPartition_CreatedByPersonAliasId, T1.MetricPartition_ModifiedByPersonAliasId, T1.MetricPartition_Guid, T1.MetricPartition_ForeignId, T1.MetricPartition_ForeignGuid, T1.MetricPartition_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS MetricPartition_Id, 
+            T.MetricId AS MetricPartition_MetricId, 
+            T.Label AS MetricPartition_Label, 
+            T.EntityTypeId AS MetricPartition_EntityTypeId, 
+            T.IsRequired AS MetricPartition_IsRequired, 
+            T.[Order] AS MetricPartition_Order, 
+            T.EntityTypeQualifierColumn AS MetricPartition_EntityTypeQualifierColumn, 
+            T.EntityTypeQualifierValue AS MetricPartition_EntityTypeQualifierValue, 
+            T.CreatedDateTime AS MetricPartition_CreatedDateTime, 
+            T.ModifiedDateTime AS MetricPartition_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS MetricPartition_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS MetricPartition_ModifiedByPersonAliasId, 
+            T.Guid AS MetricPartition_Guid, 
+            T.ForeignId AS MetricPartition_ForeignId, 
+            T.ForeignGuid AS MetricPartition_ForeignGuid, 
+            T.ForeignKey AS MetricPartition_ForeignKey, 
+            True AS _from0
+        FROM RockContext.MetricPartitions AS T
+    ) AS T1]]></view>
     <view extent="CodeFirstDatabase.MetricValue"><![CDATA[
     SELECT VALUE -- Constructing MetricValue
-        [CodeFirstDatabaseSchema.MetricValue](T1.MetricValue_Id, T1.MetricValue_MetricValueType, T1.MetricValue_XValue, T1.MetricValue_YValue, T1.MetricValue_Order, T1.MetricValue_MetricId, T1.MetricValue_Note, T1.MetricValue_MetricValueDateTime, T1.MetricValue_EntityId, T1.MetricValue_CreatedDateTime, T1.MetricValue_ModifiedDateTime, T1.MetricValue_CreatedByPersonAliasId, T1.MetricValue_ModifiedByPersonAliasId, T1.MetricValue_Guid, T1.MetricValue_ForeignId, T1.MetricValue_ForeignGuid, T1.MetricValue_ForeignKey)
+        [CodeFirstDatabaseSchema.MetricValue](T1.MetricValue_Id, T1.MetricValue_MetricValueType, T1.MetricValue_XValue, T1.MetricValue_YValue, T1.MetricValue_MetricId, T1.MetricValue_Note, T1.MetricValue_MetricValueDateTime, T1.MetricValue_CreatedDateTime, T1.MetricValue_ModifiedDateTime, T1.MetricValue_CreatedByPersonAliasId, T1.MetricValue_ModifiedByPersonAliasId, T1.MetricValue_Guid, T1.MetricValue_ForeignId, T1.MetricValue_ForeignGuid, T1.MetricValue_ForeignKey)
     FROM (
         SELECT 
             T.Id AS MetricValue_Id, 
             CAST(T.MetricValueType AS [Edm.Int32]) AS MetricValue_MetricValueType, 
             T.XValue AS MetricValue_XValue, 
             T.YValue AS MetricValue_YValue, 
-            T.[Order] AS MetricValue_Order, 
             T.MetricId AS MetricValue_MetricId, 
             T.Note AS MetricValue_Note, 
             T.MetricValueDateTime AS MetricValue_MetricValueDateTime, 
-            T.EntityId AS MetricValue_EntityId, 
             T.CreatedDateTime AS MetricValue_CreatedDateTime, 
             T.ModifiedDateTime AS MetricValue_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS MetricValue_CreatedByPersonAliasId, 
@@ -2851,6 +2872,26 @@
             T.ForeignKey AS MetricValue_ForeignKey, 
             True AS _from0
         FROM RockContext.MetricValues AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.MetricValuePartition"><![CDATA[
+    SELECT VALUE -- Constructing MetricValuePartition
+        [CodeFirstDatabaseSchema.MetricValuePartition](T1.MetricValuePartition_Id, T1.MetricValuePartition_MetricPartitionId, T1.MetricValuePartition_MetricValueId, T1.MetricValuePartition_EntityId, T1.MetricValuePartition_CreatedDateTime, T1.MetricValuePartition_ModifiedDateTime, T1.MetricValuePartition_CreatedByPersonAliasId, T1.MetricValuePartition_ModifiedByPersonAliasId, T1.MetricValuePartition_Guid, T1.MetricValuePartition_ForeignId, T1.MetricValuePartition_ForeignGuid, T1.MetricValuePartition_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS MetricValuePartition_Id, 
+            T.MetricPartitionId AS MetricValuePartition_MetricPartitionId, 
+            T.MetricValueId AS MetricValuePartition_MetricValueId, 
+            T.EntityId AS MetricValuePartition_EntityId, 
+            T.CreatedDateTime AS MetricValuePartition_CreatedDateTime, 
+            T.ModifiedDateTime AS MetricValuePartition_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS MetricValuePartition_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS MetricValuePartition_ModifiedByPersonAliasId, 
+            T.Guid AS MetricValuePartition_Guid, 
+            T.ForeignId AS MetricValuePartition_ForeignId, 
+            T.ForeignGuid AS MetricValuePartition_ForeignGuid, 
+            T.ForeignKey AS MetricValuePartition_ForeignKey, 
+            True AS _from0
+        FROM RockContext.MetricValuePartitions AS T
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.Note"><![CDATA[
     SELECT VALUE -- Constructing Note
@@ -6325,7 +6366,7 @@
     ) AS T1]]></view>
     <view extent="RockContext.Metrics"><![CDATA[
     SELECT VALUE -- Constructing Metrics
-        [Rock.Data.Metric](T1.Metric_Id, T1.Metric_IsSystem, T1.Metric_Title, T1.Metric_Subtitle, T1.Metric_Description, T1.Metric_IconCssClass, T1.Metric_IsCumulative, T1.Metric_SourceValueTypeId, T1.Metric_SourceSql, T1.Metric_DataViewId, T1.Metric_XAxisLabel, T1.Metric_YAxisLabel, T1.Metric_MetricChampionPersonAliasId, T1.Metric_AdminPersonAliasId, T1.Metric_ScheduleId, T1.Metric_LastRunDateTime, T1.Metric_EntityTypeId, T1.Metric_CreatedDateTime, T1.Metric_ModifiedDateTime, T1.Metric_CreatedByPersonAliasId, T1.Metric_ModifiedByPersonAliasId, T1.Metric_Guid, T1.Metric_ForeignId, T1.Metric_ForeignGuid, T1.Metric_ForeignKey)
+        [Rock.Data.Metric](T1.Metric_Id, T1.Metric_IsSystem, T1.Metric_Title, T1.Metric_Subtitle, T1.Metric_Description, T1.Metric_IconCssClass, T1.Metric_IsCumulative, T1.Metric_SourceValueTypeId, T1.Metric_SourceSql, T1.Metric_DataViewId, T1.Metric_XAxisLabel, T1.Metric_YAxisLabel, T1.Metric_MetricChampionPersonAliasId, T1.Metric_AdminPersonAliasId, T1.Metric_ScheduleId, T1.Metric_LastRunDateTime, T1.Metric_CreatedDateTime, T1.Metric_ModifiedDateTime, T1.Metric_CreatedByPersonAliasId, T1.Metric_ModifiedByPersonAliasId, T1.Metric_Guid, T1.Metric_ForeignId, T1.Metric_ForeignGuid, T1.Metric_ForeignKey)
     FROM (
         SELECT 
             T.Id AS Metric_Id, 
@@ -6344,7 +6385,6 @@
             T.AdminPersonAliasId AS Metric_AdminPersonAliasId, 
             T.ScheduleId AS Metric_ScheduleId, 
             T.LastRunDateTime AS Metric_LastRunDateTime, 
-            T.EntityTypeId AS Metric_EntityTypeId, 
             T.CreatedDateTime AS Metric_CreatedDateTime, 
             T.ModifiedDateTime AS Metric_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS Metric_CreatedByPersonAliasId, 
@@ -6356,20 +6396,42 @@
             True AS _from0
         FROM CodeFirstDatabase.Metric AS T
     ) AS T1]]></view>
+    <view extent="RockContext.MetricPartitions"><![CDATA[
+    SELECT VALUE -- Constructing MetricPartitions
+        [Rock.Data.MetricPartition](T1.MetricPartition_Id, T1.MetricPartition_MetricId, T1.MetricPartition_Label, T1.MetricPartition_EntityTypeId, T1.MetricPartition_IsRequired, T1.MetricPartition_Order, T1.MetricPartition_EntityTypeQualifierColumn, T1.MetricPartition_EntityTypeQualifierValue, T1.MetricPartition_CreatedDateTime, T1.MetricPartition_ModifiedDateTime, T1.MetricPartition_CreatedByPersonAliasId, T1.MetricPartition_ModifiedByPersonAliasId, T1.MetricPartition_Guid, T1.MetricPartition_ForeignId, T1.MetricPartition_ForeignGuid, T1.MetricPartition_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS MetricPartition_Id, 
+            T.MetricId AS MetricPartition_MetricId, 
+            T.Label AS MetricPartition_Label, 
+            T.EntityTypeId AS MetricPartition_EntityTypeId, 
+            T.IsRequired AS MetricPartition_IsRequired, 
+            T.[Order] AS MetricPartition_Order, 
+            T.EntityTypeQualifierColumn AS MetricPartition_EntityTypeQualifierColumn, 
+            T.EntityTypeQualifierValue AS MetricPartition_EntityTypeQualifierValue, 
+            T.CreatedDateTime AS MetricPartition_CreatedDateTime, 
+            T.ModifiedDateTime AS MetricPartition_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS MetricPartition_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS MetricPartition_ModifiedByPersonAliasId, 
+            T.Guid AS MetricPartition_Guid, 
+            T.ForeignId AS MetricPartition_ForeignId, 
+            T.ForeignGuid AS MetricPartition_ForeignGuid, 
+            T.ForeignKey AS MetricPartition_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.MetricPartition AS T
+    ) AS T1]]></view>
     <view extent="RockContext.MetricValues"><![CDATA[
     SELECT VALUE -- Constructing MetricValues
-        [Rock.Data.MetricValue](T1.MetricValue_Id, T1.MetricValue_MetricValueType, T1.MetricValue_XValue, T1.MetricValue_YValue, T1.MetricValue_Order, T1.MetricValue_MetricId, T1.MetricValue_Note, T1.MetricValue_MetricValueDateTime, T1.MetricValue_EntityId, T1.MetricValue_CreatedDateTime, T1.MetricValue_ModifiedDateTime, T1.MetricValue_CreatedByPersonAliasId, T1.MetricValue_ModifiedByPersonAliasId, T1.MetricValue_Guid, T1.MetricValue_ForeignId, T1.MetricValue_ForeignGuid, T1.MetricValue_ForeignKey)
+        [Rock.Data.MetricValue](T1.MetricValue_Id, T1.MetricValue_MetricValueType, T1.MetricValue_XValue, T1.MetricValue_YValue, T1.MetricValue_MetricId, T1.MetricValue_Note, T1.MetricValue_MetricValueDateTime, T1.MetricValue_CreatedDateTime, T1.MetricValue_ModifiedDateTime, T1.MetricValue_CreatedByPersonAliasId, T1.MetricValue_ModifiedByPersonAliasId, T1.MetricValue_Guid, T1.MetricValue_ForeignId, T1.MetricValue_ForeignGuid, T1.MetricValue_ForeignKey)
     FROM (
         SELECT 
             T.Id AS MetricValue_Id, 
             CAST(T.MetricValueType AS [Rock.Data.MetricValueType]) AS MetricValue_MetricValueType, 
             T.XValue AS MetricValue_XValue, 
             T.YValue AS MetricValue_YValue, 
-            T.[Order] AS MetricValue_Order, 
             T.MetricId AS MetricValue_MetricId, 
             T.Note AS MetricValue_Note, 
             T.MetricValueDateTime AS MetricValue_MetricValueDateTime, 
-            T.EntityId AS MetricValue_EntityId, 
             T.CreatedDateTime AS MetricValue_CreatedDateTime, 
             T.ModifiedDateTime AS MetricValue_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS MetricValue_CreatedByPersonAliasId, 
@@ -6380,6 +6442,26 @@
             T.ForeignKey AS MetricValue_ForeignKey, 
             True AS _from0
         FROM CodeFirstDatabase.MetricValue AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.MetricValuePartitions"><![CDATA[
+    SELECT VALUE -- Constructing MetricValuePartitions
+        [Rock.Data.MetricValuePartition](T1.MetricValuePartition_Id, T1.MetricValuePartition_MetricPartitionId, T1.MetricValuePartition_MetricValueId, T1.MetricValuePartition_EntityId, T1.MetricValuePartition_CreatedDateTime, T1.MetricValuePartition_ModifiedDateTime, T1.MetricValuePartition_CreatedByPersonAliasId, T1.MetricValuePartition_ModifiedByPersonAliasId, T1.MetricValuePartition_Guid, T1.MetricValuePartition_ForeignId, T1.MetricValuePartition_ForeignGuid, T1.MetricValuePartition_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS MetricValuePartition_Id, 
+            T.MetricPartitionId AS MetricValuePartition_MetricPartitionId, 
+            T.MetricValueId AS MetricValuePartition_MetricValueId, 
+            T.EntityId AS MetricValuePartition_EntityId, 
+            T.CreatedDateTime AS MetricValuePartition_CreatedDateTime, 
+            T.ModifiedDateTime AS MetricValuePartition_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS MetricValuePartition_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS MetricValuePartition_ModifiedByPersonAliasId, 
+            T.Guid AS MetricValuePartition_Guid, 
+            T.ForeignId AS MetricValuePartition_ForeignId, 
+            T.ForeignGuid AS MetricValuePartition_ForeignGuid, 
+            T.ForeignKey AS MetricValuePartition_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.MetricValuePartition AS T
     ) AS T1]]></view>
     <view extent="RockContext.Notes"><![CDATA[
     SELECT VALUE -- Constructing Notes
