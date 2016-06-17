@@ -24,11 +24,11 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.Utility
 {
     /// <summary>
-    /// Template block for developers to use to start a new block.
+    /// 
     /// </summary>
-    [DisplayName( "CkEditor MergeField" )]
+    [DisplayName( "HtmlEditor MergeField" )]
     [Category( "Utility" )]
-    [Description( "Block to be used as part of the RockMergeField CKEditor Plugin" )]
+    [Description( "Block to be used as part of the RockMergeField HtmlEditor Plugin" )]
     public partial class CkEditorMergeFieldPicker : RockBlock
     {
         #region Base Control Methods
@@ -45,23 +45,23 @@ namespace RockWeb.Blocks.Utility
 
             if ( !string.IsNullOrEmpty( mergeFields ) )
             {
-                mfpCkEditor.MergeFields = mergeFields.Split( ',' ).ToList();
+                mfpHtmlEditor.MergeFields = mergeFields.Split( ',' ).ToList();
             }
         }
 
         #endregion
 
         #region Events
-        
+
         /// <summary>
-        /// Handles the SelectItem event of the mfpCkEditor control.
+        /// Handles the SelectItem event of the mfpHtmlEditor control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void mfpCkEditor_SelectItem( object sender, EventArgs e )
+        protected void mfpHtmlEditor_SelectItem( object sender, EventArgs e )
         {
-            // set the result of the dialog so that the CkEditor plugin can grab it
-            hfResultValue.Value = mfpCkEditor.SelectedValue;
+            // set the result of the dialog so that the HtmlEditor plugin can grab it
+            hfResultValue.Value = mfpHtmlEditor.SelectedValue;
         }
 
         #endregion
