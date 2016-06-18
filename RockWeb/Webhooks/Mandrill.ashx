@@ -54,6 +54,7 @@ public class Mandrill : IHttpHandler
             var rockContext = new Rock.Data.RockContext();
 
             CommunicationRecipientService communicationRecipientService = new CommunicationRecipientService( rockContext );
+            CommunicationRecipientActivityService communicationRecipientActivityService = new CommunicationRecipientActivityService( rockContext );
 
             var payload = JsonConvert.DeserializeObject<IEnumerable<MailEvent>>( postedData );
             int unsavedCommunicationCount = 0;
@@ -118,16 +119,18 @@ public class Mandrill : IHttpHandler
                                                                                 item.UserAgent.UserAgentName ?? "unknown",
                                                                                 item.UserAgent.Type ?? "unknown" );
                                         CommunicationRecipientActivity openActivity = new CommunicationRecipientActivity();
+                                        openActivity.CommunicationRecipientId = communicationRecipient.Id;
                                         openActivity.ActivityType = "Opened";
                                         openActivity.ActivityDateTime = item.EventDateTime;
                                         openActivity.ActivityDetail = string.Format( "Opened from {0} on {1} ({2})",
                                                                         item.UserAgent.UserAgentName ?? "unknown",
                                                                         item.UserAgent.OperatingSystemName ?? "unknown",
                                                                         item.IpAddress );
-                                        communicationRecipient.Activities.Add( openActivity );
+                                        communicationRecipientActivityService.Add( openActivity );
                                         break;
                                     case MandrillEventType.Clicked:
                                         CommunicationRecipientActivity clickActivity = new CommunicationRecipientActivity();
+                                        clickActivity.CommunicationRecipientId = communicationRecipient.Id;
                                         clickActivity.ActivityType = "Click";
                                         clickActivity.ActivityDateTime = item.EventDateTime;
                                         clickActivity.ActivityDetail = string.Format( "Clicked the address {0} from {1} using {2} {3} {4} ({5})",
@@ -137,7 +140,7 @@ public class Mandrill : IHttpHandler
                                                                         item.UserAgent.UserAgentFamily ?? "unknown",
                                                                         item.UserAgent.UserAgentVersion ?? "unknown",
                                                                         item.UserAgent.Type ?? "unknown" );
-                                        communicationRecipient.Activities.Add( clickActivity );
+                                        communicationRecipientActivityService.Add( clickActivity );
                                         break;
                                 }
                             }
