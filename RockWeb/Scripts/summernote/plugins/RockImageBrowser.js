@@ -8,7 +8,7 @@
         click: function () {
 
             context.invoke('editor.saveRange');
-            var iframeUrl = Rock.settings.get('baseUrl') + "ckeditorplugins/rockfilebrowser";
+            var iframeUrl = Rock.settings.get('baseUrl') + "htmleditorplugins/rockfilebrowser";
             iframeUrl += "?rootFolder=" + encodeURIComponent(context.options.rockFileBrowserOptions.imageFolderRoot);
             iframeUrl += "&browserMode=image";
             iframeUrl += "&fileTypeBlackList=" + encodeURIComponent(context.options.rockFileBrowserOptions.fileTypeBlackList);

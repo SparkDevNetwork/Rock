@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,14 +22,18 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class CkEditorBrowserPageSecurity : Rock.Migrations.RockMigration4
+    public partial class SummerNoteEditor : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-            AddSecurityAuthForPage( Rock.SystemGuid.Page.HTMLEDITOR_ROCKFILEBROWSER_PLUGIN_FRAME, 0, "View", true, null, Model.SpecialRole.AllAuthenticatedUsers, "08138684-F4DC-4848-A8D5-342EED87FD85" );
+            RockMigrationHelper.RenameBlockType( "~/Blocks/Utility/CkEditorFileBrowser.ascx", "~/Blocks/Utility/HtmlEditorFileBrowser.ascx", null, "HtmlEditor FileBrowser", "Block to be used as part of the RockFileBrowser HtmlEditor Plugin" );
+            RockMigrationHelper.RenameBlockType( "~/Blocks/Utility/CkEditorMergeFieldPicker.ascx", "~/Blocks/Utility/HtmlEditorMergeFieldPicker.ascx", null, "HtmlEditor MergeField", "Block to be used as part of the RockMergeField HtmlEditor Plugin" );
+
+            RockMigrationHelper.AddPageRoute( "4A4995CA-24F6-4D33-B861-A24274F53AA6", "htmleditorplugins/RockFileBrowser" );
+            RockMigrationHelper.AddPageRoute( "1FC09F0D-72F2-44E6-9D16-2884F9AF33DD", "htmleditorplugins/RockMergeField" );
         }
         
         /// <summary>
@@ -37,7 +41,6 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            DeleteSecurityAuth( "08138684-F4DC-4848-A8D5-342EED87FD85" );
         }
     }
 }

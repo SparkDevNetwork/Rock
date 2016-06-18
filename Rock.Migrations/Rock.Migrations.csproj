@@ -67,6 +67,10 @@
     <Compile Include="Migrations\201606091237191_GivingAnalyticsRefactor.Designer.cs">
       <DependentUpon>201606091237191_GivingAnalyticsRefactor.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201606180003228_SummerNoteEditor.cs" />
+    <Compile Include="Migrations\201606180003228_SummerNoteEditor.Designer.cs">
+      <DependentUpon>201606180003228_SummerNoteEditor.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 5.0\Version 1.5.0\201606061308109_ClearPreviousMigrations5.cs" />
     <Compile Include="Migrations\Version 5.0\Version 1.5.0\201606061308109_ClearPreviousMigrations5.Designer.cs">
       <DependentUpon>201606061308109_ClearPreviousMigrations5.cs</DependentUpon>
@@ -2148,6 +2152,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201606091237191_GivingAnalyticsRefactor.resx">
       <DependentUpon>201606091237191_GivingAnalyticsRefactor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201606180003228_SummerNoteEditor.resx">
+      <DependentUpon>201606180003228_SummerNoteEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 5.0\Version 1.5.0\201606061308109_ClearPreviousMigrations5.resx">
       <DependentUpon>201606061308109_ClearPreviousMigrations5.cs</DependentUpon>
