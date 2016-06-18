@@ -31,10 +31,10 @@ namespace RockWeb.Blocks.Utility
     /// <summary>
     /// Template block for developers to use to start a new block.
     /// </summary>
-    [DisplayName( "CkEditor FileBrowser" )]
+    [DisplayName( "HtmlEditor FileBrowser" )]
     [Category( "Utility" )]
-    [Description( "Block to be used as part of the RockFileBrowser CKEditor Plugin" )]
-    public partial class CkEditorFileBrowser : RockBlock
+    [Description( "Block to be used as part of the RockFileBrowser HtmlEditor Plugin" )]
+    public partial class HtmlEditorFileBrowser : RockBlock
     {
         #region Base Control Methods
 

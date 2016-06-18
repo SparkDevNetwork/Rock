@@ -7,7 +7,7 @@
         tooltip: 'File Browser',
         click: function () {
             context.invoke('editor.saveRange');
-            var iframeUrl = Rock.settings.get('baseUrl') + "ckeditorplugins/rockfilebrowser";
+            var iframeUrl = Rock.settings.get('baseUrl') + "htmleditorplugins/rockfilebrowser";
             iframeUrl += "?rootFolder=" + encodeURIComponent(context.options.rockFileBrowserOptions.documentFolderRoot);
             iframeUrl += "&browserMode=doc";
             iframeUrl += "&fileTypeBlackList=" + encodeURIComponent(context.options.rockFileBrowserOptions.fileTypeBlackList);

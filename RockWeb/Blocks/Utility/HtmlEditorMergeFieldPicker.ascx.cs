@@ -29,7 +29,7 @@ namespace RockWeb.Blocks.Utility
     [DisplayName( "HtmlEditor MergeField" )]
     [Category( "Utility" )]
     [Description( "Block to be used as part of the RockMergeField HtmlEditor Plugin" )]
-    public partial class CkEditorMergeFieldPicker : RockBlock
+    public partial class HtmlEditorMergeFieldPicker : RockBlock
     {
         #region Base Control Methods
 

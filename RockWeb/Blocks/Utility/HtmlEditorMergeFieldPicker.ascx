@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CkEditorMergeFieldPicker.ascx.cs" Inherits="RockWeb.Blocks.Utility.CkEditorMergeFieldPicker" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="HtmlEditorMergeFieldPicker.ascx.cs" Inherits="RockWeb.Blocks.Utility.HtmlEditorMergeFieldPicker" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>

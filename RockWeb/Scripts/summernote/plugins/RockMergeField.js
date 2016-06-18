@@ -7,7 +7,7 @@
         tooltip: 'Merge Field',
         click: function () {
             context.invoke('editor.saveRange');
-            var iframeUrl = Rock.settings.get('baseUrl') + "ckeditorplugins/RockMergeField?mergeFields=" + encodeURIComponent(context.options.rockMergeFieldOptions.mergeFields);
+            var iframeUrl = Rock.settings.get('baseUrl') + "htmleditorplugins/RockMergeField?mergeFields=" + encodeURIComponent(context.options.rockMergeFieldOptions.mergeFields);
             iframeUrl += "&theme=" + context.options.rockTheme;
             iframeUrl += "&modalMode=1";
 

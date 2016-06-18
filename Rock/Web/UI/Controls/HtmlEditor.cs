@@ -601,7 +601,7 @@ $('#{0}').summernote({{
             bool rockFileBrowserEnabled = false;
 
             // only show the File/Image plugin if they have Auth to the file browser page
-            var fileBrowserPage = new Rock.Model.PageService( new RockContext() ).Get( Rock.SystemGuid.Page.CKEDITOR_ROCKFILEBROWSER_PLUGIN_FRAME.AsGuid() );
+            var fileBrowserPage = new Rock.Model.PageService( new RockContext() ).Get( Rock.SystemGuid.Page.HTMLEDITOR_ROCKFILEBROWSER_PLUGIN_FRAME.AsGuid() );
             if ( fileBrowserPage != null )
             {
                 var currentPerson = this.RockBlock().CurrentPerson;
