@@ -449,6 +449,25 @@ namespace Rock.Web.UI.Controls
             set { ViewState["AdditionalConfigurations"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [start in code editor mode].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [start in code editor mode]; otherwise, <c>false</c>.
+        /// </value>
+        public bool StartInCodeEditorMode
+        {
+            get
+            {
+                return ViewState["StartInCodeEditorMode"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["StartInCodeEditorMode"] = value;
+            }
+        }
+
         #endregion
 
         /// <summary>
@@ -560,7 +579,7 @@ if (!$('#summernoteJsLib').length) {{
     $('head').prepend(""<script id='summernoteJsLib' src='{1}' />"");
 }}
 
-$('#{0}').summernote({{
+var summerNoteEditor = $('#{0}').summernote({{
     height: '{2}', //set editable area's height
     toolbar: Rock.htmlEditor.toolbar_RockCustomConfig{11},
 
@@ -594,6 +613,10 @@ $('#{0}').summernote({{
         inCodeEditorModeHiddenFieldId: '{14}'
     }},
 }});
+
+if ({15} && RockCodeEditor) {{
+    RockCodeEditor(summerNoteEditor.data('summernote')).click();
+}}
 ";
 
             string summernoteJsLib = ( (RockPage)this.Page ).ResolveRockUrl( "~/Scripts/summernote/summernote.min.js", true );
@@ -657,7 +680,8 @@ $('#{0}').summernote({{
                 this.Toolbar.ConvertToString(),                                 // {11} 
                 callbacksOption,                                                // {12}
                 _ceEditor.ClientID,                                             // {13}
-                _hfInCodeEditorMode.ClientID                                    // {14}
+                _hfInCodeEditorMode.ClientID,                                   // {14}
+                StartInCodeEditorMode.ToTrueFalse().ToLower()                   // {15}
                 );                                                
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "summernote_init_script_" + this.ClientID, summernoteInitScript, true );
