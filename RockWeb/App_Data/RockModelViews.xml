@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <views>
-  <mapping-views hash="227c573ba1700510efe7e5098aaa3aac1171ede7dfd79d8171ec0eab1a90c889" conceptual-container="RockContext" store-container="CodeFirstDatabase">
+  <mapping-views hash="a797550a499aa42efd2819f598c90379f337f288bcbaff2d90a47b3a7f16a8fd" conceptual-container="RockContext" store-container="CodeFirstDatabase">
     <view extent="CodeFirstDatabase.AttendanceCode"><![CDATA[
     SELECT VALUE -- Constructing AttendanceCode
         [CodeFirstDatabaseSchema.AttendanceCode](T1.AttendanceCode_Id, T1.AttendanceCode_IssueDateTime, T1.AttendanceCode_Code, T1.AttendanceCode_Guid, T1.AttendanceCode_ForeignId, T1.AttendanceCode_ForeignGuid, T1.AttendanceCode_ForeignKey)
@@ -3530,6 +3530,392 @@
             T.ForeignKey AS MergeTemplate_ForeignKey, 
             True AS _from0
         FROM RockContext.MergeTemplates AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.TimeCard"><![CDATA[
+    SELECT VALUE -- Constructing TimeCard
+        [CodeFirstDatabaseSchema.TimeCard](T1.TimeCard_Id, T1.TimeCard_TimeCardPayPeriodId, T1.TimeCard_PersonAliasId, T1.TimeCard_TimeCardStatus, T1.TimeCard_SubmittedToPersonAliasId, T1.TimeCard_SubmittedDateTime, T1.TimeCard_ApprovedByPersonAliasId, T1.TimeCard_ApprovedDateTime, T1.TimeCard_ExportedDateTime, T1.TimeCard_CreatedDateTime, T1.TimeCard_ModifiedDateTime, T1.TimeCard_CreatedByPersonAliasId, T1.TimeCard_ModifiedByPersonAliasId, T1.TimeCard_Guid, T1.TimeCard_ForeignId, T1.TimeCard_ForeignGuid, T1.TimeCard_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS TimeCard_Id, 
+            T.TimeCardPayPeriodId AS TimeCard_TimeCardPayPeriodId, 
+            T.PersonAliasId AS TimeCard_PersonAliasId, 
+            CAST(T.TimeCardStatus AS [Edm.Int32]) AS TimeCard_TimeCardStatus, 
+            T.SubmittedToPersonAliasId AS TimeCard_SubmittedToPersonAliasId, 
+            T.SubmittedDateTime AS TimeCard_SubmittedDateTime, 
+            T.ApprovedByPersonAliasId AS TimeCard_ApprovedByPersonAliasId, 
+            T.ApprovedDateTime AS TimeCard_ApprovedDateTime, 
+            T.ExportedDateTime AS TimeCard_ExportedDateTime, 
+            T.CreatedDateTime AS TimeCard_CreatedDateTime, 
+            T.ModifiedDateTime AS TimeCard_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS TimeCard_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS TimeCard_ModifiedByPersonAliasId, 
+            T.Guid AS TimeCard_Guid, 
+            T.ForeignId AS TimeCard_ForeignId, 
+            T.ForeignGuid AS TimeCard_ForeignGuid, 
+            T.ForeignKey AS TimeCard_ForeignKey, 
+            True AS _from0
+        FROM RockContext.TimeCards AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.TimeCardDay"><![CDATA[
+    SELECT VALUE -- Constructing TimeCardDay
+        [CodeFirstDatabaseSchema.TimeCardDay](T1.TimeCardDay_Id, T1.TimeCardDay_TimeCardId, T1.TimeCardDay_StartDateTime, T1.TimeCardDay_LunchStartDateTime, T1.TimeCardDay_LunchEndDateTime, T1.TimeCardDay_EndDateTime, T1.TimeCardDay_TotalWorkedDuration, T1.TimeCardDay_PaidHolidayHours, T1.TimeCardDay_EarnedHolidayHours, T1.TimeCardDay_PaidVacationHours, T1.TimeCardDay_PaidSickHours, T1.TimeCardDay_Notes, T1.TimeCardDay_CreatedDateTime, T1.TimeCardDay_ModifiedDateTime, T1.TimeCardDay_CreatedByPersonAliasId, T1.TimeCardDay_ModifiedByPersonAliasId, T1.TimeCardDay_Guid, T1.TimeCardDay_ForeignId, T1.TimeCardDay_ForeignGuid, T1.TimeCardDay_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS TimeCardDay_Id, 
+            T.TimeCardId AS TimeCardDay_TimeCardId, 
+            T.StartDateTime AS TimeCardDay_StartDateTime, 
+            T.LunchStartDateTime AS TimeCardDay_LunchStartDateTime, 
+            T.LunchEndDateTime AS TimeCardDay_LunchEndDateTime, 
+            T.EndDateTime AS TimeCardDay_EndDateTime, 
+            T.TotalWorkedDuration AS TimeCardDay_TotalWorkedDuration, 
+            T.PaidHolidayHours AS TimeCardDay_PaidHolidayHours, 
+            T.EarnedHolidayHours AS TimeCardDay_EarnedHolidayHours, 
+            T.PaidVacationHours AS TimeCardDay_PaidVacationHours, 
+            T.PaidSickHours AS TimeCardDay_PaidSickHours, 
+            T.Notes AS TimeCardDay_Notes, 
+            T.CreatedDateTime AS TimeCardDay_CreatedDateTime, 
+            T.ModifiedDateTime AS TimeCardDay_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS TimeCardDay_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS TimeCardDay_ModifiedByPersonAliasId, 
+            T.Guid AS TimeCardDay_Guid, 
+            T.ForeignId AS TimeCardDay_ForeignId, 
+            T.ForeignGuid AS TimeCardDay_ForeignGuid, 
+            T.ForeignKey AS TimeCardDay_ForeignKey, 
+            True AS _from0
+        FROM RockContext.TimeCardDays AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.TimeCardHistory"><![CDATA[
+    SELECT VALUE -- Constructing TimeCardHistory
+        [CodeFirstDatabaseSchema.TimeCardHistory](T1.TimeCardHistory_Id, T1.TimeCardHistory_TimeCardId, T1.TimeCardHistory_HistoryDateTime, T1.TimeCardHistory_TimeCardStatus, T1.TimeCardHistory_StatusPersonAliasId, T1.TimeCardHistory_Notes, T1.TimeCardHistory_CreatedDateTime, T1.TimeCardHistory_ModifiedDateTime, T1.TimeCardHistory_CreatedByPersonAliasId, T1.TimeCardHistory_ModifiedByPersonAliasId, T1.TimeCardHistory_Guid, T1.TimeCardHistory_ForeignId, T1.TimeCardHistory_ForeignGuid, T1.TimeCardHistory_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS TimeCardHistory_Id, 
+            T.TimeCardId AS TimeCardHistory_TimeCardId, 
+            T.HistoryDateTime AS TimeCardHistory_HistoryDateTime, 
+            CAST(T.TimeCardStatus AS [Edm.Int32]) AS TimeCardHistory_TimeCardStatus, 
+            T.StatusPersonAliasId AS TimeCardHistory_StatusPersonAliasId, 
+            T.Notes AS TimeCardHistory_Notes, 
+            T.CreatedDateTime AS TimeCardHistory_CreatedDateTime, 
+            T.ModifiedDateTime AS TimeCardHistory_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS TimeCardHistory_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS TimeCardHistory_ModifiedByPersonAliasId, 
+            T.Guid AS TimeCardHistory_Guid, 
+            T.ForeignId AS TimeCardHistory_ForeignId, 
+            T.ForeignGuid AS TimeCardHistory_ForeignGuid, 
+            T.ForeignKey AS TimeCardHistory_ForeignKey, 
+            True AS _from0
+        FROM RockContext.TimeCardHistories AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.TimeCardPayPeriod"><![CDATA[
+    SELECT VALUE -- Constructing TimeCardPayPeriod
+        [CodeFirstDatabaseSchema.TimeCardPayPeriod](T1.TimeCardPayPeriod_Id, T1.TimeCardPayPeriod_StartDate, T1.TimeCardPayPeriod_EndDate, T1.TimeCardPayPeriod_CreatedDateTime, T1.TimeCardPayPeriod_ModifiedDateTime, T1.TimeCardPayPeriod_CreatedByPersonAliasId, T1.TimeCardPayPeriod_ModifiedByPersonAliasId, T1.TimeCardPayPeriod_Guid, T1.TimeCardPayPeriod_ForeignId, T1.TimeCardPayPeriod_ForeignGuid, T1.TimeCardPayPeriod_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS TimeCardPayPeriod_Id, 
+            T.StartDate AS TimeCardPayPeriod_StartDate, 
+            T.EndDate AS TimeCardPayPeriod_EndDate, 
+            T.CreatedDateTime AS TimeCardPayPeriod_CreatedDateTime, 
+            T.ModifiedDateTime AS TimeCardPayPeriod_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS TimeCardPayPeriod_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS TimeCardPayPeriod_ModifiedByPersonAliasId, 
+            T.Guid AS TimeCardPayPeriod_Guid, 
+            T.ForeignId AS TimeCardPayPeriod_ForeignId, 
+            T.ForeignGuid AS TimeCardPayPeriod_ForeignGuid, 
+            T.ForeignKey AS TimeCardPayPeriod_ForeignKey, 
+            True AS _from0
+        FROM RockContext.TimeCardPayPeriods AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.PromotionOccurrence"><![CDATA[
+    SELECT VALUE -- Constructing PromotionOccurrence
+        [CodeFirstDatabaseSchema.PromotionOccurrence](T1.PromotionOccurrence_Id, T1.PromotionOccurrence_PromotionRequestId, T1.PromotionOccurrence_ContentChannelItemId, T1.PromotionOccurrence_CreatedDateTime, T1.PromotionOccurrence_ModifiedDateTime, T1.PromotionOccurrence_CreatedByPersonAliasId, T1.PromotionOccurrence_ModifiedByPersonAliasId, T1.PromotionOccurrence_Guid, T1.PromotionOccurrence_ForeignId, T1.PromotionOccurrence_ForeignGuid, T1.PromotionOccurrence_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS PromotionOccurrence_Id, 
+            T.PromotionRequestId AS PromotionOccurrence_PromotionRequestId, 
+            T.ContentChannelItemId AS PromotionOccurrence_ContentChannelItemId, 
+            T.CreatedDateTime AS PromotionOccurrence_CreatedDateTime, 
+            T.ModifiedDateTime AS PromotionOccurrence_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS PromotionOccurrence_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS PromotionOccurrence_ModifiedByPersonAliasId, 
+            T.Guid AS PromotionOccurrence_Guid, 
+            T.ForeignId AS PromotionOccurrence_ForeignId, 
+            T.ForeignGuid AS PromotionOccurrence_ForeignGuid, 
+            T.ForeignKey AS PromotionOccurrence_ForeignKey, 
+            True AS _from0
+        FROM RockContext.PromotionOccurrences AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.PromotionRequest"><![CDATA[
+    SELECT VALUE -- Constructing PromotionRequest
+        [CodeFirstDatabaseSchema.PromotionRequest](T1.PromotionRequest_Id, T1.PromotionRequest_EventItemOccurrenceId, T1.PromotionRequest_IsActive, T1.PromotionRequest_EventLastModifiedTime, T1.PromotionRequest_ContentChannelId, T1.PromotionRequest_CreatedDateTime, T1.PromotionRequest_ModifiedDateTime, T1.PromotionRequest_CreatedByPersonAliasId, T1.PromotionRequest_ModifiedByPersonAliasId, T1.PromotionRequest_Guid, T1.PromotionRequest_ForeignId, T1.PromotionRequest_ForeignGuid, T1.PromotionRequest_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS PromotionRequest_Id, 
+            T.EventItemOccurrenceId AS PromotionRequest_EventItemOccurrenceId, 
+            T.IsActive AS PromotionRequest_IsActive, 
+            T.EventLastModifiedTime AS PromotionRequest_EventLastModifiedTime, 
+            T.ContentChannelId AS PromotionRequest_ContentChannelId, 
+            T.CreatedDateTime AS PromotionRequest_CreatedDateTime, 
+            T.ModifiedDateTime AS PromotionRequest_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS PromotionRequest_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS PromotionRequest_ModifiedByPersonAliasId, 
+            T.Guid AS PromotionRequest_Guid, 
+            T.ForeignId AS PromotionRequest_ForeignId, 
+            T.ForeignGuid AS PromotionRequest_ForeignGuid, 
+            T.ForeignKey AS PromotionRequest_ForeignKey, 
+            True AS _from0
+        FROM RockContext.PromotionRequests AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.DPSOffender"><![CDATA[
+    SELECT VALUE -- Constructing DPSOffender
+        [CodeFirstDatabaseSchema.DPSOffender](T1.DPSOffender_Id, T1.DPSOffender_Level, T1.DPSOffender_LastName, T1.DPSOffender_FirstName, T1.DPSOffender_MiddleInitial, T1.DPSOffender_Age, T1.DPSOffender_Height, T1.DPSOffender_Weight, T1.DPSOffender_Race, T1.DPSOffender_Gender, T1.DPSOffender_Hair, T1.DPSOffender_Eyes, T1.DPSOffender_ResAddress, T1.DPSOffender_ResCity, T1.DPSOffender_ResZip, T1.DPSOffender_ResState, T1.DPSOffender_Offense, T1.DPSOffender_DateConvicted, T1.DPSOffender_ConvictionState, T1.DPSOffender_Absconder, T1.DPSOffender_ConfirmedMatch, T1.DPSOffender_PersonAliasId, T1.DPSOffender_DpsLocationId, T1.DPSOffender_Guid, T1.DPSOffender_ForeignId, T1.DPSOffender_ForeignGuid, T1.DPSOffender_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS DPSOffender_Id, 
+            T.Level AS DPSOffender_Level, 
+            T.LastName AS DPSOffender_LastName, 
+            T.FirstName AS DPSOffender_FirstName, 
+            T.MiddleInitial AS DPSOffender_MiddleInitial, 
+            T.Age AS DPSOffender_Age, 
+            T.Height AS DPSOffender_Height, 
+            T.Weight AS DPSOffender_Weight, 
+            T.Race AS DPSOffender_Race, 
+            T.Gender AS DPSOffender_Gender, 
+            T.Hair AS DPSOffender_Hair, 
+            T.Eyes AS DPSOffender_Eyes, 
+            T.ResAddress AS DPSOffender_ResAddress, 
+            T.ResCity AS DPSOffender_ResCity, 
+            T.ResZip AS DPSOffender_ResZip, 
+            T.ResState AS DPSOffender_ResState, 
+            T.Offense AS DPSOffender_Offense, 
+            T.DateConvicted AS DPSOffender_DateConvicted, 
+            T.ConvictionState AS DPSOffender_ConvictionState, 
+            T.Absconder AS DPSOffender_Absconder, 
+            T.ConfirmedMatch AS DPSOffender_ConfirmedMatch, 
+            T.PersonAliasId AS DPSOffender_PersonAliasId, 
+            T.DpsLocationId AS DPSOffender_DpsLocationId, 
+            T.Guid AS DPSOffender_Guid, 
+            T.ForeignId AS DPSOffender_ForeignId, 
+            T.ForeignGuid AS DPSOffender_ForeignGuid, 
+            T.ForeignKey AS DPSOffender_ForeignKey, 
+            True AS _from0
+        FROM RockContext.DPSOffenders AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.StepMeasure"><![CDATA[
+    SELECT VALUE -- Constructing StepMeasure
+        [CodeFirstDatabaseSchema.StepMeasure](T1.StepMeasure_Id, T1.StepMeasure_Title, T1.StepMeasure_Description, T1.StepMeasure_IconCssClass, T1.StepMeasure_Color, T1.StepMeasure_Order, T1.StepMeasure_IsActive, T1.StepMeasure_IsTbd, T1.StepMeasure_CreatedDateTime, T1.StepMeasure_ModifiedDateTime, T1.StepMeasure_CreatedByPersonAliasId, T1.StepMeasure_ModifiedByPersonAliasId, T1.StepMeasure_Guid, T1.StepMeasure_ForeignId, T1.StepMeasure_ForeignGuid, T1.StepMeasure_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS StepMeasure_Id, 
+            T.Title AS StepMeasure_Title, 
+            T.Description AS StepMeasure_Description, 
+            T.IconCssClass AS StepMeasure_IconCssClass, 
+            T.Color AS StepMeasure_Color, 
+            T.[Order] AS StepMeasure_Order, 
+            T.IsActive AS StepMeasure_IsActive, 
+            T.IsTbd AS StepMeasure_IsTbd, 
+            T.CreatedDateTime AS StepMeasure_CreatedDateTime, 
+            T.ModifiedDateTime AS StepMeasure_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS StepMeasure_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS StepMeasure_ModifiedByPersonAliasId, 
+            T.Guid AS StepMeasure_Guid, 
+            T.ForeignId AS StepMeasure_ForeignId, 
+            T.ForeignGuid AS StepMeasure_ForeignGuid, 
+            T.ForeignKey AS StepMeasure_ForeignKey, 
+            True AS _from0
+        FROM RockContext.StepMeasures AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.StepMeasureValue"><![CDATA[
+    SELECT VALUE -- Constructing StepMeasureValue
+        [CodeFirstDatabaseSchema.StepMeasureValue](T1.StepMeasureValue_Id, T1.StepMeasureValue_StepMeasureId, T1.StepMeasureValue_Value, T1.StepMeasureValue_CampusId, T1.StepMeasureValue_PastorPersonAliasId, T1.StepMeasureValue_SundayDate, T1.StepMeasureValue_WeekendAttendance, T1.StepMeasureValue_ActiveAdults, T1.StepMeasureValue_ActiveStudents, T1.StepMeasureValue_Note, T1.StepMeasureValue_CreatedDateTime, T1.StepMeasureValue_ModifiedDateTime, T1.StepMeasureValue_CreatedByPersonAliasId, T1.StepMeasureValue_ModifiedByPersonAliasId, T1.StepMeasureValue_Guid, T1.StepMeasureValue_ForeignId, T1.StepMeasureValue_ForeignGuid, T1.StepMeasureValue_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS StepMeasureValue_Id, 
+            T.StepMeasureId AS StepMeasureValue_StepMeasureId, 
+            T.[Value] AS StepMeasureValue_Value, 
+            T.CampusId AS StepMeasureValue_CampusId, 
+            T.PastorPersonAliasId AS StepMeasureValue_PastorPersonAliasId, 
+            T.SundayDate AS StepMeasureValue_SundayDate, 
+            T.WeekendAttendance AS StepMeasureValue_WeekendAttendance, 
+            T.ActiveAdults AS StepMeasureValue_ActiveAdults, 
+            T.ActiveStudents AS StepMeasureValue_ActiveStudents, 
+            T.Note AS StepMeasureValue_Note, 
+            T.CreatedDateTime AS StepMeasureValue_CreatedDateTime, 
+            T.ModifiedDateTime AS StepMeasureValue_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS StepMeasureValue_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS StepMeasureValue_ModifiedByPersonAliasId, 
+            T.Guid AS StepMeasureValue_Guid, 
+            T.ForeignId AS StepMeasureValue_ForeignId, 
+            T.ForeignGuid AS StepMeasureValue_ForeignGuid, 
+            T.ForeignKey AS StepMeasureValue_ForeignKey, 
+            True AS _from0
+        FROM RockContext.StepMeasureValues AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.StepTaken"><![CDATA[
+    SELECT VALUE -- Constructing StepTaken
+        [CodeFirstDatabaseSchema.StepTaken](T1.StepTaken_Id, T1.StepTaken_StepMeasureId, T1.StepTaken_CampusId, T1.StepTaken_PersonAliasId, T1.StepTaken_SundayDate, T1.StepTaken_DateTaken, T1.StepTaken_Note, T1.StepTaken_CreatedDateTime, T1.StepTaken_ModifiedDateTime, T1.StepTaken_CreatedByPersonAliasId, T1.StepTaken_ModifiedByPersonAliasId, T1.StepTaken_Guid, T1.StepTaken_ForeignId, T1.StepTaken_ForeignGuid, T1.StepTaken_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS StepTaken_Id, 
+            T.StepMeasureId AS StepTaken_StepMeasureId, 
+            T.CampusId AS StepTaken_CampusId, 
+            T.PersonAliasId AS StepTaken_PersonAliasId, 
+            T.SundayDate AS StepTaken_SundayDate, 
+            T.DateTaken AS StepTaken_DateTaken, 
+            T.Note AS StepTaken_Note, 
+            T.CreatedDateTime AS StepTaken_CreatedDateTime, 
+            T.ModifiedDateTime AS StepTaken_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS StepTaken_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS StepTaken_ModifiedByPersonAliasId, 
+            T.Guid AS StepTaken_Guid, 
+            T.ForeignId AS StepTaken_ForeignId, 
+            T.ForeignGuid AS StepTaken_ForeignGuid, 
+            T.ForeignKey AS StepTaken_ForeignKey, 
+            True AS _from0
+        FROM RockContext.StepTakens AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.PCOAccount"><![CDATA[
+    SELECT VALUE -- Constructing PCOAccount
+        [CodeFirstDatabaseSchema.PCOAccount](T1.PCOAccount_Id, T1.PCOAccount_Name, T1.PCOAccount_ApplicationId, T1.PCOAccount_Secret, T1.PCOAccount_AllowPermissionDowngrade, T1.PCOAccount_AdministratorGroupId, T1.PCOAccount_EditorGroupId, T1.PCOAccount_SchedulerGroupId, T1.PCOAccount_ScheduledViewerGroupId, T1.PCOAccount_ViewerGroupId, T1.PCOAccount_CreatedDateTime, T1.PCOAccount_ModifiedDateTime, T1.PCOAccount_CreatedByPersonAliasId, T1.PCOAccount_ModifiedByPersonAliasId, T1.PCOAccount_Guid, T1.PCOAccount_ForeignId, T1.PCOAccount_ForeignGuid, T1.PCOAccount_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS PCOAccount_Id, 
+            T.Name AS PCOAccount_Name, 
+            T.ApplicationId AS PCOAccount_ApplicationId, 
+            T.Secret AS PCOAccount_Secret, 
+            T.AllowPermissionDowngrade AS PCOAccount_AllowPermissionDowngrade, 
+            T.AdministratorGroupId AS PCOAccount_AdministratorGroupId, 
+            T.EditorGroupId AS PCOAccount_EditorGroupId, 
+            T.SchedulerGroupId AS PCOAccount_SchedulerGroupId, 
+            T.ScheduledViewerGroupId AS PCOAccount_ScheduledViewerGroupId, 
+            T.ViewerGroupId AS PCOAccount_ViewerGroupId, 
+            T.CreatedDateTime AS PCOAccount_CreatedDateTime, 
+            T.ModifiedDateTime AS PCOAccount_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS PCOAccount_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS PCOAccount_ModifiedByPersonAliasId, 
+            T.Guid AS PCOAccount_Guid, 
+            T.ForeignId AS PCOAccount_ForeignId, 
+            T.ForeignGuid AS PCOAccount_ForeignGuid, 
+            T.ForeignKey AS PCOAccount_ForeignKey, 
+            True AS _from0
+        FROM RockContext.PCOAccounts AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.PCOAccountPerson"><![CDATA[
+    SELECT VALUE -- Constructing PCOAccountPerson
+        [CodeFirstDatabaseSchema.PCOAccountPerson](T1.PCOAccountPerson_Id, T1.PCOAccountPerson_PersonAliasId, T1.PCOAccountPerson_AccountId, T1.PCOAccountPerson_PCOId, T1.PCOAccountPerson_RockSyncState, T1.PCOAccountPerson_PCOSyncState, T1.PCOAccountPerson_CreatedDateTime, T1.PCOAccountPerson_ModifiedDateTime, T1.PCOAccountPerson_CreatedByPersonAliasId, T1.PCOAccountPerson_ModifiedByPersonAliasId, T1.PCOAccountPerson_Guid, T1.PCOAccountPerson_ForeignId, T1.PCOAccountPerson_ForeignGuid, T1.PCOAccountPerson_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS PCOAccountPerson_Id, 
+            T.PersonAliasId AS PCOAccountPerson_PersonAliasId, 
+            T.AccountId AS PCOAccountPerson_AccountId, 
+            T.PCOId AS PCOAccountPerson_PCOId, 
+            T.RockSyncState AS PCOAccountPerson_RockSyncState, 
+            T.PCOSyncState AS PCOAccountPerson_PCOSyncState, 
+            T.CreatedDateTime AS PCOAccountPerson_CreatedDateTime, 
+            T.ModifiedDateTime AS PCOAccountPerson_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS PCOAccountPerson_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS PCOAccountPerson_ModifiedByPersonAliasId, 
+            T.Guid AS PCOAccountPerson_Guid, 
+            T.ForeignId AS PCOAccountPerson_ForeignId, 
+            T.ForeignGuid AS PCOAccountPerson_ForeignGuid, 
+            T.ForeignKey AS PCOAccountPerson_ForeignKey, 
+            True AS _from0
+        FROM RockContext.PCOAccountPersons AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.Account"><![CDATA[
+    SELECT VALUE -- Constructing Account
+        [CodeFirstDatabaseSchema.Account](T1.Account_Id, T1.Account_Name, T1.Account_IsActive, T1.Account_AuthorizationUrl, T1.Account_ApiUrl, T1.Account_ClientId, T1.Account_ClientSecretEncrypted, T1.Account_AuthorizationRedirectUrl, T1.Account_AccessToken, T1.Account_RefreshToken, T1.Account_TokenExpires, T1.Account_CreatedDateTime, T1.Account_ModifiedDateTime, T1.Account_CreatedByPersonAliasId, T1.Account_ModifiedByPersonAliasId, T1.Account_Guid, T1.Account_ForeignId, T1.Account_ForeignGuid, T1.Account_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS Account_Id, 
+            T.Name AS Account_Name, 
+            T.IsActive AS Account_IsActive, 
+            T.AuthorizationUrl AS Account_AuthorizationUrl, 
+            T.ApiUrl AS Account_ApiUrl, 
+            T.ClientId AS Account_ClientId, 
+            T.ClientSecretEncrypted AS Account_ClientSecretEncrypted, 
+            T.AuthorizationRedirectUrl AS Account_AuthorizationRedirectUrl, 
+            T.AccessToken AS Account_AccessToken, 
+            T.RefreshToken AS Account_RefreshToken, 
+            T.TokenExpires AS Account_TokenExpires, 
+            T.CreatedDateTime AS Account_CreatedDateTime, 
+            T.ModifiedDateTime AS Account_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS Account_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS Account_ModifiedByPersonAliasId, 
+            T.Guid AS Account_Guid, 
+            T.ForeignId AS Account_ForeignId, 
+            T.ForeignGuid AS Account_ForeignGuid, 
+            T.ForeignKey AS Account_ForeignKey, 
+            True AS _from0
+        FROM RockContext.Accounts AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.Merchant"><![CDATA[
+    SELECT VALUE -- Constructing Merchant
+        [CodeFirstDatabaseSchema.Merchant](T1.Merchant_Id, T1.Merchant_AccountId, T1.Merchant_MerchantKey, T1.Merchant_Name, T1.Merchant_Description, T1.Merchant_ReferenceFieldsJson, T1.Merchant_FundReferenceFieldId, T1.Merchant_FundReferenceFieldName, T1.Merchant_DefaultFinancialAccountId, T1.Merchant_IsActive, T1.Merchant_LastDownloadFromDate, T1.Merchant_LastDownloadToDate, T1.Merchant_CreatedDateTime, T1.Merchant_ModifiedDateTime, T1.Merchant_CreatedByPersonAliasId, T1.Merchant_ModifiedByPersonAliasId, T1.Merchant_Guid, T1.Merchant_ForeignId, T1.Merchant_ForeignGuid, T1.Merchant_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS Merchant_Id, 
+            T.AccountId AS Merchant_AccountId, 
+            T.MerchantKey AS Merchant_MerchantKey, 
+            T.Name AS Merchant_Name, 
+            T.Description AS Merchant_Description, 
+            T.ReferenceFieldsJson AS Merchant_ReferenceFieldsJson, 
+            T.FundReferenceFieldId AS Merchant_FundReferenceFieldId, 
+            T.FundReferenceFieldName AS Merchant_FundReferenceFieldName, 
+            T.DefaultFinancialAccountId AS Merchant_DefaultFinancialAccountId, 
+            T.IsActive AS Merchant_IsActive, 
+            T.LastDownloadFromDate AS Merchant_LastDownloadFromDate, 
+            T.LastDownloadToDate AS Merchant_LastDownloadToDate, 
+            T.CreatedDateTime AS Merchant_CreatedDateTime, 
+            T.ModifiedDateTime AS Merchant_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS Merchant_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS Merchant_ModifiedByPersonAliasId, 
+            T.Guid AS Merchant_Guid, 
+            T.ForeignId AS Merchant_ForeignId, 
+            T.ForeignGuid AS Merchant_ForeignGuid, 
+            T.ForeignKey AS Merchant_ForeignKey, 
+            True AS _from0
+        FROM RockContext.Merchants AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.MerchantFund"><![CDATA[
+    SELECT VALUE -- Constructing MerchantFund
+        [CodeFirstDatabaseSchema.MerchantFund](T1.MerchantFund_Id, T1.MerchantFund_MerchantId, T1.MerchantFund_Name, T1.MerchantFund_Value, T1.MerchantFund_Order, T1.MerchantFund_FinancialAccountId, T1.MerchantFund_CreatedDateTime, T1.MerchantFund_ModifiedDateTime, T1.MerchantFund_CreatedByPersonAliasId, T1.MerchantFund_ModifiedByPersonAliasId, T1.MerchantFund_Guid, T1.MerchantFund_ForeignId, T1.MerchantFund_ForeignGuid, T1.MerchantFund_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS MerchantFund_Id, 
+            T.MerchantId AS MerchantFund_MerchantId, 
+            T.Name AS MerchantFund_Name, 
+            T.[Value] AS MerchantFund_Value, 
+            T.[Order] AS MerchantFund_Order, 
+            T.FinancialAccountId AS MerchantFund_FinancialAccountId, 
+            T.CreatedDateTime AS MerchantFund_CreatedDateTime, 
+            T.ModifiedDateTime AS MerchantFund_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS MerchantFund_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS MerchantFund_ModifiedByPersonAliasId, 
+            T.Guid AS MerchantFund_Guid, 
+            T.ForeignId AS MerchantFund_ForeignId, 
+            T.ForeignGuid AS MerchantFund_ForeignGuid, 
+            T.ForeignKey AS MerchantFund_ForeignKey, 
+            True AS _from0
+        FROM RockContext.MerchantFunds AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.Payer"><![CDATA[
+    SELECT VALUE -- Constructing Payer
+        [CodeFirstDatabaseSchema.Payer](T1.Payer_Id, T1.Payer_PayerKey, T1.Payer_PersonAliasId, T1.Payer_CreatedDateTime, T1.Payer_ModifiedDateTime, T1.Payer_CreatedByPersonAliasId, T1.Payer_ModifiedByPersonAliasId, T1.Payer_Guid, T1.Payer_ForeignId, T1.Payer_ForeignGuid, T1.Payer_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS Payer_Id, 
+            T.PayerKey AS Payer_PayerKey, 
+            T.PersonAliasId AS Payer_PersonAliasId, 
+            T.CreatedDateTime AS Payer_CreatedDateTime, 
+            T.ModifiedDateTime AS Payer_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS Payer_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS Payer_ModifiedByPersonAliasId, 
+            T.Guid AS Payer_Guid, 
+            T.ForeignId AS Payer_ForeignId, 
+            T.ForeignGuid AS Payer_ForeignGuid, 
+            T.ForeignKey AS Payer_ForeignKey, 
+            True AS _from0
+        FROM RockContext.Payers AS T
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.DeviceLocation"><![CDATA[
     SELECT VALUE -- Constructing DeviceLocation
@@ -7101,6 +7487,392 @@
             True AS _from0
         FROM CodeFirstDatabase.MergeTemplate AS T
     ) AS T1]]></view>
+    <view extent="RockContext.TimeCards"><![CDATA[
+    SELECT VALUE -- Constructing TimeCards
+        [Rock.Data.TimeCard](T1.TimeCard_Id, T1.TimeCard_TimeCardPayPeriodId, T1.TimeCard_PersonAliasId, T1.TimeCard_TimeCardStatus, T1.TimeCard_SubmittedToPersonAliasId, T1.TimeCard_SubmittedDateTime, T1.TimeCard_ApprovedByPersonAliasId, T1.TimeCard_ApprovedDateTime, T1.TimeCard_ExportedDateTime, T1.TimeCard_CreatedDateTime, T1.TimeCard_ModifiedDateTime, T1.TimeCard_CreatedByPersonAliasId, T1.TimeCard_ModifiedByPersonAliasId, T1.TimeCard_Guid, T1.TimeCard_ForeignId, T1.TimeCard_ForeignGuid, T1.TimeCard_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS TimeCard_Id, 
+            T.TimeCardPayPeriodId AS TimeCard_TimeCardPayPeriodId, 
+            T.PersonAliasId AS TimeCard_PersonAliasId, 
+            CAST(T.TimeCardStatus AS [Rock.Data.TimeCardStatus]) AS TimeCard_TimeCardStatus, 
+            T.SubmittedToPersonAliasId AS TimeCard_SubmittedToPersonAliasId, 
+            T.SubmittedDateTime AS TimeCard_SubmittedDateTime, 
+            T.ApprovedByPersonAliasId AS TimeCard_ApprovedByPersonAliasId, 
+            T.ApprovedDateTime AS TimeCard_ApprovedDateTime, 
+            T.ExportedDateTime AS TimeCard_ExportedDateTime, 
+            T.CreatedDateTime AS TimeCard_CreatedDateTime, 
+            T.ModifiedDateTime AS TimeCard_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS TimeCard_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS TimeCard_ModifiedByPersonAliasId, 
+            T.Guid AS TimeCard_Guid, 
+            T.ForeignId AS TimeCard_ForeignId, 
+            T.ForeignGuid AS TimeCard_ForeignGuid, 
+            T.ForeignKey AS TimeCard_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.TimeCard AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.TimeCardDays"><![CDATA[
+    SELECT VALUE -- Constructing TimeCardDays
+        [Rock.Data.TimeCardDay](T1.TimeCardDay_Id, T1.TimeCardDay_TimeCardId, T1.TimeCardDay_StartDateTime, T1.TimeCardDay_LunchStartDateTime, T1.TimeCardDay_LunchEndDateTime, T1.TimeCardDay_EndDateTime, T1.TimeCardDay_TotalWorkedDuration, T1.TimeCardDay_PaidHolidayHours, T1.TimeCardDay_EarnedHolidayHours, T1.TimeCardDay_PaidVacationHours, T1.TimeCardDay_PaidSickHours, T1.TimeCardDay_Notes, T1.TimeCardDay_CreatedDateTime, T1.TimeCardDay_ModifiedDateTime, T1.TimeCardDay_CreatedByPersonAliasId, T1.TimeCardDay_ModifiedByPersonAliasId, T1.TimeCardDay_Guid, T1.TimeCardDay_ForeignId, T1.TimeCardDay_ForeignGuid, T1.TimeCardDay_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS TimeCardDay_Id, 
+            T.TimeCardId AS TimeCardDay_TimeCardId, 
+            T.StartDateTime AS TimeCardDay_StartDateTime, 
+            T.LunchStartDateTime AS TimeCardDay_LunchStartDateTime, 
+            T.LunchEndDateTime AS TimeCardDay_LunchEndDateTime, 
+            T.EndDateTime AS TimeCardDay_EndDateTime, 
+            T.TotalWorkedDuration AS TimeCardDay_TotalWorkedDuration, 
+            T.PaidHolidayHours AS TimeCardDay_PaidHolidayHours, 
+            T.EarnedHolidayHours AS TimeCardDay_EarnedHolidayHours, 
+            T.PaidVacationHours AS TimeCardDay_PaidVacationHours, 
+            T.PaidSickHours AS TimeCardDay_PaidSickHours, 
+            T.Notes AS TimeCardDay_Notes, 
+            T.CreatedDateTime AS TimeCardDay_CreatedDateTime, 
+            T.ModifiedDateTime AS TimeCardDay_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS TimeCardDay_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS TimeCardDay_ModifiedByPersonAliasId, 
+            T.Guid AS TimeCardDay_Guid, 
+            T.ForeignId AS TimeCardDay_ForeignId, 
+            T.ForeignGuid AS TimeCardDay_ForeignGuid, 
+            T.ForeignKey AS TimeCardDay_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.TimeCardDay AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.TimeCardHistories"><![CDATA[
+    SELECT VALUE -- Constructing TimeCardHistories
+        [Rock.Data.TimeCardHistory](T1.TimeCardHistory_Id, T1.TimeCardHistory_TimeCardId, T1.TimeCardHistory_HistoryDateTime, T1.TimeCardHistory_TimeCardStatus, T1.TimeCardHistory_StatusPersonAliasId, T1.TimeCardHistory_Notes, T1.TimeCardHistory_CreatedDateTime, T1.TimeCardHistory_ModifiedDateTime, T1.TimeCardHistory_CreatedByPersonAliasId, T1.TimeCardHistory_ModifiedByPersonAliasId, T1.TimeCardHistory_Guid, T1.TimeCardHistory_ForeignId, T1.TimeCardHistory_ForeignGuid, T1.TimeCardHistory_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS TimeCardHistory_Id, 
+            T.TimeCardId AS TimeCardHistory_TimeCardId, 
+            T.HistoryDateTime AS TimeCardHistory_HistoryDateTime, 
+            CAST(T.TimeCardStatus AS [Rock.Data.TimeCardStatus]) AS TimeCardHistory_TimeCardStatus, 
+            T.StatusPersonAliasId AS TimeCardHistory_StatusPersonAliasId, 
+            T.Notes AS TimeCardHistory_Notes, 
+            T.CreatedDateTime AS TimeCardHistory_CreatedDateTime, 
+            T.ModifiedDateTime AS TimeCardHistory_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS TimeCardHistory_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS TimeCardHistory_ModifiedByPersonAliasId, 
+            T.Guid AS TimeCardHistory_Guid, 
+            T.ForeignId AS TimeCardHistory_ForeignId, 
+            T.ForeignGuid AS TimeCardHistory_ForeignGuid, 
+            T.ForeignKey AS TimeCardHistory_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.TimeCardHistory AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.TimeCardPayPeriods"><![CDATA[
+    SELECT VALUE -- Constructing TimeCardPayPeriods
+        [Rock.Data.TimeCardPayPeriod](T1.TimeCardPayPeriod_Id, T1.TimeCardPayPeriod_StartDate, T1.TimeCardPayPeriod_EndDate, T1.TimeCardPayPeriod_CreatedDateTime, T1.TimeCardPayPeriod_ModifiedDateTime, T1.TimeCardPayPeriod_CreatedByPersonAliasId, T1.TimeCardPayPeriod_ModifiedByPersonAliasId, T1.TimeCardPayPeriod_Guid, T1.TimeCardPayPeriod_ForeignId, T1.TimeCardPayPeriod_ForeignGuid, T1.TimeCardPayPeriod_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS TimeCardPayPeriod_Id, 
+            T.StartDate AS TimeCardPayPeriod_StartDate, 
+            T.EndDate AS TimeCardPayPeriod_EndDate, 
+            T.CreatedDateTime AS TimeCardPayPeriod_CreatedDateTime, 
+            T.ModifiedDateTime AS TimeCardPayPeriod_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS TimeCardPayPeriod_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS TimeCardPayPeriod_ModifiedByPersonAliasId, 
+            T.Guid AS TimeCardPayPeriod_Guid, 
+            T.ForeignId AS TimeCardPayPeriod_ForeignId, 
+            T.ForeignGuid AS TimeCardPayPeriod_ForeignGuid, 
+            T.ForeignKey AS TimeCardPayPeriod_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.TimeCardPayPeriod AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.PromotionOccurrences"><![CDATA[
+    SELECT VALUE -- Constructing PromotionOccurrences
+        [Rock.Data.PromotionOccurrence](T1.PromotionOccurrence_Id, T1.PromotionOccurrence_PromotionRequestId, T1.PromotionOccurrence_ContentChannelItemId, T1.PromotionOccurrence_CreatedDateTime, T1.PromotionOccurrence_ModifiedDateTime, T1.PromotionOccurrence_CreatedByPersonAliasId, T1.PromotionOccurrence_ModifiedByPersonAliasId, T1.PromotionOccurrence_Guid, T1.PromotionOccurrence_ForeignId, T1.PromotionOccurrence_ForeignGuid, T1.PromotionOccurrence_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS PromotionOccurrence_Id, 
+            T.PromotionRequestId AS PromotionOccurrence_PromotionRequestId, 
+            T.ContentChannelItemId AS PromotionOccurrence_ContentChannelItemId, 
+            T.CreatedDateTime AS PromotionOccurrence_CreatedDateTime, 
+            T.ModifiedDateTime AS PromotionOccurrence_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS PromotionOccurrence_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS PromotionOccurrence_ModifiedByPersonAliasId, 
+            T.Guid AS PromotionOccurrence_Guid, 
+            T.ForeignId AS PromotionOccurrence_ForeignId, 
+            T.ForeignGuid AS PromotionOccurrence_ForeignGuid, 
+            T.ForeignKey AS PromotionOccurrence_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.PromotionOccurrence AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.PromotionRequests"><![CDATA[
+    SELECT VALUE -- Constructing PromotionRequests
+        [Rock.Data.PromotionRequest](T1.PromotionRequest_Id, T1.PromotionRequest_EventItemOccurrenceId, T1.PromotionRequest_IsActive, T1.PromotionRequest_EventLastModifiedTime, T1.PromotionRequest_ContentChannelId, T1.PromotionRequest_CreatedDateTime, T1.PromotionRequest_ModifiedDateTime, T1.PromotionRequest_CreatedByPersonAliasId, T1.PromotionRequest_ModifiedByPersonAliasId, T1.PromotionRequest_Guid, T1.PromotionRequest_ForeignId, T1.PromotionRequest_ForeignGuid, T1.PromotionRequest_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS PromotionRequest_Id, 
+            T.EventItemOccurrenceId AS PromotionRequest_EventItemOccurrenceId, 
+            T.IsActive AS PromotionRequest_IsActive, 
+            T.EventLastModifiedTime AS PromotionRequest_EventLastModifiedTime, 
+            T.ContentChannelId AS PromotionRequest_ContentChannelId, 
+            T.CreatedDateTime AS PromotionRequest_CreatedDateTime, 
+            T.ModifiedDateTime AS PromotionRequest_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS PromotionRequest_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS PromotionRequest_ModifiedByPersonAliasId, 
+            T.Guid AS PromotionRequest_Guid, 
+            T.ForeignId AS PromotionRequest_ForeignId, 
+            T.ForeignGuid AS PromotionRequest_ForeignGuid, 
+            T.ForeignKey AS PromotionRequest_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.PromotionRequest AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.DPSOffenders"><![CDATA[
+    SELECT VALUE -- Constructing DPSOffenders
+        [Rock.Data.DPSOffender](T1.DPSOffender_Id, T1.DPSOffender_Level, T1.DPSOffender_LastName, T1.DPSOffender_FirstName, T1.DPSOffender_MiddleInitial, T1.DPSOffender_Age, T1.DPSOffender_Height, T1.DPSOffender_Weight, T1.DPSOffender_Race, T1.DPSOffender_Gender, T1.DPSOffender_Hair, T1.DPSOffender_Eyes, T1.DPSOffender_ResAddress, T1.DPSOffender_ResCity, T1.DPSOffender_ResZip, T1.DPSOffender_ResState, T1.DPSOffender_Offense, T1.DPSOffender_DateConvicted, T1.DPSOffender_ConvictionState, T1.DPSOffender_Absconder, T1.DPSOffender_ConfirmedMatch, T1.DPSOffender_PersonAliasId, T1.DPSOffender_DpsLocationId, T1.DPSOffender_Guid, T1.DPSOffender_ForeignId, T1.DPSOffender_ForeignGuid, T1.DPSOffender_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS DPSOffender_Id, 
+            T.Level AS DPSOffender_Level, 
+            T.LastName AS DPSOffender_LastName, 
+            T.FirstName AS DPSOffender_FirstName, 
+            T.MiddleInitial AS DPSOffender_MiddleInitial, 
+            T.Age AS DPSOffender_Age, 
+            T.Height AS DPSOffender_Height, 
+            T.Weight AS DPSOffender_Weight, 
+            T.Race AS DPSOffender_Race, 
+            T.Gender AS DPSOffender_Gender, 
+            T.Hair AS DPSOffender_Hair, 
+            T.Eyes AS DPSOffender_Eyes, 
+            T.ResAddress AS DPSOffender_ResAddress, 
+            T.ResCity AS DPSOffender_ResCity, 
+            T.ResZip AS DPSOffender_ResZip, 
+            T.ResState AS DPSOffender_ResState, 
+            T.Offense AS DPSOffender_Offense, 
+            T.DateConvicted AS DPSOffender_DateConvicted, 
+            T.ConvictionState AS DPSOffender_ConvictionState, 
+            T.Absconder AS DPSOffender_Absconder, 
+            T.ConfirmedMatch AS DPSOffender_ConfirmedMatch, 
+            T.PersonAliasId AS DPSOffender_PersonAliasId, 
+            T.DpsLocationId AS DPSOffender_DpsLocationId, 
+            T.Guid AS DPSOffender_Guid, 
+            T.ForeignId AS DPSOffender_ForeignId, 
+            T.ForeignGuid AS DPSOffender_ForeignGuid, 
+            T.ForeignKey AS DPSOffender_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.DPSOffender AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.StepMeasures"><![CDATA[
+    SELECT VALUE -- Constructing StepMeasures
+        [Rock.Data.StepMeasure](T1.StepMeasure_Id, T1.StepMeasure_Title, T1.StepMeasure_Description, T1.StepMeasure_IconCssClass, T1.StepMeasure_Color, T1.StepMeasure_Order, T1.StepMeasure_IsActive, T1.StepMeasure_IsTbd, T1.StepMeasure_CreatedDateTime, T1.StepMeasure_ModifiedDateTime, T1.StepMeasure_CreatedByPersonAliasId, T1.StepMeasure_ModifiedByPersonAliasId, T1.StepMeasure_Guid, T1.StepMeasure_ForeignId, T1.StepMeasure_ForeignGuid, T1.StepMeasure_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS StepMeasure_Id, 
+            T.Title AS StepMeasure_Title, 
+            T.Description AS StepMeasure_Description, 
+            T.IconCssClass AS StepMeasure_IconCssClass, 
+            T.Color AS StepMeasure_Color, 
+            T.[Order] AS StepMeasure_Order, 
+            T.IsActive AS StepMeasure_IsActive, 
+            T.IsTbd AS StepMeasure_IsTbd, 
+            T.CreatedDateTime AS StepMeasure_CreatedDateTime, 
+            T.ModifiedDateTime AS StepMeasure_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS StepMeasure_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS StepMeasure_ModifiedByPersonAliasId, 
+            T.Guid AS StepMeasure_Guid, 
+            T.ForeignId AS StepMeasure_ForeignId, 
+            T.ForeignGuid AS StepMeasure_ForeignGuid, 
+            T.ForeignKey AS StepMeasure_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.StepMeasure AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.StepMeasureValues"><![CDATA[
+    SELECT VALUE -- Constructing StepMeasureValues
+        [Rock.Data.StepMeasureValue](T1.StepMeasureValue_Id, T1.StepMeasureValue_StepMeasureId, T1.StepMeasureValue_Value, T1.StepMeasureValue_CampusId, T1.StepMeasureValue_PastorPersonAliasId, T1.StepMeasureValue_SundayDate, T1.StepMeasureValue_WeekendAttendance, T1.StepMeasureValue_ActiveAdults, T1.StepMeasureValue_ActiveStudents, T1.StepMeasureValue_Note, T1.StepMeasureValue_CreatedDateTime, T1.StepMeasureValue_ModifiedDateTime, T1.StepMeasureValue_CreatedByPersonAliasId, T1.StepMeasureValue_ModifiedByPersonAliasId, T1.StepMeasureValue_Guid, T1.StepMeasureValue_ForeignId, T1.StepMeasureValue_ForeignGuid, T1.StepMeasureValue_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS StepMeasureValue_Id, 
+            T.StepMeasureId AS StepMeasureValue_StepMeasureId, 
+            T.[Value] AS StepMeasureValue_Value, 
+            T.CampusId AS StepMeasureValue_CampusId, 
+            T.PastorPersonAliasId AS StepMeasureValue_PastorPersonAliasId, 
+            T.SundayDate AS StepMeasureValue_SundayDate, 
+            T.WeekendAttendance AS StepMeasureValue_WeekendAttendance, 
+            T.ActiveAdults AS StepMeasureValue_ActiveAdults, 
+            T.ActiveStudents AS StepMeasureValue_ActiveStudents, 
+            T.Note AS StepMeasureValue_Note, 
+            T.CreatedDateTime AS StepMeasureValue_CreatedDateTime, 
+            T.ModifiedDateTime AS StepMeasureValue_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS StepMeasureValue_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS StepMeasureValue_ModifiedByPersonAliasId, 
+            T.Guid AS StepMeasureValue_Guid, 
+            T.ForeignId AS StepMeasureValue_ForeignId, 
+            T.ForeignGuid AS StepMeasureValue_ForeignGuid, 
+            T.ForeignKey AS StepMeasureValue_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.StepMeasureValue AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.StepTakens"><![CDATA[
+    SELECT VALUE -- Constructing StepTakens
+        [Rock.Data.StepTaken](T1.StepTaken_Id, T1.StepTaken_StepMeasureId, T1.StepTaken_CampusId, T1.StepTaken_PersonAliasId, T1.StepTaken_SundayDate, T1.StepTaken_DateTaken, T1.StepTaken_Note, T1.StepTaken_CreatedDateTime, T1.StepTaken_ModifiedDateTime, T1.StepTaken_CreatedByPersonAliasId, T1.StepTaken_ModifiedByPersonAliasId, T1.StepTaken_Guid, T1.StepTaken_ForeignId, T1.StepTaken_ForeignGuid, T1.StepTaken_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS StepTaken_Id, 
+            T.StepMeasureId AS StepTaken_StepMeasureId, 
+            T.CampusId AS StepTaken_CampusId, 
+            T.PersonAliasId AS StepTaken_PersonAliasId, 
+            T.SundayDate AS StepTaken_SundayDate, 
+            T.DateTaken AS StepTaken_DateTaken, 
+            T.Note AS StepTaken_Note, 
+            T.CreatedDateTime AS StepTaken_CreatedDateTime, 
+            T.ModifiedDateTime AS StepTaken_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS StepTaken_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS StepTaken_ModifiedByPersonAliasId, 
+            T.Guid AS StepTaken_Guid, 
+            T.ForeignId AS StepTaken_ForeignId, 
+            T.ForeignGuid AS StepTaken_ForeignGuid, 
+            T.ForeignKey AS StepTaken_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.StepTaken AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.PCOAccounts"><![CDATA[
+    SELECT VALUE -- Constructing PCOAccounts
+        [Rock.Data.PCOAccount](T1.PCOAccount_Id, T1.PCOAccount_Name, T1.PCOAccount_ApplicationId, T1.PCOAccount_Secret, T1.PCOAccount_AllowPermissionDowngrade, T1.PCOAccount_AdministratorGroupId, T1.PCOAccount_EditorGroupId, T1.PCOAccount_SchedulerGroupId, T1.PCOAccount_ScheduledViewerGroupId, T1.PCOAccount_ViewerGroupId, T1.PCOAccount_CreatedDateTime, T1.PCOAccount_ModifiedDateTime, T1.PCOAccount_CreatedByPersonAliasId, T1.PCOAccount_ModifiedByPersonAliasId, T1.PCOAccount_Guid, T1.PCOAccount_ForeignId, T1.PCOAccount_ForeignGuid, T1.PCOAccount_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS PCOAccount_Id, 
+            T.Name AS PCOAccount_Name, 
+            T.ApplicationId AS PCOAccount_ApplicationId, 
+            T.Secret AS PCOAccount_Secret, 
+            T.AllowPermissionDowngrade AS PCOAccount_AllowPermissionDowngrade, 
+            T.AdministratorGroupId AS PCOAccount_AdministratorGroupId, 
+            T.EditorGroupId AS PCOAccount_EditorGroupId, 
+            T.SchedulerGroupId AS PCOAccount_SchedulerGroupId, 
+            T.ScheduledViewerGroupId AS PCOAccount_ScheduledViewerGroupId, 
+            T.ViewerGroupId AS PCOAccount_ViewerGroupId, 
+            T.CreatedDateTime AS PCOAccount_CreatedDateTime, 
+            T.ModifiedDateTime AS PCOAccount_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS PCOAccount_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS PCOAccount_ModifiedByPersonAliasId, 
+            T.Guid AS PCOAccount_Guid, 
+            T.ForeignId AS PCOAccount_ForeignId, 
+            T.ForeignGuid AS PCOAccount_ForeignGuid, 
+            T.ForeignKey AS PCOAccount_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.PCOAccount AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.PCOAccountPersons"><![CDATA[
+    SELECT VALUE -- Constructing PCOAccountPersons
+        [Rock.Data.PCOAccountPerson](T1.PCOAccountPerson_Id, T1.PCOAccountPerson_PersonAliasId, T1.PCOAccountPerson_AccountId, T1.PCOAccountPerson_PCOId, T1.PCOAccountPerson_RockSyncState, T1.PCOAccountPerson_PCOSyncState, T1.PCOAccountPerson_CreatedDateTime, T1.PCOAccountPerson_ModifiedDateTime, T1.PCOAccountPerson_CreatedByPersonAliasId, T1.PCOAccountPerson_ModifiedByPersonAliasId, T1.PCOAccountPerson_Guid, T1.PCOAccountPerson_ForeignId, T1.PCOAccountPerson_ForeignGuid, T1.PCOAccountPerson_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS PCOAccountPerson_Id, 
+            T.PersonAliasId AS PCOAccountPerson_PersonAliasId, 
+            T.AccountId AS PCOAccountPerson_AccountId, 
+            T.PCOId AS PCOAccountPerson_PCOId, 
+            T.RockSyncState AS PCOAccountPerson_RockSyncState, 
+            T.PCOSyncState AS PCOAccountPerson_PCOSyncState, 
+            T.CreatedDateTime AS PCOAccountPerson_CreatedDateTime, 
+            T.ModifiedDateTime AS PCOAccountPerson_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS PCOAccountPerson_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS PCOAccountPerson_ModifiedByPersonAliasId, 
+            T.Guid AS PCOAccountPerson_Guid, 
+            T.ForeignId AS PCOAccountPerson_ForeignId, 
+            T.ForeignGuid AS PCOAccountPerson_ForeignGuid, 
+            T.ForeignKey AS PCOAccountPerson_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.PCOAccountPerson AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.Accounts"><![CDATA[
+    SELECT VALUE -- Constructing Accounts
+        [Rock.Data.Account](T1.Account_Id, T1.Account_Name, T1.Account_IsActive, T1.Account_AuthorizationUrl, T1.Account_ApiUrl, T1.Account_ClientId, T1.Account_ClientSecretEncrypted, T1.Account_AuthorizationRedirectUrl, T1.Account_AccessToken, T1.Account_RefreshToken, T1.Account_TokenExpires, T1.Account_CreatedDateTime, T1.Account_ModifiedDateTime, T1.Account_CreatedByPersonAliasId, T1.Account_ModifiedByPersonAliasId, T1.Account_Guid, T1.Account_ForeignId, T1.Account_ForeignGuid, T1.Account_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS Account_Id, 
+            T.Name AS Account_Name, 
+            T.IsActive AS Account_IsActive, 
+            T.AuthorizationUrl AS Account_AuthorizationUrl, 
+            T.ApiUrl AS Account_ApiUrl, 
+            T.ClientId AS Account_ClientId, 
+            T.ClientSecretEncrypted AS Account_ClientSecretEncrypted, 
+            T.AuthorizationRedirectUrl AS Account_AuthorizationRedirectUrl, 
+            T.AccessToken AS Account_AccessToken, 
+            T.RefreshToken AS Account_RefreshToken, 
+            T.TokenExpires AS Account_TokenExpires, 
+            T.CreatedDateTime AS Account_CreatedDateTime, 
+            T.ModifiedDateTime AS Account_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS Account_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS Account_ModifiedByPersonAliasId, 
+            T.Guid AS Account_Guid, 
+            T.ForeignId AS Account_ForeignId, 
+            T.ForeignGuid AS Account_ForeignGuid, 
+            T.ForeignKey AS Account_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.Account AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.Merchants"><![CDATA[
+    SELECT VALUE -- Constructing Merchants
+        [Rock.Data.Merchant](T1.Merchant_Id, T1.Merchant_AccountId, T1.Merchant_MerchantKey, T1.Merchant_Name, T1.Merchant_Description, T1.Merchant_ReferenceFieldsJson, T1.Merchant_FundReferenceFieldId, T1.Merchant_FundReferenceFieldName, T1.Merchant_DefaultFinancialAccountId, T1.Merchant_IsActive, T1.Merchant_LastDownloadFromDate, T1.Merchant_LastDownloadToDate, T1.Merchant_CreatedDateTime, T1.Merchant_ModifiedDateTime, T1.Merchant_CreatedByPersonAliasId, T1.Merchant_ModifiedByPersonAliasId, T1.Merchant_Guid, T1.Merchant_ForeignId, T1.Merchant_ForeignGuid, T1.Merchant_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS Merchant_Id, 
+            T.AccountId AS Merchant_AccountId, 
+            T.MerchantKey AS Merchant_MerchantKey, 
+            T.Name AS Merchant_Name, 
+            T.Description AS Merchant_Description, 
+            T.ReferenceFieldsJson AS Merchant_ReferenceFieldsJson, 
+            T.FundReferenceFieldId AS Merchant_FundReferenceFieldId, 
+            T.FundReferenceFieldName AS Merchant_FundReferenceFieldName, 
+            T.DefaultFinancialAccountId AS Merchant_DefaultFinancialAccountId, 
+            T.IsActive AS Merchant_IsActive, 
+            T.LastDownloadFromDate AS Merchant_LastDownloadFromDate, 
+            T.LastDownloadToDate AS Merchant_LastDownloadToDate, 
+            T.CreatedDateTime AS Merchant_CreatedDateTime, 
+            T.ModifiedDateTime AS Merchant_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS Merchant_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS Merchant_ModifiedByPersonAliasId, 
+            T.Guid AS Merchant_Guid, 
+            T.ForeignId AS Merchant_ForeignId, 
+            T.ForeignGuid AS Merchant_ForeignGuid, 
+            T.ForeignKey AS Merchant_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.Merchant AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.MerchantFunds"><![CDATA[
+    SELECT VALUE -- Constructing MerchantFunds
+        [Rock.Data.MerchantFund](T1.MerchantFund_Id, T1.MerchantFund_MerchantId, T1.MerchantFund_Name, T1.MerchantFund_Value, T1.MerchantFund_Order, T1.MerchantFund_FinancialAccountId, T1.MerchantFund_CreatedDateTime, T1.MerchantFund_ModifiedDateTime, T1.MerchantFund_CreatedByPersonAliasId, T1.MerchantFund_ModifiedByPersonAliasId, T1.MerchantFund_Guid, T1.MerchantFund_ForeignId, T1.MerchantFund_ForeignGuid, T1.MerchantFund_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS MerchantFund_Id, 
+            T.MerchantId AS MerchantFund_MerchantId, 
+            T.Name AS MerchantFund_Name, 
+            T.[Value] AS MerchantFund_Value, 
+            T.[Order] AS MerchantFund_Order, 
+            T.FinancialAccountId AS MerchantFund_FinancialAccountId, 
+            T.CreatedDateTime AS MerchantFund_CreatedDateTime, 
+            T.ModifiedDateTime AS MerchantFund_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS MerchantFund_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS MerchantFund_ModifiedByPersonAliasId, 
+            T.Guid AS MerchantFund_Guid, 
+            T.ForeignId AS MerchantFund_ForeignId, 
+            T.ForeignGuid AS MerchantFund_ForeignGuid, 
+            T.ForeignKey AS MerchantFund_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.MerchantFund AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.Payers"><![CDATA[
+    SELECT VALUE -- Constructing Payers
+        [Rock.Data.Payer](T1.Payer_Id, T1.Payer_PayerKey, T1.Payer_PersonAliasId, T1.Payer_CreatedDateTime, T1.Payer_ModifiedDateTime, T1.Payer_CreatedByPersonAliasId, T1.Payer_ModifiedByPersonAliasId, T1.Payer_Guid, T1.Payer_ForeignId, T1.Payer_ForeignGuid, T1.Payer_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS Payer_Id, 
+            T.PayerKey AS Payer_PayerKey, 
+            T.PersonAliasId AS Payer_PersonAliasId, 
+            T.CreatedDateTime AS Payer_CreatedDateTime, 
+            T.ModifiedDateTime AS Payer_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS Payer_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS Payer_ModifiedByPersonAliasId, 
+            T.Guid AS Payer_Guid, 
+            T.ForeignId AS Payer_ForeignId, 
+            T.ForeignGuid AS Payer_ForeignGuid, 
+            T.ForeignKey AS Payer_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.Payer AS T
+    ) AS T1]]></view>
     <view extent="RockContext.Device_Locations"><![CDATA[
     SELECT VALUE -- Constructing Device_Locations
         [Rock.Data.Device_Locations](T3.[Device_Locations.Device_Locations_Source], T3.[Device_Locations.Device_Locations_Target])
@@ -7202,6 +7974,486 @@
             T.Metaphone2 AS Metaphone_Metaphone2, 
             True AS _from0
         FROM CodeFirstDatabase.Metaphone AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.DatamartERA"><![CDATA[
+    SELECT VALUE -- Constructing DatamartERA
+        [CodeFirstDatabaseSchema.DatamartERA](T1.DatamartERA_Id, T1.DatamartERA_FamilyId, T1.DatamartERA_WeekendDate, T1.DatamartERA_TimesAttendedLast16Weeks, T1.DatamartERA_FirstAttended, T1.DatamartERA_LastAttended, T1.DatamartERA_TimesGaveLast6Weeks, T1.DatamartERA_TimesGaveLastYear, T1.DatamartERA_TimesGaveTotal, T1.DatamartERA_LastGave, T1.DatamartERA_RegularAttendee, T1.DatamartERA_RegularAttendeeC, T1.DatamartERA_RegularAttendeeG, T1.DatamartERA_Guid, T1.DatamartERA_ForeignId, T1.DatamartERA_ForeignGuid, T1.DatamartERA_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS DatamartERA_Id, 
+            T.FamilyId AS DatamartERA_FamilyId, 
+            T.WeekendDate AS DatamartERA_WeekendDate, 
+            T.TimesAttendedLast16Weeks AS DatamartERA_TimesAttendedLast16Weeks, 
+            T.FirstAttended AS DatamartERA_FirstAttended, 
+            T.LastAttended AS DatamartERA_LastAttended, 
+            T.TimesGaveLast6Weeks AS DatamartERA_TimesGaveLast6Weeks, 
+            T.TimesGaveLastYear AS DatamartERA_TimesGaveLastYear, 
+            T.TimesGaveTotal AS DatamartERA_TimesGaveTotal, 
+            T.LastGave AS DatamartERA_LastGave, 
+            T.RegularAttendee AS DatamartERA_RegularAttendee, 
+            T.RegularAttendeeC AS DatamartERA_RegularAttendeeC, 
+            T.RegularAttendeeG AS DatamartERA_RegularAttendeeG, 
+            T.Guid AS DatamartERA_Guid, 
+            T.ForeignId AS DatamartERA_ForeignId, 
+            T.ForeignGuid AS DatamartERA_ForeignGuid, 
+            T.ForeignKey AS DatamartERA_ForeignKey, 
+            True AS _from0
+        FROM RockContext.DatamartERAs AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.DatamartERAs"><![CDATA[
+    SELECT VALUE -- Constructing DatamartERAs
+        [Rock.Data.DatamartERA](T1.DatamartERA_Id, T1.DatamartERA_FamilyId, T1.DatamartERA_WeekendDate, T1.DatamartERA_TimesAttendedLast16Weeks, T1.DatamartERA_FirstAttended, T1.DatamartERA_LastAttended, T1.DatamartERA_TimesGaveLast6Weeks, T1.DatamartERA_TimesGaveLastYear, T1.DatamartERA_TimesGaveTotal, T1.DatamartERA_LastGave, T1.DatamartERA_RegularAttendee, T1.DatamartERA_RegularAttendeeC, T1.DatamartERA_RegularAttendeeG, T1.DatamartERA_Guid, T1.DatamartERA_ForeignId, T1.DatamartERA_ForeignGuid, T1.DatamartERA_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS DatamartERA_Id, 
+            T.FamilyId AS DatamartERA_FamilyId, 
+            T.WeekendDate AS DatamartERA_WeekendDate, 
+            T.TimesAttendedLast16Weeks AS DatamartERA_TimesAttendedLast16Weeks, 
+            T.FirstAttended AS DatamartERA_FirstAttended, 
+            T.LastAttended AS DatamartERA_LastAttended, 
+            T.TimesGaveLast6Weeks AS DatamartERA_TimesGaveLast6Weeks, 
+            T.TimesGaveLastYear AS DatamartERA_TimesGaveLastYear, 
+            T.TimesGaveTotal AS DatamartERA_TimesGaveTotal, 
+            T.LastGave AS DatamartERA_LastGave, 
+            T.RegularAttendee AS DatamartERA_RegularAttendee, 
+            T.RegularAttendeeC AS DatamartERA_RegularAttendeeC, 
+            T.RegularAttendeeG AS DatamartERA_RegularAttendeeG, 
+            T.Guid AS DatamartERA_Guid, 
+            T.ForeignId AS DatamartERA_ForeignId, 
+            T.ForeignGuid AS DatamartERA_ForeignGuid, 
+            T.ForeignKey AS DatamartERA_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.DatamartERA AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.DatamartEraLoss"><![CDATA[
+    SELECT VALUE -- Constructing DatamartEraLoss
+        [CodeFirstDatabaseSchema.DatamartEraLoss](T1.DatamartEraLoss_Id, T1.DatamartEraLoss_FamilyId, T1.DatamartEraLoss_LossDate, T1.DatamartEraLoss_Processed, T1.DatamartEraLoss_SendEmail, T1.DatamartEraLoss_Sent, T1.DatamartEraLoss_Guid, T1.DatamartEraLoss_ForeignId, T1.DatamartEraLoss_ForeignGuid, T1.DatamartEraLoss_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS DatamartEraLoss_Id, 
+            T.FamilyId AS DatamartEraLoss_FamilyId, 
+            T.LossDate AS DatamartEraLoss_LossDate, 
+            T.Processed AS DatamartEraLoss_Processed, 
+            T.SendEmail AS DatamartEraLoss_SendEmail, 
+            T.Sent AS DatamartEraLoss_Sent, 
+            T.Guid AS DatamartEraLoss_Guid, 
+            T.ForeignId AS DatamartEraLoss_ForeignId, 
+            T.ForeignGuid AS DatamartEraLoss_ForeignGuid, 
+            T.ForeignKey AS DatamartEraLoss_ForeignKey, 
+            True AS _from0
+        FROM RockContext.DatamartEraLosses AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.DatamartEraLosses"><![CDATA[
+    SELECT VALUE -- Constructing DatamartEraLosses
+        [Rock.Data.DatamartEraLoss](T1.DatamartEraLoss_Id, T1.DatamartEraLoss_FamilyId, T1.DatamartEraLoss_LossDate, T1.DatamartEraLoss_Processed, T1.DatamartEraLoss_SendEmail, T1.DatamartEraLoss_Sent, T1.DatamartEraLoss_Guid, T1.DatamartEraLoss_ForeignId, T1.DatamartEraLoss_ForeignGuid, T1.DatamartEraLoss_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS DatamartEraLoss_Id, 
+            T.FamilyId AS DatamartEraLoss_FamilyId, 
+            T.LossDate AS DatamartEraLoss_LossDate, 
+            T.Processed AS DatamartEraLoss_Processed, 
+            T.SendEmail AS DatamartEraLoss_SendEmail, 
+            T.Sent AS DatamartEraLoss_Sent, 
+            T.Guid AS DatamartEraLoss_Guid, 
+            T.ForeignId AS DatamartEraLoss_ForeignId, 
+            T.ForeignGuid AS DatamartEraLoss_ForeignGuid, 
+            T.ForeignKey AS DatamartEraLoss_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.DatamartEraLoss AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.DatamartFamily"><![CDATA[
+    SELECT VALUE -- Constructing DatamartFamily
+        [CodeFirstDatabaseSchema.DatamartFamily](T1.DatamartFamily_Id, T1.DatamartFamily_FamilyId, T1.DatamartFamily_FamilyName, T1.DatamartFamily_HHPersonId, T1.DatamartFamily_HHFirstName, T1.DatamartFamily_HHNickName, T1.DatamartFamily_HHLastName, T1.DatamartFamily_HHFullName, T1.DatamartFamily_HHGender, T1.DatamartFamily_HHMemberStatus, T1.DatamartFamily_HHMaritalStatus, T1.DatamartFamily_HHFirstVisit, T1.DatamartFamily_HHFirstActivity, T1.DatamartFamily_HHAge, T1.DatamartFamily_NeighborhoodId, T1.DatamartFamily_NeighborhoodName, T1.DatamartFamily_InNeighborhoodGroup, T1.DatamartFamily_IsEra, T1.DatamartFamily_NearestNeighborhoodGroupName, T1.DatamartFamily_NearestNeighborhoodGroupId, T1.DatamartFamily_IsServing, T1.DatamartFamily_Attendance16Week, T1.DatamartFamily_ConnectionStatus, T1.DatamartFamily_Email, T1.DatamartFamily_HomePhone, T1.DatamartFamily_AdultCount, T1.DatamartFamily_ChildCount, T1.DatamartFamily_LocationId, T1.DatamartFamily_Address, T1.DatamartFamily_City, T1.DatamartFamily_State, T1.DatamartFamily_Country, T1.DatamartFamily_PostalCode, T1.DatamartFamily_GeoPoint, T1.DatamartFamily_Latitude, T1.DatamartFamily_Longitude, T1.DatamartFamily_Campus, T1.DatamartFamily_CampusId, T1.DatamartFamily_AdultNames, T1.DatamartFamily_ChildNames, T1.DatamartFamily_Giving2016, T1.DatamartFamily_Giving2015, T1.DatamartFamily_Giving2014, T1.DatamartFamily_Giving2013, T1.DatamartFamily_Giving2012, T1.DatamartFamily_Giving2011, T1.DatamartFamily_Giving2010, T1.DatamartFamily_Giving2009, T1.DatamartFamily_Giving2008, T1.DatamartFamily_Giving2007, T1.DatamartFamily_LastAttendedDate, T1.DatamartFamily_Guid, T1.DatamartFamily_ForeignId, T1.DatamartFamily_ForeignGuid, T1.DatamartFamily_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS DatamartFamily_Id, 
+            T.FamilyId AS DatamartFamily_FamilyId, 
+            T.FamilyName AS DatamartFamily_FamilyName, 
+            T.HHPersonId AS DatamartFamily_HHPersonId, 
+            T.HHFirstName AS DatamartFamily_HHFirstName, 
+            T.HHNickName AS DatamartFamily_HHNickName, 
+            T.HHLastName AS DatamartFamily_HHLastName, 
+            T.HHFullName AS DatamartFamily_HHFullName, 
+            T.HHGender AS DatamartFamily_HHGender, 
+            T.HHMemberStatus AS DatamartFamily_HHMemberStatus, 
+            T.HHMaritalStatus AS DatamartFamily_HHMaritalStatus, 
+            T.HHFirstVisit AS DatamartFamily_HHFirstVisit, 
+            T.HHFirstActivity AS DatamartFamily_HHFirstActivity, 
+            T.HHAge AS DatamartFamily_HHAge, 
+            T.NeighborhoodId AS DatamartFamily_NeighborhoodId, 
+            T.NeighborhoodName AS DatamartFamily_NeighborhoodName, 
+            T.InNeighborhoodGroup AS DatamartFamily_InNeighborhoodGroup, 
+            T.IsEra AS DatamartFamily_IsEra, 
+            T.NearestNeighborhoodGroupName AS DatamartFamily_NearestNeighborhoodGroupName, 
+            T.NearestNeighborhoodGroupId AS DatamartFamily_NearestNeighborhoodGroupId, 
+            T.IsServing AS DatamartFamily_IsServing, 
+            T.Attendance16Week AS DatamartFamily_Attendance16Week, 
+            T.ConnectionStatus AS DatamartFamily_ConnectionStatus, 
+            T.Email AS DatamartFamily_Email, 
+            T.HomePhone AS DatamartFamily_HomePhone, 
+            T.AdultCount AS DatamartFamily_AdultCount, 
+            T.ChildCount AS DatamartFamily_ChildCount, 
+            T.LocationId AS DatamartFamily_LocationId, 
+            T.Address AS DatamartFamily_Address, 
+            T.City AS DatamartFamily_City, 
+            T.State AS DatamartFamily_State, 
+            T.Country AS DatamartFamily_Country, 
+            T.PostalCode AS DatamartFamily_PostalCode, 
+            T.GeoPoint AS DatamartFamily_GeoPoint, 
+            T.Latitude AS DatamartFamily_Latitude, 
+            T.Longitude AS DatamartFamily_Longitude, 
+            T.CampusName AS DatamartFamily_Campus, 
+            T.CampusId AS DatamartFamily_CampusId, 
+            T.AdultNames AS DatamartFamily_AdultNames, 
+            T.ChildNames AS DatamartFamily_ChildNames, 
+            T.Giving2016 AS DatamartFamily_Giving2016, 
+            T.Giving2015 AS DatamartFamily_Giving2015, 
+            T.Giving2014 AS DatamartFamily_Giving2014, 
+            T.Giving2013 AS DatamartFamily_Giving2013, 
+            T.Giving2012 AS DatamartFamily_Giving2012, 
+            T.Giving2011 AS DatamartFamily_Giving2011, 
+            T.Giving2010 AS DatamartFamily_Giving2010, 
+            T.Giving2009 AS DatamartFamily_Giving2009, 
+            T.Giving2008 AS DatamartFamily_Giving2008, 
+            T.Giving2007 AS DatamartFamily_Giving2007, 
+            T.LastAttendedDate AS DatamartFamily_LastAttendedDate, 
+            T.Guid AS DatamartFamily_Guid, 
+            T.ForeignId AS DatamartFamily_ForeignId, 
+            T.ForeignGuid AS DatamartFamily_ForeignGuid, 
+            T.ForeignKey AS DatamartFamily_ForeignKey, 
+            True AS _from0
+        FROM RockContext.DatamartFamilies AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.DatamartFamilies"><![CDATA[
+    SELECT VALUE -- Constructing DatamartFamilies
+        [Rock.Data.DatamartFamily](T1.DatamartFamily_Id, T1.DatamartFamily_FamilyId, T1.DatamartFamily_FamilyName, T1.DatamartFamily_HHPersonId, T1.DatamartFamily_HHFirstName, T1.DatamartFamily_HHNickName, T1.DatamartFamily_HHLastName, T1.DatamartFamily_HHFullName, T1.DatamartFamily_HHGender, T1.DatamartFamily_HHMemberStatus, T1.DatamartFamily_HHMaritalStatus, T1.DatamartFamily_HHFirstVisit, T1.DatamartFamily_HHFirstActivity, T1.DatamartFamily_HHAge, T1.DatamartFamily_NeighborhoodId, T1.DatamartFamily_NeighborhoodName, T1.DatamartFamily_InNeighborhoodGroup, T1.DatamartFamily_IsEra, T1.DatamartFamily_NearestNeighborhoodGroupName, T1.DatamartFamily_NearestNeighborhoodGroupId, T1.DatamartFamily_IsServing, T1.DatamartFamily_Attendance16Week, T1.DatamartFamily_ConnectionStatus, T1.DatamartFamily_Email, T1.DatamartFamily_HomePhone, T1.DatamartFamily_AdultCount, T1.DatamartFamily_ChildCount, T1.DatamartFamily_LocationId, T1.DatamartFamily_Address, T1.DatamartFamily_City, T1.DatamartFamily_State, T1.DatamartFamily_Country, T1.DatamartFamily_PostalCode, T1.DatamartFamily_GeoPoint, T1.DatamartFamily_Latitude, T1.DatamartFamily_Longitude, T1.DatamartFamily_CampusName, T1.DatamartFamily_CampusId, T1.DatamartFamily_AdultNames, T1.DatamartFamily_ChildNames, T1.DatamartFamily_Giving2016, T1.DatamartFamily_Giving2015, T1.DatamartFamily_Giving2014, T1.DatamartFamily_Giving2013, T1.DatamartFamily_Giving2012, T1.DatamartFamily_Giving2011, T1.DatamartFamily_Giving2010, T1.DatamartFamily_Giving2009, T1.DatamartFamily_Giving2008, T1.DatamartFamily_Giving2007, T1.DatamartFamily_LastAttendedDate, T1.DatamartFamily_Guid, T1.DatamartFamily_ForeignId, T1.DatamartFamily_ForeignGuid, T1.DatamartFamily_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS DatamartFamily_Id, 
+            T.FamilyId AS DatamartFamily_FamilyId, 
+            T.FamilyName AS DatamartFamily_FamilyName, 
+            T.HHPersonId AS DatamartFamily_HHPersonId, 
+            T.HHFirstName AS DatamartFamily_HHFirstName, 
+            T.HHNickName AS DatamartFamily_HHNickName, 
+            T.HHLastName AS DatamartFamily_HHLastName, 
+            T.HHFullName AS DatamartFamily_HHFullName, 
+            T.HHGender AS DatamartFamily_HHGender, 
+            T.HHMemberStatus AS DatamartFamily_HHMemberStatus, 
+            T.HHMaritalStatus AS DatamartFamily_HHMaritalStatus, 
+            T.HHFirstVisit AS DatamartFamily_HHFirstVisit, 
+            T.HHFirstActivity AS DatamartFamily_HHFirstActivity, 
+            T.HHAge AS DatamartFamily_HHAge, 
+            T.NeighborhoodId AS DatamartFamily_NeighborhoodId, 
+            T.NeighborhoodName AS DatamartFamily_NeighborhoodName, 
+            T.InNeighborhoodGroup AS DatamartFamily_InNeighborhoodGroup, 
+            T.IsEra AS DatamartFamily_IsEra, 
+            T.NearestNeighborhoodGroupName AS DatamartFamily_NearestNeighborhoodGroupName, 
+            T.NearestNeighborhoodGroupId AS DatamartFamily_NearestNeighborhoodGroupId, 
+            T.IsServing AS DatamartFamily_IsServing, 
+            T.Attendance16Week AS DatamartFamily_Attendance16Week, 
+            T.ConnectionStatus AS DatamartFamily_ConnectionStatus, 
+            T.Email AS DatamartFamily_Email, 
+            T.HomePhone AS DatamartFamily_HomePhone, 
+            T.AdultCount AS DatamartFamily_AdultCount, 
+            T.ChildCount AS DatamartFamily_ChildCount, 
+            T.LocationId AS DatamartFamily_LocationId, 
+            T.Address AS DatamartFamily_Address, 
+            T.City AS DatamartFamily_City, 
+            T.State AS DatamartFamily_State, 
+            T.Country AS DatamartFamily_Country, 
+            T.PostalCode AS DatamartFamily_PostalCode, 
+            T.GeoPoint AS DatamartFamily_GeoPoint, 
+            T.Latitude AS DatamartFamily_Latitude, 
+            T.Longitude AS DatamartFamily_Longitude, 
+            T.Campus AS DatamartFamily_CampusName, 
+            T.CampusId AS DatamartFamily_CampusId, 
+            T.AdultNames AS DatamartFamily_AdultNames, 
+            T.ChildNames AS DatamartFamily_ChildNames, 
+            T.Giving2016 AS DatamartFamily_Giving2016, 
+            T.Giving2015 AS DatamartFamily_Giving2015, 
+            T.Giving2014 AS DatamartFamily_Giving2014, 
+            T.Giving2013 AS DatamartFamily_Giving2013, 
+            T.Giving2012 AS DatamartFamily_Giving2012, 
+            T.Giving2011 AS DatamartFamily_Giving2011, 
+            T.Giving2010 AS DatamartFamily_Giving2010, 
+            T.Giving2009 AS DatamartFamily_Giving2009, 
+            T.Giving2008 AS DatamartFamily_Giving2008, 
+            T.Giving2007 AS DatamartFamily_Giving2007, 
+            T.LastAttendedDate AS DatamartFamily_LastAttendedDate, 
+            T.Guid AS DatamartFamily_Guid, 
+            T.ForeignId AS DatamartFamily_ForeignId, 
+            T.ForeignGuid AS DatamartFamily_ForeignGuid, 
+            T.ForeignKey AS DatamartFamily_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.DatamartFamily AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.DatamartNearestGroup"><![CDATA[
+    SELECT VALUE -- Constructing DatamartNearestGroup
+        [CodeFirstDatabaseSchema.DatamartNearestGroup](T1.DatamartNearestGroup_Id, T1.DatamartNearestGroup_FamilyLocationId, T1.DatamartNearestGroup_GroupLocationId, T1.DatamartNearestGroup_Distance, T1.DatamartNearestGroup_Guid, T1.DatamartNearestGroup_ForeignId, T1.DatamartNearestGroup_ForeignGuid, T1.DatamartNearestGroup_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS DatamartNearestGroup_Id, 
+            T.FamilyLocationId AS DatamartNearestGroup_FamilyLocationId, 
+            T.GroupLocationId AS DatamartNearestGroup_GroupLocationId, 
+            T.Distance AS DatamartNearestGroup_Distance, 
+            T.Guid AS DatamartNearestGroup_Guid, 
+            T.ForeignId AS DatamartNearestGroup_ForeignId, 
+            T.ForeignGuid AS DatamartNearestGroup_ForeignGuid, 
+            T.ForeignKey AS DatamartNearestGroup_ForeignKey, 
+            True AS _from0
+        FROM RockContext.DatamartNearestGroups AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.DatamartNearestGroups"><![CDATA[
+    SELECT VALUE -- Constructing DatamartNearestGroups
+        [Rock.Data.DatamartNearestGroup](T1.DatamartNearestGroup_Id, T1.DatamartNearestGroup_FamilyLocationId, T1.DatamartNearestGroup_GroupLocationId, T1.DatamartNearestGroup_Distance, T1.DatamartNearestGroup_Guid, T1.DatamartNearestGroup_ForeignId, T1.DatamartNearestGroup_ForeignGuid, T1.DatamartNearestGroup_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS DatamartNearestGroup_Id, 
+            T.FamilyLocationId AS DatamartNearestGroup_FamilyLocationId, 
+            T.GroupLocationId AS DatamartNearestGroup_GroupLocationId, 
+            T.Distance AS DatamartNearestGroup_Distance, 
+            T.Guid AS DatamartNearestGroup_Guid, 
+            T.ForeignId AS DatamartNearestGroup_ForeignId, 
+            T.ForeignGuid AS DatamartNearestGroup_ForeignGuid, 
+            T.ForeignKey AS DatamartNearestGroup_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.DatamartNearestGroup AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.DatamartNeighborhood"><![CDATA[
+    SELECT VALUE -- Constructing DatamartNeighborhood
+        [CodeFirstDatabaseSchema.DatamartNeighborhood](T1.DatamartNeighborhood_Id, T1.DatamartNeighborhood_NeighborhoodId, T1.DatamartNeighborhood_NeighborhoodName, T1.DatamartNeighborhood_NeighborhoodLeaderName, T1.DatamartNeighborhood_NeighborhoodLeaderId, T1.DatamartNeighborhood_NeighborhoodPastorName, T1.DatamartNeighborhood_NeighborhoodPastorId, T1.DatamartNeighborhood_HouseholdCount, T1.DatamartNeighborhood_AdultCount, T1.DatamartNeighborhood_AdultsInGroups, T1.DatamartNeighborhood_AdultsBaptized, T1.DatamartNeighborhood_AdultsTakenStartingPoint, T1.DatamartNeighborhood_AdultsServing, T1.DatamartNeighborhood_AdultMemberCount, T1.DatamartNeighborhood_AdultMembersInGroups, T1.DatamartNeighborhood_AdultAttendeeCount, T1.DatamartNeighborhood_AdultAttendeesInGroups, T1.DatamartNeighborhood_AdultVisitors, T1.DatamartNeighborhood_AdultParticipants, T1.DatamartNeighborhood_ChildrenCount, T1.DatamartNeighborhood_GroupCount, T1.DatamartNeighborhood_Guid, T1.DatamartNeighborhood_ForeignId, T1.DatamartNeighborhood_ForeignGuid, T1.DatamartNeighborhood_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS DatamartNeighborhood_Id, 
+            T.NeighborhoodId AS DatamartNeighborhood_NeighborhoodId, 
+            T.NeighborhoodName AS DatamartNeighborhood_NeighborhoodName, 
+            T.NeighborhoodLeaderName AS DatamartNeighborhood_NeighborhoodLeaderName, 
+            T.NeighborhoodLeaderId AS DatamartNeighborhood_NeighborhoodLeaderId, 
+            T.NeighborhoodPastorName AS DatamartNeighborhood_NeighborhoodPastorName, 
+            T.NeighborhoodPastorId AS DatamartNeighborhood_NeighborhoodPastorId, 
+            T.HouseholdCount AS DatamartNeighborhood_HouseholdCount, 
+            T.AdultCount AS DatamartNeighborhood_AdultCount, 
+            T.AdultsInGroups AS DatamartNeighborhood_AdultsInGroups, 
+            T.AdultsBaptized AS DatamartNeighborhood_AdultsBaptized, 
+            T.AdultsTakenStartingPoint AS DatamartNeighborhood_AdultsTakenStartingPoint, 
+            T.AdultsServing AS DatamartNeighborhood_AdultsServing, 
+            T.AdultMemberCount AS DatamartNeighborhood_AdultMemberCount, 
+            T.AdultMembersInGroups AS DatamartNeighborhood_AdultMembersInGroups, 
+            T.AdultAttendeeCount AS DatamartNeighborhood_AdultAttendeeCount, 
+            T.AdultAttendeesInGroups AS DatamartNeighborhood_AdultAttendeesInGroups, 
+            T.AdultVisitors AS DatamartNeighborhood_AdultVisitors, 
+            T.AdultParticipants AS DatamartNeighborhood_AdultParticipants, 
+            T.ChildrenCount AS DatamartNeighborhood_ChildrenCount, 
+            T.GroupCount AS DatamartNeighborhood_GroupCount, 
+            T.Guid AS DatamartNeighborhood_Guid, 
+            T.ForeignId AS DatamartNeighborhood_ForeignId, 
+            T.ForeignGuid AS DatamartNeighborhood_ForeignGuid, 
+            T.ForeignKey AS DatamartNeighborhood_ForeignKey, 
+            True AS _from0
+        FROM RockContext.DatamartNeighborhoods AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.DatamartNeighborhoods"><![CDATA[
+    SELECT VALUE -- Constructing DatamartNeighborhoods
+        [Rock.Data.DatamartNeighborhood](T1.DatamartNeighborhood_Id, T1.DatamartNeighborhood_NeighborhoodId, T1.DatamartNeighborhood_NeighborhoodName, T1.DatamartNeighborhood_NeighborhoodLeaderName, T1.DatamartNeighborhood_NeighborhoodLeaderId, T1.DatamartNeighborhood_NeighborhoodPastorName, T1.DatamartNeighborhood_NeighborhoodPastorId, T1.DatamartNeighborhood_HouseholdCount, T1.DatamartNeighborhood_AdultCount, T1.DatamartNeighborhood_AdultsInGroups, T1.DatamartNeighborhood_AdultsBaptized, T1.DatamartNeighborhood_AdultsTakenStartingPoint, T1.DatamartNeighborhood_AdultsServing, T1.DatamartNeighborhood_AdultMemberCount, T1.DatamartNeighborhood_AdultMembersInGroups, T1.DatamartNeighborhood_AdultAttendeeCount, T1.DatamartNeighborhood_AdultAttendeesInGroups, T1.DatamartNeighborhood_AdultVisitors, T1.DatamartNeighborhood_AdultParticipants, T1.DatamartNeighborhood_ChildrenCount, T1.DatamartNeighborhood_GroupCount, T1.DatamartNeighborhood_Guid, T1.DatamartNeighborhood_ForeignId, T1.DatamartNeighborhood_ForeignGuid, T1.DatamartNeighborhood_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS DatamartNeighborhood_Id, 
+            T.NeighborhoodId AS DatamartNeighborhood_NeighborhoodId, 
+            T.NeighborhoodName AS DatamartNeighborhood_NeighborhoodName, 
+            T.NeighborhoodLeaderName AS DatamartNeighborhood_NeighborhoodLeaderName, 
+            T.NeighborhoodLeaderId AS DatamartNeighborhood_NeighborhoodLeaderId, 
+            T.NeighborhoodPastorName AS DatamartNeighborhood_NeighborhoodPastorName, 
+            T.NeighborhoodPastorId AS DatamartNeighborhood_NeighborhoodPastorId, 
+            T.HouseholdCount AS DatamartNeighborhood_HouseholdCount, 
+            T.AdultCount AS DatamartNeighborhood_AdultCount, 
+            T.AdultsInGroups AS DatamartNeighborhood_AdultsInGroups, 
+            T.AdultsBaptized AS DatamartNeighborhood_AdultsBaptized, 
+            T.AdultsTakenStartingPoint AS DatamartNeighborhood_AdultsTakenStartingPoint, 
+            T.AdultsServing AS DatamartNeighborhood_AdultsServing, 
+            T.AdultMemberCount AS DatamartNeighborhood_AdultMemberCount, 
+            T.AdultMembersInGroups AS DatamartNeighborhood_AdultMembersInGroups, 
+            T.AdultAttendeeCount AS DatamartNeighborhood_AdultAttendeeCount, 
+            T.AdultAttendeesInGroups AS DatamartNeighborhood_AdultAttendeesInGroups, 
+            T.AdultVisitors AS DatamartNeighborhood_AdultVisitors, 
+            T.AdultParticipants AS DatamartNeighborhood_AdultParticipants, 
+            T.ChildrenCount AS DatamartNeighborhood_ChildrenCount, 
+            T.GroupCount AS DatamartNeighborhood_GroupCount, 
+            T.Guid AS DatamartNeighborhood_Guid, 
+            T.ForeignId AS DatamartNeighborhood_ForeignId, 
+            T.ForeignGuid AS DatamartNeighborhood_ForeignGuid, 
+            T.ForeignKey AS DatamartNeighborhood_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.DatamartNeighborhood AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.DatamartPerson"><![CDATA[
+    SELECT VALUE -- Constructing DatamartPerson
+        [CodeFirstDatabaseSchema.DatamartPerson](T1.DatamartPerson_Id, T1.DatamartPerson_PersonId, T1.DatamartPerson_FamilyId, T1.DatamartPerson_PersonGuid, T1.DatamartPerson_LastName, T1.DatamartPerson_FirstName, T1.DatamartPerson_NickName, T1.DatamartPerson_MiddleName, T1.DatamartPerson_FullName, T1.DatamartPerson_Age, T1.DatamartPerson_Grade, T1.DatamartPerson_BirthDate, T1.DatamartPerson_Gender, T1.DatamartPerson_MaritalStatus, T1.DatamartPerson_FamilyRole, T1.DatamartPerson_Campus, T1.DatamartPerson_CampusId, T1.DatamartPerson_ConnectionStatus, T1.DatamartPerson_ConnectionStatusValueId, T1.DatamartPerson_AnniversaryDate, T1.DatamartPerson_AnniversaryYears, T1.DatamartPerson_NeighborhoodId, T1.DatamartPerson_NeighborhoodName, T1.DatamartPerson_TakenStartingPoint, T1.DatamartPerson_StartingPointDate, T1.DatamartPerson_InNeighborhoodGroup, T1.DatamartPerson_NeighborhoodGroupId, T1.DatamartPerson_NeighborhoodGroupName, T1.DatamartPerson_NearestGroupId, T1.DatamartPerson_NearestGroupName, T1.DatamartPerson_FirstVisitDate, T1.DatamartPerson_IsStaff, T1.DatamartPerson_PhotoUrl, T1.DatamartPerson_IsServing, T1.DatamartPerson_IsEra, T1.DatamartPerson_IsCoaching, T1.DatamartPerson_ServingAreas, T1.DatamartPerson_CreatedDateTime, T1.DatamartPerson_ModifiedDateTime, T1.DatamartPerson_CreatedByPersonAliasId, T1.DatamartPerson_ModifiedByPersonAliasId, T1.DatamartPerson_SpouseName, T1.DatamartPerson_IsHeadOfHousehold, T1.DatamartPerson_Address, T1.DatamartPerson_City, T1.DatamartPerson_State, T1.DatamartPerson_PostalCode, T1.DatamartPerson_Email, T1.DatamartPerson_HomePhone, T1.DatamartPerson_CellPhone, T1.DatamartPerson_WorkPhone, T1.DatamartPerson_IsBaptized, T1.DatamartPerson_BaptismDate, T1.DatamartPerson_LastContributionDate, T1.DatamartPerson_Giving2016, T1.DatamartPerson_Giving2015, T1.DatamartPerson_Giving2014, T1.DatamartPerson_Giving2013, T1.DatamartPerson_Giving2012, T1.DatamartPerson_Giving2011, T1.DatamartPerson_Giving2010, T1.DatamartPerson_Giving2009, T1.DatamartPerson_Giving2008, T1.DatamartPerson_Giving2007, T1.DatamartPerson_GivingLast12Months, T1.DatamartPerson_GeoPoint, T1.DatamartPerson_Latitude, T1.DatamartPerson_Longitude, T1.DatamartPerson_LastAttendedDate, T1.DatamartPerson_LastPublicNote, T1.DatamartPerson_FirstTimeGift, T1.DatamartPerson_SecondTimeGift, T1.DatamartPerson_TotalGifts, T1.DatamartPerson_Guid, T1.DatamartPerson_ForeignId, T1.DatamartPerson_ForeignGuid, T1.DatamartPerson_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS DatamartPerson_Id, 
+            T.PersonId AS DatamartPerson_PersonId, 
+            T.FamilyId AS DatamartPerson_FamilyId, 
+            T.PersonGuid AS DatamartPerson_PersonGuid, 
+            T.LastName AS DatamartPerson_LastName, 
+            T.FirstName AS DatamartPerson_FirstName, 
+            T.NickName AS DatamartPerson_NickName, 
+            T.MiddleName AS DatamartPerson_MiddleName, 
+            T.FullName AS DatamartPerson_FullName, 
+            T.Age AS DatamartPerson_Age, 
+            T.Grade AS DatamartPerson_Grade, 
+            T.BirthDate AS DatamartPerson_BirthDate, 
+            T.Gender AS DatamartPerson_Gender, 
+            T.MaritalStatus AS DatamartPerson_MaritalStatus, 
+            T.FamilyRole AS DatamartPerson_FamilyRole, 
+            T.CampusName AS DatamartPerson_Campus, 
+            T.CampusId AS DatamartPerson_CampusId, 
+            T.ConnectionStatusName AS DatamartPerson_ConnectionStatus, 
+            T.ConnectionStatusValueId AS DatamartPerson_ConnectionStatusValueId, 
+            T.AnniversaryDate AS DatamartPerson_AnniversaryDate, 
+            T.AnniversaryYears AS DatamartPerson_AnniversaryYears, 
+            T.NeighborhoodId AS DatamartPerson_NeighborhoodId, 
+            T.NeighborhoodName AS DatamartPerson_NeighborhoodName, 
+            T.TakenStartingPoint AS DatamartPerson_TakenStartingPoint, 
+            T.StartingPointDate AS DatamartPerson_StartingPointDate, 
+            T.InNeighborhoodGroup AS DatamartPerson_InNeighborhoodGroup, 
+            T.NeighborhoodGroupId AS DatamartPerson_NeighborhoodGroupId, 
+            T.NeighborhoodGroupName AS DatamartPerson_NeighborhoodGroupName, 
+            T.NearestGroupId AS DatamartPerson_NearestGroupId, 
+            T.NearestGroupName AS DatamartPerson_NearestGroupName, 
+            T.FirstVisitDate AS DatamartPerson_FirstVisitDate, 
+            T.IsStaff AS DatamartPerson_IsStaff, 
+            T.PhotoUrl AS DatamartPerson_PhotoUrl, 
+            T.IsServing AS DatamartPerson_IsServing, 
+            T.IsEra AS DatamartPerson_IsEra, 
+            T.IsCoaching AS DatamartPerson_IsCoaching, 
+            T.ServingAreas AS DatamartPerson_ServingAreas, 
+            T.CreatedDateTime AS DatamartPerson_CreatedDateTime, 
+            T.ModifiedDateTime AS DatamartPerson_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS DatamartPerson_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS DatamartPerson_ModifiedByPersonAliasId, 
+            T.SpouseName AS DatamartPerson_SpouseName, 
+            T.IsHeadOfHousehold AS DatamartPerson_IsHeadOfHousehold, 
+            T.Address AS DatamartPerson_Address, 
+            T.City AS DatamartPerson_City, 
+            T.State AS DatamartPerson_State, 
+            T.PostalCode AS DatamartPerson_PostalCode, 
+            T.Email AS DatamartPerson_Email, 
+            T.HomePhone AS DatamartPerson_HomePhone, 
+            T.CellPhone AS DatamartPerson_CellPhone, 
+            T.WorkPhone AS DatamartPerson_WorkPhone, 
+            T.IsBaptized AS DatamartPerson_IsBaptized, 
+            T.BaptismDate AS DatamartPerson_BaptismDate, 
+            T.LastContributionDate AS DatamartPerson_LastContributionDate, 
+            T.Giving2016 AS DatamartPerson_Giving2016, 
+            T.Giving2015 AS DatamartPerson_Giving2015, 
+            T.Giving2014 AS DatamartPerson_Giving2014, 
+            T.Giving2013 AS DatamartPerson_Giving2013, 
+            T.Giving2012 AS DatamartPerson_Giving2012, 
+            T.Giving2011 AS DatamartPerson_Giving2011, 
+            T.Giving2010 AS DatamartPerson_Giving2010, 
+            T.Giving2009 AS DatamartPerson_Giving2009, 
+            T.Giving2008 AS DatamartPerson_Giving2008, 
+            T.Giving2007 AS DatamartPerson_Giving2007, 
+            T.GivingLast12Months AS DatamartPerson_GivingLast12Months, 
+            T.GeoPoint AS DatamartPerson_GeoPoint, 
+            T.Latitude AS DatamartPerson_Latitude, 
+            T.Longitude AS DatamartPerson_Longitude, 
+            T.LastAttendedDate AS DatamartPerson_LastAttendedDate, 
+            T.LastPublicNote AS DatamartPerson_LastPublicNote, 
+            T.FirstTimeGift AS DatamartPerson_FirstTimeGift, 
+            T.SecondTimeGift AS DatamartPerson_SecondTimeGift, 
+            T.TotalGifts AS DatamartPerson_TotalGifts, 
+            T.Guid AS DatamartPerson_Guid, 
+            T.ForeignId AS DatamartPerson_ForeignId, 
+            T.ForeignGuid AS DatamartPerson_ForeignGuid, 
+            T.ForeignKey AS DatamartPerson_ForeignKey, 
+            True AS _from0
+        FROM RockContext.DatamartPersons AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.DatamartPersons"><![CDATA[
+    SELECT VALUE -- Constructing DatamartPersons
+        [Rock.Data.DatamartPerson](T1.DatamartPerson_Id, T1.DatamartPerson_PersonId, T1.DatamartPerson_FamilyId, T1.DatamartPerson_PersonGuid, T1.DatamartPerson_LastName, T1.DatamartPerson_FirstName, T1.DatamartPerson_NickName, T1.DatamartPerson_MiddleName, T1.DatamartPerson_FullName, T1.DatamartPerson_Age, T1.DatamartPerson_Grade, T1.DatamartPerson_BirthDate, T1.DatamartPerson_Gender, T1.DatamartPerson_MaritalStatus, T1.DatamartPerson_FamilyRole, T1.DatamartPerson_CampusName, T1.DatamartPerson_CampusId, T1.DatamartPerson_ConnectionStatusName, T1.DatamartPerson_ConnectionStatusValueId, T1.DatamartPerson_AnniversaryDate, T1.DatamartPerson_AnniversaryYears, T1.DatamartPerson_NeighborhoodId, T1.DatamartPerson_NeighborhoodName, T1.DatamartPerson_TakenStartingPoint, T1.DatamartPerson_StartingPointDate, T1.DatamartPerson_InNeighborhoodGroup, T1.DatamartPerson_NeighborhoodGroupId, T1.DatamartPerson_NeighborhoodGroupName, T1.DatamartPerson_NearestGroupId, T1.DatamartPerson_NearestGroupName, T1.DatamartPerson_FirstVisitDate, T1.DatamartPerson_IsStaff, T1.DatamartPerson_PhotoUrl, T1.DatamartPerson_IsServing, T1.DatamartPerson_IsEra, T1.DatamartPerson_IsCoaching, T1.DatamartPerson_ServingAreas, T1.DatamartPerson_CreatedDateTime, T1.DatamartPerson_ModifiedDateTime, T1.DatamartPerson_CreatedByPersonAliasId, T1.DatamartPerson_ModifiedByPersonAliasId, T1.DatamartPerson_SpouseName, T1.DatamartPerson_IsHeadOfHousehold, T1.DatamartPerson_Address, T1.DatamartPerson_City, T1.DatamartPerson_State, T1.DatamartPerson_PostalCode, T1.DatamartPerson_Email, T1.DatamartPerson_HomePhone, T1.DatamartPerson_CellPhone, T1.DatamartPerson_WorkPhone, T1.DatamartPerson_IsBaptized, T1.DatamartPerson_BaptismDate, T1.DatamartPerson_LastContributionDate, T1.DatamartPerson_Giving2016, T1.DatamartPerson_Giving2015, T1.DatamartPerson_Giving2014, T1.DatamartPerson_Giving2013, T1.DatamartPerson_Giving2012, T1.DatamartPerson_Giving2011, T1.DatamartPerson_Giving2010, T1.DatamartPerson_Giving2009, T1.DatamartPerson_Giving2008, T1.DatamartPerson_Giving2007, T1.DatamartPerson_GivingLast12Months, T1.DatamartPerson_GeoPoint, T1.DatamartPerson_Latitude, T1.DatamartPerson_Longitude, T1.DatamartPerson_LastAttendedDate, T1.DatamartPerson_LastPublicNote, T1.DatamartPerson_FirstTimeGift, T1.DatamartPerson_SecondTimeGift, T1.DatamartPerson_TotalGifts, T1.DatamartPerson_Guid, T1.DatamartPerson_ForeignId, T1.DatamartPerson_ForeignGuid, T1.DatamartPerson_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS DatamartPerson_Id, 
+            T.PersonId AS DatamartPerson_PersonId, 
+            T.FamilyId AS DatamartPerson_FamilyId, 
+            T.PersonGuid AS DatamartPerson_PersonGuid, 
+            T.LastName AS DatamartPerson_LastName, 
+            T.FirstName AS DatamartPerson_FirstName, 
+            T.NickName AS DatamartPerson_NickName, 
+            T.MiddleName AS DatamartPerson_MiddleName, 
+            T.FullName AS DatamartPerson_FullName, 
+            T.Age AS DatamartPerson_Age, 
+            T.Grade AS DatamartPerson_Grade, 
+            T.BirthDate AS DatamartPerson_BirthDate, 
+            T.Gender AS DatamartPerson_Gender, 
+            T.MaritalStatus AS DatamartPerson_MaritalStatus, 
+            T.FamilyRole AS DatamartPerson_FamilyRole, 
+            T.Campus AS DatamartPerson_CampusName, 
+            T.CampusId AS DatamartPerson_CampusId, 
+            T.ConnectionStatus AS DatamartPerson_ConnectionStatusName, 
+            T.ConnectionStatusValueId AS DatamartPerson_ConnectionStatusValueId, 
+            T.AnniversaryDate AS DatamartPerson_AnniversaryDate, 
+            T.AnniversaryYears AS DatamartPerson_AnniversaryYears, 
+            T.NeighborhoodId AS DatamartPerson_NeighborhoodId, 
+            T.NeighborhoodName AS DatamartPerson_NeighborhoodName, 
+            T.TakenStartingPoint AS DatamartPerson_TakenStartingPoint, 
+            T.StartingPointDate AS DatamartPerson_StartingPointDate, 
+            T.InNeighborhoodGroup AS DatamartPerson_InNeighborhoodGroup, 
+            T.NeighborhoodGroupId AS DatamartPerson_NeighborhoodGroupId, 
+            T.NeighborhoodGroupName AS DatamartPerson_NeighborhoodGroupName, 
+            T.NearestGroupId AS DatamartPerson_NearestGroupId, 
+            T.NearestGroupName AS DatamartPerson_NearestGroupName, 
+            T.FirstVisitDate AS DatamartPerson_FirstVisitDate, 
+            T.IsStaff AS DatamartPerson_IsStaff, 
+            T.PhotoUrl AS DatamartPerson_PhotoUrl, 
+            T.IsServing AS DatamartPerson_IsServing, 
+            T.IsEra AS DatamartPerson_IsEra, 
+            T.IsCoaching AS DatamartPerson_IsCoaching, 
+            T.ServingAreas AS DatamartPerson_ServingAreas, 
+            T.CreatedDateTime AS DatamartPerson_CreatedDateTime, 
+            T.ModifiedDateTime AS DatamartPerson_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS DatamartPerson_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS DatamartPerson_ModifiedByPersonAliasId, 
+            T.SpouseName AS DatamartPerson_SpouseName, 
+            T.IsHeadOfHousehold AS DatamartPerson_IsHeadOfHousehold, 
+            T.Address AS DatamartPerson_Address, 
+            T.City AS DatamartPerson_City, 
+            T.State AS DatamartPerson_State, 
+            T.PostalCode AS DatamartPerson_PostalCode, 
+            T.Email AS DatamartPerson_Email, 
+            T.HomePhone AS DatamartPerson_HomePhone, 
+            T.CellPhone AS DatamartPerson_CellPhone, 
+            T.WorkPhone AS DatamartPerson_WorkPhone, 
+            T.IsBaptized AS DatamartPerson_IsBaptized, 
+            T.BaptismDate AS DatamartPerson_BaptismDate, 
+            T.LastContributionDate AS DatamartPerson_LastContributionDate, 
+            T.Giving2016 AS DatamartPerson_Giving2016, 
+            T.Giving2015 AS DatamartPerson_Giving2015, 
+            T.Giving2014 AS DatamartPerson_Giving2014, 
+            T.Giving2013 AS DatamartPerson_Giving2013, 
+            T.Giving2012 AS DatamartPerson_Giving2012, 
+            T.Giving2011 AS DatamartPerson_Giving2011, 
+            T.Giving2010 AS DatamartPerson_Giving2010, 
+            T.Giving2009 AS DatamartPerson_Giving2009, 
+            T.Giving2008 AS DatamartPerson_Giving2008, 
+            T.Giving2007 AS DatamartPerson_Giving2007, 
+            T.GivingLast12Months AS DatamartPerson_GivingLast12Months, 
+            T.GeoPoint AS DatamartPerson_GeoPoint, 
+            T.Latitude AS DatamartPerson_Latitude, 
+            T.Longitude AS DatamartPerson_Longitude, 
+            T.LastAttendedDate AS DatamartPerson_LastAttendedDate, 
+            T.LastPublicNote AS DatamartPerson_LastPublicNote, 
+            T.FirstTimeGift AS DatamartPerson_FirstTimeGift, 
+            T.SecondTimeGift AS DatamartPerson_SecondTimeGift, 
+            T.TotalGifts AS DatamartPerson_TotalGifts, 
+            T.Guid AS DatamartPerson_Guid, 
+            T.ForeignId AS DatamartPerson_ForeignId, 
+            T.ForeignGuid AS DatamartPerson_ForeignGuid, 
+            T.ForeignKey AS DatamartPerson_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.DatamartPerson AS T
     ) AS T1]]></view>
   </mapping-views>
 </views>
