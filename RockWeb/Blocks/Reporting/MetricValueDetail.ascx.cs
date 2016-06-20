@@ -134,11 +134,11 @@ namespace RockWeb.Blocks.Reporting
 
                             var entityTypeEditControl = fieldType.Field.EditControl( configurationValues, string.Format( "metricPartition{0}_entityTypeEditControl", metricPartition.Id ) );
                             var panelCol4 = new Panel { CssClass = "col-md-4" };
-                            if ( entityTypeEditControl != null && entityTypeEditControl is IRockControl)
+                            if ( entityTypeEditControl != null && entityTypeEditControl is IRockControl )
                             {
                                 panelCol4.Controls.Add( entityTypeEditControl );
                                 phMetricValuePartitions.Controls.Add( panelCol4 );
-                                
+
                                 var entityTypeRockControl = ( entityTypeEditControl as IRockControl );
                                 entityTypeRockControl.Label = metricPartition.Label;
                                 if ( entityTypeEditControl is WebControl )
@@ -217,7 +217,7 @@ namespace RockWeb.Blocks.Reporting
             metricValue.XValue = tbXValue.Text;
             metricValue.YValue = tbYValue.Text.AsDecimalOrNull();
             metricValue.Note = tbNote.Text;
-            metricValue.MetricValueDateTime = dpMetricValueDateTime.SelectedDateTime;
+            metricValue.MetricValueDateTime = dpMetricValueDateTime.SelectedDate;
 
             // Get EntityId from EntityType UI controls
             foreach ( var metricPartition in metricValue.Metric.MetricPartitions )
@@ -250,7 +250,6 @@ namespace RockWeb.Blocks.Reporting
                     return;
                 }
             }
-
 
             if ( !metricValue.IsValid )
             {
@@ -309,7 +308,7 @@ namespace RockWeb.Blocks.Reporting
             tbYValue.Text = metricValue.YValue.ToString();
             hfMetricId.Value = metricValue.MetricId.ToString();
             tbNote.Text = metricValue.Note;
-            dpMetricValueDateTime.SelectedDateTime = metricValue.MetricValueDateTime;
+            dpMetricValueDateTime.SelectedDate = metricValue.MetricValueDateTime;
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
