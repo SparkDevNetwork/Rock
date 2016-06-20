@@ -7,7 +7,7 @@
 </asp:Panel>
 
 
-<div class="ck-folders">
+<div class="picker-folders">
     <%-- Folders - Separate UpdatePanel so that Tree doesn't get rebuilt on postbacks (unless the server explicity wants it to get rebuilt) --%>
     <asp:UpdatePanel ID="upnlFolders" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
         <ContentTemplate>
@@ -125,7 +125,7 @@
     </asp:UpdatePanel>
 </div>
 
-<div class="ck-files">
+<div class="picker-files">
     <%-- Files and Modals --%>
     <asp:UpdatePanel ID="upnlFiles" runat="server">
         <ContentTemplate>
