@@ -13974,8 +13974,8 @@ ul.list-group-panel .list-group-item:first-child,
   font-family: "summernote";
   font-style: normal;
   font-weight: normal;
-  src: url("font/summernote.eot?ad8d7e2d177d2473aecd9b35d16211fb");
-  src: url("font/summernote.eot?#iefix") format("embedded-opentype"), url("font/summernote.woff?ad8d7e2d177d2473aecd9b35d16211fb") format("woff"), url("font/summernote.ttf?ad8d7e2d177d2473aecd9b35d16211fb") format("truetype");
+  src: url("/Styles/summernote/font/summernote.eot?ad8d7e2d177d2473aecd9b35d16211fb");
+  src: url("/Styles/summernote/font/summernote.eot?#iefix") format("embedded-opentype"), url("/Styles/summernote/font/summernote.woff?ad8d7e2d177d2473aecd9b35d16211fb") format("woff"), url("/Styles/summernote/font/summernote.ttf?ad8d7e2d177d2473aecd9b35d16211fb") format("truetype");
 }
 [class^="note-icon-"]:before,
 [class*=" note-icon-"]:before {
