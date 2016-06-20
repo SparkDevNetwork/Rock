@@ -112,6 +112,8 @@
     <Compile Include="Constraints\ValidControllerNameConstraint.cs" />
     <Compile Include="Controllers\AttendancesController.partial.cs" />
     <Compile Include="Controllers\CodeGenerated\BackgroundChecksController.cs" />
+    <Compile Include="Controllers\CodeGenerated\MetricPartitionsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\MetricValuePartitionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\PageViewSessionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\PageViewUserAgentsController.cs" />
     <Compile Include="Controllers\BinaryFilesController.Partial.cs" />
@@ -175,7 +177,6 @@
     <Compile Include="Controllers\CodeGenerated\RegistrationTemplateFormsController.cs" />
     <Compile Include="Controllers\CodeGenerated\RegistrationTemplatesController.cs" />
     <Compile Include="Controllers\ExceptionLogsController.Partial.cs" />
-    <Compile Include="Controllers\FinancialTransactionDetailsController.Partial.cs" />
     <Compile Include="Controllers\FollowingsController.Partial.cs" />
     <Compile Include="Controllers\MetricValuesController.Partial.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowActionFormAttributesController.cs" />

@@ -180,6 +180,17 @@ namespace Rock.Jobs
                                     {
                                         MethodInfo qryMethod = serviceInstance.GetType().GetMethod( "Queryable", new Type[] { } );
                                         var entityQry = qryMethod.Invoke( serviceInstance, new object[] { } ) as IQueryable<IEntity>;
+
+                                        // If looking at person alias following, make sure to exclude deceased people
+                                        if ( entityType == typeof( Rock.Model.PersonAlias ) )
+                                        {
+                                            var personAliasQry = entityQry as IQueryable<PersonAlias>;
+                                            if ( personAliasQry != null )
+                                            {
+                                                entityQry = personAliasQry.Where( p => !p.Person.IsDeceased );
+                                            }
+                                        }
+
                                         var entityList = entityQry.Where( q => keyVal.Value.Contains( q.Id ) ).ToList();
 
                                         // If there are any followed entities of this type 

@@ -8,8 +8,8 @@
             ///
             /// handles putting chartData into a Line/Bar/Points chart
             ///
-            plotChartData: function (chartData, chartOptions, plotSelector, yaxisLabelText, getSeriesUrl, combineValues) {
-
+            plotChartData: function (chartData, chartOptions, plotSelector, yaxisLabelText, getSeriesPartitionNameUrl, combineValues) {
+                
                 var chartSeriesLookup = {};
                 var chartSeriesList = [];
 
@@ -31,24 +31,23 @@
                         chartGoalPoints.chartData.push(chartData[i]);
                     }
                     else {
-                        if (!chartSeriesLookup[chartData[i].SeriesId]) {
+                        var lookupKey = chartData[i].MetricValuePartitionEntityIds;
+                        if (!lookupKey || lookupKey == '') {
+                            lookupKey = chartData[i].SeriesName;
+                        }
 
-                            var seriesName = null;
-                            if ( (chartData[i].SeriesId != '') && isNaN(chartData[i].SeriesId) )
+                        if (!chartSeriesLookup[lookupKey]) {
+
+                            // If SeriesName is specified, that can be the name of the series if MetricValuePartitionEntityIds is blank
+                            var seriesName = chartData[i].SeriesName;
+
+                            // if we aren't combining values, we'll have to lookup the series name based on MetricValuePartitionEntityIds
+                            if (chartData[i].MetricValuePartitionEntityIds && chartData[i].MetricValuePartitionEntityIds != '' && !combineValues)
                             {
-                                // SeriesId isn't a number (probably is text), so have that be the series name
-                                seriesName = chartData[i].SeriesId;
-                            }
-                            else if (chartData[i].SeriesId == 0) {
-                                // SeriesId of 0 means that the metric doesn't have a series partition. (Metrics don't have to be partitioned by Series)
-                                // set the series name to the yaxislabeltext or just 'value' if it's blank
-                                seriesName = yaxisLabelText || 'value';
-                            }
-                            else {
-                                // SeriesId is NonZero so get the seriesName from the getSeriesUrl
-                                if (getSeriesUrl) {
+                                // MetricValuePartitionEntityIds is not blank so get the seriesName from the getSeriesPartitionNameUrl
+                                if (getSeriesPartitionNameUrl) {
                                     $.ajax({
-                                        url: getSeriesUrl + chartData[i].SeriesId,
+                                        url: getSeriesPartitionNameUrl + chartData[i].MetricValuePartitionEntityIds,
                                         async: false
                                     })
                                     .done(function (data) {
@@ -57,25 +56,24 @@
                                 }
                             }
 
-                            // if we weren't able to determine the seriesName for some reason, output at least the seriesId
-                            // this could happen if there is no longer a record of the entity (Campus, Group, etc) with that value or if the getSeriesUrl failed
-                            seriesName = seriesName || yaxisLabelText + '(seriesId:' + chartData[i].SeriesId + ')';
+                            // either either seriesName, yaxisLabelText or just 'value' if the seriesname isn't defined
+                            seriesName = seriesName || yaxisLabelText || 'value';
 
-                            chartSeriesLookup[chartData[i].SeriesId] = {
+                            chartSeriesLookup[lookupKey] = {
                                 label: seriesName,
                                 chartData: [],
                                 data: []
                             };
                         }
 
-                        chartSeriesLookup[chartData[i].SeriesId].data.push([chartData[i].DateTimeStamp, chartData[i].YValue]);
-                        chartSeriesLookup[chartData[i].SeriesId].chartData.push(chartData[i]);
+                        chartSeriesLookup[lookupKey].data.push([chartData[i].DateTimeStamp, chartData[i].YValue]);
+                        chartSeriesLookup[lookupKey].chartData.push(chartData[i]);
                     }
                 }
 
                 // setup the series list (goal points last, if they exist)
-                for (var seriesId in chartSeriesLookup) {
-                    var chartMeasurePoints = chartSeriesLookup[seriesId];
+                for (var chartSeriesKey in chartSeriesLookup) {
+                    var chartMeasurePoints = chartSeriesLookup[chartSeriesKey];
                     if (chartMeasurePoints.data.length) {
                         chartSeriesList.push(chartMeasurePoints);
                     }
@@ -147,7 +145,7 @@
             ///
             /// handles putting chart data into a piechart
             ///
-            plotPieChartData: function (chartData, chartOptions, plotSelector) {
+            plotPieChartData: function (chartData, chartOptions, plotSelector, getSeriesPartitionNameUrl) {
                 var pieData = [];
 
                 // populate the chartMeasurePoints data array with data from the REST result for pie data
@@ -172,17 +170,52 @@
             ///
             /// handles putting chart data into a bar chart
             ///
-            plotBarChartData: function (chartData, chartOptions, plotSelector) {
+            plotBarChartData: function (chartData, chartOptions, plotSelector, getSeriesPartitionNameUrl) {
                 var barData = [];
+                var combinedData = {};
                 var seriesLabels = [];
+                var seriesNameLookup = {};
 
-                // populate the chartMeasurePoints data array with data from the REST result for pie data
+                // populate the chartMeasurePoints data array with data from the REST result for bar chart data
                 for (var i = 0; i < chartData.length; i++) {
 
-                    var seriesCategory = chartData[i].SeriesId;
-                    barData.push([seriesCategory, chartData[i].YValue])
-                    seriesLabels.push(chartData[i].SeriesId);
+                    var seriesCategory = chartData[i].SeriesName;
+                    if (chartData[i].MetricValuePartitionEntityIds)
+                    {
+                        if (!seriesNameLookup[chartData[i].MetricValuePartitionEntityIds])
+                        {
+                            // MetricValuePartitionEntityIds is not blank so get the seriesName from the getSeriesPartitionNameUrl
+                            if (getSeriesPartitionNameUrl) {
+                                $.ajax({
+                                    url: getSeriesPartitionNameUrl + chartData[i].MetricValuePartitionEntityIds,
+                                    async: false
+                                })
+                                .done(function (data) {
+                                    seriesNameLookup[chartData[i].MetricValuePartitionEntityIds] = data;
+                                });
+                            }
+                        }
+
+                        seriesCategory = seriesNameLookup[chartData[i].MetricValuePartitionEntityIds] || seriesCategory;
+                    }
+
+                    if (!combinedData[seriesCategory])
+                    {
+                        combinedData[seriesCategory] = 0;
+                    }
+
+                    combinedData[seriesCategory] += chartData[i].YValue;
                 }
+
+                var seriesId = 0;
+                for (var combinedDataKey in combinedData) {
+
+                    barData.push([combinedDataKey, combinedData[combinedDataKey]]);
+                    seriesId++;
+                    seriesLabels.push(combinedDataKey);
+                }
+
+                seriesLabels.push(seriesCategory);
 
                 if (barData.length > 0) {
                     // plot the bar chart

@@ -79,6 +79,8 @@
     </Reference>
     <Reference Include="Microsoft.Data.OData, Version=5.6.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Data.OData.5.6.4\lib\net40\Microsoft.Data.OData.dll</HintPath>
+    <Reference Include="InteractivePreGeneratedViews, Version=1.0.0.0, Culture=neutral, PublicKeyToken=46c4868af4307d2c, processorArchitecture=MSIL">
+      <HintPath>..\packages\EFInteractiveViews.1.0.1\lib\net45\InteractivePreGeneratedViews.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Web.XmlTransform, Version=2.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Web.Xdt.2.1.1\lib\net40\Microsoft.Web.XmlTransform.dll</HintPath>
@@ -175,6 +177,7 @@
     <Compile Include="Attribute\DefinedValueRangeFieldAttribute.cs" />
     <Compile Include="Attribute\GroupAndRoleFieldAttribute.cs" />
     <Compile Include="Attribute\KeyValueListFieldAttribute.cs" />
+    <Compile Include="Attribute\ScheduleFieldAttribute.cs" />
     <Compile Include="Attribute\SystemEmailFieldAttribute.cs" />
     <Compile Include="Attribute\EnumsFieldAttribute.cs" />
     <Compile Include="Attribute\EnumFieldAttribute.cs" />
@@ -190,7 +193,6 @@
     <Compile Include="Attribute\EntityTypeFieldAttribute.cs" />
     <Compile Include="Attribute\MetricCategoriesFieldAttribute.cs" />
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
-    <Compile Include="Attribute\MetricEntityFieldAttribute.cs" />
     <Compile Include="Attribute\AccountsFieldAttribute.cs" />
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
     <Compile Include="Attribute\DaysOfWeekFieldAttribute.cs" />
@@ -260,6 +262,7 @@
     <Compile Include="Data\Udf\GetAddressStoreFunctionInjectionConvention.cs" />
     <Compile Include="Data\Udf\DbMetadataExtensions.cs" />
     <Compile Include="Data\Udf\RockUdfHelper.cs" />
+    <Compile Include="Field\IEntityQualifierFieldType.cs" />
     <Compile Include="Field\Types\AddressFieldType.cs" />
     <Compile Include="Field\Types\ContentChannelTypesFieldType.cs" />
     <Compile Include="Field\Types\PhoneNumberFieldType.cs" />
@@ -280,6 +283,7 @@
     <Compile Include="Field\Types\EnumFieldType.cs" />
     <Compile Include="Field\Types\RangeSliderFieldType.cs" />
     <Compile Include="Field\Types\MarkdownFieldType.cs" />
+    <Compile Include="Field\Types\ScheduleFieldType.cs" />
     <Compile Include="Financial\ThreeStepGatewayComponent.cs" />
     <Compile Include="Follow\Event\PersonFirstAttendedGroupType.cs" />
     <Compile Include="Follow\Event\PersonFirstJoinedGroupType.cs" />
@@ -292,6 +296,7 @@
     <Compile Include="Follow\SuggestionContainer.cs" />
     <Compile Include="Follow\EventContainer.cs" />
     <Compile Include="Jobs\CalculateFamilyAnalytics.cs" />
+    <Compile Include="Jobs\SendGroupEmail.cs" />
     <Compile Include="Jobs\SendFollowingEvents.cs" />
     <Compile Include="Jobs\SendFollowingSuggestions.cs" />
     <Compile Include="Jobs\SendRegistrationPaymentReminders.cs" />
@@ -345,7 +350,6 @@
     <Compile Include="Field\Types\EntityFieldType.cs" />
     <Compile Include="Field\Types\MetricCategoriesFieldType.cs" />
     <Compile Include="Field\Types\ComparisonFieldType.cs" />
-    <Compile Include="Field\Types\MetricEntityFieldType.cs" />
     <Compile Include="Field\Types\AudioFileFieldType.cs" />
     <Compile Include="Field\Types\AudioUrlFieldType.cs" />
     <Compile Include="Field\Types\VideoUrlFieldType.cs" />
@@ -378,6 +382,8 @@
     <Compile Include="Model\CodeGenerated\FollowingSuggestedService.cs" />
     <Compile Include="Model\CodeGenerated\FollowingSuggestionTypeService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPaymentDetailService.cs" />
+    <Compile Include="Model\CodeGenerated\MetricPartitionService.cs" />
+    <Compile Include="Model\CodeGenerated\MetricValuePartitionService.cs" />
     <Compile Include="Model\CodeGenerated\PageViewSessionService.cs" />
     <Compile Include="Model\CodeGenerated\PageViewUserAgentService.cs" />
     <Compile Include="Model\CommunicationService.Partial.cs" />
@@ -466,6 +472,8 @@
     <Compile Include="Model\GroupScheduleExclusion.cs" />
     <Compile Include="Model\GroupMemberWorkflowTrigger.Partial.cs" />
     <Compile Include="Model\MergeTemplate.cs" />
+    <Compile Include="Model\MetricValuePartition.cs" />
+    <Compile Include="Model\MetricPartition.cs" />
     <Compile Include="Model\PageViewSession.cs" />
     <Compile Include="Model\PageViewUserAgent.cs" />
     <Compile Include="Model\RegistrationRegistrant.cs" />
@@ -494,7 +502,12 @@
     <Compile Include="PersonProfile\Badge\InGroupWithPurpose.cs" />
     <Compile Include="Plugin\HotFixes\001_FixPhoneCountryCode.cs" />
     <Compile Include="Reporting\ComparisonHelper.cs" />
+    <Compile Include="Reporting\Dashboard\LineBarPointsChartDashboardWidget.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="Reporting\DataFilter\NotInOtherDataViewFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Workflow\WorkflowTypeFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Workflow\WorkflowAttributesFilter.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupMemberAttributeSelect.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupStatusSelect.cs" />
@@ -570,6 +583,9 @@
     <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinAreaRow.cs" />
     <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinGroup.cs" />
     <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinGroupRow.cs" />
+    <Compile Include="Web\UI\Controls\IRockControlAdditionalRendering.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\DefinedValuesPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\DefinedValuePicker.cs" />
     <Compile Include="Web\UI\RockTheme.cs" />
     <Compile Include="Utility\SettingsStringBase.cs" />
     <Compile Include="Web\Cache\AttributeValueCache.cs" />
@@ -688,9 +704,6 @@
     <Compile Include="Field\Types\WorkflowActivityTypeFieldType.cs" />
     <Compile Include="Plugin\Migration.cs" />
     <Compile Include="Plugin\VersionAttribute.cs" />
-    <Compile Include="Reporting\Dashboard\LineBarPointsChartDashboardWidget.cs">
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
     <Compile Include="Data\DbService.cs" />
     <Compile Include="Data\IgnoreCanDelete.cs" />
     <Compile Include="Data\IModel.cs" />
@@ -1063,7 +1076,6 @@
     <Compile Include="Web\UI\Controls\Pickers\DayOfWeekPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DaysOfWeekPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\EntityPicker.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\MetricEntityPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\RemoteAuthsPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\SlidingDateRangePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\YearPicker.cs" />

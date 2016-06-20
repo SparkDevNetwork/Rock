@@ -29,6 +29,8 @@ namespace Rock.Migrations.HotFixMigrations
         /// </summary>
         public override void Up()
         {
+// NOTE: This was added to core migration in v5.0
+/*
             Sql( @"
     DROP INDEX [IX_ValueAsNumeric] ON [AttributeValue]
     ALTER TABLE AttributeValue DROP COLUMN ValueAsNumeric
@@ -46,7 +48,7 @@ namespace Rock.Migrations.HotFixMigrations
         ) PERSISTED
     CREATE NONCLUSTERED INDEX [IX_ValueAsNumeric] ON [AttributeValue] ([ValueAsNumeric] )
 " );
-
+*/
         }
 
         /// <summary>

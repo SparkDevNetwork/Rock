@@ -68,7 +68,7 @@
         
         <asp:Panel ID="pnlRegistrarInfo" runat="server" CssClass="well">
             
-            <h4>This <asp:Literal id="lRegistrationTerm2" runat="server" /> Was Completed By</h4>
+            <h4>This <asp:Literal id="lRegistrationTerm" runat="server" /> Was Completed By</h4>
             <div class="row">
                 <div class="col-md-6">
                     <Rock:RockTextBox ID="tbYourFirstName" runat="server" Label="First Name" Required="true" />
@@ -80,6 +80,7 @@
             <div class="row">
                 <div class="col-md-6">
                     <Rock:EmailBox ID="tbConfirmationEmail" runat="server" Label="Send Confirmation Emails To" Required="true" />
+                    <Rock:RockCheckBox ID="cbUpdateEmail" runat="server" Text="Should Your Account Be Updated To Use This Email Address?" Visible="false" Checked="true" />
                 </div>
                 <div class="col-md-6">
                     <asp:Panel ID="pnlRegistrarFamilyOptions" runat="server">

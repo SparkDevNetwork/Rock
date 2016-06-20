@@ -332,11 +332,28 @@ namespace RockWeb.Blocks.CheckIn
             {
                 var groupBy = hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week;
                 lcAttendance.TooltipFormatter = null;
+                double? chartDataWeekCount = null;
+                double? chartDataMonthCount = null;
+                int maxXLabelCount = 20;
+                if ( dateRange.End.HasValue && dateRange.Start.HasValue )
+                {
+                    chartDataWeekCount = ( dateRange.End.Value - dateRange.Start.Value ).TotalDays / 7;
+                    chartDataMonthCount = ( dateRange.End.Value - dateRange.Start.Value ).TotalDays / 30;
+                }
+
                 switch ( groupBy )
                 {
                     case ChartGroupBy.Week:
                         {
-                            lcAttendance.Options.xaxis.tickSize = new string[] { "7", "day" };
+                            if ( chartDataWeekCount < maxXLabelCount )
+                            {
+                                lcAttendance.Options.xaxis.tickSize = new string[] { "7", "day" };
+                            }
+                            else
+                            {
+                                lcAttendance.Options.xaxis.tickSize = null;
+                            }
+                            
                             lcAttendance.TooltipFormatter = @"
 function(item) {
     var itemDate = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
@@ -352,7 +369,15 @@ function(item) {
 
                     case ChartGroupBy.Month:
                         {
-                            lcAttendance.Options.xaxis.tickSize = new string[] { "1", "month" };
+                            if ( chartDataMonthCount < maxXLabelCount )
+                            {
+                                lcAttendance.Options.xaxis.tickSize = new string[] { "1", "month" };
+                            }
+                            else
+                            {
+                                lcAttendance.Options.xaxis.tickSize = null;
+                            }
+
                             lcAttendance.TooltipFormatter = @"
 function(item) {
     var month_names = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -401,14 +426,10 @@ function(item) {
                 var singleDateTime = chartData.GroupBy( a => a.DateTimeStamp ).Count() == 1;
                 if ( singleDateTime )
                 {
-                    bcAttendance.Visible = true;
-                    lcAttendance.Visible = false;
                     bcAttendance.ChartData = chartDataJson;
                 }
                 else
                 {
-                    bcAttendance.Visible = false;
-                    lcAttendance.Visible = true;
                     lcAttendance.ChartData = chartDataJson;
                 }
                 bcAttendance.Visible = singleDateTime;
@@ -854,7 +875,7 @@ function(item) {
             var allAttendeeVisits = new Dictionary<int, AttendeeVisits>();
             var allResults = new List<AttendeeResult>();
 
-            // Collection of async queries to run before assembling date
+            // Collection of async queries to run before assembling data
             var qryTasks = new List<Task>();
 
             DataTable dtAttendeeLastAttendance = null;

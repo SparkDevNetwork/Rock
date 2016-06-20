@@ -29,7 +29,7 @@ namespace Rock.Migrations.HotFixMigrations
         /// </summary>
         public override void Up()
         {
-            // NOTE: This was moved to normal migration after being merged back to develop branch 
+// NOTE: This was moved to normal migration after being merged back to develop branch 
 /*
             Sql( @"
     DECLARE @AttributeId int = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = 'CE57450F-634A-420A-BF5A-B43E9B20ABF2' )

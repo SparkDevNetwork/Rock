@@ -33,7 +33,7 @@ namespace Rock.Field.Types
     /// Stored as either a single DefinedValue.Guid or a comma-delimited list of DefinedValue.Guids (if AllowMultiple)
     /// </summary>
     [Serializable]
-    public class DefinedValueFieldType : FieldType, IEntityFieldType
+    public class DefinedValueFieldType : FieldType, IEntityFieldType, IEntityQualifierFieldType
     {
         #region Configuration
 
@@ -159,6 +159,31 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region EntityQualifierConfiguration
+
+        /// <summary>
+        /// Gets the configuration values for this field using the EntityTypeQualiferColumn and EntityTypeQualifierValues
+        /// </summary>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <returns></returns>
+        public Dictionary<string, Rock.Field.ConfigurationValue> GetConfigurationValuesFromEntityQualifier(string entityTypeQualifierColumn, string entityTypeQualifierValue)
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( DEFINED_TYPE_KEY, new ConfigurationValue( "Defined Type", "The Defined Type to select values from", string.Empty ) );
+            configurationValues.Add( ALLOW_MULTIPLE_KEY, new ConfigurationValue( "Allow Multiple Values", "When set, allows multiple defined type values to be selected.", string.Empty ) );
+            configurationValues.Add( DISPLAY_DESCRIPTION, new ConfigurationValue( "Display Descriptions", "When set, the defined value descriptions will be displayed instead of the values.", string.Empty ) );
+
+            if ( entityTypeQualifierColumn.Equals("DefinedTypeId", StringComparison.OrdinalIgnoreCase ))
+            {
+                configurationValues[DEFINED_TYPE_KEY].Value = entityTypeQualifierValue;
+            }
+
+            return configurationValues;
+        }
+
+        #endregion
+
         #region Formatting
 
         /// <summary>
@@ -251,36 +276,23 @@ namespace Rock.Field.Types
         {
             ListControl editControl;
 
+            bool useDescription = configurationValues != null && configurationValues.ContainsKey( DISPLAY_DESCRIPTION ) && configurationValues[DISPLAY_DESCRIPTION].Value.AsBoolean();
+            int? definedTypeId = configurationValues != null && configurationValues.ContainsKey( DEFINED_TYPE_KEY ) ? configurationValues[DEFINED_TYPE_KEY].Value.AsIntegerOrNull() : null;
+
             if ( configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean() )
             {
-                editControl = new Rock.Web.UI.Controls.RockCheckBoxList { ID = id, RepeatDirection = RepeatDirection.Horizontal };
+                editControl = new DefinedValuesPicker { ID = id, DisplayDescriptions = useDescription, DefinedTypeId = definedTypeId };
                 editControl.AddCssClass( "checkboxlist-group" );
             }
             else
             {
-                editControl = new Rock.Web.UI.Controls.RockDropDownList { ID = id };
+                editControl = new DefinedValuePicker { ID = id, DisplayDescriptions = useDescription, DefinedTypeId = definedTypeId };
                 editControl.Items.Add( new ListItem() );
             }
-
-            if ( configurationValues != null && configurationValues.ContainsKey( DEFINED_TYPE_KEY ) )
+                
+            if ( definedTypeId.HasValue )
             {
-                int? definedTypeId = configurationValues[DEFINED_TYPE_KEY].Value.AsIntegerOrNull();
-                if ( definedTypeId.HasValue )
-                {
-                    Rock.Model.DefinedValueService definedValueService = new Model.DefinedValueService( new RockContext() );
-                    var definedValues = definedValueService.GetByDefinedTypeId( definedTypeId.Value );
-                    if ( definedValues.Any() )
-                    {
-                        bool useDescription = configurationValues.ContainsKey( DISPLAY_DESCRIPTION ) && configurationValues[DISPLAY_DESCRIPTION].Value.AsBoolean();
-
-                        foreach ( var definedValue in definedValues )
-                        {
-                            editControl.Items.Add( new ListItem( useDescription ? definedValue.Description : definedValue.Value, definedValue.Id.ToString() ) );
-                        }
-                    }
-
-                    return editControl;
-                }
+                return editControl;
             }
 
             return null;
@@ -298,11 +310,11 @@ namespace Rock.Field.Types
 
             if ( control != null && control is ListControl )
             {
-                if ( control is Rock.Web.UI.Controls.RockDropDownList )
+                if ( control is DefinedValuePicker )
                 {
                     definedValueIdList.Add( ( (ListControl)control ).SelectedValue.AsInteger() );
                 }
-                else if ( control is Rock.Web.UI.Controls.RockCheckBoxList )
+                else if ( control is DefinedValuesPicker )
                 {
                     var cblControl = control as Rock.Web.UI.Controls.RockCheckBoxList;
 
@@ -488,6 +500,7 @@ namespace Rock.Field.Types
             {
                 return null;
             }
+
             return value;
         }
 

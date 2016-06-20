@@ -114,7 +114,7 @@ namespace RockWeb.Blocks.Groups
             mergeFields.Add( "Groups", groups );
 
             Dictionary<string, object> linkedPages = new Dictionary<string, object>();
-            linkedPages.Add( "DetailPage", LinkedPageUrl( "DetailPage", null ) );
+            linkedPages.Add( "DetailPage", LinkedPageRoute( "DetailPage" ) );
             mergeFields.Add( "LinkedPages", linkedPages );
 
             string template = GetAttributeValue( "LavaTemplate" );

@@ -76,7 +76,7 @@ namespace Rock.Jobs
                 try
                 {
                     var medium = comm.Medium;
-                    if ( medium != null )
+                    if ( medium != null && medium.IsActive )
                     {
                         medium.Send( comm );
                         communicationsSent++;

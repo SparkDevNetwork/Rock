@@ -63,13 +63,16 @@ namespace Rock.Lava
                 }
             }
 
-            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
-            if ( globalAttributes.LavaSupportLevel != Lava.LavaSupportLevel.NoLegacy )
+            if ( options.GetLegacyGlobalMergeFields )
             {
-                var legacyGlobalAttributeMergeFields = Rock.Web.Cache.GlobalAttributesCache.GetLegacyMergeFields( currentPerson );
-                foreach ( var legacyGlobalAttributeMergeField in legacyGlobalAttributeMergeFields )
+                var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                if ( globalAttributes.LavaSupportLevel != Lava.LavaSupportLevel.NoLegacy )
                 {
-                    mergeFields.Add( legacyGlobalAttributeMergeField.Key, legacyGlobalAttributeMergeField.Value );
+                    var legacyGlobalAttributeMergeFields = Rock.Web.Cache.GlobalAttributesCache.GetLegacyMergeFields( currentPerson );
+                    foreach ( var legacyGlobalAttributeMergeField in legacyGlobalAttributeMergeFields )
+                    {
+                        mergeFields.Add( legacyGlobalAttributeMergeField.Key, legacyGlobalAttributeMergeField.Value );
+                    }
                 }
             }
 
