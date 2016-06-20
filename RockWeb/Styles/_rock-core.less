@@ -17,6 +17,9 @@
 @import "./FontAwesome/variables.less";
 @import "./JCrop/jcrop.less";
 
+// import as less files so they are concatenated properly
+@import (less) "./summernote/summernote.css";
+
 @import "_page-admin.less";
 @import "_modal.less";
 @import "_forms.less";
@@ -42,11 +45,6 @@
 @import "_scroll.less";
 @import "_global-variables.less";
 @import "_helpers.less";
-
-// import as less files so they are concatenated properly
-@import (less) "./summernote/summernote.css";
-
-@import "_summernote-editor.less";
 
 @import "./Bootstrap/mixins.less";
 
