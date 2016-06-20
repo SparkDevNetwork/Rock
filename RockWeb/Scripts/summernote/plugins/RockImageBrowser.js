@@ -21,27 +21,32 @@
 
             $modalPopupIFrame = Rock.controls.modal.getModalPopupIFrame();
 
-            $modalPopupIFrame.contents().on('click', '.js-select-file-button', function () {
-                Rock.controls.modal.close();
-                var fileResult = $('body iframe').contents().find('.js-filebrowser-result input[type=hidden]').val();
-                if (fileResult) {
-                    // iframe returns the result in the format "imageSrcUrl|imageAltText"
-                    var resultParts = fileResult.split('|');
-                    var imageElement = document.createElement('img');
-                    var url = Rock.settings.get('baseUrl') + resultParts[0];
-                    var altText = resultParts[1];
+            $modalPopupIFrame.load(function () {
 
-                    // insert the image at 25% to get them started
-                    context.invoke('editor.restoreRange');
-                    context.invoke('editor.insertImage', url, function ($image) {
-                        $image.css('width', '25%');
-                        $image.attr('alt', altText);
-                    });
-                }
-            });
+                $modalPopupIFrame.contents().off('click');
 
-            $modalPopupIFrame.contents().on('click', '.js-cancel-file-button', function () {
-                Rock.controls.modal.close();
+                $modalPopupIFrame.contents().on('click', '.js-select-file-button', function () {
+                    Rock.controls.modal.close();
+                    var fileResult = $('body iframe').contents().find('.js-filebrowser-result input[type=hidden]').val();
+                    if (fileResult) {
+                        // iframe returns the result in the format "imageSrcUrl|imageAltText"
+                        var resultParts = fileResult.split('|');
+                        var imageElement = document.createElement('img');
+                        var url = Rock.settings.get('baseUrl') + resultParts[0];
+                        var altText = resultParts[1];
+
+                        // insert the image at 25% to get them started
+                        context.invoke('editor.restoreRange');
+                        context.invoke('editor.insertImage', url, function ($image) {
+                            $image.css('width', '25%');
+                            $image.attr('alt', altText);
+                        });
+                    }
+                });
+
+                $modalPopupIFrame.contents().on('click', '.js-cancel-file-button', function () {
+                    Rock.controls.modal.close();
+                });
             });
         }
     });

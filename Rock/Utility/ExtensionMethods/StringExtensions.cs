@@ -91,8 +91,6 @@ namespace Rock
             return Regex.Replace( str, regex, "," ).Split( delimiter, StringSplitOptions.RemoveEmptyEntries );
         }
 
-
-
         /// <summary>
         /// Replaces every instance of oldValue (regardless of case) with the newValue.
         /// (from http://www.codeproject.com/Articles/10890/Fastest-C-Case-Insenstive-String-Replace)
@@ -187,7 +185,7 @@ namespace Rock
             if ( str == null )
             {
                 return null;
-            }                
+            }
             else if ( str.Length <= length )
             {
                 return str;
@@ -220,8 +218,6 @@ namespace Rock
 
             return truncatedString + "...";
         }
-
-        
 
         /// <summary>
         /// Removes any non-numeric characters.
@@ -292,19 +288,19 @@ namespace Rock
         /// <param name="str">The string.</param>
         /// <returns></returns>
         [System.Diagnostics.DebuggerStepThrough()]
-        public static System.Collections.Generic.Dictionary<string, string> AsDictionary(this string str)
+        public static System.Collections.Generic.Dictionary<string, string> AsDictionary( this string str )
         {
             var dictionary = new System.Collections.Generic.Dictionary<string, string>();
-            string[] nameValues = str.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] nameValues = str.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
             // If we haven't found any pipes, check for commas
-            if (nameValues.Count() == 1)
+            if ( nameValues.Count() == 1 )
             {
-                nameValues = str.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                nameValues = str.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
             }
-            foreach (string nameValue in nameValues)
+            foreach ( string nameValue in nameValues )
             {
-                string[] nameAndValue = nameValue.Split(new char[] { '^' }, 2);
-                if (nameAndValue.Count() == 2)
+                string[] nameAndValue = nameValue.Split( new char[] { '^' }, 2 );
+                if ( nameAndValue.Count() == 2 )
                 {
                     dictionary[nameAndValue[0]] = nameAndValue[1];
                 }
@@ -318,10 +314,10 @@ namespace Rock
         /// <param name="str">The string.</param>
         /// <returns></returns>
         [System.Diagnostics.DebuggerStepThrough()]
-        public static System.Collections.Generic.Dictionary<string, string> AsDictionaryOrNull(this string str)
+        public static System.Collections.Generic.Dictionary<string, string> AsDictionaryOrNull( this string str )
         {
-            var dictionary = AsDictionary(str);
-            if (dictionary.Count() > 0)
+            var dictionary = AsDictionary( str );
+            if ( dictionary.Count() > 0 )
             {
                 return dictionary;
             }
