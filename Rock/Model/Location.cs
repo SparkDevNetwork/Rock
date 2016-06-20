@@ -643,11 +643,11 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            string result = this.Name;
+            string result = GetFullStreetAddress();
 
             if ( string.IsNullOrEmpty( result ) )
             {
-                result = GetFullStreetAddress();
+                result = this.Name;
             }
 
             if ( string.IsNullOrWhiteSpace( result ) )
