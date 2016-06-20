@@ -155,8 +155,7 @@ namespace RockWeb.Blocks.Cms
             int version = hfVersion.ValueAsInt();
             HtmlContent htmlContent = htmlContentService.GetByBlockIdAndEntityValueAndVersion( this.BlockId, entityValue, version );
 
-            // get the content depending on which mode we are in (codeeditor or ckeditor)
-            string newContent = ceHtml.Visible ? ceHtml.Text : htmlEditor.Text;
+            string newContent = htmlEditor.Text;
 
             // check if the new content is valid
             // NOTE: This is a limited check that will only warn of invalid HTML the first 
@@ -164,6 +163,7 @@ namespace RockWeb.Blocks.Cms
             // are assumed to be intentional.
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml( newContent );
+
             if ( doc.ParseErrors.Count() > 0 && !nbInvalidHtml.Visible )
             {
                 var reasons = doc.ParseErrors.Select( r => r.Reason ).ToList();
@@ -389,8 +389,7 @@ namespace RockWeb.Blocks.Cms
 
             bool useCodeEditor = GetAttributeValue( "UseCodeEditor" ).AsBoolean();
 
-            ceHtml.Visible = useCodeEditor;
-            htmlEditor.Visible = !useCodeEditor;
+            htmlEditor.StartInCodeEditorMode = useCodeEditor;
 
             htmlEditor.Toolbar = HtmlEditor.ToolbarConfig.Full;
 
@@ -407,7 +406,6 @@ namespace RockWeb.Blocks.Cms
                 string onchangeScript = string.Format( onchangeScriptFormat, lblApprovalStatus.ClientID, hfApprovalStatus.ClientID, hfApprovalStatusPersonId.ClientID, lblApprovalStatusPerson.ClientID );
 
                 htmlEditor.OnChangeScript = onchangeScript;
-                ceHtml.OnChangeScript = onchangeScript;
             }
 
             htmlEditor.MergeFields.Clear();
@@ -420,16 +418,6 @@ namespace RockWeb.Blocks.Cms
             htmlEditor.MergeFields.Add( "Time" );
             htmlEditor.MergeFields.Add( "DayOfWeek" );
 
-            ceHtml.MergeFields.Clear();
-            ceHtml.MergeFields.Add( "GlobalAttribute" );
-            ceHtml.MergeFields.Add( "CurrentPerson^Rock.Model.Person|Current Person" );
-            ceHtml.MergeFields.Add( "Campuses" );
-            ceHtml.MergeFields.Add( "RockVersion" );
-            ceHtml.MergeFields.Add( "PageParameter" );
-            ceHtml.MergeFields.Add( "Date" );
-            ceHtml.MergeFields.Add( "Time" );
-            ceHtml.MergeFields.Add( "DayOfWeek" );
-
             var contextObjects = new Dictionary<string, object>();
             foreach ( var contextEntityType in RockPage.GetContextEntityTypes() )
             {
@@ -441,7 +429,6 @@ namespace RockWeb.Blocks.Cms
                     {
                         string mergeField = string.Format( "Context.{0}^{1}|Current {0} (Context)|Context", type.Name, type.FullName );
                         htmlEditor.MergeFields.Add( mergeField );
-                        ceHtml.MergeFields.Add( mergeField );
                     }
                 }
             }
@@ -471,17 +458,14 @@ namespace RockWeb.Blocks.Cms
             // set Height of editors
             if ( supportsVersioning && requireApproval )
             {
-                ceHtml.EditorHeight = "280";
                 htmlEditor.Height = 280;
             }
             else if ( supportsVersioning )
             {
-                ceHtml.EditorHeight = "350";
                 htmlEditor.Height = 350;
             }
             else
             {
-                ceHtml.EditorHeight = "380";
                 htmlEditor.Height = 380;
             }
 
@@ -516,7 +500,6 @@ namespace RockWeb.Blocks.Cms
             drpDateRange.LowerValue = htmlContent.StartDateTime;
             drpDateRange.UpperValue = htmlContent.ExpireDateTime;
             htmlEditor.Text = htmlContent.Content;
-            ceHtml.Text = htmlContent.Content;
         }
 
         /// <summary>

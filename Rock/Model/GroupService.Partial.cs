@@ -408,7 +408,7 @@ namespace Rock.Model
             var groupMemberService = new GroupMemberService( rockContext );
             var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
 
-            var qryGroupRequirements = groupRequirementService.Queryable().Where( a => a.GroupId == groupId );
+            var qryGroupRequirements = groupRequirementService.Queryable().Where( a => a.GroupId == groupId ).ToList();
             bool hasGroupRequirements = qryGroupRequirements.Any();
             if ( !hasGroupRequirements )
             {
@@ -424,21 +424,41 @@ namespace Rock.Model
                 qryGroupMembers = qryGroupMembers.Where( a => a.GroupMemberStatus == GroupMemberStatus.Active );
             }
 
-            // get a list of group member ids that don't meet all the requirements
-            IQueryable<int> qryGroupMemberIdsThatLackGroupRequirements = qryGroupMembers.Where(
-                                a => !qryGroupRequirements.Select(x => x.Id).All(
-                                    r => a.GroupMemberRequirements.Where( mr => mr.RequirementMetDateTime.HasValue ).Select( x => x.GroupRequirementId ).Contains( r ) ) ).Select(a => a.Id);
+            var groupMembers = qryGroupMembers.ToList();
 
-            IQueryable<GroupMember> qryMembersWithIssues;
+            // get a list of group member ids that don't meet all the requirements
+            List<int> qryGroupMemberIdsThatLackGroupRequirements = groupMembers
+                .Where( a =>
+                    !qryGroupRequirements
+                        .Where( r => 
+                            !r.GroupRoleId.HasValue ||
+                            r.GroupRoleId.Value == a.GroupRoleId )
+                        .Select( x => x.Id )
+                        .All( r =>
+                            a.GroupMemberRequirements
+                                .Where( mr => mr.RequirementMetDateTime.HasValue )
+                                .Select( x => x.GroupRequirementId )
+                                .Contains( r ) ) )
+                .Select( a => a.Id )
+                .ToList();
+
+            IEnumerable<GroupMember> qryMembersWithIssues;
 
             if ( includeWarnings )
             {
-                IQueryable<int> qryGroupMemberIdsWithRequirementWarnings = qryGroupMemberRequirements.Where( a => a.RequirementWarningDateTime != null || a.RequirementFailDateTime != null ).Select( a => a.GroupMemberId ).Distinct();
-                qryMembersWithIssues = qryGroupMembers.Where( a => qryGroupMemberIdsThatLackGroupRequirements.Contains( a.Id ) || qryGroupMemberIdsWithRequirementWarnings.Contains( a.Id ) );
+                IQueryable<int> qryGroupMemberIdsWithRequirementWarnings = qryGroupMemberRequirements
+                    .Where( 
+                        a => 
+                            a.RequirementWarningDateTime != null || 
+                            a.RequirementFailDateTime != null )
+                    .Select( a => a.GroupMemberId )
+                    .Distinct();
+
+                qryMembersWithIssues = groupMembers.Where( a => qryGroupMemberIdsThatLackGroupRequirements.Contains( a.Id ) || qryGroupMemberIdsWithRequirementWarnings.Contains( a.Id ) );
             }
             else
             {
-                qryMembersWithIssues = qryGroupMembers.Where( a => qryGroupMemberIdsThatLackGroupRequirements.Contains( a.Id ) );
+                qryMembersWithIssues = groupMembers.Where( a => qryGroupMemberIdsThatLackGroupRequirements.Contains( a.Id ) );
             }
 
             var qry = qryMembersWithIssues.Select( a => new

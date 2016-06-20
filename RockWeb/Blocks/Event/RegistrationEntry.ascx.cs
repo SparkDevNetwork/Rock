@@ -3126,6 +3126,16 @@ namespace RockWeb.Blocks.Event
         var $lbl = $('div.js-registration-same-family').find('label.control-label')
         $lbl.text( name + ' is in the same family as');
     }} );
+    $('input.js-your-first-name').change( function() {{
+        var name = $(this).val();
+        if ( name == null || name == '') {{
+            name = 'You are';
+        }} else {{
+            name += ' is';
+        }}
+        var $lbl = $('div.js-registration-same-family').find('label.control-label')
+        $lbl.text( name + ' in the same family as');
+    }} );
 
     $('#{0}').on('change', function() {{
 
@@ -4179,9 +4189,13 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
+                rblRegistrarFamilyOptions.Label = string.IsNullOrWhiteSpace( tbYourFirstName.Text ) ?
+                    "You are in the same family as" :
+                    tbYourFirstName.Text + " is in the same family as";
+
                 cbUpdateEmail.Visible = CurrentPerson != null && !string.IsNullOrWhiteSpace( CurrentPerson.Email );
 
-                rblRegistrarFamilyOptions.SetValue( RegistrationState.FamilyGuid.ToString() );
+                //rblRegistrarFamilyOptions.SetValue( RegistrationState.FamilyGuid.ToString() );
 
                 // Build Discount info
                 nbDiscountCode.Visible = false;

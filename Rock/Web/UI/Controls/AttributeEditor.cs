@@ -994,7 +994,7 @@ namespace Rock.Web.UI.Controls
                 }
 
                 // default control id needs to be unique to field type because some field types will transform
-                // field (i.e. ckeditor) and switching field types will not reset that
+                // field (i.e. htmleditor) and switching field types will not reset that
                 var defaultControl = field.EditControl( Qualifiers, string.Format( "defaultValue_{0}", fieldTypeId.Value ) );
                 if ( defaultControl != null )
                 {

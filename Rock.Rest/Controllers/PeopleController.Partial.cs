@@ -92,6 +92,20 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
+        /// Gets the currently authenticated person
+        /// </summary>
+        /// <returns>A person</returns>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route("api/People/GetCurrentPerson")]
+        public Person GetCurrentPerson()
+        {
+            var rockContext = new Rock.Data.RockContext();
+            return new PersonService(rockContext).Get(GetPerson().Id);
+        }
+
+        /// <summary>
         /// Searches the person entit(ies) by email.
         /// </summary>
         /// <param name="email">The email.</param>

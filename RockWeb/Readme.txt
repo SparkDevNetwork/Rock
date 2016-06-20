@@ -12,6 +12,8 @@ CALENDAR
 + Added context object to EventItemListLava block.
 + Updated EventItemListLava block so that campuses is not required.
 + Updated calendar to no longer lose selected date when switching between view modes (Fixes #1392).
++ Added 'External Website Ads', and 'Service Bulletin' content channels to public calendar configuration if no content channels are already configured.
++ Fixed exception that would occur when using the Event Item Occurrence List By Audience Lava block without a date range filter (and recurring events without an end date exist).
 
 CHECK-IN
 + Added 'Family' check-in functionality to allow checking in multiple family members at the same time.
@@ -101,6 +103,9 @@ GROUPS
 + Changed default date range for Group Attendance to 3 months instead of a year (date filter can still be changed per user).
 + Added campus filter to group attendance list. This will filter the attendance count and rate values by the people whose campus is the selected value.
 + Added an optional campus filter to the Group Attendance Detail block.
++ Fixed issue with Role specific Group Requirments still showing warning icon for members of group with a different role.
++ Updated Group Finder to prevent adding attribute filters for attribute field types that do not support filtering (Fixes #1561).
++ Fixed display of Group Name when using option to display group path and selecting a specific group type (Fixes #1525).
 
 LAVA
 + Added new SortByAttribute Lava filter.
@@ -125,6 +130,7 @@ PERSON/FAMILY
 + Update Person History block so that history items are not displayed for any category that current user does not have authorization to view.
 + Changed "Combine Giving With" to show the family name along with the list of names of the family members when editing a person
 + Allow the toggling of showing inactive campuses on the Add Family block using a block setting.
++ Updated saving of a person record to check if anniversary date was updated and if so make same update to spouse's record.
 
 PRAYER
 + The PrayerRequestEntry block's Save Success Text can now use Lava in order to display different messages based on the prayer request (or its Category) and the block can also initiate a Workflow with the PrayerRequest as the Entity if configured.
@@ -219,7 +225,7 @@ MISC
 + Added new Binary File Types Field Attribute and Field Type.
 + Updated person picker results to display a person's connection status.
 + Added option to the Person Attribute/FieldType so that the 'Enable Self Detection' option of the person picker can be enabled.
-
++ Added ability to set qualifier column/value on the Categories block to further filter entities that categories belong to.
 
 Rock McKinley 4.6
 
