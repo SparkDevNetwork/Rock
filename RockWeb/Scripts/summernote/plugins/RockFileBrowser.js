@@ -19,21 +19,26 @@
 
             $modalPopupIFrame = Rock.controls.modal.getModalPopupIFrame();
 
-            $modalPopupIFrame.contents().on('click', '.js-select-file-button', function () {
-                Rock.controls.modal.close();
-                var fileResult = $('body iframe').contents().find('.js-filebrowser-result input[type=hidden]').val();
-                if (fileResult) {
+            $modalPopupIFrame.load(function () {
 
-                    // iframe returns the result in the format "href|text"
-                    var resultParts = fileResult.split('|');
+                $modalPopupIFrame.contents().off('click');
 
-                    context.invoke('editor.restoreRange');
-                    context.invoke('editor.createLink', {
-                        text: resultParts[1],
-                        url: Rock.settings.get('baseUrl') + resultParts[0],
-                        newWindow: false
-                    });
-                }
+                $modalPopupIFrame.contents().on('click', '.js-select-file-button', function () {
+                    Rock.controls.modal.close();
+                    var fileResult = $('body iframe').contents().find('.js-filebrowser-result input[type=hidden]').val();
+                    if (fileResult) {
+
+                        // iframe returns the result in the format "href|text"
+                        var resultParts = fileResult.split('|');
+
+                        context.invoke('editor.restoreRange');
+                        context.invoke('editor.createLink', {
+                            text: resultParts[1],
+                            url: Rock.settings.get('baseUrl') + resultParts[0],
+                            newWindow: false
+                        });
+                    }
+                });
             });
 
             $modalPopupIFrame.contents().on('click', '.js-cancel-file-button', function () {

@@ -15,18 +15,23 @@
 
             $modalPopupIFrame = Rock.controls.modal.getModalPopupIFrame();
 
-            $modalPopupIFrame.contents().on('click', '.js-select-mergefield-button', function () {
-                Rock.controls.modal.close();
+            $modalPopupIFrame.load(function () {
 
-                var mergeFields = $('body iframe').contents().find('.js-mergefieldpicker-result input[type=hidden]').val();
-                var url = Rock.settings.get('baseUrl') + 'api/MergeFields/' + encodeURIComponent(mergeFields);
-                $.get(url, function (data) {
-                    {
-                        var node = document.createElement('div');
-                        node.innerHTML = data;
-                        context.invoke('editor.restoreRange');
-                        context.invoke('editor.insertNode', node);
-                    }
+                $modalPopupIFrame.contents().off('click');
+
+                $modalPopupIFrame.contents().on('click', '.js-select-mergefield-button', function () {
+                    Rock.controls.modal.close();
+
+                    var mergeFields = $('body iframe').contents().find('.js-mergefieldpicker-result input[type=hidden]').val();
+                    var url = Rock.settings.get('baseUrl') + 'api/MergeFields/' + encodeURIComponent(mergeFields);
+                    $.get(url, function (data) {
+                        {
+                            var node = document.createElement('div');
+                            node.innerHTML = data;
+                            context.invoke('editor.restoreRange');
+                            context.invoke('editor.insertNode', node);
+                        }
+                    });
                 });
             });
 
