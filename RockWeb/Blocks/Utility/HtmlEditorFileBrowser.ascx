@@ -3,7 +3,9 @@
 <asp:Panel ID="pnlModalHeader" runat="server" Visible="false">
     <h3 class="modal-title">
         <asp:Literal ID="lTitle" runat="server"></asp:Literal>
+        <span class="js-cancel-file-button cursor-pointer pull-right" style="opacity: .5">&times;</span>
     </h3>
+    
 </asp:Panel>
 
 <div class="picker-wrapper clearfix">
@@ -11,7 +13,6 @@
         <%-- Folders - Separate UpdatePanel so that Tree doesn't get rebuilt on postbacks (unless the server explicity wants it to get rebuilt) --%>
         <asp:UpdatePanel ID="upnlFolders" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
             <ContentTemplate>
-
                 <div class="actions btn-group">
                     <asp:LinkButton ID="lbCreateFolder" runat="server" CssClass="btn btn-sm btn-default" OnClick="lbCreateFolder_Click" CausesValidation="false" ToolTip="New Folder"><i class="fa fa-plus"></i></asp:LinkButton>
                     <asp:LinkButton ID="lbRenameFolder" runat="server" CssClass="btn btn-sm  btn-default" OnClick="lbRenameFolder_Click" CausesValidation="false" ToolTip="Rename Folder"><i class="fa fa-pencil"></i></asp:LinkButton>
