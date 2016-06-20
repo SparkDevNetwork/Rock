@@ -629,7 +629,16 @@ namespace Rock.Web.UI.Controls
                     cityLabel = countryValue.GetAttributeValue( "CityLabel" );
                     stateLabel = countryValue.GetAttributeValue( "StateLabel" );
                     postalCodeLabel = countryValue.GetAttributeValue( "PostalCodeLabel" );
+                    
+                    // only show Address Line 2 if this Control's ShowAddressLine2 and the Country's ShowAddressLine2 are both true
+                    if ( showAddressLine2 )
+                    {
+                        showAddressLine2 = countryValue.GetAttributeValue( "ShowAddressLine2 " ).AsBoolean();
+                    }
                 }
+
+                // if this address has a value for Street2, show it regardless of the ShowAddressLine2
+                showAddressLine2 = showAddressLine2 || !string.IsNullOrWhiteSpace(_tbStreet2.Text);
 
                 writer.AddAttribute( "id", this.ClientID );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
