@@ -49,19 +49,14 @@ cache:
 
 # scripts that run after cloning repository
 install:
-- ps: >-
-    $fileContent = "-----BEGIN RSA PRIVATE KEY-----`n"
+  - ps: $fileContent = "-----BEGIN RSA PRIVATE KEY-----`n"
+  - ps: $fileContent += $env:priv_key.Replace(' ', "`n")
+  - ps: $fileContent += "`n-----END RSA PRIVATE KEY-----`n"
+  - ps: Set-Content c:\users\appveyor\.ssh\id_rsa $fileContent
+  - cmd: git clone -q --depth=1 git@github.com:NewSpring/rock-bookshelf.git c:\projects\Rock\.remote\rock-bookshelf
+  - cmd: git clone -q --depth=1 git@github.com:NewSpring/rock-power-bi.git c:\projects\Rock\.remote\rock-power-bi
+  - cmd: git clone -q --depth=1 git@github.com:NewSpring/rock-paid-plugins.git c:\projects\Rock\.remote\rock-paid-plugins
 
-    $fileContent += $env:priv_key.Replace(' ', "`n")
-
-    $fileContent += "`n-----END RSA PRIVATE KEY-----`n"
-
-    Set-Content c:\users\appveyor\.ssh\id_rsa $fileContent
-
-    git clone -q --depth=1 git@github.com:NewSpring/rock-bookshelf.git c:\projects\Rock\.remote\rock-bookshelf
-
-    git clone -q --depth=1 git@github.com:NewSpring/rock-power-bi.git c:\projects\Rock\.remote\rock-power-bi
- 
 
 #---------------------------------#
 #       build configuration       #
@@ -73,12 +68,11 @@ configuration: Release
 
 # scripts to run before build
 before_build:
-- cmd: >-
-    nuget restore
-    npm install --production
-    node ./node_modules/normajs/bin/norma.js build
-    git clone -q --depth=1 https://github.com/NewSpring/rock-spiritual-gifts.git ../rock-spiritual-gifts
-    
+  - cmd: nuget restore
+  - cmd: npm install --production
+  - cmd: node ./node_modules/normajs/bin/norma.js build  # use cached version of norma
+  - cmd: git clone -q --depth=1 https://github.com/NewSpring/rock-spiritual-gifts.git ../rock-spiritual-gifts
+  
 
 build:
   project: Rock.sln

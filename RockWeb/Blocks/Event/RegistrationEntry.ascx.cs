@@ -1597,7 +1597,8 @@ namespace RockWeb.Blocks.Event
 
                     // If email that logged in user used is different than their stored email address, update their stored value
                     if ( !string.IsNullOrWhiteSpace( registration.ConfirmationEmail ) &&
-                        !registration.ConfirmationEmail.Trim().Equals( CurrentPerson.Email.Trim(), StringComparison.OrdinalIgnoreCase ) )
+                        !registration.ConfirmationEmail.Trim().Equals( CurrentPerson.Email.Trim(), StringComparison.OrdinalIgnoreCase ) &&
+                        ( !cbUpdateEmail.Visible || cbUpdateEmail.Checked ) )
                     {
                         var person = personService.Get( CurrentPerson.Id );
                         if ( person != null )
@@ -1848,6 +1849,15 @@ namespace RockWeb.Blocks.Event
                                         History.EvaluateChange( personChanges, "Birth Month", birthMonth, person.BirthMonth );
                                         History.EvaluateChange( personChanges, "Birth Day", birthDay, person.BirthDay );
                                         History.EvaluateChange( personChanges, "Birth Year", birthYear, person.BirthYear );
+
+                                        break;
+                                    }
+
+                                case RegistrationPersonFieldType.Grade:
+                                    {
+                                        var newGraduationYear = fieldValue.ToString().AsIntegerOrNull();
+                                        History.EvaluateChange( personChanges, "Graduation Year", person.GraduationYear, newGraduationYear );
+                                        person.GraduationYear = newGraduationYear;
 
                                         break;
                                     }
@@ -3529,6 +3539,27 @@ namespace RockWeb.Blocks.Event
                         break;
                     }
 
+                case RegistrationPersonFieldType.Grade:
+                    {
+                        var gpGrade = new GradePicker();
+                        gpGrade.ID = "gpGrade";
+                        gpGrade.Label = "Grade";
+                        gpGrade.Required = field.IsRequired;
+                        gpGrade.ValidationGroup = BlockValidationGroup;
+                        gpGrade.UseAbbreviation = true;
+                        gpGrade.UseGradeOffsetAsValue = true;
+                        gpGrade.CssClass = "input-width-md";
+                        phRegistrantControls.Controls.Add( gpGrade );
+
+                        if ( setValue && fieldValue != null )
+                        {
+                            var value = fieldValue.ToString().AsIntegerOrNull();
+                            gpGrade.SetValue( Person.GradeOffsetFromGraduationYear( value ) );
+                        }
+
+                        break;
+                    }
+
                 case RegistrationPersonFieldType.Gender:
                     {
                         var ddlGender = new RockDropDownList();
@@ -3914,6 +3945,12 @@ namespace RockWeb.Blocks.Event
                         return bpBirthday != null ? bpBirthday.SelectedDate : null;
                     }
 
+                case RegistrationPersonFieldType.Grade:
+                    {
+                        var gpGrade = phRegistrantControls.FindControl( "gpGrade" ) as GradePicker;
+                        return gpGrade != null ? Person.GraduationYearFromGradeOffset( gpGrade.SelectedValueAsInt() ) : null;
+                    }
+
                 case RegistrationPersonFieldType.Gender:
                     {
                         var ddlGender = phRegistrantControls.FindControl( "ddlGender" ) as RockDropDownList;
@@ -4084,6 +4121,7 @@ namespace RockWeb.Blocks.Event
 
         private void CreateSummaryControls( bool setValues )
         {
+            lRegistrationTerm.Text = RegistrationTerm;
             lDiscountCodeLabel.Text = DiscountCodeTerm;
 
             if ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask )
@@ -4140,6 +4178,8 @@ namespace RockWeb.Blocks.Event
                         tbConfirmationEmail.Text = string.Empty;
                     }
                 }
+
+                cbUpdateEmail.Visible = CurrentPerson != null && !string.IsNullOrWhiteSpace( CurrentPerson.Email );
 
                 rblRegistrarFamilyOptions.SetValue( RegistrationState.FamilyGuid.ToString() );
 

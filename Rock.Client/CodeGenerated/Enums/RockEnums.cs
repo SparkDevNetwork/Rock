@@ -224,16 +224,6 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
-    public enum GiversViewBy
-    {
-        Giver = 0x0,
-        Adults = 0x1,
-        Children = 0x2,
-        Family = 0x3,
-    }
-
-    /// <summary>
-    /// </summary>
     public enum GroupCapacityRule
     {
         None = 0x0,
@@ -403,6 +393,7 @@ namespace Rock.Client.Enums
         MobilePhone = 0x8,
         HomePhone = 0x9,
         WorkPhone = 0xa,
+        Grade = 0xb,
     }
 
     /// <summary>

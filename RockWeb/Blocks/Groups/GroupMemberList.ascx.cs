@@ -185,6 +185,9 @@ namespace RockWeb.Blocks.Groups
                     gGroupMembers.IsDeleteEnabled = false;
                     gGroupMembers.Actions.ShowAdd = false;
                     hlSyncStatus.Visible = true;
+                    // link to the DataView
+                    int pageId = Rock.Web.Cache.PageCache.Read( Rock.SystemGuid.Page.DATA_VIEWS.AsGuid() ).Id;
+                    hlSyncSource.NavigateUrl = System.Web.VirtualPathUtility.ToAbsolute( String.Format( "~/page/{0}?DataViewId={1}", pageId, _group.SyncDataViewId.Value ) );
                 }
             }
 

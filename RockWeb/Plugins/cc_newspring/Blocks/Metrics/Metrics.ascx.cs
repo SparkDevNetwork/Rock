@@ -189,7 +189,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
 
                 // set date range according to the context
                 DateRange dateRange = null;
-                if ( !string.IsNullOrEmpty( DateRangeContext ))
+                if ( !string.IsNullOrEmpty( DateRangeContext ) )
                 {
                     dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( DateRangeContext );
                 }
@@ -299,7 +299,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             // filter by campus context
             if ( CampusContext != null )
             {
-                metricValueQueryable = metricValueQueryable.Where( a => a.EntityId == CampusContext.Id );
+                //metricValueQueryable = metricValueQueryable.Where( a => a.EntityId == CampusContext.Id );
             }
 
             // filter by schedule context

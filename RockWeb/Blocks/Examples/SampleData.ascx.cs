@@ -607,7 +607,7 @@ namespace RockWeb.Blocks.Examples
         {
             var x = string.Format( format, args );
             _sb.Append( x );
-            _hubContext.Clients.All.receiveNotification( x );
+            _hubContext.Clients.All.receiveNotification( "sampleDataImport", x );
         }
 
         /// <summary>

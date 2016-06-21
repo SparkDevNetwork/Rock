@@ -786,6 +786,17 @@ namespace RockWeb.Blocks.Event
                                     break;
                                 }
 
+                            case RegistrationPersonFieldType.Grade:
+                                {
+                                    var gpGradeFilter = phRegistrantFormFieldFilters.FindControl( "gpGradeFilter" ) as GradePicker;
+                                    if ( gpGradeFilter != null )
+                                    {
+                                        int? gradeOffset = gpGradeFilter.SelectedValueAsInt( false );
+                                        fRegistrants.SaveUserPreference( "Grade", gradeOffset.HasValue ? gradeOffset.Value.ToString() : "" );
+                                    }
+
+                                    break;
+                                }
                             case RegistrationPersonFieldType.Gender:
                                 {
                                     var ddlGenderFilter = phRegistrantFormFieldFilters.FindControl( "ddlGenderFilter" ) as RockDropDownList;
@@ -874,6 +885,11 @@ namespace RockWeb.Blocks.Event
                 case "Birthdate Range":
                     {
                         e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
+                        break;
+                    }
+                case "Grade":
+                    {
+                        e.Value = Person.GradeFormattedFromGradeOffset( e.Value.AsIntegerOrNull() );
                         break;
                     }
                 case "First Name":
@@ -2175,6 +2191,22 @@ namespace RockWeb.Blocks.Event
                                         break;
                                     }
 
+                                case RegistrationPersonFieldType.Grade:
+                                    {
+                                        var gpGradeFilter = phRegistrantFormFieldFilters.FindControl( "gpGradeFilter" ) as GradePicker;
+                                        if ( gpGradeFilter != null )
+                                        {
+                                            int? graduationYear = Person.GraduationYearFromGradeOffset( gpGradeFilter.SelectedValueAsInt( false ) );
+                                            if ( graduationYear.HasValue )
+                                            {
+                                                qry = qry.Where( r =>
+                                                    r.PersonAlias.Person.GraduationYear.HasValue &&
+                                                    r.PersonAlias.Person.GraduationYear == graduationYear.Value );
+                                            }
+                                        }
+                                        break;
+                                    }
+
                                 case RegistrationPersonFieldType.Gender:
                                     {
                                         var ddlGenderFilter = phRegistrantFormFieldFilters.FindControl( "ddlGenderFilter" ) as RockDropDownList;
@@ -2683,6 +2715,33 @@ namespace RockWeb.Blocks.Event
                                     birthdateField2.HeaderText = "Birthdate";
                                     birthdateField2.SortExpression = dataFieldExpression;
                                     gGroupPlacements.Columns.Add( birthdateField2 );
+
+                                    break;
+                                }
+
+                            case RegistrationPersonFieldType.Grade:
+                                {
+                                    var gpGradeFilter = new GradePicker();
+                                    gpGradeFilter.ID = "gpGradeFilter";
+                                    gpGradeFilter.Label = "Grade";
+                                    gpGradeFilter.UseAbbreviation = true;
+                                    gpGradeFilter.UseGradeOffsetAsValue = true;
+                                    gpGradeFilter.CssClass = "input-width-md";
+                                    gpGradeFilter.SetValue( fRegistrants.GetUserPreference( "Grade" ).AsIntegerOrNull() );
+                                    phRegistrantFormFieldFilters.Controls.Add( gpGradeFilter );
+
+                                    string dataFieldExpression = "PersonAlias.Person.GraduationYear";
+                                    var gradeField = new RockBoundField();
+                                    gradeField.DataField = dataFieldExpression;
+                                    gradeField.HeaderText = "Graduation Year";
+                                    gradeField.SortExpression = dataFieldExpression;
+                                    gRegistrants.Columns.Add( gradeField );
+
+                                    var gradeField2 = new RockBoundField();
+                                    gradeField2.DataField = dataFieldExpression;
+                                    gradeField2.HeaderText = "Graduation Year";
+                                    gradeField2.SortExpression = dataFieldExpression;
+                                    gGroupPlacements.Columns.Add( gradeField2 );
 
                                     break;
                                 }

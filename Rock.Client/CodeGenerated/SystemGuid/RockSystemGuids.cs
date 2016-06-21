@@ -242,6 +242,7 @@ namespace Rock.Client.SystemGuid
         public const string MERGE_TEMPLATE = "CD1DB988-6891-4B0F-8D1B-B0A311A3BC3E";
         public const string METRICCATEGORY = "3D35C859-DF37-433F-A20A-0FFD0FCB9862";
         public const string NOTE = "53DC1E78-14A5-44DE-903F-6A2CB02164E7";
+        public const string PAGE = "E104DCDF-247C-4CED-A119-8CC51632761F";
         public const string PERSON = "72657ED8-D16E-492E-AC12-144C5E7567E7";
         public const string PERSON_ALIAS = "90F5E87B-F0D5-4617-8AE9-EB57E673F36F";
         public const string PROTECT_MY_MINISTRY_PROVIDER = "C16856F4-3C6B-4AFB-A0B8-88A303508206";
@@ -313,6 +314,7 @@ namespace Rock.Client.SystemGuid
         public const string PERSON = "E4EAB7B2-0B76-429B-AFE4-AD86D7428C70";
         public const string PERSON_BADGES = "3F1AE891-7DC8-46D2-865D-11543B34FB60";
         public const string REMOTE_AUTHS = "ECA90666-E7A0-4406-8559-0153DCB908FD";
+        public const string SCHEDULE = "E9C12C59-98EA-4977-8318-647435BE9A9C";
         public const string SCHEDULES = "EC6A5CAF-F6A2-47A4-9CBA-6E1C53D7E59B";
         public const string SECURITY_ROLE = "7BD25DC9-F34A-478D-BEF9-0C787F5D39B8";
         public const string SINGLE_SELECT = "7525C4CB-EE6B-41D4-9B64-A08048D5A5C0";
