@@ -93,7 +93,7 @@
                             </asp:TemplateField>
                             <asp:TemplateField HeaderText="Status" SortExpression="ConnectionStatus.Name">
                                 <ItemTemplate>
-                                    <span class='label label-<%# Eval("StatusLabel") %>'><%# Eval("Status") %></span>
+                                    <%# this.GetConnectionStatusHtml( Eval("ConnectionRequest") as Rock.Model.ConnectionRequest) %>
                                 </ItemTemplate>
                             </asp:TemplateField>
                             <Rock:DeleteField OnClick="gRequests_Delete" />

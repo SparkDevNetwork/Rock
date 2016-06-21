@@ -66,6 +66,9 @@ namespace RockWeb.Plugins.church_ccv.Connection
 </div>
 ", order: 5
 )]
+    [CodeEditorField( "ConnectionRequestStatusTemplate", "Lava Template that can be used to customize what is displayed in the Status column of the Connection Requests grid. Includes the ConnectionRequest as a merge field.", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue:
+@"<span class='label label-{% if ConnectionRequest.ConnectionStatus.IsCritical == true %}warning{% else %}info{% endif %}'>{{ ConnectionRequest.ConnectionStatus.Name }}</span>"
+, order: 6 )]
     public partial class CCV_MyConnectionOpportunities : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -257,6 +260,20 @@ namespace RockWeb.Plugins.church_ccv.Connection
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Gets the connection status HTML.
+        /// </summary>
+        /// <param name="connectionRequest">The connection request.</param>
+        /// <returns></returns>
+        public string GetConnectionStatusHtml( ConnectionRequest connectionRequest )
+        {
+            var mergeFields = new Dictionary<string, object>();
+            mergeFields.Add( "ConnectionRequest", connectionRequest );
+
+            var mergeTemplate = this.GetAttributeValue( "ConnectionRequestStatusTemplate" ); 
+            return mergeTemplate.ResolveMergeFields( mergeFields );
         }
 
         /// <summary>
@@ -854,7 +871,8 @@ namespace RockWeb.Plugins.church_ccv.Connection
                         Status = r.ConnectionStatus.Name,
                         StatusLabel = r.ConnectionStatus.IsCritical ? "warning" : "info",
                         ConnectionState = r.ConnectionState,
-                        StateLabel = FormatStateLabel( r.ConnectionState, r.FollowupDate )
+                        StateLabel = FormatStateLabel( r.ConnectionState, r.FollowupDate ),
+                        ConnectionRequest = r
                     } )
                    .ToList();
                     gRequests.DataBind();
