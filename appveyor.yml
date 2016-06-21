@@ -75,14 +75,15 @@ configuration: Release
 # scripts to run before build
 before_build:
 - cmd: >-
-    nuget restore
-
     npm install --production
 
     node ./node_modules/normajs/bin/norma.js build
 
     git clone -q --depth=1 https://github.com/NewSpring/rock-spiritual-gifts.git ../rock-spiritual-gifts
+	
     nuget restore
+	
+	
 
 
 build:
