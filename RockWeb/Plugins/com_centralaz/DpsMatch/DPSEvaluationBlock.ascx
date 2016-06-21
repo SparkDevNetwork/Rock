@@ -14,6 +14,7 @@
                 </div>
 
                 <div class="actions pull-right">
+                    <asp:LinkButton ID="lbReset" runat="server" Text="Reset Matches" CssClass="btn btn-xs" OnClick="lbReset_Click" />
                     <asp:LinkButton ID="lbNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="lbNext_Click" />
                 </div>
 

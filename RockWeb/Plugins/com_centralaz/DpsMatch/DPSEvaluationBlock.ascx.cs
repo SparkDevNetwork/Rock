@@ -78,17 +78,7 @@ namespace RockWeb.Plugins.com_centralaz.DpsMatch
                     PopulateMatchList();
                 }
 
-                if ( _matchList.Count > 0 )
-                {
-                    BuildColumns();
-                    BindGrid();
-                }
-                else
-                {
-                    nbComplete.Text = GetAttributeValue( "CompletionText" );
-                    nbComplete.Visible = true;
-                    lbNext.Visible = false;
-                }
+                ShowDetail();
             }
         }
 
@@ -178,9 +168,39 @@ namespace RockWeb.Plugins.com_centralaz.DpsMatch
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbReset control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs" /> instance containing the event data.</param>
+        protected void lbReset_Click( object sender, EventArgs e )
+        {
+            _dictionaryIndex = 0;
+            PopulateMatchList();
+            ShowDetail();
+        }
+
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Shows the detail.
+        /// </summary>
+        private void ShowDetail()
+        {
+            if ( _matchList.Count > 0 )
+            {
+                BuildColumns();
+                BindGrid();
+            }
+            else
+            {
+                nbComplete.Text = GetAttributeValue( "CompletionText" );
+                nbComplete.Visible = true;
+                lbNext.Visible = false;
+            }
+        }
 
         /// <summary>
         /// Builds the values columns.
