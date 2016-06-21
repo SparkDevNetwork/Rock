@@ -45,7 +45,7 @@ namespace chuch.ccv.Podcast.Rest
         [HttpGet]
         [HttpHead]
         [System.Web.Http.Route( "api/Podcast/Category/{categoryId}/{platform}/{version}" )]
-        public HttpResponseMessage Category( int categoryId, string platform, int version, int numSeries = int.MaxValue, bool expandSeries = true )
+        public HttpResponseMessage Category( int categoryId, string platform, int version, int numSeries = int.MaxValue, bool expandSeries = true, bool includeEmptySeries = false )
         {
             // first, what platform are we handling?
             StringContent restContent = null;
@@ -64,12 +64,12 @@ namespace chuch.ccv.Podcast.Rest
                     // if no category was specified, give them the root
                     if( categoryId == 0 )
                     {
-                        response = Retrieve_RootWithCategories( version, numSeries, expandSeries );
+                        response = Retrieve_RootWithCategories( version, numSeries, expandSeries, includeEmptySeries );
                     }
                     else
                     {
                         // otherwise, give them their category with a flat list of series
-                        response = Retrieve_FlatCategory( version, categoryId, numSeries, expandSeries );
+                        response = Retrieve_FlatCategory( version, categoryId, numSeries, expandSeries, includeEmptySeries);
                     }
                     restContent = new StringContent( response, Encoding.UTF8, "application/json" );
                     break;
@@ -82,12 +82,12 @@ namespace chuch.ccv.Podcast.Rest
                     // if no category was specified, give them the root
                     if( categoryId == 0 )
                     {
-                        response = Retrieve_RootWithCategories( version, numSeries, expandSeries );
+                        response = Retrieve_RootWithCategories( version, numSeries, expandSeries, includeEmptySeries );
                     }
                     else
                     {
                         // otherwise, give them their category with a flat list of series
-                        response = Retrieve_FlatCategory( version, categoryId, numSeries, expandSeries );
+                        response = Retrieve_FlatCategory( version, categoryId, numSeries, expandSeries, includeEmptySeries );
                     }
 
                     restContent = new StringContent( response, Encoding.UTF8, "application/json" );
@@ -115,11 +115,11 @@ namespace chuch.ccv.Podcast.Rest
 
         [HttpGet]
         [HttpHead]
-        [System.Web.Http.Route( "api/Podcast/Series/Count" )]
+        [System.Web.Http.Route( "api/Podcast/Category/LatestModifiedDateTime" )]
         public HttpResponseMessage Series( )
         {
             // serialize it into json
-            StringContent restContent = new StringContent( PodcastUtil.NumSeriesAndMessages( ).ToString( ), Encoding.UTF8, "application/json" );
+            StringContent restContent = new StringContent( PodcastUtil.LatestModifiedDateTime( ).ToString( ), Encoding.UTF8, "application/json" );
 
             // return it.
             return new HttpResponseMessage()
@@ -268,7 +268,7 @@ namespace chuch.ccv.Podcast.Rest
             return categoryItemList.AsQueryable();
         }
 
-        string Retrieve_FlatCategory( int version, int categoryId, int numSeries, bool expandSeries )
+        string Retrieve_FlatCategory( int version, int categoryId, int numSeries, bool expandSeries, bool includeEmptySeries )
         {
             // we will provide the "Root" that they ask for (defiend by categoryId),
             // and then all children as a FLAT LIST OF SERIES.
@@ -279,12 +279,12 @@ namespace chuch.ccv.Podcast.Rest
             // Get the root category, with all its child series, and pass false so we take all child category series without
             // the categories.
             // Pass numSeries so we limit the amount requested.
-            PodcastUtil.PodcastCategory rootCategory = PodcastUtil.GetPodcastsByCategory( categoryId, false, numSeries, expandSeries );
+            PodcastUtil.PodcastCategory rootCategory = PodcastUtil.GetPodcastsByCategory( categoryId, false, numSeries, expandSeries, includeEmptySeries );
             
             return JsonConvert.SerializeObject( rootCategory );
         }
         
-        string Retrieve_RootWithCategories( int version, int numSeries, bool expandSeries )
+        string Retrieve_RootWithCategories( int version, int numSeries, bool expandSeries, bool includeEmptySeries )
         {
             // we will provide the "Root" that they ask for (defiend by categoryId),
             // and then the child series and immediate child categories. The child categories will contain all their
@@ -297,7 +297,7 @@ namespace chuch.ccv.Podcast.Rest
             //--------Walk Thru John (S) [Note, this might actually be in a child category of Neighborhood Videos, but we flatten those.
             
             // First, get the root category, fully, and with its child categories.
-            PodcastUtil.PodcastCategory fullRootCategory = PodcastUtil.GetPodcastsByCategory( 0, true, numSeries, expandSeries );
+            PodcastUtil.PodcastCategory fullRootCategory = PodcastUtil.GetPodcastsByCategory( 0, true, numSeries, expandSeries, includeEmptySeries );
 
             // now, we want to create a new root with only any immediate series as its children
             PodcastUtil.PodcastCategory rootCategory = new PodcastUtil.PodcastCategory( fullRootCategory.Name, fullRootCategory.Id );
@@ -325,7 +325,7 @@ namespace chuch.ccv.Podcast.Rest
                     if ( numSeries > 0 )
                     {
                         // get as many series as numSeries is set to
-                        PodcastUtil.PodcastCategory podcasts = PodcastUtil.GetPodcastsByCategory( childCategory.Id, false, numSeries, expandSeries );
+                        PodcastUtil.PodcastCategory podcasts = PodcastUtil.GetPodcastsByCategory( childCategory.Id, false, numSeries, expandSeries, includeEmptySeries );
 
                         rootCategory.Children.Add( podcasts );
 

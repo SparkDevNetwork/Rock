@@ -31,27 +31,12 @@ namespace church.ccv.Podcast
         const int RootPodcast_CategoryId = 451;
 
         // This is Rock's Weekend Videos podcast category, and will also never change.
+        // This is defined for external systems (like the block that displays our Weekend Series)
         public const int WeekendVideos_CategoryId = 452;
 
         const int ContentChannelTypeId_PodcastSeries = 8;
-
-        public static int NumSeriesAndMessages( )
-        {
-            // // get all Podcast Series content channels
-            RockContext rockContext = new RockContext( );
-            ContentChannelService contentChannelService = new ContentChannelService( rockContext );
-            var podcastSeries = contentChannelService.Queryable( ).Where( cc => cc.ContentChannelTypeId == ContentChannelTypeId_PodcastSeries );
-
-            // query and join the items associated
-            ContentChannelItemService contentChannelItemService = new ContentChannelItemService( rockContext );
-            int numItems = contentChannelItemService.Queryable( ).Join( podcastSeries, 
-                                                                        cci => cci.ContentChannelId, cc => cc.Id, ( cci, cc ) => new { CCI = cci, CC = cc } ).Count( );
-            
-            // the combined total is NumSeriesAndMessages
-            return podcastSeries.Count( ) + numItems;
-        }
-
-        public static PodcastCategory GetPodcastsByCategory( int categoryId, bool keepCategoryHierarchy = true, int maxSeries = int.MaxValue, bool expandSeries = true )
+        
+        public static PodcastCategory GetPodcastsByCategory( int categoryId, bool keepCategoryHierarchy = true, int maxSeries = int.MaxValue, bool expandSeries = true, bool includeEmptySeries = false )
         {
             // if they pass in 0, accept that as the Root
             if ( categoryId == 0 )
@@ -70,22 +55,22 @@ namespace church.ccv.Podcast
             // now get ALL content channels with their parent category(s) attributes as a joined object
             ContentChannelService contentChannelService = new ContentChannelService( rockContext );
             var categoryContentChannelItems = contentChannelService.Queryable( ).Join( categoryAttribValList, 
-                                                                                       cc => cc.Id, cav => cav.EntityId, ( cc, cav ) => new ContentChannelWithAttribs { ContentChannel = cc, CategoryAttribValue = cav } );
+                                                                                       cc => cc.Id, cav => cav.EntityId, ( cc, cav ) => new ContentChannelWithAttrib { ContentChannel = cc, AttribValue = cav } );
             
             // create our root podcast object
             PodcastCategory rootPodcast = new PodcastCategory( category.Name, category.Id );
                         
             // see if this category has any podcasts to add.
-            Internal_GetPodcastsByCategory( category, rootPodcast, categoryContentChannelItems, maxSeries, keepCategoryHierarchy, expandSeries );
+            Internal_GetPodcastsByCategory( category, rootPodcast, categoryContentChannelItems, maxSeries, keepCategoryHierarchy, expandSeries, includeEmptySeries );
     
             return rootPodcast;
         }
 
-        static int Internal_GetPodcastsByCategory( Category category, PodcastCategory rootPodcast, IQueryable<ContentChannelWithAttribs> categoryContentChannelItems, int numSeriesToAdd, bool keepCategoryHierarchy = true, bool expandSeries = true )
+        static int Internal_GetPodcastsByCategory( Category category, PodcastCategory rootPodcast, IQueryable<ContentChannelWithAttrib> categoryContentChannelItems, int numSeriesToAdd, bool keepCategoryHierarchy, bool expandSeries, bool includeEmptySeries )
         {
             // Get all Content Channels that are immediate children of the provided category. Sort them by date, and then take 'numPodcastsToAdd', since 
             // this is recursive and we might not need anymore.
-            var podcastsForCategory = categoryContentChannelItems.Where( cci => cci.CategoryAttribValue.Value.Contains( category.Guid.ToString( ) ) )
+            var podcastsForCategory = categoryContentChannelItems.Where( cci => cci.AttribValue.Value.Contains( category.Guid.ToString( ) ) )
                                                                  .Select( cci => cci.ContentChannel )
                                                                  .OrderByDescending( cc => cc.CreatedDateTime )
                                                                  .Take( numSeriesToAdd );
@@ -94,9 +79,12 @@ namespace church.ccv.Podcast
             // (We're safe to do this because we KNOW we've only added PodcastSeries at this point)
             foreach( ContentChannel contentChannel in podcastsForCategory )
             {
-                PodcastSeries podcastSeries = ContentChannelToPodcastSeries( contentChannel, expandSeries );
-
-                rootPodcast.Children.Add( podcastSeries );
+                // if there are messages, or they want empty series, include it
+                if( contentChannel.Items.Count( ) > 0 || includeEmptySeries == true )
+                {
+                    PodcastSeries podcastSeries = ContentChannelToPodcastSeries( contentChannel, expandSeries );
+                    rootPodcast.Children.Add( podcastSeries );
+                }
             }
 
             // store the number of podcasts added
@@ -131,11 +119,63 @@ namespace church.ccv.Podcast
                 if( seriesAdded < numSeriesToAdd )
                 {
                     // recursively call this so it can add its children
-                    seriesAdded += Internal_GetPodcastsByCategory( childCategory, podcastCategory, categoryContentChannelItems, numSeriesToAdd - seriesAdded, keepCategoryHierarchy );
+                    seriesAdded += Internal_GetPodcastsByCategory( childCategory, podcastCategory, categoryContentChannelItems, numSeriesToAdd - seriesAdded, keepCategoryHierarchy, expandSeries, includeEmptySeries );
                 }
             }
 
             return seriesAdded;
+        }
+
+        public static DateTime? LatestModifiedDateTime( )
+        {
+            //JHM 6-21-2016: cc.ModifiedDateTime< DateTime.Now is a hack to fix an issue when porting from Arena. We used the Series StartDateTime as the Created/Modified DateTime, which
+            // causes a ModifiedDateTime in the future. This can go away after 7-3-2016.
+
+            // this will gather the series, messages, and all attribute values, and see what the date/time of the most recent change was
+            RockContext rockContext = new RockContext( );
+
+            DateTime? latestDate = null;
+
+            // get all podcast series sorted by ModifiedDateTime
+            ContentChannelService contentChannelService = new ContentChannelService( rockContext );
+            var podcastSeries = contentChannelService.Queryable( ).Where( cc => cc.ContentChannelTypeId == ContentChannelTypeId_PodcastSeries && cc.ModifiedDateTime< DateTime.Now ).OrderByDescending( cc => cc.ModifiedDateTime );
+            if( podcastSeries.Count( ) > 0 )
+            {
+                var seriesIds = podcastSeries.Select( ps => ps.Id );
+
+                // take the latest modified date/time and assume that's the latest change
+                latestDate = podcastSeries.FirstOrDefault( ).ModifiedDateTime;
+
+                // get all messages for all the podcast series, sorted by ModifiedDateTime
+                ContentChannelItemService contentChannelItemService = new ContentChannelItemService( rockContext );
+                var podcastMessages = contentChannelItemService.Queryable( ).Where( cci => seriesIds.Contains( cci.ContentChannelId ) && cci.ModifiedDateTime< DateTime.Now ).OrderByDescending( cci => cci.ModifiedDateTime );
+                if ( podcastMessages.Count() > 0 )
+                {
+                    var messageIds = podcastMessages.Select( pm => pm.Id );
+
+                    // if there's a more recent change in the messages, take that date/time
+                    if ( latestDate < podcastMessages.FirstOrDefault().ModifiedDateTime )
+                    {
+                        latestDate = podcastMessages.FirstOrDefault().ModifiedDateTime;
+                    }
+
+                    // NOW, get all attrib values for messages AND series, sorted by date
+                    var attribValList = new AttributeValueService( rockContext ).Queryable().Where( av => av.Attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" && av.ModifiedDateTime < DateTime.Now &&
+                                                                                                   ( seriesIds.Contains( av.EntityId.Value ) || messageIds.Contains( av.EntityId.Value ) ) ).OrderByDescending( av => av.ModifiedDateTime );
+
+                    if ( attribValList.Count() > 0 )
+                    {
+                        // and see if there's anything newer
+                        if ( latestDate < attribValList.FirstOrDefault().ModifiedDateTime )
+                        {
+                            latestDate = attribValList.FirstOrDefault().ModifiedDateTime;
+                        }
+                    }
+                }
+            }
+
+            // now return the latestDate, which is the most recent change to ANYTHING related to the podcast system
+            return latestDate;
         }
 
         static PodcastSeries ContentChannelToPodcastSeries( ContentChannel contentChannel, bool expandSeries )
@@ -255,11 +295,11 @@ namespace church.ccv.Podcast
             return null;
         }
         
-        // Helper class for storing a Content Channel with its Category Attribute Value
-        public class ContentChannelWithAttribs
+        // Helper class for storing a Content Channel with an associated Attribute Value
+        public class ContentChannelWithAttrib
         {
             public ContentChannel ContentChannel { get; set; }
-            public AttributeValue CategoryAttribValue { get; set; }
+            public AttributeValue AttribValue { get; set; }
         }
 
         // Interface so that PodcastCategories can have either Series or Categories as children.
