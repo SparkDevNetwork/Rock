@@ -15,7 +15,7 @@
                     ['style_group2', ['undo', 'redo']],
                     ['style_group3', ['clear']],
                     ['style_group4', ['style']],
-                    ['justify', ['paragraph']],
+                    ['para', ['paragraph']],
                     ['plugins1', ['rockmergefield']],
                     ['plugins2', ['rockimagebrowser', 'rockfilebrowser']],
                     ['help_group1', ['help']]
@@ -31,7 +31,7 @@
                     ['style_group3', ['clear']],
                     ['style_group4', ['style']],
                     ['full_toolbar_only', ['fontname', 'fontsize', 'color', 'superscript', 'subscript', 'table', 'hr']],
-                    ['justify', ['paragraph']],
+                    ['para', ['paragraph']],
                     ['plugins1', ['rockmergefield']],
                     ['plugins2', ['rockimagebrowser', 'rockfilebrowser']],
                     ['help_group1', ['help']]
