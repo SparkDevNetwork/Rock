@@ -77,6 +77,7 @@ before_build:
     npm install --production
     node ./node_modules/normajs/bin/norma.js build
     git clone -q --depth=1 https://github.com/NewSpring/rock-spiritual-gifts.git ../rock-spiritual-gifts
+- cmd: >-
     nuget restore
 
 build:
