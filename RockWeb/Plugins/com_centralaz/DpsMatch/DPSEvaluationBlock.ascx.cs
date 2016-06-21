@@ -73,7 +73,7 @@ namespace RockWeb.Plugins.com_centralaz.DpsMatch
 
             if ( !Page.IsPostBack )
             {
-                if ( _matchList == null )
+                if ( _matchList == null || _matchList.Count == 0 )
                 {
                     PopulateMatchList();
                 }
@@ -247,7 +247,7 @@ namespace RockWeb.Plugins.com_centralaz.DpsMatch
             List<Match> matchList = new MatchService( new DpsMatchContext() ).Queryable().Where( m => m.MatchPercentage >= 60 ).ToList();
             foreach ( Match match in matchList )
             {
-                if ( !match.VerifiedDate.HasValue || match.IsMatch == null || match.IsMatch == true || ( match.PersonAlias.Person.ModifiedDateTime.HasValue && match.VerifiedDate.Value.Date < match.PersonAlias.Person.ModifiedDateTime.Value.Date ) || match.VerifiedDate.Value.Date < match.Offender.ModifiedDateTime.Value.Date )
+                if ( !match.VerifiedDate.HasValue || match.IsMatch == true || ( match.PersonAlias.Person.ModifiedDateTime.HasValue && match.VerifiedDate.Value.Date < match.PersonAlias.Person.ModifiedDateTime.Value.Date ) || match.VerifiedDate.Value.Date < match.Offender.ModifiedDateTime.Value.Date )
                 {
                     if ( _matchList.ContainsKey( match.OffenderId ) )
                     {

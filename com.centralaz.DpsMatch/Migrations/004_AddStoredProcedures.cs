@@ -138,6 +138,20 @@ namespace com.centralaz.DpsMatch.Migrations
                   ,[Unverified] = @Unverified
                   ,[ModifiedDateTime] = @UpdateDateTime
              WHERE KeyString=@KeyString
+				And ( [MiddleInitial] != @MiddleInitial
+				Or [Age] != @Age
+				Or [Height] != @Height
+				Or [Weight] != @Weight
+				Or [ResidentialAddress] != @ResidentialAddress
+				Or [ResidentialCity] != @ResidentialCity
+				Or [ResidentialState] != @ResidentialState
+				Or [ResidentialZip] != @ResidentialZip
+				Or [VerificationDate] != @VerificationDate
+				Or [Offense] != @Offense
+				Or [OffenseLevel] != @OffenseLevel
+				Or [Absconder] != @Absconder
+				Or [ConvictingJurisdiction] != @ConvictingJurisdiction
+				Or [Unverified] != @Unverified )
 	            END
 " );
 
