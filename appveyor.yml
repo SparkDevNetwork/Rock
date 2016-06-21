@@ -61,8 +61,7 @@ install:
     git clone -q --depth=1 git@github.com:NewSpring/rock-bookshelf.git c:\projects\Rock\.remote\rock-bookshelf
 
     git clone -q --depth=1 git@github.com:NewSpring/rock-power-bi.git c:\projects\Rock\.remote\rock-power-bi
-  
-
+ 
 
 #---------------------------------#
 #       build configuration       #
@@ -76,15 +75,9 @@ configuration: Release
 before_build:
 - cmd: >-
     npm install --production
-
     node ./node_modules/normajs/bin/norma.js build
-
     git clone -q --depth=1 https://github.com/NewSpring/rock-spiritual-gifts.git ../rock-spiritual-gifts
-	
     nuget restore
-	
-	
-
 
 build:
   project: Rock.sln
@@ -96,14 +89,11 @@ matrix:
   fast_finish: true    # set this flag to immediately finish build once one of the jobs fails
 
 
-
 #---------------------------------#
 #       tests configuration       #
 #---------------------------------#
 # to disable automatic tests
 test: off
-
-
 
 
 #---------------------------------#
@@ -137,3 +127,4 @@ notifications:
     auth_token:
       secure: 1OsoJ8x/9EYQWTaJQVCj53YgZJRiz/GSLl5VhE7ZA0wb/J5wISUoxzxhIUMSttheY0G/iQCBt1Tb/9lLaIulWw==
     channel: deployments
+	
