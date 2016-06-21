@@ -49,13 +49,18 @@ cache:
 
 # scripts that run after cloning repository
 install:
-  - ps: >-
+- ps: >-
     $fileContent = "-----BEGIN RSA PRIVATE KEY-----`n"
+
     $fileContent += $env:priv_key.Replace(' ', "`n")
+
     $fileContent += "`n-----END RSA PRIVATE KEY-----`n"
+
     Set-Content c:\users\appveyor\.ssh\id_rsa $fileContent
+
     git clone -q --depth=1 git@github.com:NewSpring/rock-bookshelf.git c:\projects\Rock\.remote\rock-bookshelf
-    git clone -q --depth=1 git@github.com:NewSpring/rock-power-bi.git c:\projects\Rock\.remote\rock-power-bi 
+
+    git clone -q --depth=1 git@github.com:NewSpring/rock-power-bi.git c:\projects\Rock\.remote\rock-power-bi
   
 
 
@@ -69,9 +74,13 @@ configuration: Release
 
 # scripts to run before build
 before_build:
-  - cmd: >-
+- cmd: >-
+    nuget restore
+
     npm install --production
+
     node ./node_modules/normajs/bin/norma.js build
+
     git clone -q --depth=1 https://github.com/NewSpring/rock-spiritual-gifts.git ../rock-spiritual-gifts
     nuget restore
 
