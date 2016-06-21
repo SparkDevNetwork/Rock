@@ -74,12 +74,13 @@ configuration: Release
 # scripts to run before build
 before_build:
 - cmd: >-
-    nuget restore
     npm install --production
+	
     node ./node_modules/normajs/bin/norma.js build
+	
     git clone -q --depth=1 https://github.com/NewSpring/rock-spiritual-gifts.git ../rock-spiritual-gifts
-    
-
+	
+    nuget restore
 build:
   project: Rock.sln
   publish_wap: true               # package Web Application Projects (WAP) for Web Deploy
@@ -102,7 +103,7 @@ test: off
 #---------------------------------#
 
 artifacts:
-  - path: RockWeb
+- path: RockWeb
     name: NewSpringRockKit
     type: Web Deploy Package
 
@@ -112,11 +113,10 @@ artifacts:
 #---------------------------------#
 
 deploy:
-
-  - provider: Environment
-    name: Alpha (alpha-rock.newspring.cc)
-    on:
-      branch: alpha
+- provider: Environment
+  name: Alpha (alpha-rock.newspring.cc)
+  on:
+    branch: alpha
 
 
 #---------------------------------#
@@ -124,7 +124,7 @@ deploy:
 #---------------------------------#
 
 notifications:
-  - provider: Slack
-    auth_token:
-      secure: 1OsoJ8x/9EYQWTaJQVCj53YgZJRiz/GSLl5VhE7ZA0wb/J5wISUoxzxhIUMSttheY0G/iQCBt1Tb/9lLaIulWw==
-    channel: deployments
+- provider: Slack
+  auth_token:
+    secure: 1OsoJ8x/9EYQWTaJQVCj53YgZJRiz/GSLl5VhE7ZA0wb/J5wISUoxzxhIUMSttheY0G/iQCBt1Tb/9lLaIulWw==
+  channel: deployments
