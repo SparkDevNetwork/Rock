@@ -127,4 +127,3 @@ notifications:
     auth_token:
       secure: 1OsoJ8x/9EYQWTaJQVCj53YgZJRiz/GSLl5VhE7ZA0wb/J5wISUoxzxhIUMSttheY0G/iQCBt1Tb/9lLaIulWw==
     channel: deployments
-	
