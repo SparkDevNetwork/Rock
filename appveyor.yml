@@ -49,7 +49,7 @@ cache:
 
 # scripts that run after cloning repository
 install:
-  - ps: >-
+- ps: >-
     $fileContent = "-----BEGIN RSA PRIVATE KEY-----`n"
 
     $fileContent += $env:priv_key.Replace(' ', "`n")
@@ -73,7 +73,7 @@ configuration: Release
 
 # scripts to run before build
 before_build:
-  - cmd: >-
+- cmd: >-
     nuget restore
     npm install --production
     node ./node_modules/normajs/bin/norma.js build
