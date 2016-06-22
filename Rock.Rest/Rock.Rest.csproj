@@ -175,7 +175,6 @@
     <Compile Include="Controllers\CodeGenerated\RegistrationTemplateFormsController.cs" />
     <Compile Include="Controllers\CodeGenerated\RegistrationTemplatesController.cs" />
     <Compile Include="Controllers\ExceptionLogsController.Partial.cs" />
-    <Compile Include="Controllers\FinancialTransactionDetailsController.Partial.cs" />
     <Compile Include="Controllers\FollowingsController.Partial.cs" />
     <Compile Include="Controllers\MetricValuesController.Partial.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowActionFormAttributesController.cs" />
