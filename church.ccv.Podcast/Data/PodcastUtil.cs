@@ -22,6 +22,8 @@ using Newtonsoft.Json.Serialization;
 using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
+using System.Data.Entity;
 
 namespace church.ccv.Podcast
 {
@@ -47,7 +49,8 @@ namespace church.ccv.Podcast
             RockContext rockContext = new RockContext( );
 
             // get the root category that's parent to all categories and podcasts they care about
-            var category = new CategoryService( rockContext ).Queryable( ).Where( c => c.Id == categoryId ).SingleOrDefault( );
+            //var category = new CategoryService( rockContext ).Queryable( ).Where( c => c.Id == categoryId ).SingleOrDefault( );
+            var category = CategoryCache.Read( categoryId );
             
             // create a query that'll get all of the "Category" attributes for all the content channels
             var categoryAttribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.Guid == new Guid( church.ccv.Utility.SystemGuids.Attribute.CONTENT_CHANNEL_CATEGORY_ATTRIBUTE  ) );
@@ -55,7 +58,7 @@ namespace church.ccv.Podcast
             // now get ALL content channels with their parent category(s) attributes as a joined object
             ContentChannelService contentChannelService = new ContentChannelService( rockContext );
             var categoryContentChannelItems = contentChannelService.Queryable( ).Join( categoryAttribValList, 
-                                                                                       cc => cc.Id, cav => cav.EntityId, ( cc, cav ) => new ContentChannelWithAttrib { ContentChannel = cc, AttribValue = cav } );
+                                                                                       cc => cc.Id, cav => cav.EntityId, ( cc, cav ) => new ContentChannelWithAttrib { ContentChannel = cc, AttribValue = cav.Value } );
             
             // create our root podcast object
             PodcastCategory rootPodcast = new PodcastCategory( category.Name, category.Id );
@@ -66,14 +69,16 @@ namespace church.ccv.Podcast
             return rootPodcast;
         }
 
-        static int Internal_GetPodcastsByCategory( Category category, PodcastCategory rootPodcast, IQueryable<ContentChannelWithAttrib> categoryContentChannelItems, int numSeriesToAdd, bool keepCategoryHierarchy, bool expandSeries, bool includeEmptySeries )
+        static int Internal_GetPodcastsByCategory( CategoryCache category, PodcastCategory rootPodcast, IQueryable<ContentChannelWithAttrib> categoryContentChannelItems, int numSeriesToAdd, bool keepCategoryHierarchy, bool expandSeries, bool includeEmptySeries )
         {
             // Get all Content Channels that are immediate children of the provided category. Sort them by date, and then take 'numPodcastsToAdd', since 
             // this is recursive and we might not need anymore.
-            var podcastsForCategory = categoryContentChannelItems.Where( cci => cci.AttribValue.Value.Contains( category.Guid.ToString( ) ) )
+            var podcastsForCategory = categoryContentChannelItems.Where( cci => cci.AttribValue.Contains( category.Guid.ToString( ) ) )
                                                                  .Select( cci => cci.ContentChannel )
                                                                  .OrderByDescending( cc => cc.CreatedDateTime )
-                                                                 .Take( numSeriesToAdd );
+                                                                 .Take( numSeriesToAdd )
+                                                                 .Include( cc => cc.Items )
+                                                                 .AsNoTracking( );
             
             // Convert all the content channel items into PodcastSeries and add them as children.
             // (We're safe to do this because we KNOW we've only added PodcastSeries at this point)
@@ -91,7 +96,7 @@ namespace church.ccv.Podcast
             int seriesAdded = podcastsForCategory.Count( );
             
             // now recursively handle all child categories
-            foreach ( Category childCategory in category.ChildCategories )
+            foreach ( CategoryCache childCategory in category.Categories )
             {
                 PodcastCategory podcastCategory = null;
 
@@ -138,39 +143,44 @@ namespace church.ccv.Podcast
 
             // get all podcast series sorted by ModifiedDateTime
             ContentChannelService contentChannelService = new ContentChannelService( rockContext );
-            var podcastSeries = contentChannelService.Queryable( ).Where( cc => cc.ContentChannelTypeId == ContentChannelTypeId_PodcastSeries && cc.ModifiedDateTime< DateTime.Now ).OrderByDescending( cc => cc.ModifiedDateTime );
+            var podcastSeries = contentChannelService.Queryable( ).Where( cc => cc.ContentChannelTypeId == ContentChannelTypeId_PodcastSeries && cc.ModifiedDateTime < DateTime.Now )
+                                                                  .Select( ps => new { ps.Id, ps.ModifiedDateTime } ).AsNoTracking( );
             if( podcastSeries.Count( ) > 0 )
             {
-                var seriesIds = podcastSeries.Select( ps => ps.Id );
-
                 // take the latest modified date/time and assume that's the latest change
-                latestDate = podcastSeries.FirstOrDefault( ).ModifiedDateTime;
-
-                // get all messages for all the podcast series, sorted by ModifiedDateTime
+                var seriesIds = podcastSeries.Select( ps => ps.Id );
+                latestDate = podcastSeries.Max( ps => ps.ModifiedDateTime );
+                
+                // get all messages for all the podcast series
                 ContentChannelItemService contentChannelItemService = new ContentChannelItemService( rockContext );
-                var podcastMessages = contentChannelItemService.Queryable( ).Where( cci => seriesIds.Contains( cci.ContentChannelId ) && cci.ModifiedDateTime< DateTime.Now ).OrderByDescending( cci => cci.ModifiedDateTime );
+                var podcastMessages = contentChannelItemService.Queryable( ).Where( cci => seriesIds.Contains( cci.ContentChannelId ) && cci.ModifiedDateTime< DateTime.Now )
+                                                                            .Select( cci => new { cci.Id, cci.ModifiedDateTime } ).AsNoTracking( );
                 if ( podcastMessages.Count() > 0 )
                 {
+                    // take the message IDs and the most recent modifiedDateTime
                     var messageIds = podcastMessages.Select( pm => pm.Id );
+                    var mostRecentDate = podcastMessages.Max( pm => pm.ModifiedDateTime );
 
                     // if there's a more recent change in the messages, take that date/time
-                    if ( latestDate < podcastMessages.FirstOrDefault().ModifiedDateTime )
+                    if ( latestDate < mostRecentDate )
                     {
-                        latestDate = podcastMessages.FirstOrDefault().ModifiedDateTime;
+                        latestDate = mostRecentDate;
                     }
 
-                    // NOW, get all attrib values for messages AND series, sorted by date
-                    var attribValList = new AttributeValueService( rockContext ).Queryable().Where( av => av.Attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" && av.ModifiedDateTime < DateTime.Now &&
-                                                                                                   ( seriesIds.Contains( av.EntityId.Value ) || messageIds.Contains( av.EntityId.Value ) ) ).OrderByDescending( av => av.ModifiedDateTime );
+                    // NOW, get the most recent series OR messages' attribValue modifiedDateTime
+                    mostRecentDate = new AttributeValueService( rockContext ).Queryable()
+                                                .Where( av => av.Attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" && 
+                                                av.ModifiedDateTime < DateTime.Now && 
+                                                ( seriesIds.Contains( av.EntityId.Value ) || messageIds.Contains( av.EntityId.Value ) ) )
+                                                .AsNoTracking( )
+                                                .Max( av => av.ModifiedDateTime );
 
-                    if ( attribValList.Count() > 0 )
+                    // and see if it's newer
+                    if ( latestDate < mostRecentDate )
                     {
-                        // and see if there's anything newer
-                        if ( latestDate < attribValList.FirstOrDefault().ModifiedDateTime )
-                        {
-                            latestDate = attribValList.FirstOrDefault().ModifiedDateTime;
-                        }
+                        latestDate = mostRecentDate;
                     }
+                    
                 }
             }
 
@@ -181,14 +191,14 @@ namespace church.ccv.Podcast
         static PodcastSeries ContentChannelToPodcastSeries( ContentChannel contentChannel, bool expandSeries )
         {
             // Given a content channel in the database, this will convert it into our Podcast model.
-
             RockContext rockContext = new RockContext( );
             IQueryable<AttributeValue> attribValQuery = new AttributeValueService( rockContext ).Queryable( );
 
             // get the list of attributes for this content channel
-            List<AttributeValue> contentChannelAttribValList = attribValQuery.Where( av => av.EntityId == contentChannel.Id && 
-                                                                                           av.Attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" )
-                                                                             .ToList( );
+            var contentChannelAttribValList = attribValQuery.Where( av => av.EntityId == contentChannel.Id && av.Attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" )
+                                                            .Select( av => new { AttributeKey = av.Attribute.Key, av.Value } )
+                                                            .AsNoTracking( )
+                                                            .ToList( );
 
             // setup the series
             PodcastSeries series = new PodcastSeries( );
@@ -198,7 +208,7 @@ namespace church.ccv.Podcast
                 
             // add all the attributes
             series.Attributes = new Dictionary<string, string>( );
-            foreach( AttributeValue attribValue in contentChannelAttribValList )
+            foreach( var attribValue in contentChannelAttribValList )
             {
                 series.Attributes.Add( attribValue.AttributeKey, attribValue.Value );
             }
@@ -233,9 +243,10 @@ namespace church.ccv.Podcast
             IQueryable<AttributeValue> attribValQuery = new AttributeValueService( rockContext ).Queryable( );
 
             // get this message's attributes
-            List<AttributeValue> itemAttribValList = attribValQuery.Where( av => av.EntityId == contentChannelItem.Id && 
-                                                                                 av.Attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" )
-                                                                    .ToList( );
+            var itemAttribValList = attribValQuery.Where( av => av.EntityId == contentChannelItem.Id && av.Attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" )
+                                                  .Select( av => new { AttributeKey = av.Attribute.Key, av.Value } )
+                                                  .AsNoTracking( )
+                                                  .ToList( );
 
             PodcastMessage message = new PodcastMessage( );
             message.Id = contentChannelItem.Id;
@@ -246,7 +257,7 @@ namespace church.ccv.Podcast
 
             // add all the attributes
             message.Attributes = new Dictionary<string, string>( );
-            foreach( AttributeValue attribValue in itemAttribValList )
+            foreach( var attribValue in itemAttribValList )
             {
                 message.Attributes.Add( attribValue.AttributeKey, attribValue.Value );
             }
@@ -265,7 +276,7 @@ namespace church.ccv.Podcast
             RockContext rockContext = new RockContext( );
             ContentChannelService contentChannelService = new ContentChannelService( rockContext );
 
-            ContentChannel seriesContentChannel = contentChannelService.Queryable( ).Where( cc => cc.Id == seriesId ).SingleOrDefault( );
+            ContentChannel seriesContentChannel = contentChannelService.Queryable( ).Where( cc => cc.Id == seriesId ).Include( cc => cc.Items ).SingleOrDefault( );
             if( seriesContentChannel != null )
             {
                 // convert it to a PodcastSeries and return it
@@ -299,7 +310,7 @@ namespace church.ccv.Podcast
         public class ContentChannelWithAttrib
         {
             public ContentChannel ContentChannel { get; set; }
-            public AttributeValue AttribValue { get; set; }
+            public string AttribValue { get; set; }
         }
 
         // Interface so that PodcastCategories can have either Series or Categories as children.
