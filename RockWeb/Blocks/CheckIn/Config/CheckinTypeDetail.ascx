@@ -96,6 +96,8 @@
                                 <div class="col-md-6">
                                     <Rock:RockCheckBox ID="cbAgeRequired" runat="server" Label="Age is Required" Text="Yes" 
                                         Help="If an area and/or group has an age requirement, should people without an age be allowed to check-in to that area/group?" />
+                                    <Rock:RockCheckBox ID="cbGradeRequired" runat="server" Label="Grade is Required" Text="Yes" 
+                                        Help="If an area and/or group has a grade requirement, should people without an grade be allowed to check-in to that area/group?" />
                                     <Rock:RockCheckBox ID="cbDisplayLocCount" runat="server" Label="Display Location Count" Text="Yes" 
                                         Help="Should the room locations options include a count of how many people are currently checked into that location?" />
                                 </div>
