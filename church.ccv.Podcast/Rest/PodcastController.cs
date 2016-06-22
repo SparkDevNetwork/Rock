@@ -388,7 +388,8 @@ namespace chuch.ccv.Podcast.Rest
         {
             using ( StringWriter stringWriter = new StringWriterWithEncoding(Encoding.UTF8) )
             {
-                string publicApplicationRoot = string.Empty;
+                // first, get the public application root
+                string publicApplicationRoot = GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot");
 
                 XmlWriterSettings settings = new XmlWriterSettings();
                 settings.Indent = true;
@@ -398,11 +399,6 @@ namespace chuch.ccv.Podcast.Rest
                
                 using ( XmlWriter writer = XmlWriter.Create( stringWriter, settings) )
                 {
-                    // first, get the public application root
-                    RockContext rockContext = new RockContext( );
-                    var attribQuery = new AttributeService( rockContext ).Queryable( ).Where( a => a.Key == "PublicApplicationRoot" ).SingleOrDefault( );
-                    publicApplicationRoot = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.AttributeId == attribQuery.Id ).SingleOrDefault( ).Value;
-
                     // since we're using the same function for video or audio, setup the values that differ.
                     string rssTitle = wantVideo == true ? iTunesRSS_VideoTitle : iTunesRSS_AudioTitle;
                     string mediaType = wantVideo == true ? "video/mp4" : "audio/mpeg";
