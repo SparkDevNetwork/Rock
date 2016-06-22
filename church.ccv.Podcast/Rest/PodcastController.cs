@@ -410,7 +410,7 @@ namespace chuch.ccv.Podcast.Rest
                     string iTunesNamespace = "http://www.itunes.com/dtds/podcast-1.0.dtd";
                     string atomNamespace = "http://www.w3.org/2005/Atom";
                     string contentNamespace = "http://purl.org/rss/1.0/modules/content/";
-                    string rssSource = publicApplicationRoot + string.Format( "api/Podcast/Retrieve/{0}/{1}/0", mediaRestUrl, version );
+                    string rssSource = publicApplicationRoot + string.Format( "api/Podcast/Category/0/{0}/{1}", mediaRestUrl, version );
 
                     writer.WriteStartDocument( true );
                     writer.WriteStartElement( "rss" );
