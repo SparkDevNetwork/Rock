@@ -144,7 +144,7 @@ NoLegacy - Old Lava syntax will be ignored and not loaded. (Best Performance)",
             RockMigrationHelper.DeleteAttribute( "BBF88ADA-3C2E-4A0B-A9AE-5B07D4557129" );
             RockMigrationHelper.DeleteAttribute( "DE32D84F-5653-41F9-9B34-D04BA9024670" );
             RockMigrationHelper.DeleteAttribute( "24A8A4B0-F54D-490A-89F6-476B044CD114" );
-            RockMigrationHelper.DeleteAttribute( "DA3417AC-7138-4219-9363-7AB37D614350" );
+            RockMigrationHelper.DeleteAttribute( "DA3417AC-7138-4219-9363-7AB37D614350" ); 
             RockMigrationHelper.DeleteAttribute( "93CA081A-6128-4BBE-BF2B-DF55B7AA817C" );
             RockMigrationHelper.DeleteAttribute( "34D0971A-53AB-4D43-94EA-E251081D7F93" );
             RockMigrationHelper.DeleteAttribute( "C99D34BF-711B-4865-84B4-B0929C92D16C" );
