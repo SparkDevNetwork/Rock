@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -91,6 +91,8 @@ namespace RockWeb.Blocks.Cms
             gItemAttributes.GridRebind += gItemAttributes_GridRebind;
             gItemAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
             gItemAttributes.GridReorder += gItemAttributes_GridReorder;
+
+            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentChannel ) ).Id;
             
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -117,7 +119,16 @@ namespace RockWeb.Blocks.Cms
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "contentChannelId" ).AsInteger() );
+                int? contentChannelId = PageParameter( "contentChannelId" ).AsIntegerOrNull( );
+                if( contentChannelId.HasValue )
+                {
+                    upnlContent.Visible = true;
+                    ShowDetail( contentChannelId.Value );
+                }
+                else
+                {
+                    upnlContent.Visible = false;
+                }
             }
             else
             {
@@ -575,6 +586,10 @@ namespace RockWeb.Blocks.Cms
                         ShowEditDetails( contentChannel );
                     }
                 }
+
+                btnSecurity.Visible = contentChannel.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+                btnSecurity.Title = contentChannel.Name;
+                btnSecurity.EntityId = contentChannel.Id;
 
                 lbSave.Visible = !readOnly;
             }

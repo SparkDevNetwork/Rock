@@ -79,6 +79,7 @@
                             <Rock:FinancialGatewayPicker ID="gpPaymentGateway" runat="server" Label="Payment Gateway" />
                             <Rock:DataTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code"
                                 SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="TransactionCode" />
+                            <asp:PlaceHolder ID="phAttributeEdits" runat="server" EnableViewState="false"></asp:PlaceHolder>
                         </div>
                         <div class="col-md-6">
                             <Rock:RockCheckBox ID="cbIsRefund" runat="server" Label="This is a Refund" Text="Yes" AutoPostBack="true" OnCheckedChanged="cbIsRefund_CheckedChanged" />
@@ -109,6 +110,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <asp:Literal ID="lDetailsLeft" runat="server" />
+                            <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
                         </div>
                         <div class="col-md-6">
 

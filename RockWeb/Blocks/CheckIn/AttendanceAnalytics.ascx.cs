@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -401,14 +401,10 @@ function(item) {
                 var singleDateTime = chartData.GroupBy( a => a.DateTimeStamp ).Count() == 1;
                 if ( singleDateTime )
                 {
-                    bcAttendance.Visible = true;
-                    lcAttendance.Visible = false;
                     bcAttendance.ChartData = chartDataJson;
                 }
                 else
                 {
-                    bcAttendance.Visible = false;
-                    lcAttendance.Visible = true;
                     lcAttendance.ChartData = chartDataJson;
                 }
                 bcAttendance.Visible = singleDateTime;
@@ -854,7 +850,7 @@ function(item) {
             var allAttendeeVisits = new Dictionary<int, AttendeeVisits>();
             var allResults = new List<AttendeeResult>();
 
-            // Collection of async queries to run before assembling date
+            // Collection of async queries to run before assembling data
             var qryTasks = new List<Task>();
 
             DataTable dtAttendeeLastAttendance = null;

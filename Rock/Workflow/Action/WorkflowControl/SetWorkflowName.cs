@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -31,7 +31,7 @@ namespace Rock.Workflow.Action
     [ActionCategory( "Workflow Control" )]
     [Description( "Sets the name of the workflow" )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Workflow Set Name " )]
+    [ExportMetadata( "ComponentName", "Workflow Set Name" )]
 
     [WorkflowTextOrAttribute( "Text Value", "Attribute Value", "The value to use for the workflow's name. <span class='tip tip-lava'></span>", false, "", "", 1, "NameValue" )]
     public class SetWorkflowName : ActionComponent

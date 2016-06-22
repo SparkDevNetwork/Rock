@@ -149,6 +149,8 @@
     <Compile Include="Address\VerificationContainer.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\Bing.cs" />
+    <Compile Include="Attribute\AddressFieldAttribute.cs" />
+    <Compile Include="Attribute\ContentChannelTypesFieldAttribute.cs" />
     <Compile Include="Attribute\PhoneNumberFieldAttribute.cs" />
     <Compile Include="Attribute\DataViewFieldAttribute.cs" />
     <Compile Include="Attribute\BinaryFileTypesFieldAttribute.cs" />
@@ -258,6 +260,8 @@
     <Compile Include="Data\Udf\GetAddressStoreFunctionInjectionConvention.cs" />
     <Compile Include="Data\Udf\DbMetadataExtensions.cs" />
     <Compile Include="Data\Udf\RockUdfHelper.cs" />
+    <Compile Include="Field\Types\AddressFieldType.cs" />
+    <Compile Include="Field\Types\ContentChannelTypesFieldType.cs" />
     <Compile Include="Field\Types\PhoneNumberFieldType.cs" />
     <Compile Include="Field\Types\DataViewFieldType.cs" />
     <Compile Include="Field\Types\BinaryFileTypesFieldType.cs" />
@@ -531,7 +535,9 @@
     <Compile Include="Reporting\DataSelect\Group\GroupLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\ParticipationRateSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\ParentGroupSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Person\LastLoginSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\LastAttendedGroupOfType.cs" />
+    <Compile Include="Reporting\DataSelect\Person\ParentEmailSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\ParentPhoneNumberSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\InGroupGeofenceGroupTypeSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\LastNoteSelect.cs" />
@@ -1162,6 +1168,10 @@
     <Compile Include="Web\UI\IDetailBlock.cs" />
     <Compile Include="Web\UI\ISecondaryBlock.cs" />
     <Compile Include="Web\Utilities\HtmlSanitizer.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterLocationsBySchedule.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterLocationsByThreshold.cs" />
+    <Compile Include="Workflow\Action\CheckIn\PreSelectRecentAttendance.cs" />
+    <Compile Include="Workflow\Action\CheckIn\SetAvailableSchedules.cs" />
     <Compile Include="Workflow\Action\People\PersonAddressUpdate.cs" />
     <Compile Include="Workflow\Action\People\PersonPhoneUpdate.cs" />
     <Compile Include="Workflow\Action\People\PersonGetSpouse.cs" />
@@ -1388,7 +1398,7 @@
     <Compile Include="Workflow\Action\WorkflowControl\CompleteWorkflow.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\ActivateActivity.cs" />
     <Compile Include="Workflow\Action\Communications\SendSystemEmail.cs" />
-    <Compile Include="Workflow\Action\People\SetStatus.cs" />
+    <Compile Include="Workflow\Action\WorkflowControl\SetStatus.cs" />
     <Compile Include="Model\WorkflowService.Partial.cs" />
     <Compile Include="Workflow\ActionComponent.cs" />
     <Compile Include="Workflow\ActionContainer.cs" />

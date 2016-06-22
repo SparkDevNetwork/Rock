@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -142,7 +142,7 @@ namespace Rock.Model
             var includeNullCampus = ( campusIds ?? "" ).Split( ',' ).ToList().Any( a => a.Equals( "null", StringComparison.OrdinalIgnoreCase ) );
             var campusIdList = ( campusIds ?? "" ).Split( ',' ).AsIntegerList();
 
-            // remove 0 from the list, just in case it is there 
+            // remove 0 from the list, just in case it is there
             campusIdList.Remove( 0 );
 
             if ( campusIdList.Any() )
@@ -209,7 +209,7 @@ namespace Rock.Model
                 {
                     DateTimeStamp = a.Key.SummaryDateTime.ToJavascriptMilliseconds(),
                     DateTime = a.Key.SummaryDateTime,
-                    SeriesId = "Total",
+                    SeriesName = "Total",
                     YValue = a.Count
                 } ).ToList();
             }
@@ -221,7 +221,7 @@ namespace Rock.Model
                 {
                     DateTimeStamp = a.Key.SummaryDateTime.ToJavascriptMilliseconds(),
                     DateTime = a.Key.SummaryDateTime,
-                    SeriesId = a.Key.Series.Name,
+                    SeriesName = a.Key.Series.Name,
                     YValue = a.Count
                 } ).ToList();
             }
@@ -233,7 +233,7 @@ namespace Rock.Model
                 {
                     DateTimeStamp = a.Key.SummaryDateTime.ToJavascriptMilliseconds(),
                     DateTime = a.Key.SummaryDateTime,
-                    SeriesId = a.Key.Series.Name,
+                    SeriesName = a.Key.Series.Name,
                     YValue = a.Count
                 } ).ToList();
             }
@@ -245,7 +245,7 @@ namespace Rock.Model
                 {
                     DateTimeStamp = a.Key.SummaryDateTime.ToJavascriptMilliseconds(),
                     DateTime = a.Key.SummaryDateTime,
-                    SeriesId = a.Key.Series.Name,
+                    SeriesName = a.Key.Series.Name,
                     YValue = a.Count
                 } ).ToList();
             }
@@ -257,7 +257,7 @@ namespace Rock.Model
                 {
                     DateTimeStamp = a.Key.SummaryDateTime.ToJavascriptMilliseconds(),
                     DateTime = a.Key.SummaryDateTime,
-                    SeriesId = a.Key.Series.Name,
+                    SeriesName = a.Key.Series.Name,
                     YValue = a.Count
                 } ).ToList();
             }
@@ -410,7 +410,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class AttendanceWithSummaryDateTime
         {
@@ -433,7 +433,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public static class AttendanceQryExtensions
     {
@@ -484,6 +484,4 @@ namespace Rock.Model
             return qryAttendanceGroupedBy;
         }
     }
-
-
 }
