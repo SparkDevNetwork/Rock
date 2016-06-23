@@ -115,7 +115,7 @@ Thank you for sharing God's answer to your prayer with us.
                             || prayerRequest.ExpirationDate == null )
                             )
                         {
-                            if ( prayerRequest.ExpirationDate == null || hardExpiration.Date < RockDateTime.Now.Date || hardExpiration.Date < prayerRequest.ExpirationDate.Date )
+                            if ( prayerRequest.ExpirationDate == null || hardExpiration.Date < RockDateTime.Now.Date || hardExpiration.Date < prayerRequest.ExpirationDate.Value.Date )
                             {
                                 lbExtend.Visible = false;
                             }
