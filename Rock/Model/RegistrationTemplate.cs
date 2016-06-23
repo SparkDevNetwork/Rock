@@ -420,6 +420,15 @@ namespace Rock.Model
         }
         private bool _allowExternalRegistrationUpdates = true;
 
+        /// <summary>
+        /// Optional workflow type to launch at end of registration
+        /// </summary>
+        /// <value>
+        /// The workflow type id.
+        /// </value>        
+        [DataMember]
+        public int? RegistrationWorkflowTypeId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -448,6 +457,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual FinancialGateway FinancialGateway { get; set; }
+
+        /// <summary>
+        /// Gets or sets the workflow type to launch at end of registration.
+        /// </summary>
+        /// <value>
+        /// The Workflow Type.
+        /// </value>
+        [DataMember]
+        public virtual WorkflowType RegistrationWorkflowType { get; set; }
 
         /// <summary>
         /// Gets or sets the discounts.
@@ -538,6 +556,7 @@ namespace Rock.Model
             this.HasOptional( t => t.Category ).WithMany().HasForeignKey( t => t.CategoryId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.GroupType ).WithMany().HasForeignKey( t => t.GroupTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.FinancialGateway ).WithMany().HasForeignKey( t => t.FinancialGatewayId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.RegistrationWorkflowType ).WithMany().HasForeignKey( t => t.RegistrationWorkflowTypeId ).WillCascadeOnDelete( false );
         }
     }
 

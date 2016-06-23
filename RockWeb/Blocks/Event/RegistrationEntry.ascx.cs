@@ -1399,7 +1399,7 @@ namespace RockWeb.Blocks.Event
                         // If there is a valid registration, and nothing went wrong processing the payment, add registrants to group and send the notifications
                         if ( registration != null && !registration.IsTemporary )
                         {
-                            ProcessPostSave( registrationService, registration, previousRegistrantIds, rockContext );
+                            ProcessPostSave( isNewRegistration, registrationService, registration, previousRegistrantIds, rockContext );
                         }
                     }
 
@@ -1446,7 +1446,7 @@ namespace RockWeb.Blocks.Event
             return registration != null ? registration.Id : (int?)null;
         }
 
-        private void ProcessPostSave( RegistrationService registrationService, Registration registration, List<int> previousRegistrantIds, RockContext rockContext )
+        private void ProcessPostSave( bool isNewRegistration, RegistrationService registrationService, Registration registration, List<int> previousRegistrantIds, RockContext rockContext )
         {
             try
             {
@@ -1456,17 +1456,20 @@ namespace RockWeb.Blocks.Event
                 string appRoot = ResolveRockUrl( "~/" );
                 string themeRoot = ResolveRockUrl( "~~/" );
 
-                var confirmation = new Rock.Transactions.SendRegistrationConfirmationTransaction();
-                confirmation.RegistrationId = registration.Id;
-                confirmation.AppRoot = appRoot;
-                confirmation.ThemeRoot = themeRoot;
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( confirmation );
+                if ( isNewRegistration )
+                {
+                    var confirmation = new Rock.Transactions.SendRegistrationConfirmationTransaction();
+                    confirmation.RegistrationId = registration.Id;
+                    confirmation.AppRoot = appRoot;
+                    confirmation.ThemeRoot = themeRoot;
+                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( confirmation );
 
-                var notification = new Rock.Transactions.SendRegistrationNotificationTransaction();
-                notification.RegistrationId = registration.Id;
-                notification.AppRoot = appRoot;
-                notification.ThemeRoot = themeRoot;
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( notification );
+                    var notification = new Rock.Transactions.SendRegistrationNotificationTransaction();
+                    notification.RegistrationId = registration.Id;
+                    notification.AppRoot = appRoot;
+                    notification.ThemeRoot = themeRoot;
+                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( notification );
+                }
 
                 var newRegistration = registrationService
                     .Queryable( "Registrants.PersonAlias.Person,Registrants.GroupMember,RegistrationInstance.Account,RegistrationInstance.RegistrationTemplate.Fees,RegistrationInstance.RegistrationTemplate.Discounts,RegistrationInstance.RegistrationTemplate.Forms.Fields.Attribute,RegistrationInstance.RegistrationTemplate.FinancialGateway" )
@@ -1474,6 +1477,12 @@ namespace RockWeb.Blocks.Event
                     .FirstOrDefault();
                 if ( newRegistration != null )
                 {
+                    if ( isNewRegistration )
+                    {
+                        newRegistration.LaunchWorkflow( RegistrationTemplate.RegistrationWorkflowTypeId, newRegistration.ToString() );
+                        newRegistration.LaunchWorkflow( RegistrationInstanceState.RegistrationWorkflowTypeId, newRegistration.ToString() );
+                    }
+
                     RegistrationInstanceState = newRegistration.RegistrationInstance;
                     RegistrationState = new RegistrationInfo( newRegistration, rockContext );
                     RegistrationState.PreviousPaymentTotal = registrationService.GetTotalPayments( registration.Id );
