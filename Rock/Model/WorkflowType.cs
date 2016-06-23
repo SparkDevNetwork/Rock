@@ -62,6 +62,16 @@ namespace Rock.Model
         public bool? IsActive { get; set; }
 
         /// <summary>
+        /// Gets or sets the workflow identifier prefix.
+        /// </summary>
+        /// <value>
+        /// The workflow identifier prefix.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string WorkflowIdPrefix { get; set; }
+
+        /// <summary>
         /// Gets or sets the friendly Name of the WorkflowType. This property is required.
         /// </summary>
         /// <value>
