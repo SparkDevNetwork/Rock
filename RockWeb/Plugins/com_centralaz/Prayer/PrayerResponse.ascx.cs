@@ -38,6 +38,7 @@ namespace RockWeb.Plugins.com_centralaz.Prayer
     [Category( "com_centralaz > Prayer" )]
     [Description( "Block for people who have requested prayer to submit an answer to said prayer." )]
     [IntegerField( "Expires After (Days)", "Number of days until the request will expire (only applies when auto-approved is enabled).", false, 14, "Features", 4, "ExpireDays" )]
+    [IntegerField( "Maximum Active Period", "The maximum number of days a request can be extended past its creation date.", true, 45 )]
     [IntegerField( "Maximum Answer Length", "Maximum character length for prayer answers.", true, 4000 )]
     [CodeEditorField( "Description", "Lava template to use to display information about the block", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"<div>
   We are encouraged to be able to pray for you. If you feel as though your prayer has been answered, feel welcome to fill out just how it has been answered. Otherwise, click the 'Extend Request' button for the prayer request to be extended another week.
@@ -102,6 +103,7 @@ Thank you for sharing God's answer to your prayer with us.
                 if ( guid != null )
                 {
                     PrayerRequest prayerRequest = new PrayerRequestService( new RockContext() ).Get( guid.Value );
+                    DateTime hardExpiration = prayerRequest.CreatedDateTime.Value.AddDays( GetAttributeValue( "MaximumActivePeriod" ).AsInteger() );
                     if ( prayerRequest != null )
                     {
                         byte[] b = System.Text.Encoding.UTF8.GetBytes( prayerRequest.Email );
@@ -109,11 +111,11 @@ Thank you for sharing God's answer to your prayer with us.
 
                         if ( encodedEmail == PageParameter( "Key" )
                             && ( ( prayerRequest.ExpirationDate != null
-                                && prayerRequest.ExpirationDate.Value.AddDays( GetAttributeValue( "ExpireDays" ).AsInteger() ) >= DateTime.Now )
+                                && prayerRequest.ExpirationDate.Value.AddDays( GetAttributeValue( "ExpireDays" ).AsInteger() ) >= RockDateTime.Now )
                             || prayerRequest.ExpirationDate == null )
                             )
                         {
-                            if ( prayerRequest.ExpirationDate == null )
+                            if ( prayerRequest.ExpirationDate == null || hardExpiration.Date < RockDateTime.Now.Date || hardExpiration.Date < prayerRequest.ExpirationDate.Date )
                             {
                                 lbExtend.Visible = false;
                             }
