@@ -35,10 +35,11 @@ namespace com.centralaz.Workflow.Action.CheckIn
     /// Removes (or excludes) all the groups from each group type for each selected family member except the first match.
     /// </summary>
     [ActionCategory( "com_centralaz: Check-In" )]
-    [Description( "Removes all but the 'first match' grroup." )]
+    [Description( "Removes all but the 'first match' group for any group types that have a 'UseFirstMatch' boolean attribute set to true." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Groups By First Match" )]
 
+    [BooleanField( "Use Ascending Group Order", "Select 'Yes' if groups should be ordered as seen on screen (from top to bottom); choose false otherwise.", true, "", 0 )]
     [BooleanField( "Remove", "Select 'Yes' if groups should be be removed. Select 'No' if they should just be marked as excluded.", true, "", 0 )]
     public class FilterGroupsByFirstMatch : CheckInActionComponent
     {
@@ -63,6 +64,7 @@ namespace com.centralaz.Workflow.Action.CheckIn
             if ( family != null )
             {
                 var remove = GetAttributeValue( action, "Remove" ).AsBoolean();
+                var useAscendingOrder = GetAttributeValue( action, "UseAscendingGroupOrder" ).AsBoolean();
 
                 foreach ( var person in family.People )
                 {
@@ -75,7 +77,8 @@ namespace com.centralaz.Workflow.Action.CheckIn
                         // Only perform filtering for group types that are set to UseFirstMatch true.
                         if ( useFirstMatch )
                         {
-                            foreach ( var group in groupType.Groups.ToList() )
+                            var groupList = useAscendingOrder ? groupType.Groups.OrderBy( g => g.Group.Order ).ToList() : groupType.Groups.OrderByDescending( g => g.Group.Order ).ToList();
+                            foreach ( var group in groupList )
                             {
                                 if ( foundFirstMatch )
                                 {
