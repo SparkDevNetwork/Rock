@@ -75,6 +75,10 @@
     <Compile Include="Migrations\201606231511599_RegistrationWorkflow.Designer.cs">
       <DependentUpon>201606231511599_RegistrationWorkflow.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201606232056332_WorkflowNumber.cs" />
+    <Compile Include="Migrations\201606232056332_WorkflowNumber.Designer.cs">
+      <DependentUpon>201606232056332_WorkflowNumber.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 5.0\Version 1.5.0\201606061308109_ClearPreviousMigrations5.cs" />
     <Compile Include="Migrations\Version 5.0\Version 1.5.0\201606061308109_ClearPreviousMigrations5.Designer.cs">
       <DependentUpon>201606061308109_ClearPreviousMigrations5.cs</DependentUpon>
@@ -2162,6 +2166,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201606231511599_RegistrationWorkflow.resx">
       <DependentUpon>201606231511599_RegistrationWorkflow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201606232056332_WorkflowNumber.resx">
+      <DependentUpon>201606232056332_WorkflowNumber.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 5.0\Version 1.5.0\201606061308109_ClearPreviousMigrations5.resx">
       <DependentUpon>201606061308109_ClearPreviousMigrations5.cs</DependentUpon>

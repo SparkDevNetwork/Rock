@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -48,6 +49,25 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int WorkflowTypeId { get; set; }
+
+        /// <summary>
+        /// A type specific number to uniquely identify a workflow.
+        /// </summary>
+        /// <value>
+        /// The type identifier number.
+        /// </value>
+        [DataMember]
+        public int WorkflowIdNumber { get; set; }
+
+        /// <summary>
+        /// Gets the workflow identifier.
+        /// </summary>
+        /// <value>
+        /// The workflow identifier.
+        /// </value>
+        [DataMember]
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        public virtual string WorkflowId { get; set; }
 
         /// <summary>
         /// Gets or sets a friendly name for this Workflow instance. This property is required.
@@ -452,7 +472,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="state">The state.</param>
-        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state )
         {
             if (_logEntries != null)
             {
@@ -471,6 +491,16 @@ namespace Rock.Model
                 }
             }
             
+            // Set the workflow number
+            if ( state == System.Data.Entity.EntityState.Added )
+            {
+                int maxNumber = new WorkflowService( dbContext as RockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( w => w.WorkflowTypeId == this.WorkflowTypeId )
+                    .Max( w => (int?)w.WorkflowIdNumber ) ?? 0;
+                this.WorkflowIdNumber = maxNumber + 1;
+            }
+
             base.PreSaveChanges( dbContext, state );
         }
 

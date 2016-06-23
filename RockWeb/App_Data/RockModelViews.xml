@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <views>
-  <mapping-views hash="51b50f45976fb9552bc1555fc39ba708a6dc69449941235f9d75ec3733cc71c6" conceptual-container="RockContext" store-container="CodeFirstDatabase">
+  <mapping-views hash="588e19962d7b6931ad416f8d5a6c60fd2d2b32413eabed946f1f9d86db0dc44f" conceptual-container="RockContext" store-container="CodeFirstDatabase">
     <view extent="CodeFirstDatabase.AttendanceCode"><![CDATA[
     SELECT VALUE -- Constructing AttendanceCode
         [CodeFirstDatabaseSchema.AttendanceCode](T1.AttendanceCode_Id, T1.AttendanceCode_IssueDateTime, T1.AttendanceCode_Code, T1.AttendanceCode_Guid, T1.AttendanceCode_ForeignId, T1.AttendanceCode_ForeignGuid, T1.AttendanceCode_ForeignKey)
@@ -644,12 +644,13 @@
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.WorkflowType"><![CDATA[
     SELECT VALUE -- Constructing WorkflowType
-        [CodeFirstDatabaseSchema.WorkflowType](T1.WorkflowType_Id, T1.WorkflowType_IsSystem, T1.WorkflowType_IsActive, T1.WorkflowType_Name, T1.WorkflowType_Description, T1.WorkflowType_CategoryId, T1.WorkflowType_Order, T1.WorkflowType_WorkTerm, T1.WorkflowType_ProcessingIntervalSeconds, T1.WorkflowType_IsPersisted, T1.WorkflowType_LoggingLevel, T1.WorkflowType_IconCssClass, T1.WorkflowType_CreatedDateTime, T1.WorkflowType_ModifiedDateTime, T1.WorkflowType_CreatedByPersonAliasId, T1.WorkflowType_ModifiedByPersonAliasId, T1.WorkflowType_Guid, T1.WorkflowType_ForeignId, T1.WorkflowType_ForeignGuid, T1.WorkflowType_ForeignKey)
+        [CodeFirstDatabaseSchema.WorkflowType](T1.WorkflowType_Id, T1.WorkflowType_IsSystem, T1.WorkflowType_IsActive, T1.WorkflowType_WorkflowIdPrefix, T1.WorkflowType_Name, T1.WorkflowType_Description, T1.WorkflowType_CategoryId, T1.WorkflowType_Order, T1.WorkflowType_WorkTerm, T1.WorkflowType_ProcessingIntervalSeconds, T1.WorkflowType_IsPersisted, T1.WorkflowType_LoggingLevel, T1.WorkflowType_IconCssClass, T1.WorkflowType_CreatedDateTime, T1.WorkflowType_ModifiedDateTime, T1.WorkflowType_CreatedByPersonAliasId, T1.WorkflowType_ModifiedByPersonAliasId, T1.WorkflowType_Guid, T1.WorkflowType_ForeignId, T1.WorkflowType_ForeignGuid, T1.WorkflowType_ForeignKey)
     FROM (
         SELECT 
             T.Id AS WorkflowType_Id, 
             T.IsSystem AS WorkflowType_IsSystem, 
             T.IsActive AS WorkflowType_IsActive, 
+            T.WorkflowIdPrefix AS WorkflowType_WorkflowIdPrefix, 
             T.Name AS WorkflowType_Name, 
             T.Description AS WorkflowType_Description, 
             T.CategoryId AS WorkflowType_CategoryId, 
@@ -2268,11 +2269,13 @@
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.Workflow"><![CDATA[
     SELECT VALUE -- Constructing Workflow
-        [CodeFirstDatabaseSchema.Workflow](T1.Workflow_Id, T1.Workflow_WorkflowTypeId, T1.Workflow_Name, T1.Workflow_Description, T1.Workflow_Status, T1.Workflow_IsProcessing, T1.Workflow_ActivatedDateTime, T1.Workflow_LastProcessedDateTime, T1.Workflow_CompletedDateTime, T1.Workflow_InitiatorPersonAliasId, T1.Workflow_CreatedDateTime, T1.Workflow_ModifiedDateTime, T1.Workflow_CreatedByPersonAliasId, T1.Workflow_ModifiedByPersonAliasId, T1.Workflow_Guid, T1.Workflow_ForeignId, T1.Workflow_ForeignGuid, T1.Workflow_ForeignKey)
+        [CodeFirstDatabaseSchema.Workflow](T1.Workflow_Id, T1.Workflow_WorkflowTypeId, T1.Workflow_WorkflowIdNumber, T1.Workflow_WorkflowId, T1.Workflow_Name, T1.Workflow_Description, T1.Workflow_Status, T1.Workflow_IsProcessing, T1.Workflow_ActivatedDateTime, T1.Workflow_LastProcessedDateTime, T1.Workflow_CompletedDateTime, T1.Workflow_InitiatorPersonAliasId, T1.Workflow_CreatedDateTime, T1.Workflow_ModifiedDateTime, T1.Workflow_CreatedByPersonAliasId, T1.Workflow_ModifiedByPersonAliasId, T1.Workflow_Guid, T1.Workflow_ForeignId, T1.Workflow_ForeignGuid, T1.Workflow_ForeignKey)
     FROM (
         SELECT 
             T.Id AS Workflow_Id, 
             T.WorkflowTypeId AS Workflow_WorkflowTypeId, 
+            T.WorkflowIdNumber AS Workflow_WorkflowIdNumber, 
+            T.WorkflowId AS Workflow_WorkflowId, 
             T.Name AS Workflow_Name, 
             T.Description AS Workflow_Description, 
             T.Status AS Workflow_Status, 
@@ -4218,12 +4221,13 @@
     ) AS T1]]></view>
     <view extent="RockContext.WorkflowTypes"><![CDATA[
     SELECT VALUE -- Constructing WorkflowTypes
-        [Rock.Data.WorkflowType](T1.WorkflowType_Id, T1.WorkflowType_IsSystem, T1.WorkflowType_IsActive, T1.WorkflowType_Name, T1.WorkflowType_Description, T1.WorkflowType_CategoryId, T1.WorkflowType_Order, T1.WorkflowType_WorkTerm, T1.WorkflowType_ProcessingIntervalSeconds, T1.WorkflowType_IsPersisted, T1.WorkflowType_LoggingLevel, T1.WorkflowType_IconCssClass, T1.WorkflowType_CreatedDateTime, T1.WorkflowType_ModifiedDateTime, T1.WorkflowType_CreatedByPersonAliasId, T1.WorkflowType_ModifiedByPersonAliasId, T1.WorkflowType_Guid, T1.WorkflowType_ForeignId, T1.WorkflowType_ForeignGuid, T1.WorkflowType_ForeignKey)
+        [Rock.Data.WorkflowType](T1.WorkflowType_Id, T1.WorkflowType_IsSystem, T1.WorkflowType_IsActive, T1.WorkflowType_WorkflowIdPrefix, T1.WorkflowType_Name, T1.WorkflowType_Description, T1.WorkflowType_CategoryId, T1.WorkflowType_Order, T1.WorkflowType_WorkTerm, T1.WorkflowType_ProcessingIntervalSeconds, T1.WorkflowType_IsPersisted, T1.WorkflowType_LoggingLevel, T1.WorkflowType_IconCssClass, T1.WorkflowType_CreatedDateTime, T1.WorkflowType_ModifiedDateTime, T1.WorkflowType_CreatedByPersonAliasId, T1.WorkflowType_ModifiedByPersonAliasId, T1.WorkflowType_Guid, T1.WorkflowType_ForeignId, T1.WorkflowType_ForeignGuid, T1.WorkflowType_ForeignKey)
     FROM (
         SELECT 
             T.Id AS WorkflowType_Id, 
             T.IsSystem AS WorkflowType_IsSystem, 
             T.IsActive AS WorkflowType_IsActive, 
+            T.WorkflowIdPrefix AS WorkflowType_WorkflowIdPrefix, 
             T.Name AS WorkflowType_Name, 
             T.Description AS WorkflowType_Description, 
             T.CategoryId AS WorkflowType_CategoryId, 
@@ -5842,11 +5846,13 @@
     ) AS T1]]></view>
     <view extent="RockContext.Workflows"><![CDATA[
     SELECT VALUE -- Constructing Workflows
-        [Rock.Data.Workflow](T1.Workflow_Id, T1.Workflow_WorkflowTypeId, T1.Workflow_Name, T1.Workflow_Description, T1.Workflow_Status, T1.Workflow_IsProcessing, T1.Workflow_ActivatedDateTime, T1.Workflow_LastProcessedDateTime, T1.Workflow_CompletedDateTime, T1.Workflow_InitiatorPersonAliasId, T1.Workflow_CreatedDateTime, T1.Workflow_ModifiedDateTime, T1.Workflow_CreatedByPersonAliasId, T1.Workflow_ModifiedByPersonAliasId, T1.Workflow_Guid, T1.Workflow_ForeignId, T1.Workflow_ForeignGuid, T1.Workflow_ForeignKey)
+        [Rock.Data.Workflow](T1.Workflow_Id, T1.Workflow_WorkflowTypeId, T1.Workflow_WorkflowIdNumber, T1.Workflow_WorkflowId, T1.Workflow_Name, T1.Workflow_Description, T1.Workflow_Status, T1.Workflow_IsProcessing, T1.Workflow_ActivatedDateTime, T1.Workflow_LastProcessedDateTime, T1.Workflow_CompletedDateTime, T1.Workflow_InitiatorPersonAliasId, T1.Workflow_CreatedDateTime, T1.Workflow_ModifiedDateTime, T1.Workflow_CreatedByPersonAliasId, T1.Workflow_ModifiedByPersonAliasId, T1.Workflow_Guid, T1.Workflow_ForeignId, T1.Workflow_ForeignGuid, T1.Workflow_ForeignKey)
     FROM (
         SELECT 
             T.Id AS Workflow_Id, 
             T.WorkflowTypeId AS Workflow_WorkflowTypeId, 
+            T.WorkflowIdNumber AS Workflow_WorkflowIdNumber, 
+            T.WorkflowId AS Workflow_WorkflowId, 
             T.Name AS Workflow_Name, 
             T.Description AS Workflow_Description, 
             T.Status AS Workflow_Status, 

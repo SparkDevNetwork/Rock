@@ -11,6 +11,7 @@
                 <h1 class="panel-title"><i class="fa fa-cog"></i>
                     <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
                 <div class="panel-labels">
+                    <Rock:HighlightLabel ID="hlblWorkflowId" runat="server" LabelType="Info" />
                     <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
                     <Rock:HighlightLabel ID="hlState" runat="server" />
                 </div>

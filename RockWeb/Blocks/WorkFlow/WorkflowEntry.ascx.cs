@@ -293,6 +293,8 @@ namespace RockWeb.Blocks.WorkFlow
                 }
                 if ( _workflow != null )
                 {
+                    hlblWorkflowId.Text = _workflow.WorkflowId;
+
                     _workflow.LoadAttributes();
                     foreach ( var activity in _workflow.Activities )
                     {
