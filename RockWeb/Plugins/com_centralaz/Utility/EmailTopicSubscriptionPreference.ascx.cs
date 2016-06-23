@@ -42,6 +42,12 @@ namespace RockWeb.Plugins.com_centralaz.Utility
 
     public partial class EmailTopicSubscriptionPreference : Rock.Web.UI.RockBlock
     {
+        #region Fields
+
+        private Person _person = null;
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -51,6 +57,31 @@ namespace RockWeb.Plugins.com_centralaz.Utility
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            var key = PageParameter( "Person" );
+            if ( !string.IsNullOrWhiteSpace( key ) )
+            {
+                var service = new PersonService( new RockContext() );
+                _person = service.GetByUrlEncodedKey( key );
+            }
+
+            if ( _person == null && CurrentPerson != null )
+            {
+                _person = CurrentPerson;
+            }
+
+            if ( _person != null )
+            {
+                nbSuccess.NotificationBoxType = NotificationBoxType.Success;
+                nbSuccess.Text = "Your preferences were saved.";
+            }
+            else
+            {
+                nbSuccess.NotificationBoxType = NotificationBoxType.Danger;
+                nbSuccess.Text = "Unfortunately, we're unable to update your email preference, as we're not sure who you are.";
+                nbSuccess.Visible = true;
+                lbEditPreferences.Visible = false;
+            }
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -67,7 +98,7 @@ namespace RockWeb.Plugins.com_centralaz.Utility
 
             if ( !Page.IsPostBack )
             {
-                if ( CurrentPerson != null )
+                if ( _person != null )
                 {
                     ShowDetail();
                 }
@@ -89,10 +120,10 @@ namespace RockWeb.Plugins.com_centralaz.Utility
             nbSuccess.Visible = false;
             try
             {
-                if ( CurrentPerson != null )
+                if ( _person != null )
                 {
-                    CurrentPerson.LoadAttributes();
-                    var personAttributeValueGuid = CurrentPerson.GetAttributeValue( hfAttributeKey.Value );
+                    _person.LoadAttributes();
+                    var personAttributeValueGuid = _person.GetAttributeValue( hfAttributeKey.Value );
                     if ( personAttributeValueGuid != null )
                     {
                         List<Guid> guidPopupRequiredList = GetAttributeValue( "PopupDefinedValues" ).SplitDelimitedValues().AsGuidList();
@@ -188,8 +219,8 @@ namespace RockWeb.Plugins.com_centralaz.Utility
             }
 
             List<Guid> subscribedGuidList = new List<Guid>();
-            CurrentPerson.LoadAttributes();
-            var subscribedDefinedValueGuids = CurrentPerson.GetAttributeValue( hfAttributeKey.Value );
+            _person.LoadAttributes();
+            var subscribedDefinedValueGuids = _person.GetAttributeValue( hfAttributeKey.Value );
             if ( !String.IsNullOrWhiteSpace( subscribedDefinedValueGuids ) )
             {
                 subscribedGuidList = subscribedDefinedValueGuids.SplitDelimitedValues().AsGuidList();
@@ -237,13 +268,13 @@ namespace RockWeb.Plugins.com_centralaz.Utility
                 cblPreference.DataBind();
 
                 // set the person's current value as the selected one
-                CurrentPerson.LoadAttributes();
+                _person.LoadAttributes();
 
                 // The Guids that are put into the data list will be in lowercase as per
                 // https://msdn.microsoft.com/en-us/library/97af8hh4(v=vs.110).aspx
                 // so we need to make sure we're comparing with the lowercase of whatever
                 // was stored.
-                var personAttributeValueGuid = CurrentPerson.GetAttributeValue( hfAttributeKey.Value );
+                var personAttributeValueGuid = _person.GetAttributeValue( hfAttributeKey.Value );
                 if ( personAttributeValueGuid != null )
                 {
                     try
@@ -308,7 +339,7 @@ namespace RockWeb.Plugins.com_centralaz.Utility
         private void ShowPopup( List<Guid> guidPopupList )
         {
             var definedValueList = new DefinedValueService( new RockContext() ).GetByGuids( guidPopupList ).ToList();
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this._person );
             mergeFields.Add( "DefinedValues", definedValueList );
 
             lWarning.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
@@ -320,9 +351,9 @@ namespace RockWeb.Plugins.com_centralaz.Utility
         /// </summary>
         private void SaveAttribute()
         {
-            CurrentPerson.LoadAttributes();
-            CurrentPerson.SetAttributeValue( hfAttributeKey.Value, cblPreference.SelectedValues.AsDelimited( "," ) );
-            CurrentPerson.SaveAttributeValues();
+            _person.LoadAttributes();
+            _person.SetAttributeValue( hfAttributeKey.Value, cblPreference.SelectedValues.AsDelimited( "," ) );
+            _person.SaveAttributeValues();
             nbSuccess.Visible = true;
             ShowDetail();
         }

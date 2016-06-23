@@ -6,7 +6,7 @@
         <asp:HiddenField ID="hfAttributeId" runat="server" />
         <asp:HiddenField ID="hfAttributeKey" runat="server" />
         <asp:Panel ID="pnlViewPreferences" runat="server">
-            <Rock:NotificationBox ID="nbSuccess" runat="server" Visible="false" NotificationBoxType="Success" Text="Your preference was saved."></Rock:NotificationBox>
+            <Rock:NotificationBox ID="nbSuccess" runat="server" Visible="false" NotificationBoxType="Success" Text="Your preferences were saved."></Rock:NotificationBox>
             <asp:Literal ID="lPreferences" runat="server" /></h1>
             <asp:LinkButton ID="lbEditPreferences" runat="server" CssClass="btn btn-primary btn-xs" OnClick="lbEditPreferences_Click"><i class="fa fa-pencil"></i> Edit Subscription Preferences</asp:LinkButton>
         </asp:Panel>
