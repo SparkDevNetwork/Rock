@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <views>
-  <mapping-views hash="227c573ba1700510efe7e5098aaa3aac1171ede7dfd79d8171ec0eab1a90c889" conceptual-container="RockContext" store-container="CodeFirstDatabase">
+  <mapping-views hash="51b50f45976fb9552bc1555fc39ba708a6dc69449941235f9d75ec3733cc71c6" conceptual-container="RockContext" store-container="CodeFirstDatabase">
     <view extent="CodeFirstDatabase.AttendanceCode"><![CDATA[
     SELECT VALUE -- Constructing AttendanceCode
         [CodeFirstDatabaseSchema.AttendanceCode](T1.AttendanceCode_Id, T1.AttendanceCode_IssueDateTime, T1.AttendanceCode_Code, T1.AttendanceCode_Guid, T1.AttendanceCode_ForeignId, T1.AttendanceCode_ForeignGuid, T1.AttendanceCode_ForeignKey)
@@ -18,7 +18,7 @@
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.Attendance"><![CDATA[
     SELECT VALUE -- Constructing Attendance
-        [CodeFirstDatabaseSchema.Attendance](T1.Attendance_Id, T1.Attendance_LocationId, T1.Attendance_CampusId, T1.Attendance_ScheduleId, T1.Attendance_GroupId, T1.Attendance_PersonAliasId, T1.Attendance_DeviceId, T1.Attendance_SearchTypeValueId, T1.Attendance_AttendanceCodeId, T1.Attendance_QualifierValueId, T1.Attendance_StartDateTime, T1.Attendance_EndDateTime, T1.Attendance_RSVP, T1.Attendance_DidAttend, T1.Attendance_DidNotOccur, T1.Attendance_Processed, T1.Attendance_Note, T1.Attendance_SundayDate, T1.Attendance_CreatedDateTime, T1.Attendance_ModifiedDateTime, T1.Attendance_CreatedByPersonAliasId, T1.Attendance_ModifiedByPersonAliasId, T1.Attendance_Guid, T1.Attendance_ForeignId, T1.Attendance_ForeignGuid, T1.Attendance_ForeignKey)
+        [CodeFirstDatabaseSchema.Attendance](T1.Attendance_Id, T1.Attendance_LocationId, T1.Attendance_CampusId, T1.Attendance_ScheduleId, T1.Attendance_GroupId, T1.Attendance_PersonAliasId, T1.Attendance_DeviceId, T1.Attendance_SearchTypeValueId, T1.Attendance_SearchValue, T1.Attendance_SearchResultGroupId, T1.Attendance_AttendanceCodeId, T1.Attendance_QualifierValueId, T1.Attendance_StartDateTime, T1.Attendance_EndDateTime, T1.Attendance_RSVP, T1.Attendance_DidAttend, T1.Attendance_DidNotOccur, T1.Attendance_Processed, T1.Attendance_Note, T1.Attendance_SundayDate, T1.Attendance_CreatedDateTime, T1.Attendance_ModifiedDateTime, T1.Attendance_CreatedByPersonAliasId, T1.Attendance_ModifiedByPersonAliasId, T1.Attendance_Guid, T1.Attendance_ForeignId, T1.Attendance_ForeignGuid, T1.Attendance_ForeignKey)
     FROM (
         SELECT 
             T.Id AS Attendance_Id, 
@@ -29,6 +29,8 @@
             T.PersonAliasId AS Attendance_PersonAliasId, 
             T.DeviceId AS Attendance_DeviceId, 
             T.SearchTypeValueId AS Attendance_SearchTypeValueId, 
+            T.SearchValue AS Attendance_SearchValue, 
+            T.SearchResultGroupId AS Attendance_SearchResultGroupId, 
             T.AttendanceCodeId AS Attendance_AttendanceCodeId, 
             T.QualifierValueId AS Attendance_QualifierValueId, 
             T.StartDateTime AS Attendance_StartDateTime, 
@@ -1162,7 +1164,7 @@
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.RegistrationInstance"><![CDATA[
     SELECT VALUE -- Constructing RegistrationInstance
-        [CodeFirstDatabaseSchema.RegistrationInstance](T1.RegistrationInstance_Id, T1.RegistrationInstance_Name, T1.RegistrationInstance_RegistrationTemplateId, T1.RegistrationInstance_StartDateTime, T1.RegistrationInstance_EndDateTime, T1.RegistrationInstance_SendReminderDateTime, T1.RegistrationInstance_ReminderSent, T1.RegistrationInstance_Details, T1.RegistrationInstance_MaxAttendees, T1.RegistrationInstance_AccountId, T1.RegistrationInstance_Cost, T1.RegistrationInstance_MinimumInitialPayment, T1.RegistrationInstance_IsActive, T1.RegistrationInstance_ContactPersonAliasId, T1.RegistrationInstance_ContactPhone, T1.RegistrationInstance_ContactEmail, T1.RegistrationInstance_AdditionalReminderDetails, T1.RegistrationInstance_AdditionalConfirmationDetails, T1.RegistrationInstance_CreatedDateTime, T1.RegistrationInstance_ModifiedDateTime, T1.RegistrationInstance_CreatedByPersonAliasId, T1.RegistrationInstance_ModifiedByPersonAliasId, T1.RegistrationInstance_Guid, T1.RegistrationInstance_ForeignId, T1.RegistrationInstance_ForeignGuid, T1.RegistrationInstance_ForeignKey)
+        [CodeFirstDatabaseSchema.RegistrationInstance](T1.RegistrationInstance_Id, T1.RegistrationInstance_Name, T1.RegistrationInstance_RegistrationTemplateId, T1.RegistrationInstance_StartDateTime, T1.RegistrationInstance_EndDateTime, T1.RegistrationInstance_SendReminderDateTime, T1.RegistrationInstance_ReminderSent, T1.RegistrationInstance_Details, T1.RegistrationInstance_MaxAttendees, T1.RegistrationInstance_AccountId, T1.RegistrationInstance_Cost, T1.RegistrationInstance_MinimumInitialPayment, T1.RegistrationInstance_IsActive, T1.RegistrationInstance_ContactPersonAliasId, T1.RegistrationInstance_ContactPhone, T1.RegistrationInstance_ContactEmail, T1.RegistrationInstance_AdditionalReminderDetails, T1.RegistrationInstance_AdditionalConfirmationDetails, T1.RegistrationInstance_RegistrationWorkflowTypeId, T1.RegistrationInstance_CreatedDateTime, T1.RegistrationInstance_ModifiedDateTime, T1.RegistrationInstance_CreatedByPersonAliasId, T1.RegistrationInstance_ModifiedByPersonAliasId, T1.RegistrationInstance_Guid, T1.RegistrationInstance_ForeignId, T1.RegistrationInstance_ForeignGuid, T1.RegistrationInstance_ForeignKey)
     FROM (
         SELECT 
             T.Id AS RegistrationInstance_Id, 
@@ -1183,6 +1185,7 @@
             T.ContactEmail AS RegistrationInstance_ContactEmail, 
             T.AdditionalReminderDetails AS RegistrationInstance_AdditionalReminderDetails, 
             T.AdditionalConfirmationDetails AS RegistrationInstance_AdditionalConfirmationDetails, 
+            T.RegistrationWorkflowTypeId AS RegistrationInstance_RegistrationWorkflowTypeId, 
             T.CreatedDateTime AS RegistrationInstance_CreatedDateTime, 
             T.ModifiedDateTime AS RegistrationInstance_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS RegistrationInstance_CreatedByPersonAliasId, 
@@ -1324,7 +1327,7 @@
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.RegistrationTemplate"><![CDATA[
     SELECT VALUE -- Constructing RegistrationTemplate
-        [CodeFirstDatabaseSchema.RegistrationTemplate](T1.RegistrationTemplate_Id, T1.RegistrationTemplate_Name, T1.RegistrationTemplate_CategoryId, T1.RegistrationTemplate_GroupTypeId, T1.RegistrationTemplate_GroupMemberRoleId, T1.RegistrationTemplate_GroupMemberStatus, T1.RegistrationTemplate_Notify, T1.RegistrationTemplate_FeeTerm, T1.RegistrationTemplate_RegistrantTerm, T1.RegistrationTemplate_RegistrationTerm, T1.RegistrationTemplate_DiscountCodeTerm, T1.RegistrationTemplate_ConfirmationFromName, T1.RegistrationTemplate_ConfirmationFromEmail, T1.RegistrationTemplate_ConfirmationSubject, T1.RegistrationTemplate_ConfirmationEmailTemplate, T1.RegistrationTemplate_ReminderFromName, T1.RegistrationTemplate_ReminderFromEmail, T1.RegistrationTemplate_ReminderSubject, T1.RegistrationTemplate_ReminderEmailTemplate, T1.RegistrationTemplate_SetCostOnInstance, T1.RegistrationTemplate_Cost, T1.RegistrationTemplate_MinimumInitialPayment, T1.RegistrationTemplate_LoginRequired, T1.RegistrationTemplate_RegistrantsSameFamily, T1.RegistrationTemplate_RequestEntryName, T1.RegistrationTemplate_SuccessTitle, T1.RegistrationTemplate_SuccessText, T1.RegistrationTemplate_AllowMultipleRegistrants, T1.RegistrationTemplate_MaxRegistrants, T1.RegistrationTemplate_FinancialGatewayId, T1.RegistrationTemplate_IsActive, T1.RegistrationTemplate_AddPersonNote, T1.RegistrationTemplate_AllowGroupPlacement, T1.RegistrationTemplate_PaymentReminderFromName, T1.RegistrationTemplate_PaymentReminderFromEmail, T1.RegistrationTemplate_PaymentReminderSubject, T1.RegistrationTemplate_PaymentReminderEmailTemplate, T1.RegistrationTemplate_PaymentReminderTimeSpan, T1.RegistrationTemplate_BatchNamePrefix, T1.RegistrationTemplate_AllowExternalRegistrationUpdates, T1.RegistrationTemplate_CreatedDateTime, T1.RegistrationTemplate_ModifiedDateTime, T1.RegistrationTemplate_CreatedByPersonAliasId, T1.RegistrationTemplate_ModifiedByPersonAliasId, T1.RegistrationTemplate_Guid, T1.RegistrationTemplate_ForeignId, T1.RegistrationTemplate_ForeignGuid, T1.RegistrationTemplate_ForeignKey)
+        [CodeFirstDatabaseSchema.RegistrationTemplate](T1.RegistrationTemplate_Id, T1.RegistrationTemplate_Name, T1.RegistrationTemplate_CategoryId, T1.RegistrationTemplate_GroupTypeId, T1.RegistrationTemplate_GroupMemberRoleId, T1.RegistrationTemplate_GroupMemberStatus, T1.RegistrationTemplate_Notify, T1.RegistrationTemplate_FeeTerm, T1.RegistrationTemplate_RegistrantTerm, T1.RegistrationTemplate_RegistrationTerm, T1.RegistrationTemplate_DiscountCodeTerm, T1.RegistrationTemplate_ConfirmationFromName, T1.RegistrationTemplate_ConfirmationFromEmail, T1.RegistrationTemplate_ConfirmationSubject, T1.RegistrationTemplate_ConfirmationEmailTemplate, T1.RegistrationTemplate_ReminderFromName, T1.RegistrationTemplate_ReminderFromEmail, T1.RegistrationTemplate_ReminderSubject, T1.RegistrationTemplate_ReminderEmailTemplate, T1.RegistrationTemplate_SetCostOnInstance, T1.RegistrationTemplate_Cost, T1.RegistrationTemplate_MinimumInitialPayment, T1.RegistrationTemplate_LoginRequired, T1.RegistrationTemplate_RegistrantsSameFamily, T1.RegistrationTemplate_RequestEntryName, T1.RegistrationTemplate_SuccessTitle, T1.RegistrationTemplate_SuccessText, T1.RegistrationTemplate_AllowMultipleRegistrants, T1.RegistrationTemplate_MaxRegistrants, T1.RegistrationTemplate_FinancialGatewayId, T1.RegistrationTemplate_IsActive, T1.RegistrationTemplate_AddPersonNote, T1.RegistrationTemplate_AllowGroupPlacement, T1.RegistrationTemplate_PaymentReminderFromName, T1.RegistrationTemplate_PaymentReminderFromEmail, T1.RegistrationTemplate_PaymentReminderSubject, T1.RegistrationTemplate_PaymentReminderEmailTemplate, T1.RegistrationTemplate_PaymentReminderTimeSpan, T1.RegistrationTemplate_BatchNamePrefix, T1.RegistrationTemplate_AllowExternalRegistrationUpdates, T1.RegistrationTemplate_RegistrationWorkflowTypeId, T1.RegistrationTemplate_CreatedDateTime, T1.RegistrationTemplate_ModifiedDateTime, T1.RegistrationTemplate_CreatedByPersonAliasId, T1.RegistrationTemplate_ModifiedByPersonAliasId, T1.RegistrationTemplate_Guid, T1.RegistrationTemplate_ForeignId, T1.RegistrationTemplate_ForeignGuid, T1.RegistrationTemplate_ForeignKey)
     FROM (
         SELECT 
             T.Id AS RegistrationTemplate_Id, 
@@ -1367,6 +1370,7 @@
             T.PaymentReminderTimeSpan AS RegistrationTemplate_PaymentReminderTimeSpan, 
             T.BatchNamePrefix AS RegistrationTemplate_BatchNamePrefix, 
             T.AllowExternalRegistrationUpdates AS RegistrationTemplate_AllowExternalRegistrationUpdates, 
+            T.RegistrationWorkflowTypeId AS RegistrationTemplate_RegistrationWorkflowTypeId, 
             T.CreatedDateTime AS RegistrationTemplate_CreatedDateTime, 
             T.ModifiedDateTime AS RegistrationTemplate_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS RegistrationTemplate_CreatedByPersonAliasId, 
@@ -3588,7 +3592,7 @@
     ) AS T1]]></view>
     <view extent="RockContext.Attendances"><![CDATA[
     SELECT VALUE -- Constructing Attendances
-        [Rock.Data.Attendance](T1.Attendance_Id, T1.Attendance_LocationId, T1.Attendance_CampusId, T1.Attendance_ScheduleId, T1.Attendance_GroupId, T1.Attendance_PersonAliasId, T1.Attendance_DeviceId, T1.Attendance_SearchTypeValueId, T1.Attendance_AttendanceCodeId, T1.Attendance_QualifierValueId, T1.Attendance_StartDateTime, T1.Attendance_EndDateTime, T1.Attendance_RSVP, T1.Attendance_DidAttend, T1.Attendance_DidNotOccur, T1.Attendance_Processed, T1.Attendance_Note, T1.Attendance_SundayDate, T1.Attendance_CreatedDateTime, T1.Attendance_ModifiedDateTime, T1.Attendance_CreatedByPersonAliasId, T1.Attendance_ModifiedByPersonAliasId, T1.Attendance_Guid, T1.Attendance_ForeignId, T1.Attendance_ForeignGuid, T1.Attendance_ForeignKey)
+        [Rock.Data.Attendance](T1.Attendance_Id, T1.Attendance_LocationId, T1.Attendance_CampusId, T1.Attendance_ScheduleId, T1.Attendance_GroupId, T1.Attendance_PersonAliasId, T1.Attendance_DeviceId, T1.Attendance_SearchTypeValueId, T1.Attendance_SearchValue, T1.Attendance_SearchResultGroupId, T1.Attendance_AttendanceCodeId, T1.Attendance_QualifierValueId, T1.Attendance_StartDateTime, T1.Attendance_EndDateTime, T1.Attendance_RSVP, T1.Attendance_DidAttend, T1.Attendance_DidNotOccur, T1.Attendance_Processed, T1.Attendance_Note, T1.Attendance_SundayDate, T1.Attendance_CreatedDateTime, T1.Attendance_ModifiedDateTime, T1.Attendance_CreatedByPersonAliasId, T1.Attendance_ModifiedByPersonAliasId, T1.Attendance_Guid, T1.Attendance_ForeignId, T1.Attendance_ForeignGuid, T1.Attendance_ForeignKey)
     FROM (
         SELECT 
             T.Id AS Attendance_Id, 
@@ -3599,6 +3603,8 @@
             T.PersonAliasId AS Attendance_PersonAliasId, 
             T.DeviceId AS Attendance_DeviceId, 
             T.SearchTypeValueId AS Attendance_SearchTypeValueId, 
+            T.SearchValue AS Attendance_SearchValue, 
+            T.SearchResultGroupId AS Attendance_SearchResultGroupId, 
             T.AttendanceCodeId AS Attendance_AttendanceCodeId, 
             T.QualifierValueId AS Attendance_QualifierValueId, 
             T.StartDateTime AS Attendance_StartDateTime, 
@@ -4732,7 +4738,7 @@
     ) AS T1]]></view>
     <view extent="RockContext.RegistrationInstances"><![CDATA[
     SELECT VALUE -- Constructing RegistrationInstances
-        [Rock.Data.RegistrationInstance](T1.RegistrationInstance_Id, T1.RegistrationInstance_Name, T1.RegistrationInstance_RegistrationTemplateId, T1.RegistrationInstance_StartDateTime, T1.RegistrationInstance_EndDateTime, T1.RegistrationInstance_SendReminderDateTime, T1.RegistrationInstance_ReminderSent, T1.RegistrationInstance_Details, T1.RegistrationInstance_MaxAttendees, T1.RegistrationInstance_AccountId, T1.RegistrationInstance_Cost, T1.RegistrationInstance_MinimumInitialPayment, T1.RegistrationInstance_IsActive, T1.RegistrationInstance_ContactPersonAliasId, T1.RegistrationInstance_ContactPhone, T1.RegistrationInstance_ContactEmail, T1.RegistrationInstance_AdditionalReminderDetails, T1.RegistrationInstance_AdditionalConfirmationDetails, T1.RegistrationInstance_CreatedDateTime, T1.RegistrationInstance_ModifiedDateTime, T1.RegistrationInstance_CreatedByPersonAliasId, T1.RegistrationInstance_ModifiedByPersonAliasId, T1.RegistrationInstance_Guid, T1.RegistrationInstance_ForeignId, T1.RegistrationInstance_ForeignGuid, T1.RegistrationInstance_ForeignKey)
+        [Rock.Data.RegistrationInstance](T1.RegistrationInstance_Id, T1.RegistrationInstance_Name, T1.RegistrationInstance_RegistrationTemplateId, T1.RegistrationInstance_StartDateTime, T1.RegistrationInstance_EndDateTime, T1.RegistrationInstance_SendReminderDateTime, T1.RegistrationInstance_ReminderSent, T1.RegistrationInstance_Details, T1.RegistrationInstance_MaxAttendees, T1.RegistrationInstance_AccountId, T1.RegistrationInstance_Cost, T1.RegistrationInstance_MinimumInitialPayment, T1.RegistrationInstance_IsActive, T1.RegistrationInstance_ContactPersonAliasId, T1.RegistrationInstance_ContactPhone, T1.RegistrationInstance_ContactEmail, T1.RegistrationInstance_AdditionalReminderDetails, T1.RegistrationInstance_AdditionalConfirmationDetails, T1.RegistrationInstance_RegistrationWorkflowTypeId, T1.RegistrationInstance_CreatedDateTime, T1.RegistrationInstance_ModifiedDateTime, T1.RegistrationInstance_CreatedByPersonAliasId, T1.RegistrationInstance_ModifiedByPersonAliasId, T1.RegistrationInstance_Guid, T1.RegistrationInstance_ForeignId, T1.RegistrationInstance_ForeignGuid, T1.RegistrationInstance_ForeignKey)
     FROM (
         SELECT 
             T.Id AS RegistrationInstance_Id, 
@@ -4753,6 +4759,7 @@
             T.ContactEmail AS RegistrationInstance_ContactEmail, 
             T.AdditionalReminderDetails AS RegistrationInstance_AdditionalReminderDetails, 
             T.AdditionalConfirmationDetails AS RegistrationInstance_AdditionalConfirmationDetails, 
+            T.RegistrationWorkflowTypeId AS RegistrationInstance_RegistrationWorkflowTypeId, 
             T.CreatedDateTime AS RegistrationInstance_CreatedDateTime, 
             T.ModifiedDateTime AS RegistrationInstance_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS RegistrationInstance_CreatedByPersonAliasId, 
@@ -4894,7 +4901,7 @@
     ) AS T1]]></view>
     <view extent="RockContext.RegistrationTemplates"><![CDATA[
     SELECT VALUE -- Constructing RegistrationTemplates
-        [Rock.Data.RegistrationTemplate](T1.RegistrationTemplate_Id, T1.RegistrationTemplate_Name, T1.RegistrationTemplate_CategoryId, T1.RegistrationTemplate_GroupTypeId, T1.RegistrationTemplate_GroupMemberRoleId, T1.RegistrationTemplate_GroupMemberStatus, T1.RegistrationTemplate_Notify, T1.RegistrationTemplate_FeeTerm, T1.RegistrationTemplate_RegistrantTerm, T1.RegistrationTemplate_RegistrationTerm, T1.RegistrationTemplate_DiscountCodeTerm, T1.RegistrationTemplate_ConfirmationFromName, T1.RegistrationTemplate_ConfirmationFromEmail, T1.RegistrationTemplate_ConfirmationSubject, T1.RegistrationTemplate_ConfirmationEmailTemplate, T1.RegistrationTemplate_ReminderFromName, T1.RegistrationTemplate_ReminderFromEmail, T1.RegistrationTemplate_ReminderSubject, T1.RegistrationTemplate_ReminderEmailTemplate, T1.RegistrationTemplate_SetCostOnInstance, T1.RegistrationTemplate_Cost, T1.RegistrationTemplate_MinimumInitialPayment, T1.RegistrationTemplate_LoginRequired, T1.RegistrationTemplate_RegistrantsSameFamily, T1.RegistrationTemplate_RequestEntryName, T1.RegistrationTemplate_SuccessTitle, T1.RegistrationTemplate_SuccessText, T1.RegistrationTemplate_AllowMultipleRegistrants, T1.RegistrationTemplate_MaxRegistrants, T1.RegistrationTemplate_FinancialGatewayId, T1.RegistrationTemplate_IsActive, T1.RegistrationTemplate_AddPersonNote, T1.RegistrationTemplate_AllowGroupPlacement, T1.RegistrationTemplate_PaymentReminderFromName, T1.RegistrationTemplate_PaymentReminderFromEmail, T1.RegistrationTemplate_PaymentReminderSubject, T1.RegistrationTemplate_PaymentReminderEmailTemplate, T1.RegistrationTemplate_PaymentReminderTimeSpan, T1.RegistrationTemplate_BatchNamePrefix, T1.RegistrationTemplate_AllowExternalRegistrationUpdates, T1.RegistrationTemplate_CreatedDateTime, T1.RegistrationTemplate_ModifiedDateTime, T1.RegistrationTemplate_CreatedByPersonAliasId, T1.RegistrationTemplate_ModifiedByPersonAliasId, T1.RegistrationTemplate_Guid, T1.RegistrationTemplate_ForeignId, T1.RegistrationTemplate_ForeignGuid, T1.RegistrationTemplate_ForeignKey)
+        [Rock.Data.RegistrationTemplate](T1.RegistrationTemplate_Id, T1.RegistrationTemplate_Name, T1.RegistrationTemplate_CategoryId, T1.RegistrationTemplate_GroupTypeId, T1.RegistrationTemplate_GroupMemberRoleId, T1.RegistrationTemplate_GroupMemberStatus, T1.RegistrationTemplate_Notify, T1.RegistrationTemplate_FeeTerm, T1.RegistrationTemplate_RegistrantTerm, T1.RegistrationTemplate_RegistrationTerm, T1.RegistrationTemplate_DiscountCodeTerm, T1.RegistrationTemplate_ConfirmationFromName, T1.RegistrationTemplate_ConfirmationFromEmail, T1.RegistrationTemplate_ConfirmationSubject, T1.RegistrationTemplate_ConfirmationEmailTemplate, T1.RegistrationTemplate_ReminderFromName, T1.RegistrationTemplate_ReminderFromEmail, T1.RegistrationTemplate_ReminderSubject, T1.RegistrationTemplate_ReminderEmailTemplate, T1.RegistrationTemplate_SetCostOnInstance, T1.RegistrationTemplate_Cost, T1.RegistrationTemplate_MinimumInitialPayment, T1.RegistrationTemplate_LoginRequired, T1.RegistrationTemplate_RegistrantsSameFamily, T1.RegistrationTemplate_RequestEntryName, T1.RegistrationTemplate_SuccessTitle, T1.RegistrationTemplate_SuccessText, T1.RegistrationTemplate_AllowMultipleRegistrants, T1.RegistrationTemplate_MaxRegistrants, T1.RegistrationTemplate_FinancialGatewayId, T1.RegistrationTemplate_IsActive, T1.RegistrationTemplate_AddPersonNote, T1.RegistrationTemplate_AllowGroupPlacement, T1.RegistrationTemplate_PaymentReminderFromName, T1.RegistrationTemplate_PaymentReminderFromEmail, T1.RegistrationTemplate_PaymentReminderSubject, T1.RegistrationTemplate_PaymentReminderEmailTemplate, T1.RegistrationTemplate_PaymentReminderTimeSpan, T1.RegistrationTemplate_BatchNamePrefix, T1.RegistrationTemplate_AllowExternalRegistrationUpdates, T1.RegistrationTemplate_RegistrationWorkflowTypeId, T1.RegistrationTemplate_CreatedDateTime, T1.RegistrationTemplate_ModifiedDateTime, T1.RegistrationTemplate_CreatedByPersonAliasId, T1.RegistrationTemplate_ModifiedByPersonAliasId, T1.RegistrationTemplate_Guid, T1.RegistrationTemplate_ForeignId, T1.RegistrationTemplate_ForeignGuid, T1.RegistrationTemplate_ForeignKey)
     FROM (
         SELECT 
             T.Id AS RegistrationTemplate_Id, 
@@ -4937,6 +4944,7 @@
             T.PaymentReminderTimeSpan AS RegistrationTemplate_PaymentReminderTimeSpan, 
             T.BatchNamePrefix AS RegistrationTemplate_BatchNamePrefix, 
             T.AllowExternalRegistrationUpdates AS RegistrationTemplate_AllowExternalRegistrationUpdates, 
+            T.RegistrationWorkflowTypeId AS RegistrationTemplate_RegistrationWorkflowTypeId, 
             T.CreatedDateTime AS RegistrationTemplate_CreatedDateTime, 
             T.ModifiedDateTime AS RegistrationTemplate_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS RegistrationTemplate_CreatedByPersonAliasId, 
