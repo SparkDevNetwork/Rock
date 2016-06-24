@@ -46,6 +46,22 @@
   }
 }
 
+// Easier for non technical users to add a list item in a WYSIWYG editor than to
+// duplicate markup in the code editor
+.list-group-auto {
+  > li {
+    .list-group-item;
+    border-left: none;
+    border-right: none;
+    &:first-child {
+      border-top: none;
+    }
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+}
+
 // Overrides
 // -------------------------
 
