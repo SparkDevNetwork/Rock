@@ -69,8 +69,12 @@
                 });
             }
             this.events={
-                'summernote.paste':function(we,e){
-                    if(options.cleaner.action=='both'||options.cleaner.action=='paste'){
+                'summernote.paste': function (we, e) {
+
+                    // disable plugin for now
+                    return;
+
+                    if (options.cleaner.action == 'both' || options.cleaner.action == 'paste') {
                         e.preventDefault();
                         var ua=window.navigator.userAgent;
                         var msie=ua.indexOf("MSIE ");
