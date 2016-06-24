@@ -102,6 +102,12 @@
                             __doPostBack('<%=upDetail.ClientID %>', 'select-group:' + $li.attr('data-key'));
                         }
                     }
+
+                    // Used to scroll to the top of the 'details' section when it's currently off-screen.
+                    // We tried using the "if (!$('.js-area-group-details').visible(true))" approach but it wasn't as awesome.
+                    $('html, body').animate({
+                        scrollTop: $('.js-area-group-details').offset().top + 'px'
+                    }, 400);
                 });
 
                 // javascript to make the Reorder buttons work on the CheckinGroupTypeEditor controls
