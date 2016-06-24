@@ -134,7 +134,7 @@ namespace Rock.Migrations
                 Below is an update from the self-service kiosk.
             </p>
 
-            {% if PersonId != '' %}
+            {% if PersonId != '''' %}
                 <p>
                     <a href=""{{ GlobalAttribute.InternalApplicationRoot }}/Person/{{ PersonId }}"">{{ FirstName }} {{ LastName }}''s Record</a>
                 </p>
