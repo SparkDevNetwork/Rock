@@ -78,11 +78,6 @@ namespace RockWeb.Blocks.Reporting
             gMetricValues.DataKeyNames = new string[] { "Id" };
             gMetricValues.Actions.AddClick += gMetricValues_Add;
             gMetricValues.GridRebind += gMetricValues_GridRebind;
-
-            // Block Security and special attributes (RockPage takes care of View)
-            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
-            gMetricValues.Actions.ShowAdd = canAddEditDelete;
-            gMetricValues.IsDeleteEnabled = canAddEditDelete;
         }
 
         /// <summary>
@@ -563,6 +558,20 @@ namespace RockWeb.Blocks.Reporting
 
             hfMetricId.Value = metricId.ToString();
             hfMetricCategoryId.Value = metricCategoryId.ToString();
+
+            gMetricValues.Actions.ShowAdd = false;
+            gMetricValues.IsDeleteEnabled = false;
+
+            if ( metricId.HasValue && metricId.Value > 0 )
+            {
+                var metric = new MetricService( new RockContext() ).Get( metricId.Value );
+                if ( UserCanEdit || ( metric != null && metric.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) )
+                {
+                    // Block Security and special attributes (RockPage takes care of View)
+                    gMetricValues.Actions.ShowAdd = true;
+                    gMetricValues.IsDeleteEnabled = true;
+                }
+            }
         }
 
         #endregion
