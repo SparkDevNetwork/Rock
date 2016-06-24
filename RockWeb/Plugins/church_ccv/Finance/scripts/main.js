@@ -1,1 +1,181 @@
-"use strict"; function initAutocomplete() { autocomplete = new google.maps.places.Autocomplete(document.getElementById("street"), { types: ["geocode"] }), autocomplete.addListener("place_changed", fillInAddress) } function fillInAddress() { var t = autocomplete.getPlace(); giveForm.address.street = t.name; for (var e = 0; e < t.address_components.length; e++) { var a = t.address_components[e].types[0]; if (formMapping[a]) { var n = t.address_components[e].short_name; giveForm.address[formMapping[a]] = n } } } function capitalizeEachWord(t) { return t.replace(/\w\S*/g, function (t) { return t.charAt(0).toUpperCase() + t.substr(1).toLowerCase() }) } function getInitialData() { var t = moment().format("YYYY-MM-DD"); return { amount: "", repeating: !1, firstGift: t, schedule: "biweekly", firstName: "", lastName: "", showSplitNameField: !1, email: "", fund: "", card: { number: "", exp: "", cvc: "" }, phone: "", address: { street: "", city: "", state: "", zip: "" }, givingFunds: givingFunds } } function geoDistance(t, e, a, n, i) { var o = Math.PI * t / 180, r = Math.PI * a / 180, s = e - n, u = Math.PI * s / 180, c = Math.sin(o) * Math.sin(r) + Math.cos(o) * Math.cos(r) * Math.cos(u); return c = Math.acos(c), c = 180 * c / Math.PI, c = 60 * c * 1.1515, "K" == i && (c = 1.609344 * c), "N" == i && (c = .8684 * c), c } function findNearestLocation(t, e) { for (var a = Number.POSITIVE_INFINITY, n = {}, i = 0; i < e.length; i++) { var o = e[i], r = geoDistance(t.latitude, t.longitude, o.latitude, o.longitude); a > r && (a = r, n = o) } return n } var autocomplete, formMapping = { locality: "city", administrative_area_level_1: "state", postal_code: "zip" }, giveForm = new Vue({ el: "#givingForm", data: getInitialData, computed: { fullName: function () { return (this.firstName + " " + this.lastName).trim() }, todaysDate: function () { return moment().format("YYYY-MM-DD") } }, watch: { fullName: function (t) { var e = document.createEvent("Event"); e.initEvent("change", !0, !0), document.getElementById("fullName").dispatchEvent(e) } }, methods: { splitFullName: function (t) { var e = t.target.value.split(" ").map(capitalizeEachWord); this.firstName = e.splice(0, 1)[0], this.lastName = e.join(" "), this.refreshNameSplit() }, refreshNameSplit: function () { this.showSplitNameField = this.lastName.length > 0 }, resetData: function () { this.$data = getInitialData(), this.$nextTick(function () { $(".js-card-group input").each(function () { var t = document.createEvent("Event"); t.initEvent("keyup", !0, !0), t.keyCode = 8, this.dispatchEvent(t) }), $(".js-repeating-toggle").bootstrapSwitch("state", this.repeating) }) } } }), isMobile = { Windows: function () { return /IEMobile/i.test(navigator.userAgent) }, Android: function () { return /Android/i.test(navigator.userAgent) }, BlackBerry: function () { return /BlackBerry/i.test(navigator.userAgent) }, iOS: function () { return /iPhone|iPad|iPod/i.test(navigator.userAgent) }, any: function () { return isMobile.Android() || isMobile.BlackBerry() || isMobile.iOS() || isMobile.Windows() } }; isMobile.iOS() ? ($("#amount").attr("pattern", "[0-9]*"), $("#amount").inputmask({ mask: "9{*}.99", numericInput: !0 })) : isMobile.Android() ? $("#amount").attr("type", "number") : $("#amount").inputmask({ rightAlign: !1, groupSeparator: ",", alias: "numeric", placeholder: "0", autoGroup: !0, digits: 2, digitsOptional: !1, clearMaskOnLostFocus: !1 }), $("#phone").inputmask(), $("form").card({ container: ".js-card-graphic-holder", formSelectors: { numberInput: "input#card_number", expiryInput: "input#card_expiry", cvcInput: "input#card_cvc", nameInput: "input#fullName" } }), $(".js-repeating-toggle").bootstrapSwitch({ onColor: "success", onSwitchChange: function (t, e) { giveForm.repeating = e } }), 0 == Modernizr.inputtypes.date && $(".js-firstgift").datepicker({ format: "yyyy-mm-dd", startDate: new Date, todayHighlight: !0, todayBtn: "linked", autoclose: !0 }); var campusFundLocations = [{ name: "Anthem Campus Fund", latitude: 33.84683, longitude: -112.13706 }, { name: "Avondale Campus Fund", latitude: 33.4636054, longitude: -112.301477 }, { name: "East Valley Campus Fund", latitude: 33.3912, longitude: -111.61549 }, { name: "Peoria Campus Fund", latitude: 33.7110943, longitude: -112.2088517 }, { name: "Scottsdale Campus Fund", latitude: 33.65789, longitude: -111.88851 }, { name: "Surprise Campus Fund", lat: 33.5875394, lng: -112.3785948 }]; $.getJSON("https://freegeoip.net/json/", function (t) { var e = findNearestLocation(t, campusFundLocations); "" == giveForm.fund && (giveForm.fund = e.name) });
+var autocomplete
+var formMapping = {
+    locality: 'city',
+    administrative_area_level_1: 'state',
+    postal_code: 'zip'
+}
+
+function initAutocomplete() {
+    autocomplete = new google.maps.places.Autocomplete(
+      document.getElementById('street'),
+      {
+          types: ['geocode']
+      }
+    )
+    autocomplete.addListener('place_changed', fillInAddress)
+}
+
+function fillInAddress() {
+    var place = autocomplete.getPlace()
+    giveForm.address.street = place.name
+    for (var i = 0; i < place.address_components.length; i++) {
+        var type = place.address_components[i].types[0]
+        if (formMapping[type]) {
+            var val = place.address_components[i]['short_name']
+            giveForm.address[formMapping[type]] = val
+        }
+    }
+}
+
+function capitalizeEachWord(str) {
+    return str.replace(/\w\S*/g, function (txt) {
+        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+    })
+}
+
+function getInitialData() {
+    var today = moment().format('YYYY-MM-DD')
+    return {
+        amount: '',
+        repeating: false,
+        firstGift: today,
+        schedule: 'biweekly',
+        firstName: '',
+        lastName: '',
+        showSplitNameField: false,
+        email: '',
+        fund: '',
+        card: {
+            number: '',
+            exp: '',
+            cvc: ''
+        },
+        phone: '',
+        address: {
+            street: '',
+            city: '',
+            state: '',
+            zip: ''
+        },
+        givingFunds: givingFunds
+    }
+}
+
+var giveForm = new Vue({
+    el: '#givingForm',
+    data: getInitialData,
+    computed: {
+        fullName: function () {
+            return (this.firstName + ' ' + this.lastName).trim()
+        },
+        todaysDate: function () {
+            return moment().format('YYYY-MM-DD')
+        }
+    },
+    watch: {
+        'fullName': function (val) {
+            // Manually trigger update event for card display
+            var event = document.createEvent('Event');
+            event.initEvent('change', true, true)
+            document.getElementById('fullName').dispatchEvent(event)
+        },
+    },
+    methods: {
+
+        splitFullName: function (e) {
+            var name = e.target.value.split(' ').map(capitalizeEachWord)
+            this.firstName = name.splice(0, 1)[0]
+            this.lastName = name.join(' ')
+            this.refreshNameSplit()
+        },
+
+        refreshNameSplit: function () {
+            this.showSplitNameField = (this.lastName.length > 0)
+        },
+
+        resetData: function () {
+            this.$data = getInitialData()
+            this.$nextTick(function () {
+                // Trigger card graphic update manually
+                $('.js-card-group input').each(function () {
+                    var event = document.createEvent('Event');
+                    event.initEvent('keyup', true, true)
+                    // Need to send backspace to card number to trigger card type reset,
+                    // other fields only require a 'change' event
+                    event.keyCode = 8; // Backspace
+                    this.dispatchEvent(event)
+                })
+                // Reset the bootstrap-switch
+                $('.js-repeating-toggle').bootstrapSwitch('state', this.repeating)
+            })
+        }
+    }
+})
+
+var isMobile = {
+    Windows: function () {
+        return /IEMobile/i.test(navigator.userAgent);
+    },
+    Android: function () {
+        return /Android/i.test(navigator.userAgent);
+    },
+    BlackBerry: function () {
+        return /BlackBerry/i.test(navigator.userAgent);
+    },
+    iOS: function () {
+        return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    },
+    any: function () {
+        return (isMobile.Android() || isMobile.BlackBerry() || isMobile.iOS() || isMobile.Windows());
+    }
+}
+
+if (isMobile.iOS()) {
+    $('#amount').attr('pattern', '[0-9]*')
+    $('#amount').inputmask({
+        mask: '9{*}.99',
+        numericInput: true,
+    })
+} else if (isMobile.Android()) {
+    $('#amount').attr('type', 'number')
+} else {
+    $('#amount').inputmask({
+        rightAlign: false,
+        groupSeparator: ",",
+        alias: "numeric",
+        placeholder: "0",
+        autoGroup: true,
+        digits: 2,
+        digitsOptional: false,
+        clearMaskOnLostFocus: false
+    })
+}
+
+$('#phone').inputmask()
+
+$('form').card({
+    container: '.js-card-graphic-holder',
+    formSelectors: {
+        numberInput: 'input#card_number',
+        expiryInput: 'input#card_expiry',
+        cvcInput: 'input#card_cvc',
+        nameInput: 'input#fullName'
+    }
+})
+
+$('.js-repeating-toggle').bootstrapSwitch({
+    onColor: 'success',
+    onSwitchChange: function (event, state) {
+        giveForm.repeating = state
+    }
+})
+
+if (Modernizr.inputtypes.date == false) {
+    $('.js-firstgift').datepicker({
+        format: 'yyyy-mm-dd',
+        startDate: new Date(),
+        todayHighlight: true,
+        todayBtn: 'linked',
+        autoclose: true
+    })
+}
