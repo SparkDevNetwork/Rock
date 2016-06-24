@@ -508,6 +508,7 @@
     <Compile Include="PersonProfile\Badge\GeofencedByGroup.cs" />
     <Compile Include="PersonProfile\Badge\DISC.cs" />
     <Compile Include="PersonProfile\Badge\InGroupWithPurpose.cs" />
+    <Compile Include="Plugin\HotFixes\003_FixSystemEmailQuote.cs" />
     <Compile Include="Plugin\HotFixes\002_CheckinGradeRequired.cs" />
     <Compile Include="Plugin\HotFixes\001_FixPhoneCountryCode.cs" />
     <Compile Include="Reporting\ComparisonHelper.cs" />

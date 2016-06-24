@@ -142,12 +142,12 @@ SET [Body] = '{{ GlobalAttribute.EmailHeader }}
 {% for attribute in Action.FormAttributes %}
 
     
-    {% if attribute.IsVisible and attribute.Value != '' %}
+    {% if attribute.IsVisible and attribute.Value != '''' %}
         <div>
             <strong>{{ attribute.Name }}:</strong>
             <br />
             
-                {% if attribute.Url and attribute.Url != '' %}
+                {% if attribute.Url and attribute.Url != '''' %}
                     <a href=''{{ attribute.Url }}''>{{ attribute.Value }}</a>
                 {% else %}
                     {{ attribute.Value }}
