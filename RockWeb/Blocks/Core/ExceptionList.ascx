@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ExceptionList.ascx.cs" Inherits="RockWeb.Blocks.Administraton.ExceptionList" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ExceptionList.ascx.cs" Inherits="RockWeb.Blocks.Administration.ExceptionList" %>
 
 <script type="text/javascript">
     function confirmExceptionListClear() {
@@ -50,55 +50,11 @@
                     <Rock:Grid ID="gExceptionList" runat="server" AllowSorting="true" OnRowSelected="gExceptionList_RowSelected" EmptyDataText="No Exceptions Found">
                         <Columns>
                             <Rock:DateTimeField DataField="LastExceptionDate" HeaderText="Last Date" ItemStyle-Wrap="false" SortExpression="LastExceptionDate" ItemStyle-HorizontalAlign="Left" />
-                            <Rock:RockBoundField DataField="SiteName" HeaderText="Site Name" SortExpression="SiteName" />
-                            <Rock:RockBoundField DataField="PageName" HeaderText="Page" SortExpression="PageName" />
-                            <Rock:RockBoundField DataField="Description" HeaderText="Exception" SortExpression="Description" TruncateLength="255"  />
+                            <Rock:RockBoundField DataField="Description" HeaderText="Exception" SortExpression="Description" TruncateLength="255" HtmlEncode="false" />
                             <Rock:RockBoundField DataField="TotalCount" HeaderText="Total Count" SortExpression="TotalCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                             <Rock:RockBoundField DataField="SubsetCount" SortExpression="SubsetCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                         </Columns>
                     </Rock:Grid>
-                </div>
-
-            </div>
-
-        </asp:Panel>
-
-        <asp:Panel ID="pnlExceptionOccurrences" CssClass="panel panel-block" runat="server" Visible="false">
-            <asp:HiddenField ID="hfBaseExceptionID" runat="server" />
-            
-            <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-bug"></i> <asp:Literal ID="lDetailTitle" runat="server" /></h1>
-            </div>
-            <div class="panel-body">
-
-                <div class="row">
-                    <div class="col-md-12">
-                        <p>
-                            Below is a list of each occurrence of this error.
-                        </p>
-                        <asp:Literal ID="lblMainDetails" runat="server" />
-                    </div>
-                </div>
-
-                <h4>Exception List</h4>
-
-                <div class="grid margin-t-md">
-                    <Rock:Grid ID="gExceptionOccurrences" runat="server" AllowSorting="true">
-                        <Columns>
-                            <Rock:DateTimeField DataField="CreatedDateTime" HeaderText="Date/Time" SortExpression="CreatedDateTime" />
-                            <Rock:RockBoundField DataField="PageName" HeaderText="Page/URL" SortExpression="PageName" />
-                            <Rock:RockBoundField DataField="FullName" HeaderText="Logged In User" SortExpression="FullName" />
-                            <Rock:RockBoundField DataField="Description" HeaderText="Exception" SortExpression="Description" />
-                        </Columns>
-                    </Rock:Grid>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-1">
-                        <asp:LinkButton ID="btnReturnToList" runat="server" CssClass="btn btn-action btn-sm" OnClick="btnReturnToList_Click" CausesValidation="false">
-                            <i class="fa fa-arrow-left"></i> Return to List
-                        </asp:LinkButton>
-                    </div>
                 </div>
 
             </div>
