@@ -571,52 +571,55 @@ namespace Rock.Web.UI.Controls
         public void RenderBaseControl( HtmlTextWriter writer )
         {
             string summernoteInitScriptFormat = @"
-var summerNoteEditor = $('#{0}').summernote({{
-    height: '{2}', //set editable area's height
-    toolbar: Rock.htmlEditor.toolbar_RockCustomConfig{11},
+$(document).ready( function() {{
+    var summerNoteEditor_{0} = $('#{0}').summernote({{
+        height: '{2}', //set editable area's height
+        toolbar: Rock.htmlEditor.toolbar_RockCustomConfig{11},
 
-    callbacks: {{
-       {12} 
-    }},
+        callbacks: {{
+           {12} 
+        }},
 
-    buttons: {{
-        rockfilebrowser: RockFileBrowser,
-        rockimagebrowser: RockImageBrowser, 
-        rockmergefield: RockMergeField,
-        rockcodeeditor: RockCodeEditor
-    }},
+        buttons: {{
+            rockfilebrowser: RockFileBrowser,
+            rockimagebrowser: RockImageBrowser, 
+            rockmergefield: RockMergeField,
+            rockcodeeditor: RockCodeEditor
+        }},
 
-    rockFileBrowserOptions: {{ 
-        enabled: {3},
-        documentFolderRoot: '{4}', 
-        imageFolderRoot: '{5}',
-        imageFileTypeWhiteList: '{6}',
-        fileTypeBlackList: '{7}'
-    }},
+        rockFileBrowserOptions: {{ 
+            enabled: {3},
+            documentFolderRoot: '{4}', 
+            imageFolderRoot: '{5}',
+            imageFileTypeWhiteList: '{6}',
+            fileTypeBlackList: '{7}'
+        }},
 
-    rockMergeFieldOptions: {{ 
-        enabled: {9},
-        mergeFields: '{8}' 
-    }},
-    rockTheme: '{10}',
+        rockMergeFieldOptions: {{ 
+            enabled: {9},
+            mergeFields: '{8}' 
+        }},
+        rockTheme: '{10}',
 
-    codeEditorOptions: {{
-        controlId: '{13}',
-        inCodeEditorModeHiddenFieldId: '{14}'
-    }},
+        codeEditorOptions: {{
+            controlId: '{13}',
+            inCodeEditorModeHiddenFieldId: '{14}'
+        }},
 
-    // summernote-cleaner.js plugin options
-    cleaner:{{
-            el:'{0}',  // Element ID or Class used to Initialise Summernote.
-            notTime:2400, // Time to display Notifications.
-            action:'paste', // both|button|paste 'button' only cleans via toolbar button, 'paste' only clean when pasting content, both does both options.
+        // summernote-cleaner.js plugin options
+        cleaner:{{
+                el:'{0}',  // Element ID or Class used to Initialise Summernote.
+                notTime:2400, // Time to display Notifications.
+                action:'paste', // both|button|paste 'button' only cleans via toolbar button, 'paste' only clean when pasting content, both does both options.
+        }}
+
+    }});
+
+    if ({15} && RockCodeEditor) {{
+        RockCodeEditor(summerNoteEditor_{0}.data('summernote')).click();
     }}
 
 }});
-
-if ({15} && RockCodeEditor) {{
-    RockCodeEditor(summerNoteEditor.data('summernote')).click();
-}}
 ";
 
             bool rockMergeFieldEnabled = MergeFields.Any();
