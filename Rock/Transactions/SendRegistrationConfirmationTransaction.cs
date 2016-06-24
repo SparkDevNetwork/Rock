@@ -16,9 +16,8 @@
 //
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.IO;
 using System.Linq;
-using System.Text;
+
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
@@ -90,30 +89,7 @@ namespace Rock.Transactions
                         string message = template.ConfirmationEmailTemplate.ResolveMergeFields( mergeFields );
 
                         var recipients = new List<string> { registration.ConfirmationEmail };
-
-                        List<System.Net.Mail.Attachment> attachments = null;
-                        if ( registration.RegistrationInstance.Linkages.FirstOrDefault() != null )
-                        {
-                            try
-                            {
-                                var eventItemOccurrence = registration.RegistrationInstance.Linkages.FirstOrDefault().EventItemOccurrence;
-                                int insertIndex = eventItemOccurrence.Schedule.iCalendarContent.IndexOf( "END:VEVENT" );
-                                string location = !string.IsNullOrWhiteSpace( eventItemOccurrence.Location ) ? eventItemOccurrence.Location : "";
-                                string nameLocation = string.Format( "SUMMARY: {0}\r\nLOCATION: {1}\r\n", eventItemOccurrence.EventItem.Name, location );
-                                StringBuilder sb = new StringBuilder();
-                                sb.Append( eventItemOccurrence.Schedule.iCalendarContent.Insert( insertIndex, nameLocation ) );
-
-                                // convert string to stream
-                                byte[] byteArray = Encoding.UTF8.GetBytes( sb.ToString() );
-                                MemoryStream stream = new MemoryStream( byteArray );
-                                var attachment = new System.Net.Mail.Attachment( stream, string.Format( "{0}.ics", eventItemOccurrence.EventItem.Name ), "text/plain" );
-                                attachments = new List<System.Net.Mail.Attachment>();
-                                attachments.Add( attachment );
-                            }
-                            catch { }
-                        }
-
-                        Email.Send( from, fromName, subject, recipients, message, AppRoot, ThemeRoot, attachments: attachments );
+                        Email.Send( from, fromName, subject, recipients, message, AppRoot, ThemeRoot );
                     }
                 }
             }
