@@ -148,5 +148,96 @@ namespace RockWeb.Plugins.church_ccv.Finance
                 ddlAccounts.Items.Add( new ListItem( account.Name, account.AccountId.ToString() ) );
             }
         }
+
+        /// <summary>
+        /// Handles the Click event of the btnSubmit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSubmit_Click( object sender, EventArgs e )
+        {
+            var amount = tbAmount.Text.AsDecimalOrNull();
+
+            var errorMessages = new List<string>();
+
+            // Validate that an amount was entered
+            if ( amount <= 0 )
+            {
+                errorMessages.Add( "Make sure you've entered an amount." );
+            }
+
+            // Validate that no negative amounts were entered
+            if ( amount < 0 )
+            {
+                errorMessages.Add( "Make sure the amount you've entered is a positive amount" );
+            }
+
+            // validate the payment schedule
+            if ( cbRepeating.Checked != null )
+            {
+                var startDate = dpStartDate.Value.AsDateTime();
+
+                if ( startDate == null )
+                {
+                    errorMessages.Add( "When scheduling a repeating payment, make sure the First Gift date is specified" );
+                }
+
+                // Make sure a repeating payment starts in the future
+                if ( startDate <= RockDateTime.Today )
+                {
+                    errorMessages.Add( "When scheduling a repeating payment, make sure the First Gift date is in the future (after today)" );
+                }
+            }
+
+            if ( string.IsNullOrWhiteSpace( tbFirstName.Value ) || string.IsNullOrWhiteSpace( tbLastName.Value ) )
+            {
+                errorMessages.Add( "Make sure to enter both a first and last name" );
+            }
+
+            if ( string.IsNullOrWhiteSpace( tbEmail.Value ) )
+            {
+                errorMessages.Add( "Make sure to enter a valid email address.  An email address is required for us to send you a payment confirmation" );
+            }
+
+            if ( string.IsNullOrWhiteSpace( tbCardNumber.Value ) )
+            {
+                errorMessages.Add( "Make sure to enter a valid credit card number" );
+            }
+
+            var currentMonth = RockDateTime.Today;
+            currentMonth = new DateTime( currentMonth.Year, currentMonth.Month, 1 );
+
+            var cardMMYY = tbCardExpiry.Value.Split( new char[] { '/' } ).Select( a => a.Trim().AsInteger() ).ToArray();
+            if (cardMMYY.Length != 2)
+            {
+                errorMessages.Add( "Make sure to enter a valid credit card expiration date" );
+            }
+            else
+            {
+                var expDateTime = new DateTime( 2000 + cardMMYY[1], cardMMYY[0], 1 );
+                if ( expDateTime < currentMonth )
+                {
+                    //errorMessages.Add( "The Credit card expiration date is expired" );
+                }
+            }
+
+            if ( string.IsNullOrWhiteSpace( tbCardCvc.Value ) )
+            {
+                errorMessages.Add( "Make sure to enter a valid credit card security code" );
+            }
+
+            if ( errorMessages.Any() )
+            {
+                var errorMessage = errorMessages.AsDelimited( "<br/>" );
+                nbMessage.NotificationBoxType = NotificationBoxType.Danger;
+                nbMessage.Title = "Before we finish...";
+                nbMessage.Text = errorMessage;
+                nbMessage.Visible = true;
+
+                return;
+            }
+
+            // TODO
+        }
     }
 }

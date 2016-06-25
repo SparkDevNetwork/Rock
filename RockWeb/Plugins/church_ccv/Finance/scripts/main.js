@@ -77,7 +77,7 @@ var giveForm = new Vue({
             // Manually trigger update event for card display
             var event = document.createEvent('Event');
             event.initEvent('change', true, true)
-            document.getElementById('fullName').dispatchEvent(event)
+            $('#givingForm .js-hf-fullname')[0].dispatchEvent(event)
         },
     },
     methods: {
@@ -131,15 +131,15 @@ var isMobile = {
 }
 
 if (isMobile.iOS()) {
-    $('#amount').attr('pattern', '[0-9]*')
-    $('#amount').inputmask({
+    $('#givingForm .js-amount').attr('pattern', '[0-9]*')
+    $('#givingForm .js-amount').inputmask({
         mask: '9{*}.99',
         numericInput: true,
     })
 } else if (isMobile.Android()) {
-    $('#amount').attr('type', 'number')
+    $('#givingForm .js-amount').attr('type', 'number')
 } else {
-    $('#amount').inputmask({
+    $('#givingForm .js-amount').inputmask({
         rightAlign: false,
         groupSeparator: ",",
         alias: "numeric",
@@ -151,15 +151,15 @@ if (isMobile.iOS()) {
     })
 }
 
-$('#phone').inputmask()
+$('#givingForm .js-phone').inputmask()
 
 $('form').card({
     container: '.js-card-graphic-holder',
     formSelectors: {
-        numberInput: 'input#card_number',
-        expiryInput: 'input#card_expiry',
-        cvcInput: 'input#card_cvc',
-        nameInput: 'input#fullName'
+        numberInput: '#givingForm .cardinput-number',
+        expiryInput: '#givingForm .cardinput-exp',
+        cvcInput: '#givingForm .cardinput-cvc',
+        nameInput: '#givingForm .js-hf-fullname'
     }
 })
 
@@ -171,7 +171,7 @@ $('.js-repeating-toggle').bootstrapSwitch({
 })
 
 if (Modernizr.inputtypes.date == false) {
-    $('.js-firstgift').datepicker({
+    $('#givingForm .js-firstgift').datepicker({
         format: 'yyyy-mm-dd',
         startDate: new Date(),
         todayHighlight: true,
