@@ -39,8 +39,9 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Displays list of people that match a given search type and term." )]
 
-    [LinkedPage("Person Detail Page")]
-    [BooleanField("Show Performance", "Displays how long the search took.", false)]
+    [LinkedPage("Person Detail Page", order: 0 )]
+    [BooleanField( "Show Birthdate", "Should a birthdate column be displayed?", false, "", 1 )]
+    [BooleanField("Show Performance", "Displays how long the search took.", false, "", 2 )]
     public partial class PersonSearch : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -213,6 +214,8 @@ namespace RockWeb.Blocks.Crm
 
         private void BindGrid()
         {
+            var birthDateCol = gPeople.ColumnsOfType<DateField>().First( c => c.DataField == "BirthDate" );
+            birthDateCol.Visible = GetAttributeValue( "ShowBirthdate" ).AsBoolean();
 
             string type = PageParameter( "SearchType" );
             string term = PageParameter( "SearchTerm" );
