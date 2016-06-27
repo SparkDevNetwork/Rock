@@ -665,6 +665,7 @@ namespace RockWeb.Blocks.Event
             RegistrationTemplate.GroupTypeId = gtpGroupType.SelectedGroupTypeId;
             RegistrationTemplate.GroupMemberRoleId = rpGroupTypeRole.GroupRoleId;
             RegistrationTemplate.GroupMemberStatus = ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>();
+            RegistrationTemplate.RegistrationWorkflowTypeId = wtpRegistrationWorkflow.SelectedValueAsInt();
             RegistrationTemplate.Notify = notify;
             RegistrationTemplate.AddPersonNote = cbAddPersonNote.Checked;
             RegistrationTemplate.LoginRequired = cbLoginRequired.Checked;
@@ -1949,6 +1950,7 @@ namespace RockWeb.Blocks.Event
             rpGroupTypeRole.GroupTypeId = RegistrationTemplate.GroupTypeId ?? 0;
             rpGroupTypeRole.GroupRoleId = RegistrationTemplate.GroupMemberRoleId;
             ddlGroupMemberStatus.SetValue( RegistrationTemplate.GroupMemberStatus.ConvertToInt() );
+            wtpRegistrationWorkflow.SetValue( RegistrationTemplate.RegistrationWorkflowTypeId );
 
             foreach( ListItem li in cblNotify.Items )
             {
@@ -2029,6 +2031,9 @@ namespace RockWeb.Blocks.Event
                 RegistrationTemplate.Category.Name : string.Empty;
             lGroupType.Text = RegistrationTemplate.GroupType != null ?
                 RegistrationTemplate.GroupType.Name : string.Empty;
+            lWorkflowType.Text = RegistrationTemplate.RegistrationWorkflowType != null ?
+                RegistrationTemplate.RegistrationWorkflowType.Name : string.Empty;
+            lWorkflowType.Visible = !string.IsNullOrWhiteSpace( lWorkflowType.Text );
 
             rcwForms.Label = string.Format( "<strong>Forms</strong> ({0}) <i class='fa fa-caret-down'></i>", RegistrationTemplate.Forms.Count() );
             if ( RegistrationTemplate.Forms.Any() )

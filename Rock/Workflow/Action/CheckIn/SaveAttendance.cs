@@ -112,6 +112,8 @@ namespace Rock.Workflow.Action.CheckIn
                                                 attendance.PersonAliasId = primaryAlias.Id;
                                                 attendance.DeviceId = checkInState.Kiosk.Device.Id;
                                                 attendance.SearchTypeValueId = checkInState.CheckIn.SearchType.Id;
+                                                attendance.SearchValue = checkInState.CheckIn.SearchValue;
+                                                attendance.SearchResultGroupId = family.Group.Id;
                                                 attendanceService.Add( attendance );
                                             }
                                         }

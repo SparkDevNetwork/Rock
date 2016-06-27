@@ -517,6 +517,16 @@ namespace Rock.Model
                 {
                     groupRequirementService.DeleteRange( groupRequirements );
                 }
+
+                // manually set any attendance search group ids to null
+                var attendanceService = new AttendanceService( dbContext as RockContext );
+                foreach ( var attendance in attendanceService.Queryable()
+                    .Where( a => 
+                        a.SearchResultGroupId.HasValue &&
+                        a.SearchResultGroupId.Value == this.Id ) )
+                {
+                    attendance.SearchResultGroupId = null;
+                }
             }
         }
 

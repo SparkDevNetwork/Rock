@@ -1708,6 +1708,9 @@ namespace RockWeb.Blocks.Event
 
             lMaxAttendees.Visible = RegistrationInstance.MaxAttendees > 0;
             lMaxAttendees.Text = RegistrationInstance.MaxAttendees.ToString( "N0" );
+            lWorkflowType.Text = RegistrationInstance.RegistrationWorkflowType != null ?
+                RegistrationInstance.RegistrationWorkflowType.Name : string.Empty;
+            lWorkflowType.Visible = !string.IsNullOrWhiteSpace( lWorkflowType.Text );
 
             lDetails.Visible = !string.IsNullOrWhiteSpace( RegistrationInstance.Details );
             lDetails.Text = RegistrationInstance.Details;

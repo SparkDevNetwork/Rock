@@ -16,9 +16,8 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.IO;
-using System.Runtime.Caching;
-using System.Text.RegularExpressions;
 using System.Web.Compilation;
 using System.Web.Routing;
 using Rock.Model;
@@ -56,19 +55,46 @@ namespace Rock.Web
                 {
                     pageId = (string)requestContext.RouteData.Values["PageId"];
                 }
+
                 // Pages that use a custom URL route will have the page id in the RouteDate.DataTokens collection
-                else if ( requestContext.RouteData.DataTokens["PageId"] != null )
+                else if ( requestContext.RouteData.DataTokens["PageRoutes"] != null )
                 {
-                    pageId = (string)requestContext.RouteData.DataTokens["PageId"];
-                    routeId = Int32.Parse( (string)requestContext.RouteData.DataTokens["RouteId"] );
+                    var pageAndRouteIds = requestContext.RouteData.DataTokens["PageRoutes"] as List<PageAndRouteId>;
+                    if ( pageAndRouteIds != null && pageAndRouteIds.Count > 0 )
+                    {
+                        if ( pageAndRouteIds.Count == 1 )
+                        {
+                            var pageAndRouteId = pageAndRouteIds.First();
+                            pageId = pageAndRouteId.PageId.ToJson();
+                            routeId = pageAndRouteId.RouteId;
+                        }
+                        else
+                        {
+                            SiteCache site = SiteCache.GetSiteByDomain( requestContext.HttpContext.Request.Url.Host );
+                            if ( site != null )
+                            {
+                                foreach ( var pageAndRouteId in pageAndRouteIds )
+                                {
+                                    var pageCache = PageCache.Read( pageAndRouteId.PageId );
+                                    if ( pageCache != null && pageCache.Layout != null && pageCache.Layout.SiteId == site.Id )
+                                    {
+                                        pageId = pageAndRouteId.PageId.ToJson();
+                                        routeId = pageAndRouteId.RouteId;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
 
                     foreach ( var routeParm in requestContext.RouteData.Values )
                     {
                         parms.Add( routeParm.Key, (string)routeParm.Value );
                     }
                 }
+
                 // If page has not been specified get the site by the domain and use the site's default page
-                else
+                if ( string.IsNullOrEmpty( pageId ) )
                 {
                     SiteCache site = SiteCache.GetSiteByDomain( requestContext.HttpContext.Request.Url.Host );
 
@@ -220,6 +246,28 @@ namespace Rock.Web
                 return errorPage;
             }
         }
+    }
+
+    /// <summary>
+    /// Helper for storing page an route ids in a System.Web.Routing.Route datatoken
+    /// </summary>
+    public class PageAndRouteId
+    {
+        /// <summary>
+        /// Gets or sets the page identifier.
+        /// </summary>
+        /// <value>
+        /// The page identifier.
+        /// </value>
+        public int PageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the route identifier.
+        /// </summary>
+        /// <value>
+        /// The route identifier.
+        /// </value>
+        public int RouteId { get; set; }
     }
 
     /// <summary>

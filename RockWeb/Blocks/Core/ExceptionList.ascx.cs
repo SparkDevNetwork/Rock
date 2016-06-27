@@ -37,7 +37,7 @@ using Rock.Security;
 using Rock.Reporting.Dashboard;
 
 
-namespace RockWeb.Blocks.Administraton
+namespace RockWeb.Blocks.Administration
 {
     /// <summary>
     /// Exception List Block
@@ -76,20 +76,6 @@ namespace RockWeb.Blocks.Administraton
             gExceptionList.GridRebind += gExceptionList_GridRebind;
             gExceptionList.RowItemText = "Exception";
 
-            //Set properties and events for Exception Occurrences
-            gExceptionOccurrences.DataKeyNames = new string[] { "Id" };
-            gExceptionOccurrences.GridRebind += gExceptionOccurrences_GridRebind;
-            gExceptionOccurrences.RowSelected += gExceptionOccurrences_RowSelected;
-            gExceptionOccurrences.RowItemText = "Exception";
-
-            
-            RockPage page = Page as RockPage;
-            if ( page != null )
-            {
-                page.PageNavigate += page_PageNavigate;
-            }
-
-
             RockPage.AddScriptLink( this.Page, "https://www.google.com/jsapi", false );
             RockPage.AddScriptLink( this.Page, "~/Scripts/jquery.smartresize.js" );
         }
@@ -104,8 +90,8 @@ namespace RockWeb.Blocks.Administraton
 
             if ( !Page.IsPostBack )
             {
-                //Set Exception Panel visibility to show Exception List
-                SetExceptionPanelVisibility( None.Id );
+                LoadExceptionList();
+                pnlExceptionGroups.Visible = true;
             }
 
             lcExceptions.Options.SetChartStyle( this.ChartStyle );
@@ -150,16 +136,6 @@ function(item) {
                 bcExceptions.Visible = false;
             }
 
-        }
-
-        void page_PageNavigate( object sender, HistoryEventArgs e )
-        {
-            string stateData = e.State["ExceptionId"];
-
-            int exceptionId = 0;
-            int.TryParse( stateData, out exceptionId );
-
-            SetExceptionPanelVisibility( exceptionId );
         }
 
         /// <summary>
@@ -318,34 +294,6 @@ function(item) {
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gExceptionList_RowSelected( object sender, RowEventArgs e )
         {
-            this.AddHistory( "ExceptionId", e.RowKeyId.ToString() );
-            SetExceptionPanelVisibility( e.RowKeyId );
-        }
-
-        #endregion
-
-        #region Exception Occurrence Grid Events
-
-        /// <summary>
-        /// Handles the GridRebind event of the gExceptionOccurrences control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void gExceptionOccurrences_GridRebind( object sender, EventArgs e )
-        {
-            int exceptionID = 0;
-            if ( int.TryParse( hfBaseExceptionID.Value, out exceptionID ) )
-            {
-                ExceptionLogService exceptionService = new ExceptionLogService( new RockContext() );
-                ExceptionLog baseException = exceptionService.Get( exceptionID );
-
-                BindExceptionOccurrenceGrid( baseException );
-            }
-
-        }
-
-        protected void gExceptionOccurrences_RowSelected( object sender, RowEventArgs e )
-        {
             NavigateToLinkedPage( "DetailPage", "ExceptionId", e.RowKeyId );
         }
 
@@ -364,18 +312,6 @@ function(item) {
             BindExceptionListGrid();
         }
 
-
-        /// <summary>
-        /// Handles the Click event of the btnReturnToList control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnReturnToList_Click( object sender, EventArgs e )
-        {
-            // just reload the page with no parameters to get back to the main summary list
-            this.NavigateToPage( new Rock.Web.PageReference( this.PageCache.Id ) );
-        }
-        
         #endregion
 
         #region Internal Methods
@@ -432,30 +368,26 @@ function(item) {
             int summaryCountDays = Convert.ToInt32( GetAttributeValue( "SummaryCountDays" ) );
 
             //set the header text for the subset/summary field
-            gExceptionList.Columns[5].HeaderText = string.Format( "Last {0} days", summaryCountDays );
+            gExceptionList.Columns[3].HeaderText = string.Format( "Last {0} days", summaryCountDays );
 
             //get the subset/summary date
             DateTime minSummaryCountDate = RockDateTime.Now.Date.AddDays( -( summaryCountDays ) );
 
             var rockContext = new RockContext();
-            
+            string url = String.Format( "{0}?ExceptionId=", LinkedPageUrl( "DetailPage" ) );
             var exceptionQuery = BuildBaseExceptionListQuery( rockContext )
                                     .GroupBy( e => new
-                                        {
-                                            SiteName = e.Site.Name ?? "",
-                                            PageName = e.Page.InternalName ?? "",
-                                            Description = e.Description
-                                        } )
+                                    {
+                                        Description = e.Description.Substring( 0, 28 )
+                                    } )
                                     .Select( eg => new
-                                        {
-                                            Id = eg.Max( e => e.Id ),
-                                            SiteName = eg.Key.SiteName,
-                                            PageName = eg.Key.PageName,
-                                            Description = eg.Key.Description,
-                                            LastExceptionDate = eg.Max( e => e.CreatedDateTime ),
-                                            TotalCount = eg.Count(),
-                                            SubsetCount = eg.Count( e => e.CreatedDateTime.HasValue && e.CreatedDateTime.Value >= minSummaryCountDate )
-                                        } );
+                                    {
+                                        Id = eg.Max( e => e.Id ),
+                                        Description = "<a href='" + url + eg.Max( e => e.Id ) + "'>" + eg.FirstOrDefault().Description + "</a>",
+                                        LastExceptionDate = eg.Max( e => e.CreatedDateTime ),
+                                        TotalCount = eg.Count(),
+                                        SubsetCount = eg.Count( e => e.CreatedDateTime.HasValue && e.CreatedDateTime.Value >= minSummaryCountDate )
+                                    } );
 
             if ( gExceptionList.SortProperty != null )
             {
@@ -469,44 +401,6 @@ function(item) {
             gExceptionList.SetLinqDataSource( exceptionQuery );
             gExceptionList.DataBind();
 
-        }
-
-        /// <summary>
-        /// Binds the exception occurrence grid.
-        /// </summary>
-        /// <param name="baseException">Exception to base the occurrence grid off of.</param>
-        private void BindExceptionOccurrenceGrid( ExceptionLog baseException )
-        {
-            ExceptionLogService exceptionService = new ExceptionLogService( new RockContext() );
-
-            var query = exceptionService.Queryable()
-                .Where( e => e.HasInnerException == null || e.HasInnerException == false )
-                .Where( e => e.SiteId == baseException.SiteId )
-                .Where( e => e.PageId == baseException.PageId )
-                .Where( e => e.Description == baseException.Description )
-                .Select( e => new
-                    {
-                        Id = e.Id,
-                        CreatedDateTime = e.CreatedDateTime,
-                        PageName = e.Page.InternalName ?? e.PageUrl,
-                        FullName = ( e.CreatedByPersonAlias != null &&
-                            e.CreatedByPersonAlias.Person != null ) ?
-                            e.CreatedByPersonAlias.Person.LastName + ", " + e.CreatedByPersonAlias.Person.NickName : "",
-                        Description = e.Description
-                    } ).OrderBy(e => e.CreatedDateTime);
-
-            if ( gExceptionOccurrences.SortProperty == null )
-            {
-                query = query.OrderByDescending( e => e.CreatedDateTime );
-            }
-            else
-            {
-                query = query.Sort( gExceptionOccurrences.SortProperty );
-            }
-
-            gExceptionOccurrences.EntityTypeId = EntityTypeCache.Read<ExceptionLog>().Id;
-            gExceptionOccurrences.SetLinqDataSource( query );
-            gExceptionOccurrences.DataBind();
         }
 
         /// <summary>
@@ -591,76 +485,6 @@ function(item) {
         {
             BindExceptionListFilter();
             BindExceptionListGrid();
-        }
-
-        /// <summary>
-        /// Loads the exception occurrences panel
-        /// </summary>
-        /// <param name="exceptionId">The Id of the base exception for the grid</param>
-        private void LoadExceptionOccurrences( int exceptionId )
-        {
-            //get the base exception
-            ExceptionLogService exceptionService = new ExceptionLogService( new RockContext() );
-            ExceptionLog exception = exceptionService.Get( exceptionId );
-
-            //set the summary fields for the base exception
-            if ( exception != null )
-            {
-                if ( Page.IsPostBack && Page.IsAsync )
-                {
-                    this.AddHistory( "ExceptionId", exceptionId.ToString(), string.Format( "Exception Occurrences {0}", exception.Description ) );
-                }
-                hfBaseExceptionID.Value = exceptionId.ToString();
-
-                var descriptionList = new Rock.Web.DescriptionList();
-
-                // set detail title with formating
-                lDetailTitle.Text = String.Format( "Occurrences of {0}", exception.ExceptionType ).FormatAsHtmlTitle();
-
-                if ( !string.IsNullOrEmpty( exception.ExceptionType ) )
-                {
-                    descriptionList.Add( "Type", exception.ExceptionType );
-                }
-
-                if ( exception.Site != null )
-                {
-                    descriptionList.Add( "Site", exception.Site.Name );
-                }
-
-                if ( exception.Page != null )
-                {
-                    descriptionList.Add( "Page", exception.Page.InternalName );
-                }
-                
-                lblMainDetails.Text = descriptionList.Html;
-
-                //Load the occurrences for the selected exception
-                BindExceptionOccurrenceGrid( exception );
-            }
-        }
-
-        /// <summary>
-        /// Sets the visibility of the exception panels
-        /// </summary>
-        /// <param name="baseExceptionId">The base exception id.</param>
-        private void SetExceptionPanelVisibility( int baseExceptionId )
-        {
-            //initially hide both panels
-            pnlExceptionGroups.Visible = false;
-            pnlExceptionOccurrences.Visible = false;
-
-            if ( baseExceptionId == None.Id )
-            {
-                //Load exception List if no base ExceptionId
-                LoadExceptionList();
-                pnlExceptionGroups.Visible = true;
-            }
-            else
-            {
-                //If an exception id is passed in load related exception occurrences.
-                LoadExceptionOccurrences( baseExceptionId );
-                pnlExceptionOccurrences.Visible = true;
-            }
         }
 
         #endregion

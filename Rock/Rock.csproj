@@ -517,6 +517,8 @@
     <Compile Include="PersonProfile\Badge\GeofencedByGroup.cs" />
     <Compile Include="PersonProfile\Badge\DISC.cs" />
     <Compile Include="PersonProfile\Badge\InGroupWithPurpose.cs" />
+    <Compile Include="Plugin\HotFixes\003_FixSystemEmailQuote.cs" />
+    <Compile Include="Plugin\HotFixes\002_CheckinGradeRequired.cs" />
     <Compile Include="Plugin\HotFixes\001_FixPhoneCountryCode.cs" />
     <Compile Include="Reporting\ComparisonHelper.cs" />
     <Compile Include="Reporting\Dashboard\LineBarPointsChartDashboardWidget.cs">
@@ -1197,6 +1199,7 @@
     <Compile Include="Web\UI\IDetailBlock.cs" />
     <Compile Include="Web\UI\ISecondaryBlock.cs" />
     <Compile Include="Web\Utilities\HtmlSanitizer.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterGroupsByGradeAndAge.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterLocationsBySchedule.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterLocationsByThreshold.cs" />
     <Compile Include="Workflow\Action\CheckIn\PreSelectRecentAttendance.cs" />
