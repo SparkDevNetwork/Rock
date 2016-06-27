@@ -36,7 +36,7 @@
 
         <div class="js-registration-same-family registrationentry-samefamily">
             <asp:Panel ID="pnlFamilyOptions" runat="server" CssClass="well">
-                <Rock:RockRadioButtonList ID="rblFamilyOptions" runat="server" Label="Individual is in the same family as" RepeatDirection="Vertical" Required="true" DataTextField="Value" DataValueField="Key" />
+                <Rock:RockRadioButtonList ID="rblFamilyOptions" runat="server" Label="Individual is in the same family as" RepeatDirection="Vertical" Required="true" RequiredErrorMessage="Answer to which family is required." DataTextField="Value" DataValueField="Key" />
             </asp:Panel>
         </div>
         
@@ -71,7 +71,7 @@
             <h4>This <asp:Literal id="lRegistrationTerm" runat="server" /> Was Completed By</h4>
             <div class="row">
                 <div class="col-md-6">
-                    <Rock:RockTextBox ID="tbYourFirstName" runat="server" Label="First Name" Required="true" />
+                    <Rock:RockTextBox ID="tbYourFirstName" runat="server" Label="First Name" CssClass="js-your-first-name" Required="true" />
                 </div>
                 <div class="col-md-6">
                     <Rock:RockTextBox ID="tbYourLastName" runat="server" Label="Last Name" Required="true" />
@@ -83,8 +83,8 @@
                     <Rock:RockCheckBox ID="cbUpdateEmail" runat="server" Text="Should Your Account Be Updated To Use This Email Address?" Visible="false" Checked="true" />
                 </div>
                 <div class="col-md-6">
-                    <asp:Panel ID="pnlRegistrarFamilyOptions" runat="server">
-                        <Rock:RockRadioButtonList ID="rblRegistrarFamilyOptions" runat="server" Label="You are in the same family as" RepeatDirection="Horizontal" Required="true" DataTextField="Value" DataValueField="Key" />
+                    <asp:Panel ID="pnlRegistrarFamilyOptions" runat="server" CssClass="js-registration-same-family">
+                        <Rock:RockRadioButtonList ID="rblRegistrarFamilyOptions" runat="server" Label="You are in the same family as" RepeatDirection="Horizontal" Required="true" DataTextField="Value" DataValueField="Key" RequiredErrorMessage="Answer to which family is required." />
                     </asp:Panel>
                 </div>
             </div>

@@ -2608,7 +2608,9 @@ namespace Rock.Lava
                     if ( value is ILiquidizable )
                     {
                         var liquidObject = value as ILiquidizable;
-                        if ( liquidObject.ContainsKey( filterKey ) && liquidObject[filterKey].Equals( filterValue ) )
+                        var condition = DotLiquid.Condition.Operators["=="];
+
+                        if ( liquidObject.ContainsKey( filterKey ) && condition( liquidObject[filterKey], filterValue ) )
                         {
                             result.Add( liquidObject );
                         }
@@ -2723,3 +2725,4 @@ namespace Rock.Lava
         #endregion
     }
 }
+
