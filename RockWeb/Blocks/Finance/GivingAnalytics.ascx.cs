@@ -1200,6 +1200,17 @@ function(item) {
                 // Add a column for selecting rows
                 gGiversGifts.Columns.Add( selectField );
 
+                // Add a hidden column for person id
+                gGiversGifts.Columns.Add(
+                    new RockBoundField
+                    {
+                        DataField = "Id",
+                        HeaderText = "Person Id",
+                        SortExpression = "Id",
+                        Visible = false,
+                        ExcelExportBehavior = ExcelExportBehavior.AlwaysInclude
+                    } );
+
                 // Add a column for the person's name
                 gGiversGifts.Columns.Add(
                     new RockBoundField
