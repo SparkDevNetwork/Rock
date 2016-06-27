@@ -949,12 +949,13 @@ function(item) {
                     {
                         result = transactionInfoList
                             .Where( c => c.SummaryDate.HasValue )
-                            .GroupBy( c => new { c.SummaryDate.Value, c.AccountName } )
+                            .GroupBy( c => new { c.SummaryDate.Value, c.AccountName, c.GLCode } )
                             .Select( r => new SummaryData
                             {
                                 DateTimeStamp = r.Key.Value.ToJavascriptMilliseconds(),
                                 DateTime = r.Key.Value,
                                 SeriesName = r.Key.AccountName,
+                                SeriesAddlInfo = r.Key.GLCode,
                                 YValue = r.Sum( a => a.Amount )
                             } )
                             .OrderBy( r => r.DateTime )
