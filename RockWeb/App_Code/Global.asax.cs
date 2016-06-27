@@ -255,6 +255,7 @@ namespace RockWeb
                     Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
                     Template.FileSystem = new RockWeb.LavaFileSystem();
                     Template.RegisterSafeType( typeof( Enum ), o => o.ToString() );
+                    Template.RegisterSafeType( typeof( DBNull ), o => null );
                     Template.RegisterFilter( typeof( Rock.Lava.RockFilters ) );
 
                     // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
