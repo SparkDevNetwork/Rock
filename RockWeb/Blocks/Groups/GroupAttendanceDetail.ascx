@@ -51,7 +51,7 @@
                         <div class="col-md-6">
 
                             <div class="js-roster">
-                                <h4><asp:Literal ID="lMembers" runat="server" /></h4>
+                                <h4 class="js-members-label"><asp:Literal ID="lMembers" runat="server" /></h4>
                                 <asp:ListView ID="lvMembers" runat="server">
                                     <ItemTemplate>
                                         <asp:HiddenField ID="hfMember" runat="server" Value='<%# Eval("PersonId") %>' />
@@ -95,6 +95,31 @@
             </div>
 
         </div>
+
+
+        <script>
+            Sys.Application.add_load(function () {
+                // toggle all checkboxes
+                $('.js-members-label').on('click', function (e) {
+                    
+                    var container = $(this).parent();
+                    var isChecked = container.hasClass('all-checked');
+
+                    container.find('input:checkbox').each(function () {
+                        $(this).prop('checked', !isChecked);
+                    });
+
+                    if (isChecked) {
+                        container.removeClass('all-checked');
+                    }
+                    else {
+                        container.addClass('all-checked');
+                    }
+
+                });
+            });
+        </script>
+
 
     </ContentTemplate>
 </asp:UpdatePanel>
