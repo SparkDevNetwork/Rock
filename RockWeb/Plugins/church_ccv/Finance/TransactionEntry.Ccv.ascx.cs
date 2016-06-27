@@ -23,7 +23,11 @@ namespace RockWeb.Plugins.church_ccv.Finance
     [Description( "Custom CCV block that provides an optimized experience for giving" )]
 
     [FinancialGatewayField( "Credit Card Gateway", "The payment gateway to use for Credit Card transactions", false, "", "", 0, "CCGateway" )]
-    [AccountsField( "Accounts", "The accounts to display.  By default all active accounts with a Public Name will be displayed", false, "", "", 6 )]
+    [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving", "", 2 )]
+    [AccountsField( "Accounts", "The accounts to display. By default all active accounts with a Public Name will be displayed", false, "", "", 6 )]
+
+    [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", "", 25 )]
+    [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49", "", 26 )]
     public partial class TransactionEntryCcv : Rock.Web.UI.RockBlock
     {
         /// <summary>
@@ -149,6 +153,8 @@ namespace RockWeb.Plugins.church_ccv.Finance
             }
         }
 
+        #region Similar code from TransactionEntry.ascx.cs
+
         /// <summary>
         /// Handles the Click event of the btnSubmit control.
         /// </summary>
@@ -156,7 +162,118 @@ namespace RockWeb.Plugins.church_ccv.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSubmit_Click( object sender, EventArgs e )
         {
+            var rockContext = new RockContext();
+
+            // validate configuration
+            var financialGateway = GetGateway( rockContext, "CCGateway" );
+            var gateway = GetGatewayComponent( rockContext, financialGateway );
+
+            if ( gateway == null )
+            {
+                nbMessage.NotificationBoxType = NotificationBoxType.Danger;
+                nbMessage.Title = "ERROR";
+                nbMessage.Text = "There was a problem creating the payment gateway information";
+                nbMessage.Visible = true;
+                return;
+            }
+
+            // valid UI inputs
+            var errorMessage = string.Empty;
+            if ( !ValidateEntries( out errorMessage ) )
+            {
+                nbMessage.NotificationBoxType = NotificationBoxType.Danger;
+                nbMessage.Title = "Before we finish...";
+                nbMessage.Text = errorMessage;
+                nbMessage.Visible = true;
+                return;
+            }
+
+            // validate/create person
+            Person person = GetPerson( true );
+            if ( person == null )
+            {
+                nbMessage.NotificationBoxType = NotificationBoxType.Danger;
+                nbMessage.Title = "ERROR";
+                nbMessage.Text = "There was a problem creating the person information";
+                nbMessage.Visible = true;
+                return;
+
+            }
+
+            if ( !person.PrimaryAliasId.HasValue )
+            {
+                nbMessage.NotificationBoxType = NotificationBoxType.Danger;
+                nbMessage.Title = "ERROR";
+                nbMessage.Text = "There was a problem creating the person's primary alias";
+                nbMessage.Visible = true;
+                return;
+
+            }
+
+            // TODO Something to prevent duplicate transactions
+
+            
+            // set up the CreditCard charge
+            var cardMMYY = tbCardExpiry.Value.Split( new char[] { '/' } ).Select( a => a.Trim().AsInteger() ).ToArray();
+            var expDateTime = new DateTime( 2000 + cardMMYY[1], cardMMYY[0], 1 );
+
+            // TODO: use Saved Account if selected
+
+            CreditCardPaymentInfo cc = new CreditCardPaymentInfo( tbCardNumber.Value.Replace(" ", ""), tbCardCvc.Value, expDateTime );
+            cc.NameOnCard = gateway.SplitNameOnCard ? tbFirstName.Value : hfFullName.Value;
+            cc.LastName = tbLastName.Value;
+
+            if ( !string.IsNullOrEmpty( tbStreet.Value ) )
+            {
+                cc.BillingStreet1 = tbStreet.Value;
+                cc.BillingStreet2 = string.Empty;
+                cc.BillingCity = tbCity.Value;
+                cc.BillingState = tbState.Value;
+                cc.BillingPostalCode = tbZip.Value;
+                cc.BillingCountry = GlobalAttributesCache.Read().OrganizationCountry;
+
+                cc.Street1 = tbStreet.Value;
+                cc.Street2 = string.Empty;
+                cc.City = tbCity.Value;
+                cc.State = tbState.Value;
+                cc.PostalCode = tbZip.Value;
+                cc.Country = GlobalAttributesCache.Read().OrganizationCountry;
+            }
+
+            cc.Amount = tbAmount.Text.AsDecimal();
+            cc.Email = tbEmail.Value;
+            cc.Phone = PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), tbPhone.Value, true );
+            
+
+            // TODO Setup a Scheduled Payment
+
+            // Charge CC
+            var transaction = gateway.Charge( financialGateway, cc, out errorMessage );
+            if (transaction == null)
+            {
+                nbMessage.NotificationBoxType = NotificationBoxType.Danger;
+                nbMessage.Title = "Payment Error";
+                nbMessage.Text = errorMessage;
+                nbMessage.Visible = true;
+                return;
+            }
+            else
+            {
+                SaveTransaction( financialGateway, gateway, person, cc, transaction, rockContext );
+                // show success page
+            }
+
+        }
+
+        /// <summary>
+        /// Validates the entries.
+        /// </summary>
+        /// <returns></returns>
+        private bool ValidateEntries( out string errorMessage )
+        {
             var amount = tbAmount.Text.AsDecimalOrNull();
+
+            errorMessage = string.Empty;
 
             var errorMessages = new List<string>();
 
@@ -173,7 +290,7 @@ namespace RockWeb.Plugins.church_ccv.Finance
             }
 
             // validate the payment schedule
-            if ( cbRepeating.Checked != null )
+            if ( cbRepeating.Checked )
             {
                 var startDate = dpStartDate.Value.AsDateTime();
 
@@ -208,7 +325,7 @@ namespace RockWeb.Plugins.church_ccv.Finance
             currentMonth = new DateTime( currentMonth.Year, currentMonth.Month, 1 );
 
             var cardMMYY = tbCardExpiry.Value.Split( new char[] { '/' } ).Select( a => a.Trim().AsInteger() ).ToArray();
-            if (cardMMYY.Length != 2)
+            if ( cardMMYY.Length != 2 )
             {
                 errorMessages.Add( "Make sure to enter a valid credit card expiration date" );
             }
@@ -228,16 +345,297 @@ namespace RockWeb.Plugins.church_ccv.Finance
 
             if ( errorMessages.Any() )
             {
-                var errorMessage = errorMessages.AsDelimited( "<br/>" );
-                nbMessage.NotificationBoxType = NotificationBoxType.Danger;
-                nbMessage.Title = "Before we finish...";
-                nbMessage.Text = errorMessage;
-                nbMessage.Visible = true;
+                errorMessage = errorMessages.AsDelimited( "<br/>" );
 
-                return;
+                return false;
             }
 
-            // TODO
+            return true;
         }
+
+
+        /// <summary>
+        /// Gets the person.
+        /// </summary>
+        /// <param name="create">if set to <c>true</c> [create].</param>
+        /// <returns></returns>
+        private Person GetPerson( bool create )
+        {
+            Person person = null;
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+
+            Group familyGroup = null;
+
+            int personId = ViewState["PersonId"] as int? ?? 0;
+            if ( personId == 0 && this.CurrentPerson != null )
+            {
+                personId = this.CurrentPerson.Id;
+            }
+
+            if ( personId != 0 )
+            {
+                person = personService.Get( personId );
+            }
+
+            if ( create )
+            {
+                if ( person == null )
+                {
+                    // Check to see if there's only one person with same email, first name, and last name
+                    if ( !string.IsNullOrWhiteSpace( tbEmail.Value ) &&
+                        !string.IsNullOrWhiteSpace( tbFirstName.Value ) &&
+                        !string.IsNullOrWhiteSpace( tbLastName.Value ) )
+                    {
+                        // Same logic as CreatePledge.ascx.cs
+                        var personMatches = personService.GetByMatch( tbFirstName.Value, tbLastName.Value, tbEmail.Value );
+                        if ( personMatches.Count() == 1 )
+                        {
+                            person = personMatches.FirstOrDefault();
+                        }
+                        else
+                        {
+                            person = null;
+                        }
+                    }
+
+                    if ( person == null )
+                    {
+                        DefinedValueCache dvcConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
+                        DefinedValueCache dvcRecordStatus = DefinedValueCache.Read( GetAttributeValue( "RecordStatus" ).AsGuid() );
+
+                        // Create Person
+                        person = new Person();
+                        person.FirstName = tbFirstName.Value;
+                        person.LastName = tbLastName.Value;
+                        person.IsEmailActive = true;
+                        person.EmailPreference = EmailPreference.EmailAllowed;
+                        person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                        if ( dvcConnectionStatus != null )
+                        {
+                            person.ConnectionStatusValueId = dvcConnectionStatus.Id;
+                        }
+
+                        if ( dvcRecordStatus != null )
+                        {
+                            person.RecordStatusValueId = dvcRecordStatus.Id;
+                        }
+
+                        // Create Person/Family
+                        familyGroup = PersonService.SaveNewPerson( person, rockContext, null, false );
+                    }
+
+                    ViewState["PersonId"] = person != null ? person.Id : 0;
+                }
+            }
+
+            if ( create && person != null ) // person should never be null at this point
+            {
+                person.Email = tbEmail.Value;
+
+                if ( GetAttributeValue( "DisplayPhone" ).AsBooleanOrNull() ?? false )
+                {
+                    var numberTypeId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ).Id;
+                    var phone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberTypeId );
+                    if ( phone == null )
+                    {
+                        phone = new PhoneNumber();
+                        person.PhoneNumbers.Add( phone );
+                        phone.NumberTypeValueId = numberTypeId;
+                    }
+                    phone.CountryCode = PhoneNumber.CleanNumber( PhoneNumber.DefaultCountryCode() );
+                    phone.Number = PhoneNumber.CleanNumber( tbPhone.Value );
+                }
+
+                if ( familyGroup == null )
+                {
+                    var groupLocationService = new GroupLocationService( rockContext );
+                    var groupLocationValue = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
+                    if ( groupLocationValue != null )
+                    {
+                        familyGroup = groupLocationService.Queryable()
+                            .Where( gl => gl.Id == groupLocationValue.Id )
+                            .Select( gl => gl.Group )
+                            .FirstOrDefault();
+                    }
+                    else
+                    {
+                        familyGroup = personService.GetFamilies( person.Id ).FirstOrDefault();
+                    }
+                }
+
+                rockContext.SaveChanges();
+
+                if ( familyGroup != null )
+                {
+                    GroupService.AddNewGroupAddress(
+                        rockContext,
+                        familyGroup,
+                        GetAttributeValue( "AddressType" ),
+                        tbStreet.Value, null, tbCity.Value, tbState.Value, tbZip.Value, GlobalAttributesCache.Read().OrganizationCountry,
+                        true );
+                }
+            }
+
+            return person;
+        }
+
+        /// <summary>
+        /// Gets the gateway.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="attributeName">Name of the attribute.</param>
+        /// <returns></returns>
+        private FinancialGateway GetGateway( RockContext rockContext, string attributeName )
+        {
+            var financialGatewayService = new FinancialGatewayService( rockContext );
+            Guid? ccGatewayGuid = GetAttributeValue( attributeName ).AsGuidOrNull();
+            if ( ccGatewayGuid.HasValue )
+            {
+                return financialGatewayService.Get( ccGatewayGuid.Value );
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the gateway component.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="gateway">The gateway.</param>
+        /// <returns></returns>
+        private GatewayComponent GetGatewayComponent( RockContext rockContext, FinancialGateway gateway )
+        {
+            if ( gateway != null )
+            {
+                gateway.LoadAttributes( rockContext );
+                var gatewayComponent = gateway.GetGatewayComponent();
+                if ( gatewayComponent != null )
+                {
+                    var threeStepGateway = gatewayComponent as ThreeStepGatewayComponent;
+                    if ( threeStepGateway != null )
+                    {
+                        // NOT SUPPORTED.  If CCV needs to support this, we'll have to update this block
+                        return null;
+                    }
+                }
+
+                return gatewayComponent;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Saves the transaction.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="gateway">The gateway.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <param name="transaction">The transaction.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void SaveTransaction( FinancialGateway financialGateway, GatewayComponent gateway, Person person, PaymentInfo paymentInfo, FinancialTransaction transaction, RockContext rockContext )
+        {
+            var txnChanges = new List<string>();
+            txnChanges.Add( "Created Transaction" );
+
+            History.EvaluateChange( txnChanges, "Transaction Code", string.Empty, transaction.TransactionCode );
+
+            transaction.AuthorizedPersonAliasId = person.PrimaryAliasId;
+            History.EvaluateChange( txnChanges, "Person", string.Empty, person.FullName );
+
+            transaction.TransactionDateTime = RockDateTime.Now;
+            History.EvaluateChange( txnChanges, "Date/Time", null, transaction.TransactionDateTime );
+
+            transaction.FinancialGatewayId = financialGateway.Id;
+            History.EvaluateChange( txnChanges, "Gateway", string.Empty, financialGateway.Name );
+
+            var txnType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) );
+            transaction.TransactionTypeValueId = txnType.Id;
+            History.EvaluateChange( txnChanges, "Type", string.Empty, txnType.Value );
+
+            transaction.Summary = paymentInfo.Comment1;
+            History.EvaluateChange( txnChanges, "Summary", string.Empty, transaction.Summary );
+
+            if ( transaction.FinancialPaymentDetail == null )
+            {
+                transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
+            }
+            transaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, gateway, rockContext, txnChanges );
+
+            Guid sourceGuid = Guid.Empty;
+            if ( Guid.TryParse( GetAttributeValue( "Source" ), out sourceGuid ) )
+            {
+                var source = DefinedValueCache.Read( sourceGuid );
+                if ( source != null )
+                {
+                    transaction.SourceTypeValueId = source.Id;
+                    History.EvaluateChange( txnChanges, "Source", string.Empty, source.Value );
+                }
+            }
+
+            var accountId = ddlAccounts.SelectedValue.AsInteger();
+
+            var account = new FinancialAccountService( rockContext ).Get( accountId );
+
+
+            var transactionDetail = new FinancialTransactionDetail();
+            transactionDetail.Amount = paymentInfo.Amount;
+            transactionDetail.AccountId = account.Id;
+            transaction.TransactionDetails.Add( transactionDetail );
+            History.EvaluateChange( txnChanges, account.Name, 0.0M.FormatAsCurrency(), transactionDetail.Amount.FormatAsCurrency() );
+
+            var batchService = new FinancialBatchService( rockContext );
+
+            // Get the batch
+            var batch = batchService.Get(
+                GetAttributeValue( "BatchNamePrefix" ),
+                paymentInfo.CurrencyTypeValue,
+                paymentInfo.CreditCardTypeValue,
+                transaction.TransactionDateTime.Value,
+                financialGateway.GetBatchTimeOffset() );
+
+            var batchChanges = new List<string>();
+
+            if ( batch.Id == 0 )
+            {
+                batchChanges.Add( "Generated the batch" );
+                History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
+                History.EvaluateChange( batchChanges, "Status", null, batch.Status );
+                History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
+                History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
+            }
+
+            decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
+            History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
+            batch.ControlAmount = newControlAmount;
+
+            transaction.BatchId = batch.Id;
+            batch.Transactions.Add( transaction );
+
+            rockContext.SaveChanges();
+
+            HistoryService.SaveChanges(
+                rockContext,
+                typeof( FinancialBatch ),
+                Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                batch.Id,
+                batchChanges
+            );
+
+            HistoryService.SaveChanges(
+                rockContext,
+                typeof( FinancialBatch ),
+                Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
+                batch.Id,
+                txnChanges,
+                person.FullName,
+                typeof( FinancialTransaction ),
+                transaction.Id
+            );
+
+            //SendReceipt( transaction.Id );
+        }
+
+        #endregion
     }
 }
