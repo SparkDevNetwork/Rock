@@ -106,6 +106,7 @@ namespace Rock.Model
             target.MinimumInitialPayment = source.MinimumInitialPayment;
             target.Name = source.Name;
             target.RegistrationTemplateId = source.RegistrationTemplateId;
+            target.RegistrationWorkflowTypeId = source.RegistrationWorkflowTypeId;
             target.ReminderSent = source.ReminderSent;
             target.SendReminderDateTime = source.SendReminderDateTime;
             target.StartDateTime = source.StartDateTime;

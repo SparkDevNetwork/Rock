@@ -71,7 +71,7 @@ namespace Rock
         /// </summary>
         /// <param name="routes">The routes.</param>
         /// <param name="routeName">Name of the route.</param>
-        /// <param name="pages">The pages.</param>
+        /// <param name="pageAndRouteIds">The page and route ids.</param>
         public static void AddPageRoute( this Collection<RouteBase> routes, string routeName, List<Rock.Web.PageAndRouteId> pageAndRouteIds)
         {
             Route route = new Route( routeName, new Rock.Web.RockRouteHandler() );
