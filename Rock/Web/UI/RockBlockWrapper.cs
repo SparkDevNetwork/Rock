@@ -105,26 +105,6 @@ namespace Rock.Web.UI
                 if ( preHtml.HasMergeFields() || postHtml.HasMergeFields() )
                 {
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( _rockBlock.RockPage );
-
-                    var contextObjects = new Dictionary<string, object>();
-                    foreach ( var contextEntityType in _rockBlock.RockPage.GetContextEntityTypes() )
-                    {
-                        var contextEntity = _rockBlock.RockPage.GetCurrentContext( contextEntityType );
-                        if ( contextEntity != null && contextEntity is DotLiquid.ILiquidizable )
-                        {
-                            var type = Type.GetType( contextEntityType.AssemblyName ?? contextEntityType.Name );
-                            if ( type != null )
-                            {
-                                contextObjects.Add( type.Name, contextEntity );
-                            }
-                        }
-                    }
-
-                    if ( contextObjects.Any() )
-                    {
-                        mergeFields.Add( "Context", contextObjects );
-                    }
-
                     preHtml = preHtml.ResolveMergeFields( mergeFields );
                     postHtml = postHtml.ResolveMergeFields( mergeFields );
                 }
