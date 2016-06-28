@@ -998,7 +998,9 @@ namespace Rock.Web.UI.Controls
                 var defaultControl = field.EditControl( Qualifiers, string.Format( "defaultValue_{0}", fieldTypeId.Value ) );
                 if ( defaultControl != null )
                 {
-                    if (recreate)
+                    _phDefaultValue.Controls.Add( defaultControl );
+
+                    if ( recreate)
                     {
                         field.SetEditValue( defaultControl, Qualifiers, DefaultValue );
                     }
@@ -1010,7 +1012,6 @@ namespace Rock.Web.UI.Controls
                         rockControl.Label = "Default Value";
                     }
 
-                    _phDefaultValue.Controls.Add( defaultControl );
                 }
             }
         }
