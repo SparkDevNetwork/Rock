@@ -171,32 +171,32 @@ namespace Rock.Jobs
                             notification.GroupId = group.Id;
                             notification.Person = leader.Person;
                             _notificationList.Add( notification );
+                        }
+                            
+                        // notify parents
+                        if ( notificationOption != NotificationOption.None )
+                        {
+                            var parentLeaders = new GroupMemberService( rockContext ).Queryable( "Person" ).AsNoTracking()
+                                                    .Where( m => m.GroupRole.IsLeader && !excludedGroupRoleIds.Contains( m.GroupRoleId ) );
 
-                            // notify parents
-                            if ( notificationOption != NotificationOption.None )
+                            if ( notificationOption == NotificationOption.DirectParent )
                             {
-                                var parentLeaders = new GroupMemberService( rockContext ).Queryable( "Person" ).AsNoTracking()
-                                                        .Where( m => m.GroupRole.IsLeader && !excludedGroupRoleIds.Contains( m.GroupRoleId ) );
+                                // just the parent group
+                                parentLeaders = parentLeaders.Where( m => m.GroupId == group.ParentGroupId );
+                            }
+                            else
+                            {
+                                // all parents in the heirarchy
+                                var parentIds = groupService.GetAllAncestorIds( group.Id );
+                                parentLeaders = parentLeaders.Where( m => parentIds.Contains( m.GroupId ) );
+                            }
 
-                                if ( notificationOption == NotificationOption.DirectParent )
-                                {
-                                    // just the parent group
-                                    parentLeaders = parentLeaders.Where( m => m.GroupId == group.ParentGroupId );
-                                }
-                                else
-                                {
-                                    // all parents in the heirarchy
-                                    var parentIds = groupService.GetAllAncestorIds( group.Id );
-                                    parentLeaders = parentLeaders.Where( m => parentIds.Contains( m.GroupId ) );
-                                }
-
-                                foreach ( var parentLeader in parentLeaders.ToList() )
-                                {
-                                    NotificationItem parentNotification = new NotificationItem();
-                                    parentNotification.Person = parentLeader.Person;
-                                    parentNotification.GroupId = group.Id;
-                                    _notificationList.Add( parentNotification );
-                                }
+                            foreach ( var parentLeader in parentLeaders.ToList() )
+                            {
+                                NotificationItem parentNotification = new NotificationItem();
+                                parentNotification.Person = parentLeader.Person;
+                                parentNotification.GroupId = group.Id;
+                                _notificationList.Add( parentNotification );
                             }
                         }
                     }

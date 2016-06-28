@@ -19,20 +19,25 @@ namespace Rock.Plugin.HotFixes
     /// <summary>
     /// 
     /// </summary>
-    [MigrationNumber( 3, "1.5.0" )]
-    public class FixSystemEmailQuote : Migration
+    [MigrationNumber( 4, "1.5.0" )]
+    public class FixGradeRequiredAttribute : Migration
     {
         /// <summary>
         /// The commands to run to migrate plugin to the specific version
         /// </summary>
         public override void Up()
         {
-            // Moved to 201606281347449_PersonDirectory
-//            Sql( @"
-//    UPDATE [SystemEmail] 
-//    SET [Body] = REPLACE( [Body], ' != '' %', ' != '''' %' )
-//    WHERE [Body] LIKE '% != '' \%%' ESCAPE '\'
-//" );
+            Sql( @"
+    DECLARE @GroupTypeEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.GroupType' )
+    DECLARE @CheckInTemplatePurposeId int = ( SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = '4A406CB0-495B-4795-B788-52BDFDE00B01' )
+    IF @GroupTypeEntityTypeId IS NOT NULL AND @CheckInTemplatePurposeId IS NOT NULL
+    BEGIN
+        UPDATE [Attribute] SET [EntityTypeQualifierValue] = CAST( @CheckInTemplatePurposeId AS varchar) 
+        WHERE [EntityTypeId] = @GroupTypeEntityTypeId
+        AND [EntityTypeQualifierColumn] = 'GroupTypePurposeValueId'
+        AND [Key] = 'core_checkin_GradeRequired'
+    END
+" );
         }
 
         /// <summary>
