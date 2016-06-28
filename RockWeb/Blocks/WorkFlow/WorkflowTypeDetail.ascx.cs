@@ -517,7 +517,7 @@ namespace RockWeb.Blocks.WorkFlow
             var validationErrors = new List<string>();
 
             // check for unique prefix
-            string prefix = tbNumberPrefix.Text.Trim();
+            string prefix = tbNumberPrefix.UntrimmedText;
             if ( !string.IsNullOrWhiteSpace( prefix ) &&
                 prefix.ToUpper() != ( workflowType.WorkflowIdPrefix ?? string.Empty ).ToUpper() )
             {
@@ -532,6 +532,10 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     workflowType.WorkflowIdPrefix = prefix;
                 }
+            }
+            else
+            {
+                workflowType.WorkflowIdPrefix = prefix;
             }
 
             workflowType.IsActive = cbIsActive.Checked;
