@@ -777,8 +777,8 @@ function(item) {
                 end,
                 groupIds,
                 campusIds,
-                scheduleIds,
-                dvpDataView.SelectedValueAsInt() );
+                dvpDataView.SelectedValueAsInt(),
+                scheduleIds );
             return chartData;
         }
 

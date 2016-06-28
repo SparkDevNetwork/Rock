@@ -12,6 +12,8 @@ CALANDAR
 + Added context object to EventItemListLava block.
 + Updated EventItemListLava block so that campuses is not required.
 + Updated calendar to no longer lose selected date when switching between view modes (Fixes #1392).
++ Added 'External Website Ads', and 'Service Bulletin' content channels to public calendar configuration if no content channels are already configured.
++ Fixed exception that would occur when using the Event Item Occurrence List By Audience Lava block without a date range filter (and recurring events without an end date exist).
 
 CHECK-IN
 + Added 'Family' check-in functionality to allow checking in multiple family members at the same time.
@@ -217,7 +219,7 @@ MISC
 + Added new Binary File Types Field Attribute and Field Type.
 + Updated person picker results to display a person's connection status.
 + Added option to the Person Attribute/FieldType so that the 'Enable Self Detection' option of the person picker can be enabled.
-
++ Added ability to set qualifier column/value on the Categories block to further filter entities that categories belong to.
 
 Rock McKinley 4.6
 

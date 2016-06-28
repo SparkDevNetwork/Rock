@@ -48,8 +48,7 @@
                                 <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Display from" />
 
                                 <Rock:HtmlEditor ID="htmlEditor" runat="server" ResizeMaxWidth="720" Height="140" />
-                                <Rock:CodeEditor ID="ceHtml" runat="server" EditorHeight="280" />
-
+                                
                                 <Rock:RockCheckBox ID="cbOverwriteVersion" runat="server" Text="Don't save as a new version" />
 
                             </asp:Panel>

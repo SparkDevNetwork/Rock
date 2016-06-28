@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Reporting
     [BooleanField( "Update Page", "If True, provides fields for updating the parent page's Name and Description", true, "", 0 )]
 
     // Custom Settings
-    [CodeEditorField( "Query", "The query to execute", CodeEditorMode.Sql, CodeEditorTheme.Rock, 400, false, "", "CustomSetting" )]
+    [CodeEditorField( "Query", "The query to execute. Note that if you are providing SQL you can add items from the query string using Lava like {{ QueryParmName }}.", CodeEditorMode.Sql, CodeEditorTheme.Rock, 400, false, "", "CustomSetting" )]
     [TextField( "Query Params", "Parameters to pass to query", false, "", "CustomSetting" )]
     [BooleanField( "Stored Procedure", "Is the query a stored procedure?", false, "CustomSetting" )]
     [TextField( "Url Mask", "The Url to redirect to when a row is clicked", false, "", "CustomSetting" )]

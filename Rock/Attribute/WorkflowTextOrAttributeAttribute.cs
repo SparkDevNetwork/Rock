@@ -42,6 +42,23 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         /// <param name="fieldTypeClassNames">The field type class names.</param>
+        public WorkflowTextOrAttributeAttribute( string textLabel, string attributeLabel, string description, bool required, string defaultValue, string category, int order, string key, string[] fieldTypeClassNames )
+            : this( textLabel, attributeLabel, description, required, defaultValue, category, order, key, fieldTypeClassNames, 1 )
+        {
+        }
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WorkflowAttributeAttribute" /> class.
+        /// </summary>
+        /// <param name="textLabel">The text label.</param>
+        /// <param name="attributeLabel">The attribute label.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="category">The category.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="fieldTypeClassNames">The field type class names.</param>
         /// <param name="rows">The rows.</param>
         public WorkflowTextOrAttributeAttribute( string textLabel, string attributeLabel, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null, string[] fieldTypeClassNames = null, int rows = 1 )
             : base( textLabel + "|" + attributeLabel, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.WorkflowTextOrAttributeFieldType ).FullName )
