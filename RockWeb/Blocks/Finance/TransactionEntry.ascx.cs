@@ -282,6 +282,8 @@ namespace RockWeb.Blocks.Finance
 
             if ( !Page.IsPostBack )
             {
+                hfTransactionGuid.Value = Guid.NewGuid().ToString();
+                
                 SetControlOptions();
 
                 SetPage( 1 );
@@ -519,7 +521,9 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnConfirm_Click( object sender, EventArgs e )
         {
+            // They are hitting Confirm on the "Possible Duplicate" warning, so reset the TransactionCode and Transaction.Guid which would have preventing them from doing a duplicate
             TransactionCode = string.Empty;
+            hfTransactionGuid.Value = Guid.NewGuid().ToString();
 
             string errorMessage = string.Empty;
             if ( ProcessConfirmation( out errorMessage ) )
@@ -1619,6 +1623,8 @@ namespace RockWeb.Blocks.Finance
             var rockContext = new RockContext();
             if ( string.IsNullOrWhiteSpace( TransactionCode ) )
             {
+                var transactionGuid = hfTransactionGuid.Value.AsGuid();
+                
                 bool isACHTxn = hfPaymentTab.Value == "ACH";
                 var financialGateway = isACHTxn ? _achGateway : _ccGateway;
                 var gateway = isACHTxn ? _achGatewayComponent : _ccGatewayComponent;
@@ -1648,6 +1654,14 @@ namespace RockWeb.Blocks.Finance
                     return false;
                 }
 
+                var transactionAlreadyExists = new FinancialTransactionService( rockContext ).Queryable().FirstOrDefault( a => a.Guid == transactionGuid );
+                if ( transactionAlreadyExists != null )
+                {
+                    // hopefully shouldn't happen, but just in case the transaction already went thru, show the success screen
+                    ShowSuccess( gateway, person, paymentInfo, null, transactionAlreadyExists.FinancialPaymentDetail, rockContext );
+                    return true;
+                }
+
                 PaymentSchedule schedule = GetSchedule();
                 FinancialPaymentDetail paymentDetail = null;
                 if ( schedule != null )
@@ -1670,6 +1684,9 @@ namespace RockWeb.Blocks.Finance
                     {
                         return false;
                     }
+
+                    // manually assign the Guid that we generated at the beginning of the transaction UI entry to help make duplicate transactions impossible
+                    transaction.Guid = transactionGuid;
 
                     SaveTransaction( financialGateway, gateway, person, paymentInfo, transaction, rockContext );
                     paymentDetail = transaction.FinancialPaymentDetail.Clone( false );
