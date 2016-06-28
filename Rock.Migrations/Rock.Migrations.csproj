@@ -83,6 +83,10 @@
     <Compile Include="Migrations\201606241700105_ExceptionUpdates.Designer.cs">
       <DependentUpon>201606241700105_ExceptionUpdates.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201606281347449_PersonDirectory.cs" />
+    <Compile Include="Migrations\201606281347449_PersonDirectory.Designer.cs">
+      <DependentUpon>201606281347449_PersonDirectory.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 5.0\Version 1.5.0\201606061308109_ClearPreviousMigrations5.cs" />
     <Compile Include="Migrations\Version 5.0\Version 1.5.0\201606061308109_ClearPreviousMigrations5.Designer.cs">
       <DependentUpon>201606061308109_ClearPreviousMigrations5.cs</DependentUpon>
@@ -2176,6 +2180,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201606241700105_ExceptionUpdates.resx">
       <DependentUpon>201606241700105_ExceptionUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201606281347449_PersonDirectory.resx">
+      <DependentUpon>201606281347449_PersonDirectory.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 5.0\Version 1.5.0\201606061308109_ClearPreviousMigrations5.resx">
       <DependentUpon>201606061308109_ClearPreviousMigrations5.cs</DependentUpon>
