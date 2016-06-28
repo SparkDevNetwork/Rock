@@ -116,7 +116,7 @@ namespace Rock.Workflow.Action
                                                     formattedNewValue = attribute.FieldType.Field.FormatValue( null, updateValue, attribute.QualifierValues, false );
                                                 }
 
-                                                History.EvaluateChange( changes, attribute.Name, formattedOriginalValue, formattedNewValue );
+                                                History.EvaluateChange( changes, attribute.Name, formattedOriginalValue, formattedNewValue, attribute.FieldType.Field.IsSensitive() );
                                                 if ( changes.Any() )
                                                 {
                                                     HistoryService.SaveChanges( rockContext, typeof( Person ), 
