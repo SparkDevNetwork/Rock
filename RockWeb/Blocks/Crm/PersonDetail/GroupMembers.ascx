@@ -70,6 +70,12 @@
 
                     </div>
 
+                    <asp:panel ID="pnlGroupAttributes" runat="server" CssClass="margin-l-md">
+                        <ul class="list-inline">
+                            <asp:PlaceHolder ID="phGroupAttributes" runat="server" />
+                        </ul>
+                    </asp:panel>
+
                 </div>
 
             </ItemTemplate>

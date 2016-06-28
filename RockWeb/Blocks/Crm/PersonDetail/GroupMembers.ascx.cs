@@ -25,7 +25,9 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -161,6 +163,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
 
                     Repeater rptrAddresses = e.Item.FindControl( "rptrAddresses" ) as Repeater;
+                    if ( rptrAddresses != null )
                     {
                         rptrAddresses.ItemDataBound += rptrAddresses_ItemDataBound;
                         rptrAddresses.ItemCommand += rptrAddresses_ItemCommand;
@@ -169,6 +172,46 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             .OrderBy( l => l.GroupLocationTypeValue.Order )
                             .ToList();
                         rptrAddresses.DataBind();
+                    }
+
+                    Panel pnlGroupAttributes = e.Item.FindControl( "pnlGroupAttributes" ) as Panel;
+                    PlaceHolder phGroupAttributes = e.Item.FindControl( "phGroupAttributes" ) as PlaceHolder;
+                    if ( pnlGroupAttributes  != null && phGroupAttributes != null )
+                    {
+                        phGroupAttributes.Controls.Clear();
+
+                        group.LoadAttributes();
+                        var attributes = group.Attributes
+                            .Select( a => a.Value )
+                            .Where( a => a.IsGridColumn )
+                            .OrderBy( a => a.Order )
+                            .ToList();
+                        foreach( var attribute in attributes )
+                        {
+                            if ( attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                            {
+                                // Get the Attribute Value formatted for display.
+                                string value = attribute.DefaultValue;
+                                if ( group.AttributeValues.ContainsKey( attribute.Key ) && group.AttributeValues[attribute.Key] != null )
+                                {
+                                    value = group.AttributeValues[attribute.Key].Value;
+                                }
+
+                                if ( !string.IsNullOrWhiteSpace( value ) )
+                                {
+                                    var literalControl = new RockLiteral();
+                                    literalControl.Label = attribute.Name;
+                                    literalControl.Text = attribute.FieldType.Field.FormatValueAsHtml( null, value, attribute.QualifierValues );
+
+                                    var li = new HtmlGenericControl( "li" );
+                                    li.Controls.Add( literalControl );
+
+                                    phGroupAttributes.Controls.Add( li );
+                                }
+                            }
+                        }
+
+                        pnlGroupAttributes.Visible = phGroupAttributes.Controls.Count > 0;
                     }
                 }
             }
