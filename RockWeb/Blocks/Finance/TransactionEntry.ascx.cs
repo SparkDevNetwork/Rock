@@ -1708,7 +1708,10 @@ namespace RockWeb.Blocks.Finance
         private bool ProcessStep3( string resultQueryString, out string errorMessage )
         {
             var rockContext = new RockContext();
+            
 
+            var transactionGuid = hfTransactionGuid.Value.AsGuid();
+            
             bool isACHTxn = hfPaymentTab.Value == "ACH";
             var financialGateway = isACHTxn ? _achGateway : _ccGateway;
             var gateway = ( isACHTxn ? _achGatewayComponent : _ccGatewayComponent ) as ThreeStepGatewayComponent;
@@ -1758,6 +1761,15 @@ namespace RockWeb.Blocks.Finance
                 paymentInfo.Comment1 = GetAttributeValue( "PaymentComment" );
             }
 
+            var transactionAlreadyExists = new FinancialTransactionService( rockContext ).Queryable().FirstOrDefault( a => a.Guid == transactionGuid );
+            if ( transactionAlreadyExists != null )
+            {
+                // hopefully shouldn't happen, but just in case the transaction already went thru, show the success screen
+                ShowSuccess( gateway, person, paymentInfo, null, transactionAlreadyExists.FinancialPaymentDetail, rockContext );
+                errorMessage = string.Empty;
+                return true;
+            }
+
             PaymentSchedule schedule = GetSchedule();
             FinancialPaymentDetail paymentDetail = null;
             if ( schedule != null )
@@ -1778,6 +1790,9 @@ namespace RockWeb.Blocks.Finance
                 {
                     return false;
                 }
+
+                // manually assign the Guid that we generated at the beginning of the transaction UI entry to help make duplicate transactions impossible
+                transaction.Guid = transactionGuid;
 
                 paymentDetail = transaction.FinancialPaymentDetail.Clone( false );
                 SaveTransaction( financialGateway, gateway, person, paymentInfo, transaction, rockContext );
