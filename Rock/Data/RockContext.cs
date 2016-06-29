@@ -1190,6 +1190,12 @@ namespace Rock.Data
                 {
                     modelBuilder.RegisterEntityType( entityType );
                 }
+
+                // add configurations that might be in plugin assemblies
+                foreach ( var assembly in entityTypeList.Select( a => a.Assembly ).Distinct() )
+                {
+                    modelBuilder.Configurations.AddFromAssembly( assembly );
+                }
             }
             catch ( Exception ex )
             {
