@@ -89,7 +89,7 @@ namespace Rock.Rest.Controllers
         /// <param name="height">The height.</param>
         /// <param name="fullPath">The full path.</param>
         /// <returns></returns>
-        private static HttpResponseMessage ResizeAndSendImage( int? width, int? height, string fullPath )
+        private HttpResponseMessage ResizeAndSendImage( int? width, int? height, string fullPath )
         {
             if ( Path.GetExtension( fullPath ).Equals( ".svg", StringComparison.OrdinalIgnoreCase ) )
             {
@@ -124,6 +124,13 @@ namespace Rock.Rest.Controllers
                     resizedStream.Position = 0;
                     result.Content = new StreamContent( resizedStream );
                     result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue( mimeType );
+
+                    if ( this.Request.GetQueryString( "timeStamp" ) != null )
+                    {
+                        // set the CacheControl to 365 days since the Request URL timestamp param will change if the file changes
+                        result.Headers.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue() { Public = true, MaxAge = new TimeSpan( 365, 0, 0, 0 ) };
+                    }
+
                     return result;
                 }
             }
