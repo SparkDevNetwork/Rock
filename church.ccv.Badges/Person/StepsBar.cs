@@ -67,9 +67,9 @@ namespace church.ccv.Badges.Person
                 <div class='badge badge-share badge-icon step-nottaken' data-toggle='tooltip' data-original-title='Coming Soon...' data-container='body'>
                     <i class='icon ccv-share'></i>
                 </div>
-                <div class='badge badge-coach badge-icon step-nottaken' data-toggle='tooltip' data-original-title='{1} is not coaching' data-container='body'>
+                <a class='badge badge-coach badge-icon step-nottaken' data-toggle='tooltip' data-original-title='{1} is not coaching' data-container='body'  href='/page/{7}?PersonGuid={2}'>
                     <i class='icon ccv-coach'></i>
-                </div>
+                </a>
             </div>", 
                 badge.Id // 0
                 , Person.NickName // 1
@@ -78,6 +78,7 @@ namespace church.ccv.Badges.Person
                 , baptismRegistrationPageId // 4
                 , connectionGroupRegistrationPageId // 5
                 , servingConnectionPageId // 6
+                , nextStepGroupRegistrationPageId // 7
             ) );
             
             writer.Write( string.Format(
@@ -319,6 +320,11 @@ namespace church.ccv.Badges.Person
                     // create content for popover
                     var popoverContent = firstName + "" is in the following coaching groups: <ul styling='padding-left: 20px;'>"";
 
+                    // disable the anchor tag
+                    $badge.find( '.badge-coach' ).on( ""click"", function( e ) {{
+                        e.preventDefault();
+                    }});
+
                     $.each( data.CoachingResult.Groups, function (index, group)
                     {{
                         popoverContent = popoverContent + ""<li><a href='/page/"" + groupDetailPageId + ""?GroupId="" + group.GroupId + ""'>"" + group.GroupName + ""</a></li>"";
@@ -343,6 +349,8 @@ namespace church.ccv.Badges.Person
                             popoverContent = popoverContent + ""<p>and "" + moreCount + "" others (see groups tab for details)</p>"";
                         }}
                     }}
+
+                    var popoverContent = popoverContent + ""<p class='margin-b-none margin-t-sm'><a href='/page/"" + nextStepGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find NS Group</a></p>"";
 
                     $badge.find('.badge-coach').removeClass('step-nottaken');
                     $badge.find('.badge-coach').attr('data-toggle', 'popover');
@@ -378,6 +386,9 @@ namespace church.ccv.Badges.Person
                             $badge.find( '.badge-coach' ).tooltip( 'hide' );
                         }}
                     }});
+                }}
+                else {{
+                    $badge.find( '.badge-coach' ).attr( 'data-original-title', firstName + ' is not coaching.' );
                 }}
             }}
         }},
