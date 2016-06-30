@@ -80,6 +80,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\ImageResizer.3.4.3\lib\ImageResizer.dll</HintPath>
     </Reference>
+    <Reference Include="InteractivePreGeneratedViews, Version=1.0.0.0, Culture=neutral, PublicKeyToken=46c4868af4307d2c, processorArchitecture=MSIL">
+      <HintPath>..\packages\EFInteractiveViews.1.0.1\lib\net45\InteractivePreGeneratedViews.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.Web.XmlTransform, Version=2.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Microsoft.Web.Xdt.2.1.1\lib\net40\Microsoft.Web.XmlTransform.dll</HintPath>
@@ -504,6 +508,9 @@
     <Compile Include="PersonProfile\Badge\GeofencedByGroup.cs" />
     <Compile Include="PersonProfile\Badge\DISC.cs" />
     <Compile Include="PersonProfile\Badge\InGroupWithPurpose.cs" />
+    <Compile Include="Plugin\HotFixes\004_FixGradeRequiredAttribute.cs" />
+    <Compile Include="Plugin\HotFixes\003_FixSystemEmailQuote.cs" />
+    <Compile Include="Plugin\HotFixes\002_CheckinGradeRequired.cs" />
     <Compile Include="Plugin\HotFixes\001_FixPhoneCountryCode.cs" />
     <Compile Include="Reporting\ComparisonHelper.cs" />
     <Compile Include="Reporting\DataFilter\NotInOtherDataViewFilter.cs" />
@@ -1185,6 +1192,7 @@
     <Compile Include="Web\UI\IDetailBlock.cs" />
     <Compile Include="Web\UI\ISecondaryBlock.cs" />
     <Compile Include="Web\Utilities\HtmlSanitizer.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterGroupsByGradeAndAge.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterLocationsBySchedule.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterLocationsByThreshold.cs" />
     <Compile Include="Workflow\Action\CheckIn\PreSelectRecentAttendance.cs" />

@@ -283,7 +283,7 @@ namespace Rock.Reporting.DataFilter.Workflow
                     var workflowType = new WorkflowTypeService( new RockContext() ).Get( workflowTypePicker.SelectedValue.AsIntegerOrNull() ?? 0 );
                     if ( workflowType != null )
                     {
-                        if ( containerControl.Controls.Count == 1 )
+                        if ( containerControl.Controls.Count == 1 || filterMode == FilterMode.SimpleFilter )
                         {
                             workflowTypePicker_SelectItem( workflowTypePicker, new EventArgs() );
                         }

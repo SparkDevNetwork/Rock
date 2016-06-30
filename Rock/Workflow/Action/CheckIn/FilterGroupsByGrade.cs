@@ -58,12 +58,12 @@ namespace Rock.Workflow.Action.CheckIn
             if ( family != null )
             {
                 var remove = GetAttributeValue( action, "Remove" ).AsBoolean();
+                bool gradeRequired = checkInState.CheckInType == null || checkInState.CheckInType.GradeRequired;
 
                 foreach ( var person in family.People )
                 {
                     int? personsGradeOffset = person.Person.GradeOffset;
-
-                    if ( personsGradeOffset == null )
+                    if ( personsGradeOffset == null && !gradeRequired )
                     {
                         continue;
                     }

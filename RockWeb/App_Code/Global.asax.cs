@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Configuration;
 using System.Data.Entity;
 using System.Data.SqlClient;
@@ -31,12 +30,13 @@ using System.Web.Caching;
 using System.Web.Http;
 using System.Web.Optimization;
 using System.Web.Routing;
-using dotless.Core;
-using dotless.Core.configuration;
+
 using DotLiquid;
+
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
+
 using Rock;
 using Rock.Communication;
 using Rock.Data;
@@ -44,7 +44,6 @@ using Rock.Jobs;
 using Rock.Model;
 using Rock.Plugin;
 using Rock.Transactions;
-using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -138,6 +137,13 @@ namespace RockWeb
 
                 // Clear all cache
                 RockMemoryCache.Clear();
+
+                // If not migrating, set up view cache to speed up startup (Not supported when running migrations).
+                var fileInfo = new FileInfo( Server.MapPath( "~/App_Data/Run.Migration" ) );
+                if ( !fileInfo.Exists )
+                {
+                    RockInteractiveViews.SetViewFactory( Server.MapPath( "~/App_Data/RockModelViews.xml" ) );
+                }
 
                 // Get a db context
                 using ( var rockContext = new RockContext() )

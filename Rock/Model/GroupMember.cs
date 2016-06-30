@@ -213,66 +213,99 @@ namespace Rock.Model
         /// <param name="state">The state.</param>
         public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
         {
-            string action = string.Empty;
-            string verb = string.Empty;
+            try
+            {
+                string verb = string.Empty;
+                string action = string.Empty;
 
-            if ( state == System.Data.Entity.EntityState.Added )
-            {
-                action = "Added to group.";
-                verb = "ADD";
-                if ( !this.DateTimeAdded.HasValue )
+                var rockContext = (RockContext)dbContext;
+                Group group = null;
+
+                if ( state == System.Data.Entity.EntityState.Added )
                 {
-                    this.DateTimeAdded = RockDateTime.Now;
-                }
-            }
-            else if ( state == System.Data.Entity.EntityState.Modified )
-            {
-                var changeEntry = dbContext.ChangeTracker.Entries<GroupMember>().Where( a => a.Entity == this ).FirstOrDefault();
-                if ( changeEntry != null )
-                {
-                    var origGroupMemberStatus = (GroupMemberStatus)changeEntry.OriginalValues["GroupMemberStatus"];
-                    if ( origGroupMemberStatus != this.GroupMemberStatus )
+                    verb = "ADD";
+                    action = "Added to group.";
+                    if ( !this.DateTimeAdded.HasValue )
                     {
-                        action = string.Format( "Group member status changed from {0} to {1}", origGroupMemberStatus.ToString(), this.GroupMemberStatus.ToString() );
-                        verb = "UPDATE";
+                        this.DateTimeAdded = RockDateTime.Now;
+                    }
+                }
+                else if ( state == System.Data.Entity.EntityState.Modified )
+                {
+                    verb = "UPDATE";
+
+                    var changeEntry = dbContext.ChangeTracker.Entries<GroupMember>().Where( a => a.Entity == this ).FirstOrDefault();
+                    if ( changeEntry != null )
+                    {
+                        var origGroupMemberStatus = (GroupMemberStatus)changeEntry.OriginalValues["GroupMemberStatus"];
+                        if ( origGroupMemberStatus != this.GroupMemberStatus )
+                        {
+                            action = string.Format( "Group member status changed from {0} to {1}", origGroupMemberStatus.ToString(), this.GroupMemberStatus.ToString() );
+                        }
+
+                        var origGroupRoleId = (int)changeEntry.OriginalValues["GroupRoleId"];
+                        if ( origGroupRoleId != this.GroupRoleId )
+                        {
+                            if ( group == null )
+                            {
+                                group = this.Group;
+                            }
+                            if ( group == null )
+                            {
+                                group = new GroupService( rockContext ).Get( this.GroupId );
+                            }
+                            if ( group != null )
+                            {
+                                var groupType = GroupTypeCache.Read( group.GroupTypeId );
+                                if ( groupType != null )
+                                {
+                                    var origRole = groupType.Roles.FirstOrDefault( r => r.Id == origGroupRoleId );
+                                    var newRole = groupType.Roles.FirstOrDefault( r => r.Id == this.GroupRoleId );
+                                    action = string.Format( "Group role changed from {0} to {1}",
+                                        ( origRole != null ? origRole.Name : "??" ),
+                                        ( newRole != null ? newRole.Name : "??" ) );
+                                }
+                            }
+                        }
+                    }
+                }
+                else if ( state == System.Data.Entity.EntityState.Deleted )
+                {
+                    verb = "DELETE";
+                    action = "Removed from group.";
+                }
+
+                if ( !string.IsNullOrWhiteSpace( action ) )
+                {
+                    if ( group == null )
+                    {
+                        group = this.Group;
+                    }
+                    if ( group == null )
+                    {
+                        group = new GroupService( rockContext ).Get( this.GroupId );
+                    }
+                    if ( group != null )
+                    {
+                        var personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+                        var groupEntityTypeId = EntityTypeCache.Read( "Rock.Model.Group" ).Id;
+                        var groupMembershipCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_GROUP_MEMBERSHIP.AsGuid(), rockContext ).Id;
+
+                        new HistoryService( rockContext ).Add( new History
+                        {
+                            EntityTypeId = personEntityTypeId,
+                            CategoryId = groupMembershipCategoryId,
+                            EntityId = this.PersonId,
+                            Summary = action,
+                            Caption = group.Name,
+                            RelatedEntityTypeId = groupEntityTypeId,
+                            RelatedEntityId = this.GroupId,
+                            Verb = verb
+                        } );
                     }
                 }
             }
-            else if ( state == System.Data.Entity.EntityState.Deleted )
-            {
-                action = "Removed from group.";
-                verb = "DELETE";
-            }
-
-            if ( !string.IsNullOrWhiteSpace( action ) )
-            {
-                var rockContext = (RockContext)dbContext;
-
-                var group = this.Group;
-                if ( group == null )
-                {
-                    group = new GroupService( rockContext ).Get( this.GroupId );
-                }
-
-                if ( group != null )
-                {
-                    var personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
-                    var groupEntityTypeId = EntityTypeCache.Read( "Rock.Model.Group" ).Id;
-                    var groupMembershipCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_GROUP_MEMBERSHIP.AsGuid(), rockContext ).Id;
-
-                    new HistoryService( rockContext ).Add( new History
-                    {
-                        EntityTypeId = personEntityTypeId,
-                        CategoryId = groupMembershipCategoryId,
-                        EntityId = this.PersonId,
-                        Summary = action,
-                        Caption = group.Name,
-                        RelatedEntityTypeId = groupEntityTypeId,
-                        RelatedEntityId = this.GroupId,
-                        Verb = verb
-                    } );
-                }
-            }
+            catch { }
 
             base.PreSaveChanges( dbContext, state );
         }
