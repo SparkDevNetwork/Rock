@@ -131,6 +131,15 @@ namespace Rock.CheckIn
         public List<CheckInSchedule> PossibleSchedules { get; set; }
 
         /// <summary>
+        /// Gets or sets state parameters which can be used by workflow actions to track state of current person's check-in
+        /// </summary>
+        /// <value>
+        /// The state parameters.
+        /// </value>
+        [DataMember]
+        public Dictionary<string, string> StateParameters { get; set; }
+
+        /// <summary>
         /// Gets the selected schedules.
         /// </summary>
         /// <value>
@@ -163,6 +172,7 @@ namespace Rock.CheckIn
         {
             GroupTypes = new List<CheckInGroupType>();
             PossibleSchedules = new List<CheckInSchedule>();
+            StateParameters = new Dictionary<string, string>();
         }
 
         /// <summary>

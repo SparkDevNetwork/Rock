@@ -118,7 +118,9 @@ namespace RockWeb.Blocks.CheckIn
                     foreach( var group in groupType.SelectedGroups( schedule ) )
                     {
                         group.Selected = false;
-                        group.SelectedForSchedule = new List<int>();
+                        group.SelectedForSchedule = schedule != null ?
+                            group.SelectedForSchedule.Where( s => s != schedule.Schedule.Id ).ToList() :
+                            new List<int>();
                     }
                 }
             }
