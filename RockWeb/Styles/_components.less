@@ -40,6 +40,7 @@
   37. Custom Buttons
   38. Color Picker
   39. HTML Editor (summernote)
+  40. Person Directory
 */
 
 // 1. Pickers
@@ -2282,4 +2283,21 @@ ul.list-group-panel, .panel-collapse {
 
 iframe.file-browser {
     border: 0;
+}
+
+// 40. Person Directory
+// -------------------------
+
+.directory-letters {
+    li {
+        width: 3.8455%;
+        min-width: 20px;
+    }
+}
+
+.directory-grid { 
+    
+    div.row:nth-child(odd) {
+        background-color: @grid-row-odd-bg;
+    }
 }
