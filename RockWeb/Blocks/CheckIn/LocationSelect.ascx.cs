@@ -130,7 +130,9 @@ namespace RockWeb.Blocks.CheckIn
                         foreach ( var location in group.SelectedLocations( schedule ) )
                         {
                             location.Selected = false;
-                            location.SelectedForSchedule = new List<int>();
+                            location.SelectedForSchedule = schedule != null ?
+                                location.SelectedForSchedule.Where( s => s != schedule.Schedule.Id ).ToList() :
+                                new List<int>();
                         }
                     }
                 }
