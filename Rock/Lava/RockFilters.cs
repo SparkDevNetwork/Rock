@@ -631,7 +631,7 @@ namespace Rock.Lava
         /// <param name="start">If the passed index is negative, it is counted from the end of the string.</param>
         /// <param name="length">An optional second parameter can be passed to specify the length of the substring.  If no second parameter is given, a substring of one character will be returned.</param>
         /// <returns></returns>
-        public static String slice( string input, int start, int length = 1 )
+        public static String Slice( string input, int start, int length = 1 )
         {
             // If a negative start, subtract if from the length
             if ( start < 0 )
