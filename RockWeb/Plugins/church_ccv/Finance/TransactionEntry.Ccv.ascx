@@ -3,6 +3,9 @@
 <asp:UpdatePanel ID="upPayment" runat="server">
     <ContentTemplate>
 
+        <%-- hidden field to store the Transaction.Guid to use for the transaction. This is to help prevent duplicate transactions.   --%>
+        <asp:HiddenField ID="hfTransactionGuid" runat="server" Value="" />
+
         <Rock:NotificationBox ID="nbMessage" runat="server" Visible="false"></Rock:NotificationBox>
         
         <div class="container">
@@ -112,6 +115,8 @@
                         </asp:DropDownList>
                     </div>
                 </div>
+
+                <Rock:RockRadioButtonList ID="rblSavedAccount" runat="server" CssClass="radio-list margin-b-lg" RepeatDirection="Vertical" DataValueField="Id" DataTextField="Name" />
 
                 <div class="form-group js-card-group">
                     <label class="control-label col-sm-3">Card Info</label>
