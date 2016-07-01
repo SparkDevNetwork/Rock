@@ -624,6 +624,29 @@ namespace Rock.Lava
             return match.Success;
         }
 
+        /// <summary>
+        /// The slice filter returns a substring, starting at the specified index.
+        /// </summary>
+        /// <param name="input">The input string.</param>
+        /// <param name="start">If the passed index is negative, it is counted from the end of the string.</param>
+        /// <param name="length">An optional second parameter can be passed to specify the length of the substring.  If no second parameter is given, a substring of one character will be returned.</param>
+        /// <returns></returns>
+        public static String slice( string input, int start, int length = 1 )
+        {
+            // If a negative start, subtract if from the length
+            if ( start < 0 )
+            {
+                start = input.Length + start;
+            }
+            // Make sure start is never < 0
+            start = start >= 0 ? start : 0;
+
+            // If length takes us off the end, fix it
+            length = length > ( input.Length - start ) ? ( input.Length - start ) : length;
+
+            return input.Substring(start, length);
+        }
+
         #endregion
 
         #region DateTime Filters
