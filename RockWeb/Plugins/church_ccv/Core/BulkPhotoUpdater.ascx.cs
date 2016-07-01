@@ -99,7 +99,7 @@ namespace RockWeb.Plugins.church_ccv.Core
                     dvpDataView.SetValue( dataViewVal );
 
                     int? specificPersonId = this.PageParameter( "PersonId" ).AsIntegerOrNull();
-                    if (specificPersonId.HasValue)
+                    if ( specificPersonId.HasValue )
                     {
                         hfPersonIds.Value = specificPersonId.ToString();
                     }
@@ -107,7 +107,7 @@ namespace RockWeb.Plugins.church_ccv.Core
                     {
                         UpdatePhotoList();
                     }
-                    
+
 
                     ShowPersonDetail( hfPersonIds.Value.SplitDelimitedValues().FirstOrDefault().AsIntegerOrNull() );
                 }
@@ -202,39 +202,17 @@ namespace RockWeb.Plugins.church_ccv.Core
         /// <param name="photoData">The photo data.</param>
         private void UpdatePhotoDetails( BinaryFile photoData )
         {
-            var photoDateTime = photoData.ModifiedDateTime ?? photoData.CreatedDateTime;
-            if ( photoDateTime.HasValue )
+            try
             {
-                lPhotoDate.Text = photoDateTime.Value.ToString( "G" );
-            }
-            else
-            {
-                lPhotoDate.Text = "unknown date/time";
-            }
-
-            using ( System.Drawing.Image image = System.Drawing.Image.FromStream( photoData.ContentStream ) )
-            {
-                if ( image.Width == image.Height )
+                var photoDateTime = photoData.ModifiedDateTime ?? photoData.CreatedDateTime;
+                if ( photoDateTime.HasValue )
                 {
-                    lDimenions.Text = @"<span class='label label-success'>" + image.Width.ToString() + " X " + image.Height.ToString() + "</span>";
+                    lPhotoDate.Text = photoDateTime.Value.ToString( "G" );
                 }
                 else
                 {
-                    lDimenions.Text = @"<span class='label label-danger'>" + image.Width.ToString() + " X " + image.Height.ToString() + "</span>";
+                    lPhotoDate.Text = "unknown date/time";
                 }
-
-                if ( image.Width >= 500 || image.Height >= 500 )
-                {
-                    lSizeCheck.Text = "<span class='label label-danger'>Too Large</span>";
-                    lSizeCheck.Visible = true;
-                }
-                else
-                {
-                    lSizeCheck.Visible = false;
-                }
-
-                btnShrink.Visible = image.Width > 500;
-                nbShrinkWidth.Visible = btnShrink.Visible;
 
                 var photoKiloBytes = photoData.ContentStream.Length / 1024;
                 if ( photoKiloBytes > 1024 )
@@ -252,6 +230,40 @@ namespace RockWeb.Plugins.church_ccv.Core
                     lByteSizeCheck.Text = string.Format( @"<span class='label label-info'>{0}KB</span>", photoData.ContentStream.Length / 1024 );
                     lByteSizeCheck.Visible = true;
                 }
+
+                using ( System.Drawing.Image image = System.Drawing.Image.FromStream( photoData.ContentStream ) )
+                {
+                    if ( image.Width == image.Height )
+                    {
+                        lDimensions.Text = @"<span class='label label-success'>" + image.Width.ToString() + " X " + image.Height.ToString() + "</span>";
+                    }
+                    else
+                    {
+                        lDimensions.Text = @"<span class='label label-danger'>" + image.Width.ToString() + " X " + image.Height.ToString() + "</span>";
+                    }
+
+                    if ( image.Width >= 500 || image.Height >= 500 )
+                    {
+                        lSizeCheck.Text = "<span class='label label-danger'>Too Large</span>";
+                        lSizeCheck.Visible = true;
+                    }
+                    else
+                    {
+                        lSizeCheck.Visible = false;
+                    }
+
+                    btnShrink.Visible = image.Width > 500;
+                    nbShrinkWidth.Visible = btnShrink.Visible;
+                }
+
+                nbPhotoError.Visible = false;
+            }
+            catch ( Exception ex )
+            {
+                nbPhotoError.Title = "Error";
+                nbPhotoError.Text = ex.Message;
+                nbPhotoError.Dismissable = true;
+                nbPhotoError.Visible = true;
             }
         }
 

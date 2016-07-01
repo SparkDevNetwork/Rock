@@ -30,6 +30,7 @@
                             
                             <Rock:ImageEditor ID="imgPhoto" runat="server" Label="Photo" BinaryFileTypeGuid="03BD8476-8A9F-4078-B628-5B538F967AFC" />
                             <div class="form-inline margin-t-md">
+                                <Rock:NotificationBox ID="nbPhotoError" runat="server" NotificationBoxType="Danger" Visible="false" />
                                 <asp:LinkButton ID="btnRotate" runat="server" CssClass="btn btn-action btn-sm" OnClick="btnRotate_Click" ><i class="fa fa-repeat" title="rotate"></i></asp:LinkButton>
                                 <asp:LinkButton ID="btnShrink" runat="server" CssClass="btn btn-action btn-sm" Text="Shrink" OnClick="btnShrink_Click" />
                                 <Rock:NumberBox ID="nbShrinkWidth" AppendText="px" runat="server" Value="1000" Maximum="1000" Minimum="250" CssClass="input-width-md" />
@@ -39,7 +40,8 @@
                         </div>
                         <div class="col-md-9">
                             <h1 class="title name" style="margin-top: 0px;"><asp:Literal ID="lName" runat="server" /></h1>
-                            <asp:Literal ID="lDimenions" runat="server" />
+
+                            <asp:Literal ID="lDimensions" runat="server" />
                             <asp:Literal ID="lSizeCheck" runat="server" />
                             <asp:Literal ID="lByteSizeCheck" runat="server" />
                             
