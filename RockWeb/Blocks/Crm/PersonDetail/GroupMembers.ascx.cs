@@ -175,43 +175,56 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
 
                     Panel pnlGroupAttributes = e.Item.FindControl( "pnlGroupAttributes" ) as Panel;
+                    HyperLink hlShowMoreAttributes = e.Item.FindControl( "hlShowMoreAttributes" ) as HyperLink;
                     PlaceHolder phGroupAttributes = e.Item.FindControl( "phGroupAttributes" ) as PlaceHolder;
-                    if ( pnlGroupAttributes  != null && phGroupAttributes != null )
+                    PlaceHolder phMoreGroupAttributes = e.Item.FindControl( "phMoreGroupAttributes" ) as PlaceHolder;
+
+                    if ( pnlGroupAttributes  != null && hlShowMoreAttributes != null && phGroupAttributes != null && phMoreGroupAttributes != null )
                     {
+                        hlShowMoreAttributes.Visible = false;
                         phGroupAttributes.Controls.Clear();
+                        phMoreGroupAttributes.Controls.Clear();
 
                         group.LoadAttributes();
                         var attributes = group.Attributes
                             .Select( a => a.Value )
-                            .Where( a => a.IsGridColumn )
                             .OrderBy( a => a.Order )
                             .ToList();
+
                         foreach( var attribute in attributes )
                         {
                             if ( attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                             {
-                                // Get the Attribute Value formatted for display.
                                 string value = attribute.DefaultValue;
                                 if ( group.AttributeValues.ContainsKey( attribute.Key ) && group.AttributeValues[attribute.Key] != null )
                                 {
-                                    value = group.AttributeValues[attribute.Key].Value;
+                                    value = group.AttributeValues[attribute.Key].ValueFormatted;
                                 }
 
                                 if ( !string.IsNullOrWhiteSpace( value ) )
                                 {
                                     var literalControl = new RockLiteral();
+                                    literalControl.ID = string.Format( "familyAttribute_{0}", attribute.Id );
                                     literalControl.Label = attribute.Name;
-                                    literalControl.Text = attribute.FieldType.Field.FormatValueAsHtml( null, value, attribute.QualifierValues );
+                                    literalControl.Text = value;
 
                                     var li = new HtmlGenericControl( "li" );
                                     li.Controls.Add( literalControl );
 
-                                    phGroupAttributes.Controls.Add( li );
+                                    if ( attribute.IsGridColumn )
+                                    {
+                                        phGroupAttributes.Controls.Add( li );
+                                    }
+                                    else
+                                    {
+                                        hlShowMoreAttributes.Visible = true;
+                                        phMoreGroupAttributes.Controls.Add( li );
+                                    }
                                 }
                             }
                         }
 
-                        pnlGroupAttributes.Visible = phGroupAttributes.Controls.Count > 0;
+                        pnlGroupAttributes.Visible = phGroupAttributes.Controls.Count > 0 || phMoreGroupAttributes.Controls.Count > 0;
                     }
                 }
             }
