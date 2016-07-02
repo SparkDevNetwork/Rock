@@ -70,9 +70,15 @@
 
                     </div>
 
-                    <asp:panel ID="pnlGroupAttributes" runat="server" CssClass="margin-l-md">
+                    <asp:panel ID="pnlGroupAttributes" runat="server" CssClass="margin-l-md js-family-attributes" style="min-height: 22px;" >
+                        <div class="actions pull-right">
+                            <asp:HyperLink ID="hlShowMoreAttributes" runat="server" Visible="false" CssClass="btn btn-xs btn-default js-show-more-family-attributes"><i class="fa fa-chevron-down"></i> More</asp:HyperLink>
+                        </div>
                         <ul class="list-inline">
                             <asp:PlaceHolder ID="phGroupAttributes" runat="server" />
+                        </ul>
+                        <ul class="list-inline js-more-family-attributes" style="display:none">
+                            <asp:PlaceHolder ID="phMoreGroupAttributes" runat="server" />
                         </ul>
                     </asp:panel>
 
@@ -80,6 +86,24 @@
 
             </ItemTemplate>
         </asp:Repeater>
+
+        <script type="text/javascript">
+
+            Sys.Application.add_load(function () {
+                $('a.js-show-more-family-attributes').click(function (e) {
+                    var $pnl = $(this).closest('div.js-family-attributes');
+                    var $ul = $pnl.find('ul.js-more-family-attributes').first();
+                    if ( $ul.is(':visible') ) {
+                        $ul.slideUp();
+                        $(this).html('<i class="fa fa-chevron-down"></i> More');
+                    } else {
+                        $ul.slideDown();
+                        $(this).html('<i class="fa fa-chevron-up"></i> Less');
+                    }
+                });
+            });
+
+        </script>
 
     </ContentTemplate>
 </asp:UpdatePanel>
