@@ -127,7 +127,7 @@ namespace RockWeb.Blocks.Crm
                 }
             }
 
-            phLetters.Visible = _lastNameCharsRequired <= 1;
+            phLetters.Visible = _showAllPeople;
 
             lbOptInOut.Visible = CurrentPerson != null && _optOutGroupGuid.HasValue;
 
@@ -205,6 +205,7 @@ namespace RockWeb.Blocks.Crm
             var lbLetter = sender as LinkButton;
             if ( lbLetter != null )
             {
+                tbFirstName.Text = string.Empty;
                 tbLastName.Text = lbLetter.ID.Substring( 8 );
             }
 
@@ -513,7 +514,6 @@ namespace RockWeb.Blocks.Crm
                                 m.Group.GroupTypeId == familyGroupType.Id )
                             .Select( m => new
                             {
-                                m.GroupId,
                                 m.PersonId,
                                 HomeLocations = m.Group.GroupLocations
                                     .Where( gl =>
@@ -522,6 +522,12 @@ namespace RockWeb.Blocks.Crm
                                     .Select( gl => gl.Location )
                                     .ToList()
                             } )
+                            .GroupBy( m => m.PersonId )
+                            .Select( g => new
+                            {
+                                PersonId = g.Key,
+                                HomeLocations = g.SelectMany( m => m.HomeLocations ).ToList()
+                            })
                             .ToDictionary( k => k.PersonId, v => v.HomeLocations );
                     }
                 }
