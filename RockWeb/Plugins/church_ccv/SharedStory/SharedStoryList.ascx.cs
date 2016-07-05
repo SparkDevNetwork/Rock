@@ -518,8 +518,7 @@ namespace RockWeb.Plugins.church_ccv.SharedStory
                 {
                     w.Id,
                     w.WorkflowId,
-                    w.Name,
-                    w.CreatedDateTime
+                    SubmittedDate = w.CreatedDateTime
                 } );
 
                 gWorkflows.SetLinqDataSource( qryGrid );

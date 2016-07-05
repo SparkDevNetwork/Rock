@@ -22,7 +22,7 @@
 	                <Rock:Grid ID="gWorkflows" runat="server" AllowSorting="true" DisplayType="Full" OnRowSelected="gWorkflows_Edit">
 	                    <Columns>
 	                        <Rock:RockBoundField DataField="WorkflowId" HeaderText="Id" SortExpression="WorkflowId" />
-	                        <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                            <Rock:RockBoundField DataField="SubmittedDate" HeaderText="Date Submitted" SortExpression="CreatedDateTime" />
 	                    </Columns>
     	            </Rock:Grid>
                 </div>
