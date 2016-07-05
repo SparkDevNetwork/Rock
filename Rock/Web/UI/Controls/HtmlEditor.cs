@@ -576,6 +576,25 @@ $(document).ready( function() {{
         height: '{2}', //set editable area's height
         toolbar: Rock.htmlEditor.toolbar_RockCustomConfig{11},
 
+        popover: {{
+          image: [
+            ['imagesize', ['imageSize100', 'imageSize50', 'imageSize25']],
+            ['custom', ['rockimagebrowser']],
+            ['float', ['floatLeft', 'floatRight', 'floatNone']],
+            ['remove', ['removeMedia']]
+          ],
+          link: [
+            ['link', ['linkDialogShow', 'unlink']]
+          ],
+          air: [
+            ['color', ['color']],
+            ['font', ['bold', 'underline', 'clear']],
+            ['para', ['ul', 'paragraph']],
+            ['table', ['table']],
+            ['insert', ['link', 'picture']]
+          ]
+        }},
+
         callbacks: {{
            {12} 
         }},
@@ -608,7 +627,7 @@ $(document).ready( function() {{
 
         // summernote-cleaner.js plugin options
         cleaner:{{
-                el:'{0}',  // Element ID or Class used to Initialise Summernote.
+                el:'#{0}',  // Element ID or Class used to Initialise Summernote.
                 notTime:2400, // Time to display Notifications.
                 action:'paste', // both|button|paste 'button' only cleans via toolbar button, 'paste' only clean when pasting content, both does both options.
         }}
