@@ -34,13 +34,21 @@
                         var imageElement = document.createElement('img');
                         var url = Rock.settings.get('baseUrl') + resultParts[0];
                         var altText = resultParts[1];
-
-                        // insert the image at 25% to get them started
-                        context.invoke('editor.restoreRange');
-                        context.invoke('editor.insertImage', url, function ($image) {
-                            $image.css('width', '25%');
-                            $image.attr('alt', altText);
-                        });
+                        
+                        var imgTarget = context.invoke('editor.restoreTarget');
+                        // if they already have an img selected, just change the src of the image
+                        if (imgTarget) {
+                            imgTarget.src = url;
+                            imgTarget.alt = altText;
+                        }
+                        else {
+                            // insert the image at 25% to get them started
+                            context.invoke('editor.restoreRange');
+                            context.invoke('editor.insertImage', url, function ($image) {
+                                $image.css('width', '25%');
+                                $image.attr('alt', altText);
+                            });
+                        }
                     }
                 });
 
