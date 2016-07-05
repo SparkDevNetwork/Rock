@@ -16,7 +16,7 @@
 	</code>
 </doc>
 */
-ALTER VIEW [vCheckin_GroupTypeAttendance]
+ALTER VIEW [dbo].[vCheckin_GroupTypeAttendance]
 
 AS
 
