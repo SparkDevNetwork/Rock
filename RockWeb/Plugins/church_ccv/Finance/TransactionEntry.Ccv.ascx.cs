@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
@@ -96,6 +97,20 @@ namespace RockWeb.Plugins.church_ccv.Finance
         private void ShowDetail()
         {
             hfTransactionGuid.Value = Guid.NewGuid().ToString();
+            if ( CurrentPerson != null )
+            {
+                tbFullName.Value = CurrentPerson.FullName;
+                hfFullName.Value = CurrentPerson.FullName;
+                tbFullName.Style[HtmlTextWriterStyle.Display] = "none";
+                lFullName.Text = CurrentPerson.FullName;
+                tbFirstName.Value = CurrentPerson.FirstName;
+                tbLastName.Value = CurrentPerson.LastName;
+                tbEmail.Value = CurrentPerson.Email;
+            }
+            else
+            {
+                lFullName.Visible = false;
+            }
 
             LoadDropDowns();
         }
@@ -182,11 +197,23 @@ namespace RockWeb.Plugins.church_ccv.Finance
                     rblSavedAccount.DataBind();
                     if ( rblSavedAccount.Items.Count > 0 )
                     {
-                        rblSavedAccount.Items.Add( new ListItem( "Use a different payment method", "0" ) );
+                        rblSavedAccount.Items.Add( new ListItem( "Use a new card", "0" ) );
                         if ( rblSavedAccount.SelectedValue == "" )
                         {
                             rblSavedAccount.Items[0].Selected = true;
                         }
+
+                        rblSavedAccount.Visible = true;
+                    }
+                    else
+                    {
+                        rblSavedAccount.Visible = false;
+                    }
+
+                    if ( rblSavedAccount.Visible && rblSavedAccount.SelectedValue != "0" )
+                    {
+                        pnlCardInput.Style[HtmlTextWriterStyle.Display] = "none";
+                        pnlCardGraphicHolder.Style[HtmlTextWriterStyle.Display] = "none";
                     }
                 }
             }
@@ -218,6 +245,7 @@ namespace RockWeb.Plugins.church_ccv.Finance
             }
 
             // valid UI inputs
+            // NOTE: The Client Javascript should have caught most of these, but just in case
             var errorMessage = string.Empty;
             if ( !ValidateEntries( out errorMessage ) )
             {
@@ -249,23 +277,43 @@ namespace RockWeb.Plugins.church_ccv.Finance
             }
 
             // set up the CreditCard charge
-            var cardMMYY = tbCardExpiry.Value.Split( new char[] { '/' } ).Select( a => a.Trim().AsInteger() ).ToArray();
-            var expDateTime = new DateTime( 2000 + cardMMYY[1], cardMMYY[0], 1 );
+            PaymentInfo paymentInfo = null;
 
-            // TODO: use Saved Account if selected
+            var savedAccountId = rblSavedAccount.SelectedValue.AsInteger();
+            if ( savedAccountId != 0 )
+            {
+                // used a saved account
+                var savedAccount = new FinancialPersonSavedAccountService( new RockContext() ).Get( savedAccountId );
+                if ( savedAccount != null )
+                {
+                    paymentInfo = savedAccount.GetReferencePayment();
+                }
+            }
+            else
+            {
+                // used a new card
+                var cardMMYY = tbCardExpiry.Value.Split( new char[] { '/' } ).Select( a => a.Trim().AsInteger() ).ToArray();
+                var expDateTime = new DateTime( 2000 + cardMMYY[1], cardMMYY[0], 1 );
 
-            CreditCardPaymentInfo paymentInfo = new CreditCardPaymentInfo( tbCardNumber.Value.Replace( " ", string.Empty ), tbCardCvc.Value, expDateTime );
-            paymentInfo.NameOnCard = gateway.SplitNameOnCard ? tbFirstName.Value : hfFullName.Value;
-            paymentInfo.LastName = tbLastName.Value;
+                var ccPaymentInfo = new CreditCardPaymentInfo( tbCardNumber.Value.Replace( " ", string.Empty ), tbCardCvc.Value, expDateTime );
+                ccPaymentInfo.NameOnCard = gateway.SplitNameOnCard ? tbFirstName.Value : hfFullName.Value;
+                ccPaymentInfo.LastName = tbLastName.Value;
+
+                paymentInfo = ccPaymentInfo;
+            }
 
             if ( !string.IsNullOrEmpty( tbStreet.Value ) )
             {
-                paymentInfo.BillingStreet1 = tbStreet.Value;
-                paymentInfo.BillingStreet2 = string.Empty;
-                paymentInfo.BillingCity = tbCity.Value;
-                paymentInfo.BillingState = tbState.Value;
-                paymentInfo.BillingPostalCode = tbZip.Value;
-                paymentInfo.BillingCountry = GlobalAttributesCache.Read().OrganizationCountry;
+                if ( paymentInfo is CreditCardPaymentInfo )
+                {
+                    var ccPaymentInfo = paymentInfo as CreditCardPaymentInfo;
+                    ccPaymentInfo.BillingStreet1 = tbStreet.Value;
+                    ccPaymentInfo.BillingStreet2 = string.Empty;
+                    ccPaymentInfo.BillingCity = tbCity.Value;
+                    ccPaymentInfo.BillingState = tbState.Value;
+                    ccPaymentInfo.BillingPostalCode = tbZip.Value;
+                    ccPaymentInfo.BillingCountry = GlobalAttributesCache.Read().OrganizationCountry;
+                }
 
                 paymentInfo.Street1 = tbStreet.Value;
                 paymentInfo.Street2 = string.Empty;
@@ -339,7 +387,7 @@ namespace RockWeb.Plugins.church_ccv.Finance
         /// <param name="financialPaymentDetail">The financial payment detail.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        private void ShowSuccess( GatewayComponent gateway, Person person, CreditCardPaymentInfo paymentInfo, object p, FinancialPaymentDetail financialPaymentDetail, RockContext rockContext )
+        private void ShowSuccess( GatewayComponent gateway, Person person, PaymentInfo paymentInfo, object p, FinancialPaymentDetail financialPaymentDetail, RockContext rockContext )
         {
             throw new NotImplementedException();
         }
@@ -526,31 +574,34 @@ namespace RockWeb.Plugins.church_ccv.Finance
                 errorMessages.Add( "Make sure to enter a valid email address.  An email address is required for us to send you a payment confirmation" );
             }
 
-            if ( string.IsNullOrWhiteSpace( tbCardNumber.Value ) )
+            if ( rblSavedAccount.SelectedValue.AsInteger() == 0 )
             {
-                errorMessages.Add( "Make sure to enter a valid credit card number" );
-            }
-
-            var currentMonth = RockDateTime.Today;
-            currentMonth = new DateTime( currentMonth.Year, currentMonth.Month, 1 );
-
-            var cardMMYY = tbCardExpiry.Value.Split( new char[] { '/' } ).Select( a => a.Trim().AsInteger() ).ToArray();
-            if ( cardMMYY.Length != 2 )
-            {
-                errorMessages.Add( "Make sure to enter a valid credit card expiration date" );
-            }
-            else
-            {
-                var expDateTime = new DateTime( 2000 + cardMMYY[1], cardMMYY[0], 1 );
-                if ( expDateTime < currentMonth )
+                if ( string.IsNullOrWhiteSpace( tbCardNumber.Value ) )
                 {
-                    //errorMessages.Add( "The Credit card expiration date is expired" );
+                    errorMessages.Add( "Make sure to enter a valid credit card number" );
                 }
-            }
 
-            if ( string.IsNullOrWhiteSpace( tbCardCvc.Value ) )
-            {
-                errorMessages.Add( "Make sure to enter a valid credit card security code" );
+                var currentMonth = RockDateTime.Today;
+                currentMonth = new DateTime( currentMonth.Year, currentMonth.Month, 1 );
+
+                var cardMMYY = tbCardExpiry.Value.Split( new char[] { '/' } ).Select( a => a.Trim().AsInteger() ).ToArray();
+                if ( cardMMYY.Length != 2 )
+                {
+                    errorMessages.Add( "Make sure to enter a valid credit card expiration date" );
+                }
+                else
+                {
+                    var expDateTime = new DateTime( 2000 + cardMMYY[1], cardMMYY[0], 1 );
+                    if ( expDateTime < currentMonth )
+                    {
+                        //errorMessages.Add( "The Credit card expiration date is expired" );
+                    }
+                }
+
+                if ( string.IsNullOrWhiteSpace( tbCardCvc.Value ) )
+                {
+                    errorMessages.Add( "Make sure to enter a valid credit card security code" );
+                }
             }
 
             if ( errorMessages.Any() )

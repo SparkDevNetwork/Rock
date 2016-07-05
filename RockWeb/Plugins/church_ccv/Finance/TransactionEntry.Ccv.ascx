@@ -6,8 +6,6 @@
         <%-- hidden field to store the Transaction.Guid to use for the transaction. This is to help prevent duplicate transactions.   --%>
         <asp:HiddenField ID="hfTransactionGuid" runat="server" Value="" />
 
-        <Rock:NotificationBox ID="nbMessage" runat="server" Visible="false"></Rock:NotificationBox>
-        
         <div class="container">
 
             <div class="form-horizontal" id="givingForm" runat="server" clientidmode="Static">
@@ -86,7 +84,8 @@
                 <div class="form-group js-full-name">
                     <label for="fullName" class="col-sm-3 control-label">Full Name</label>
                     <div class="col-sm-9">
-                        <input type="text" class="form-control" placeholder="Full Name" v-on:blur="splitFullName" v-if="showSplitNameField == false" v-model="firstName" />
+                        <input runat="server" id="tbFullName" type="text" class="form-control" placeholder="Full Name" v-on:blur="splitFullName" v-if="showSplitNameField == false" v-model="firstName" />
+                        <label class="form-control-static" ><asp:Literal runat="server" ID="lFullName" /></label>
                         <div class="row" v-if="showSplitNameField" v-cloak>
                             <div class="col-xs-6">
                                 <input runat="server" type="text" class="js-firstname js-update-name form-control" id="tbFirstName" placeholder="First Name" v-model="firstName" />
@@ -116,26 +115,25 @@
                     </div>
                 </div>
 
-                <Rock:RockRadioButtonList ID="rblSavedAccount" runat="server" CssClass="radio-list margin-b-lg" RepeatDirection="Vertical" DataValueField="Id" DataTextField="Name" />
-
                 <div class="form-group js-card-group">
                     <label class="control-label col-sm-3">Card Info</label>
                     <div class="col-sm-9">
-                        <div class="cardinput">
+                        <Rock:RockRadioButtonList ID="rblSavedAccount" runat="server" CssClass="radio-list js-saved-payment-option" RepeatDirection="Vertical" DataValueField="Id" DataTextField="Name" AutoPostBack="false" />
+                        <div class="cardinput js-new-cardinput" runat="server" id="pnlCardInput">
                             <input runat="server" v-model="card.number" type="text" pattern="[0-9]*" id="tbCardNumber" placeholder="Card Number" class="form-control cardinput-number">
                             <input runat="server" v-model="card.exp" type="text" pattern="[0-9]*" id="tbCardExpiry" placeholder="MM/YY" class="form-control cardinput-exp">
                             <input runat="server" v-model="card.cvc" type="text" pattern="[0-9]*" id="tbCardCvc" placeholder="CVC" class="form-control cardinput-cvc">
                         </div>
                         <input type="hidden" id="hfFullName" class="js-hf-fullname" runat="server" v-model="fullName" />
 
-                        <div class="js-card-graphic-holder cardholder"></div>
+                        <div class="js-card-graphic-holder cardholder" runat="server" id="pnlCardGraphicHolder"></div>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label for="phone" class="control-label col-sm-3">Phone <small class="text-muted">(optional)</small></label>
                     <div class="col-sm-9">
-                        <input runat="server" v-model="phone" type="tel" id="tbPhone"  placeholder="(000) 000-0000" class="form-control" data-inputmask="'mask': '(999) 999-9999', 'greedy': false">
+                        <input runat="server" v-model="phone" type="tel" id="tbPhone" placeholder="(000) 000-0000" class="form-control" data-inputmask="'mask': '(999) 999-9999', 'greedy': false">
                     </div>
                 </div>
 
@@ -151,10 +149,12 @@
                     </div>
                 </div>
 
+                <Rock:NotificationBox ID="nbMessage" runat="server" Visible="false"></Rock:NotificationBox>
+
                 <div class="form-group">
                     <div class="col-sm-offset-3 col-sm-9">
                         <button runat="server" id="btnClear" onclick="giveForm.resetData();" class="btn btn-default js-reset-form" type="button" name="clear">Clear</button>
-                        <asp:LinkButton ID="btnSubmit" runat="server" Text="Submit" CssClass="btn btn-primary pull-right" OnClick="btnSubmit_Click" />
+                        <asp:LinkButton ID="btnSubmit" runat="server" Text="Submit" CssClass="btn btn-primary pull-right js-submit-giving" OnClick="btnSubmit_Click" />
                     </div>
                 </div>
             </div>
@@ -175,6 +175,57 @@
         <script src="<%= RockPage.ResolveRockUrl( "~/Plugins/church_ccv/Finance/scripts/location-detection.js", true ) %>"></script>
 
         <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCj2sJQbEBvz626mHM3dMHoO2H6HrWP6_M&libraries=places&callback=initAutocomplete" async defer></script>
+
+        <script>
+            Sys.Application.add_load(function() {
+
+                // show/hide card inputs based on selected saved-payment option 
+                $('#givingForm .js-saved-payment-option input').on('click', function () {
+                    if (!$('#givingForm .js-saved-payment-option input:checked').length || $('#givingForm .js-saved-payment-option input:checked').val() == "0") {
+                        $('#givingForm .js-new-cardinput').show();
+                        $('#givingForm .js-card-graphic-holder').show();
+                    } else {
+                        $('#givingForm .js-new-cardinput').hide();
+                        $('#givingForm .js-card-graphic-holder').hide();
+                    }
+                });
+                
+                // do the input validation on the client side 
+                $('#givingForm .js-submit-giving').on('click', function() {
+
+                    $('#givingForm').find('*').removeClass("has-error");
+                    var isValid = true;
+                    if (!giveForm.amount)
+                    {
+                        isValid = false;
+                        $('#givingForm .js-amount').closest('.form-group').addClass("has-error");
+                    }
+
+                    if (!giveForm.email)
+                    {
+                        isValid = false;
+                        $('#givingForm .js-email').closest('.form-group').addClass("has-error");
+                    }
+
+                    if (!giveForm.fullName)
+                    {
+                        isValid = false;
+                        $('#givingForm .js-full-name').addClass("has-error");
+                    }
+
+                    var givingWithNewCard = !$('#givingForm .js-saved-payment-option input:checked').length || $('#givingForm .js-saved-payment-option input:checked').val() == "0";
+
+                    if (givingWithNewCard && (!giveForm.card.number || !giveForm.card.cvc || !giveForm.card.exp))
+                    {
+                        isValid = false;
+                        $('#givingForm .js-new-cardinput').addClass("has-error");
+                    }
+
+                    return isValid;
+                });
+            });
+
+        </script>
 
     </ContentTemplate>
 </asp:UpdatePanel>
