@@ -11,7 +11,7 @@
             });
         </script>
 
-        <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
+        <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block" DefaultButton="lbSearch">
         
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-users"></i> Directory</h1>
