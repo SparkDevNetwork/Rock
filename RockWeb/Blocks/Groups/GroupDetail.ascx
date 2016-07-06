@@ -7,6 +7,24 @@
 
     Sys.Application.add_load( function () {
         $('.js-follow-status').tooltip();
+
+        $(".js-drawerpull").on("click", function () {
+            $(this).closest('.panel-drawer').toggleClass('open');
+            $(this).siblings('.drawer-content').slideToggle();
+
+            var icon = $(this).find('i');
+            var iconOpenClass = icon.attr('data-icon-open') || 'fa fa-chevron-up';
+            var iconCloseClass = icon.attr('data-icon-closed') || 'fa fa-chevron-down';
+
+            console.log('icon: ' + icon);
+
+            if ($(this).closest('.panel-drawer').hasClass('open')) {
+                icon.attr('class', iconOpenClass);
+            }
+            else {
+                icon.attr('class', iconCloseClass);
+            }
+        });
     });
 </script>
 
@@ -32,6 +50,25 @@
                     </div>
 
                     <asp:Panel runat="server" ID="pnlFollowing" CssClass="panel-follow-status js-follow-status" data-toggle="tooltip" data-placement="top" title="Click to Follow"></asp:Panel>
+                    
+                </div>
+
+                <div id="divPanelDrawer" class="panel-drawer" runat="server">
+                    <div class="drawer-content" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <dl>
+                                    <dt>Created By</dt>
+                                    <dd><asp:Literal ID="lCreatedBy" runat="server" /></dd>
+                                </dl>
+                            </div>
+                            <div class="col-md-6">
+                                <dt>Last Modified By</dt>
+                                <dd><asp:Literal ID="lLastModifiedBy" runat="server" /></dd>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="drawer-pull js-drawerpull"><i class="fa fa-chevron-down" data-icon-closed="fa fa-chevron-down" data-icon-open="fa fa-chevron-up"></i></div>
                 </div>
                 
                 <div class="panel-body">
