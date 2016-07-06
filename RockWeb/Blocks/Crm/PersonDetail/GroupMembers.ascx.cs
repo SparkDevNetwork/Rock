@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
@@ -72,6 +73,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             rptrGroups.ItemDataBound += rptrGroups_ItemDataBound;
 
             _allowEdit = IsUserAuthorized( Rock.Security.Authorization.EDIT );
+
+            RegisterScripts();
         }
 
         /// <summary>
@@ -477,6 +480,25 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         protected string FormatAsHtmlTitle( string str )
         {
             return str.FormatAsHtmlTitle();
+        }
+
+        private void RegisterScripts()
+        {
+            string script = @"
+    $('a.js-show-more-family-attributes').click(function (e) {
+        var $pnl = $(this).closest('div.js-family-attributes');
+        var $ul = $pnl.find('ul.js-more-family-attributes').first();
+        if ( $ul.is(':visible') ) {
+            $ul.slideUp();
+            $(this).html('<i class=""fa fa-chevron-down""></i> More');
+        } else {
+            $ul.slideDown();
+            $(this).html('<i class=""fa fa-chevron-up""></i> Less');
+        }
+    });
+";
+            ScriptManager.RegisterStartupScript( upGroupMembers, upGroupMembers.GetType(), "showmore", script, true );
+
         }
 
         #endregion

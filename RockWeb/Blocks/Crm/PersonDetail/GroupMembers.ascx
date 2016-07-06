@@ -87,23 +87,5 @@
             </ItemTemplate>
         </asp:Repeater>
 
-        <script type="text/javascript">
-
-            Sys.Application.add_load(function () {
-                $('a.js-show-more-family-attributes').click(function (e) {
-                    var $pnl = $(this).closest('div.js-family-attributes');
-                    var $ul = $pnl.find('ul.js-more-family-attributes').first();
-                    if ( $ul.is(':visible') ) {
-                        $ul.slideUp();
-                        $(this).html('<i class="fa fa-chevron-down"></i> More');
-                    } else {
-                        $ul.slideDown();
-                        $(this).html('<i class="fa fa-chevron-up"></i> Less');
-                    }
-                });
-            });
-
-        </script>
-
     </ContentTemplate>
 </asp:UpdatePanel>
