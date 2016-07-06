@@ -17,7 +17,7 @@
     <link rel="apple-touch-icon-precomposed" sizes="72x72" href="<%= Page.ResolveUrl("~/Assets/Icons/touch-icon-ipad.png") %>">
     <link rel="apple-touch-icon-precomposed" href="<%= Page.ResolveUrl("~/Assets/Icons/touch-icon-iphone.png") %>">
 
-    <script src="<%= ResolveUrl("~/Scripts/jquery-1.10.2.min.js") %>" >
+    <script src="<%= ResolveUrl("~/Scripts/jquery-1.12.4.min.js") %>" >
     <script>
         $(document).ready(function () {
             $(".stack-trace").hide();

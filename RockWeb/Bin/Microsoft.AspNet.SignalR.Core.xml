@@ -93,9 +93,17 @@
             Provides methods that communicate with SignalR connections that connected to a <see cref="T:Microsoft.AspNet.SignalR.Hub"/>.
             </summary>
         </member>
-        <member name="T:Microsoft.AspNet.SignalR.Hubs.HubBase">
+        <member name="T:Microsoft.AspNet.SignalR.Hub">
             <summary>
             Provides methods that communicate with SignalR connections that connected to a <see cref="T:Microsoft.AspNet.SignalR.Hub"/>.
+            </summary>
+        </member>
+        <member name="T:Microsoft.AspNet.SignalR.IUntrackedDisposable">
+            <summary>
+            This marker interface can be used in lieu of IDisposable in order to indicate to the dependency resolver that 
+            it should not retain/track references nor invoke Dispose on instances of the resolved type.
+            This is useful for transient types that are created by the dependency resolver, but are short-lived and will
+            be Disposed by some other means outside of the resolver.
             </summary>
         </member>
         <member name="M:Microsoft.AspNet.SignalR.Hubs.IHub.OnConnected">
@@ -134,7 +142,7 @@
             Gets the <see cref="T:Microsoft.AspNet.SignalR.IGroupManager"/> the hub instance.
             </summary>
         </member>
-        <member name="M:Microsoft.AspNet.SignalR.Hubs.HubBase.OnDisconnected(System.Boolean)">
+        <member name="M:Microsoft.AspNet.SignalR.Hub.OnDisconnected(System.Boolean)">
             <summary>
             Called when a connection disconnects from this hub gracefully or due to a timeout.
             </summary>
@@ -146,36 +154,36 @@
             </param>
             <returns>A <see cref="T:System.Threading.Tasks.Task"/></returns>
         </member>
-        <member name="M:Microsoft.AspNet.SignalR.Hubs.HubBase.OnConnected">
+        <member name="M:Microsoft.AspNet.SignalR.Hub.OnConnected">
             <summary>
             Called when the connection connects to this hub instance.
             </summary>
             <returns>A <see cref="T:System.Threading.Tasks.Task"/></returns>
         </member>
-        <member name="M:Microsoft.AspNet.SignalR.Hubs.HubBase.OnReconnected">
+        <member name="M:Microsoft.AspNet.SignalR.Hub.OnReconnected">
             <summary>
             Called when the connection reconnects to this hub instance.
             </summary>
             <returns>A <see cref="T:System.Threading.Tasks.Task"/></returns>
         </member>
-        <member name="P:Microsoft.AspNet.SignalR.Hubs.HubBase.Microsoft#AspNet#SignalR#Hubs#IHub#Clients">
+        <member name="P:Microsoft.AspNet.SignalR.Hub.Clients">
             <summary>
-            
+            Gets a dynamic object that represents all clients connected to this hub (not hub instance).
             </summary>
         </member>
-        <member name="P:Microsoft.AspNet.SignalR.Hubs.HubBase.Context">
+        <member name="P:Microsoft.AspNet.SignalR.Hub.Context">
             <summary>
             Provides information about the calling client.
             </summary>
         </member>
-        <member name="P:Microsoft.AspNet.SignalR.Hubs.HubBase.Groups">
+        <member name="P:Microsoft.AspNet.SignalR.Hub.Groups">
             <summary>
             The group manager for this hub instance.
             </summary>
         </member>
         <member name="P:Microsoft.AspNet.SignalR.Hub`1.Clients">
             <summary>
-            
+            Gets a dynamic object that represents all clients connected to this hub (not hub instance).
             </summary>
         </member>
         <member name="P:Microsoft.AspNet.SignalR.HubConfiguration.EnableJavaScriptProxies">
@@ -1412,6 +1420,26 @@
             Gets the performance counter representing the total number of connection Disconnect events since the application was started.
             </summary>
         </member>
+        <member name="P:Microsoft.AspNet.SignalR.Infrastructure.IPerformanceCounterManager.ConnectionsCurrentForeverFrame">
+            <summary>
+            Gets the performance counter representing the number of connections currently connected using ForeverFrame transport.
+            </summary>
+        </member>
+        <member name="P:Microsoft.AspNet.SignalR.Infrastructure.IPerformanceCounterManager.ConnectionsCurrentLongPolling">
+            <summary>
+            Gets the performance counter representing the number of connections currently connected using LongPolling transport.
+            </summary>
+        </member>
+        <member name="P:Microsoft.AspNet.SignalR.Infrastructure.IPerformanceCounterManager.ConnectionsCurrentServerSentEvents">
+            <summary>
+            Gets the performance counter representing the number of connections currently connected using ServerSentEvents transport.
+            </summary>
+        </member>
+        <member name="P:Microsoft.AspNet.SignalR.Infrastructure.IPerformanceCounterManager.ConnectionsCurrentWebSockets">
+            <summary>
+            Gets the performance counter representing the number of connections currently connected using WebSockets transport.
+            </summary>
+        </member>
         <member name="P:Microsoft.AspNet.SignalR.Infrastructure.IPerformanceCounterManager.ConnectionsCurrent">
             <summary>
             Gets the performance counter representing the number of connections currently connected.
@@ -1597,6 +1625,26 @@
         <member name="P:Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager.ConnectionsDisconnected">
             <summary>
             Gets the performance counter representing the total number of connection Disconnect events since the application was started.
+            </summary>
+        </member>
+        <member name="P:Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager.ConnectionsCurrentForeverFrame">
+            <summary>
+            Gets the performance counter representing the number of connections currently connected using the ForeverFrame transport.
+            </summary>
+        </member>
+        <member name="P:Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager.ConnectionsCurrentLongPolling">
+            <summary>
+            Gets the performance counter representing the number of connections currently connected using the LongPolling transport.
+            </summary>
+        </member>
+        <member name="P:Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager.ConnectionsCurrentServerSentEvents">
+            <summary>
+            Gets the performance counter representing the number of connections currently connected using the ServerSentEvents transport.
+            </summary>
+        </member>
+        <member name="P:Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager.ConnectionsCurrentWebSockets">
+            <summary>
+            Gets the performance counter representing the number of connections currently connected using the WebSockets transport.
             </summary>
         </member>
         <member name="P:Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager.ConnectionsCurrent">
@@ -2366,16 +2414,6 @@
             <param name="descriptor">Retrieved descriptor object.</param>
             <returns>True, if hub has been found</returns>
         </member>
-        <member name="T:Microsoft.AspNet.SignalR.Hub">
-            <summary>
-            Provides methods that communicate with SignalR connections that connected to a <see cref="T:Microsoft.AspNet.SignalR.Hub"/>.
-            </summary>
-        </member>
-        <member name="P:Microsoft.AspNet.SignalR.Hub.Clients">
-            <summary>
-            
-            </summary>
-        </member>
         <member name="M:Microsoft.AspNet.SignalR.Hubs.HubCallerContext.#ctor">
             <summary>
             This constructor is only intended to enable mocking of the class. Use of this constructor 
@@ -2605,6 +2643,13 @@
             <param name="groupName">The name of the group</param>
             <returns>A task that represents the connection id being removed from the group.</returns>
         </member>
+        <member name="T:Microsoft.AspNet.SignalR.Infrastructure.AckSubscriber">
+            <summary>
+            A singleton that subscribes to all ACKs sent over the
+            <see cref="T:Microsoft.AspNet.SignalR.Messaging.IMessageBus"/> and
+            triggers any corresponding ACKs on the <see cref="T:Microsoft.AspNet.SignalR.Infrastructure.IAckHandler"/>.
+            </summary>
+        </member>
         <member name="T:Microsoft.AspNet.SignalR.Resources">
             <summary>
               A strongly-typed resource class, for looking up localized strings, etc.
@@ -2689,11 +2734,6 @@
         <member name="P:Microsoft.AspNet.SignalR.Resources.Error_DuplicatePayloadsForStream">
             <summary>
               Looks up a localized string similar to Duplicate payload id detected for stream &apos;{0}&apos;..
-            </summary>
-        </member>
-        <member name="P:Microsoft.AspNet.SignalR.Resources.Error_ErrorCreatingHub">
-            <summary>
-              Looks up a localized string similar to Error creating Hub {0}. .
             </summary>
         </member>
         <member name="P:Microsoft.AspNet.SignalR.Resources.Error_ExceptionContextCanOnlyBeModifiedOnce">
@@ -2876,16 +2916,6 @@
               Looks up a localized string similar to Forbidden: JSONP is disabled..
             </summary>
         </member>
-        <member name="P:Microsoft.AspNet.SignalR.Resources.Warning_AssemblyGetTypesException">
-             <summary>
-               Looks up a localized string similar to None of the classes from assembly &quot;{0}&quot; could be loaded when searching for Hubs. [{1}]
-            
-            Original exception type: {2}
-            Original exception message: {3}
-            
-            .
-             </summary>
-        </member>
         <member name="T:Microsoft.AspNet.SignalR.Transports.ITrackingConnection">
             <summary>
             Represents a connection that can be tracked by an <see cref="T:Microsoft.AspNet.SignalR.Transports.ITransportHeartbeat"/>.
@@ -2909,6 +2939,16 @@
         <member name="M:Microsoft.AspNet.SignalR.Transports.ITrackingConnection.KeepAlive">
             <summary>
             Sends a keep alive ping over the connection.
+            </summary>
+        </member>
+        <member name="M:Microsoft.AspNet.SignalR.Transports.ITrackingConnection.IncrementConnectionsCount">
+            <summary>
+            Increments performance counter for current connections.
+            </summary>
+        </member>
+        <member name="M:Microsoft.AspNet.SignalR.Transports.ITrackingConnection.DecrementConnectionsCount">
+            <summary>
+            Decrements performance counter for current connections.
             </summary>
         </member>
         <member name="M:Microsoft.AspNet.SignalR.Transports.ITrackingConnection.End">
@@ -2965,6 +3005,12 @@
             <summary>
             Represents a transport that communicates
             </summary>
+        </member>
+        <member name="M:Microsoft.AspNet.SignalR.Transports.ITransport.GetGroupsToken">
+            <summary>
+            Get groupsToken in request over the transport.
+            </summary>
+            <returns>groupsToken in request</returns>
         </member>
         <member name="M:Microsoft.AspNet.SignalR.Transports.ITransport.ProcessRequest(Microsoft.AspNet.SignalR.Transports.ITransportConnection)">
             <summary>
