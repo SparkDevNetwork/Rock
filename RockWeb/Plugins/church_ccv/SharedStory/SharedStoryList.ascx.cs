@@ -45,9 +45,9 @@ namespace RockWeb.Plugins.church_ccv.SharedStory
         
         private WorkflowType _workflowType = null;
 
-        const int sYourStory_AttribId = 25997;
-        const int sDifference_AttribId = 25998;
-        const int sScripture_AttribId = 25999;
+        const int sScripture_AttribId = 26542;
+        const int sYourStory_AttribId = 26543;
+        const int sDifference_AttribId = 26544;
         const int sWorkflowTypeId = 163;
 
         #endregion
