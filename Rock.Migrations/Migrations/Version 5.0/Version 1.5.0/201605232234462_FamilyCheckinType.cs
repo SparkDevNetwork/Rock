@@ -37,7 +37,7 @@ namespace Rock.Migrations
             RockMigrationHelper.AddPage( "CDF2C599-D341-42FD-B7DC-CD402EA96050", "66FA0143-F04C-4447-A67A-2A10A6BB1A2B", "Time Select (Family Check-in)", "", "67BD09B0-0C6E-44E7-A8EB-0E71551F3E6B", "" ); // Site:Rock Check-in
             RockMigrationHelper.AddPage( "CDF2C599-D341-42FD-B7DC-CD402EA96050", "66FA0143-F04C-4447-A67A-2A10A6BB1A2B", "Save Attendance (Family Check-in)", "", "4AF7A0E1-E991-4AE5-A2B5-C440F67A2E6A", "" ); // Site:Rock Check-in
 
-            RockMigrationHelper.AddPageRoute( "7CA317B5-5C47-465D-B407-7D614F2A568F", "checkin/{KioskId}/{CheckinConfigId}/{GroupTypeIds}" );
+            RockMigrationHelper.AddPageRoute( "7B7207D0-B905-4836-800E-A24DDC6FE445", "checkin/{KioskId}/{CheckinConfigId}/{GroupTypeIds}" );
             RockMigrationHelper.AddPageRoute( "D14154BA-2F2C-41C3-B380-F833252CBB13", "checkin/people", "FC4747A0-E42B-4F5D-98A4-B94D393461AD" );// for Page:Person Select (Family Check-in)
 
             RockMigrationHelper.UpdateBlockType( "Person Select (Family Check-in)", "Lists people who match the selected family and provides option of selecting multiple.", "~/Blocks/CheckIn/MultiPersonSelect.ascx", "Check-in", "92DCF018-F551-4890-8BA1-511D97BF6B8A" );
