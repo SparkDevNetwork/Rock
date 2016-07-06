@@ -106,7 +106,7 @@ namespace com.centralaz.CheckInLabels
             label.Footer = checkInLabel.MergeFields.ContainsKey( "CentralAZ.ClaimCardFooter" ) ? checkInLabel.MergeFields["CentralAZ.ClaimCardFooter"] : string.Empty;
             label.ClaimCardTitle = checkInLabel.MergeFields.ContainsKey( "CentralAZ.ClaimCardTitle" ) ? checkInLabel.MergeFields["CentralAZ.ClaimCardTitle"] : string.Empty;
             label.HealthNotesTitle = checkInLabel.MergeFields.ContainsKey( "CentralAZ.HealthNotesTitle" ) ? checkInLabel.MergeFields["CentralAZ.HealthNotesTitle"] : string.Empty;
-            label.LogoImageFile = checkInLabel.MergeFields.ContainsKey( "CentralAZ.LogoImageFile" ) ? checkInLabel.MergeFields["CentralAZ.LogoImageFile"] : string.Empty;
+            label.HealthNotes = checkInLabel.MergeFields.ContainsKey( "AllergyNote" ) ? checkInLabel.MergeFields["AllergyNote"] : string.Empty;
             label.ParentsInitialsTitle = checkInLabel.MergeFields.ContainsKey( "CentralAZ.ParentsInitialsTitle" ) ? checkInLabel.MergeFields["CentralAZ.ParentsInitialsTitle"] : string.Empty;
             label.ServicesTitle = checkInLabel.MergeFields.ContainsKey( "CentralAZ.ServicesLabel" ) ? checkInLabel.MergeFields["CentralAZ.ServicesLabel"] : string.Empty;
 
@@ -114,9 +114,10 @@ namespace com.centralaz.CheckInLabels
             // This section is only needed because we have a weird "Transfer: " chunk
             // on the label that lists all the services the person is checked into.
             StringBuilder services = new StringBuilder();
-            foreach ( var group in groupType.Groups.Where( g => g.Selected ) )
+            foreach ( var group in groupType.GetGroups( true ) )
             {
-                foreach ( var location in group.Locations.Where( l => l.Selected ).OrderBy( e => e.Schedules.Min( s => s.StartTime ) ) )
+                //foreach ( var location in group.Locations.Where( l => l.Selected ).OrderBy( e => e.Schedules.Min( s => s.StartTime ) ) )
+                foreach ( var location in group.GetLocations( true ).OrderBy( e => e.Schedules.Min( s => s.StartTime ) ) )
                 {
                     // Put the first location's name on the label
                     if ( firstLocation == null )
@@ -125,7 +126,7 @@ namespace com.centralaz.CheckInLabels
                         label.RoomName = firstLocation.Location.Name;
                     }
 
-                    foreach ( var schedule in location.Schedules.Where( s => s.Selected ) )
+                    foreach ( var schedule in location.GetSchedules( true ) )
                     {
                         if ( services.Length > 0 )
                         {
@@ -138,27 +139,11 @@ namespace com.centralaz.CheckInLabels
 
             label.Services = services.ToString();
             SetAgeGroup( attendee.Person );
-            SetLabelFlags( attendee.Person );
-        }
 
-        /// <summary>
-        /// This method will set the label's flags and health notes for the given person.
-        /// </summary>
-        /// <param name="attendee"></param>
-        private void SetLabelFlags( Person attendee )
-        {
-            attendee.LoadAttributes();
+            label.EpiPenFlag = checkInLabel.MergeFields.ContainsKey( "EpiPenFlag" ) ? checkInLabel.MergeFields["EpiPenFlag"].AsBoolean() : false;
+            label.SelfCheckOutFlag = checkInLabel.MergeFields.ContainsKey( "SelfCheckOutFlag" ) ? checkInLabel.MergeFields["SelfCheckOutFlag"].AsBoolean() : false;
 
-            var selfCheckOut = attendee.GetAttributeValue( "CentralAZ.SelfCheckOut" ).AsBoolean();
-            var legalNotes = attendee.GetAttributeValue( "LegalNotes" );
-            var healthNotes = attendee.GetAttributeValue( "CentralAZ.HealthNotes" );
-            var epiPenRelease = attendee.GetAttributeValue( "CentralAZ.EpiPenRelease" ).AsBoolean();
-
-            label.EpiPenFlag = epiPenRelease;
-            label.SelfCheckOutFlag = attendee.GetAttributeValue( "CentralAZ.SelfCheckOut" ).AsBoolean();
-            label.LegalNoteFlag = ( !string.IsNullOrWhiteSpace( legalNotes ) );
-
-            if ( !string.IsNullOrWhiteSpace( healthNotes ) )
+            if ( !string.IsNullOrWhiteSpace( checkInLabel.MergeFields["AllergyNote"] ) )
             {
                 label.HealthNoteFlag = true;
                 // This was removed after speaking with Laurie (NA 1/26/2009)
@@ -166,13 +151,15 @@ namespace com.centralaz.CheckInLabels
                 //if ( !( attendee.GraduationDate > DateTime.Parse( "1/1/1900" )
                 //    && Person.CalculateGradeLevel( attendee.GraduationDate, organization.GradePromotionDate ) >= 1 ) )
                 //{
-                label.HealthNotes = healthNotes;
+                label.HealthNotes = checkInLabel.MergeFields["AllergyNote"];
                 //}
             }
             else
             {
                 label.HealthNoteFlag = false;
             }
+
+            label.LegalNoteFlag = (! string.IsNullOrWhiteSpace( checkInLabel.MergeFields["LegalNote"] ) );
         }
 
         /// <summary>

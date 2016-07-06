@@ -30,6 +30,7 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
     [DisplayName("Time Select")]
     [Category( "com_centralaz > Check-in" )]
     [Description("Displays a list of times to checkin for.")]
+    [Obsolete( "Deprecated.  We'll be moving back to most of Rock's core check-in blocks with the exception of Admin.ascx and Success.ascx" )]
     public partial class TimeSelect : CheckInBlock
     {
         protected override void OnLoad( EventArgs e )

@@ -51,8 +51,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Action\CheckIn\FilterLocationsByFirstMatch.cs" />
     <Compile Include="Action\CheckIn\FilterGroupsByFirstMatch.cs" />
     <Compile Include="Action\CheckIn\FilterGroupsByAgeOrGrade.cs" />
+    <Compile Include="Action\CheckIn\SaveAttendance.cs" />
     <Compile Include="Migrations\001_AddCheckinWorkflowActions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -30,6 +30,7 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
     [DisplayName("Person Select")]
     [Category( "com_centralaz > Check-in" )]
     [Description("Lists people who match the selected family to pick to checkin.")]
+    [Obsolete( "Deprecated.  We'll be moving back to most of Rock's core check-in blocks with the exception of Admin.ascx and Success.ascx" )]
     public partial class PersonSelect : CheckInBlock
     {
         protected override void OnLoad( EventArgs e )

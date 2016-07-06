@@ -79,20 +79,22 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                         // Print the labels
                         foreach ( var family in CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ) )
                         {
-                            lbAnother.Visible = family.People.Count > 1;
-
-                            foreach ( var person in family.People.Where( p => p.Selected ) )
+                            lbAnother.Visible =
+                                CurrentCheckInState.CheckInType.TypeOfCheckin == TypeOfCheckin.Individual &&
+                                family.People.Count > 1;
+                            
+                            foreach ( var person in family.GetPeople( true ) )
                             {
-                                foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
+                                foreach ( var groupType in person.GetGroupTypes( true ) )
                                 {
-                                    foreach ( var group in groupType.Groups.Where( g => g.Selected ) )
+                                    foreach ( var group in groupType.GetGroups( true ) )
                                     {
-                                        foreach ( var location in group.Locations.Where( l => l.Selected ) )
+                                        foreach ( var location in group.GetLocations( true ) )
                                         {
-                                            foreach ( var schedule in location.Schedules.Where( s => s.Selected ) )
+                                            foreach ( var schedule in location.GetSchedules( true ) )
                                             {
                                                 var li = new HtmlGenericControl( "li" );
-                                                li.InnerText = string.Format( "{0} was checked into {1} for {2} at {3}",
+                                                li.InnerText = string.Format( "{0} : {2} at {3}",
                                                     person.ToString(), group.ToString(), location.ToString(), schedule.ToString(), person.SecurityCode );
 
                                                 phResults.Controls.Add( li );
@@ -100,22 +102,49 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                                         }
                                     }
 
-                                    var printFromClient = groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Client );
-                                    if ( printFromClient.Any() )
+                                    try
                                     {
-                                        var urlRoot = string.Format( "{0}://{1}", Request.Url.Scheme, Request.Url.Authority );
-                                        printFromClient.ToList().ForEach( l => l.LabelFile = urlRoot + l.LabelFile );
-                                        AddLabelScript( printFromClient.ToJson() );
-                                    }
+                                        var printFromClient = groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Client ).OrderBy( l => l.Order );
+                                        if ( printFromClient.Any() )
+                                        {
+                                            var urlRoot = string.Format( "{0}://{1}", Request.Url.Scheme, Request.Url.Authority );
+                                            printFromClient.ToList().ForEach( l => l.LabelFile = urlRoot + l.LabelFile );
+                                            AddLabelScript( printFromClient.ToJson() );
+                                        }
 
-                                    var printFromServer = groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Server );
-                                    if ( printFromServer.Any() )
+                                        var printFromServer = groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Server ).OrderBy( l => l.Order );
+                                        if ( printFromServer.Any() )
+                                        {
+                                            PrintFromServerLabels( person, groupType, printFromServer );
+                                        }
+                                    }
+                                    catch ( Exception ex )
                                     {
-                                        PrintFromServerLabels( person, groupType, printFromServer );
+                                        phResults.Controls.Add( new LiteralControl( string.Format( "<br/><span class='text-danger '>Could not connect to printer! {0}</span>", ex.Message ) ) );
+
+                                        // Problem printing person's labels.
+                                        LogException( ex );
                                     }
                                 }
                             }
                         }
+
+
+                        /*
+                        <table class="table table-condensed">
+                            <tr>
+                                <th></th><th>4:30</th><th>6:30</th><th></th>
+                            </tr>
+                            <tr>
+                                <td>Noah</td><td class="bg-success">B131</td><td class="bg-danger text-danger">error</td>
+                            </tr>
+                            <tr>
+                                <td>Alex</td><td class="bg-success">B131</td><td>B129</td><td><!--no error--></td>
+                            </tr>
+                        </table>
+                        */
+
+
                     }
                     catch ( Exception ex )
                     {
@@ -138,7 +167,7 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             string currentIp = string.Empty;
             int numOfLabels = printFromServer.Count();
             int labelIndex = 0;
-            foreach ( var label in printFromServer )
+            foreach ( var label in printFromServer.OrderBy( l => l.Order ) )
             {
                 labelIndex++;
                 var labelCache = KioskLabel.Read( label.FileGuid );

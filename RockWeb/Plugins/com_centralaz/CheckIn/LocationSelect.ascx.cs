@@ -32,6 +32,7 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
     [Category( "com_centralaz > Check-in" )]
     [Description("Displays a list of locations a person is able to checkin to.")]
     [TextField( "Current Count Format", "How should current count be displayed", false, " Count: {0}" )]
+    [Obsolete( "Deprecated.  We'll be moving back to most of Rock's core check-in blocks with the exception of Admin.ascx and Success.ascx" )]
     public partial class LocationSelect : CheckInBlock
     {
         /// <summary>
@@ -176,7 +177,7 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                 var personId = hfPerson.ValueAsInt();
 
                 var group = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
-                    .SelectMany( f => f.People.Where( p => p.Selected & p.Person.Id == personId ) 
+                    .SelectMany( f => f.People.Where( p => p.Selected && p.Person.Id == personId ) 
                         .SelectMany( p => p.GroupTypes.Where( t => t.Selected ) 
                             .SelectMany( t => t.Groups.Where( g => g.Selected ) ) ) )
                     .FirstOrDefault();

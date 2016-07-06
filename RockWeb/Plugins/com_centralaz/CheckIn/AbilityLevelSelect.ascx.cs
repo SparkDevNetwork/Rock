@@ -45,6 +45,7 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
 
             RockPage.AddScriptLink( "~/Scripts/iscroll.js" );
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
+            RockPage.AddScriptLink( "~/Plugins/com_centralaz/CheckIn/Scripts/checkin-core.js" );
 
             if ( CurrentWorkflow == null || CurrentCheckInState == null )
             {
@@ -54,10 +55,49 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             {
                 if ( !Page.IsPostBack )
                 {
-                    _allowPreviousOptions = GetAttributeValue( "AllowPreviousOptions" ).AsBoolean(true);
+                    ClearSelection();
+                    SetSelectedPeopleInHiddenList();
+                    SetupSelectionScreenForNextPerson();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Set each selected person into the list of people to be processed.
+        /// This is a queue that will drain as we process each person.
+        /// </summary>
+        private void SetSelectedPeopleInHiddenList()
+        {
+            var ids = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
+                        .SelectMany( f => f.People.Where( p => p.Selected ) )
+                        .Select( p => p.Person.Id.ToString() ).ToArray();
+
+            hfPeopleToProcess.Value = string.Join( ",", ids );
+        }
+
+        /// <summary>
+        /// Builds the selection screen for the next person who needs it
+        /// and returns how many people remain to be processed.
+        /// When no more remain it will call ProcessSelection()
+        /// </summary>
+        private void SetupSelectionScreenForNextPerson()
+        {
+            // if there are people to process, then process them
+            if ( !string.IsNullOrEmpty( hfPeopleToProcess.Value ) )
+            {
+                Queue<string> ids = new Queue<string>( hfPeopleToProcess.Value.SplitDelimitedValues() );
+
+                // Process each person in the stack until there are no more.
+                while ( ids.Count > 0 )
+                {
+                    int personId = ids.Dequeue().AsInteger();
+                    hfPeopleToProcess.Value = string.Join( ",", ids );
+                    hfPerson.Value = personId.ToString();
+
+                    _allowPreviousOptions = GetAttributeValue( "AllowPreviousOptions" ).AsBoolean( true );
 
                     var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
-                        .SelectMany( f => f.People.Where( p => p.Selected ) )
+                        .SelectMany( f => f.People.Where( p => p.Selected && p.Person.Id == personId ) )
                         .FirstOrDefault();
 
                     if ( person == null )
@@ -78,7 +118,7 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                         }
                         else
                         {
-                            ProcessSelection();
+                            // do nothing, continue to next person...
                         }
                     }
                     else
@@ -86,12 +126,35 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                         person.Person.LoadAttributes();
                         _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" ).ToUpper();
 
+                        // consider skipping if the person is at top level?
+
                         var abilityLevelDType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL_TYPE.AsGuid() );
                         if ( abilityLevelDType != null )
                         {
                             rSelection.DataSource = abilityLevelDType.DefinedValues.ToList();
                             rSelection.DataBind();
+                            return;
                         }
+                    }
+                }
+            }
+
+            // No more people, then continue to next step
+            ProcessSelection();
+        }
+
+        /// <summary>
+        /// Clear any previously group types people.
+        /// </summary>
+        private void ClearSelection()
+        {
+            foreach ( var family in CurrentCheckInState.CheckIn.Families )
+            {
+                foreach ( var person in family.People )
+                {
+                    foreach ( var groupType in person.GroupTypes )
+                    {
+                        groupType.Selected = false;
                     }
                 }
             }
@@ -129,12 +192,19 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             return true;
         }
 
+        /// <summary>
+        /// Process the selected ability level for the person currently being handled.
+        /// </summary>
+        /// <param name="source">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
         protected void rSelection_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             if ( KioskCurrentlyActive )
             {
+                var personId = hfPerson.ValueAsInt();
+
                 var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
-                    .SelectMany( f => f.People.Where( p => p.Selected ) )
+                    .SelectMany( f => f.People.Where( p => p.Selected && p.Person.Id == personId ) )
                     .FirstOrDefault();
 
                 if ( person != null )
@@ -161,7 +231,7 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                         }
                     }
 
-                    ProcessSelection();
+                    SetupSelectionScreenForNextPerson();
                 }
             }
         }
@@ -210,31 +280,11 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
 
         protected void ProcessSelection()
         {
-            if ( !ProcessSelection( maWarning, () => CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
+            ProcessSelection( maWarning, () => CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
                 .SelectMany( f => f.People.Where( p => p.Selected )
                     .SelectMany( p => p.GroupTypes.Where( t => !t.ExcludedByFilter ) ) )
                 .Count() <= 0,
-                "<p>Sorry, based on your selection, there are currently not any available locations that can be checked into.</p>" ) ) 
-            {
-                // Clear any filtered items so that user can select another option
-                var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
-                    .SelectMany( f => f.People.Where( p => p.Selected ) )
-                    .FirstOrDefault();
-                if ( person != null )
-                {
-                    person.ClearFilteredExclusions();
-                    person.Person.LoadAttributes();
-                    _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" ).ToUpper();
-
-                    var abilityLevelDType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL_TYPE.AsGuid() );
-                    if ( abilityLevelDType != null )
-                    {
-                        rSelection.DataSource = abilityLevelDType.DefinedValues.ToList();
-                        rSelection.DataBind();
-                    }
-                }
-            }
+                "<ul><li>Sorry, based on your selection, there are currently not any available locations that can be checked into.</li></ul>" );
         }
-
     }
 }

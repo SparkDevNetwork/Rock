@@ -30,6 +30,7 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
     [DisplayName("Group Type Select")]
     [Category( "com_centralaz > Check-in" )]
     [Description("Displays a list of group types the person is configured to checkin to.")]
+    [Obsolete( "Deprecated.  We'll be moving back to most of Rock's core check-in blocks with the exception of Admin.ascx and Success.ascx" )]
     public partial class GroupTypeSelect : CheckInBlock
     {
         protected override void OnInit( EventArgs e )
@@ -159,7 +160,7 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             {
                 var personId = hfPerson.ValueAsInt();
                 var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
-                    .SelectMany( f => f.People.Where( p => p.Selected & p.Person.Id == personId ) )
+                    .SelectMany( f => f.People.Where( p => p.Selected && p.Person.Id == personId ) )
                     .FirstOrDefault();
 
                 if ( person != null )

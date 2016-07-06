@@ -141,7 +141,7 @@ namespace com.centralaz.Workflow.Action.CheckIn
                 decimal minAge = 0;
                 decimal maxAge = 0;
 
-                if ( decimal.TryParse( minAgeValue, out minAge ) )
+                if ( decimal.TryParse( minAgeValue, out minAge ) && decimal.TryParse( maxAgeValue, out maxAge ) )
                 {
                     decimal? personAgePrecise = null;
 
