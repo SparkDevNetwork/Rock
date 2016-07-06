@@ -369,11 +369,12 @@
             <param name="node">The node to duplicate. May not be <c>null</c>.</param>
             <param name="deep">true to recursively clone the subtree under the specified node, false to clone only the node itself.</param>
         </member>
-        <member name="M:HtmlAgilityPack.HtmlNode.DescendantNodes">
+        <member name="M:HtmlAgilityPack.HtmlNode.DescendantNodes(System.Int32)">
             <summary>
             Gets all Descendant nodes for this node and each of child nodes
             </summary>
-            <returns></returns>
+            <param name="level">The depth level of the node to parse in the html tree</param>
+            <returns>the current element as an HtmlNode</returns>
         </member>
         <member name="M:HtmlAgilityPack.HtmlNode.DescendantNodesAndSelf">
             <summary>
@@ -381,7 +382,7 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:HtmlAgilityPack.HtmlNode.Descendants">
+        <member name="M:HtmlAgilityPack.HtmlNode.Descendants(System.Int32)">
             <summary>
             Gets all Descendant nodes in enumerated list
             </summary>
@@ -520,11 +521,12 @@
             <param name="value">The value for the attribute.</param>
             <returns>The corresponding attribute instance.</returns>
         </member>
-        <member name="M:HtmlAgilityPack.HtmlNode.WriteContentTo(System.IO.TextWriter)">
+        <member name="M:HtmlAgilityPack.HtmlNode.WriteContentTo(System.IO.TextWriter,System.Int32)">
             <summary>
             Saves all the children of the node to the specified TextWriter.
             </summary>
             <param name="outText">The TextWriter to which you want to save.</param>
+            <param name="level">Identifies the level we are in starting at root with 0</param>
         </member>
         <member name="M:HtmlAgilityPack.HtmlNode.WriteContentTo">
             <summary>
@@ -532,11 +534,12 @@
             </summary>
             <returns>The saved string.</returns>
         </member>
-        <member name="M:HtmlAgilityPack.HtmlNode.WriteTo(System.IO.TextWriter)">
+        <member name="M:HtmlAgilityPack.HtmlNode.WriteTo(System.IO.TextWriter,System.Int32)">
             <summary>
             Saves the current node to the specified TextWriter.
             </summary>
             <param name="outText">The TextWriter to which you want to save.</param>
+            <param name="level">identifies the level we are in starting at root with 0</param>
         </member>
         <member name="M:HtmlAgilityPack.HtmlNode.WriteTo(System.Xml.XmlWriter)">
             <summary>
@@ -765,6 +768,11 @@
             Creates a new XPathNavigator object for navigating this HTML document.
             </summary>
             <returns>An XPathNavigator object. The XPathNavigator is positioned on the root of the document.</returns>
+        </member>
+        <member name="F:HtmlAgilityPack.HtmlDocument._maxDepthLevel">
+            <summary>
+            Defines the max level we would go deep into the html document
+            </summary>
         </member>
         <member name="F:HtmlAgilityPack.HtmlDocument.OptionAddDebuggingAttributes">
             <summary>
@@ -1032,6 +1040,12 @@
             Saves the HTML document to the specified XmlWriter.
             </summary>
             <param name="writer">The XmlWriter to which you want to save.</param>
+        </member>
+        <member name="P:HtmlAgilityPack.HtmlDocument.MaxDepthLevel">
+            <summary>
+            Defines the max level we would go deep into the html document. If this depth level is exceeded, and exception is
+            thrown.
+            </summary>
         </member>
         <member name="P:HtmlAgilityPack.HtmlDocument.CheckSum">
             <summary>

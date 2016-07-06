@@ -90,7 +90,7 @@ namespace RockWeb
                     response.Write( "<head>" );
                     response.Write( string.Format( "<link rel='stylesheet' type='text/css' href='{0}Themes/Rock/Styles/bootstrap.css'>", appPath ) );
                     response.Write( string.Format( "<link rel='stylesheet' type='text/css' href='{0}Themes/Rock/Styles/theme.css'>", appPath ) );
-                    response.Write( string.Format( "<script src='{0}Scripts/jquery-1.10.2.min.js'></script>", appPath ) );
+                    response.Write( string.Format( "<script src='{0}Scripts/jquery-1.12.4.min.js'></script>", appPath ) );
                     response.Write( string.Format( "<script src='{0}Scripts/bootstrap.min.js'></script>", appPath ) );
                     response.Write( "</head>" );
                     response.Write( "<body style='padding: 24px;'>" );
