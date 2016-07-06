@@ -629,27 +629,28 @@ namespace Rock.Attribute
         public static Rock.Model.Attribute SaveAttributeEdits( AttributeEditor edtAttribute, int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue, RockContext rockContext = null )
         {
             // Create and update a new attribute object with new values
-            var newAttribute = new Rock.Model.Attribute();
-            edtAttribute.GetAttributeProperties( newAttribute );
-
             rockContext = rockContext ?? new RockContext();
             var internalAttributeService = new AttributeService( rockContext );
-            Rock.Model.Attribute attribute = null;
 
-            if ( newAttribute.Id > 0 )
+            Rock.Model.Attribute attribute = null;
+            var newAttribute = new Rock.Model.Attribute();
+
+            if ( edtAttribute.AttributeId.HasValue )
             {
-                attribute = internalAttributeService.Get( newAttribute.Id );
+                attribute = internalAttributeService.Get( edtAttribute.AttributeId.Value );
             }
 
-            if ( attribute == null )
+            if ( attribute != null )
             {
-                newAttribute.Order = internalAttributeService.Queryable().Max( a => a.Order ) + 1;
+                newAttribute.CopyPropertiesFrom( attribute );
             }
             else
             {
-                newAttribute.Order = attribute.Order;
-            } 
-            
+                newAttribute.Order = internalAttributeService.Queryable().Max( a => a.Order ) + 1;
+            }
+
+            edtAttribute.GetAttributeProperties( newAttribute );
+
             return SaveAttributeEdits( newAttribute, entityTypeId, entityTypeQualifierColumn, entityTypeQualifierValue, rockContext );
         }
 
