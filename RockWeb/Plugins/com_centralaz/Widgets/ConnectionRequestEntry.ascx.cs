@@ -108,100 +108,110 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                 var opportunityService = new ConnectionOpportunityService( rockContext );
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var personService = new PersonService( rockContext );
-                Person person = personService.Get( ppPerson.PersonId.Value );
-                List<string> opportunityNames = new List<string>();
-
-                // If there is a valid person with a primary alias, continue
-                if ( person != null && person.PrimaryAliasId.HasValue )
+                if ( ppPerson.PersonId.HasValue )
                 {
+                    Person person = personService.Get( ppPerson.PersonId.Value );
+                    List<string> opportunityNames = new List<string>();
 
-                    foreach ( RepeaterItem typeItem in rptConnnectionTypes.Items )
+                    // If there is a valid person with a primary alias, continue
+                    if ( person != null && person.PrimaryAliasId.HasValue )
                     {
-                        var cblOpportunities = typeItem.FindControl( "cblOpportunities" ) as RockCheckBoxList;
-                        foreach ( int connectionOpportunityId in cblOpportunities.SelectedValuesAsInt )
+
+                        foreach ( RepeaterItem typeItem in rptConnnectionTypes.Items )
                         {
-
-                            // Get the opportunity and default status
-                            var opportunity = opportunityService
-                                .Queryable()
-                                .Where( o => o.Id == connectionOpportunityId )
-                                .FirstOrDefault();
-
-                            int defaultStatusId = opportunity.ConnectionType.ConnectionStatuses
-                                .Where( s => s.IsDefault )
-                                .Select( s => s.Id )
-                                .FirstOrDefault();
-
-                            // If opportunity is valid and has a default status
-                            if ( opportunity != null && defaultStatusId > 0 )
+                            var cblOpportunities = typeItem.FindControl( "cblOpportunities" ) as RockCheckBoxList;
+                            foreach ( int connectionOpportunityId in cblOpportunities.SelectedValuesAsInt )
                             {
-                                // Now we create the connection request
-                                var connectionRequest = new ConnectionRequest();
-                                connectionRequest.PersonAliasId = person.PrimaryAliasId.Value;
-                                connectionRequest.Comments = tbComments.Text.Trim();
-                                connectionRequest.ConnectionOpportunityId = opportunity.Id;
-                                connectionRequest.ConnectionState = ConnectionState.Active;
-                                connectionRequest.ConnectionStatusId = defaultStatusId;
 
-                                if ( person.GetCampus() != null )
+                                // Get the opportunity and default status
+                                var opportunity = opportunityService
+                                    .Queryable()
+                                    .Where( o => o.Id == connectionOpportunityId )
+                                    .FirstOrDefault();
+
+                                int defaultStatusId = opportunity.ConnectionType.ConnectionStatuses
+                                    .Where( s => s.IsDefault )
+                                    .Select( s => s.Id )
+                                    .FirstOrDefault();
+
+                                // If opportunity is valid and has a default status
+                                if ( opportunity != null && defaultStatusId > 0 )
                                 {
-                                    var campusId = person.GetCampus().Id;
-                                    connectionRequest.CampusId = campusId;
-                                    connectionRequest.ConnectorPersonAliasId = opportunity.GetDefaultConnectorPersonAliasId( campusId );
-                                    if (
-                                        opportunity != null &&
-                                        opportunity.ConnectionOpportunityCampuses != null )
+                                    // Now we create the connection request
+                                    var connectionRequest = new ConnectionRequest();
+                                    connectionRequest.PersonAliasId = person.PrimaryAliasId.Value;
+                                    connectionRequest.Comments = tbComments.Text.Trim();
+                                    connectionRequest.ConnectionOpportunityId = opportunity.Id;
+                                    connectionRequest.ConnectionState = ConnectionState.Active;
+                                    connectionRequest.ConnectionStatusId = defaultStatusId;
+
+                                    if ( person.GetCampus() != null )
                                     {
-                                        var campus = opportunity.ConnectionOpportunityCampuses
-                                            .Where( c => c.CampusId == campusId )
-                                            .FirstOrDefault();
-                                        if ( campus != null )
+                                        var campusId = person.GetCampus().Id;
+                                        connectionRequest.CampusId = campusId;
+                                        connectionRequest.ConnectorPersonAliasId = opportunity.GetDefaultConnectorPersonAliasId( campusId );
+                                        if (
+                                            opportunity != null &&
+                                            opportunity.ConnectionOpportunityCampuses != null )
                                         {
-                                            connectionRequest.ConnectorPersonAliasId = campus.DefaultConnectorPersonAliasId;
+                                            var campus = opportunity.ConnectionOpportunityCampuses
+                                                .Where( c => c.CampusId == campusId )
+                                                .FirstOrDefault();
+                                            if ( campus != null )
+                                            {
+                                                connectionRequest.ConnectorPersonAliasId = campus.DefaultConnectorPersonAliasId;
+                                            }
                                         }
                                     }
+
+                                    if ( !connectionRequest.IsValid )
+                                    {
+                                        // Controls will show warnings
+                                        return;
+                                    }
+
+                                    opportunityNames.Add( opportunity.Name );
+
+                                    connectionRequestService.Add( connectionRequest );
                                 }
-
-                                if ( !connectionRequest.IsValid )
-                                {
-                                    // Controls will show warnings
-                                    return;
-                                }
-
-                                opportunityNames.Add( opportunity.Name );
-
-                                connectionRequestService.Add( connectionRequest );
                             }
                         }
                     }
-                }
-                if ( opportunityNames.Count > 0 )
-                {
-                    rockContext.SaveChanges();
 
-                    // Reset everything for the next person
-                    tbComments.Text = string.Empty;
-                    LoadOpportunities();
-                    ppPerson.SetValue( null );
-
-                    StringBuilder sb = new StringBuilder();
-                    sb.AppendLine( String.Format( "{0}'s connection requests have been entered for the following opportunities:\n<ul>", person.FullName ) );
-                    foreach ( var name in opportunityNames )
+                    if ( opportunityNames.Count > 0 )
                     {
-                        sb.AppendLine( String.Format( "<li> {0}</li>", name ) );
-                    }
-                    sb.AppendLine( "</ul>" );
+                        rockContext.SaveChanges();
 
-                    nbSuccess.Text = sb.ToString();
-                    nbSuccess.Visible = true;
-                    nbDanger.Visible = false;
+                        // Reset everything for the next person
+                        tbComments.Text = string.Empty;
+                        LoadOpportunities();
+                        ppPerson.SetValue( null );
+
+                        StringBuilder sb = new StringBuilder();
+                        sb.AppendLine( String.Format( "{0}'s connection requests have been entered for the following opportunities:\n<ul>", person.FullName ) );
+                        foreach ( var name in opportunityNames )
+                        {
+                            sb.AppendLine( String.Format( "<li> {0}</li>", name ) );
+                        }
+                        sb.AppendLine( "</ul>" );
+
+                        nbSuccess.Text = sb.ToString();
+                        nbSuccess.Visible = true;
+                        nbDanger.Visible = false;
+                    }
+                    else
+                    {
+                        nbDanger.Visible = true;
+                        nbDanger.Text = "Please select an opportunity.";
+                        nbSuccess.Visible = false;
+                    }
                 }
                 else
                 {
                     nbDanger.Visible = true;
+                    nbDanger.Text = "Please select a person.";
                     nbSuccess.Visible = false;
                 }
-
             }
         }
 

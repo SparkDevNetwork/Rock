@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
         <Rock:NotificationBox ID="nbSuccess" NotificationBoxType="Success" runat="server" />
-        <Rock:NotificationBox ID="nbDanger" NotificationBoxType="Danger" runat="server" Text="Please select an opportunity." />
+        <Rock:NotificationBox ID="nbDanger" NotificationBoxType="Danger" runat="server" />
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
