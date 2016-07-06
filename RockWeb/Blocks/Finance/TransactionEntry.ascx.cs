@@ -86,10 +86,10 @@ namespace RockWeb.Blocks.Finance
 </div>
 ", "Text Options", 20 )]
     [TextField( "Success Title", "The text to display as heading of section for displaying details of gift.", false, "Gift Information", "Text Options", 21 )]
-    [CodeEditorField( "Success Header", "The text (HTML) to display at the top of the success section. <span class='tip tip-lava'></Fspan> <span class='tip tip-html'></span>",
+    [CodeEditorField( "Success Header", "The text (HTML) to display at the top of the success section. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
         CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
 <p>
-    Thank you for your generous contribution.  Your support is helping {{ OrganizationName }} actively
+    Thank you for your generous contribution.  Your support is helping {{ 'Global' | Attribute:'OrganizationName' }} actively
     achieve our mission.  We are so grateful for your commitment.
 </p>
 ", "Text Options", 22 )]
