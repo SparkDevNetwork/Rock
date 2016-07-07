@@ -114,12 +114,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         hlEditGroup.NavigateUrl = LinkedPageUrl( "GroupEditPage", pageParams );
                     }
 
-                    Literal lEditGroup = e.Item.FindControl( "lEditGroup" ) as Literal;
-                    if ( lEditGroup != null )
-                    {
-                        lEditGroup.Text = "Edit " + _groupType.Name;
-                    }
-
                     Repeater rptrMembers = e.Item.FindControl( "rptrMembers" ) as Repeater;
                     if ( rptrMembers != null )
                     {
