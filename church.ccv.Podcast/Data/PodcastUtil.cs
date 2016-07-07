@@ -222,7 +222,7 @@ namespace church.ccv.Podcast
             if ( expandSeries )
             {
                 // sort the messages by date
-                var orderedContentChannelItems = contentChannel.Items.OrderByDescending( i => i.CreatedDateTime );
+                var orderedContentChannelItems = contentChannel.Items.OrderByDescending( i => i.StartDateTime );
 
                 foreach( ContentChannelItem contentChannelItem in orderedContentChannelItems )
                 {
