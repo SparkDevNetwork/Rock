@@ -103,7 +103,8 @@
       <HintPath>..\packages\OpenXmlPowerTools.3.1.07.0\lib\OpenXmlPowerTools.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Quartz">
+    <Reference Include="Quartz, Version=2.0.0.100, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\libs\Quartz\Quartz.dll</HintPath>
     </Reference>
     <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
