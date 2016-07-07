@@ -860,7 +860,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     {
                         foreach ( var childGroupType in parentGroupType.ChildGroupTypes )
                         {
-                            AddGroupType( childGroupType, chartTimes );
+                            AddGroupType( null, childGroupType, chartTimes );
                         }
                     }
 
@@ -920,7 +920,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                             .ToList();
                     }
 
-                    // Remove any grouptype without groups
+                    // Remove any grouptype without groups or child group types
                     var emptyGroupTypeIds = NavData.GroupTypes
                         .Where( t => !t.ChildGroupIds.Any() && !t.ChildGroupTypeIds.Any() )
                         .Select( t => t.Id )
@@ -1095,16 +1095,18 @@ namespace RockWeb.Blocks.CheckIn.Manager
             return times;
         }
 
-        private void AddGroupType( GroupTypeCache groupType, List<DateTime> chartTimes )
+        private void AddGroupType( int? parentGroupTypeId, GroupTypeCache groupType, List<DateTime> chartTimes )
         {
             if ( groupType != null && !NavData.GroupTypes.Exists( g => g.Id == groupType.Id ) )
             {
                 var navGroupType = new NavigationGroupType( groupType, chartTimes );
+                navGroupType.ParentId = parentGroupTypeId;
+
                 NavData.GroupTypes.Add( navGroupType );
 
                 foreach ( var childGroupType in groupType.ChildGroupTypes )
                 {
-                    AddGroupType( childGroupType, chartTimes );
+                    AddGroupType( groupType.Id, childGroupType, chartTimes );
                     navGroupType.ChildGroupTypeIds.Add( childGroupType.Id );
                 }
             }
