@@ -23,8 +23,14 @@ using System.Diagnostics;
 
 namespace CSScriptEvaluatorApi
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class HostApp
     {
+        /// <summary>
+        /// Tests this instance.
+        /// </summary>
         public static void Test()
         {
             // Just in case clear AlternativeCompiler so it is not set to Roslyn or anything else by 
@@ -278,6 +284,9 @@ namespace CSScriptEvaluatorApi
             }
         }
 
+        /// <summary>
+        /// Profiles this instance.
+        /// </summary>
         public static void Profile()
         {
             var sw = new Stopwatch();
@@ -325,13 +334,28 @@ namespace CSScriptEvaluatorApi
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public interface ICalc
     {
+        /// <summary>
+        /// Sums the specified a.
+        /// </summary>
+        /// <param name="a">a.</param>
+        /// <param name="b">The b.</param>
+        /// <returns></returns>
         int Sum(int a, int b);
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class InputData
     {
+        /// <summary>
+        /// The index
+        /// </summary>
         public int Index = 0;
     }
 }

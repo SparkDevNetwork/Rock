@@ -28,8 +28,14 @@ using System.Threading.Tasks;
 // All samples rely on the compiler agnostic CSScript.Evaluator API. 
 namespace CSScriptEvaluatorExtensions
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class HostApp
     {
+        /// <summary>
+        /// Tests this instance.
+        /// </summary>
         public static void Test()
         {
             Console.WriteLine("---------------------------------------------");
@@ -45,8 +51,14 @@ namespace CSScriptEvaluatorExtensions
             new UnloadingSamples().RunAll();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         class AsyncSamples
         {
+            /// <summary>
+            /// Runs all.
+            /// </summary>
             public void RunAll()
             {
                 Action<Action, string> run = (action, name) => { action(); Console.WriteLine(name); };
@@ -267,14 +279,39 @@ script.UnloadOwnerDomain();
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public interface ICalc
     {
+        /// <summary>
+        /// Sums the specified a.
+        /// </summary>
+        /// <param name="a">a.</param>
+        /// <param name="b">The b.</param>
+        /// <returns></returns>
         int Sum(int a, int b);
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public interface IFullCalc
     {
+        /// <summary>
+        /// Sums the specified a.
+        /// </summary>
+        /// <param name="a">a.</param>
+        /// <param name="b">The b.</param>
+        /// <returns></returns>
         int Sum(int a, int b);
+
+        /// <summary>
+        /// Subs the specified a.
+        /// </summary>
+        /// <param name="a">a.</param>
+        /// <param name="b">The b.</param>
+        /// <returns></returns>
         int Sub(int a, int b);
     }
 }

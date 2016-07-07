@@ -11,11 +11,21 @@ using CSScriptLibrary;
 
 namespace Rock.Lava.Blocks
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="DotLiquid.Block" />
     public class Execute : DotLiquid.Block
     {
         private RuntimeType _runtimeType = RuntimeType.SCRIPT;
         private List<string> _imports = new List<string>();
 
+        /// <summary>
+        /// Initializes the specified tag name.
+        /// </summary>
+        /// <param name="tagName">Name of the tag.</param>
+        /// <param name="markup">The markup.</param>
+        /// <param name="tokens">The tokens.</param>
         public override void Initialize( string tagName, string markup, List<string> tokens )
         {
             string[] parms = markup.Split( ' ' );
@@ -46,6 +56,11 @@ namespace Rock.Lava.Blocks
             base.Initialize( tagName, markup, tokens );
         }
 
+        /// <summary>
+        /// Renders the specified context.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="result">The result.</param>
         public override void Render( Context context, TextWriter result )
         {
             string userScript = @"return ""Watson, can you hear me?"";"; // inital script here was just for testing
@@ -127,6 +142,10 @@ namespace Rock.Lava.Blocks
     /// </summary>
     public interface ILavaScript
     {
+        /// <summary>
+        /// Executes this instance.
+        /// </summary>
+        /// <returns></returns>
         string Execute();
     }
 }
