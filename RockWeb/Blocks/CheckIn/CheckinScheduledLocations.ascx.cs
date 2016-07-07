@@ -140,19 +140,28 @@ namespace RockWeb.Blocks.CheckIn
             var groupTypeService = new GroupTypeService( rockContext );
             var groupService = new GroupService( rockContext );
 
-            IEnumerable<GroupTypePath> groupPaths = new List<GroupTypePath>();
             var groupLocationQry = groupLocationService.Queryable();
 
-            List<int> currentAndDescendantGroupTypeIds = new List<int>();
-            var currentGroupTypeIds = this.CurrentGroupTypeIds.ToList();
-            currentAndDescendantGroupTypeIds.AddRange( currentGroupTypeIds );
-            foreach ( var templateGroupType in groupTypeService.Queryable().Where( a => currentGroupTypeIds.Contains( a.Id ) ) )
+            var templateGroupPaths = new Dictionary<int, List<GroupTypePath>>();
+            var currentAndDescendantGroupTypeIds = new List<int>();
+            foreach ( var groupType in groupTypeService.Queryable().Where( a => this.CurrentGroupTypeIds.Contains( a.Id ) ) )
             {
-                foreach ( var childGroupType in groupTypeService.GetChildGroupTypes( templateGroupType.Id ) )
+                foreach( var parentGroupType in groupType.ParentGroupTypes )
                 {
-                    currentAndDescendantGroupTypeIds.Add( childGroupType.Id );
-                    currentAndDescendantGroupTypeIds.AddRange( groupTypeService.GetAllAssociatedDescendents( childGroupType.Id ).Select( a => a.Id ).ToList() );
+                    if ( !templateGroupPaths.ContainsKey( parentGroupType.Id ) )
+                    {
+                        templateGroupPaths.Add( parentGroupType.Id, groupTypeService.GetAllAssociatedDescendentsPath( parentGroupType.Id ).ToList() );
+                    }
                 }
+
+                currentAndDescendantGroupTypeIds.Add( groupType.Id );
+                currentAndDescendantGroupTypeIds.AddRange( groupTypeService.GetAllAssociatedDescendents( groupType.Id ).Select( a => a.Id ).ToList() );
+            }
+
+            var groupPaths = new List<GroupTypePath>();
+            foreach ( var path in templateGroupPaths )
+            {
+                groupPaths.AddRange( path.Value );
             }
 
             groupLocationQry = groupLocationQry.Where( a => currentAndDescendantGroupTypeIds.Contains( a.Group.GroupTypeId ) );
