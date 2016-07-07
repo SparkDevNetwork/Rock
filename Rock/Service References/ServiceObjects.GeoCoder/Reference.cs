@@ -7,6 +7,7 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
+#pragma warning disable
 
 namespace Rock.ServiceObjects.GeoCoder {
     
