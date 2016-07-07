@@ -287,7 +287,6 @@ namespace Rock.Field.Types
             else
             {
                 editControl = new DefinedValuePicker { ID = id, DisplayDescriptions = useDescription, DefinedTypeId = definedTypeId };
-                editControl.Items.Add( new ListItem() );
             }
                 
             if ( definedTypeId.HasValue )
