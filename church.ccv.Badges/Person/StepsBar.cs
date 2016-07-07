@@ -183,8 +183,8 @@ namespace church.ccv.Badges.Person
 
                 var popoverContent = popoverContent + ""<p class='margin-b-none'><a href='/page/"" + connectionGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find NH Group</a></p>"";
                 var popoverContent = popoverContent + ""<p class='margin-b-none margin-t-sm'><a href='/page/"" + nextGenGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find Students Group</a></p>"";
+                var popoverContent = popoverContent + ""<p class='margin-b-none margin-t-sm'><a href='/page/"" + youngAdultGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find YA Group</a></p>"";
                 //var popoverContent = popoverContent + ""<p class='margin-b-none margin-t-sm'><a href='/page/"" + nextStepGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find NS Group</a></p>"";
-                //var popoverContent = popoverContent + ""<p class='margin-b-none margin-t-sm'><a href='/page/"" + youngAdultGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find YA Group</a></p>"";
 
                 if (data.ConnectionResult.ConnectionStatus == 2) {{
                     $badge.find('.badge-connect').addClass('step-partial');
