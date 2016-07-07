@@ -13,3 +13,4 @@
 /bin/Rock.Version.dll
 /bin/*.pdb
 /bin/*.xml
+/bin/*.refresh
