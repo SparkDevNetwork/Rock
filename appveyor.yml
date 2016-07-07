@@ -72,6 +72,7 @@ before_build:
   - cmd: node ./node_modules/normajs/bin/norma.js build  # use cached version of norma
   - cmd: git clone -q --depth=1 https://github.com/NewSpring/rock-spiritual-gifts.git ../rock-spiritual-gifts
   - cmd: nuget restore
+  - cmd: dir c:\projects\rock\RockWeb\bin
   
 
 build:
