@@ -579,11 +579,6 @@
             Try to match an HTML tag after first &lt;, returning number of chars matched.
             </summary>
         </member>
-        <member name="F:CommonMark.Parser.Scanner.schemeArray">
-            <summary>
-            List of valid schemes of an URL. The array must be sorted.
-            </summary>
-        </member>
         <member name="M:CommonMark.Parser.Scanner.scan_autolink_uri(System.String,System.Int32,System.Int32)">
             <summary>
             Try to match URI autolink after first &lt;, returning number of chars matched.

@@ -6205,6 +6205,17 @@
             Helper for Cache class.
             </summary>
         </member>
+        <member name="M:Microsoft.Data.Edm.EdmUtil.DictionaryGetOrUpdate``2(System.Collections.Generic.IDictionary{``0,``1},``0,System.Func{``0,``1})">
+            <summary>
+            Query dictionary for certain key, and update it if not exist
+            </summary>
+            <typeparam name="TKey">Key type for dictionary</typeparam>
+            <typeparam name="TValue">Value type for dictionary</typeparam>
+            <param name="dictionary">The dictionary to look up</param>
+            <param name="key">The key property</param>
+            <param name="computeValue">The function to compute value if key not exist in dictionary</param>
+            <returns>The value for the key</returns>
+        </member>
         <member name="T:Microsoft.Data.Edm.EdmContainerElementKind">
             <summary>
             Defines EDM container element types.

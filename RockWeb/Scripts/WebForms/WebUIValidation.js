@@ -1,4 +1,4 @@
-//CdnPath=http://ajax.aspnetcdn.com/ajax/4.5/6/WebUIValidation.js
+//CdnPath=http://ajax.aspnetcdn.com/ajax/4.5.1/1/WebUIValidation.js
 var Page_ValidationVer = "125";
 var Page_IsValid = true;
 var Page_BlockSubmit = false;
