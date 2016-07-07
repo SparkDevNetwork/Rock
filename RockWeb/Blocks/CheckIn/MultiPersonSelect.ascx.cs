@@ -56,7 +56,7 @@ namespace RockWeb.Blocks.CheckIn
 
         $('a.btn-checkin-select').click( function() {{
             //$(this).toggleClass('btn-dimmed');
-            $(this).find('i').toggleClass('fa-check-square').toggleClass('fa-square');
+            $(this).find('i').toggleClass('fa-check-square').toggleClass('fa-square-o');
         }});
 
 ", lbSelect.ClientID, hfPeople.ClientID );
