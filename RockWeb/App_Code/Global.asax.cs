@@ -258,6 +258,9 @@ namespace RockWeb
                     Template.RegisterSafeType( typeof( DBNull ), o => null );
                     Template.RegisterFilter( typeof( Rock.Lava.RockFilters ) );
 
+                    // register lava entity blocks
+                    Rock.Lava.Blocks.RockEntity.RegisterEntityCommands();
+
                     // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
                     AddCallBack();
                     
