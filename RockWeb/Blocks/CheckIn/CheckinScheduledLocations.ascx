@@ -4,14 +4,14 @@
     <ContentTemplate>
         <style>
             .scheduled-locations-scroll-panel {
-                bottom: 100px;
+                bottom: 110px;
             }
 
             .scheduled-locations-actions {
                 position: absolute;
                 bottom: 0px;
                 margin-bottom: 10px;
-                left: 75%;
+                right: 20px;
             }
 
             
