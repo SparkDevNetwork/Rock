@@ -159,6 +159,10 @@
                 </div>
             </div>
 
+            <asp:Panel ID="pnlSuccess" runat="server" Visible="false">
+                <asp:Literal ID="lSuccessContent" runat="server" />
+            </asp:Panel>
+
         </div>
 
         <script type="text/javascript">

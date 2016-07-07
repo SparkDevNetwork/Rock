@@ -34,6 +34,48 @@ namespace RockWeb.Plugins.church_ccv.Finance
 
     [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", "", 25 )]
     [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49", "", 26 )]
+
+    [TextField( "Success Title", "The text to display as heading of section for displaying details of gift.", false, "Gift Information", "Text Options", 21 )]
+    [CodeEditorField( "Success Header", "The text (HTML) to display at the top of the success section. <span class='tip tip-lava'></Fspan> <span class='tip tip-html'></span>",
+        CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
+<p>
+    Thank you for your generous contribution.  Your support is helping {{ OrganizationName }} actively
+    achieve our mission.  We are so grateful for your commitment.
+</p>
+", "Text Options", 22 )]
+    [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
+        CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, @"
+", "Text Options", 23 )]
+
+
+    [CodeEditorField( "Success Template", "The text (HTML) to display when a transaction is successfully submitted. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
+        CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
+<div class='well'>
+    <legend>Gift Information</legend>
+    <p>
+        Thank you for your generous contribution.  Your support is helping {{ 'Global' | Attribute:'OrganizationName' }} actively
+        achieve our mission.  We are so grateful for your commitment.
+    </p>
+    <dl class='dl-horizontal gift-success'>
+        {% if Schedule.Id %}<dt>Payment Schedule ID</dt><dd>{{ Schedule.Id }}</dd>{% endif %}
+        <dt>Confirmation Code</dt><dd>{{ PaymentInfo.TransactionCode }}</dd>
+        <dt></dt><dd></dd>
+        <dt>Name</dt><dd>{{ Person.FullName }}</dd>
+        {% if PaymentInfo.Phone %}<dt>Phone</dt><dd>{{ PaymentInfo.Phone }}</dd>{% endif %}
+        <dt>Email</dt><dd>{{ PaymentInfo.Email }}</dd>
+        {% if Address %}<dt>Address</dt><dd>{{ Address }}</dd>{% endif %}
+        <dt>Account</dt><dd>{{ Account.Name }}</dd>
+        <dt>Amount</dt><dd>{{ 'Global' | Attribute:'CurrencySymbol' }}{{ PaymentInfo.Amount | Format:'#,##0.00' }}</dd>
+        <dt></dt><dd></dd>
+        <dt>Payment Method</dt><dd>Credit Card</dd>
+        <dt>Account Number</dt><dd>{% if PaymentInfo.MaskedNumber %>{{ PaymentInfo.MaskedNumber }}{% else %}{{ PaymentDetail.AccountNumberMasked }}{% endif %}</dd>
+        {% if Schedule.Id %}<dt>When</dt><dd></dd>{% endif %}
+    </dl>
+</div>
+", "Text Options", 22 )]
+
+
+    [TextField( "Save Account Title", "The text to display as heading of section for saving payment information.", false, "Make Giving Even Easier", "Text Options", 24 )]
     public partial class TransactionEntryCcv : Rock.Web.UI.RockBlock
     {
         /// <summary>
@@ -325,7 +367,10 @@ namespace RockWeb.Plugins.church_ccv.Finance
 
             paymentInfo.Amount = tbAmount.Text.AsDecimal();
             paymentInfo.Email = tbEmail.Value;
-            paymentInfo.Phone = PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), tbPhone.Value, true );
+            if ( !string.IsNullOrEmpty( tbPhone.Value ) )
+            {
+                paymentInfo.Phone = PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), tbPhone.Value, true );
+            }
 
             var transactionAlreadyExists = new FinancialTransactionService( rockContext ).Queryable().FirstOrDefault( a => a.Guid == transactionGuid );
             if ( transactionAlreadyExists != null )
@@ -387,9 +432,23 @@ namespace RockWeb.Plugins.church_ccv.Finance
         /// <param name="financialPaymentDetail">The financial payment detail.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        private void ShowSuccess( GatewayComponent gateway, Person person, PaymentInfo paymentInfo, object p, FinancialPaymentDetail financialPaymentDetail, RockContext rockContext )
+        private void ShowSuccess( GatewayComponent gateway, Person person, PaymentInfo paymentInfo, PaymentSchedule paymentSchedule, FinancialPaymentDetail financialPaymentDetail, RockContext rockContext )
         {
-            throw new NotImplementedException();
+            var accountId = ddlAccounts.SelectedValue.AsInteger();
+            var account = new FinancialAccountService( rockContext ).Get( accountId );
+
+            givingForm.Visible = false;
+            pnlSuccess.Visible = true;
+            var successTemplate = this.GetAttributeValue( "SuccessTemplate" );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage );
+            mergeFields.Add( "PaymentInfo", DotLiquid.Hash.FromAnonymousObject(paymentInfo) );
+            mergeFields.Add( "PaymentDetail", financialPaymentDetail );
+            mergeFields.Add( "PaymentSchedule", DotLiquid.Hash.FromAnonymousObject( paymentSchedule ) );
+            mergeFields.Add( "Account", account );
+            mergeFields.AddOrReplace( "Person", person );
+            lSuccessContent.Text = successTemplate.ResolveMergeFields( mergeFields );
+
+            // TODO: Prompt to save account
         }
 
         /// <summary>
@@ -564,7 +623,7 @@ namespace RockWeb.Plugins.church_ccv.Finance
                 }
             }
 
-            if ( string.IsNullOrWhiteSpace( tbFirstName.Value ) || string.IsNullOrWhiteSpace( tbLastName.Value ) )
+            if ( CurrentPerson == null && (string.IsNullOrWhiteSpace( tbFirstName.Value ) || string.IsNullOrWhiteSpace( tbLastName.Value )) )
             {
                 errorMessages.Add( "Make sure to enter both a first and last name" );
             }
