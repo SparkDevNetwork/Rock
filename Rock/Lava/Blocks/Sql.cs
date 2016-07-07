@@ -23,6 +23,13 @@ namespace Rock.Lava.Blocks
 
         private string _to;
 
+        /// <summary>
+        /// Initializes the specified tag name.
+        /// </summary>
+        /// <param name="tagName">Name of the tag.</param>
+        /// <param name="markup">The markup.</param>
+        /// <param name="tokens">The tokens.</param>
+        /// <exception cref="System.Exception">Could not find the variable to place results in.</exception>
         public override void Initialize( string tagName, string markup, List<string> tokens )
         {
             Match syntaxMatch = Syntax.Match( markup );
@@ -34,6 +41,11 @@ namespace Rock.Lava.Blocks
             base.Initialize( tagName, markup, tokens );
         }
 
+        /// <summary>
+        /// Renders the specified context.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="result">The result.</param>
         public override void Render( Context context, TextWriter result )
         {
             using ( TextWriter sql = new StringWriter() )

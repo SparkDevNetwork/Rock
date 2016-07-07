@@ -22,12 +22,22 @@ using Rock.Security;
 
 namespace Rock.Lava.Blocks
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="DotLiquid.Block" />
     public class RockEntity : DotLiquid.Block
     {
         RockContext _rockContext;
         string _entityName = string.Empty;
         string _markup = string.Empty;
 
+        /// <summary>
+        /// Initializes the specified tag name.
+        /// </summary>
+        /// <param name="tagName">Name of the tag.</param>
+        /// <param name="markup">The markup.</param>
+        /// <param name="tokens">The tokens.</param>
         public override void Initialize( string tagName, string markup, List<string> tokens )
         {
             _rockContext = new RockContext();
@@ -37,6 +47,12 @@ namespace Rock.Lava.Blocks
             base.Initialize( tagName, markup, tokens );
         }
 
+        /// <summary>
+        /// Renders the specified context.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="result">The result.</param>
+        /// <exception cref="System.Exception">Your Lava command must contain at least one valid filter. If you configured a filter it's possible that the property or attribute you provided does not exist.</exception>
         public override void Render( Context context, TextWriter result )
         {
             bool hasFilter = false;
@@ -407,7 +423,9 @@ namespace Rock.Lava.Blocks
         /// Parses the markup.
         /// </summary>
         /// <param name="markup">The markup.</param>
+        /// <param name="context">The context.</param>
         /// <returns></returns>
+        /// <exception cref="System.Exception">No parameters were found in your command. The syntax for a parameter is parmName:'' (note that you must use single quotes).</exception>
         private Dictionary<string, string> ParseMarkup( string markup, Context context )
         {
             // first run lava across the inputted markup

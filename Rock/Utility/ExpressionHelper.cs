@@ -20,7 +20,6 @@ namespace Rock.Utility
         /// <summary>
         /// Gets a filter expression for an entity property value.
         /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
         /// <param name="filterValues">The filter values.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="propertyName">Name of the property.</param>

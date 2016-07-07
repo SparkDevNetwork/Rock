@@ -22,6 +22,8 @@ using System;
 //  - Script caching
 //  - Script unloading
 
+#pragma warning disable
+
 namespace CSScriptNativeApi
 {
     public class HostApp
@@ -254,3 +256,4 @@ namespace CSScriptNativeApi
         int Sum(int a, int b);
     }
 }
+
