@@ -107,6 +107,8 @@
     <Compile Include="ApiController.cs" />
     <Compile Include="ApiControllerBase.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Binders\NakedBodyAttribute.cs" />
+    <Compile Include="Binders\NakedBodyParameterBinding.cs" />
     <Compile Include="Constraints\ValidControllerNameConstraint.cs" />
     <Compile Include="Controllers\AttendancesController.partial.cs" />
     <Compile Include="Controllers\CodeGenerated\BackgroundChecksController.cs" />
@@ -115,6 +117,7 @@
     <Compile Include="Controllers\CodeGenerated\PageViewSessionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\PageViewUserAgentsController.cs" />
     <Compile Include="Controllers\BinaryFilesController.Partial.cs" />
+    <Compile Include="Controllers\LavaController.cs" />
     <Compile Include="Controllers\WorkflowActionTypesController.Partial.cs" />
     <Compile Include="Controllers\ConnectionRequestsController.Partial.cs" />
     <Compile Include="Controllers\CodeGenerated\BenevolenceRequestsController.cs" />

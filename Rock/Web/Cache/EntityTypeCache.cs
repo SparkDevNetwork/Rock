@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
@@ -456,6 +457,37 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Alls this instance.
+        /// </summary>
+        /// <returns></returns>
+        public static List<EntityTypeCache> All()
+        {
+            List<EntityTypeCache> entityTypes = new List<EntityTypeCache>();
+            var entityTypeIds = GetOrAddExisting( "Rock:EntityType:All", () => LoadAll() );
+            if ( entityTypeIds != null )
+            {
+                foreach ( int entityTypeId in entityTypeIds )
+                {
+                    var entityTypeCache = EntityTypeCache.Read( entityTypeId );
+                    entityTypes.Add( entityTypeCache );
+                }
+            }
+            return entityTypes;
+        }
+
+        private static List<int> LoadAll()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return new EntityTypeService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .OrderBy( c => c.Name )
+                    .Select( c => c.Id )
+                    .ToList();
+            }
+        }
+
+        /// <summary>
         /// Removes entityType from cache
         /// </summary>
         /// <param name="id"></param>
@@ -471,6 +503,8 @@ namespace Rock.Web.Cache
             // rebuild the _entityTypes dictionary 
             var _keepEntityTypes = _entityTypes.Where( a => a.Value != id );
             _entityTypes = new ConcurrentDictionary<string, int>( _keepEntityTypes );
+
+            FlushCache( "Rock:EntityType:All" );
         }
 
         #endregion
