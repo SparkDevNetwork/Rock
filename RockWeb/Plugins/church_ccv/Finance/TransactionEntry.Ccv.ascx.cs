@@ -57,25 +57,27 @@ namespace RockWeb.Plugins.church_ccv.Finance
         achieve our mission.  We are so grateful for your commitment.
     </p>
     <dl class='dl-horizontal gift-success'>
-        {% if Schedule.Id %}<dt>Payment Schedule ID</dt><dd>{{ Schedule.Id }}</dd>{% endif %}
+        {% if PaymentSchedule.Id %}<dt>Payment Schedule ID</dt><dd>{{ PaymentSchedule.Id }}</dd>{% endif %}
         <dt>Confirmation Code</dt><dd>{{ PaymentInfo.TransactionCode }}</dd>
-        <dt></dt><dd></dd>
+        <dt> </dt><dd> </dd>
         <dt>Name</dt><dd>{{ Person.FullName }}</dd>
         {% if PaymentInfo.Phone %}<dt>Phone</dt><dd>{{ PaymentInfo.Phone }}</dd>{% endif %}
         <dt>Email</dt><dd>{{ PaymentInfo.Email }}</dd>
         {% if Address %}<dt>Address</dt><dd>{{ Address }}</dd>{% endif %}
         <dt>Account</dt><dd>{{ Account.Name }}</dd>
         <dt>Amount</dt><dd>{{ 'Global' | Attribute:'CurrencySymbol' }}{{ PaymentInfo.Amount | Format:'#,##0.00' }}</dd>
-        <dt></dt><dd></dd>
+        <dt> </dt><dd> </dd>
         <dt>Payment Method</dt><dd>Credit Card</dd>
         <dt>Account Number</dt><dd>{% if PaymentInfo.MaskedNumber %>{{ PaymentInfo.MaskedNumber }}{% else %}{{ PaymentDetail.AccountNumberMasked }}{% endif %}</dd>
-        {% if Schedule.Id %}<dt>When</dt><dd></dd>{% endif %}
+        {% if PaymentSchedule %}<dt>When</dt><dd>{{ PaymentSchedule }}</dd>{% endif %}
     </dl>
 </div>
 ", "Text Options", 22 )]
 
 
     [TextField( "Save Account Title", "The text to display as heading of section for saving payment information.", false, "Make Giving Even Easier", "Text Options", 24 )]
+
+    [SystemEmailField( "Receipt Email", "The system email to use to send the receipt.", false, "", "Email Templates", 27 )]
     public partial class TransactionEntryCcv : Rock.Web.UI.RockBlock
     {
         /// <summary>
@@ -141,16 +143,17 @@ namespace RockWeb.Plugins.church_ccv.Finance
             hfTransactionGuid.Value = Guid.NewGuid().ToString();
             if ( CurrentPerson != null )
             {
-                tbFullName.Value = CurrentPerson.FullName;
+                
                 hfFullName.Value = CurrentPerson.FullName;
-                tbFullName.Style[HtmlTextWriterStyle.Display] = "none";
-                lFullName.Text = CurrentPerson.FullName;
+                hfHideFullNameInput.Value = "1";
+                lFullName.Text = string.Format( "<label class='form-control-static'>{0}</label>", CurrentPerson.FullName );
                 tbFirstName.Value = CurrentPerson.FirstName;
                 tbLastName.Value = CurrentPerson.LastName;
                 tbEmail.Value = CurrentPerson.Email;
             }
             else
             {
+                hfHideFullNameInput.Value = "0";
                 lFullName.Visible = false;
             }
 
@@ -431,7 +434,6 @@ namespace RockWeb.Plugins.church_ccv.Finance
         /// <param name="p">The p.</param>
         /// <param name="financialPaymentDetail">The financial payment detail.</param>
         /// <param name="rockContext">The rock context.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
         private void ShowSuccess( GatewayComponent gateway, Person person, PaymentInfo paymentInfo, PaymentSchedule paymentSchedule, FinancialPaymentDetail financialPaymentDetail, RockContext rockContext )
         {
             var accountId = ddlAccounts.SelectedValue.AsInteger();
@@ -443,14 +445,37 @@ namespace RockWeb.Plugins.church_ccv.Finance
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage );
             mergeFields.Add( "PaymentInfo", DotLiquid.Hash.FromAnonymousObject(paymentInfo) );
             mergeFields.Add( "PaymentDetail", financialPaymentDetail );
-            mergeFields.Add( "PaymentSchedule", DotLiquid.Hash.FromAnonymousObject( paymentSchedule ) );
+            if ( paymentSchedule != null )
+            {
+                mergeFields.Add( "PaymentSchedule", paymentSchedule.ToString() );
+            }
+
             mergeFields.Add( "Account", account );
             mergeFields.AddOrReplace( "Person", person );
             lSuccessContent.Text = successTemplate.ResolveMergeFields( mergeFields );
 
             // TODO: Prompt to save account
+            /*
+            var transactionCode = paymentInfo
+
+            // If there was a transaction code returned and this was not already created from a previous saved account,
+            // show the option to save the account.
+            if ( !( paymentInfo is ReferencePaymentInfo ) && !string.IsNullOrWhiteSpace( TransactionCode ) && gatewayComponent.SupportsSavedAccount( paymentInfo.CurrencyTypeValue ) )
+            {
+                cbSaveAccount.Visible = true;
+                pnlSaveAccount.Visible = true;
+                txtSaveAccount.Visible = true;
+
+                // If current person does not have a login, have them create a username and password
+                phCreateLogin.Visible = !new UserLoginService( rockContext ).GetByPersonId( person.Id ).Any();
+            }
+            else
+            {
+                pnlSaveAccount.Visible = false;
+            }*/
         }
 
+        
         /// <summary>
         /// Gets the schedule.
         /// </summary>
@@ -499,87 +524,6 @@ namespace RockWeb.Plugins.church_ccv.Finance
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Saves the scheduled transaction.
-        /// </summary>
-        /// <param name="financialGateway">The financial gateway.</param>
-        /// <param name="gateway">The gateway.</param>
-        /// <param name="person">The person.</param>
-        /// <param name="paymentInfo">The payment information.</param>
-        /// <param name="schedule">The schedule.</param>
-        /// <param name="scheduledTransaction">The scheduled transaction.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void SaveScheduledTransaction( FinancialGateway financialGateway, GatewayComponent gateway, Person person, PaymentInfo paymentInfo, PaymentSchedule schedule, FinancialScheduledTransaction scheduledTransaction, RockContext rockContext )
-        {
-            scheduledTransaction.TransactionFrequencyValueId = schedule.TransactionFrequencyValue.Id;
-            scheduledTransaction.StartDate = schedule.StartDate;
-            scheduledTransaction.AuthorizedPersonAliasId = person.PrimaryAliasId.Value;
-            scheduledTransaction.FinancialGatewayId = financialGateway.Id;
-
-            if ( scheduledTransaction.FinancialPaymentDetail == null )
-            {
-                scheduledTransaction.FinancialPaymentDetail = new FinancialPaymentDetail();
-            }
-            scheduledTransaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, gateway, rockContext );
-
-            Guid sourceGuid = Guid.Empty;
-            if ( Guid.TryParse( GetAttributeValue( "Source" ), out sourceGuid ) )
-            {
-                var source = DefinedValueCache.Read( sourceGuid );
-                if ( source != null )
-                {
-                    scheduledTransaction.SourceTypeValueId = source.Id;
-                }
-            }
-
-            var changeSummary = new StringBuilder();
-            changeSummary.AppendFormat( "{0} starting {1}", schedule.TransactionFrequencyValue.Value, schedule.StartDate.ToShortDateString() );
-            changeSummary.AppendLine();
-            changeSummary.Append( paymentInfo.CurrencyTypeValue.Value );
-            if ( paymentInfo.CreditCardTypeValue != null )
-            {
-                changeSummary.AppendFormat( " - {0}", paymentInfo.CreditCardTypeValue.Value );
-            }
-            changeSummary.AppendFormat( " {0}", paymentInfo.MaskedNumber );
-            changeSummary.AppendLine();
-
-            var accountId = ddlAccounts.SelectedValue.AsInteger();
-
-            var account = new FinancialAccountService( rockContext ).Get( accountId );
-
-            var transactionDetail = new FinancialScheduledTransactionDetail();
-            transactionDetail.Amount = paymentInfo.Amount;
-            transactionDetail.AccountId = account.Id;
-            scheduledTransaction.ScheduledTransactionDetails.Add( transactionDetail );
-            changeSummary.AppendFormat( "{0}: {1}", account.Name, paymentInfo.Amount.FormatAsCurrency() );
-            changeSummary.AppendLine();
-
-            if ( !string.IsNullOrWhiteSpace( paymentInfo.Comment1 ) )
-            {
-                changeSummary.Append( paymentInfo.Comment1 );
-                changeSummary.AppendLine();
-            }
-
-            var transactionService = new FinancialScheduledTransactionService( rockContext );
-            transactionService.Add( scheduledTransaction );
-            rockContext.SaveChanges();
-
-            // Add a note about the change
-            var noteType = NoteTypeCache.Read( Rock.SystemGuid.NoteType.SCHEDULED_TRANSACTION_NOTE.AsGuid() );
-            if ( noteType != null )
-            {
-                var noteService = new NoteService( rockContext );
-                var note = new Note();
-                note.NoteTypeId = noteType.Id;
-                note.EntityId = scheduledTransaction.Id;
-                note.Caption = "Created Transaction";
-                note.Text = changeSummary.ToString();
-                noteService.Add( note );
-            }
-
-            rockContext.SaveChanges();
         }
 
         /// <summary>
@@ -671,6 +615,171 @@ namespace RockWeb.Plugins.church_ccv.Finance
             }
 
             return true;
+        }
+
+        
+
+        /// <summary>
+        /// Gets the gateway.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="attributeName">Name of the attribute.</param>
+        /// <returns></returns>
+        private FinancialGateway GetGateway( RockContext rockContext, string attributeName )
+        {
+            var financialGatewayService = new FinancialGatewayService( rockContext );
+            Guid? ccGatewayGuid = GetAttributeValue( attributeName ).AsGuidOrNull();
+            if ( ccGatewayGuid.HasValue )
+            {
+                return financialGatewayService.Get( ccGatewayGuid.Value );
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the gateway component.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="gateway">The gateway.</param>
+        /// <returns></returns>
+        private GatewayComponent GetGatewayComponent( RockContext rockContext, FinancialGateway gateway )
+        {
+            if ( gateway != null )
+            {
+                gateway.LoadAttributes( rockContext );
+                var gatewayComponent = gateway.GetGatewayComponent();
+                if ( gatewayComponent != null )
+                {
+                    var threeStepGateway = gatewayComponent as ThreeStepGatewayComponent;
+                    if ( threeStepGateway != null )
+                    {
+                        // NOT SUPPORTED.  If CCV needs to support this, we'll have to update this block
+                        return null;
+                    }
+                }
+
+                return gatewayComponent;
+            }
+
+            return null;
+        }
+
+
+
+        #endregion
+
+        #region Exact Copy/Pasted code from TransactionEntry.ascx.cs
+        // Except where noted, the code in this region is nearly an exact copy/paste from Core TransactionEntry.ascx.cs
+
+        /// <summary>
+        /// Saves the transaction.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="gateway">The gateway.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <param name="transaction">The transaction.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void SaveTransaction( FinancialGateway financialGateway, GatewayComponent gateway, Person person, PaymentInfo paymentInfo, FinancialTransaction transaction, RockContext rockContext )
+        {
+            var txnChanges = new List<string>();
+            txnChanges.Add( "Created Transaction" );
+
+            History.EvaluateChange( txnChanges, "Transaction Code", string.Empty, transaction.TransactionCode );
+
+            transaction.AuthorizedPersonAliasId = person.PrimaryAliasId;
+            History.EvaluateChange( txnChanges, "Person", string.Empty, person.FullName );
+
+            transaction.TransactionDateTime = RockDateTime.Now;
+            History.EvaluateChange( txnChanges, "Date/Time", null, transaction.TransactionDateTime );
+
+            transaction.FinancialGatewayId = financialGateway.Id;
+            History.EvaluateChange( txnChanges, "Gateway", string.Empty, financialGateway.Name );
+
+            var txnType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) );
+            transaction.TransactionTypeValueId = txnType.Id;
+            History.EvaluateChange( txnChanges, "Type", string.Empty, txnType.Value );
+
+            transaction.Summary = paymentInfo.Comment1;
+            History.EvaluateChange( txnChanges, "Summary", string.Empty, transaction.Summary );
+
+            if ( transaction.FinancialPaymentDetail == null )
+            {
+                transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
+            }
+
+            transaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, gateway, rockContext, txnChanges );
+
+            Guid sourceGuid = Guid.Empty;
+            if ( Guid.TryParse( GetAttributeValue( "Source" ), out sourceGuid ) )
+            {
+                var source = DefinedValueCache.Read( sourceGuid );
+                if ( source != null )
+                {
+                    transaction.SourceTypeValueId = source.Id;
+                    History.EvaluateChange( txnChanges, "Source", string.Empty, source.Value );
+                }
+            }
+
+            // This chunk of Account logic is specific to TransactionEntry.ccv
+            var accountId = ddlAccounts.SelectedValue.AsInteger();
+            var account = new FinancialAccountService( rockContext ).Get( accountId );
+
+            var transactionDetail = new FinancialTransactionDetail();
+            transactionDetail.Amount = paymentInfo.Amount;
+            transactionDetail.AccountId = account.Id;
+            transaction.TransactionDetails.Add( transactionDetail );
+            History.EvaluateChange( txnChanges, account.Name, 0.0M.FormatAsCurrency(), transactionDetail.Amount.FormatAsCurrency() );
+
+            var batchService = new FinancialBatchService( rockContext );
+
+            // Get the batch
+            var batch = batchService.Get(
+                GetAttributeValue( "BatchNamePrefix" ),
+                paymentInfo.CurrencyTypeValue,
+                paymentInfo.CreditCardTypeValue,
+                transaction.TransactionDateTime.Value,
+                financialGateway.GetBatchTimeOffset() );
+
+            var batchChanges = new List<string>();
+
+            if ( batch.Id == 0 )
+            {
+                batchChanges.Add( "Generated the batch" );
+                History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
+                History.EvaluateChange( batchChanges, "Status", null, batch.Status );
+                History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
+                History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
+            }
+
+            decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
+            History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
+            batch.ControlAmount = newControlAmount;
+
+            transaction.BatchId = batch.Id;
+            batch.Transactions.Add( transaction );
+
+            rockContext.SaveChanges();
+
+            HistoryService.SaveChanges(
+                rockContext,
+                typeof( FinancialBatch ),
+                Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                batch.Id,
+                batchChanges );
+
+            HistoryService.SaveChanges(
+                rockContext,
+                typeof( FinancialBatch ),
+                Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
+                batch.Id,
+                txnChanges,
+                person.FullName,
+                typeof( FinancialTransaction ),
+                transaction.Id );
+
+            SendReceipt( transaction.Id );
         }
 
         /// <summary>
@@ -807,89 +916,27 @@ namespace RockWeb.Plugins.church_ccv.Finance
         }
 
         /// <summary>
-        /// Gets the gateway.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="attributeName">Name of the attribute.</param>
-        /// <returns></returns>
-        private FinancialGateway GetGateway( RockContext rockContext, string attributeName )
-        {
-            var financialGatewayService = new FinancialGatewayService( rockContext );
-            Guid? ccGatewayGuid = GetAttributeValue( attributeName ).AsGuidOrNull();
-            if ( ccGatewayGuid.HasValue )
-            {
-                return financialGatewayService.Get( ccGatewayGuid.Value );
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the gateway component.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="gateway">The gateway.</param>
-        /// <returns></returns>
-        private GatewayComponent GetGatewayComponent( RockContext rockContext, FinancialGateway gateway )
-        {
-            if ( gateway != null )
-            {
-                gateway.LoadAttributes( rockContext );
-                var gatewayComponent = gateway.GetGatewayComponent();
-                if ( gatewayComponent != null )
-                {
-                    var threeStepGateway = gatewayComponent as ThreeStepGatewayComponent;
-                    if ( threeStepGateway != null )
-                    {
-                        // NOT SUPPORTED.  If CCV needs to support this, we'll have to update this block
-                        return null;
-                    }
-                }
-
-                return gatewayComponent;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Saves the transaction.
+        /// Saves the scheduled transaction.
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>
         /// <param name="gateway">The gateway.</param>
         /// <param name="person">The person.</param>
         /// <param name="paymentInfo">The payment information.</param>
-        /// <param name="transaction">The transaction.</param>
+        /// <param name="schedule">The schedule.</param>
+        /// <param name="scheduledTransaction">The scheduled transaction.</param>
         /// <param name="rockContext">The rock context.</param>
-        private void SaveTransaction( FinancialGateway financialGateway, GatewayComponent gateway, Person person, PaymentInfo paymentInfo, FinancialTransaction transaction, RockContext rockContext )
+        private void SaveScheduledTransaction( FinancialGateway financialGateway, GatewayComponent gateway, Person person, PaymentInfo paymentInfo, PaymentSchedule schedule, FinancialScheduledTransaction scheduledTransaction, RockContext rockContext )
         {
-            var txnChanges = new List<string>();
-            txnChanges.Add( "Created Transaction" );
+            scheduledTransaction.TransactionFrequencyValueId = schedule.TransactionFrequencyValue.Id;
+            scheduledTransaction.StartDate = schedule.StartDate;
+            scheduledTransaction.AuthorizedPersonAliasId = person.PrimaryAliasId.Value;
+            scheduledTransaction.FinancialGatewayId = financialGateway.Id;
 
-            History.EvaluateChange( txnChanges, "Transaction Code", string.Empty, transaction.TransactionCode );
-
-            transaction.AuthorizedPersonAliasId = person.PrimaryAliasId;
-            History.EvaluateChange( txnChanges, "Person", string.Empty, person.FullName );
-
-            transaction.TransactionDateTime = RockDateTime.Now;
-            History.EvaluateChange( txnChanges, "Date/Time", null, transaction.TransactionDateTime );
-
-            transaction.FinancialGatewayId = financialGateway.Id;
-            History.EvaluateChange( txnChanges, "Gateway", string.Empty, financialGateway.Name );
-
-            var txnType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) );
-            transaction.TransactionTypeValueId = txnType.Id;
-            History.EvaluateChange( txnChanges, "Type", string.Empty, txnType.Value );
-
-            transaction.Summary = paymentInfo.Comment1;
-            History.EvaluateChange( txnChanges, "Summary", string.Empty, transaction.Summary );
-
-            if ( transaction.FinancialPaymentDetail == null )
+            if ( scheduledTransaction.FinancialPaymentDetail == null )
             {
-                transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
+                scheduledTransaction.FinancialPaymentDetail = new FinancialPaymentDetail();
             }
-
-            transaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, gateway, rockContext, txnChanges );
+            scheduledTransaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, gateway, rockContext );
 
             Guid sourceGuid = Guid.Empty;
             if ( Guid.TryParse( GetAttributeValue( "Source" ), out sourceGuid ) )
@@ -897,71 +944,75 @@ namespace RockWeb.Plugins.church_ccv.Finance
                 var source = DefinedValueCache.Read( sourceGuid );
                 if ( source != null )
                 {
-                    transaction.SourceTypeValueId = source.Id;
-                    History.EvaluateChange( txnChanges, "Source", string.Empty, source.Value );
+                    scheduledTransaction.SourceTypeValueId = source.Id;
                 }
             }
+
+            var changeSummary = new StringBuilder();
+            changeSummary.AppendFormat( "{0} starting {1}", schedule.TransactionFrequencyValue.Value, schedule.StartDate.ToShortDateString() );
+            changeSummary.AppendLine();
+            changeSummary.Append( paymentInfo.CurrencyTypeValue.Value );
+            if ( paymentInfo.CreditCardTypeValue != null )
+            {
+                changeSummary.AppendFormat( " - {0}", paymentInfo.CreditCardTypeValue.Value );
+            }
+            changeSummary.AppendFormat( " {0}", paymentInfo.MaskedNumber );
+            changeSummary.AppendLine();
 
             var accountId = ddlAccounts.SelectedValue.AsInteger();
 
             var account = new FinancialAccountService( rockContext ).Get( accountId );
 
-            var transactionDetail = new FinancialTransactionDetail();
+            var transactionDetail = new FinancialScheduledTransactionDetail();
             transactionDetail.Amount = paymentInfo.Amount;
             transactionDetail.AccountId = account.Id;
-            transaction.TransactionDetails.Add( transactionDetail );
-            History.EvaluateChange( txnChanges, account.Name, 0.0M.FormatAsCurrency(), transactionDetail.Amount.FormatAsCurrency() );
+            scheduledTransaction.ScheduledTransactionDetails.Add( transactionDetail );
+            changeSummary.AppendFormat( "{0}: {1}", account.Name, paymentInfo.Amount.FormatAsCurrency() );
+            changeSummary.AppendLine();
 
-            var batchService = new FinancialBatchService( rockContext );
-
-            // Get the batch
-            var batch = batchService.Get(
-                GetAttributeValue( "BatchNamePrefix" ),
-                paymentInfo.CurrencyTypeValue,
-                paymentInfo.CreditCardTypeValue,
-                transaction.TransactionDateTime.Value,
-                financialGateway.GetBatchTimeOffset() );
-
-            var batchChanges = new List<string>();
-
-            if ( batch.Id == 0 )
+            if ( !string.IsNullOrWhiteSpace( paymentInfo.Comment1 ) )
             {
-                batchChanges.Add( "Generated the batch" );
-                History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
-                History.EvaluateChange( batchChanges, "Status", null, batch.Status );
-                History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
-                History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
+                changeSummary.Append( paymentInfo.Comment1 );
+                changeSummary.AppendLine();
             }
 
-            decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
-            History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
-            batch.ControlAmount = newControlAmount;
-
-            transaction.BatchId = batch.Id;
-            batch.Transactions.Add( transaction );
-
+            var transactionService = new FinancialScheduledTransactionService( rockContext );
+            transactionService.Add( scheduledTransaction );
             rockContext.SaveChanges();
 
-            HistoryService.SaveChanges(
-                rockContext,
-                typeof( FinancialBatch ),
-                Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
-                batch.Id,
-                batchChanges );
+            // Add a note about the change
+            var noteType = NoteTypeCache.Read( Rock.SystemGuid.NoteType.SCHEDULED_TRANSACTION_NOTE.AsGuid() );
+            if ( noteType != null )
+            {
+                var noteService = new NoteService( rockContext );
+                var note = new Note();
+                note.NoteTypeId = noteType.Id;
+                note.EntityId = scheduledTransaction.Id;
+                note.Caption = "Created Transaction";
+                note.Text = changeSummary.ToString();
+                noteService.Add( note );
+            }
 
-            HistoryService.SaveChanges(
-                rockContext,
-                typeof( FinancialBatch ),
-                Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
-                batch.Id,
-                txnChanges,
-                person.FullName,
-                typeof( FinancialTransaction ),
-                transaction.Id );
+            rockContext.SaveChanges();
+        }
 
-            //TODO SendReceipt( transaction.Id );
+        /// <summary>
+        /// Sends the receipt.
+        /// </summary>
+        /// <param name="transactionId">The transaction identifier.</param>
+        private void SendReceipt( int transactionId )
+        {
+            Guid? recieptEmail = GetAttributeValue( "ReceiptEmail" ).AsGuidOrNull();
+            if ( recieptEmail.HasValue )
+            {
+                // Queue a transaction to send reciepts
+                var newTransactionIds = new List<int> { transactionId };
+                var sendPaymentRecieptsTxn = new Rock.Transactions.SendPaymentReciepts( recieptEmail.Value, newTransactionIds );
+                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( sendPaymentRecieptsTxn );
+            }
         }
 
         #endregion
+
     }
 }

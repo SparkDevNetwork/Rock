@@ -42,7 +42,7 @@
                                     <label for="firstGift" class="control-label">First Gift</label>
                                 </div>
                                 <div class="col-sm-9">
-                                    <input id="dpStartDate" runat="server" class="js-firstgift form-control" min="{{ todaysDate }}" type="date" name="firstGift" v-model="firstGift" required="true">
+                                    <input id="dpStartDate" runat="server" class="js-firstgift form-control" min="{{ tomorrowsDate }}" value="{{ tomorrowsDate }}" type="date" name="firstGift" v-model="firstGift" required="true">
                                 </div>
                             </div>
                             <div class="form-group">
@@ -84,8 +84,10 @@
                 <div class="form-group js-full-name">
                     <label for="fullName" class="col-sm-3 control-label">Full Name</label>
                     <div class="col-sm-9">
-                        <input runat="server" id="tbFullName" type="text" class="form-control" placeholder="Full Name" v-on:blur="splitFullName" v-if="showSplitNameField == false" v-model="firstName" />
-                        <label class="form-control-static" ><asp:Literal runat="server" ID="lFullName" /></label>
+                        <Rock:HiddenFieldWithClass ID="hfHideFullNameInput" CssClass="js-hide-full-input" runat="server" />
+                        <input id="tbFullName" type="text" class="form-control js-input-fullname" placeholder="Full Name" v-on:blur="splitFullName" v-if="showSplitNameField == false" v-model="firstName" />
+                        
+                        <asp:Literal runat="server" ID="lFullName" />
                         <div class="row" v-if="showSplitNameField" v-cloak>
                             <div class="col-xs-6">
                                 <input runat="server" type="text" class="js-firstname js-update-name form-control" id="tbFirstName" placeholder="First Name" v-model="firstName" />
@@ -163,6 +165,9 @@
                 <asp:Literal ID="lSuccessContent" runat="server" />
             </asp:Panel>
 
+            <asp:Panel ID="pnlSaveAccount" runat="server" Visible="false">
+            </asp:Panel>
+
         </div>
 
         <script type="text/javascript">
@@ -182,6 +187,10 @@
 
         <script>
             Sys.Application.add_load(function() {
+
+                if ($('#givingForm .js-hide-full-input').val() == "1") {
+                    $('#givingForm .js-input-fullname').hide();
+                }
 
                 // show/hide card inputs based on selected saved-payment option 
                 $('#givingForm .js-saved-payment-option input').on('click', function () {
@@ -211,7 +220,8 @@
                         $('#givingForm .js-email').closest('.form-group').addClass("has-error");
                     }
 
-                    if (!giveForm.fullName)
+                    
+                    if ($('#givingForm .js-input-fullname').is(':visible') && !giveForm.fullName)
                     {
                         isValid = false;
                         $('#givingForm .js-full-name').addClass("has-error");
