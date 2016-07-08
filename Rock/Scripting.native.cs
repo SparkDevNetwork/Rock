@@ -256,4 +256,3 @@ namespace CSScriptNativeApi
         int Sum(int a, int b);
     }
 }
-
