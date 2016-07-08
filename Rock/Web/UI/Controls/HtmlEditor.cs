@@ -517,7 +517,7 @@ namespace Rock.Web.UI.Controls
 
             if ( this.Page.IsPostBack )
             {
-                if ( _hfInCodeEditorMode.Value.AsBoolean() )
+                if ( this.Page.Request.Params[_hfInCodeEditorMode.UniqueID].AsBoolean() )
                 {
                     this.Text = _ceEditor.Text;
                 }
@@ -557,6 +557,12 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
+                if ( this.StartInCodeEditorMode )
+                {
+                    _ceEditor.Text = this.Text;
+                    this.Text = "";
+                }
+
                 RockControlHelper.RenderControl( this, writer );
                 _hfDisableVrm.RenderControl( writer );
                 _hfInCodeEditorMode.RenderControl( writer );
@@ -635,7 +641,7 @@ $(document).ready( function() {{
     }});
 
     if ({15} && RockCodeEditor) {{
-        RockCodeEditor(summerNoteEditor_{0}.data('summernote')).click();
+        RockCodeEditor(summerNoteEditor_{0}.data('summernote'), true).click();
     }}
 
 }});
