@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Finance
     [Description( "Lists all financial batches and provides filtering by campus, status, etc." )]
     [LinkedPage( "Detail Page", order: 0 )]
     [BooleanField( "Show Accounting Code", "Should the accounting code column be displayed.", false, "", 1 )]
+    [TextField( "Merge Template Page Route", "Route to merge template block. Sample: ~/FinanceMergeTemplate/{0}", false, "", "", 2 )]
     public partial class BatchList : Rock.Web.UI.RockBlock, IPostBackEventHandler
     {
         #region Fields
@@ -125,6 +126,11 @@ namespace RockWeb.Blocks.Finance
                 SetVisibilityOption();
                 BindFilter();
                 BindGrid();
+            }
+
+            if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "MergeTemplatePageRoute" ) ) )
+            {
+                gBatchList.MergeTemplatePageRoute = GetAttributeValue( "MergeTemplatePageRoute" );
             }
         }
 
