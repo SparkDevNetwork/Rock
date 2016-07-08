@@ -143,7 +143,7 @@
                                             <asp:ListItem Text="Checking" Value="checking" Selected="true" />
                                             <asp:ListItem Text="Savings" Value="savings" />
                                         </Rock:RockRadioButtonList>
-                                        <asp:Image ID="imgCheck" runat="server" ImageUrl="<%$ Fingerprint:~/Assets/Images/check-image.png %>" />                                    
+                                        <asp:Image ID="imgCheck" CssClass="img-responsive" runat="server" ImageUrl="<%$ Fingerprint:~/Assets/Images/check-image.png %>" />                                    
                                     </div>
 
                                 </div>

@@ -39,11 +39,13 @@
                         });
                     }
                 });
+
+                $modalPopupIFrame.contents().on('click', '.js-cancel-file-button', function () {
+                    Rock.controls.modal.close();
+                });
             });
 
-            $modalPopupIFrame.contents().on('click', '.js-cancel-file-button', function () {
-                Rock.controls.modal.close();
-            });
+            
         }
     });
 
