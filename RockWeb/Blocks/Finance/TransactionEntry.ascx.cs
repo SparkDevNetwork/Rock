@@ -1654,19 +1654,19 @@ namespace RockWeb.Blocks.Finance
                     return false;
                 }
 
-                var transactionAlreadyExists = new FinancialTransactionService( rockContext ).Queryable().FirstOrDefault( a => a.Guid == transactionGuid );
-                if ( transactionAlreadyExists != null )
-                {
-                    // hopefully shouldn't happen, but just in case the transaction already went thru, show the success screen
-                    ShowSuccess( gateway, person, paymentInfo, null, transactionAlreadyExists.FinancialPaymentDetail, rockContext );
-                    return true;
-                }
-
                 PaymentSchedule schedule = GetSchedule();
                 FinancialPaymentDetail paymentDetail = null;
                 if ( schedule != null )
                 {
                     schedule.PersonId = person.Id;
+
+                    var scheduledTransactionAlreadyExists = new FinancialScheduledTransactionService( rockContext ).Queryable().FirstOrDefault( a => a.Guid == transactionGuid );
+                    if ( scheduledTransactionAlreadyExists != null )
+                    {
+                        // hopefully shouldn't happen, but just in case the scheduledtransaction already went thru, show the success screen
+                        ShowSuccess( gateway, person, paymentInfo, schedule, scheduledTransactionAlreadyExists.FinancialPaymentDetail, rockContext );
+                        return true;
+                    }
 
                     var scheduledTransaction = gateway.AddScheduledPayment( financialGateway, schedule, paymentInfo, out errorMessage );
                     if ( scheduledTransaction == null )
@@ -1674,11 +1674,22 @@ namespace RockWeb.Blocks.Finance
                         return false;
                     }
 
+                    // manually assign the Guid that we generated at the beginning of the transaction UI entry to help make duplicate scheduled transactions impossible
+                    scheduledTransaction.Guid = transactionGuid;
+
                     SaveScheduledTransaction( financialGateway, gateway, person, paymentInfo, schedule, scheduledTransaction, rockContext );
                     paymentDetail = scheduledTransaction.FinancialPaymentDetail.Clone( false );
                 }
                 else
                 {
+                    var transactionAlreadyExists = new FinancialTransactionService( rockContext ).Queryable().FirstOrDefault( a => a.Guid == transactionGuid );
+                    if ( transactionAlreadyExists != null )
+                    {
+                        // hopefully shouldn't happen, but just in case the transaction already went thru, show the success screen
+                        ShowSuccess( gateway, person, paymentInfo, null, transactionAlreadyExists.FinancialPaymentDetail, rockContext );
+                        return true;
+                    }
+
                     var transaction = gateway.Charge( financialGateway, paymentInfo, out errorMessage );
                     if ( transaction == null )
                     {
