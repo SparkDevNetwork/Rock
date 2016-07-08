@@ -165,7 +165,44 @@
                 <asp:Literal ID="lSuccessContent" runat="server" />
             </asp:Panel>
 
+            <%-- pnlSaveAccount is copy/paste of the core TransactionEntry block --%>
+            
             <asp:Panel ID="pnlSaveAccount" runat="server" Visible="false">
+                <asp:HiddenField ID="hfSaveAccountTransactionCode" runat="server" />
+                <asp:HiddenField ID="hfSaveAccountScheduleId" runat="server" />
+                <div class="well">
+                    <legend><asp:Literal ID="lSaveAcccountTitle" runat="server" /></legend>
+                    <fieldset>
+                        <Rock:RockCheckBox ID="cbSaveAccount" runat="server" Text="Save account information for future gifts" CssClass="toggle-input" />
+                        <div id="divSaveAccount" runat="server" class="toggle-content">
+                            <Rock:RockTextBox ID="txtSaveAccount" runat="server" Label="Name for this account" CssClass="input-large"></Rock:RockTextBox>
+
+                            <asp:PlaceHolder ID="phCreateLogin" runat="server" Visible="false">
+
+                                <div class="control-group">
+                                    <div class="controls">
+                                        <div class="alert alert-info">
+                                            <b>Note:</b> For security purposes you will need to login to use your saved account information.  To create
+	    			                    a login account please provide a user name and password below. You will be sent an email with the account 
+	    			                    information above as a reminder.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <Rock:RockTextBox ID="txtUserName" runat="server" Label="Username" CssClass="input-medium" />
+                                <Rock:RockTextBox ID="txtPassword" runat="server" Label="Password" CssClass="input-medium" TextMode="Password" />
+                                <Rock:RockTextBox ID="txtPasswordConfirm" runat="server" Label="Confirm Password" CssClass="input-medium" TextMode="Password" />
+
+                            </asp:PlaceHolder>
+
+                            <Rock:NotificationBox ID="nbSaveAccount" runat="server" Visible="false" NotificationBoxType="Danger"></Rock:NotificationBox>
+
+                            <div id="divSaveActions" runat="server" class="actions">
+                                <asp:LinkButton ID="lbSaveAccount" runat="server" Text="Save Account" CssClass="btn btn-primary" OnClick="lbSaveAccount_Click" />
+                            </div>
+                        </div>
+                    </fieldset>                    
+                </div>
             </asp:Panel>
 
         </div>
