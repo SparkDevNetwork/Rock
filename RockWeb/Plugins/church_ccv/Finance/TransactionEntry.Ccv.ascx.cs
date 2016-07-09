@@ -28,25 +28,13 @@ namespace RockWeb.Plugins.church_ccv.Finance
 
     [BooleanField( "Scheduled Transactions", "Allow", "Don't Allow",
         "If the selected gateway(s) allow scheduled transactions, should that option be provided to user", true, "", 8, "AllowScheduled" )]
-    [BooleanField( "Prompt for Phone", "Should the user be prompted for their phone number?", false, "", 9, "DisplayPhone" )]
+
     [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Address Type", "The location type to use for the person's address", false,
         Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 11 )]
     [SystemEmailField( "Confirm Account", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "Email Templates", 12, "ConfirmAccountTemplate" )]
 
     [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", "", 25 )]
     [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49", "", 26 )]
-
-    [TextField( "Success Title", "The text to display as heading of section for displaying details of gift.", false, "Gift Information", "Text Options", 21 )]
-    [CodeEditorField( "Success Header", "The text (HTML) to display at the top of the success section. <span class='tip tip-lava'></Fspan> <span class='tip tip-html'></span>",
-        CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
-<p>
-    Thank you for your generous contribution.  Your support is helping {{ OrganizationName }} actively
-    achieve our mission.  We are so grateful for your commitment.
-</p>
-", "Text Options", 22 )]
-    [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
-        CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, @"
-", "Text Options", 23 )]
 
     [CodeEditorField( "Success Template", "The text (HTML) to display when a transaction is successfully submitted. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
         CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
@@ -338,39 +326,39 @@ namespace RockWeb.Plugins.church_ccv.Finance
                 var expDateTime = new DateTime( 2000 + cardMMYY[1], cardMMYY[0], 1 );
 
                 var ccPaymentInfo = new CreditCardPaymentInfo( tbCardNumber.Value.Replace( " ", string.Empty ), tbCardCvc.Value, expDateTime );
-                ccPaymentInfo.NameOnCard = gateway.SplitNameOnCard ? tbFirstName.Value : hfFullName.Value;
-                ccPaymentInfo.LastName = tbLastName.Value;
+                ccPaymentInfo.NameOnCard = gateway.SplitNameOnCard ? tbFirstName.Value.Trim() : hfFullName.Value.Trim();
+                ccPaymentInfo.LastName = tbLastName.Value.Trim();
 
                 paymentInfo = ccPaymentInfo;
             }
 
-            if ( !string.IsNullOrEmpty( tbStreet.Value ) )
+            if ( !string.IsNullOrWhiteSpace( tbStreet.Value ) )
             {
                 if ( paymentInfo is CreditCardPaymentInfo )
                 {
                     var ccPaymentInfo = paymentInfo as CreditCardPaymentInfo;
-                    ccPaymentInfo.BillingStreet1 = tbStreet.Value;
+                    ccPaymentInfo.BillingStreet1 = tbStreet.Value.Trim();
                     ccPaymentInfo.BillingStreet2 = string.Empty;
-                    ccPaymentInfo.BillingCity = tbCity.Value;
-                    ccPaymentInfo.BillingState = tbState.Value;
-                    ccPaymentInfo.BillingPostalCode = tbZip.Value;
+                    ccPaymentInfo.BillingCity = tbCity.Value.Trim();
+                    ccPaymentInfo.BillingState = tbState.Value.Trim();
+                    ccPaymentInfo.BillingPostalCode = tbZip.Value.Trim();
                     ccPaymentInfo.BillingCountry = GlobalAttributesCache.Read().OrganizationCountry;
                 }
 
-                paymentInfo.Street1 = tbStreet.Value;
+                paymentInfo.Street1 = tbStreet.Value.Trim();
                 paymentInfo.Street2 = string.Empty;
-                paymentInfo.City = tbCity.Value;
-                paymentInfo.State = tbState.Value;
-                paymentInfo.PostalCode = tbZip.Value;
+                paymentInfo.City = tbCity.Value.Trim();
+                paymentInfo.State = tbState.Value.Trim();
+                paymentInfo.PostalCode = tbZip.Value.Trim();
                 paymentInfo.Country = GlobalAttributesCache.Read().OrganizationCountry;
             }
 
             paymentInfo.Amount = tbAmount.Text.AsDecimal();
-            paymentInfo.Email = tbEmail.Value;
+            paymentInfo.Email = tbEmail.Value.Trim();
 
-            if ( !string.IsNullOrEmpty( tbPhone.Value ) )
+            if ( !string.IsNullOrWhiteSpace( tbPhone.Value ) )
             {
-                paymentInfo.Phone = PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), tbPhone.Value, true );
+                paymentInfo.Phone = PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), tbPhone.Value.Trim(), true );
             }
 
             PaymentSchedule schedule = GetSchedule();
@@ -824,7 +812,7 @@ namespace RockWeb.Plugins.church_ccv.Finance
                         !string.IsNullOrWhiteSpace( tbLastName.Value ) )
                     {
                         // Same logic as CreatePledge.ascx.cs
-                        var personMatches = personService.GetByMatch( tbFirstName.Value, tbLastName.Value, tbEmail.Value );
+                        var personMatches = personService.GetByMatch( tbFirstName.Value.Trim(), tbLastName.Value.Trim(), tbEmail.Value.Trim() );
                         if ( personMatches.Count() == 1 )
                         {
                             person = personMatches.FirstOrDefault();
@@ -842,8 +830,8 @@ namespace RockWeb.Plugins.church_ccv.Finance
 
                         // Create Person
                         person = new Person();
-                        person.FirstName = tbFirstName.Value;
-                        person.LastName = tbLastName.Value;
+                        person.FirstName = tbFirstName.Value.Trim();
+                        person.LastName = tbLastName.Value.Trim();
                         person.IsEmailActive = true;
                         person.EmailPreference = EmailPreference.EmailAllowed;
                         person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
@@ -868,11 +856,13 @@ namespace RockWeb.Plugins.church_ccv.Finance
             // person should never be null at this point
             if ( create && person != null )
             {
-                person.Email = tbEmail.Value;
+                person.Email = tbEmail.Value.Trim();
 
-                if ( GetAttributeValue( "DisplayPhone" ).AsBooleanOrNull() ?? false )
+                string phoneNumberValue = tbPhone.Value.Trim();
+                if ( !string.IsNullOrEmpty( phoneNumberValue ) )
                 {
                     var numberTypeId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ).Id;
+
                     var phone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberTypeId );
                     if ( phone == null )
                     {
@@ -882,7 +872,7 @@ namespace RockWeb.Plugins.church_ccv.Finance
                     }
 
                     phone.CountryCode = PhoneNumber.CleanNumber( PhoneNumber.DefaultCountryCode() );
-                    phone.Number = PhoneNumber.CleanNumber( tbPhone.Value );
+                    phone.Number = PhoneNumber.CleanNumber( phoneNumberValue );
                 }
 
                 if ( familyGroup == null )
@@ -910,11 +900,11 @@ namespace RockWeb.Plugins.church_ccv.Finance
                         rockContext,
                         familyGroup,
                         GetAttributeValue( "AddressType" ),
-                        tbStreet.Value,
+                        tbStreet.Value.Trim(),
                         null,
-                        tbCity.Value,
-                        tbState.Value,
-                        tbZip.Value,
+                        tbCity.Value.Trim(),
+                        tbState.Value.Trim(),
+                        tbZip.Value.Trim(),
                         GlobalAttributesCache.Read().OrganizationCountry,
                         true );
                 }

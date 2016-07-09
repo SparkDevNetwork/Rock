@@ -251,7 +251,7 @@
                         $('#givingForm .js-amount').closest('.form-group').addClass("has-error");
                     }
 
-                    if (!giveForm.email)
+                    if (!giveForm.email.trim())
                     {
                         isValid = false;
                         $('#givingForm .js-email').closest('.form-group').addClass("has-error");

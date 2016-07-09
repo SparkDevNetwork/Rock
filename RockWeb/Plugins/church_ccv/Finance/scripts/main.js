@@ -70,6 +70,9 @@ var giveForm = new Vue({
         },
         todaysDate: function () {
             return moment().format('YYYY-MM-DD')
+        },
+        tomorrowsDate: function () {
+            return moment().add(1, 'days').format('YYYY-MM-DD')
         }
     },
     watch: {
@@ -112,70 +115,73 @@ var giveForm = new Vue({
     }
 })
 
-var isMobile = {
-    Windows: function () {
-        return /IEMobile/i.test(navigator.userAgent);
-    },
-    Android: function () {
-        return /Android/i.test(navigator.userAgent);
-    },
-    BlackBerry: function () {
-        return /BlackBerry/i.test(navigator.userAgent);
-    },
-    iOS: function () {
-        return /iPhone|iPad|iPod/i.test(navigator.userAgent);
-    },
-    any: function () {
-        return (isMobile.Android() || isMobile.BlackBerry() || isMobile.iOS() || isMobile.Windows());
+Sys.Application.add_load(function () {
+
+    var isMobile = {
+        Windows: function () {
+            return /IEMobile/i.test(navigator.userAgent);
+        },
+        Android: function () {
+            return /Android/i.test(navigator.userAgent);
+        },
+        BlackBerry: function () {
+            return /BlackBerry/i.test(navigator.userAgent);
+        },
+        iOS: function () {
+            return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        },
+        any: function () {
+            return (isMobile.Android() || isMobile.BlackBerry() || isMobile.iOS() || isMobile.Windows());
+        }
     }
-}
 
-if (isMobile.iOS()) {
-    $('#givingForm .js-amount').attr('pattern', '[0-9]*')
-    $('#givingForm .js-amount').inputmask({
-        mask: '9{*}.99',
-        numericInput: true,
+    if (isMobile.iOS()) {
+        $('#givingForm .js-amount').attr('pattern', '[0-9]*')
+        $('#givingForm .js-amount').inputmask({
+            mask: '9{*}.99',
+            numericInput: true,
+        })
+    } else if (isMobile.Android()) {
+        $('#givingForm .js-amount').attr('type', 'number')
+    } else {
+        $('#givingForm .js-amount').inputmask({
+            rightAlign: false,
+            groupSeparator: ",",
+            alias: "numeric",
+            placeholder: "0",
+            autoGroup: true,
+            digits: 2,
+            digitsOptional: false,
+            clearMaskOnLostFocus: false
+        })
+    }
+
+    $('#givingForm .js-phone').inputmask()
+
+    $('form').card({
+        container: '.js-card-graphic-holder',
+        formSelectors: {
+            numberInput: '#givingForm .cardinput-number',
+            expiryInput: '#givingForm .cardinput-exp',
+            cvcInput: '#givingForm .cardinput-cvc',
+            nameInput: '#givingForm .js-hf-fullname'
+        }
     })
-} else if (isMobile.Android()) {
-    $('#givingForm .js-amount').attr('type', 'number')
-} else {
-    $('#givingForm .js-amount').inputmask({
-        rightAlign: false,
-        groupSeparator: ",",
-        alias: "numeric",
-        placeholder: "0",
-        autoGroup: true,
-        digits: 2,
-        digitsOptional: false,
-        clearMaskOnLostFocus: false
+    
+    $('#givingForm .js-repeating-toggle').bootstrapSwitch({
+        onColor: 'success',
+        onSwitchChange: function (event, state) {
+            giveForm.repeating = state
+        }
     })
-}
 
-$('#givingForm .js-phone').inputmask()
-
-$('form').card({
-    container: '.js-card-graphic-holder',
-    formSelectors: {
-        numberInput: '#givingForm .cardinput-number',
-        expiryInput: '#givingForm .cardinput-exp',
-        cvcInput: '#givingForm .cardinput-cvc',
-        nameInput: '#givingForm .js-hf-fullname'
+    if (Modernizr.inputtypes.date == false) {
+        $('#givingForm .js-firstgift').datepicker({
+            format: 'yyyy-mm-dd',
+            startDate: new Date(),
+            todayHighlight: true,
+            todayBtn: 'linked',
+            autoclose: true
+        })
     }
 })
-
-$('.js-repeating-toggle').bootstrapSwitch({
-    onColor: 'success',
-    onSwitchChange: function (event, state) {
-        giveForm.repeating = state
-    }
-})
-
-if (Modernizr.inputtypes.date == false) {
-    $('#givingForm .js-firstgift').datepicker({
-        format: 'yyyy-mm-dd',
-        startDate: new Date(),
-        todayHighlight: true,
-        todayBtn: 'linked',
-        autoclose: true
-    })
-}
