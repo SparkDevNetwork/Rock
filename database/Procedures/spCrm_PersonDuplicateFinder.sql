@@ -100,7 +100,7 @@ BEGIN
     SELECT [e].[Email] [Email]
         ,[pa].[Id] [PersonAliasId]
     FROM (
-        SELECT [a].[Email]
+  SELECT [a].[Email]
         FROM (
             SELECT [Email]
                 ,COUNT(*) [EmailCount]
