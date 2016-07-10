@@ -78,8 +78,7 @@ build:
   project: Rock.sln
   publish_wap: true               # package Web Application Projects (WAP) for Web Deploy
   parallel: true
-  verbosity: minimal
-  cmd: dir c:\projects\Rock\RockWeb\Bin
+  verbosity: minimal  
   
   
 after_build:
