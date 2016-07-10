@@ -71,16 +71,20 @@ before_build:
   - cmd: npm install --production
   - cmd: node ./node_modules/normajs/bin/norma.js build  # use cached version of norma
   - cmd: git clone -q --depth=1 https://github.com/NewSpring/rock-spiritual-gifts.git ../rock-spiritual-gifts
-  - cmd: nuget restore
-  - cmd: dir c:\projects\rock\RockWeb\bin
+  - cmd: nuget restore  
   
-
+  
 build:
   project: Rock.sln
   publish_wap: true               # package Web Application Projects (WAP) for Web Deploy
   parallel: true
   verbosity: minimal
-
+  cmd: dir c:\projects\Rock\RockWeb\Bin
+  
+  
+after_build:
+  - cmd: dir c:\projects\rock\RockWeb\bin
+  
 matrix:
   fast_finish: true    # set this flag to immediately finish build once one of the jobs fails
 
