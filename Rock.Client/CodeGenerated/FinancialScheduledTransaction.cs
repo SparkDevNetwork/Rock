@@ -90,6 +90,9 @@ namespace Rock.Client
         /// <summary />
         public int TransactionFrequencyValueId { get; set; }
 
+        /// <summary />
+        public int? TransactionTypeValueId { get; set; }
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -141,6 +144,7 @@ namespace Rock.Client
             this.StartDate = source.StartDate;
             this.TransactionCode = source.TransactionCode;
             this.TransactionFrequencyValueId = source.TransactionFrequencyValueId;
+            this.TransactionTypeValueId = source.TransactionTypeValueId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -173,6 +177,9 @@ namespace Rock.Client
 
         /// <summary />
         public ICollection<FinancialTransaction> Transactions { get; set; }
+
+        /// <summary />
+        public DefinedValue TransactionTypeValue { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

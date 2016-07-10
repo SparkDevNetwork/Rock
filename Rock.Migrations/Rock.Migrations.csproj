@@ -88,6 +88,10 @@
     <Compile Include="Migrations\201606282048283_FamilyAttributes.Designer.cs">
       <DependentUpon>201606282048283_FamilyAttributes.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201607102235065_ScheduledTransactionType.cs" />
+    <Compile Include="Migrations\201607102235065_ScheduledTransactionType.Designer.cs">
+      <DependentUpon>201607102235065_ScheduledTransactionType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 5.0\Version 1.5.0\201606061308109_ClearPreviousMigrations5.cs" />
     <Compile Include="Migrations\Version 5.0\Version 1.5.0\201606061308109_ClearPreviousMigrations5.Designer.cs">
       <DependentUpon>201606061308109_ClearPreviousMigrations5.cs</DependentUpon>
@@ -2188,6 +2192,9 @@
     <EmbeddedResource Include="Migrations\201606282048283_FamilyAttributes.resx">
       <DependentUpon>201606282048283_FamilyAttributes.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201607102235065_ScheduledTransactionType.resx">
+      <DependentUpon>201607102235065_ScheduledTransactionType.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 5.0\Version 1.5.0\201606061308109_ClearPreviousMigrations5.resx">
       <DependentUpon>201606061308109_ClearPreviousMigrations5.cs</DependentUpon>
     </EmbeddedResource>
@@ -3737,6 +3744,7 @@
     <Content Include="Migrations\201606091237191_GivingAnalyticsRefactor_FirstLastEverDates.sql" />
     <Content Include="Migrations\201606091237191_GivingAnalyticsRefactor_TransactionData.sql" />
     <Content Include="Migrations\201606091237191_GivingAnalyticsRefactor_AccountTotals.sql" />
+    <Content Include="Migrations\201607102235065_ScheduledTransactionType.sql" />
     <Content Include="Migrations\201606231511599_RegistrationWorkflow_Indexes.sql" />
     <Content Include="Migrations\Version 5.0\Version 1.5.0\201604281205403_AttendanceAnalyticsGroupTypes_AttendeeFirstDates.sql" />
     <Content Include="Migrations\Version 5.0\Version 1.5.0\201604281205403_AttendanceAnalyticsGroupTypes_GroupTypeAttendance.sql" />
