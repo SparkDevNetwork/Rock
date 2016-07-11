@@ -20,6 +20,7 @@ using System.Diagnostics;
 // the hosting AppDomain. Roslyn (at least CSharp.Scripting-v1.2.0.0) also has very high initial loading overhead up to 4 seconds.
 //
 // One of the possible approaches would be to use EvaluatorEngine.CodeDom during the active development and later on switch to Mono/Roslyn.
+#pragma warning disable
 
 namespace CSScriptEvaluatorApi
 {
