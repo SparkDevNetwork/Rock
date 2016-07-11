@@ -254,6 +254,11 @@ namespace Rock.SystemGuid
         public const string KEY_VALUE_LIST = "73B02051-0D38-4AD9-BF81-A2D477DE4F70";
 
         /// <summary>
+        /// The lava commands field type
+        /// </summary>
+        public const string LAVA_COMMANDS = "4BD9088F-5CC6-89B1-45FC-A2AAFFC7CC0D";
+
+        /// <summary>
         /// Location field type
         /// </summary>
         public const string LOCATION = "B0B9EFE3-F09F-4604-AD1B-76B298A85D83";
