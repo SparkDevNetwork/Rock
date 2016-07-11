@@ -2,7 +2,3 @@
 /obj/
 /*.suo
 /*.user
-
-#Ignore Packages
-/packages/*
-!/packages/repositories.config
