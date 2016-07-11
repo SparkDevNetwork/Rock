@@ -17,7 +17,7 @@ namespace Rock.Lava.Blocks
     /// SELECT [FirstName], [LastName] FROM [Person]
     /// {% endsql %}
     /// </summary>
-    public class Sql : DotLiquid.Block
+    public class Sql : RockLavaBlockBase
     {
         private static readonly Regex Syntax = new Regex( @"(\w+)" );
 
@@ -48,6 +48,14 @@ namespace Rock.Lava.Blocks
         /// <param name="result">The result.</param>
         public override void Render( Context context, TextWriter result )
         {
+            // first ensure that entity commands are allowed in the context
+            if ( !this.IsAuthorized( context ) )
+            {
+                result.Write( string.Format( "The Lava command '{0}' is not configured for this template.", this.Name ) );
+                base.Render( context, result );
+                return;
+            }
+
             using ( TextWriter sql = new StringWriter() )
             {
                 base.Render( context, sql );
