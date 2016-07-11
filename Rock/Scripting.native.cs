@@ -21,7 +21,6 @@ using System;
 //  - Debugging scripts
 //  - Script caching
 //  - Script unloading
-#pragma warning disable
 
 namespace CSScriptNativeApi
 {
