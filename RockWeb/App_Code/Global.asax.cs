@@ -259,31 +259,7 @@ namespace RockWeb
                     Template.RegisterFilter( typeof( Rock.Lava.RockFilters ) );
 
                     // register lava entity blocks
-                    var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-
-                    foreach ( var assembly in assemblies )
-                    {
-                        try
-                        {
-                            var customCommands = assembly.GetTypes().Where( x => x.BaseType == typeof( Rock.Lava.Blocks.RockLavaBlockBase ) );
-
-                            foreach ( var command in customCommands )
-                            {
-                                if (command.Name == "RockEntity" )
-                                {
-                                    Rock.Lava.Blocks.RockEntity.RegisterEntityCommands();
-                                }
-                                else
-                                {
-                                    MethodInfo method = typeof( Template ).GetMethod( "RegisterTag" );
-                                    MethodInfo genericMethod = method.MakeGenericMethod( command );
-                                    object[] parametersArray = new object[] { command.Name.ToLower() };
-                                    genericMethod.Invoke( this, parametersArray );
-                                }
-                            }
-                        }
-                        catch { }
-                    }
+                    Rock.Lava.Blocks.RockEntity.RegisterEntityCommands();
 
                     // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
                     AddCallBack();
