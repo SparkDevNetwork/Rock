@@ -246,6 +246,7 @@
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerRangeFieldAttribute.cs" />
     <Compile Include="Attribute\KeyValueListFieldAttribute.cs" />
+    <Compile Include="Attribute\LavaCommandsFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
     <Compile Include="Attribute\LocationFieldAttribute.cs" />
     <Compile Include="Attribute\MarkdownFieldAttribute.cs" />
@@ -425,6 +426,7 @@
     <Compile Include="Field\Types\IntegerFieldType.cs" />
     <Compile Include="Field\Types\IntegerRangeFieldType.cs" />
     <Compile Include="Field\Types\KeyValueListFieldType.cs" />
+    <Compile Include="Field\Types\LavaCommandsFieldType.cs" />
     <Compile Include="Field\Types\LocationFieldType.cs" />
     <Compile Include="Field\Types\MarkdownFieldType.cs" />
     <Compile Include="Field\Types\MemoFieldType.cs" />
@@ -506,6 +508,7 @@
     <Compile Include="Jobs\SendRegistrationReminders.cs" />
     <Compile Include="Lava\Blocks\Execute.cs" />
     <Compile Include="Lava\Blocks\RockEntity.cs" />
+    <Compile Include="Lava\Blocks\RockLavaBlockBase.cs" />
     <Compile Include="Lava\Blocks\Sql.cs" />
     <Compile Include="Lava\CommonMergeFieldsOptions.cs" />
     <Compile Include="Lava\ILiquidizable.cs" />
