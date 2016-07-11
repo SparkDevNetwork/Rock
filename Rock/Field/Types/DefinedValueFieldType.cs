@@ -432,7 +432,7 @@ namespace Rock.Field.Types
                 overrideConfigValues.Add( keyVal.Key, keyVal.Value );
             }
 
-            overrideConfigValues.AddOrReplace( ALLOW_MULTIPLE_KEY, new ConfigurationValue( ( !allowMultiple ).ToString() ) );
+            overrideConfigValues.AddOrReplace( ALLOW_MULTIPLE_KEY, new ConfigurationValue( ( true ).ToString() ) );
 
             return base.FilterValueControl( overrideConfigValues, id, required, filterMode );
         }
@@ -618,12 +618,61 @@ namespace Rock.Field.Types
         public override Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
         {
             bool allowMultiple = configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
+            List<string> selectedValues;
             if ( allowMultiple || filterValues.Count != 1 )
             {
-                return base.AttributeFilterExpression( configurationValues, filterValues, parameterExpression );
+                ComparisonType comparisonType = filterValues[0].ConvertToEnum<ComparisonType>( ComparisonType.Contains );
+
+                // if it isn't either "Contains" or "Not Contains", just use the base AttributeFilterExpression
+                if ( !( new ComparisonType[] { ComparisonType.Contains, ComparisonType.DoesNotContain }).Contains(comparisonType))
+                {
+                    return base.AttributeFilterExpression( configurationValues, filterValues, parameterExpression );
+                }
+
+                //// OR up the where clauses for each of the selected values 
+                // and make sure to wrap commas around things so we don't collide with partial matches
+                // so it'll do something like this:
+                //
+                // WHERE ',' + Value + ',' like '%,bacon,%'
+                // OR ',' + Value + ',' like '%,lettuce,%'
+                // OR ',' + Value + ',' like '%,tomato,%'
+
+                if ( filterValues.Count > 1 )
+                {
+                    selectedValues = filterValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                }
+                else
+                {
+                    selectedValues = new List<string>();
+                }
+
+                Expression comparison = null;
+
+                foreach ( var selectedValue in selectedValues )
+                {
+                    var searchValue = "," + selectedValue + ",";
+                    var qryToExtract = new AttributeValueService( new Data.RockContext() ).Queryable().Where( a => ( "," + a.Value + "," ).Contains( searchValue ) );
+                    var valueExpression = FilterExpressionExtractor.Extract<AttributeValue>( qryToExtract, parameterExpression, "a" );
+
+                    if ( comparisonType != ComparisonType.Contains )
+                    {
+                        valueExpression = Expression.Not( valueExpression );
+                    }
+
+                    if ( comparison == null )
+                    {
+                        comparison = valueExpression;
+                    }
+                    else
+                    {
+                        comparison = Expression.Or( comparison, valueExpression );
+                    }
+                }
+
+                return comparison;
             }
 
-            List<string> selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+            selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
             if ( selectedValues.Any() )
             {
                 MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
