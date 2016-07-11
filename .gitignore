@@ -27,6 +27,3 @@ RockWeb/App_Data/PackageStaging
 /scaffolding.config
 *.sln.GhostDoc.xml
 
-#Ignore Packages
-/packages/*
-!/packages/repositories.config
