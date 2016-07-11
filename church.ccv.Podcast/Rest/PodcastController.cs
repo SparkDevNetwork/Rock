@@ -708,13 +708,6 @@ namespace chuch.ccv.Podcast.Rest
                         // write the "Series" start element
                         writer.WriteStartElement( "Series" );
 
-                        // if it's not active, set it to "private"
-                        bool activeValue = series.Attributes["Active"] == "True" ? true : false;
-                        if( activeValue == false )
-                        {
-                            writer.WriteAttributeString( "Private", "true" );
-                        }
-
                         // Put each needed XML element
                         writer.WriteStartElement( "SeriesName" );
                         writer.WriteValue( series.Name );
@@ -748,6 +741,10 @@ namespace chuch.ccv.Podcast.Rest
 
                 
                         // Now generate each message of the series
+
+                        // default to assuming there are no public messages for this series.
+                        bool hasPublicMessage = false;
+
                         foreach( PodcastUtil.PodcastMessage message in series.Messages )
                         {
                             writer.WriteStartElement( "Message" );
@@ -756,6 +753,11 @@ namespace chuch.ccv.Podcast.Rest
                             if( message.Date > DateTime.Now || message.Approved == false )
                             {
                                 writer.WriteAttributeString( "Private", "true" );
+                            }
+                            else
+                            {
+                                // if the series has at least one message not marked private, then set this to true.
+                                hasPublicMessage = true;
                             }
 
                             // Put required elements
@@ -806,6 +808,13 @@ namespace chuch.ccv.Podcast.Rest
 
                             // close the message
                             writer.WriteEndElement();
+                        }
+
+                        // if the series isn't active, or there are no public messages, make it private.
+                        bool activeValue = series.Attributes["Active"] == "True" ? true : false;
+                        if( activeValue == false || hasPublicMessage == false )
+                        {
+                            writer.WriteAttributeString( "Private", "true" );
                         }
 
                         // close the series
