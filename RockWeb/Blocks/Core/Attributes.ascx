@@ -23,6 +23,7 @@
                         </Rock:GridFilter>
                         <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" RowItemText="setting" TooltipField="Description" OnRowSelected="rGrid_RowSelected">
                             <Columns>
+                                <Rock:ReorderField Visible="false" />
                                 <Rock:RockBoundField
                                     DataField="Id"
                                     HeaderText="Id"

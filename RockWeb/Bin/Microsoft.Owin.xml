@@ -4,6 +4,61 @@
         <name>Microsoft.Owin</name>
     </assembly>
     <members>
+        <member name="T:Microsoft.Owin.IOwinContext">
+            <summary>
+            This wraps OWIN environment dictionary and provides strongly typed accessors.
+            </summary>
+            <summary>
+            This wraps OWIN environment dictionary and provides strongly typed accessors.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Owin.IOwinContext.Get``1(System.String)">
+            <summary>
+            Gets a value from the OWIN environment, or returns default(T) if not present.
+            </summary>
+            <typeparam name="T">The type of the value.</typeparam>
+            <param name="key">The key of the value to get.</param>
+            <returns>The value with the specified key or the default(T) if not present.</returns>
+        </member>
+        <member name="M:Microsoft.Owin.IOwinContext.Set``1(System.String,``0)">
+            <summary>
+            Sets the given key and value in the OWIN environment.
+            </summary>
+            <typeparam name="T">The type of the value.</typeparam>
+            <param name="key">The key of the value to set.</param>
+            <param name="value">The value to set.</param>
+            <returns>This instance.</returns>
+        </member>
+        <member name="P:Microsoft.Owin.IOwinContext.Authentication">
+            <summary>
+            Gets the Authentication middleware functionality available on the current request.
+            </summary>
+            <returns>The authentication middleware functionality available on the current request.</returns>
+        </member>
+        <member name="P:Microsoft.Owin.IOwinContext.Request">
+            <summary>
+            Gets a wrapper exposing request specific properties.
+            </summary>
+            <returns>A wrapper exposing request specific properties.</returns>
+        </member>
+        <member name="P:Microsoft.Owin.IOwinContext.Response">
+            <summary>
+            Gets a wrapper exposing response specific properties.
+            </summary>
+            <returns>A wrapper exposing response specific properties.</returns>
+        </member>
+        <member name="P:Microsoft.Owin.IOwinContext.Environment">
+            <summary>
+            Gets the OWIN environment.
+            </summary>
+            <returns>The OWIN environment.</returns>
+        </member>
+        <member name="P:Microsoft.Owin.IOwinContext.TraceOutput">
+            <summary>
+            Gets or sets the host.TraceOutput environment value.
+            </summary>
+            <returns>The host.TraceOutput TextWriter.</returns>
+        </member>
         <member name="T:Owin.AppBuilderUseExtensions">
             <summary>
             Extension methods for <see cref="T:Owin.IAppBuilder"/>.
@@ -38,25 +93,48 @@
             Represents a middleware for executing in-line function middleware.
             </summary>
         </member>
-        <member name="M:Microsoft.Owin.Extensions.UseHandlerMiddleware.#ctor(System.Func{System.Collections.Generic.IDictionary{System.String,System.Object},System.Threading.Tasks.Task},System.Func{Microsoft.Owin.IOwinContext,System.Threading.Tasks.Task})">
+        <member name="T:Microsoft.Owin.OwinMiddleware">
+            <summary>
+            An abstract base class for a standard middleware pattern.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Owin.OwinMiddleware.#ctor(Microsoft.Owin.OwinMiddleware)">
+            <summary>
+            Instantiates the middleware with an optional pointer to the next component.
+            </summary>
+            <param name="next"></param>
+        </member>
+        <member name="M:Microsoft.Owin.OwinMiddleware.Invoke(Microsoft.Owin.IOwinContext)">
+            <summary>
+            Process an individual request.
+            </summary>
+            <param name="context"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Microsoft.Owin.OwinMiddleware.Next">
+            <summary>
+            The optional next component.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Owin.Extensions.UseHandlerMiddleware.#ctor(Microsoft.Owin.OwinMiddleware,System.Func{Microsoft.Owin.IOwinContext,System.Threading.Tasks.Task})">
             <summary>
             Initializes a new instance of the <see cref="T:Microsoft.Owin.Extensions.UseHandlerMiddleware" /> class.
             </summary>
             <param name="next">The pointer to next middleware.</param>
             <param name="handler">A function that handles all requests.</param>
         </member>
-        <member name="M:Microsoft.Owin.Extensions.UseHandlerMiddleware.#ctor(System.Func{System.Collections.Generic.IDictionary{System.String,System.Object},System.Threading.Tasks.Task},System.Func{Microsoft.Owin.IOwinContext,System.Func{System.Threading.Tasks.Task},System.Threading.Tasks.Task})">
+        <member name="M:Microsoft.Owin.Extensions.UseHandlerMiddleware.#ctor(Microsoft.Owin.OwinMiddleware,System.Func{Microsoft.Owin.IOwinContext,System.Func{System.Threading.Tasks.Task},System.Threading.Tasks.Task})">
             <summary>
             Initializes a new instance of the <see cref="T:Microsoft.Owin.Extensions.UseHandlerMiddleware" /> class.
             </summary>
             <param name="next">The pointer to next middleware.</param>
             <param name="handler">A function that handles the request or calls the given next function.</param>
         </member>
-        <member name="M:Microsoft.Owin.Extensions.UseHandlerMiddleware.Invoke(System.Collections.Generic.IDictionary{System.String,System.Object})">
+        <member name="M:Microsoft.Owin.Extensions.UseHandlerMiddleware.Invoke(Microsoft.Owin.IOwinContext)">
             <summary>
             Invokes the handler for processing the request.
             </summary>
-            <param name="environment">The OWIN context.</param>
+            <param name="context">The OWIN context.</param>
             <returns>The <see cref="T:System.Threading.Tasks.Task" /> object that represents the request operation.</returns>
         </member>
         <member name="T:Microsoft.Owin.FormCollection">
@@ -481,120 +559,13 @@
             Returns the original value from the constructor.
             </summary>
         </member>
-        <member name="T:Microsoft.Owin.Infrastructure.ChunkingCookieManager">
-            <summary>
-            This handles cookies that are limited by per cookie length. It breaks down long cookies for responses, and reassembles them
-            from requests.
-            </summary>
-        </member>
-        <member name="M:Microsoft.Owin.Infrastructure.ChunkingCookieManager.GetRequestCookie(Microsoft.Owin.IOwinContext,System.String)">
-            <summary>
-            Get the reassembled cookie. Non chunked cookies are returned normally.
-            Cookies with missing chunks just have their "chunks:XX" header returned.
-            </summary>
-            <param name="context"></param>
-            <param name="key"></param>
-            <returns>The reassembled cookie, if any, or null.</returns>
-        </member>
-        <member name="M:Microsoft.Owin.Infrastructure.ChunkingCookieManager.AppendResponseCookie(Microsoft.Owin.IOwinContext,System.String,System.String,Microsoft.Owin.CookieOptions)">
-            <summary>
-            Appends a new response cookie to the Set-Cookie header. If the cookie is larger than the given size limit
-            then it will be broken down into multiple cookies as follows:
-            Set-Cookie: CookieName=chunks:3; path=/
-            Set-Cookie: CookieNameC1=Segment1; path=/
-            Set-Cookie: CookieNameC2=Segment2; path=/
-            Set-Cookie: CookieNameC3=Segment3; path=/
-            </summary>
-            <param name="context"></param>
-            <param name="key"></param>
-            <param name="value"></param>
-            <param name="options"></param>
-        </member>
-        <member name="M:Microsoft.Owin.Infrastructure.ChunkingCookieManager.DeleteCookie(Microsoft.Owin.IOwinContext,System.String,Microsoft.Owin.CookieOptions)">
-            <summary>
-            Deletes the cookie with the given key by setting an expired state. If a matching chunked cookie exists on
-            the request, delete each chunk.
-            </summary>
-            <param name="context"></param>
-            <param name="key"></param>
-            <param name="options"></param>
-        </member>
-        <member name="P:Microsoft.Owin.Infrastructure.ChunkingCookieManager.ChunkSize">
-             <summary>
-             The maximum size of cookie to send back to the client. If a cookie exceeds this size it will be broken down into multiple
-             cookies. Set this value to null to disable this behavior. The default is 4090 characters, which is supported by all
-             common browsers.
-            
-             Note that browsers may also have limits on the total size of all cookies per domain, and on the number of cookies per domain.
-             </summary>
-        </member>
-        <member name="P:Microsoft.Owin.Infrastructure.ChunkingCookieManager.ThrowForPartialCookies">
-            <summary>
-            Throw if not all chunks of a cookie are available on a request for re-assembly.
-            </summary>
-        </member>
-        <member name="T:Microsoft.Owin.IOwinContext">
-            <summary>
-            This wraps OWIN environment dictionary and provides strongly typed accessors.
-            </summary>
-        </member>
-        <member name="M:Microsoft.Owin.IOwinContext.Get``1(System.String)">
-            <summary>
-            Gets a value from the OWIN environment, or returns default(T) if not present.
-            </summary>
-            <typeparam name="T">The type of the value.</typeparam>
-            <param name="key">The key of the value to get.</param>
-            <returns>The value with the specified key or the default(T) if not present.</returns>
-        </member>
-        <member name="M:Microsoft.Owin.IOwinContext.Set``1(System.String,``0)">
-            <summary>
-            Sets the given key and value in the OWIN environment.
-            </summary>
-            <typeparam name="T">The type of the value.</typeparam>
-            <param name="key">The key of the value to set.</param>
-            <param name="value">The value to set.</param>
-            <returns>This instance.</returns>
-        </member>
-        <member name="P:Microsoft.Owin.IOwinContext.Request">
-            <summary>
-            Gets a wrapper exposing request specific properties.
-            </summary>
-            <returns>A wrapper exposing request specific properties.</returns>
-        </member>
-        <member name="P:Microsoft.Owin.IOwinContext.Response">
-            <summary>
-            Gets a wrapper exposing response specific properties.
-            </summary>
-            <returns>A wrapper exposing response specific properties.</returns>
-        </member>
-        <member name="P:Microsoft.Owin.IOwinContext.Authentication">
-            <summary>
-            Gets the Authentication middleware functionality available on the current request.
-            </summary>
-            <returns>The authentication middleware functionality available on the current request.</returns>
-        </member>
-        <member name="P:Microsoft.Owin.IOwinContext.Environment">
-            <summary>
-            Gets the OWIN environment.
-            </summary>
-            <returns>The OWIN environment.</returns>
-        </member>
-        <member name="P:Microsoft.Owin.IOwinContext.TraceOutput">
-            <summary>
-            Gets or sets the host.TraceOutput environment value.
-            </summary>
-            <returns>The host.TraceOutput TextWriter.</returns>
-        </member>
         <member name="T:Microsoft.Owin.IOwinRequest">
             <summary>
             This wraps OWIN environment dictionary and provides strongly typed accessors.
             </summary>
-        </member>
-        <member name="M:Microsoft.Owin.IOwinRequest.ReadFormAsync">
             <summary>
-            Asynchronously reads and parses the request body as a form.
+            This wraps OWIN environment dictionary and provides strongly typed accessors.
             </summary>
-            <returns>The parsed form data.</returns>
         </member>
         <member name="M:Microsoft.Owin.IOwinRequest.Get``1(System.String)">
             <summary>
@@ -612,6 +583,12 @@
             <param name="key">The key of the value to set.</param>
             <param name="value">The value to set.</param>
             <returns>This instance.</returns>
+        </member>
+        <member name="M:Microsoft.Owin.IOwinRequest.ReadFormAsync">
+            <summary>
+            Asynchronously reads and parses the request body as a form.
+            </summary>
+            <returns>The parsed form data.</returns>
         </member>
         <member name="P:Microsoft.Owin.IOwinRequest.Environment">
             <summary>
@@ -1070,18 +1047,18 @@
             Matching paths have the matching piece removed from owin.RequestPath and added to the owin.RequestPathBase.
             </summary>
         </member>
-        <member name="M:Microsoft.Owin.Mapping.MapMiddleware.#ctor(System.Func{System.Collections.Generic.IDictionary{System.String,System.Object},System.Threading.Tasks.Task},Microsoft.Owin.Mapping.MapOptions)">
+        <member name="M:Microsoft.Owin.Mapping.MapMiddleware.#ctor(Microsoft.Owin.OwinMiddleware,Microsoft.Owin.Mapping.MapOptions)">
             <summary>
             Initializes a new instance of the <see cref="T:Microsoft.Owin.Mapping.MapMiddleware"/> class
             </summary>
             <param name="next">The normal pipeline taken for a negative match</param>
             <param name="options"></param>
         </member>
-        <member name="M:Microsoft.Owin.Mapping.MapMiddleware.Invoke(System.Collections.Generic.IDictionary{System.String,System.Object})">
+        <member name="M:Microsoft.Owin.Mapping.MapMiddleware.Invoke(Microsoft.Owin.IOwinContext)">
             <summary>
             Process an individual request.
             </summary>
-            <param name="environment"></param>
+            <param name="context"></param>
             <returns></returns>
         </member>
         <member name="T:Microsoft.Owin.Mapping.MapOptions">
@@ -1128,21 +1105,24 @@
             to a user defined callback.
             </summary>
         </member>
-        <member name="M:Microsoft.Owin.Mapping.MapWhenMiddleware.#ctor(System.Func{System.Collections.Generic.IDictionary{System.String,System.Object},System.Threading.Tasks.Task},Microsoft.Owin.Mapping.MapWhenOptions)">
+        <member name="M:Microsoft.Owin.Mapping.MapWhenMiddleware.#ctor(Microsoft.Owin.OwinMiddleware,Microsoft.Owin.Mapping.MapWhenOptions)">
             <summary>
             Initializes a new instance of the <see cref="T:Microsoft.Owin.Mapping.MapWhenMiddleware"/> class
             </summary>
             <param name="next">The normal application pipeline</param>
             <param name="options"></param>
         </member>
-        <member name="M:Microsoft.Owin.Mapping.MapWhenMiddleware.Invoke(System.Collections.Generic.IDictionary{System.String,System.Object})">
+        <member name="M:Microsoft.Owin.Mapping.MapWhenMiddleware.Invoke(Microsoft.Owin.IOwinContext)">
             <summary>
             Process an individual request.
             </summary>
-            <param name="environment"></param>
+            <param name="context"></param>
             <returns></returns>
         </member>
         <member name="T:Microsoft.Owin.Mapping.MapWhenOptions">
+            <summary>
+            Options for the MapWhen middleware
+            </summary>
             <summary>
             Options for the MapWhen middleware
             </summary>
@@ -1152,17 +1132,20 @@
             The user callback that determines if the branch should be taken
             </summary>
         </member>
-        <member name="P:Microsoft.Owin.Mapping.MapWhenOptions.PredicateAsync">
-            <summary>
-            The async user callback that determines if the branch should be taken
-            </summary>
-        </member>
         <member name="P:Microsoft.Owin.Mapping.MapWhenOptions.Branch">
             <summary>
             The branch taken for a positive match
             </summary>
         </member>
+        <member name="P:Microsoft.Owin.Mapping.MapWhenOptions.PredicateAsync">
+            <summary>
+            The async user callback that determines if the branch should be taken
+            </summary>
+        </member>
         <member name="T:Microsoft.Owin.OwinContext">
+            <summary>
+            This wraps OWIN environment dictionary and provides strongly typed accessors.
+            </summary>
             <summary>
             This wraps OWIN environment dictionary and provides strongly typed accessors.
             </summary>
@@ -1207,12 +1190,6 @@
             </summary>
             <returns>A wrapper exposing response specific properties.</returns>
         </member>
-        <member name="P:Microsoft.Owin.OwinContext.Authentication">
-            <summary>
-            Gets the Authentication middleware functionality available on the current request.
-            </summary>
-            <returns>The authentication middleware functionality available on the current request.</returns>
-        </member>
         <member name="P:Microsoft.Owin.OwinContext.Environment">
             <summary>
             Gets the OWIN environment.
@@ -1224,6 +1201,204 @@
             Gets or sets the host.TraceOutput environment value.
             </summary>
             <returns>The host.TraceOutput TextWriter.</returns>
+        </member>
+        <member name="P:Microsoft.Owin.OwinContext.Authentication">
+            <summary>
+            Gets the Authentication middleware functionality available on the current request.
+            </summary>
+            <returns>The authentication middleware functionality available on the current request.</returns>
+        </member>
+        <member name="T:Microsoft.Owin.OwinRequest">
+            <summary>
+            This wraps OWIN environment dictionary and provides strongly typed accessors.
+            </summary>
+            <summary>
+            This wraps OWIN environment dictionary and provides strongly typed accessors.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Owin.OwinRequest.ReadFormAsync">
+            <summary>
+            Asynchronously reads and parses the request body as a form.
+            </summary>
+            <returns>The parsed form data.</returns>
+        </member>
+        <member name="M:Microsoft.Owin.OwinRequest.#ctor">
+            <summary>
+            Create a new context with only request and response header collections.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Owin.OwinRequest.#ctor(System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Create a new environment wrapper exposing request properties.
+            </summary>
+            <param name="environment">OWIN environment dictionary which stores state information about the request, response and relevant server state.</param>
+        </member>
+        <member name="M:Microsoft.Owin.OwinRequest.Get``1(System.String)">
+            <summary>
+            Gets a value from the OWIN environment, or returns default(T) if not present.
+            </summary>
+            <typeparam name="T">The type of the value.</typeparam>
+            <param name="key">The key of the value to get.</param>
+            <returns>The value with the specified key or the default(T) if not present.</returns>
+        </member>
+        <member name="M:Microsoft.Owin.OwinRequest.Set``1(System.String,``0)">
+            <summary>
+            Sets the given key and value in the OWIN environment.
+            </summary>
+            <typeparam name="T">The type of the value.</typeparam>
+            <param name="key">The key of the value to set.</param>
+            <param name="value">The value to set.</param>
+            <returns>This instance.</returns>
+        </member>
+        <member name="P:Microsoft.Owin.OwinRequest.Environment">
+            <summary>
+            Gets the OWIN environment.
+            </summary>
+            <returns>The OWIN environment.</returns>
+        </member>
+        <member name="P:Microsoft.Owin.OwinRequest.Context">
+            <summary>
+            Gets the request context.
+            </summary>
+            <returns>The request context.</returns>
+        </member>
+        <member name="P:Microsoft.Owin.OwinRequest.Method">
+            <summary>
+            Gets or set the HTTP method.
+            </summary>
+            <returns>The HTTP method.</returns>
+        </member>
+        <member name="P:Microsoft.Owin.OwinRequest.Scheme">
+            <summary>
+            Gets or set the HTTP request scheme from owin.RequestScheme.
+            </summary>
+            <returns>The HTTP request scheme from owin.RequestScheme.</returns>
+        </member>
+        <member name="P:Microsoft.Owin.OwinRequest.IsSecure">
+            <summary>
+            Returns true if the owin.RequestScheme is https.
+            </summary>
+            <returns>true if this request is using https; otherwise, false.</returns>
+        </member>
+        <member name="P:Microsoft.Owin.OwinRequest.Host">
+            <summary>
+            Gets or set the Host header. May include the port.
+            </summary>
+            <return>The Host header.</return>
+        </member>
+        <member name="P:Microsoft.Owin.OwinRequest.PathBase">
+            <summary>
+            Gets or set the owin.RequestPathBase.
+            </summary>
+            <returns>The owin.RequestPathBase.</returns>
+        </member>
+        <member name="P:Microsoft.Owin.OwinRequest.Path">
+            <summary>
+            Gets or set the request path from owin.RequestPath.
+            </summary>
+            <returns>The request path from owin.RequestPath.</returns>
+        </member>
+        <member name="P:Microsoft.Owin.OwinRequest.QueryString">
+            <summary>
+            Gets or set the query string from owin.RequestQueryString.
+            </summary>
+            <returns>The query string from owin.RequestQueryString.</returns>
+        </member>
+        <member name="P:Microsoft.Owin.OwinRequest.Query">
+            <summary>
+            Gets the query value collection parsed from owin.RequestQueryString.
+            </summary>
+            <returns>The query value collection parsed from owin.RequestQueryString.</returns>
+        </member>
+        <member name="P:Microsoft.Owin.OwinRequest.Uri">
+            <summary>
+            Gets the uniform resource identifier (URI) associated with the request.
+            </summary>
+            <returns>The uniform resource identifier (URI) associated with the request.</returns>
+        </member>
+        <member name="P:Microsoft.Owin.OwinRequest.Protocol">
+            <summary>
+            Gets or set the owin.RequestProtocol.
+            </summary>
+            <returns>The owin.RequestProtocol.</returns>
+        </member>
+        <member name="P:Microsoft.Owin.OwinRequest.Headers">
+            <summary>
+            Gets the request headers.
+            </summary>
+            <returns>The request headers.</returns>
+        </member>
+        <member name="P:Microsoft.Owin.OwinRequest.Cookies">
+            <summary>
+            Gets the collection of Cookies for this request.
+            </summary>
+            <returns>The collection of Cookies for this request.</returns>
+        </member>
+        <member name="P:Microsoft.Owin.OwinRequest.ContentType">
+            <summary>
+            Gets or sets the Content-Type header.
+            </summary>
+            <returns>The Content-Type header.</returns>
+        </member>
+        <member name="P:Microsoft.Owin.OwinRequest.CacheControl">
+            <summary>
+            Gets or sets the Cache-Control header.
+            </summary>
+            <returns>The Cache-Control header.</returns>
+        </member>
+        <member name="P:Microsoft.Owin.OwinRequest.MediaType">
+            <summary>
+            Gets or sets the Media-Type header.
+            </summary>
+            <returns>The Media-Type header.</returns>
+        </member>
+        <member name="P:Microsoft.Owin.OwinRequest.Accept">
+            <summary>
+            Gets or set the Accept header.
+            </summary>
+            <returns>The Accept header.</returns>
+        </member>
+        <member name="P:Microsoft.Owin.OwinRequest.Body">
+            <summary>
+            Gets or set the owin.RequestBody Stream.
+            </summary>
+            <returns>The owin.RequestBody Stream.</returns>
+        </member>
+        <member name="P:Microsoft.Owin.OwinRequest.CallCancelled">
+            <summary>
+            Gets or sets the cancellation token for the request.
+            </summary>
+            <returns>The cancellation token for the request.</returns>
+        </member>
+        <member name="P:Microsoft.Owin.OwinRequest.LocalIpAddress">
+            <summary>
+            Gets or set the server.LocalIpAddress.
+            </summary>
+            <returns>The server.LocalIpAddress.</returns>
+        </member>
+        <member name="P:Microsoft.Owin.OwinRequest.LocalPort">
+            <summary>
+            Gets or set the server.LocalPort.
+            </summary>
+            <returns>The server.LocalPort.</returns>
+        </member>
+        <member name="P:Microsoft.Owin.OwinRequest.RemoteIpAddress">
+            <summary>
+            Gets or set the server.RemoteIpAddress.
+            </summary>
+            <returns>The server.RemoteIpAddress.</returns>
+        </member>
+        <member name="P:Microsoft.Owin.OwinRequest.RemotePort">
+            <summary>
+            Gets or set the server.RemotePort.
+            </summary>
+            <returns>The server.RemotePort.</returns>
+        </member>
+        <member name="P:Microsoft.Owin.OwinRequest.User">
+            <summary>
+            Gets or set the server.User.
+            </summary>
+            <returns>The server.User.</returns>
         </member>
         <member name="T:Microsoft.Owin.PathString">
             <summary>
@@ -1378,7 +1553,7 @@
         </member>
         <member name="M:Microsoft.Owin.QueryString.#ctor(System.String)">
             <summary>
-            Initialize the query string with a given value. This value must be in escaped and delimited format without
+            Initalize the query string with a given value. This value must be in escaped and delimited format without 
             a leading '?' character. 
             </summary>
             <param name="value">The query string to be assigned to the Value property.</param>
@@ -1393,7 +1568,7 @@
         <member name="M:Microsoft.Owin.QueryString.ToString">
             <summary>
             Provides the query string escaped in a way which is correct for combining into the URI representation. 
-            A leading '?' character will be prepended unless the Value is null or empty. Characters which are potentially
+            A leading '?' character will be prepended unless the Value is null or empty. Characters which are potentally
             dangerous are escaped.
             </summary>
             <returns>The query string value</returns>
@@ -1459,7 +1634,7 @@
         </member>
         <member name="P:Microsoft.Owin.QueryString.Value">
             <summary>
-            The escaped query string without the leading '?' character
+            The unescaped query string without the leading '?' character
             </summary>
         </member>
         <member name="P:Microsoft.Owin.QueryString.HasValue">
@@ -1516,16 +1691,6 @@
         <member name="P:Microsoft.Owin.Resources.Exception_ConversionTakesOneParameter">
             <summary>
               Looks up a localized string similar to Conversion delegate must take one parameter..
-            </summary>
-        </member>
-        <member name="P:Microsoft.Owin.Resources.Exception_CookieLimitTooSmall">
-            <summary>
-              Looks up a localized string similar to The cookie key and options are larger than ChunksSize, leaving no room for data..
-            </summary>
-        </member>
-        <member name="P:Microsoft.Owin.Resources.Exception_ImcompleteChunkedCookie">
-            <summary>
-              Looks up a localized string similar to The chunked cookie is incomplete. Only {0} of the expected {1} chunks were found, totaling {2} characters. A client size limit may have been exceeded..
             </summary>
         </member>
         <member name="P:Microsoft.Owin.Resources.Exception_MiddlewareNotSupported">
@@ -2408,29 +2573,6 @@
             Converts between an OwinMiddlware and an <typeref name="Func&lt;IDictionary&lt;string,object&gt;, Task&gt;"/>.
             </summary>
         </member>
-        <member name="T:Microsoft.Owin.OwinMiddleware">
-            <summary>
-            An abstract base class for a standard middleware pattern.
-            </summary>
-        </member>
-        <member name="M:Microsoft.Owin.OwinMiddleware.#ctor(Microsoft.Owin.OwinMiddleware)">
-            <summary>
-            Instantiates the middleware with an optional pointer to the next component.
-            </summary>
-            <param name="next"></param>
-        </member>
-        <member name="M:Microsoft.Owin.OwinMiddleware.Invoke(Microsoft.Owin.IOwinContext)">
-            <summary>
-            Process an individual request.
-            </summary>
-            <param name="context"></param>
-            <returns></returns>
-        </member>
-        <member name="P:Microsoft.Owin.OwinMiddleware.Next">
-            <summary>
-            The optional next component.
-            </summary>
-        </member>
         <member name="M:Microsoft.Owin.Infrastructure.AppFuncTransition.#ctor(System.Func{System.Collections.Generic.IDictionary{System.String,System.Object},System.Threading.Tasks.Task})">
             <summary>
             
@@ -2472,195 +2614,6 @@
             Adds adapters between <typeref name="Func&lt;IDictionary&lt;string,object&gt;, Task&gt;"/> and OwinMiddleware.
             </summary>
             <param name="app"></param>
-        </member>
-        <member name="T:Microsoft.Owin.OwinRequest">
-            <summary>
-            This wraps OWIN environment dictionary and provides strongly typed accessors.
-            </summary>
-        </member>
-        <member name="M:Microsoft.Owin.OwinRequest.#ctor">
-            <summary>
-            Create a new context with only request and response header collections.
-            </summary>
-        </member>
-        <member name="M:Microsoft.Owin.OwinRequest.#ctor(System.Collections.Generic.IDictionary{System.String,System.Object})">
-            <summary>
-            Create a new environment wrapper exposing request properties.
-            </summary>
-            <param name="environment">OWIN environment dictionary which stores state information about the request, response and relevant server state.</param>
-        </member>
-        <member name="M:Microsoft.Owin.OwinRequest.ReadFormAsync">
-            <summary>
-            Asynchronously reads and parses the request body as a form.
-            </summary>
-            <returns>The parsed form data.</returns>
-        </member>
-        <member name="M:Microsoft.Owin.OwinRequest.Get``1(System.String)">
-            <summary>
-            Gets a value from the OWIN environment, or returns default(T) if not present.
-            </summary>
-            <typeparam name="T">The type of the value.</typeparam>
-            <param name="key">The key of the value to get.</param>
-            <returns>The value with the specified key or the default(T) if not present.</returns>
-        </member>
-        <member name="M:Microsoft.Owin.OwinRequest.Set``1(System.String,``0)">
-            <summary>
-            Sets the given key and value in the OWIN environment.
-            </summary>
-            <typeparam name="T">The type of the value.</typeparam>
-            <param name="key">The key of the value to set.</param>
-            <param name="value">The value to set.</param>
-            <returns>This instance.</returns>
-        </member>
-        <member name="P:Microsoft.Owin.OwinRequest.Environment">
-            <summary>
-            Gets the OWIN environment.
-            </summary>
-            <returns>The OWIN environment.</returns>
-        </member>
-        <member name="P:Microsoft.Owin.OwinRequest.Context">
-            <summary>
-            Gets the request context.
-            </summary>
-            <returns>The request context.</returns>
-        </member>
-        <member name="P:Microsoft.Owin.OwinRequest.Method">
-            <summary>
-            Gets or set the HTTP method.
-            </summary>
-            <returns>The HTTP method.</returns>
-        </member>
-        <member name="P:Microsoft.Owin.OwinRequest.Scheme">
-            <summary>
-            Gets or set the HTTP request scheme from owin.RequestScheme.
-            </summary>
-            <returns>The HTTP request scheme from owin.RequestScheme.</returns>
-        </member>
-        <member name="P:Microsoft.Owin.OwinRequest.IsSecure">
-            <summary>
-            Returns true if the owin.RequestScheme is https.
-            </summary>
-            <returns>true if this request is using https; otherwise, false.</returns>
-        </member>
-        <member name="P:Microsoft.Owin.OwinRequest.Host">
-            <summary>
-            Gets or set the Host header. May include the port.
-            </summary>
-            <return>The Host header.</return>
-        </member>
-        <member name="P:Microsoft.Owin.OwinRequest.PathBase">
-            <summary>
-            Gets or set the owin.RequestPathBase.
-            </summary>
-            <returns>The owin.RequestPathBase.</returns>
-        </member>
-        <member name="P:Microsoft.Owin.OwinRequest.Path">
-            <summary>
-            Gets or set the request path from owin.RequestPath.
-            </summary>
-            <returns>The request path from owin.RequestPath.</returns>
-        </member>
-        <member name="P:Microsoft.Owin.OwinRequest.QueryString">
-            <summary>
-            Gets or set the query string from owin.RequestQueryString.
-            </summary>
-            <returns>The query string from owin.RequestQueryString.</returns>
-        </member>
-        <member name="P:Microsoft.Owin.OwinRequest.Query">
-            <summary>
-            Gets the query value collection parsed from owin.RequestQueryString.
-            </summary>
-            <returns>The query value collection parsed from owin.RequestQueryString.</returns>
-        </member>
-        <member name="P:Microsoft.Owin.OwinRequest.Uri">
-            <summary>
-            Gets the uniform resource identifier (URI) associated with the request.
-            </summary>
-            <returns>The uniform resource identifier (URI) associated with the request.</returns>
-        </member>
-        <member name="P:Microsoft.Owin.OwinRequest.Protocol">
-            <summary>
-            Gets or set the owin.RequestProtocol.
-            </summary>
-            <returns>The owin.RequestProtocol.</returns>
-        </member>
-        <member name="P:Microsoft.Owin.OwinRequest.Headers">
-            <summary>
-            Gets the request headers.
-            </summary>
-            <returns>The request headers.</returns>
-        </member>
-        <member name="P:Microsoft.Owin.OwinRequest.Cookies">
-            <summary>
-            Gets the collection of Cookies for this request.
-            </summary>
-            <returns>The collection of Cookies for this request.</returns>
-        </member>
-        <member name="P:Microsoft.Owin.OwinRequest.ContentType">
-            <summary>
-            Gets or sets the Content-Type header.
-            </summary>
-            <returns>The Content-Type header.</returns>
-        </member>
-        <member name="P:Microsoft.Owin.OwinRequest.CacheControl">
-            <summary>
-            Gets or sets the Cache-Control header.
-            </summary>
-            <returns>The Cache-Control header.</returns>
-        </member>
-        <member name="P:Microsoft.Owin.OwinRequest.MediaType">
-            <summary>
-            Gets or sets the Media-Type header.
-            </summary>
-            <returns>The Media-Type header.</returns>
-        </member>
-        <member name="P:Microsoft.Owin.OwinRequest.Accept">
-            <summary>
-            Gets or set the Accept header.
-            </summary>
-            <returns>The Accept header.</returns>
-        </member>
-        <member name="P:Microsoft.Owin.OwinRequest.Body">
-            <summary>
-            Gets or set the owin.RequestBody Stream.
-            </summary>
-            <returns>The owin.RequestBody Stream.</returns>
-        </member>
-        <member name="P:Microsoft.Owin.OwinRequest.CallCancelled">
-            <summary>
-            Gets or sets the cancellation token for the request.
-            </summary>
-            <returns>The cancellation token for the request.</returns>
-        </member>
-        <member name="P:Microsoft.Owin.OwinRequest.LocalIpAddress">
-            <summary>
-            Gets or set the server.LocalIpAddress.
-            </summary>
-            <returns>The server.LocalIpAddress.</returns>
-        </member>
-        <member name="P:Microsoft.Owin.OwinRequest.LocalPort">
-            <summary>
-            Gets or set the server.LocalPort.
-            </summary>
-            <returns>The server.LocalPort.</returns>
-        </member>
-        <member name="P:Microsoft.Owin.OwinRequest.RemoteIpAddress">
-            <summary>
-            Gets or set the server.RemoteIpAddress.
-            </summary>
-            <returns>The server.RemoteIpAddress.</returns>
-        </member>
-        <member name="P:Microsoft.Owin.OwinRequest.RemotePort">
-            <summary>
-            Gets or set the server.RemotePort.
-            </summary>
-            <returns>The server.RemotePort.</returns>
-        </member>
-        <member name="P:Microsoft.Owin.OwinRequest.User">
-            <summary>
-            Gets or set the server.User.
-            </summary>
-            <returns>The server.User.</returns>
         </member>
         <member name="T:Microsoft.Owin.OwinResponse">
             <summary>
@@ -2927,16 +2880,6 @@
             value to determine which claims are granted by which middleware. The recommended use is to have a single
             ClaimsIdentity which has the AuthenticationType matching a specific middleware.</param>
         </member>
-        <member name="M:Microsoft.Owin.Security.IAuthenticationManager.SignOut(Microsoft.Owin.Security.AuthenticationProperties,System.String[])">
-            <summary>
-            Add information to the response environment that will cause the appropriate authentication middleware
-            to revoke any claims identity associated the the caller. The exact method varies.
-            </summary>
-            <param name="properties">Additional arbitrary values which may be used by particular authentication types.</param>
-            <param name="authenticationTypes">Identifies which middleware should perform the work to sign out.
-            Multiple authentication types may be provided to clear out more than one cookie at a time, or to clear
-            cookies and redirect to an external single-sign out url.</param>
-        </member>
         <member name="M:Microsoft.Owin.Security.IAuthenticationManager.SignOut(System.String[])">
             <summary>
             Add information to the response environment that will cause the appropriate authentication middleware
@@ -3031,11 +2974,6 @@
             Gets or sets the time at which the authentication ticket expires.
             </summary>
         </member>
-        <member name="P:Microsoft.Owin.Security.AuthenticationProperties.AllowRefresh">
-            <summary>
-            Gets or sets if refreshing the authentication session should be allowed.
-            </summary>
-        </member>
         <member name="T:Microsoft.Owin.Security.AuthenticationResponseChallenge">
             <summary>
             Exposes the security.Challenge environment value as a strong type.
@@ -3094,7 +3032,7 @@
         </member>
         <member name="T:Microsoft.Owin.Security.AuthenticationResponseRevoke">
             <summary>
-            Exposes the security.SignOut and security.SignOutProperties environment values as a strong type.
+            Exposes the security.SignOut environment value as a strong type.
             </summary>
         </member>
         <member name="M:Microsoft.Owin.Security.AuthenticationResponseRevoke.#ctor(System.String[])">
@@ -3103,21 +3041,9 @@
             </summary>
             <param name="authenticationTypes"></param>
         </member>
-        <member name="M:Microsoft.Owin.Security.AuthenticationResponseRevoke.#ctor(System.String[],Microsoft.Owin.Security.AuthenticationProperties)">
-            <summary>
-            Initializes a new instance of the <see cref="T:Microsoft.Owin.Security.AuthenticationResponseRevoke"/> class
-            </summary>
-            <param name="authenticationTypes"></param>
-            <param name="properties"></param>
-        </member>
         <member name="P:Microsoft.Owin.Security.AuthenticationResponseRevoke.AuthenticationTypes">
             <summary>
             List of the authentication types that should be revoked on sign out.
-            </summary>
-        </member>
-        <member name="P:Microsoft.Owin.Security.AuthenticationResponseRevoke.Properties">
-            <summary>
-            Dictionary used to store state values about the authentication session.
             </summary>
         </member>
         <member name="T:Microsoft.Owin.Logging.DiagnosticsLoggerFactory">

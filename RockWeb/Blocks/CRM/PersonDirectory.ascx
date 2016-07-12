@@ -1,14 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PersonDirectory.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonDirectory" %>
 
-<style>
-    .person-directory-grid > div.row {
-        padding:5px;
-    }
-    .person-directory-grid > div.row:nth-child(odd) {
-        background-color:#f5f2ee;
-    }
-</style>
-
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
@@ -20,7 +11,7 @@
             });
         </script>
 
-        <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
+        <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block" DefaultButton="lbSearch">
         
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-users"></i> Directory</h1>
@@ -47,15 +38,15 @@
                     </div>
                 </div>
 
-                <ul class="list-inline">
+                <ul class="list-inline directory-letters">
                     <asp:PlaceHolder ID="phLetters" runat="server" />
                 </ul>
 
-                <div class="person-directory-grid">
+                <div class="directory-grid">
 
                     <asp:Repeater ID="rptPeople" runat="server" >
                         <ItemTemplate>
-                            <div class="row">
+                            <div class="row padding-v-lg">
                                 <asp:Literal ID="lPerson" runat="server" />
                                 <asp:Literal ID="lAddress" runat="server" />
                                 <asp:Literal ID="lPhones" runat="server" />
@@ -66,14 +57,14 @@
 
                     <asp:Repeater ID="rptFamilies" runat="server" >
                         <ItemTemplate>
-                            <div class="row">
-                                <div class="col-md-3">
+                            <div class="row padding-v-lg">
+                                <div class="col-sm-3 margin-b-lg">
                                     <asp:Literal ID="lFamily" runat="server" />
                                 </div>
-                                <div class="col-md-9">
+                                <div class="col-sm-9">
                                     <asp:Repeater ID="rptFamilyPeople" runat="server" >
                                         <ItemTemplate>
-                                            <div class="row margin-b-sm">
+                                            <div class="row margin-b-md">
                                                 <asp:Literal ID="lPerson" runat="server" />
                                                 <asp:Literal ID="lPhones" runat="server" />
                                                 <asp:Literal ID="lBirthdateGender" runat="server" />
@@ -87,9 +78,9 @@
 
                 </div>
 
-                <div class="actions margin-t-lg">
+                <asp:Panel ID="pnlOptOut" runat="server" CssClass="actions margin-t-lg">
                     <asp:LinkButton ID="lbOptInOut" runat="server" Text="Opt Out" CssClass="btn btn-default btn-sm" OnClick="btnOptOutIn_Click" />
-                </div>
+                </asp:Panel>
 
             </div>
         

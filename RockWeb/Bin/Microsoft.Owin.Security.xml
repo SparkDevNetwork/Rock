@@ -256,53 +256,6 @@
             <param name="sslPolicyErrors">One or more errors associated with the remote certificate.</param>
             <returns>A Boolean value that determines whether the specified certificate is accepted for authentication.</returns>
         </member>
-        <member name="T:Microsoft.Owin.Security.Provider.BaseContext`1">
-            <summary>
-            Base class used for certain event contexts
-            </summary>
-        </member>
-        <member name="M:Microsoft.Owin.Security.Notifications.BaseNotification`1.HandleResponse">
-            <summary>
-            Discontinue all processing for this request and return to the client.
-            The caller is responsible for generating the full response.
-            </summary>
-        </member>
-        <member name="M:Microsoft.Owin.Security.Notifications.BaseNotification`1.SkipToNextMiddleware">
-            <summary>
-            Discontinue processing the request in the current middleware and pass control to the next one.
-            </summary>
-        </member>
-        <member name="F:Microsoft.Owin.Security.Notifications.NotificationResultState.Continue">
-            <summary>
-            Continue with normal processing.
-            </summary>
-        </member>
-        <member name="F:Microsoft.Owin.Security.Notifications.NotificationResultState.Skipped">
-            <summary>
-            Discontinue processing the request in the current middleware and pass control to the next one.
-            </summary>
-        </member>
-        <member name="F:Microsoft.Owin.Security.Notifications.NotificationResultState.HandledResponse">
-            <summary>
-            Discontinue all processing for this request.
-            </summary>
-        </member>
-        <member name="M:Microsoft.Owin.Security.Notifications.RedirectToIdentityProviderNotification`2.HandleResponse">
-            <summary>
-            Discontinue all processing for this request and return to the client.
-            The caller is responsible for generating the full response.
-            </summary>
-        </member>
-        <member name="P:Microsoft.Owin.Security.Notifications.SecurityTokenValidatedNotification`2.AuthenticationTicket">
-            <summary>
-            Gets or set the <see cref="P:Microsoft.Owin.Security.Notifications.SecurityTokenValidatedNotification`2.AuthenticationTicket"/>
-            </summary>
-        </member>
-        <member name="P:Microsoft.Owin.Security.Notifications.SecurityTokenValidatedNotification`2.ProtocolMessage">
-            <summary>
-            Gets or sets the Protocol message
-            </summary>
-        </member>
         <member name="T:Microsoft.Owin.Security.DataProtection.DpapiDataProtectionProvider">
             <summary>
             Used to provide the data protection services that are derived from the Data Protection API. It is the best choice of
@@ -371,6 +324,11 @@
             <param name="authenticationType">The authentication type to look for</param>
             <param name="authenticationMode">The authentication mode the middleware is running under</param>
             <returns>The information instructing the middleware how it should behave</returns>
+        </member>
+        <member name="T:Microsoft.Owin.Security.Provider.BaseContext`1">
+            <summary>
+            Base class used for certain event contexts
+            </summary>
         </member>
         <member name="T:Microsoft.Owin.Security.Provider.EndpointContext`1">
             <summary>

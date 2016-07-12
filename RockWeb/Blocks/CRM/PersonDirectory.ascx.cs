@@ -54,6 +54,7 @@ namespace RockWeb.Blocks.Crm
         false, true, "407e7e45-7b2e-4fcd-9605-ecb1339f2453,aa8732fb-2cea-4c76-8d6d-6aaa2c6a4303,2cc66d5a-f61c-4b74-9af9-590a9847c13c", "", 8 )]
     [BooleanField( "Show Birthday", "Should email address be included in the directory?", true, "", 9 )]
     [BooleanField( "Show Gender", "Should email address be included in the directory?", true, "", 10 )]
+    [BooleanField( "Show Grade", "Should grade be included in the directory?", false, "", 11 )]
     public partial class PersonDirectory : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -68,6 +69,7 @@ namespace RockWeb.Blocks.Crm
         private bool _showAddress = true;
         private bool _showBirthday = true;
         private bool _showGender = true;
+        private bool _showGrade = false;
         private Dictionary<int, string> _phoneNumberCaptions = new Dictionary<int, string>();
 
         private List<PhoneNumber> _phoneNumbers = null;
@@ -117,8 +119,9 @@ namespace RockWeb.Blocks.Crm
             _showAddress = GetAttributeValue( "ShowAddress" ).AsBoolean();
             _showBirthday = GetAttributeValue( "ShowBirthday" ).AsBoolean();
             _showGender = GetAttributeValue( "ShowGender" ).AsBoolean();
+            _showGrade = GetAttributeValue( "ShowGrade" ).AsBoolean();
 
-            foreach( var guid in GetAttributeValue( "ShowPhones" ).SplitDelimitedValues().AsGuidList() )
+            foreach ( var guid in GetAttributeValue( "ShowPhones" ).SplitDelimitedValues().AsGuidList() )
             {
                 var phoneValue = DefinedValueCache.Read( guid );
                 if ( phoneValue != null )
@@ -127,7 +130,7 @@ namespace RockWeb.Blocks.Crm
                 }
             }
 
-            phLetters.Visible = _lastNameCharsRequired <= 1;
+            phLetters.Visible = _showAllPeople;
 
             lbOptInOut.Visible = CurrentPerson != null && _optOutGroupGuid.HasValue;
 
@@ -205,6 +208,7 @@ namespace RockWeb.Blocks.Crm
             var lbLetter = sender as LinkButton;
             if ( lbLetter != null )
             {
+                tbFirstName.Text = string.Empty;
                 tbLastName.Text = lbLetter.ID.Substring( 8 );
             }
 
@@ -263,7 +267,7 @@ namespace RockWeb.Blocks.Crm
                         _showFamily ? _familyCol2Class : _peopleCol3Class, phones.AsDelimited( "<br/>" ) );
                 }
 
-                if ( ( _showBirthday || _showGender ) && lBirthdateGender != null )
+                if ( ( _showBirthday || _showGender || _showGrade ) && lBirthdateGender != null )
                 {
                     var sb = new StringBuilder();
                     if ( _showBirthday )
@@ -285,6 +289,18 @@ namespace RockWeb.Blocks.Crm
                         sb.AppendFormat( "Gender: {0}", personItem.Gender == Gender.Male ? "M" : "F" );
                     }
 
+                    if ( _showGrade )
+                    {
+                        if ( !string.IsNullOrWhiteSpace( personItem.Grade ))
+                        {
+                            if ( sb.Length > 0 )
+                            {
+                                sb.Append( "<br/>" );
+                            }
+
+                            sb.AppendFormat( "Grade: {0}", personItem.Grade );
+                        }
+                    }
 
                     lBirthdateGender.Text = string.Format( "<div class='{0} clearfix'>{1}</div>",
                         _showFamily ? _familyCol3Class : _peopleCol4Class, sb.ToString() );
@@ -492,7 +508,8 @@ namespace RockWeb.Blocks.Crm
                     BirthDay = p.BirthDay,
                     BirthDate = p.BirthDate,
                     Gender = p.Gender,
-                    PhotoId = p.PhotoId
+                    PhotoId = p.PhotoId,
+                    GraduationYear = p.GraduationYear
                 } )
                 .ToList();
 
@@ -513,7 +530,6 @@ namespace RockWeb.Blocks.Crm
                                 m.Group.GroupTypeId == familyGroupType.Id )
                             .Select( m => new
                             {
-                                m.GroupId,
                                 m.PersonId,
                                 HomeLocations = m.Group.GroupLocations
                                     .Where( gl =>
@@ -522,6 +538,12 @@ namespace RockWeb.Blocks.Crm
                                     .Select( gl => gl.Location )
                                     .ToList()
                             } )
+                            .GroupBy( m => m.PersonId )
+                            .Select( g => new
+                            {
+                                PersonId = g.Key,
+                                HomeLocations = g.SelectMany( m => m.HomeLocations ).ToList()
+                            })
                             .ToDictionary( k => k.PersonId, v => v.HomeLocations );
                     }
                 }
@@ -572,7 +594,8 @@ namespace RockWeb.Blocks.Crm
                             BirthDay = p.BirthDay,
                             BirthDate = p.BirthDate,
                             Gender = p.Gender,
-                            PhotoId = p.PhotoId
+                            PhotoId = p.PhotoId,
+                            GraduationYear = p.GraduationYear
                         } )
                         .ToList()
                 } )
@@ -769,6 +792,13 @@ namespace RockWeb.Blocks.Crm
                 }
             }
             public Gender Gender { get; set; }
+            public int? GraduationYear { get; set; }
+            public string Grade {
+                get
+                {
+                    return Person.GradeFormattedFromGraduationYear( this.GraduationYear );
+                }
+            }
             public int? PhotoId { get; set; }
             public string PhotoUrl
             {

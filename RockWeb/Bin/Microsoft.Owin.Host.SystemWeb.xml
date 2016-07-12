@@ -145,6 +145,26 @@
               Looks up a localized string similar to The &apos;{0}&apos; method on class &apos;{1}&apos; does not have the expected signature &apos;void {0}(IAppBuilder)&apos;..
             </summary>
         </member>
+        <member name="T:Microsoft.Owin.Host.SystemWeb.AuthenticationResult">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Microsoft.Owin.Host.SystemWeb.AuthenticationResult.#ctor(System.Security.Principal.IIdentity,System.Collections.Generic.IDictionary{System.String,System.String},System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary></summary>
+            <param name="identity"></param>
+            <param name="extra"></param>
+            <param name="properties"></param>
+        </member>
+        <member name="P:Microsoft.Owin.Host.SystemWeb.AuthenticationResult.Identity">
+            <summary></summary>
+        </member>
+        <member name="P:Microsoft.Owin.Host.SystemWeb.AuthenticationResult.Extra">
+            <summary></summary>
+        </member>
+        <member name="P:Microsoft.Owin.Host.SystemWeb.AuthenticationResult.Properties">
+            <summary></summary>
+        </member>
         <member name="T:Microsoft.Owin.Host.SystemWeb.DataProtection.MachineKeyDataProtectionProvider">
             <summary>
             Used to provide the data protection services that are derived from the MachineKey API. It is the best choice of

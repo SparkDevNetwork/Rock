@@ -38,9 +38,9 @@
         <member name="M:Twilio.TwilioRestClient.ChangeSubAccountStatus(System.String,Twilio.AccountStatus,System.Action{Twilio.Account})">
             <summary>
             Changes the status of a subaccount. You must be authenticated as the master account to call this method on a subaccount.
-            WARNING: When closing an account, Twilio will release all phone numbers assigned to it and shut it down completely. 
-            You can't ever use a closed account to make and receive phone calls or send and receive SMS messages. 
-            It's closed, gone, kaput. It will still appear in your accounts list, and you will still have access to historical 
+            WARNING: When closing an account, Twilio will release all phone numbers assigned to it and shut it down completely.
+            You can't ever use a closed account to make and receive phone calls or send and receive SMS messages.
+            It's closed, gone, kaput. It will still appear in your accounts list, and you will still have access to historical
             data for that subaccount, but you cannot reopen a closed account.
             /// </summary>
             <param name="subAccountSid">The subaccount to change the status on</param>
@@ -286,21 +286,6 @@
             <param name="homepageUrl">The public URL where users can obtain more information about this Connect App. (optional, null to leave as-is)</param>
             <param name="callback">Method to call upon successful completion</param>
         </member>
-        <member name="M:Twilio.TwilioRestClient.ExecuteAsync``1(RestSharp.IRestRequest,System.Action{``0})">
-            <summary>
-            Execute a manual REST request
-            </summary>
-            <typeparam name="T">The type of object to create and populate with the returned data.</typeparam>
-            <param name="request">The RestRequest to execute (will use client credentials)</param>
-            <param name="callback">The callback function to execute when the async request completes</param>
-        </member>
-        <member name="M:Twilio.TwilioRestClient.ExecuteAsync(RestSharp.IRestRequest,System.Action{RestSharp.IRestResponse})">
-            <summary>
-            Execute a manual REST request
-            </summary>
-            <param name="request">The RestRequest to execute (will use client credentials)</param>
-            <param name="callback">The callback function to execute when the async request completes</param>
-        </member>
         <member name="M:Twilio.TwilioRestClient.GetFeedback(System.String,System.Action{Twilio.Feedback})">
             <summary>
             Retrieve the Feedback for a specific CallSid.
@@ -482,7 +467,7 @@
         </member>
         <member name="M:Twilio.TwilioRestClient.DeleteMedia(System.String,System.String,System.Action{Twilio.DeleteStatus})">
             <summary>
-            Delete the specified media instance. Makes a DELETE request to a 
+            Delete the specified media instance. Makes a DELETE request to a
             Media Instance resource.
             </summary>
             <param name="mediaSid">The Sid of the media to delete</param>
@@ -503,7 +488,7 @@
         </member>
         <member name="M:Twilio.TwilioRestClient.ListMessages(System.Action{Twilio.MessageResult})">
             <summary>
-            Returns a list of Messages. 
+            Returns a list of Messages.
             The list includes paging information.
             Makes a GET request to the Message List resource.
             </summary>
@@ -584,6 +569,76 @@
             Makes a POST request to the Messages List resource.
             </summary>
             <param name="from">The phone number to send the message from. Must be a Twilio-provided or ported local (not toll-free) number. Validated outgoing caller IDs cannot be used.</param>
+            <param name="to">The phone number to send the message to. If using the Sandbox, this number must be a validated outgoing caller ID</param>
+            <param name="body">The message to send. Must be 160 characters or less.</param>
+            <param name="statusCallback">A URL that Twilio will POST to when your message is processed. Twilio will POST the SmsSid as well as SmsStatus=sent or SmsStatus=failed</param>
+            <param name="applicationSid"></param>
+            <param name="mmsOnly">Doesn't fallback to SMS if set to true</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.SendMessageWithService(System.String,System.String,System.String,System.Action{Twilio.Message})">
+            <summary>
+            Send a new Message to the specified recipients.
+            Makes a POST request to the Messages List resource.
+            </summary>
+            <param name="messagingServiceSid">The messagingServiceSid to send the message from.</param>
+            <param name="to">The phone number to send the message to.</param>
+            <param name="body">The message to send. Must be 160 characters or less.</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.SendMessageWithService(System.String,System.String,System.String,System.String,System.Action{Twilio.Message})">
+            <summary>
+            Send a new Message to the specified recipients.
+            Makes a POST request to the Messages List resource.
+            </summary>
+            <param name="messagingServiceSid">The messagingServiceSid to send the message from.</param>
+            <param name="to">The phone number to send the message to.</param>
+            <param name="body">The message to send. Must be 160 characters or less.</param>
+            <param name="statusCallback">A URL that Twilio will POST to when your message is processed. Twilio will POST the MessageSid as well as MessageStatus=sent or MessageStatus=failed</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.SendMessageWithService(System.String,System.String,System.String[],System.Action{Twilio.Message})">
+            <summary>
+            Send a new Message to the specified recipients.
+            Makes a POST request to the Messages List resource.
+            </summary>
+            <param name="messagingServiceSid">The messagingServiceSid to send the message from.</param>
+            <param name="to">The phone number to send the message to.</param>
+            <param name="mediaUrls">An array of URLs where each member of the array points to a media file to be sent with the message.  You can include a maximum of 10 media URLs</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.SendMessageWithService(System.String,System.String,System.String,System.String[],System.Action{Twilio.Message})">
+            <summary>
+            Send a new Message to the specified recipients.
+            Makes a POST request to the Messages List resource.
+            </summary>
+            <param name="messagingServiceSid">The messagingServiceSid to send the message from.</param>
+            <param name="to">The phone number to send the message to. If using the Sandbox, this number must be a validated outgoing caller ID</param>
+            <param name="body">The message to send. Must be 160 characters or less.</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.SendMessageWithService(System.String,System.String,System.String,System.String[],System.String,System.Action{Twilio.Message})">
+            <summary>
+            Send a new Message to the specified recipients
+            Makes a POST request to the Messages List resource.
+            </summary>
+            <param name="messagingServiceSid">The messagingServiceSid to send the message from.</param>
+            <param name="to">The phone number to send the message to. If using the Sandbox, this number must be a validated outgoing caller ID</param>
+            <param name="body">The message to send. Must be 160 characters or less.</param>
+            <param name="statusCallback">A URL that Twilio will POST to when your message is processed. Twilio will POST the SmsSid as well as SmsStatus=sent or SmsStatus=failed</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.SendMessageWithService(System.String,System.String,System.String,System.String[],System.String,System.String,System.Action{Twilio.Message})">
+            <summary>
+            Send a new Message to the specified recipients
+            Makes a POST request to the Messages List resource.
+            </summary>
+            <param name="messagingServiceSid">The messagingServiceSid to send the message from.</param>
+            <param name="to">The phone number to send the message to. If using the Sandbox, this number must be a validated outgoing caller ID</param>
+            <param name="body">The message to send. Must be 160 characters or less.</param>
+            <param name="statusCallback">A URL that Twilio will POST to when your message is processed. Twilio will POST the SmsSid as well as SmsStatus=sent or SmsStatus=failed</param>
+            <param name="applicationSid"></param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.SendMessageWithService(System.String,System.String,System.String,System.String[],System.String,System.String,System.Nullable{System.Boolean},System.Action{Twilio.Message})">
+            <summary>
+            Send a new Message to the specified recipients
+            Makes a POST request to the Messages List resource.
+            </summary>
+            <param name="messagingServiceSid">The messagingServiceSid to send the message from.</param>
             <param name="to">The phone number to send the message to. If using the Sandbox, this number must be a validated outgoing caller ID</param>
             <param name="body">The message to send. Must be 160 characters or less.</param>
             <param name="statusCallback">A URL that Twilio will POST to when your message is processed. Twilio will POST the SmsSid as well as SmsStatus=sent or SmsStatus=failed</param>
@@ -858,6 +913,9 @@
             <returns></returns>
         </member>
         <member name="M:Twilio.TwilioRestClient.ListDomains(System.Nullable{System.Int32},System.Nullable{System.Int32},System.Action{Twilio.DomainResult})">
+            <summary>
+            Return a list of all SIP Domain resources
+            </summary>
             <param name="pageNumber"></param>
             <param name="count"></param>
             <returns></returns>
@@ -985,6 +1043,10 @@
             <returns></returns>
         </member>
         <member name="M:Twilio.TwilioRestClient.ListIpAccessControlLists(System.Nullable{System.Int32},System.Nullable{System.Int32},System.Action{Twilio.IpAccessControlListResult})">
+            <summary>
+            Lists all IpAccessControlLists for this account
+            </summary>
+            <param name="pageNumber"></param>
             <param name="count"></param>
             <returns></returns>
         </member>
@@ -1436,9 +1498,9 @@
         <member name="M:Twilio.TwilioRestClient.ChangeSubAccountStatus(System.String,Twilio.AccountStatus)">
             <summary>
             Changes the status of a subaccount. You must be authenticated as the master account to call this method on a subaccount.
-            WARNING: When closing an account, Twilio will release all phone numbers assigned to it and shut it down completely. 
-            You can't ever use a closed account to make and receive phone calls or send and receive SMS messages. 
-            It's closed, gone, kaput. It will still appear in your accounts list, and you will still have access to historical 
+            WARNING: When closing an account, Twilio will release all phone numbers assigned to it and shut it down completely.
+            You can't ever use a closed account to make and receive phone calls or send and receive SMS messages.
+            It's closed, gone, kaput. It will still appear in your accounts list, and you will still have access to historical
             data for that subaccount, but you cannot reopen a closed account.
             </summary>
             <param name="subAccountSid">The subaccount to change the status on</param>
@@ -1449,6 +1511,112 @@
             Update the friendly name associated with the currently authenticated account. Makes a POST request to an Account Instance resource.
             </summary>
             <param name="friendlyName">Name to use when updating</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.GetAddress(System.String,System.Action{Twilio.Address})">
+            <summary>
+            Retrieve the details for an address instance. Makes a GET request to an Address Instance resource.
+            </summary>
+            <param name="addressSid">The Sid of the application to retrieve</param>
+            <param name="callback">Method to call upon successful completion</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.ListAddresses(System.Action{Twilio.AddressResult})">
+            <summary>
+            List addresses on the current account.
+            </summary>
+            <param name="callback">Method to call upon successful completion</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.ListAddresses(Twilio.AddressListRequest,System.Action{Twilio.AddressResult})">
+            <summary>
+            List addresses on the current account, with filters.
+            </summary>
+            <param name="options">Filters to pass into the list request</param>
+            <param name="callback">Method to call upon successful completion</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.ListDependentPhoneNumbers(System.String,System.Action{Twilio.DependentPhoneNumberResult})">
+            <summary>
+            List incoming phone numbers on the current account that depend on the specified Address.
+            </summary>
+            <param name="addressSid">Sid of the address to retrieve numbers for</param>
+            <param name="callback">Method to call upon successful completion</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.AddAddress(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Action{Twilio.Address})">
+            <summary>
+            Create a new Address.
+            </summary>
+            <param name="friendlyName">Friendly name (optional)</param>
+            <param name="customerName">Customer name.</param>
+            <param name="street">Street.</param>
+            <param name="city">City.</param>
+            <param name="region">Region.</param>
+            <param name="postalCode">Postal code.</param>
+            <param name="isoCountry">Iso country.</param>
+            <param name="callback">Method to call upon successful completion.</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.UpdateAddress(System.String,Twilio.AddressOptions,System.Action{Twilio.Address})">
+            <summary>
+            Update an address on the current account.
+            </summary>
+            <param name="addressSid">Sid of the address to update</param>
+            <param name="options">Attributes to update. Only properties with a value set will be updated.</param>
+            <param name="callback">Method to call upon successful completion.</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.DeleteAddress(System.String,System.Action{Twilio.DeleteStatus})">
+            <summary>
+            Delete an address from the current account.
+            </summary>
+            <param name="addressSid">Sid of the address to delete</param>
+            <param name="callback">Method to call upon completion; should accept a DeleteStatus object indicating whether the request succeeded.</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.GetAddress(System.String)">
+            <summary>
+            Retrieve the details for an address instance. Makes a GET request to an Address Instance resource.
+            </summary>
+            <param name="addressSid">The Sid of the address to retrieve</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.ListAddresses">
+            <summary>
+            List Addresses on the current account.
+            </summary>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.ListAddresses(Twilio.AddressListRequest)">
+            <summary>
+            List Addresses on the current account, with filters.
+            </summary>
+            <param name="options">Filters to be applied to the request.</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.ListDependentPhoneNumbers(System.String)">
+            <summary>
+            List the current account's incoming phone numbers that depend on a specific address.
+            </summary>
+            <param name="addressSid">Sid of the address to retrieve dependent phone numbers for.</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.AddAddress(System.String,System.String,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Create a new Address.
+            </summary>
+            <returns>The address.</returns>
+            <param name="friendlyName">Friendly name (optional)</param>
+            <param name="customerName">Customer name</param>
+            <param name="street">Number and street of the address</param>
+            <param name="city">City name for the address</param>
+            <param name="region">The state or region</param>
+            <param name="postalCode">Postal code</param>
+            <param name="isoCountry">ISO 3166-1 2-letter country code</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.UpdateAddress(System.String,Twilio.AddressOptions)">
+            <summary>
+            Update an Address. All attributes of the address except for the IsoCountry can be updated.
+            </summary>
+            <returns>Updated Address object.</returns>
+            <param name="addressSid">The sid of the Address to update.</param>
+            <param name="options">Which properties to update. Only properties with values set will be updated.</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.DeleteAddress(System.String)">
+            <summary>
+            Delete an Address.
+            </summary>
+            <returns>A DeleteStatus object indicating whether the request succeeded.</returns>
+            <param name="addressSid">The sid of the Address to be deleted.</param>
         </member>
         <member name="M:Twilio.TwilioRestClient.GetApplication(System.String)">
             <summary>
@@ -1549,6 +1717,13 @@
             <param name="isoCountryCode">Two-character ISO country code (US or CA)</param>
             <param name="contains">Value to use when filtering search. Accepts numbers or characters.</param>
         </member>
+        <member name="M:Twilio.TwilioRestClient.ListAvailableTollFreePhoneNumbers(System.String,Twilio.AvailablePhoneNumberListRequest)">
+            <summary>
+            Search available toll-free phone numbers.  Makes a GET request to the AvailablePhoneNumber List resource.
+            </summary>
+            <param name="isoCountryCode">Two-character ISO country code (US or CA)</param>
+            <param name="contains">Value to use when filtering search. Accepts numbers or characters.</param>
+        </member>
         <member name="M:Twilio.TwilioRestClient.ListAvailableMobilePhoneNumbers(System.String,Twilio.AvailablePhoneNumberListRequest)">
             <summary>
             Search available mobile phone numbers.  Makes a GET request to the AvailablePhoneNumber List resource.
@@ -1579,6 +1754,14 @@
             <param name="contains">Value to use when filtering search. Accepts numbers or characters.</param>
             <param name="callback">Method to call upon successful completion</param>
         </member>
+        <member name="M:Twilio.TwilioRestClient.ListAvailableTollFreePhoneNumbers(System.String,Twilio.AvailablePhoneNumberListRequest,System.Action{Twilio.AvailablePhoneNumberResult})">
+            <summary>
+            Search available toll-free phone numbers
+            </summary>
+            <param name="isoCountryCode">Two-character ISO country code (US or CA)</param>
+            <param name="contains">Value to use when filtering search. Accepts numbers or characters.</param>
+            <param name="callback">Method to call upon successful completion</param>
+        </member>
         <member name="M:Twilio.TwilioRestClient.ListAvailableMobilePhoneNumbers(System.String,Twilio.AvailablePhoneNumberListRequest,System.Action{Twilio.AvailablePhoneNumberResult})">
             <summary>
             Search available mobile phone numbers.  Makes a GET request to the AvailablePhoneNumber List resource.
@@ -1599,6 +1782,13 @@
             Makes a GET request to the Calls List resource.
             </summary>
             <param name="options">List filter options. If an property is set the list will be filtered by that value.</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.ListCalls(System.String)">
+            <summary>
+            Returns a paged list of phone calls made to and from the account.
+            Makes a GET request to the Calls List resource.
+            </summary>
+            <param name="To"></param>
         </member>
         <member name="M:Twilio.TwilioRestClient.GetCall(System.String)">
             <summary>
@@ -1660,14 +1850,14 @@
         </member>
         <member name="M:Twilio.TwilioRestClient.ListConferences">
             <summary>
-            Returns a list of conferences within an account. 
+            Returns a list of conferences within an account.
             The list includes paging information.
             Makes a GET request to the Conferences List resource.
             </summary>
         </member>
         <member name="M:Twilio.TwilioRestClient.ListConferences(Twilio.ConferenceListRequest)">
             <summary>
-            Returns a list of conferences within an account. 
+            Returns a list of conferences within an account.
             The list includes paging information.
             Makes a POST request to the Conferences List resource.
             </summary>
@@ -1738,18 +1928,15 @@
             <param name="authToken">The AuthToken to authenticate with</param>
             <param name="accountResourceSid"></param>
         </member>
-        <member name="M:Twilio.TwilioRestClient.Execute``1(RestSharp.IRestRequest)">
+        <member name="M:Twilio.TwilioRestClient.#ctor(System.String,System.String,System.String,System.String,System.String)">
             <summary>
-            Execute a manual REST request
+            Initializes a new client with the specified credentials.
             </summary>
-            <typeparam name="T">The type of object to create and populate with the returned data.</typeparam>
-            <param name="request">The RestRequest to execute (will use client credentials)</param>
-        </member>
-        <member name="M:Twilio.TwilioRestClient.Execute(RestSharp.IRestRequest)">
-            <summary>
-            Execute a manual REST request
-            </summary>
-            <param name="request">The RestRequest to execute (will use client credentials)</param>
+            <param name="accountSid">The AccountSid to authenticate with</param>
+            <param name="authToken">The AuthToken to authenticate with</param>
+            <param name="accountResourceSid">The AccountSid for the account you want to use</param>
+            <param name="apiVersion">The version of the Twilio API to use</param>
+            <param name="baseUrl">The base URL of the Twilio API</param>
         </member>
         <member name="M:Twilio.TwilioRestClient.GetConnectApp(System.String)">
             <summary>
@@ -1824,6 +2011,90 @@
             </summary>
             <param name="callSid">The Sid of the Call to delete the Feedback entry from</param>
             <returns></returns>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.CreateFeedbackSummary(System.DateTime,System.DateTime,System.Action{Twilio.FeedbackSummary})">
+            <summary>
+            Creates a feedback summary.
+            </summary>
+            <param name="startDate">Start date.</param>
+            <param name="endDate">End date.</param>
+            <param name="callback">Asynchronous callback.</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.CreateFeedbackSummary(System.DateTime,System.DateTime,System.Boolean,System.Action{Twilio.FeedbackSummary})">
+            <summary>
+            Creates a feedback summary.
+            </summary>
+            <param name="startDate">Start date.</param>
+            <param name="endDate">End date.</param>
+            <param name="includeSubaccounts">If set to <c>true</c> include subaccounts.</param>
+            <param name="callback">Asynchronous callback.</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.CreateFeedbackSummary(System.DateTime,System.DateTime,System.Boolean,System.String,System.String,System.Action{Twilio.FeedbackSummary})">
+            <summary>
+            Creates a feedback summary.
+            </summary>
+            <param name="startDate">Start date.</param>
+            <param name="endDate">End date.</param>
+            <param name="includeSubaccounts">If set to <c>true</c> include subaccounts.</param>
+            <param name="statusCallback">Status callback.</param>
+            <param name="statusCallbackMethod">Status callback method.</param>
+            <param name="callback">Asynchronous callback.</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.DeleteFeedbackSummary(System.String,System.Action{Twilio.DeleteStatus})">
+            <summary>
+            Deletes a feedback summary.
+            </summary>
+            <param name="feedbackSummarySid">Feedback summary sid.</param>
+            <param name="callback">Asynchronous callback.</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.GetFeedbackSummary(System.String,System.Action{Twilio.FeedbackSummary})">
+            <summary>
+            Gets a feedback summary.
+            </summary>
+            <param name="feedbackSummarySid">Feedback summary sid.</param>
+            <param name="callback">Asynchronous callback.</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.CreateFeedbackSummary(System.DateTime,System.DateTime)">
+            <summary>
+            Creates a feedback summary.
+            </summary>
+            <returns>A feedback summary.</returns>
+            <param name="startDate">Start date.</param>
+            <param name="endDate">End date.</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.CreateFeedbackSummary(System.DateTime,System.DateTime,System.Boolean)">
+            <summary>
+            Creates a feedback summary.
+            </summary>
+            <returns>A feedback summary.</returns>
+            <param name="startDate">Start date.</param>
+            <param name="endDate">End date.</param>
+            <param name="includeSubaccounts">If set to <c>true</c> include subaccounts.</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.CreateFeedbackSummary(System.DateTime,System.DateTime,System.Boolean,System.String,System.String)">
+            <summary>
+            Creates a feedback summary.
+            </summary>
+            <returns>A feedback summary.</returns>
+            <param name="startDate">Start date.</param>
+            <param name="endDate">End date.</param>
+            <param name="includeSubaccounts">If set to <c>true</c> include subaccounts.</param>
+            <param name="statusCallback">Status callback URL.</param>
+            <param name="statusCallbackMethod">Status callback URL method. Either GET or POST.</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.DeleteFeedbackSummary(System.String)">
+            <summary>
+            Deletes a feedback summary.
+            </summary>
+            <returns>Deletion status.</returns>
+            <param name="feedbackSummarySid">Feedback summary sid.</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.GetFeedbackSummary(System.String)">
+            <summary>
+            Gets a feedback summary.
+            </summary>
+            <returns>A feedback summary.</returns>
+            <param name="feedbackSummarySid">Feedback summary sid.</param>
         </member>
         <member name="M:Twilio.TwilioRestClient.GetIncomingPhoneNumber(System.String)">
             <summary>
@@ -1926,6 +2197,41 @@
             </summary>
             <param name="incomingPhoneNumberSid">The Sid of the number to remove</param>
         </member>
+        <member name="M:Twilio.TwilioRestClient.GetKey(System.String)">
+            <summary>
+            Retrieve a Key by its unique ID.
+            </summary>
+            <param name="sid">Key string ID</param>
+            <returns>The Key resource</returns>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.AddKey">
+            <summary>
+            Add a new Key.
+            </summary>
+            <returns>The created Key resource</returns>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.AddKey(System.String)">
+            <summary>
+            Add a new Key with the specified FriendlyName.
+            </summary>
+            <param name="friendlyName">A human-readable name for this Key</param>
+            <returns>The created Key resource</returns>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.UpdateKey(System.String,System.String)">
+            <summary>
+            Update attributes of the specified Key
+            </summary>
+            <param name="sid">ID of the Key to update</param>
+            <param name="friendlyName">Human-readable name for this Key</param>
+            <returns>The updated Key resource</returns>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.DeleteKey(System.String)">
+            <summary>
+            Delete the specified Key.
+            </summary>
+            <param name="sid">ID of the key to delete</param>
+            <returns>Whether the delete request succeeded</returns>
+        </member>
         <member name="M:Twilio.TwilioRestClient.GetMedia(System.String,System.String)">
             <summary>
             Get the details for a specific Media instance.
@@ -1952,7 +2258,7 @@
         </member>
         <member name="M:Twilio.TwilioRestClient.DeleteMedia(System.String,System.String)">
             <summary>
-            Delete the specified media instance. Makes a DELETE request to a 
+            Delete the specified media instance. Makes a DELETE request to a
             Media Instance resource.
             </summary>
             <param name="mediaSid">The Sid of the media to delete</param>
@@ -1976,6 +2282,14 @@
             The list includes paging information.
             Makes a GET request to the Message List resource.
             </summary>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.ListMessages(System.String)">
+            <summary>
+            Returns a list of Messages.
+            The list includes paging information.
+            Makes a GET request to the Message List resource.
+            </summary>
+            <param name="To"></param>
         </member>
         <member name="M:Twilio.TwilioRestClient.ListMessages(Twilio.MessageListRequest)">
             <summary>
@@ -2051,6 +2365,81 @@
             Makes a POST request to the Messages List resource.
             </summary>
             <param name="from">The phone number to send the message from. Must be a Twilio-provided or ported local (not toll-free) number. Validated outgoing caller IDs cannot be used.</param>
+            <param name="to">The phone number to send the message to. If using the Sandbox, this number must be a validated outgoing caller ID</param>
+            <param name="body">The message to send. Must be 160 characters or less.</param>
+            <param name="mediaUrls">An array of URLs where each member of the array points to a media file to be sent with the message.  You can include a maximum of 10 media URLs</param>
+            <param name="statusCallback">A URL that Twilio will POST to when your message is processed. Twilio will POST the MessageSid as well as MessageStatus=sent or MessageStatus=failed</param>
+            <param name="applicationSid"></param>
+            <param name="mmsOnly">Doesn't fallback to SMS if set to true</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.SendMessageWithService(System.String,System.String,System.String)">
+            <summary>
+            Send a new Message to the specified recipients.
+            Makes a POST request to the Messages List resource.
+            </summary>
+            <param name="messagingServiceSid">The MessagingServiceSid to send the message from.</param>
+            <param name="to">The phone number to send the message to.</param>
+            <param name="body">The message to send. Must be 160 characters or less.</param>
+            <param name="statusCallback">A URL that Twilio will POST to when your message is processed. Twilio will POST the MessageSid as well as MessageStatus=sent or MessageStatus=failed</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.SendMessageWithService(System.String,System.String,System.String,System.String)">
+            <summary>
+            Send a new Message to the specified recipients.
+            Makes a POST request to the Messages List resource.
+            </summary>
+            <param name="messagingServiceSid">The MessagingServiceSid to send the message from.</param>
+            <param name="to">The phone number to send the message to.</param>
+            <param name="body">The message to send. Must be 160 characters or less.</param>
+            <param name="statusCallback">A URL that Twilio will POST to when your message is processed. Twilio will POST the MessageSid as well as MessageStatus=sent or MessageStatus=failed</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.SendMessageWithService(System.String,System.String,System.String[])">
+            <summary>
+            Send a new Message to the specified recipients.
+            Makes a POST request to the Messages List resource.
+            </summary>
+            <param name="messagingServiceSid">The MessagingServiceSid to send the message from.</param>
+            <param name="to">The phone number to send the message to.</param>
+            <param name="mediaUrls">An array of URLs where each member of the array points to a media file to be sent with the message.  You can include a maximum of 10 media URLs</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.SendMessageWithService(System.String,System.String,System.String,System.String[])">
+            <summary>
+            Send a new Message to the specified recipients.
+            Makes a POST request to the Messages List resource.
+            </summary>
+            <param name="messagingServiceSid">The MessagingServiceSid to send the message from.</param>
+            <param name="to">The phone number to send the message to.</param>
+            <param name="body">The message to send. Must be 160 characters or less.</param>
+            <param name="mediaUrls">An array of URLs where each member of the array points to a media file to be sent with the message.  You can include a maximum of 10 media URLs</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.SendMessageWithService(System.String,System.String,System.String,System.String[],System.String)">
+            <summary>
+            Send a new Message to the specified recipients
+            Makes a POST request to the Messages List resource.
+            </summary>
+            <param name="messagingServiceSid">The MessagingServiceSid to send the message from.</param>
+            <param name="to">The phone number to send the message to. If using the Sandbox, this number must be a validated outgoing caller ID</param>
+            <param name="body">The message to send. Must be 160 characters or less.</param>
+            <param name="mediaUrls">An array of URLs where each member of the array points to a media file to be sent with the message.  You can include a maximum of 10 media URLs</param>
+            <param name="statusCallback">A URL that Twilio will POST to when your message is processed. Twilio will POST the MessageSid as well as MessageStatus=sent or MessageStatus=failed</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.SendMessageWithService(System.String,System.String,System.String,System.String[],System.String,System.String)">
+            <summary>
+            Send a new Message to the specified recipients
+            Makes a POST request to the Messages List resource.
+            </summary>
+            <param name="messagingServiceSid">The MessagingServiceSid to send the message from.</param>
+            <param name="to">The phone number to send the message to. If using the Sandbox, this number must be a validated outgoing caller ID</param>
+            <param name="body">The message to send. Must be 160 characters or less.</param>
+            <param name="mediaUrls">An array of URLs where each member of the array points to a media file to be sent with the message.  You can include a maximum of 10 media URLs</param>
+            <param name="statusCallback">A URL that Twilio will POST to when your message is processed. Twilio will POST the MessageSid as well as MessageStatus=sent or MessageStatus=failed</param>
+            <param name="applicationSid"></param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.SendMessageWithService(System.String,System.String,System.String,System.String[],System.String,System.String,System.Nullable{System.Boolean})">
+            <summary>
+            Send a new Message to the specified recipients
+            Makes a POST request to the Messages List resource.
+            </summary>
+            <param name="messagingServiceSid">The MessagingServiceSid to send the message from.</param>
             <param name="to">The phone number to send the message to. If using the Sandbox, this number must be a validated outgoing caller ID</param>
             <param name="body">The message to send. Must be 160 characters or less.</param>
             <param name="mediaUrls">An array of URLs where each member of the array points to a media file to be sent with the message.  You can include a maximum of 10 media URLs</param>
@@ -2269,6 +2658,20 @@
             <param name="pageNumber">The page to start retrieving results from</param>
             <param name="count">How many results to retrieve</param>
         </member>
+        <member name="M:Twilio.TwilioRestClient.ListRecordings(System.String,System.Nullable{System.DateTime},System.Nullable{System.DateTime},System.Nullable{System.DateTime},System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            Returns a filtered list of Recordings, each representing a recording generated during the course of a phone call. 
+            The list includes paging information.
+            Makes a GET request to the Recordings List resource.
+            </summary>
+            <param name="callSid">(Optional) The CallSid to retrieve recordings for</param>
+            <param name="dateCreated">(Optional) Only get recordings created on this date (GMT)</param>
+            <param name="dateCreatedLessThanOrEqual">(Optional) Only get recordings created at or before midnight on this date (GMT)</param>
+            <param name="dateCreatedGreaterThanOrEqual">(Optional) Only get recordings created at or after midnight on this date (GMT)</param>
+            <param name="dateCreated">(Optional) The date the recording was created (GMT)</param>
+            <param name="pageNumber">The page to start retrieving results from</param>
+            <param name="count">How many results to retrieve</param>
+        </member>
         <member name="M:Twilio.TwilioRestClient.GetRecording(System.String)">
             <summary>
             Retrieve the details for the specified recording instance.
@@ -2366,7 +2769,7 @@
             Retrieve the details for a specific ShortCode instance.
             Makes a GET request to a ShortCode Instance resource.
             </summary>
-            <param name="shortCodeSid">The Sid of the ShortCode resource to return</param>
+            <param name="shortCodeSid">The Sid of the ShortCode resource to return</param>        
         </member>
         <member name="M:Twilio.TwilioRestClient.UpdateShortCode(System.String,System.String,System.String,System.String,System.String,System.String,System.String)">
             <summary>
@@ -2387,6 +2790,30 @@
             </summary>
             <param name="shortCode">Only show the ShortCode resources that match this pattern. You can specify partial numbers and use '*' as a wildcard for any digit.</param>
             <param name="friendlyName">Only show the ShortCode resources with friendly names that exactly match this name.</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.CreateToken(System.Int32,System.Action{Twilio.Token})">
+            <summary>
+            Create a new token
+            </summary>
+            <param name="ttl">The time in seconds before this token expires</param>
+            <param name="callback">Method to call upon successful completion</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.CreateToken(System.Action{Twilio.Token})">
+            <summary>
+            Create a new token
+            </summary>
+            <param name="callback">Method to call upon successful completion</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.CreateToken(System.Int32)">
+            <summary>
+            Create a new token
+            </summary>
+            <param name="ttl">The friendly name to name the application</param>
+        </member>
+        <member name="M:Twilio.TwilioRestClient.CreateToken">
+            <summary>
+            Create a new token
+            </summary>
         </member>
         <member name="M:Twilio.TwilioRestClient.ListTranscriptions">
             <summary>
@@ -2647,7 +3074,7 @@
             Lists all IpAccessControlLists mapped to a SIP Domain
             </summary>
             <param name="domainSid">The Sid of the SIP Domain to list mappings for</param>
-            <param name="pageNumber"></param>        
+            <param name="pageNumber"></param>
             <param name="count"></param>
             <returns></returns>
         </member>
@@ -2854,164 +3281,297 @@
             <param name="credentialSid">The Sid of the Credential to delete</param>
             <returns></returns>
         </member>
-        <member name="M:Twilio.TwilioRestClient.GetAddress(System.String)">
+        <member name="M:Twilio.TwilioClient.ExecuteAsync``1(RestSharp.IRestRequest,System.Action{``0})">
             <summary>
-            Retrieve the details for an address instance. Makes a GET request to an Address Instance resource.
+            Execute a manual REST request
             </summary>
-            <param name="addressSid">The Sid of the address to retrieve</param>
+            <typeparam name="T">The type of object to create and populate with the returned data.</typeparam>
+            <param name="request">The RestRequest to execute (will use client credentials)</param>
+            <param name="callback">The callback function to execute when the async request completes</param>
         </member>
-        <member name="M:Twilio.TwilioRestClient.ListAddresses">
+        <member name="M:Twilio.TwilioClient.ExecuteAsync(RestSharp.IRestRequest,System.Action{RestSharp.IRestResponse})">
             <summary>
-            List Addresses on the current account.
+            Execute a manual REST request
             </summary>
+            <param name="request">The RestRequest to execute (will use client credentials)</param>
+            <param name="callback">The callback function to execute when the async request completes</param>
         </member>
-        <member name="M:Twilio.TwilioRestClient.ListAddresses(Twilio.AddressListRequest)">
-            <summary>
-            List Addresses on the current account, with filters.
-            </summary>
-            <param name="options">Filters to be applied to the request.</param>
-        </member>
-        <member name="M:Twilio.TwilioRestClient.ListDependentPhoneNumbers(System.String)">
-            <summary>
-            List the current account's incoming phone numbers that depend on a specific address.
-            </summary>
-            <param name="addressSid">Sid of the address to retrieve dependent phone numbers for.</param>
-        </member>
-        <member name="M:Twilio.TwilioRestClient.AddAddress(System.String,System.String,System.String,System.String,System.String,System.String,System.String)">
-            <summary>
-            Create a new Address.
-            </summary>
-            <returns>The address.</returns>
-            <param name="friendlyName">Friendly name (optional)</param>
-            <param name="customerName">Customer name</param>
-            <param name="street">Number and street of the address</param>
-            <param name="city">City name for the address</param>
-            <param name="region">The state or region</param>
-            <param name="postalCode">Postal code</param>
-            <param name="isoCountry">ISO 3166-1 2-letter country code</param>
-        </member>
-        <member name="M:Twilio.TwilioRestClient.UpdateAddress(System.String,Twilio.AddressOptions)">
-            <summary>
-            Update an Address. All attributes of the address except for the IsoCountry can be updated.
-            </summary>
-            <returns>Updated Address object.</returns>
-            <param name="addressSid">The sid of the Address to update.</param>
-            <param name="options">Which properties to update. Only properties with values set will be updated.</param>
-        </member>
-        <member name="M:Twilio.TwilioRestClient.DeleteAddress(System.String)">
-            <summary>
-            Delete an Address.
-            </summary>
-            <returns>A DeleteStatus object indicating whether the request succeeded.</returns>
-            <param name="addressSid">The sid of the Address to be deleted.</param>
-        </member>
-        <member name="M:Twilio.TwilioRestClient.GetAddress(System.String,System.Action{Twilio.Address})">
-            <summary>
-            Retrieve the details for an address instance. Makes a GET request to an Address Instance resource.
-            </summary>
-            <param name="addressSid">The Sid of the application to retrieve</param>
-            <param name="callback">Method to call upon successful completion</param>
-        </member>
-        <member name="M:Twilio.TwilioRestClient.ListAddresses(System.Action{Twilio.AddressResult})">
-            <summary>
-            List addresses on the current account.
-            </summary>
-            <param name="callback">Method to call upon successful completion</param>
-        </member>
-        <member name="M:Twilio.TwilioRestClient.ListAddresses(Twilio.AddressListRequest,System.Action{Twilio.AddressResult})">
-            <summary>
-            List addresses on the current account, with filters.
-            </summary>
-            <param name="options">Filters to pass into the list request</param>
-            <param name="callback">Method to call upon successful completion</param>
-        </member>
-        <member name="M:Twilio.TwilioRestClient.ListDependentPhoneNumbers(System.String,System.Action{Twilio.DependentPhoneNumberResult})">
-            <summary>
-            List incoming phone numbers on the current account that depend on the specified Address.
-            </summary>
-            <param name="addressSid">Sid of the address to retrieve numbers for</param>
-            <param name="callback">Method to call upon successful completion</param>
-        </member>
-        <member name="M:Twilio.TwilioRestClient.AddAddress(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Action{Twilio.Address})">
-            <summary>
-            Create a new Address.
-            </summary>
-            <param name="friendlyName">Friendly name (optional)</param>
-            <param name="customerName">Customer name.</param>
-            <param name="street">Street.</param>
-            <param name="city">City.</param>
-            <param name="region">Region.</param>
-            <param name="postalCode">Postal code.</param>
-            <param name="isoCountry">Iso country.</param>
-            <param name="callback">Method to call upon successful completion.</param>
-        </member>
-        <member name="M:Twilio.TwilioRestClient.UpdateAddress(System.String,Twilio.AddressOptions,System.Action{Twilio.Address})">
-            <summary>
-            Update an address on the current account.
-            </summary>
-            <param name="addressSid">Sid of the address to update</param>
-            <param name="options">Attributes to update. Only properties with a value set will be updated.</param>
-            <param name="callback">Method to call upon successful completion.</param>
-        </member>
-        <member name="M:Twilio.TwilioRestClient.DeleteAddress(System.String,System.Action{Twilio.DeleteStatus})">
-            <summary>
-            Delete an address from the current account.
-            </summary>
-            <param name="addressSid">Sid of the address to delete</param>
-            <param name="callback">Method to call upon completion; should accept a DeleteStatus object indicating whether the request succeeded.</param>
-        </member>
-        <member name="M:Twilio.TwilioRestClient.CreateToken(System.Int32)">
-            <summary>
-            Create a new token
-            </summary>
-            <param name="ttl">The friendly name to name the application</param>
-        </member>
-        <member name="M:Twilio.TwilioRestClient.CreateToken">
-            <summary>
-            Create a new token
-            </summary>
-        </member>
-        <member name="M:Twilio.TwilioRestClient.CreateToken(System.Int32,System.Action{Twilio.Token})">
-            <summary>
-            Create a new token
-            </summary>
-            <param name="ttl">The time in seconds before this token expires</param>
-            <param name="callback">Method to call upon successful completion</param>
-        </member>
-        <member name="M:Twilio.TwilioRestClient.CreateToken(System.Action{Twilio.Token})">
-            <summary>
-            Create a new token
-            </summary>
-            <param name="callback">Method to call upon successful completion</param>
-        </member>
-        <member name="P:Twilio.TwilioRestClient.ApiVersion">
+        <member name="P:Twilio.TwilioClient.ApiVersion">
             <summary>
             Twilio API version to use when making requests
             </summary>
         </member>
-        <member name="P:Twilio.TwilioRestClient.BaseUrl">
+        <member name="P:Twilio.TwilioClient.BaseUrl">
             <summary>
-            Base URL of API (defaults to https://api.twilio.com)
+            Base URL of API
             </summary>
         </member>
-        <member name="P:Twilio.TwilioRestClient.Proxy">
+        <member name="P:Twilio.TwilioClient.Proxy">
             <summary>
             
             </summary>
         </member>
-        <member name="T:Twilio.TwilioBase">
+        <member name="M:Twilio.TwilioClient.#ctor(System.String,System.String,System.String,System.String,System.String)">
             <summary>
-            Base class for all Twilio resource types
+            Initializes a new client with the specified credentials.
+            </summary>
+            <param name="accountSid">The AccountSid to authenticate with</param>
+            <param name="authToken">The AuthToken to authenticate with</param>
+            <param name="accountResourceSid"></param>
+            <param name="apiVersion"></param>
+            <param name="baseUrl"></param>
+        </member>
+        <member name="M:Twilio.TwilioClient.Execute``1(RestSharp.IRestRequest)">
+            <summary>
+            Execute a manual REST request
+            </summary>
+            <typeparam name="T">The type of object to create and populate with the returned data.</typeparam>
+            <param name="request">The RestRequest to execute (will use client credentials)</param>
+        </member>
+        <member name="M:Twilio.TwilioClient.Execute(RestSharp.IRestRequest)">
+            <summary>
+            Execute a manual REST request
+            </summary>
+            <param name="request">The RestRequest to execute (will use client credentials)</param>
+        </member>
+        <member name="T:Twilio.Address">
+            <summary>
+            An Address resource represents a single address to be associated with Twilio Phone Numbers.
             </summary>
         </member>
-        <member name="P:Twilio.TwilioBase.RestException">
+        <member name="P:Twilio.Address.Sid">
             <summary>
-            Exception encountered during API request
+            A 34 character string that uniquely identifies this address.
             </summary>
         </member>
-        <member name="P:Twilio.TwilioBase.Uri">
+        <member name="P:Twilio.Address.AccountSid">
             <summary>
-            The URI for this resource, relative to https://api.twilio.com
+            The unique id of the Account responsible for creating this address.
+            </summary>
+        </member>
+        <member name="P:Twilio.Address.FriendlyName">
+            <summary>
+            A user provided string that identifies this address.
+            </summary>
+        </member>
+        <member name="P:Twilio.Address.CustomerName">
+            <summary>
+            Gets or sets the name of the customer.
+            </summary>
+            <value>The name of the customer.</value>
+        </member>
+        <member name="P:Twilio.Address.Street">
+            <summary>
+            Gets or sets the street component of the address.
+            </summary>
+            <value>The street number and name.</value>
+        </member>
+        <member name="P:Twilio.Address.City">
+            <summary>
+            Gets or sets the city.
+            </summary>
+            <value>The city.</value>
+        </member>
+        <member name="P:Twilio.Address.Region">
+            <summary>
+            Gets or sets the region.
+            </summary>
+            <value>The region.</value>
+        </member>
+        <member name="P:Twilio.Address.PostalCode">
+            <summary>
+            Gets or sets the postal code.
+            </summary>
+            <value>The postal code.</value>
+        </member>
+        <member name="P:Twilio.Address.IsoCountry">
+            <summary>
+            The ISO country code for this address.
+            </summary>
+            <value>An ISO-3166-1 alpha-2 (two-letter) country code.</value>
+        </member>
+        <member name="P:Twilio.Address.DateCreated">
+            <summary>
+            The date that this address was created, given as GMT
+            </summary>
+        </member>
+        <member name="P:Twilio.Address.DateUpdated">
+            <summary>
+            The date that this address was last updated, given as GMT
+            </summary>
+        </member>
+        <member name="P:Twilio.AddressListRequest.FriendlyName">
+            <summary>
+            Only show Addresses with this friendly name.
+            </summary>
+        </member>
+        <member name="P:Twilio.AddressListRequest.CustomerName">
+            <summary>
+            Only show Addresses with this customer name.
+            </summary>
+        </member>
+        <member name="P:Twilio.AddressListRequest.IsoCountry">
+            <summary>
+            Only show Addresses located in this country.
+            </summary>
+        </member>
+        <member name="P:Twilio.AddressOptions.FriendlyName">
+            <summary>
+            An optional string that identifies this address. 64 characters maximum.
+            </summary>
+        </member>
+        <member name="P:Twilio.AddressOptions.CustomerName">
+            <summary>
+            You or your customer's name or business name.
+            </summary>
+        </member>
+        <member name="P:Twilio.AddressOptions.Street">
+            <summary>
+            The number and street address where you or your customer are located.
+            </summary>	
+        </member>
+        <member name="P:Twilio.AddressOptions.City">
+            <summary>
+            The city in which you or your customer are located.
+            </summary>
+            <value>The city.</value>
+        </member>
+        <member name="P:Twilio.AddressOptions.Region">
+            <summary>
+            The state or region in which you or your customer are located.
+            </summary>
+            <value>The region.</value>
+        </member>
+        <member name="P:Twilio.AddressOptions.PostalCode">
+            <summary>
+            The postal code in which you or your customer are located.
+            </summary>
+            <value>The postal code.</value>
+        </member>
+        <member name="T:Twilio.AddressResult">
+            <summary>
+            Twilio API call result with paging information.
+            </summary>
+        </member>
+        <member name="P:Twilio.AddressResult.Addresses">
+            <summary>
+            List of Address results returned from Twilio API call.
+            </summary>
+        </member>
+        <member name="T:Twilio.DependentPhoneNumber">
+            <summary>
+            Represents a phone number object that depends on a particular Address.
+            </summary>
+        </member>
+        <member name="P:Twilio.DependentPhoneNumber.Sid">
+            <summary>
+            A 34 character string that uniquely identifies this resource.
+            </summary>
+        </member>
+        <member name="P:Twilio.DependentPhoneNumber.DateCreated">
+            <summary>
+            The date that this resource was created, given as GMT
+            </summary>
+        </member>
+        <member name="P:Twilio.DependentPhoneNumber.DateUpdated">
+            <summary>
+            The date that this resource was last updated, given as GMT
+            </summary>
+        </member>
+        <member name="P:Twilio.DependentPhoneNumber.FriendlyName">
+            <summary>
+            A human readable descriptive text for this resource, up to 64 characters long. By default, the FriendlyName is a nicely formatted version of the phone number.
+            </summary>
+        </member>
+        <member name="P:Twilio.DependentPhoneNumber.AccountSid">
+            <summary>
+            The unique id of the Account responsible for this phone number.
+            </summary>
+        </member>
+        <member name="P:Twilio.DependentPhoneNumber.PhoneNumber">
+            <summary>
+            The incoming phone number. e.g., +16175551212 (E.164 format)
+            </summary>
+        </member>
+        <member name="P:Twilio.DependentPhoneNumber.ApiVersion">
+            <summary>
+            Calls to this phone number will start a new TwiML session with this API version.
+            </summary>
+        </member>
+        <member name="P:Twilio.DependentPhoneNumber.VoiceCallerIdLookup">
+            <summary>
+            Look up the caller's caller-ID name from the CNAM database (additional charges apply)
+            </summary>
+        </member>
+        <member name="P:Twilio.DependentPhoneNumber.VoiceUrl">
+            <summary>
+            The URL Twilio will request when this phone number receives a call.
+            </summary>
+        </member>
+        <member name="P:Twilio.DependentPhoneNumber.VoiceMethod">
+            <summary>
+            The HTTP method Twilio will use when requesting the above Url. Either GET or POST.
+            </summary>
+        </member>
+        <member name="P:Twilio.DependentPhoneNumber.VoiceFallbackUrl">
+            <summary>
+            The URL that Twilio will request if an error occurs retrieving or executing the TwiML requested by Url.
+            </summary>
+        </member>
+        <member name="P:Twilio.DependentPhoneNumber.VoiceFallbackMethod">
+            <summary>
+            The HTTP method Twilio will use when requesting the VoiceFallbackUrl. Either GET or POST.
+            </summary>
+        </member>
+        <member name="P:Twilio.DependentPhoneNumber.StatusCallback">
+            <summary>
+            The URL that Twilio will request to pass status parameters (such as call ended) to your application.
+            </summary>
+        </member>
+        <member name="P:Twilio.DependentPhoneNumber.StatusCallbackMethod">
+            <summary>
+            The HTTP method Twilio will use to make requests to the StatusCallbackUrl. Either GET or POST.
+            </summary>
+        </member>
+        <member name="P:Twilio.DependentPhoneNumber.SmsUrl">
+            <summary>
+            The URL Twilio will request when receiving an incoming SMS message to this number.
+            </summary>
+        </member>
+        <member name="P:Twilio.DependentPhoneNumber.SmsMethod">
+            <summary>
+            The HTTP method Twilio will use when making requests to the SmsUrl. Either GET or POST.
+            </summary>
+        </member>
+        <member name="P:Twilio.DependentPhoneNumber.SmsFallbackUrl">
+            <summary>
+            The URL that Twilio will request if an error occurs retrieving or executing the TwiML from SmsUrl.
+            </summary>
+        </member>
+        <member name="P:Twilio.DependentPhoneNumber.SmsFallbackMethod">
+            <summary>
+            The HTTP method Twilio will use when requesting the above URL. Either GET or POST.
+            </summary>
+        </member>
+        <member name="P:Twilio.DependentPhoneNumber.SmsApplicationSid">
+            <summary>
+            The ApplicationSid assigned to this number for SMS requests
+            </summary>
+        </member>
+        <member name="P:Twilio.DependentPhoneNumber.VoiceApplicationSid">
+            <summary>
+            The ApplicationSid assigned to this number for voice requests
+            </summary>
+        </member>
+        <member name="P:Twilio.DependentPhoneNumber.AddressRequirements">
+            <summary>
+            Indicates whether this number requires an associated physical address.
+            One of "any", "local", "foreign", or "none".
+            </summary>
+        </member>
+        <member name="T:Twilio.DependentPhoneNumberResult">
+            <summary>
+            Twilio API call result with paging information.
             </summary>
         </member>
         <member name="P:Twilio.Feedback.QualityScore">
@@ -3035,6 +3595,88 @@
             The date that this resource was last updated, given as GMT 
             </summary>
         </member>
+        <member name="T:Twilio.FeedbackSummary">
+            <summary>
+            An FeedbackSummary instance resource represents a single Twilio call FeedbackSummary.
+            </summary>
+        </member>
+        <member name="P:Twilio.FeedbackSummary.Sid">
+            <summary>
+            A 34 character string that uniquely identifies this feedback summary.
+            </summary>
+        </member>
+        <member name="P:Twilio.FeedbackSummary.StartDate">
+            <summary>
+            The feedback summary start date.
+            </summary>
+        </member>
+        <member name="P:Twilio.FeedbackSummary.EndDate">
+            <summary>
+            The feedback summary start date.
+            </summary>
+        </member>
+        <member name="P:Twilio.FeedbackSummary.AccountSid">
+            <summary>
+            The feedback summary AccountSid.
+            </summary>
+        </member>
+        <member name="P:Twilio.FeedbackSummary.IncludeSubaccounts">
+            <summary>
+            Gets or sets a value indicating whether this <see cref="T:Twilio.FeedbackSummary"/> include subaccounts.
+            </summary>
+            <value><c>true</c> if include subaccounts; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Twilio.FeedbackSummary.Status">
+            <summary>
+            Gets or sets the status.
+            </summary>
+            <value>The status.</value>
+        </member>
+        <member name="P:Twilio.FeedbackSummary.CallCount">
+            <summary>
+            Gets or sets the call count.
+            </summary>
+            <value>The call count.</value>
+        </member>
+        <member name="P:Twilio.FeedbackSummary.CallFeedbackCount">
+            <summary>
+            Gets or sets the call feedback count.
+            </summary>
+            <value>The call feedback count.</value>
+        </member>
+        <member name="P:Twilio.FeedbackSummary.QualityScoreAverage">
+            <summary>
+            Gets or sets the quality score average.
+            </summary>
+            <value>The quality score average.</value>
+        </member>
+        <member name="P:Twilio.FeedbackSummary.QualityScoreMedian">
+            <summary>
+            Gets or sets the quality score median.
+            </summary>
+            <value>The quality score median.</value>
+        </member>
+        <member name="P:Twilio.FeedbackSummary.QualityScoreStandardDeviation">
+            <summary>
+            Gets or sets the quality score standard deviation.
+            </summary>
+            <value>The quality score standard deviation.</value>
+        </member>
+        <member name="P:Twilio.FeedbackSummary.Issues">
+            <summary>
+            List of issues present in this feedback summary.
+            </summary>
+        </member>
+        <member name="P:Twilio.FeedbackSummary.DateCreated">
+            <summary>
+            The date that this feedback summary was created, given as GMT
+            </summary>
+        </member>
+        <member name="P:Twilio.FeedbackSummary.DateUpdated">
+            <summary>
+            The date that this feedback summary was last updated, given as GMT
+            </summary>
+        </member>
         <member name="T:Twilio.Issue">
             <summary>
             Feedback summary issue.
@@ -3055,9 +3697,80 @@
             The percentage of calls that experienced this issue
             </summary>
         </member>
+        <member name="P:Twilio.Key.Sid">
+            <summary>
+            A 34 character string that uniquely identifies this resource.
+            </summary>
+        </member>
+        <member name="P:Twilio.Key.FriendlyName">
+            <summary>
+            A human-readable description of this Key.
+            </summary>
+        </member>
+        <member name="P:Twilio.Key.DateCreated">
+            <summary>
+            The time this Key was created.
+            </summary>
+        </member>
+        <member name="P:Twilio.Key.DateUpdated">
+            <summary>
+            The time this Key was last updated.
+            </summary>
+        </member>
+        <member name="P:Twilio.Key.Secret">
+            <summary>
+            The secret key. Only returned upon the initial creation of the Key resource; null on subsequent requests.
+            </summary>
+        </member>
+        <member name="P:Twilio.KeyResult.Keys">
+            <summary>
+            A list of Key instances returned by the API.
+            </summary>
+        </member>
+        <member name="P:Twilio.Model.ListMeta.Key">
+            <summary>
+            The plural name of this resource collection
+            </summary>
+        </member>
+        <member name="P:Twilio.Model.ListMeta.Page">
+            <summary>
+            Page number of this result page, counting from 0
+            </summary>
+        </member>
+        <member name="P:Twilio.Model.ListMeta.PageSize">
+            <summary>
+            The size of this result page
+            </summary>
+        </member>
+        <member name="P:Twilio.Model.ListMeta.NextPageUrl">
+            <summary>
+            URL of the next page in this list
+            </summary>
+        </member>
+        <member name="P:Twilio.Model.ListMeta.PreviousPageUrl">
+            <summary>
+            URL of the previous page in this list
+            </summary>
+        </member>
+        <member name="P:Twilio.Model.ListMeta.FirstPageUrl">
+            <summary>
+            URL of the first page in this list
+            </summary>
+        </member>
+        <member name="P:Twilio.Model.ListMeta.Url">
+            <summary>
+            URL for this page
+            </summary>
+        </member>
+        <member name="P:Twilio.Model.NextGenListBase.Meta">
+            <summary>
+            Metadata about this list resource representation.
+            Includes resource name and paging information.
+            </summary>
+        </member>
         <member name="T:Twilio.MediaListRequest">
             <summary>
-            Search filter options for a list of Media 
+            Search filter options for a list of Media
             </summary>
         </member>
         <member name="P:Twilio.MediaListRequest.ParentSid">
@@ -3083,6 +3796,51 @@
         <member name="P:Twilio.MediaListRequest.Count">
             <summary>
             How many results to retrieve
+            </summary>
+        </member>
+        <member name="T:Twilio.Permission">
+            <summary>
+            A single Connect App permission
+            </summary>
+        </member>
+        <member name="P:Twilio.Permission.Value">
+            <summary>
+            The value of the Permission.  Valid values are get-all or post-all.
+            </summary>
+        </member>
+        <member name="P:Twilio.Token.AccountSid">
+            <summary>
+            The account sid that requested this token.
+            </summary>
+        </member>
+        <member name="P:Twilio.Token.Username">
+            <summary>
+            The username for this token.
+            </summary>
+        </member>
+        <member name="P:Twilio.Token.Password">
+            <summary>
+            The password for this token.
+            </summary>
+        </member>
+        <member name="P:Twilio.Token.IceServers">
+            <summary>
+            The IceServers for this token.
+            </summary>
+        </member>
+        <member name="P:Twilio.Token.Ttl">
+            <summary>
+            How long this token is good for in seconds.
+            </summary>
+        </member>
+        <member name="P:Twilio.Token.DateCreated">
+            <summary>
+            The date that this resource was created, given as GMT
+            </summary>
+        </member>
+        <member name="P:Twilio.Token.DateUpdated">
+            <summary>
+            The date that this resource was last updated, given as GMT 
             </summary>
         </member>
         <member name="T:Twilio.Account">
@@ -3123,61 +3881,6 @@
         <member name="T:Twilio.AccountResult">
             <summary>
             Twilio API call result with paging information
-            </summary>
-        </member>
-        <member name="T:Twilio.TwilioListBase">
-            <summary>
-            Base class for list resource data
-            </summary>
-        </member>
-        <member name="P:Twilio.TwilioListBase.Page">
-            <summary>
-            The current page number. Zero-indexed, so the first page is 0.
-            </summary>
-        </member>
-        <member name="P:Twilio.TwilioListBase.NumPages">
-            <summary>
-            The total number of pages.
-            </summary>
-        </member>
-        <member name="P:Twilio.TwilioListBase.PageSize">
-            <summary>
-            How many items are in each page
-            </summary>
-        </member>
-        <member name="P:Twilio.TwilioListBase.Total">
-            <summary>
-            The total number of items in the list.
-            </summary>
-        </member>
-        <member name="P:Twilio.TwilioListBase.Start">
-            <summary>
-            The position in the overall list of the first item in this page.
-            </summary>
-        </member>
-        <member name="P:Twilio.TwilioListBase.End">
-            <summary>
-            The position in the overall list of the last item in this page.
-            </summary>
-        </member>
-        <member name="P:Twilio.TwilioListBase.FirstPageUri">
-            <summary>
-            The URI for the first page of this list.
-            </summary>
-        </member>
-        <member name="P:Twilio.TwilioListBase.NextPageUri">
-            <summary>
-            The URI for the next page of this list.
-            </summary>
-        </member>
-        <member name="P:Twilio.TwilioListBase.PreviousPageUri">
-            <summary>
-            The URI for the previous page of this list.
-            </summary>
-        </member>
-        <member name="P:Twilio.TwilioListBase.LastPageUri">
-            <summary>
-            The URI for the last page of this list.
             </summary>
         </member>
         <member name="P:Twilio.AccountResult.Accounts">
@@ -3430,7 +4133,11 @@
             Indicates whether this number requires an associated physical address.
             One of "any", "local", "foreign", or "none".
             </summary>
-            XXX does this want to be an enum of some sort?
+        </member>
+        <member name="P:Twilio.AvailablePhoneNumber.Beta">
+            <summary>
+            Whether this number is new to the Twilio platform.
+            </summary>
         </member>
         <member name="P:Twilio.AvailablePhoneNumber.Capabilities">
             <summary>
@@ -3753,7 +4460,7 @@
         </member>
         <member name="T:Twilio.MessageListRequest">
             <summary>
-            Search filter options for a list of Messages 
+            Search filter options for a list of Messages
             </summary>
         </member>
         <member name="P:Twilio.MessageListRequest.From">
@@ -4372,6 +5079,19 @@
             The HTTP method Twilio should use when requesting the above URL. Defaults to POST.
             </summary>
         </member>
+        <member name="P:Twilio.CallOptions.StatusCallbackEvents">
+             <summary>
+             The call lifecycle events Twilio should send a StatusCallback request for.
+             Available event types:
+             - initiated
+             - ringing
+             - answered
+             - completed
+            
+             "completed" events are free; see twilio.com for pricing on the other event types.
+             If not set, defaults to ["completed"].
+             </summary>
+        </member>
         <member name="P:Twilio.CallOptions.Method">
             <summary>
             The HTTP method Twilio should use when requesting the required Url parameter's value above. Defaults to POST.
@@ -4417,6 +5137,21 @@
             <summary>
             If this is a Sip call, set the authorization password for your Sip
             endpoint
+            </summary>
+        </member>
+        <member name="P:Twilio.CallOptions.RecordingChannels">
+            <summary>
+            Set this parameter to specify the number of channels in the final .wav recording. Defaults to 'mono'.
+            </summary>
+        </member>
+        <member name="P:Twilio.CallOptions.RecordingStatusCallback">
+            <summary>
+            A URL that Twilio will request when the recording is ready to notify your app.
+            </summary>
+        </member>
+        <member name="P:Twilio.CallOptions.RecordingStatusCallbackMethod">
+            <summary>
+            The HTTP method Twilio should use when requesting the above URL. Defaults to POST.
             </summary>
         </member>
         <member name="T:Twilio.AvailablePhoneNumberListRequest">
@@ -4478,14 +5213,14 @@
         </member>
         <member name="P:Twilio.AvailablePhoneNumberListRequest.VoiceEnabled">
             <summary>
-            Set to 'true' or 'false'. If true, the response will contain Voice 
-            enabled phone numbers. The SMS capability is independent of the 
+            Set to 'true' or 'false'. If true, the response will contain Voice
+            enabled phone numbers. The SMS capability is independent of the
             Voice capability.
             </summary>
         </member>
         <member name="P:Twilio.AvailablePhoneNumberListRequest.MmsEnabled">
             <summary>
-            Set to 'true' or 'false'. If true, the response will contain MMS 
+            Set to 'true' or 'false'. If true, the response will contain MMS
             enabled phone numbers. The MMS capability is independent of the
             SMS capability.
             </summary>
@@ -4507,6 +5242,12 @@
             <summary>
             Indicates whether the response includes phone numbers which require a foreign Address.
             Defaults to 'false', meaning results could include phone numbers with a foreign Address required.
+            </summary>
+        </member>
+        <member name="P:Twilio.AvailablePhoneNumberListRequest.Beta">
+            <summary>
+            Whether to include new (beta) numbers on the Twilio platform.
+            Defaults to true.
             </summary>
         </member>
         <member name="T:Twilio.ComparisonType">
@@ -4793,6 +5534,11 @@
             <summary>
             Indicates whether this number requires an associated physical address.
             One of "any", "local", "foreign", or "none".
+            </summary>
+        </member>
+        <member name="P:Twilio.IncomingPhoneNumber.Beta">
+            <summary>
+            Whether this number is new to the Twilio platform.
             </summary>
         </member>
         <member name="T:Twilio.IncomingPhoneNumberResult">
@@ -5103,6 +5849,11 @@
             The HTTP method Twilio will use to make requests to the StatusCallback URL. Either GET or POST. Defaults to POST.
             </summary>
         </member>
+        <member name="P:Twilio.PhoneNumberOptions.TrunkSid">
+            <summary>
+            The 34 character sid of the Trunk Twilio should use to handle phone calls to this number
+            </summary>
+        </member>
         <member name="T:Twilio.Recording">
             <summary>
             An Recording instance resource represents a single Twilio Recording.
@@ -5147,6 +5898,26 @@
             <summary>
             The charge for this recording in USD. Populated after the recording is completed. May not be immediately available. 
             Doesn't include storage charge.
+            </summary>
+        </member>
+        <member name="P:Twilio.Recording.PriceUnit">
+            <summary>
+            The Price Unit of the recording.
+            </summary>
+        </member>
+        <member name="P:Twilio.Recording.Status">
+            <summary>
+            The Status of the recording.
+            </summary>
+        </member>
+        <member name="P:Twilio.Recording.Source">
+            <summary>
+            The Source of the recording.
+            </summary>
+        </member>
+        <member name="P:Twilio.Recording.Channels">
+            <summary>
+            The amount of Channels in the recording.
             </summary>
         </member>
         <member name="T:Twilio.RecordingResult">
@@ -5319,6 +6090,61 @@
             List of Transcription resources returned by API
             </summary>
         </member>
+        <member name="T:Twilio.TwilioBase">
+            <summary>
+            Base class for all Twilio resource types
+            </summary>
+        </member>
+        <member name="P:Twilio.TwilioBase.RestException">
+            <summary>
+            Exception encountered during API request
+            </summary>
+        </member>
+        <member name="P:Twilio.TwilioBase.Uri">
+            <summary>
+            The URI for this resource, relative to https://api.twilio.com
+            </summary>
+        </member>
+        <member name="T:Twilio.TwilioListBase">
+            <summary>
+            Base class for list resource data
+            </summary>
+        </member>
+        <member name="P:Twilio.TwilioListBase.Page">
+            <summary>
+            The current page number. Zero-indexed, so the first page is 0.
+            </summary>
+        </member>
+        <member name="P:Twilio.TwilioListBase.PageSize">
+            <summary>
+            How many items are in each page
+            </summary>
+        </member>
+        <member name="P:Twilio.TwilioListBase.Start">
+            <summary>
+            The position in the overall list of the first item in this page.
+            </summary>
+        </member>
+        <member name="P:Twilio.TwilioListBase.End">
+            <summary>
+            The position in the overall list of the last item in this page.
+            </summary>
+        </member>
+        <member name="P:Twilio.TwilioListBase.FirstPageUri">
+            <summary>
+            The URI for the first page of this list.
+            </summary>
+        </member>
+        <member name="P:Twilio.TwilioListBase.NextPageUri">
+            <summary>
+            The URI for the next page of this list.
+            </summary>
+        </member>
+        <member name="P:Twilio.TwilioListBase.PreviousPageUri">
+            <summary>
+            The URI for the previous page of this list.
+            </summary>
+        </member>
         <member name="T:Twilio.ValidationRequestResult">
             <summary>
             Result of making a request to validate an OutgoingCallerId
@@ -5347,281 +6173,6 @@
         <member name="P:Twilio.ValidationRequestResult.ValidationCode">
             <summary>
             The 6 digit validation code that must be entered via the phone to validate this phone number for Caller ID.
-            </summary>
-        </member>
-        <member name="T:Twilio.Address">
-            <summary>
-            An Address resource represents a single address to be associated with Twilio Phone Numbers.
-            </summary>
-        </member>
-        <member name="P:Twilio.Address.Sid">
-            <summary>
-            A 34 character string that uniquely identifies this address.
-            </summary>
-        </member>
-        <member name="P:Twilio.Address.AccountSid">
-            <summary>
-            The unique id of the Account responsible for creating this address.
-            </summary>
-        </member>
-        <member name="P:Twilio.Address.FriendlyName">
-            <summary>
-            A user provided string that identifies this address.
-            </summary>
-        </member>
-        <member name="P:Twilio.Address.CustomerName">
-            <summary>
-            Gets or sets the name of the customer.
-            </summary>
-            <value>The name of the customer.</value>
-        </member>
-        <member name="P:Twilio.Address.Street">
-            <summary>
-            Gets or sets the street component of the address.
-            </summary>
-            <value>The street number and name.</value>
-        </member>
-        <member name="P:Twilio.Address.City">
-            <summary>
-            Gets or sets the city.
-            </summary>
-            <value>The city.</value>
-        </member>
-        <member name="P:Twilio.Address.Region">
-            <summary>
-            Gets or sets the region.
-            </summary>
-            <value>The region.</value>
-        </member>
-        <member name="P:Twilio.Address.PostalCode">
-            <summary>
-            Gets or sets the postal code.
-            </summary>
-            <value>The postal code.</value>
-        </member>
-        <member name="P:Twilio.Address.IsoCountry">
-            <summary>
-            The ISO country code for this address.
-            </summary>
-            <value>An ISO-3166-1 alpha-2 (two-letter) country code.</value>
-        </member>
-        <member name="P:Twilio.Address.DateCreated">
-            <summary>
-            The date that this address was created, given as GMT
-            </summary>
-        </member>
-        <member name="P:Twilio.Address.DateUpdated">
-            <summary>
-            The date that this address was last updated, given as GMT
-            </summary>
-        </member>
-        <member name="T:Twilio.AddressResult">
-            <summary>
-            Twilio API call result with paging information.
-            </summary>
-        </member>
-        <member name="P:Twilio.AddressResult.Addresses">
-            <summary>
-            List of Address results returned from Twilio API call.
-            </summary>
-        </member>
-        <member name="P:Twilio.AddressListRequest.FriendlyName">
-            <summary>
-            Only show Addresses with this friendly name.
-            </summary>
-        </member>
-        <member name="P:Twilio.AddressListRequest.CustomerName">
-            <summary>
-            Only show Addresses with this customer name.
-            </summary>
-        </member>
-        <member name="P:Twilio.AddressListRequest.IsoCountry">
-            <summary>
-            Only show Addresses located in this country.
-            </summary>
-        </member>
-        <member name="T:Twilio.DependentPhoneNumber">
-            <summary>
-            Represents a phone number object that depends on a particular Address.
-            </summary>
-        </member>
-        <member name="P:Twilio.DependentPhoneNumber.Sid">
-            <summary>
-            A 34 character string that uniquely identifies this resource.
-            </summary>
-        </member>
-        <member name="P:Twilio.DependentPhoneNumber.DateCreated">
-            <summary>
-            The date that this resource was created, given as GMT
-            </summary>
-        </member>
-        <member name="P:Twilio.DependentPhoneNumber.DateUpdated">
-            <summary>
-            The date that this resource was last updated, given as GMT
-            </summary>
-        </member>
-        <member name="P:Twilio.DependentPhoneNumber.FriendlyName">
-            <summary>
-            A human readable descriptive text for this resource, up to 64 characters long. By default, the FriendlyName is a nicely formatted version of the phone number.
-            </summary>
-        </member>
-        <member name="P:Twilio.DependentPhoneNumber.AccountSid">
-            <summary>
-            The unique id of the Account responsible for this phone number.
-            </summary>
-        </member>
-        <member name="P:Twilio.DependentPhoneNumber.PhoneNumber">
-            <summary>
-            The incoming phone number. e.g., +16175551212 (E.164 format)
-            </summary>
-        </member>
-        <member name="P:Twilio.DependentPhoneNumber.ApiVersion">
-            <summary>
-            Calls to this phone number will start a new TwiML session with this API version.
-            </summary>
-        </member>
-        <member name="P:Twilio.DependentPhoneNumber.VoiceCallerIdLookup">
-            <summary>
-            Look up the caller's caller-ID name from the CNAM database (additional charges apply)
-            </summary>
-        </member>
-        <member name="P:Twilio.DependentPhoneNumber.VoiceUrl">
-            <summary>
-            The URL Twilio will request when this phone number receives a call.
-            </summary>
-        </member>
-        <member name="P:Twilio.DependentPhoneNumber.VoiceMethod">
-            <summary>
-            The HTTP method Twilio will use when requesting the above Url. Either GET or POST.
-            </summary>
-        </member>
-        <member name="P:Twilio.DependentPhoneNumber.VoiceFallbackUrl">
-            <summary>
-            The URL that Twilio will request if an error occurs retrieving or executing the TwiML requested by Url.
-            </summary>
-        </member>
-        <member name="P:Twilio.DependentPhoneNumber.VoiceFallbackMethod">
-            <summary>
-            The HTTP method Twilio will use when requesting the VoiceFallbackUrl. Either GET or POST.
-            </summary>
-        </member>
-        <member name="P:Twilio.DependentPhoneNumber.StatusCallback">
-            <summary>
-            The URL that Twilio will request to pass status parameters (such as call ended) to your application.
-            </summary>
-        </member>
-        <member name="P:Twilio.DependentPhoneNumber.StatusCallbackMethod">
-            <summary>
-            The HTTP method Twilio will use to make requests to the StatusCallbackUrl. Either GET or POST.
-            </summary>
-        </member>
-        <member name="P:Twilio.DependentPhoneNumber.SmsUrl">
-            <summary>
-            The URL Twilio will request when receiving an incoming SMS message to this number.
-            </summary>
-        </member>
-        <member name="P:Twilio.DependentPhoneNumber.SmsMethod">
-            <summary>
-            The HTTP method Twilio will use when making requests to the SmsUrl. Either GET or POST.
-            </summary>
-        </member>
-        <member name="P:Twilio.DependentPhoneNumber.SmsFallbackUrl">
-            <summary>
-            The URL that Twilio will request if an error occurs retrieving or executing the TwiML from SmsUrl.
-            </summary>
-        </member>
-        <member name="P:Twilio.DependentPhoneNumber.SmsFallbackMethod">
-            <summary>
-            The HTTP method Twilio will use when requesting the above URL. Either GET or POST.
-            </summary>
-        </member>
-        <member name="P:Twilio.DependentPhoneNumber.SmsApplicationSid">
-            <summary>
-            The ApplicationSid assigned to this number for SMS requests
-            </summary>
-        </member>
-        <member name="P:Twilio.DependentPhoneNumber.VoiceApplicationSid">
-            <summary>
-            The ApplicationSid assigned to this number for voice requests
-            </summary>
-        </member>
-        <member name="P:Twilio.DependentPhoneNumber.AddressRequirements">
-            <summary>
-            Indicates whether this number requires an associated physical address.
-            One of "any", "local", "foreign", or "none".
-            </summary>
-        </member>
-        <member name="T:Twilio.DependentPhoneNumberResult">
-            <summary>
-            Twilio API call result with paging information.
-            </summary>
-        </member>
-        <member name="P:Twilio.AddressOptions.FriendlyName">
-            <summary>
-            An optional string that identifies this address. 64 characters maximum.
-            </summary>
-        </member>
-        <member name="P:Twilio.AddressOptions.CustomerName">
-            <summary>
-            You or your customer's name or business name.
-            </summary>
-        </member>
-        <member name="P:Twilio.AddressOptions.Street">
-            <summary>
-            The number and street address where you or your customer are located.
-            </summary>	
-        </member>
-        <member name="P:Twilio.AddressOptions.City">
-            <summary>
-            The city in which you or your customer are located.
-            </summary>
-            <value>The city.</value>
-        </member>
-        <member name="P:Twilio.AddressOptions.Region">
-            <summary>
-            The state or region in which you or your customer are located.
-            </summary>
-            <value>The region.</value>
-        </member>
-        <member name="P:Twilio.AddressOptions.PostalCode">
-            <summary>
-            The postal code in which you or your customer are located.
-            </summary>
-            <value>The postal code.</value>
-        </member>
-        <member name="P:Twilio.Token.AccountSid">
-            <summary>
-            The account sid that requested this token.
-            </summary>
-        </member>
-        <member name="P:Twilio.Token.Username">
-            <summary>
-            The username for this token.
-            </summary>
-        </member>
-        <member name="P:Twilio.Token.Password">
-            <summary>
-            The password for this token.
-            </summary>
-        </member>
-        <member name="P:Twilio.Token.IceServers">
-            <summary>
-            The IceServers for this token.
-            </summary>
-        </member>
-        <member name="P:Twilio.Token.Ttl">
-            <summary>
-            How long this token is good for in seconds.
-            </summary>
-        </member>
-        <member name="P:Twilio.Token.DateCreated">
-            <summary>
-            The date that this resource was created, given as GMT
-            </summary>
-        </member>
-        <member name="P:Twilio.Token.DateUpdated">
-            <summary>
-            The date that this resource was last updated, given as GMT 
             </summary>
         </member>
     </members>

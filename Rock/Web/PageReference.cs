@@ -389,9 +389,9 @@ namespace Rock.Web
         {
             string routeUrl = string.Empty;
 
-            foreach ( Route route in RouteTable.Routes )
+            foreach ( var route in RouteTable.Routes.OfType<Route>() )
             {
-                if ( route.DataTokens != null && route.DataTokens.ContainsKey( "PageRoutes" ) )
+                if ( route != null && route.DataTokens != null && route.DataTokens.ContainsKey( "PageRoutes" ) )
                 {
                     var pageAndRouteIds = route.DataTokens["PageRoutes"] as List<PageAndRouteId>;
                     if ( pageAndRouteIds != null && pageAndRouteIds.Any( r => r.RouteId == RouteId ) )

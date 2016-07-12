@@ -243,6 +243,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     SetActiveTab();
                     modalAddPerson.Show();
                 }
+
+                BuildAttributes( false );
             }
             else
             {
@@ -329,6 +331,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
 
                     BindLocations();
+
+                    BuildAttributes( true );
                 }
             }
         }
@@ -1190,6 +1194,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         }
                     }
 
+                    _group.LoadAttributes();
+                    Rock.Attribute.Helper.GetEditValues( phGroupAttributes, _group );
+                    _group.SaveAttributeValues( rockContext );
+
                     if ( _isFamilyGroupType )
                     {
                         foreach ( var fm in _group.Members )
@@ -1377,6 +1385,24 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             gLocations.DataSource = GroupAddresses;
             gLocations.DataBind();
+        }
+
+        private void BuildAttributes( bool setValues )
+        {
+            if ( _group != null )
+            {
+                phGroupAttributes.Controls.Clear();
+                _group.LoadAttributes();
+                if ( _group.Attributes != null && _group.Attributes.Any() )
+                {
+                    pnlAttributes.Visible = true;
+                    Rock.Attribute.Helper.AddEditControls( _group, phGroupAttributes, setValues, BlockValidationGroup );
+                }
+                else
+                {
+                    pnlAttributes.Visible = false;
+                }
+            }
         }
 
         /// <summary>

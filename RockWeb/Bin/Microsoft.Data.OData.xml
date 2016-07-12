@@ -13094,12 +13094,6 @@
                             XmlNodeType.EndElement - The end element of the element to read properties from.
             </remarks>
         </member>
-        <member name="M:Microsoft.Data.OData.Atom.ODataAtomPropertyAndValueDeserializer.ReadUndeclarePropertyOrSkip">
-            <summary>
-            Reads undeclared property in an element (primitive type value, or null value of complex type)
-            </summary>
-            <returns>The result ODataProperty.</returns>
-        </member>
         <member name="M:Microsoft.Data.OData.Atom.ODataAtomPropertyAndValueDeserializer.ReadProperty(System.String,Microsoft.Data.Edm.IEdmTypeReference,Microsoft.Data.OData.Metadata.ODataNullValueBehaviorKind,System.Boolean)">
             <summary>
             Reads a property.
@@ -15109,6 +15103,30 @@
             true if the stream is in buffering mode; otherwise false.
             </summary>
         </member>
+        <member name="T:Microsoft.Data.OData.ODataJsonLightRawAnnotationSet">
+            <summary>
+            Class representing a property's raw annotations in the JSON Light format.
+            </summary>
+        </member>
+        <member name="F:Microsoft.Data.OData.ODataJsonLightRawAnnotationSet.annotations">
+            <summary>The (instance and property) annotations included in this annotation group.</summary>
+        </member>
+        <member name="P:Microsoft.Data.OData.ODataJsonLightRawAnnotationSet.Annotations">
+            <summary>
+            The (instance and property) annotations included in this annotation group.
+            </summary>
+            <remarks>The keys in the dictionary are the names of the annotations, the values are their values.</remarks>
+        </member>
+        <member name="T:Microsoft.Data.OData.ODataUntypedValue">
+            <summary>
+            Represents the unknown typed value of a property, not including null value.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Data.OData.ODataUntypedValue.RawJson">
+            <summary>
+            Gets or sets raw Json string.
+            </summary>
+        </member>
         <member name="T:Microsoft.Data.OData.Evaluation.IODataEntryMetadataContext">
             <summary>
             Interface used for substitutability of the metadata-centric responsibilities of an entry.
@@ -16392,7 +16410,7 @@
             <param name="annotationName">The custom instance annotation name in question.</param>
             <returns>Returns true if <paramref name="annotationName"/> should be skipped by the reader; false otherwise.</returns>
         </member>
-        <member name="M:Microsoft.Data.OData.JsonLight.ODataJsonLightDeserializer.SkippedOverUnknownODataAnnotation(System.String)">
+        <member name="M:Microsoft.Data.OData.JsonLight.ODataJsonLightDeserializer.SkippedOverUnknownODataAnnotation(System.String,System.String@)">
             <summary>
             If <paramref name="annotationName"/> is under the odata namespace but is not known to ODataLib, move the JSON reader forward to skip the
             annotation name and value then return true; return false otherwise.
@@ -16403,6 +16421,7 @@
             Note that when we add new odata annotations that cannot be skipped, we would bump the protocol version.
             </remarks>
             <param name="annotationName">The annotation name in question.</param>
+            <param name="skippedRawJson">Outputs the skipped raw json string.</param>
             <returns>Returns true if the annotation name and value is skipped; returns false otherwise.</returns>
         </member>
         <member name="M:Microsoft.Data.OData.JsonLight.ODataJsonLightDeserializer.ParseProperty(Microsoft.Data.OData.DuplicatePropertyNamesChecker,System.Func{System.String,System.Object},System.String@)">
@@ -19110,6 +19129,12 @@
             </summary>
             <param name="value">String value to be written.</param>
         </member>
+        <member name="M:Microsoft.Data.OData.Json.IJsonWriter.WriteRawString(System.String)">
+            <summary>
+            Write a raw string value without any escaping or encoding.
+            </summary>
+            <param name="value">String value to be written.</param>
+        </member>
         <member name="M:Microsoft.Data.OData.Json.IJsonWriter.Flush">
             <summary>
             Clears all buffers for the current writer.
@@ -21320,6 +21345,61 @@
             <param name="propertyAnnotationName">The name of the property annotation.</param>
             <returns>The value of the annotation read.</returns>
         </member>
+        <member name="M:Microsoft.Data.OData.JsonLight.ODataJsonLightPropertyAndValueDeserializer.IsKnownValueTypeForNonOpenEntityOrComplex(Microsoft.Data.OData.Json.JsonNodeType,System.Object,System.String,Microsoft.Data.Edm.IEdmTypeReference)">
+            <summary>
+            Check if a property value type in non-open entity is deterministic .
+            </summary>
+            <param name="jsonReaderNodeType">The current JsonReader NodeType.</param>
+            <param name="jsonReaderValue">The current JsonReader Value</param>
+            <param name="payloadTypeName">The 'odata.type' annotation in payload.</param>
+            <param name="payloadTypeReference">The payloadTypeReference of 'odata.type'.</param>
+            <returns>True if property value type is deterministic.</returns>
+        </member>
+        <member name="M:Microsoft.Data.OData.JsonLight.ODataJsonLightPropertyAndValueDeserializer.IsKnownValueTypeForOpenEntityOrComplex(Microsoft.Data.OData.Json.JsonNodeType,System.Object,System.String,Microsoft.Data.Edm.IEdmTypeReference)">
+            <summary>
+            Check if a property value type in open entity is deterministic .
+            </summary>
+            <param name="jsonReaderNodeType">The current JsonReader NodeType.</param>
+            <param name="jsonReaderValue">The current JsonReader Value</param>
+            <param name="payloadTypeName">The 'odata.type' annotation in payload.</param>
+            <param name="payloadTypeReference">The payloadTypeReference of 'odata.type'.</param>
+            <returns>True if property value type is deterministic.</returns>
+        </member>
+        <member name="M:Microsoft.Data.OData.JsonLight.ODataJsonLightPropertyAndValueDeserializer.TryReadOrPeekPayloadType(Microsoft.Data.OData.DuplicatePropertyNamesChecker,System.String,System.Boolean)">
+            <summary>
+            Try to read or peek the odata.type annotation.
+            </summary>
+            <param name="duplicatePropertyNamesChecker">The current level's DuplicatePropertyNamesChecker.</param>
+            <param name="propertyName">The property name.</param>
+            <param name="insideComplexValue">If inside complex value.</param>
+            <returns>The odata.type value or null.</returns>
+        </member>
+        <member name="M:Microsoft.Data.OData.JsonLight.ODataJsonLightPropertyAndValueDeserializer.InnerReadNonOpenUndeclaredProperty(Microsoft.Data.OData.DuplicatePropertyNamesChecker,System.String,System.Boolean)">
+            <summary>
+            Reads a non-open entity or complex type's undeclared property.
+            </summary>
+            <param name="duplicatePropertyNamesChecker">duplicatePropertyNamesChecker.</param>
+            <param name="propertyName">Now this name can't be found in model.</param>
+            <param name="isTopLevelPropertyValue">bool</param>
+            <returns>The read result.</returns>
+        </member>
+        <member name="M:Microsoft.Data.OData.JsonLight.ODataJsonLightPropertyAndValueDeserializer.TryAttachRawAnnotationSetToPropertyValue(Microsoft.Data.OData.DuplicatePropertyNamesChecker,Microsoft.Data.OData.ODataProperty)">
+            <summary>
+            Adds an ODataJsonLightRawAnnotationSet to the property's value (ODataAnnotatable) if it has raw annotation.
+            </summary>
+            <param name="duplicatePropertyNamesChecker">The DuplicatePropertyNamesChecker already containing raw annotations.</param>
+            <param name="property">The target property.</param>
+            <returns>True if annotation is added to property value.</returns>
+        </member>
+        <member name="M:Microsoft.Data.OData.JsonLight.ODataJsonLightPropertyAndValueDeserializer.GetNonEntityValueKind">
+            <summary>
+            Determines the value kind for a non-entity value (that is top-level property value, property value on a complex type, item in a collection)
+            </summary>
+            <returns>The type kind of the property value.</returns>
+            <remarks>
+            Doesn't move the JSON reader.
+            </remarks>
+        </member>
         <member name="M:Microsoft.Data.OData.JsonLight.ODataJsonLightPropertyAndValueDeserializer.TryReadODataTypeAnnotation(System.String@)">
             <summary>
             Tries to read an annotation as OData type name annotation.
@@ -21435,7 +21515,7 @@
             <param name="validateNullValue">true to validate null values; otherwise false.</param>
             <param name="isTopLevelPropertyValue">true if we are reading a top-level property value; otherwise false.</param>
             <param name="insideComplexValue">true if we are reading a complex value and the reader is already positioned inside the complex value; otherwise false.</param>
-            <param name="propertyName">The name of the property whose value is being read, if applicable (used for error reporting).</param>
+            <param name="propertyName">The name of the property whose value is being read, if applicable (used for error reporting). this property name may be re-read from inside json object's odata.type.</param>
             <param name="readRawValueEvenIfNoTypeFound">If true: when no type info, read raw value as primitive (not including spatial type), untyped complex or untype collection.</param>
             <returns>The value of the property read.</returns>
             <remarks>
@@ -21491,15 +21571,6 @@
             Make sure that we don't find any other odata.* annotations or properties after reading a payload with the odata.null annotation or the odata.metadata annotation with value ending #Edm.Null
             </summary>
             <param name="duplicatePropertyNamesChecker">The duplicate property names checker to use.</param>
-        </member>
-        <member name="M:Microsoft.Data.OData.JsonLight.ODataJsonLightPropertyAndValueDeserializer.GetNonEntityValueKind">
-            <summary>
-            Determines the value kind for a non-entity value (that is top-level property value, property value on a complex type, item in a collection)
-            </summary>
-            <returns>The type kind of the property value.</returns>
-            <remarks>
-            Doesn't move the JSON reader.
-            </remarks>
         </member>
         <member name="M:Microsoft.Data.OData.JsonLight.ODataJsonLightPropertyAndValueDeserializer.IncreaseRecursionDepth">
             <summary>
@@ -22313,6 +22384,11 @@
             The value of the last reported node.
             </summary>
         </member>
+        <member name="F:Microsoft.Data.OData.Json.JsonReader.nodeRawValue">
+            <summary>
+            The json raw string or char of the last reported node.
+            </summary>
+        </member>
         <member name="F:Microsoft.Data.OData.Json.JsonReader.stringValueBuilder">
             <summary>
             Cached string builder to be used when constructing string values (needed to resolve escape sequences).
@@ -22333,6 +22409,18 @@
             </summary>
             <returns>true if a new node was found, or false if end of input was reached.</returns>
         </member>
+        <member name="M:Microsoft.Data.OData.Json.JsonReader.TryAppendJsonRawValue(System.String)">
+            <summary>
+            Appends current JSON raw string.
+            </summary>
+            <param name="rawValue">The string.</param>
+        </member>
+        <member name="M:Microsoft.Data.OData.Json.JsonReader.TryAppendJsonRawValue(System.Char)">
+            <summary>
+            Appends current JSON raw string.
+            </summary>
+            <param name="rawValue">The char.</param>
+        </member>
         <member name="M:Microsoft.Data.OData.Json.JsonReader.IsWhitespaceCharacter(System.Char)">
             <summary>
             Determines if a given character is a whitespace character.
@@ -22350,16 +22438,18 @@
             <param name="stringValue">The string value to parse.</param>
             <returns>The parsed date time value, or null if the string value doesn't represent a date time value.</returns>
         </member>
-        <member name="M:Microsoft.Data.OData.Json.JsonReader.ParseValue">
+        <member name="M:Microsoft.Data.OData.Json.JsonReader.ParseValue(System.String@)">
             <summary>
             Parses a "value", that is an array, object or primitive value.
             </summary>
+            <param name="rawValue">The raw string, out parameter.</param>
             <returns>The node type to report to the user.</returns>
         </member>
-        <member name="M:Microsoft.Data.OData.Json.JsonReader.ParseProperty">
+        <member name="M:Microsoft.Data.OData.Json.JsonReader.ParseProperty(System.String@)">
             <summary>
             Parses a property name and the colon after it.
             </summary>
+            <param name="rawValue">The raw string, out parameter.</param>
             <returns>The node type to report to the user.</returns>
         </member>
         <member name="M:Microsoft.Data.OData.Json.JsonReader.ParseStringPrimitiveValue">
@@ -22384,31 +22474,35 @@
             Note that the string parsing can never end with EndOfInput, since we're already seen the quote.
             So it can either return a string succesfully or fail.</remarks>
         </member>
-        <member name="M:Microsoft.Data.OData.Json.JsonReader.ParseNullPrimitiveValue">
+        <member name="M:Microsoft.Data.OData.Json.JsonReader.ParseNullPrimitiveValue(System.String@)">
             <summary>
             Parses the null primitive value.
             </summary>
+            <param name="rawValue">The raw string, out parameter.</param>
             <returns>Always returns null if successful. Otherwise throws.</returns>
             <remarks>Assumes that the current token position points to the 'n' character.</remarks>
         </member>
-        <member name="M:Microsoft.Data.OData.Json.JsonReader.ParseBooleanPrimitiveValue">
+        <member name="M:Microsoft.Data.OData.Json.JsonReader.ParseBooleanPrimitiveValue(System.String@)">
             <summary>
             Parses the true or false primitive values.
             </summary>
+            <param name="rawValue">The raw string, out parameter.</param>
             <returns>true of false boolean value if successful. Otherwise throws.</returns>
             <remarks>Assumes that the current token position points to the 't' or 'f' character.</remarks>
         </member>
-        <member name="M:Microsoft.Data.OData.Json.JsonReader.ParseNumberPrimitiveValue">
+        <member name="M:Microsoft.Data.OData.Json.JsonReader.ParseNumberPrimitiveValue(System.String@)">
             <summary>
             Parses the number primitive values.
             </summary>
+            <param name="rawValue">The raw string, out parameter.</param>
             <returns>Int32 or Double value if successful. Otherwise throws.</returns>
             <remarks>Assumes that the current token position points to the first character of the number, so either digit, dot or dash.</remarks>
         </member>
-        <member name="M:Microsoft.Data.OData.Json.JsonReader.ParseName">
+        <member name="M:Microsoft.Data.OData.Json.JsonReader.ParseName(System.String@)">
             <summary>
             Parses a name token.
             </summary>
+            <param name="rawValue">The raw string, out parameter.</param>
             <returns>The value of the name token.</returns>
             <remarks>Name tokens are (for backward compat reasons) either
             - string value quoted with double quotes.
@@ -22485,6 +22579,11 @@
         <member name="P:Microsoft.Data.OData.Json.JsonReader.NodeType">
             <summary>
             The type of the last node read.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Data.OData.Json.JsonReader.RawValue">
+            <summary>
+            Gets json raw string/char.
             </summary>
         </member>
         <member name="T:Microsoft.Data.OData.Json.JsonReader.ScopeType">
@@ -22724,10 +22823,24 @@
             buffered read or the node type of the last unbuffered read.
             </remarks>
         </member>
+        <member name="P:Microsoft.Data.OData.Json.BufferingJsonReader.RawValue">
+            <summary>
+            The raw value (string or char) of the last reported node.
+            </summary>
+            <remarks>
+            Depending on whether buffering is on or off this will return the node raw value of the last
+            buffered read or the node raw value of the last unbuffered read.
+            </remarks>
+        </member>
         <member name="P:Microsoft.Data.OData.Json.BufferingJsonReader.DisableInStreamErrorDetection">
             <summary>
             true if the parser should check for in-stream errors whenever a start-object node is encountered; otherwise false.
             This is set to false for parsing of top-level errors where we don't want the in-stream error detection code to kick in.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Data.OData.Json.BufferingJsonReader.IsBuffering">
+            <summary>
+            Flag indicating whether buffering is on or off; debug-only for use in asserts.
             </summary>
         </member>
         <member name="T:Microsoft.Data.OData.Json.BufferingJsonReader.BufferedNode">
@@ -22741,12 +22854,16 @@
         <member name="F:Microsoft.Data.OData.Json.BufferingJsonReader.BufferedNode.nodeValue">
             <summary>The value of the node.</summary>
         </member>
-        <member name="M:Microsoft.Data.OData.Json.BufferingJsonReader.BufferedNode.#ctor(Microsoft.Data.OData.Json.JsonNodeType,System.Object)">
+        <member name="F:Microsoft.Data.OData.Json.BufferingJsonReader.BufferedNode.nodeRawValue">
+            <summary>The Json raw value of the node.</summary>
+        </member>
+        <member name="M:Microsoft.Data.OData.Json.BufferingJsonReader.BufferedNode.#ctor(Microsoft.Data.OData.Json.JsonNodeType,System.Object,System.String)">
             <summary>
             Constructor.
             </summary>
             <param name="nodeType">The type of the node read.</param>
             <param name="value">The value of the node.</param>
+            <param name="rawValue">The Json raw string or char of the node.</param>
         </member>
         <member name="P:Microsoft.Data.OData.Json.BufferingJsonReader.BufferedNode.NodeType">
             <summary>
@@ -22756,6 +22873,11 @@
         <member name="P:Microsoft.Data.OData.Json.BufferingJsonReader.BufferedNode.Value">
             <summary>
             The value of the node.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Data.OData.Json.BufferingJsonReader.BufferedNode.RawValue">
+            <summary>
+            The raw value (string or char) of the node.
             </summary>
         </member>
         <member name="P:Microsoft.Data.OData.Json.BufferingJsonReader.BufferedNode.Previous">
@@ -24485,6 +24607,7 @@
             <param name="entryState">The entry state for the entry to add the property to.</param>
             <param name="propertyName">The name of the property to add.</param>
             <param name="propertyValue">The value of the property to add.</param>
+            <returns>The added ODataProperty.</returns>
         </member>
         <member name="M:Microsoft.Data.OData.JsonLight.ODataJsonLightEntryAndFeedDeserializer.ReadExpandedFeedAnnotationsAtFeedEnd(Microsoft.Data.OData.ODataFeed,Microsoft.Data.OData.JsonLight.ODataJsonLightReaderNavigationLinkInfo)">
             <summary>
@@ -24539,11 +24662,13 @@
                             JsonNodeType.EndObject:   the end-object node of the entry
             </remarks>
         </member>
-        <member name="M:Microsoft.Data.OData.JsonLight.ODataJsonLightEntryAndFeedDeserializer.ReadOpenProperty(Microsoft.Data.OData.JsonLight.IODataJsonLightReaderEntryState,System.String,System.Boolean)">
+        <member name="M:Microsoft.Data.OData.JsonLight.ODataJsonLightEntryAndFeedDeserializer.InnerReadOpenUndeclaredProperty(Microsoft.Data.OData.JsonLight.IODataJsonLightReaderEntryState,Microsoft.Data.Edm.IEdmStructuredType,System.String,System.Boolean)">
             <summary>
-            Read an open property.
+            Read an open entity's undeclared property.
             </summary>
             <param name="entryState">The state of the reader for entry to read.</param>
+            <param name="owningStructuredType">The owning type of the property with name <paramref name="propertyName"/> 
+            or null if no metadata is available.</param>
             <param name="propertyName">The name of the open property to read.</param>
             <param name="propertyWithValue">true if the property has a value, false if it doesn't.</param>
             <remarks>
@@ -24731,6 +24856,16 @@
             <param name="edmProperty">The metadata of the property.</param>
             <returns>true if the property is an open property; false if it is not, or if openness cannot be determined</returns>
         </member>
+        <member name="M:Microsoft.Data.OData.JsonLight.ODataJsonLightPropertySerializer.ShouldWriteProperty(Microsoft.Data.Edm.IEdmStructuredType,Microsoft.Data.OData.ODataProperty,Microsoft.Data.Edm.IEdmProperty,System.Boolean@)">
+            <summary>
+            Should write property or not.
+            </summary>
+            <param name="owningType">The IEdmStructuredType</param>
+            <param name="property">The ODataProperty to be written.</param>
+            <param name="edmProperty">The found edm information in model.</param>
+            <param name="shouldWriteRawAnnotations">Outputs if should write raw annotations.</param>
+            <returns>True if should write property.</returns>
+        </member>
         <member name="M:Microsoft.Data.OData.JsonLight.ODataJsonLightPropertySerializer.WriteProperty(Microsoft.Data.OData.ODataProperty,Microsoft.Data.Edm.IEdmStructuredType,System.Boolean,System.Boolean,Microsoft.Data.OData.DuplicatePropertyNamesChecker,Microsoft.Data.OData.ProjectedPropertiesAnnotation)">
             <summary>
             Writes a name/value pair for a property.
@@ -24742,6 +24877,14 @@
             Named stream properties should only be defined on ODataEntry instances.</param>
             <param name="duplicatePropertyNamesChecker">The checker instance for duplicate property names.</param>
             <param name="projectedProperties">Set of projected properties, or null if all properties should be written.</param>
+        </member>
+        <member name="M:Microsoft.Data.OData.JsonLight.ODataJsonLightPropertySerializer.TryWriteRawAnnotations(Microsoft.Data.OData.ODataProperty,System.Boolean@)">
+            <summary>
+            Write raw annotatoins if hte property value has any.
+            </summary>
+            <param name="property">The property.</param>
+            <param name="isODataTypeWritten">Outputs if odata.type annotation has been written to the wire.</param>
+            <returns>True if raw annotations have been written.</returns>
         </member>
         <member name="M:Microsoft.Data.OData.JsonLight.ODataJsonLightPropertySerializer.WriteStreamReferenceProperty(System.String,Microsoft.Data.OData.ODataStreamReferenceValue)">
             <summary>
@@ -31176,6 +31319,11 @@
             - Association links
             - Stream properties
             </remarks>
+        </member>
+        <member name="F:Microsoft.Data.OData.ODataUndeclaredPropertyBehaviorKinds.SupportUndeclaredValueProperty">
+            <summary>
+            Reading/writing undeclared properties will be supported.
+            </summary>
         </member>
         <member name="T:Microsoft.Data.OData.Query.ExpressionConstants">
             <summary>This type provides constants used in URI query expressions.</summary>
@@ -38670,6 +38818,11 @@
             See the comments on <see cref="T:Microsoft.Data.OData.DuplicatePropertyNamesChecker.DuplicationKind"/> for more details.
             </summary>
         </member>
+        <member name="F:Microsoft.Data.OData.DuplicatePropertyNamesChecker.annotationCollector">
+            <summary>
+            The annotation collector.
+            </summary>
+        </member>
         <member name="M:Microsoft.Data.OData.DuplicatePropertyNamesChecker.#ctor(System.Boolean,System.Boolean)">
             <summary>
             Constructor.
@@ -38822,6 +38975,11 @@
             <param name="annotationName">The name of the annotation being added (only for error reporting).</param>
             <returns>The duplication record to use. This will never be null.</returns>
         </member>
+        <member name="P:Microsoft.Data.OData.DuplicatePropertyNamesChecker.AnnotationCollector">
+            <summary>
+            The raw annotation collector.
+            </summary>
+        </member>
         <member name="T:Microsoft.Data.OData.DuplicatePropertyNamesChecker.DuplicationKind">
             <summary>
             An enumeration to represent the duplication kind of a given property name.
@@ -38845,6 +39003,65 @@
         </member>
         <member name="F:Microsoft.Data.OData.DuplicatePropertyNamesChecker.DuplicationKind.NavigationProperty">
             <summary>A navigation link or association link was reported.</summary>
+        </member>
+        <member name="T:Microsoft.Data.OData.DuplicatePropertyNamesChecker.PropertyAnnotationCollector">
+            <summary>
+            An independent annotation collector to collect the raw json annotations.
+            </summary>
+        </member>
+        <member name="F:Microsoft.Data.OData.DuplicatePropertyNamesChecker.PropertyAnnotationCollector.propertyAnnotations">
+            <summary>
+            The raw annotations.
+            </summary>
+        </member>
+        <member name="F:Microsoft.Data.OData.DuplicatePropertyNamesChecker.PropertyAnnotationCollector.shouldCollectAnnotation">
+            <summary>
+            If should collect annotation.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Data.OData.DuplicatePropertyNamesChecker.PropertyAnnotationCollector.TryPeekAndCollectAnnotationRawJson(Microsoft.Data.OData.Json.BufferingJsonReader,System.String,System.String)">
+            <summary>
+            Tries to peek and collect a raw annotation value from BufferingJsonReader.
+            </summary>
+            <param name="jsonReader">The BufferingJsonReader.</param>
+            <param name="propertyName">The property name.</param>
+            <param name="annotationName">The annotation name.</param>
+        </member>
+        <member name="M:Microsoft.Data.OData.DuplicatePropertyNamesChecker.PropertyAnnotationCollector.TryAddPropertyAnnotationRawJson(System.String,System.String,System.String)">
+            <summary>
+            Tries to add property annotation raw json.
+            </summary>
+            <param name="propertyName">The property name.</param>
+            <param name="annotationName">The annotation name.</param>
+            <param name="rawJson">The raw json string.</param>
+        </member>
+        <member name="M:Microsoft.Data.OData.DuplicatePropertyNamesChecker.PropertyAnnotationCollector.GetPropertyRawAnnotationSet(System.String)">
+            <summary>
+            Gets an ODataJsonLightRawAnnotationSet that can be attached to ODataValue or ODataUntypedValue.
+            </summary>
+            <param name="propertyName">The property name.</param>
+            <returns>An ODataJsonLightRawAnnotationSet instance.</returns>
+        </member>
+        <member name="M:Microsoft.Data.OData.DuplicatePropertyNamesChecker.PropertyAnnotationCollector.PeekAndCollectAnnotationRawJson(Microsoft.Data.OData.Json.BufferingJsonReader,System.String,System.String)">
+            <summary>
+            Peeks and collects a raw annotation value from BufferingJsonReader.
+            </summary>
+            <param name="jsonReader">The BufferingJsonReader.</param>
+            <param name="propertyName">The property name.</param>
+            <param name="annotationName">The annotation name.</param>
+        </member>
+        <member name="M:Microsoft.Data.OData.DuplicatePropertyNamesChecker.PropertyAnnotationCollector.AddPropertyAnnotationRawJson(System.String,System.String,System.String)">
+            <summary>
+            Add property annotation raw json.
+            </summary>
+            <param name="propertyName">The property name.</param>
+            <param name="annotationName">The annotation name.</param>
+            <param name="rawJson">The raw json string.</param>
+        </member>
+        <member name="P:Microsoft.Data.OData.DuplicatePropertyNamesChecker.PropertyAnnotationCollector.ShouldCollectAnnotation">
+            <summary>
+            Gets or sets if should collect annotation;
+            </summary>
         </member>
         <member name="T:Microsoft.Data.OData.DuplicatePropertyNamesChecker.DuplicationRecord">
             <summary>
@@ -40443,7 +40660,7 @@
             <param name="model">The model to use.</param>
             <param name="messageReaderSettings">The message reader settings to use.</param>
             <param name="version">The version of the payload being read.</param>
-            <param name="typeKindFromPayloadFunc">A func to compute the type kind from the payload shape if it could not be determined from the expected type or the payload type.</param>
+            <param name="typeKindPeekedFromPayloadFunc">A func to compute the type kind from the payload shape if it could not be determined from the expected type or the payload type.</param>
             <param name="targetTypeKind">The target type kind to be used to read the payload.</param>
             <param name="serializationTypeNameAnnotation">Potentially non-null instance of an annotation to put on the value reported from the reader.</param>
             <returns>
@@ -40541,12 +40758,13 @@
             <param name="metadata">The metadata value for the operation (used for error reporting).</param>
             <param name="operationsHeader">The header for the operation, either 'actions' or 'functions'.</param>
         </member>
-        <member name="M:Microsoft.Data.OData.ReaderValidationUtils.ResolveAndValidateTargetTypeWithNoExpectedType(Microsoft.Data.Edm.EdmTypeKind,Microsoft.Data.Edm.IEdmType)">
+        <member name="M:Microsoft.Data.OData.ReaderValidationUtils.ResolveAndValidateTargetTypeWithNoExpectedType(Microsoft.Data.Edm.EdmTypeKind,Microsoft.Data.Edm.IEdmType,Microsoft.Data.OData.ODataUndeclaredPropertyBehaviorKinds)">
             <summary>
             Resolves the payload type if there's no expected type.
             </summary>
             <param name="expectedTypeKind">The expected type kind for the value.</param>
             <param name="payloadType">The payload type, or null if the payload type was not specified, or it didn't resolve against the model.</param>
+            <param name="undeclaredPropertyBehaviorKinds">Value of UndeclaredPropertyBehaviorKinds in message settings.</param>
             <returns>The target type reference to use for parsing the value.</returns>
         </member>
         <member name="M:Microsoft.Data.OData.ReaderValidationUtils.ResolveAndValidateTargetTypeStrictValidationDisabled(Microsoft.Data.Edm.EdmTypeKind,Microsoft.Data.Edm.IEdmTypeReference,Microsoft.Data.Edm.IEdmType)">
@@ -40780,24 +40998,26 @@
             </summary>
             <param name="propertyName">The property name to validate..</param>
         </member>
-        <member name="M:Microsoft.Data.OData.WriterValidationUtils.ValidatePropertyDefined(System.String,Microsoft.Data.Edm.IEdmStructuredType)">
+        <member name="M:Microsoft.Data.OData.WriterValidationUtils.ValidatePropertyDefined(System.String,Microsoft.Data.Edm.IEdmStructuredType,Microsoft.Data.OData.ODataUndeclaredPropertyBehaviorKinds)">
             <summary>
             Validates that a property with the specified name exists on a given structured type.
             The structured type can be null if no metadata is available.
             </summary>
             <param name="propertyName">The name of the property to validate.</param>
-            <param name="owningStructuredType">The owning type of the property with name <paramref name="propertyName"/> 
+            <param name="owningStructuredType">The owning type of the property with name <paramref name="propertyName"/>
             or null if no metadata is available.</param>
+            <param name="undeclaredPropertyBehaviorKinds">Value of UndeclaredPropertyBehaviorKinds in message settings.</param>
             <returns>The <see cref="T:Microsoft.Data.Edm.IEdmProperty"/> instance representing the property with name <paramref name="propertyName"/> 
             or null if no metadata is available.</returns>
         </member>
-        <member name="M:Microsoft.Data.OData.WriterValidationUtils.ValidateNavigationPropertyDefined(System.String,Microsoft.Data.Edm.IEdmEntityType)">
+        <member name="M:Microsoft.Data.OData.WriterValidationUtils.ValidateNavigationPropertyDefined(System.String,Microsoft.Data.Edm.IEdmEntityType,Microsoft.Data.OData.ODataUndeclaredPropertyBehaviorKinds)">
             <summary>
             Validates that a navigation property with the specified name exists on a given entity type.
             The entity type can be null if no metadata is available.
             </summary>
             <param name="propertyName">The name of the property to validate.</param>
             <param name="owningEntityType">The owning entity type or null if no metadata is available.</param>
+            <param name="undeclaredPropertyBehaviorKinds">Value of UndeclaredPropertyBehaviorKinds in message settings.</param>
             <returns>The <see cref="T:Microsoft.Data.Edm.IEdmProperty"/> instance representing the navigation property with name <paramref name="propertyName"/>
             or null if no metadata is available.</returns>
         </member>
@@ -40873,13 +41093,14 @@
             </summary>
             <param name="entityReferenceLink">The entity reference link to validate.</param>
         </member>
-        <member name="M:Microsoft.Data.OData.WriterValidationUtils.ValidateNavigationLink(Microsoft.Data.OData.ODataNavigationLink,Microsoft.Data.Edm.IEdmEntityType,System.Nullable{Microsoft.Data.OData.ODataPayloadKind})">
+        <member name="M:Microsoft.Data.OData.WriterValidationUtils.ValidateNavigationLink(Microsoft.Data.OData.ODataNavigationLink,Microsoft.Data.Edm.IEdmEntityType,System.Nullable{Microsoft.Data.OData.ODataPayloadKind},Microsoft.Data.OData.ODataUndeclaredPropertyBehaviorKinds)">
             <summary>
             Validates an <see cref="T:Microsoft.Data.OData.ODataNavigationLink"/> to ensure all required information is specified and valid.
             </summary>
             <param name="navigationLink">The navigation link to validate.</param>
             <param name="declaringEntityType">The <see cref="T:Microsoft.Data.Edm.IEdmEntityType"/> declaring the navigation property; or null if metadata is not available.</param>
             <param name="expandedPayloadKind">The <see cref="T:Microsoft.Data.OData.ODataPayloadKind"/> of the expanded content of this navigation link or null for deferred links.</param>
+            <param name="undeclaredPropertyBehaviorKinds">Value of UndeclaredPropertyBehaviorKinds in message settings.</param>
             <returns>The type of the navigation property for this navigation link; or null if no <paramref name="declaringEntityType"/> was specified.</returns>
         </member>
         <member name="M:Microsoft.Data.OData.WriterValidationUtils.ValidateNavigationLinkUrlPresent(Microsoft.Data.OData.ODataNavigationLink)">
@@ -40990,6 +41211,13 @@
             Pre-Condition: JsonNodeType.PrimitiveValue, JsonNodeType.StartArray or JsonNodeType.StartObject
             Post-Condition: JsonNodeType.PrimitiveValue, JsonNodeType.EndArray or JsonNodeType.EndObject
             </remarks>
+        </member>
+        <member name="M:Microsoft.Data.OData.Json.JsonReaderExtensions.SkipValue(Microsoft.Data.OData.Json.JsonReader,System.Text.StringBuilder)">
+            <summary>
+            Skips over a JSON value (primitive, object or array), and append raw string to StringBuilder.
+            </summary>
+            <param name="jsonReader">The <see cref="T:Microsoft.Data.OData.Json.JsonReader"/> to read from.</param>
+            <param name="jsonRawValueStringBuilder">The StringBuilder to receive JSON raw string.</param>
         </member>
         <member name="M:Microsoft.Data.OData.Json.JsonReaderExtensions.ReadNext(Microsoft.Data.OData.Json.JsonReader)">
             <summary>
@@ -41385,6 +41613,13 @@
             <summary>Initializes a new instance of the <see cref="T:Microsoft.Data.OData.ODataMessageReaderSettings" /> class.</summary>
             <param name="other">The other message reader settings.</param>
         </member>
+        <member name="M:Microsoft.Data.OData.ODataMessageReaderSettings.ContainUndeclaredPropertyBehavior(Microsoft.Data.OData.ODataUndeclaredPropertyBehaviorKinds)">
+            <summary>
+            True if OdataMessgeReaderSettings contain corresponding undeclaredPropertyBehaviorKinds.
+            </summary>
+            <param name="undeclaredPropertyBehaviorKinds">The enum value of ODataUndeclaredPropertyBehaviorKinds.</param>
+            <returns>True if OdataMessgeReaderSettings contain corresponding undeclaredPropertyBehaviorKinds.</returns>
+        </member>
         <member name="M:Microsoft.Data.OData.ODataMessageReaderSettings.SetAtomEntryXmlCustomizationCallback(System.Func{Microsoft.Data.OData.ODataEntry,System.Xml.XmlReader,System.Uri,System.Xml.XmlReader})">
             <summary>Sets the atom entry XML customization callback.</summary>
             <param name="atomEntryXmlCustomizationCallback">The atom entry XML customization callback.</param>
@@ -41630,16 +41865,6 @@
         <member name="P:Microsoft.Data.OData.ODataMessageReaderSettings.AtomEntryXmlCustomizationCallback">
             <summary>
             ATOM entry XML customization callback.
-            </summary>
-        </member>
-        <member name="P:Microsoft.Data.OData.ODataMessageReaderSettings.ReportUndeclaredLinkProperties">
-            <summary>
-            Whether or not to report any undeclared link properties in the payload. Computed from the UndeclaredPropertyBehaviorKinds enum property.
-            </summary>
-        </member>
-        <member name="P:Microsoft.Data.OData.ODataMessageReaderSettings.IgnoreUndeclaredValueProperties">
-            <summary>
-            Whether or not to ignore any undeclared value properties in the payload. Computed from the UndeclaredPropertyBehaviorKinds enum property.
             </summary>
         </member>
         <member name="T:Microsoft.Data.OData.ODataMessageReader">
@@ -42824,12 +43049,13 @@
             <summary>The set of characters that are invalid in property names.</summary>
             <remarks>Keep this array in sync with MetadataProviderUtils.InvalidCharactersInPropertyNames in Astoria.</remarks>
         </member>
-        <member name="M:Microsoft.Data.OData.ValidationUtils.ValidateOpenPropertyValue(System.String,System.Object)">
+        <member name="M:Microsoft.Data.OData.ValidationUtils.ValidateOpenPropertyValue(System.String,System.Object,Microsoft.Data.OData.ODataUndeclaredPropertyBehaviorKinds)">
             <summary>
             Validates that an open property value is supported.
             </summary>
             <param name="propertyName">The name of the open property.</param>
             <param name="value">The value of the open property.</param>
+            <param name="undeclaredPropertyBehaviorKinds">Value of UndeclaredPropertyBehaviorKinds in message settings.</param>
         </member>
         <member name="M:Microsoft.Data.OData.ValidationUtils.ValidateValueTypeKind(Microsoft.Data.Edm.EdmTypeKind,System.String)">
             <summary>
@@ -48108,6 +48334,13 @@
             <param name="value">The URI of the metadata document.</param>
             <param name="selectClause">The select clause.</param>
         </member>
+        <member name="M:Microsoft.Data.OData.ODataMessageWriterSettings.ContainUndeclaredPropertyBehavior(Microsoft.Data.OData.ODataUndeclaredPropertyBehaviorKinds)">
+            <summary>
+            True if OdataMessgeReaderSettings contain corresponding undeclaredPropertyBehaviorKinds.
+            </summary>
+            <param name="undeclaredPropertyBehaviorKinds">The enum value of ODataUndeclaredPropertyBehaviorKinds.</param>
+            <returns>True if OdataMessgeReaderSettings contain corresponding undeclaredPropertyBehaviorKinds.</returns>
+        </member>
         <member name="M:Microsoft.Data.OData.ODataMessageWriterSettings.HasJsonPaddingFunction">
             <summary>
             Determines if there is a JSON padding function defined.
@@ -48135,6 +48368,11 @@
             So for example this base URI "http://services.odata.org/OData/OData.svc" combined with relative URI "Products(0)" would produce
             "http://services.odata.org/OData/Products(0)", which is typically not the desired result.
             </remarks>
+        </member>
+        <member name="P:Microsoft.Data.OData.ODataMessageWriterSettings.UndeclaredPropertyBehaviorKinds">
+            <summary>
+            Gets or sets UndeclaredPropertyBehaviorKinds.
+            </summary>
         </member>
         <member name="P:Microsoft.Data.OData.ODataMessageWriterSettings.DisableMessageStreamDisposal">
             <summary>Gets or sets a value that indicates whether the message stream will not be disposed after finishing writing with the message.</summary>
@@ -49456,6 +49694,12 @@
             </summary>
             <param name="value">String value to be written.</param>
         </member>
+        <member name="M:Microsoft.Data.OData.Json.JsonWriter.WriteRawString(System.String)">
+            <summary>
+            Write a raw string value without any escaping or encoding.
+            </summary>
+            <param name="value">String value to be written.</param>
+        </member>
         <member name="M:Microsoft.Data.OData.Json.JsonWriter.Flush">
             <summary>
             Clears all buffers for the current writer.
@@ -49939,7 +50183,7 @@
             Represents a single property of an entry.
             </summary>
         </member>
-        <member name="F:Microsoft.Data.OData.ODataProperty.odataValue">
+        <member name="F:Microsoft.Data.OData.ODataProperty.odataOrUntypedValue">
             <summary>
             The value of this property, accessed and set by both <seealso cref="P:Microsoft.Data.OData.ODataProperty.Value"/> and <seealso cref="P:Microsoft.Data.OData.ODataProperty.ODataValue"/>.
             </summary>
