@@ -35,7 +35,7 @@
     <title></title>
 
     <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js", true) %>" ></script>
-    <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.10.2.min.js", true) %>"></script>
+    <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.12.4.min.js", true) %>"></script>
 
     <script src="//maps.google.com/maps/api/js?v=3"></script>
 

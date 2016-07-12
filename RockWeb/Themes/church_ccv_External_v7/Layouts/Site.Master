@@ -27,7 +27,7 @@
   <title></title>
 
   <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js") %>" ></script>
-  <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.10.2.min.js") %>"></script>
+  <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.12.4.min.js") %>"></script>
   <script src="<%# ResolveRockUrl("~~/Scripts/min/plugins.min.js", true) %>" ></script>
   <script src="<%# ResolveRockUrl("~~/Scripts/min/main.min.js", true) %>" ></script>
 
