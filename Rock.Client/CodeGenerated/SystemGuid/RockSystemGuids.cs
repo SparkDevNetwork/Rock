@@ -30,6 +30,7 @@ namespace Rock.Client.SystemGuid
     public class Attribute
     {
         public const string GLOBAL_EMAIL_LINK_PREFERENCE = "F1BECEF9-1047-E89F-4CC8-8F856750E5D0";
+        public const string GLOBAL_ENABLED_LAVA_COMMANDS = "933CFB7D-C9E1-BDAE-40AD-231002A91626";
         public const string PERSON_ALLERGY = "DBD192C9-0AA1-46EC-92AB-A3DA8E056D31";
         public const string PERSON_ERA_CURRENTLY_AN_ERA = "CE5739C5-2156-E2AB-48E5-1337C38B935E";
         public const string PERSON_ERA_END_DATE = "4711D67E-7526-9582-4A8E-1CD7BBE1B3A2";
@@ -304,6 +305,7 @@ namespace Rock.Client.SystemGuid
         public const string INTEGER = "A75DFC58-7A1B-4799-BF31-451B2BBE38FF";
         public const string INTEGER_RANGE = "9D5F21E0-DEA0-4E8E-BA42-71151F6A8ED4";
         public const string KEY_VALUE_LIST = "73B02051-0D38-4AD9-BF81-A2D477DE4F70";
+        public const string LAVA_COMMANDS = "4BD9088F-5CC6-89B1-45FC-A2AAFFC7CC0D";
         public const string LOCATION = "B0B9EFE3-F09F-4604-AD1B-76B298A85D83";
         public const string MEMO = "C28C7BF3-A552-4D77-9408-DEDCF760CED0";
         public const string METRIC_CATEGORIES = "F5334A8E-B7E2-415C-A6EC-A6D8FA5341C4";
