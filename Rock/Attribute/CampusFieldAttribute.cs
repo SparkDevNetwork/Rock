@@ -27,8 +27,10 @@ namespace Rock.Attribute
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class CampusFieldAttribute : FieldAttribute
     {
+        private const string INCLUDE_INACTIVE_KEY = "includeInactive";
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="CampusFieldAttribute"/> class.
+        /// Initializes a new instance of the <see cref="CampusFieldAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
@@ -37,9 +39,13 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public CampusFieldAttribute( string name = "Campus", string description = "", bool required = true, string defaultCampusId = "", string category = "", int order = 0, string key = null )
+        /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
+        public CampusFieldAttribute( string name = "Campus", string description = "", bool required = true, string defaultCampusId = "", string category = "", int order = 0, string key = null, bool includeInactive = false )
             : base( name, description, required, defaultCampusId, category, order, key, typeof( Rock.Field.Types.CampusFieldType ).FullName )
         {
+            var includeInactiveConfigValue = new Field.ConfigurationValue( includeInactive.ToString() );
+            FieldConfigurationValues.Add( INCLUDE_INACTIVE_KEY, includeInactiveConfigValue );
         }
+
     }
 }

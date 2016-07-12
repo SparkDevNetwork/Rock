@@ -948,12 +948,13 @@ function(item) {
                     {
                         result = transactionInfoList
                             .Where( c => c.SummaryDate.HasValue )
-                            .GroupBy( c => new { c.SummaryDate.Value, c.AccountName } )
+                            .GroupBy( c => new { c.SummaryDate.Value, c.AccountName, c.GLCode } )
                             .Select( r => new SummaryData
                             {
                                 DateTimeStamp = r.Key.Value.ToJavascriptMilliseconds(),
                                 DateTime = r.Key.Value,
                                 SeriesName = r.Key.AccountName,
+                                SeriesAddlInfo = r.Key.GLCode,
                                 YValue = r.Sum( a => a.Amount )
                             } )
                             .OrderBy( r => r.DateTime )
@@ -1198,6 +1199,17 @@ function(item) {
 
                 // Add a column for selecting rows
                 gGiversGifts.Columns.Add( selectField );
+
+                // Add a hidden column for person id
+                gGiversGifts.Columns.Add(
+                    new RockBoundField
+                    {
+                        DataField = "Id",
+                        HeaderText = "Person Id",
+                        SortExpression = "Id",
+                        Visible = false,
+                        ExcelExportBehavior = ExcelExportBehavior.AlwaysInclude
+                    } );
 
                 // Add a column for the person's name
                 gGiversGifts.Columns.Add(

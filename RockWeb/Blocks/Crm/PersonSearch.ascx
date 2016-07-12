@@ -22,6 +22,11 @@
                             <asp:Literal ID="lPerson" runat="server" />
                         </ItemTemplate>
                     </Rock:RockTemplateField>
+                    <Rock:DateField 
+                        DataField="BirthDate" 
+                        HeaderText="Birthdate" 
+                        SortExpression="BirthYear desc,BirthMonth desc,BirthDay desc" 
+                        ColumnPriority="Desktop" />
                     <Rock:RockBoundField 
                         ItemStyle-HorizontalAlign="Right"
                         HeaderStyle-HorizontalAlign="Right"
