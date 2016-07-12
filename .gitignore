@@ -1,3 +1,5 @@
 *.suo
 StyleCop.Cache
 *.sln.GhostDoc.xml
+
+Packages/*
