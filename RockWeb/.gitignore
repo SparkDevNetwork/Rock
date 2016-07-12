@@ -1,1 +1,8 @@
 /web.ConnectionStrings.config
+/bin/*/*.dll
+/bin/*.dll
+/bin/*.pdb
+/bin/*.xml
+
+/*.suo
+/*.user

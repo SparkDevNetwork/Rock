@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <views>
-  <mapping-views hash="a8769418c8d857f9a01f7eeac92d7629df0570ba354d699ca2ee7989bd1f12d7" conceptual-container="RockContext" store-container="CodeFirstDatabase">
+  <mapping-views hash="3be68aee33173c7dbfd2754d5ccd3ee2b07d4dc638eeb3265b9c37ce0219d4c8" conceptual-container="RockContext" store-container="CodeFirstDatabase">
     <view extent="CodeFirstDatabase.AttendanceCode"><![CDATA[
     SELECT VALUE -- Constructing AttendanceCode
         [CodeFirstDatabaseSchema.AttendanceCode](T1.AttendanceCode_Id, T1.AttendanceCode_IssueDateTime, T1.AttendanceCode_Code, T1.AttendanceCode_Guid, T1.AttendanceCode_ForeignId, T1.AttendanceCode_ForeignGuid, T1.AttendanceCode_ForeignKey)
@@ -2568,11 +2568,12 @@
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.FinancialScheduledTransaction"><![CDATA[
     SELECT VALUE -- Constructing FinancialScheduledTransaction
-        [CodeFirstDatabaseSchema.FinancialScheduledTransaction](T1.FinancialScheduledTransaction_Id, T1.FinancialScheduledTransaction_AuthorizedPersonAliasId, T1.FinancialScheduledTransaction_SourceTypeValueId, T1.FinancialScheduledTransaction_TransactionFrequencyValueId, T1.FinancialScheduledTransaction_StartDate, T1.FinancialScheduledTransaction_EndDate, T1.FinancialScheduledTransaction_NumberOfPayments, T1.FinancialScheduledTransaction_NextPaymentDate, T1.FinancialScheduledTransaction_LastStatusUpdateDateTime, T1.FinancialScheduledTransaction_IsActive, T1.FinancialScheduledTransaction_FinancialGatewayId, T1.FinancialScheduledTransaction_FinancialPaymentDetailId, T1.FinancialScheduledTransaction_TransactionCode, T1.FinancialScheduledTransaction_GatewayScheduleId, T1.FinancialScheduledTransaction_CardReminderDate, T1.FinancialScheduledTransaction_LastRemindedDate, T1.FinancialScheduledTransaction_CreatedDateTime, T1.FinancialScheduledTransaction_ModifiedDateTime, T1.FinancialScheduledTransaction_CreatedByPersonAliasId, T1.FinancialScheduledTransaction_ModifiedByPersonAliasId, T1.FinancialScheduledTransaction_Guid, T1.FinancialScheduledTransaction_ForeignId, T1.FinancialScheduledTransaction_ForeignGuid, T1.FinancialScheduledTransaction_ForeignKey)
+        [CodeFirstDatabaseSchema.FinancialScheduledTransaction](T1.FinancialScheduledTransaction_Id, T1.FinancialScheduledTransaction_AuthorizedPersonAliasId, T1.FinancialScheduledTransaction_TransactionTypeValueId, T1.FinancialScheduledTransaction_SourceTypeValueId, T1.FinancialScheduledTransaction_TransactionFrequencyValueId, T1.FinancialScheduledTransaction_StartDate, T1.FinancialScheduledTransaction_EndDate, T1.FinancialScheduledTransaction_NumberOfPayments, T1.FinancialScheduledTransaction_NextPaymentDate, T1.FinancialScheduledTransaction_LastStatusUpdateDateTime, T1.FinancialScheduledTransaction_IsActive, T1.FinancialScheduledTransaction_FinancialGatewayId, T1.FinancialScheduledTransaction_FinancialPaymentDetailId, T1.FinancialScheduledTransaction_TransactionCode, T1.FinancialScheduledTransaction_GatewayScheduleId, T1.FinancialScheduledTransaction_CardReminderDate, T1.FinancialScheduledTransaction_LastRemindedDate, T1.FinancialScheduledTransaction_CreatedDateTime, T1.FinancialScheduledTransaction_ModifiedDateTime, T1.FinancialScheduledTransaction_CreatedByPersonAliasId, T1.FinancialScheduledTransaction_ModifiedByPersonAliasId, T1.FinancialScheduledTransaction_Guid, T1.FinancialScheduledTransaction_ForeignId, T1.FinancialScheduledTransaction_ForeignGuid, T1.FinancialScheduledTransaction_ForeignKey)
     FROM (
         SELECT 
             T.Id AS FinancialScheduledTransaction_Id, 
             T.AuthorizedPersonAliasId AS FinancialScheduledTransaction_AuthorizedPersonAliasId, 
+            T.TransactionTypeValueId AS FinancialScheduledTransaction_TransactionTypeValueId, 
             T.SourceTypeValueId AS FinancialScheduledTransaction_SourceTypeValueId, 
             T.TransactionFrequencyValueId AS FinancialScheduledTransaction_TransactionFrequencyValueId, 
             T.StartDate AS FinancialScheduledTransaction_StartDate, 
@@ -3447,6 +3448,25 @@
             True AS _from0
         FROM RockContext.FollowingEventTypes AS T
     ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.FollowingEventSubscription"><![CDATA[
+    SELECT VALUE -- Constructing FollowingEventSubscription
+        [CodeFirstDatabaseSchema.FollowingEventSubscription](T1.FollowingEventSubscription_Id, T1.FollowingEventSubscription_EventTypeId, T1.FollowingEventSubscription_PersonAliasId, T1.FollowingEventSubscription_CreatedDateTime, T1.FollowingEventSubscription_ModifiedDateTime, T1.FollowingEventSubscription_CreatedByPersonAliasId, T1.FollowingEventSubscription_ModifiedByPersonAliasId, T1.FollowingEventSubscription_Guid, T1.FollowingEventSubscription_ForeignId, T1.FollowingEventSubscription_ForeignGuid, T1.FollowingEventSubscription_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS FollowingEventSubscription_Id, 
+            T.EventTypeId AS FollowingEventSubscription_EventTypeId, 
+            T.PersonAliasId AS FollowingEventSubscription_PersonAliasId, 
+            T.CreatedDateTime AS FollowingEventSubscription_CreatedDateTime, 
+            T.ModifiedDateTime AS FollowingEventSubscription_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS FollowingEventSubscription_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS FollowingEventSubscription_ModifiedByPersonAliasId, 
+            T.Guid AS FollowingEventSubscription_Guid, 
+            T.ForeignId AS FollowingEventSubscription_ForeignId, 
+            T.ForeignGuid AS FollowingEventSubscription_ForeignGuid, 
+            T.ForeignKey AS FollowingEventSubscription_ForeignKey, 
+            True AS _from0
+        FROM RockContext.FollowingEventSubscriptions AS T
+    ) AS T1]]></view>
     <view extent="CodeFirstDatabase.FollowingSuggested"><![CDATA[
     SELECT VALUE -- Constructing FollowingSuggested
         [CodeFirstDatabaseSchema.FollowingSuggested](T1.FollowingSuggested_Id, T1.FollowingSuggested_EntityTypeId, T1.FollowingSuggested_EntityId, T1.FollowingSuggested_PersonAliasId, T1.FollowingSuggested_SuggestionTypeId, T1.FollowingSuggested_LastPromotedDateTime, T1.FollowingSuggested_StatusChangedDateTime, T1.FollowingSuggested_Status, T1.FollowingSuggested_CreatedDateTime, T1.FollowingSuggested_ModifiedDateTime, T1.FollowingSuggested_CreatedByPersonAliasId, T1.FollowingSuggested_ModifiedByPersonAliasId, T1.FollowingSuggested_Guid, T1.FollowingSuggested_ForeignId, T1.FollowingSuggested_ForeignGuid, T1.FollowingSuggested_ForeignKey)
@@ -3495,25 +3515,6 @@
             T.ForeignKey AS FollowingSuggestionType_ForeignKey, 
             True AS _from0
         FROM RockContext.FollowingSuggestionTypes AS T
-    ) AS T1]]></view>
-    <view extent="CodeFirstDatabase.FollowingEventSubscription"><![CDATA[
-    SELECT VALUE -- Constructing FollowingEventSubscription
-        [CodeFirstDatabaseSchema.FollowingEventSubscription](T1.FollowingEventSubscription_Id, T1.FollowingEventSubscription_EventTypeId, T1.FollowingEventSubscription_PersonAliasId, T1.FollowingEventSubscription_CreatedDateTime, T1.FollowingEventSubscription_ModifiedDateTime, T1.FollowingEventSubscription_CreatedByPersonAliasId, T1.FollowingEventSubscription_ModifiedByPersonAliasId, T1.FollowingEventSubscription_Guid, T1.FollowingEventSubscription_ForeignId, T1.FollowingEventSubscription_ForeignGuid, T1.FollowingEventSubscription_ForeignKey)
-    FROM (
-        SELECT 
-            T.Id AS FollowingEventSubscription_Id, 
-            T.EventTypeId AS FollowingEventSubscription_EventTypeId, 
-            T.PersonAliasId AS FollowingEventSubscription_PersonAliasId, 
-            T.CreatedDateTime AS FollowingEventSubscription_CreatedDateTime, 
-            T.ModifiedDateTime AS FollowingEventSubscription_ModifiedDateTime, 
-            T.CreatedByPersonAliasId AS FollowingEventSubscription_CreatedByPersonAliasId, 
-            T.ModifiedByPersonAliasId AS FollowingEventSubscription_ModifiedByPersonAliasId, 
-            T.Guid AS FollowingEventSubscription_Guid, 
-            T.ForeignId AS FollowingEventSubscription_ForeignId, 
-            T.ForeignGuid AS FollowingEventSubscription_ForeignGuid, 
-            T.ForeignKey AS FollowingEventSubscription_ForeignKey, 
-            True AS _from0
-        FROM RockContext.FollowingEventSubscriptions AS T
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.MergeTemplate"><![CDATA[
     SELECT VALUE -- Constructing MergeTemplate
@@ -6531,11 +6532,12 @@
     ) AS T1]]></view>
     <view extent="RockContext.FinancialScheduledTransactions"><![CDATA[
     SELECT VALUE -- Constructing FinancialScheduledTransactions
-        [Rock.Data.FinancialScheduledTransaction](T1.FinancialScheduledTransaction_Id, T1.FinancialScheduledTransaction_AuthorizedPersonAliasId, T1.FinancialScheduledTransaction_SourceTypeValueId, T1.FinancialScheduledTransaction_TransactionFrequencyValueId, T1.FinancialScheduledTransaction_StartDate, T1.FinancialScheduledTransaction_EndDate, T1.FinancialScheduledTransaction_NumberOfPayments, T1.FinancialScheduledTransaction_NextPaymentDate, T1.FinancialScheduledTransaction_LastStatusUpdateDateTime, T1.FinancialScheduledTransaction_IsActive, T1.FinancialScheduledTransaction_FinancialGatewayId, T1.FinancialScheduledTransaction_FinancialPaymentDetailId, T1.FinancialScheduledTransaction_TransactionCode, T1.FinancialScheduledTransaction_GatewayScheduleId, T1.FinancialScheduledTransaction_CardReminderDate, T1.FinancialScheduledTransaction_LastRemindedDate, T1.FinancialScheduledTransaction_CreatedDateTime, T1.FinancialScheduledTransaction_ModifiedDateTime, T1.FinancialScheduledTransaction_CreatedByPersonAliasId, T1.FinancialScheduledTransaction_ModifiedByPersonAliasId, T1.FinancialScheduledTransaction_Guid, T1.FinancialScheduledTransaction_ForeignId, T1.FinancialScheduledTransaction_ForeignGuid, T1.FinancialScheduledTransaction_ForeignKey)
+        [Rock.Data.FinancialScheduledTransaction](T1.FinancialScheduledTransaction_Id, T1.FinancialScheduledTransaction_AuthorizedPersonAliasId, T1.FinancialScheduledTransaction_TransactionTypeValueId, T1.FinancialScheduledTransaction_SourceTypeValueId, T1.FinancialScheduledTransaction_TransactionFrequencyValueId, T1.FinancialScheduledTransaction_StartDate, T1.FinancialScheduledTransaction_EndDate, T1.FinancialScheduledTransaction_NumberOfPayments, T1.FinancialScheduledTransaction_NextPaymentDate, T1.FinancialScheduledTransaction_LastStatusUpdateDateTime, T1.FinancialScheduledTransaction_IsActive, T1.FinancialScheduledTransaction_FinancialGatewayId, T1.FinancialScheduledTransaction_FinancialPaymentDetailId, T1.FinancialScheduledTransaction_TransactionCode, T1.FinancialScheduledTransaction_GatewayScheduleId, T1.FinancialScheduledTransaction_CardReminderDate, T1.FinancialScheduledTransaction_LastRemindedDate, T1.FinancialScheduledTransaction_CreatedDateTime, T1.FinancialScheduledTransaction_ModifiedDateTime, T1.FinancialScheduledTransaction_CreatedByPersonAliasId, T1.FinancialScheduledTransaction_ModifiedByPersonAliasId, T1.FinancialScheduledTransaction_Guid, T1.FinancialScheduledTransaction_ForeignId, T1.FinancialScheduledTransaction_ForeignGuid, T1.FinancialScheduledTransaction_ForeignKey)
     FROM (
         SELECT 
             T.Id AS FinancialScheduledTransaction_Id, 
             T.AuthorizedPersonAliasId AS FinancialScheduledTransaction_AuthorizedPersonAliasId, 
+            T.TransactionTypeValueId AS FinancialScheduledTransaction_TransactionTypeValueId, 
             T.SourceTypeValueId AS FinancialScheduledTransaction_SourceTypeValueId, 
             T.TransactionFrequencyValueId AS FinancialScheduledTransaction_TransactionFrequencyValueId, 
             T.StartDate AS FinancialScheduledTransaction_StartDate, 
@@ -7410,6 +7412,25 @@
             True AS _from0
         FROM CodeFirstDatabase.FollowingEventType AS T
     ) AS T1]]></view>
+    <view extent="RockContext.FollowingEventSubscriptions"><![CDATA[
+    SELECT VALUE -- Constructing FollowingEventSubscriptions
+        [Rock.Data.FollowingEventSubscription](T1.FollowingEventSubscription_Id, T1.FollowingEventSubscription_EventTypeId, T1.FollowingEventSubscription_PersonAliasId, T1.FollowingEventSubscription_CreatedDateTime, T1.FollowingEventSubscription_ModifiedDateTime, T1.FollowingEventSubscription_CreatedByPersonAliasId, T1.FollowingEventSubscription_ModifiedByPersonAliasId, T1.FollowingEventSubscription_Guid, T1.FollowingEventSubscription_ForeignId, T1.FollowingEventSubscription_ForeignGuid, T1.FollowingEventSubscription_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS FollowingEventSubscription_Id, 
+            T.EventTypeId AS FollowingEventSubscription_EventTypeId, 
+            T.PersonAliasId AS FollowingEventSubscription_PersonAliasId, 
+            T.CreatedDateTime AS FollowingEventSubscription_CreatedDateTime, 
+            T.ModifiedDateTime AS FollowingEventSubscription_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS FollowingEventSubscription_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS FollowingEventSubscription_ModifiedByPersonAliasId, 
+            T.Guid AS FollowingEventSubscription_Guid, 
+            T.ForeignId AS FollowingEventSubscription_ForeignId, 
+            T.ForeignGuid AS FollowingEventSubscription_ForeignGuid, 
+            T.ForeignKey AS FollowingEventSubscription_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.FollowingEventSubscription AS T
+    ) AS T1]]></view>
     <view extent="RockContext.FollowingSuggesteds"><![CDATA[
     SELECT VALUE -- Constructing FollowingSuggesteds
         [Rock.Data.FollowingSuggested](T1.FollowingSuggested_Id, T1.FollowingSuggested_EntityTypeId, T1.FollowingSuggested_EntityId, T1.FollowingSuggested_PersonAliasId, T1.FollowingSuggested_SuggestionTypeId, T1.FollowingSuggested_LastPromotedDateTime, T1.FollowingSuggested_StatusChangedDateTime, T1.FollowingSuggested_Status, T1.FollowingSuggested_CreatedDateTime, T1.FollowingSuggested_ModifiedDateTime, T1.FollowingSuggested_CreatedByPersonAliasId, T1.FollowingSuggested_ModifiedByPersonAliasId, T1.FollowingSuggested_Guid, T1.FollowingSuggested_ForeignId, T1.FollowingSuggested_ForeignGuid, T1.FollowingSuggested_ForeignKey)
@@ -7458,25 +7479,6 @@
             T.ForeignKey AS FollowingSuggestionType_ForeignKey, 
             True AS _from0
         FROM CodeFirstDatabase.FollowingSuggestionType AS T
-    ) AS T1]]></view>
-    <view extent="RockContext.FollowingEventSubscriptions"><![CDATA[
-    SELECT VALUE -- Constructing FollowingEventSubscriptions
-        [Rock.Data.FollowingEventSubscription](T1.FollowingEventSubscription_Id, T1.FollowingEventSubscription_EventTypeId, T1.FollowingEventSubscription_PersonAliasId, T1.FollowingEventSubscription_CreatedDateTime, T1.FollowingEventSubscription_ModifiedDateTime, T1.FollowingEventSubscription_CreatedByPersonAliasId, T1.FollowingEventSubscription_ModifiedByPersonAliasId, T1.FollowingEventSubscription_Guid, T1.FollowingEventSubscription_ForeignId, T1.FollowingEventSubscription_ForeignGuid, T1.FollowingEventSubscription_ForeignKey)
-    FROM (
-        SELECT 
-            T.Id AS FollowingEventSubscription_Id, 
-            T.EventTypeId AS FollowingEventSubscription_EventTypeId, 
-            T.PersonAliasId AS FollowingEventSubscription_PersonAliasId, 
-            T.CreatedDateTime AS FollowingEventSubscription_CreatedDateTime, 
-            T.ModifiedDateTime AS FollowingEventSubscription_ModifiedDateTime, 
-            T.CreatedByPersonAliasId AS FollowingEventSubscription_CreatedByPersonAliasId, 
-            T.ModifiedByPersonAliasId AS FollowingEventSubscription_ModifiedByPersonAliasId, 
-            T.Guid AS FollowingEventSubscription_Guid, 
-            T.ForeignId AS FollowingEventSubscription_ForeignId, 
-            T.ForeignGuid AS FollowingEventSubscription_ForeignGuid, 
-            T.ForeignKey AS FollowingEventSubscription_ForeignKey, 
-            True AS _from0
-        FROM CodeFirstDatabase.FollowingEventSubscription AS T
     ) AS T1]]></view>
     <view extent="RockContext.MergeTemplates"><![CDATA[
     SELECT VALUE -- Constructing MergeTemplates
