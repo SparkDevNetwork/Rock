@@ -1,0 +1,27 @@
+{% comment %}
+  {% include '~~/Assets/Lava/Kids/Resources/_blog-thumbnails.lava' %}
+{% endcomment %}
+
+<div class="row">
+  {% for item in Items %}
+    <div class="col-xs-6 col-sm-4">
+
+      <div class="card">
+        <div class="card-img-top">
+          <a href="{{ item | Attribute: 'Image', 'Url' }}">
+            <img src="{{ item | Attribute: 'Image', 'Url' }}&width=345&height=194&mode=crop&scale=both" alt="{{ item.Title }}">
+          </a>
+        </div>
+        <div class="card-block">
+          <a href="{{ item | Attribute: 'Image', 'Url' }}">
+            <h4 class="card-title">{{ item.Title }}</h4>
+          </a>
+          <p class="card-text">
+            {{ item.Content }}
+          </p>
+        </div>
+      </div>
+
+    </div>
+  {% endfor %}
+</div>

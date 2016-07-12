@@ -24,7 +24,10 @@
 @import "_mixins";
 @import "_helpers";
 
+@import "modules/_bigblock";
+@import "modules/_card";
 @import "modules/_misc-icons";
+
 
 @body-bg: #212121;
 // we set bg color inline on the body tag for the layout to prevent a flash of white on load
@@ -51,6 +54,8 @@
 @well-bg:                     #111;
 @well-border:                 @well-bg;
 
+@link-color: lighten(@brand-primary, 15%);
+
 
 // Styles that should be moved later
 // -------------------------
@@ -75,6 +80,13 @@ h1, h2, h3, h4, h5, h6,
   text-transform: uppercase;
   small {
     color: @gray-lighter;
+  }
+}
+
+a {
+  color: @link-color;
+  &:hover, &:focus {
+    color: darken(@link-color, 10%);
   }
 }
 

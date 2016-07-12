@@ -1,0 +1,16 @@
+{% comment %}
+  {% include '~~/Assets/Lava/Kids/Resources/PickAge.lava' %}
+{% endcomment %}
+
+<h2 class="page-header">Parent Resources for Kids</h2>
+
+<p class="lead">Select an age group to continue</p>
+
+<div class="row">
+  <div class="col-sm-6 margin-b-lg">
+    <a href="/page/1250" class="btn btn-block btn-default">Early Kids<br><span class="no-caps">Birth - 1st Grade</span></a>
+  </div>
+  <div class="col-sm-6 margin-b-lg">
+    <a href="/page/1251" class="btn btn-block btn-default">Later Kids<br><span class="no-caps">2nd - 6th Grade</span></a>
+  </div>
+</div>
