@@ -272,7 +272,7 @@ namespace RockWeb.Blocks.Administration
         private string GetRoutesInfo()
         {
             var routes = new SortedDictionary<string, System.Web.Routing.Route>();
-            foreach ( System.Web.Routing.Route route in System.Web.Routing.RouteTable.Routes )
+            foreach ( System.Web.Routing.Route route in System.Web.Routing.RouteTable.Routes.OfType<System.Web.Routing.Route>() )
             {
                 if ( !routes.ContainsKey( route.Url ) ) routes.Add( route.Url, route );
             }
