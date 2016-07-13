@@ -454,7 +454,9 @@ namespace Rock.Communication.Transport
                                 subject = subject.Replace( "~/", appRoot );
                                 body = body.Replace( "~/", appRoot );
                                 body = body.Replace( @" src=""/", @" src=""" + appRoot );
+                                body = body.Replace( @" src='/", @" src='" + appRoot );
                                 body = body.Replace( @" href=""/", @" href=""" + appRoot );
+                                body = body.Replace( @" href='/", @" href='" + appRoot );
                             }
 
                             message.Subject = subject;
