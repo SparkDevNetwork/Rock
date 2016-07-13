@@ -314,7 +314,7 @@ You can view an online version of this email here:
                 }
                 
                 // Resolve merge fields
-                htmlBody = htmlBody.ResolveMergeFields( mergeObjects, currentPersonOverride );
+                htmlBody = htmlBody.ResolveMergeFields( mergeObjects, currentPersonOverride, communication.EnabledLavaCommands );
 
                 // Resolve special syntax needed if option was included in global attribute
                 if ( Regex.IsMatch( htmlBody, @"\[\[\s*UnsubscribeOption\s*\]\]" ) )
@@ -360,7 +360,7 @@ You can view an online version of this email here:
                 plainTextBody = defaultPlainText;
             }
 
-            return plainTextBody.ResolveMergeFields( mergeObjects, currentPersonOverride );
+            return plainTextBody.ResolveMergeFields( mergeObjects, currentPersonOverride, communication.EnabledLavaCommands );
 
         }
 

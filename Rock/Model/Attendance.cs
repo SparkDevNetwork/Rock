@@ -18,6 +18,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using Rock.Data;
@@ -351,6 +352,51 @@ namespace Rock.Model
 
             return sb.ToString().Trim();
 
+        }
+
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public override bool IsValid
+        {
+            get
+            {
+                var result = base.IsValid;
+                if ( result )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        // validate cases where the group type requires that a location/schedule is required
+                        if ( this.GroupId != null )
+                        {
+                            var group = this.Group ?? new GroupService( rockContext ).Queryable("GroupType").Where( g => g.Id == this.GroupId ).FirstOrDefault();
+
+                            if ( group != null )
+                            {
+                                if ( group.GroupType.GroupAttendanceRequiresLocation && this.LocationId == null )
+                                {
+                                    var locationErrorMessage = string.Format( "{0} requires attendance records to have a location.", group.GroupType.Name.Pluralize() );
+                                    ValidationResults.Add( new ValidationResult( locationErrorMessage ) );
+                                    result = false;
+                                }
+
+                                if ( group.GroupType.GroupAttendanceRequiresSchedule && this.ScheduleId == null )
+                                {
+                                    var scheduleErrorMessage = string.Format( "{0} requires attendance records to have a schedule.", group.GroupType.Name.Pluralize() );
+                                    ValidationResults.Add( new ValidationResult( scheduleErrorMessage ) );
+                                    result = false;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return result;
+            }
         }
 
         #endregion
