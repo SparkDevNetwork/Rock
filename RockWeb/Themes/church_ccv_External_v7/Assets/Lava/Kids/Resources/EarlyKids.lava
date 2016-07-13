@@ -55,4 +55,4 @@
 <p> BIG Question: {{ viewedItem | Attribute: 'TheBIGQuestion' }}</p>
 <p> Bible Verses: {{ viewedItem | Attribute: 'BibleVerses' }}</p>
 
-<a class="btn btn-default" href="{{ viewedItem | Attribute: 'LinktoMessage' }}">Watch the Message </a>
+<a class="btn btn-default" href="{{ viewedItem | Attribute: 'LinktoMessage' }}">Watch the Message</a>
