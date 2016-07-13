@@ -71,45 +71,21 @@
                                         </Rock:Grid>
                                     </div>
                                 </Rock:RockControlWrapper>
+
+                                <Rock:GroupTypePicker ID="gtpInheritedGroupType" runat="server" Label="Inherited Group Type" 
+                                    Help="Group Type to inherit attributes from" AutoPostBack="true" OnSelectedIndexChanged="gtpInheritedGroupType_SelectedIndexChanged" />
+
                                 <div class="row">
                                     <div class="col-xs-6">
-                                        <Rock:RockCheckBox ID="cbTakesAttendance" runat="server" Label="Takes Attendance" Text="Yes" 
-                                            Help="Check this option if groups of this type should support taking and tracking attendance." />
-                                        <Rock:RockCheckBox ID="cbWeekendService" runat="server" Label="Weekend Service" Text="Yes" 
-                                            Help="Check this option if attendance in groups of this type should be counted towards attending a weekend service." />
-                                        <Rock:RockCheckBox ID="cbSendAttendanceReminder" runat="server" Label="Send Attendance Reminder" Text="Yes"
-                                            Help="Check this option if an email should be sent to the group leaders of these group types reminding them to enter attendance information." />
                                         <Rock:RockDropDownList ID="ddlGroupCapacityRule" runat="server" Label="Group Capacity Rule" Help="Does this group type support group capacity and if so how is it enforced." />
                                     </div>
                                     <div class="col-xs-6">
-                                        <Rock:RockCheckBoxList ID="cblScheduleTypes" runat="server" Label="Group Schedule Options"
-                                            Help="The schedule option types to allow when editing groups of this type."/>
+                                        
                                     </div>
                                 </div>
-                                <Rock:RockControlWrapper ID="rcScheduleExclusions" runat="server" Label="Schedule Exclusions"
-                                    Help="The date ranges that groups of this type do not meet (regardless of their individual schedules).">
-                                    <div class="grid">
-                                        <Rock:Grid ID="gScheduleExclusions" runat="server" DisplayType="Light" ShowHeader="false" RowItemText="Exclusion">
-                                            <Columns>
-                                                <asp:TemplateField>
-                                                    <ItemTemplate>
-                                                        <%# ((DateTime)Eval("Value.Start")).ToShortDateString() %> - 
-                                                        <%# ((DateTime)Eval("Value.End")).ToShortDateString() %>
-                                                    </ItemTemplate>
-                                                </asp:TemplateField>
-                                                <Rock:EditField OnClick="gScheduleExclusions_Edit" />
-                                                <Rock:DeleteField OnClick="gScheduleExclusions_Delete" />
-                                            </Columns>
-                                        </Rock:Grid>
-                                    </div>
-                                </Rock:RockControlWrapper>
-                                <Rock:RockDropDownList ID="ddlAttendanceRule" runat="server" Label="Check-in Rule"
-                                    Help="The rule that check in should use when a person attempts to check in to a group of this type.  If 'None' is selected, user will not be added to group and is not required to belong to group.  If 'Add On Check In' is selected, user will be added to group if they don't already belong.  If 'Already Belongs' is selected, user must already be a member of the group or they will not be allowed to check in." />
-                                <Rock:RockDropDownList ID="ddlPrintTo" runat="server" Label="Print Using" 
-                                    Help="When printing check-in labels, should the device's printer or the location's printer be used?  Note: the device has a similiar setting which takes precedence over this setting.">
-                                    <asp:ListItem Text="Device Printer" Value="1" />
-                                    <asp:ListItem Text="Location Printer" Value="2" />
-                                </Rock:RockDropDownList>
+                                
+                                <Rock:RockCheckBox ID="cbGroupsRequireCampus" runat="server" Label="Groups Require a Campus" Text="Yes" 
+                                            Help="This setting will require that all groups of this type have a campus when adding and editing."/>
                             </div>
                             <div class="col-md-6">
                                 <div class="row">
@@ -135,10 +111,66 @@
                                         </Rock:Grid>
                                     </div>
                                 </Rock:RockControlWrapper>
-                                <Rock:GroupTypePicker ID="gtpInheritedGroupType" runat="server" Label="Inherited Group Type" 
-                                    Help="Group Type to inherit attributes from" AutoPostBack="true" OnSelectedIndexChanged="gtpInheritedGroupType_SelectedIndexChanged" />
+                                
                                 <Rock:RockCheckBox ID="cbDontInactivateMembers" runat="server" Label="Don't Inactivate Members" 
                                     Help="By default, whenever a person record is inactivated, all of that person's group memberships are also inactivated. Check this option if members in groups of this type should not be inactivated when their person record is inactivated." />
+                            </div>
+                        </div>
+                    </Rock:PanelWidget>
+
+                    <Rock:PanelWidget ID="wpAttendanceCheckin" runat="server" Title="Attendance / Check-in">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                        <Rock:RockCheckBox ID="cbTakesAttendance" runat="server" Label="Takes Attendance" Text="Yes" 
+                                                    Help="Check this option if groups of this type should support taking and tracking attendance." />
+                                        <Rock:RockCheckBox ID="cbWeekendService" runat="server" Label="Weekend Service" Text="Yes" 
+                                            Help="Check this option if attendance in groups of this type should be counted towards attending a weekend service." />
+                                        <Rock:RockCheckBox ID="cbSendAttendanceReminder" runat="server" Label="Send Attendance Reminder" Text="Yes"
+                                            Help="Check this option if an email should be sent to the group leaders of these group types reminding them to enter attendance information." />
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <Rock:RockCheckBoxList ID="cblScheduleTypes" runat="server" Label="Group Schedule Options" Help="The schedule option types to allow when editing groups of this type."/>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                        <Rock:RockCheckBox ID="cbGroupAttendanceRequiresLocation" runat="server" Label="Group Attendance Requires Location" Text="Yes" 
+                                                    Help="This option will require that all attendance occurrences have a location." />
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <Rock:RockCheckBox ID="cbGroupAttendanceRequiresSchedule" runat="server" Label="Group Attendance Requires Schedule" Text="Yes" 
+                                                    Help="This option will require that all attendance occurrences have a schedule." />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:RockControlWrapper ID="rcScheduleExclusions" runat="server" Label="Schedule Exclusions"
+                                    Help="The date ranges that groups of this type do not meet (regardless of their individual schedules).">
+                                    <div class="grid">
+                                        <Rock:Grid ID="gScheduleExclusions" runat="server" DisplayType="Light" ShowHeader="false" RowItemText="Exclusion">
+                                            <Columns>
+                                                <asp:TemplateField>
+                                                    <ItemTemplate>
+                                                        <%# ((DateTime)Eval("Value.Start")).ToShortDateString() %> - 
+                                                        <%# ((DateTime)Eval("Value.End")).ToShortDateString() %>
+                                                    </ItemTemplate>
+                                                </asp:TemplateField>
+                                                <Rock:EditField OnClick="gScheduleExclusions_Edit" />
+                                                <Rock:DeleteField OnClick="gScheduleExclusions_Delete" />
+                                            </Columns>
+                                        </Rock:Grid>
+                                    </div>
+                                </Rock:RockControlWrapper>
+                                <Rock:RockDropDownList ID="ddlAttendanceRule" runat="server" Label="Check-in Rule"
+                                    Help="The rule that check in should use when a person attempts to check in to a group of this type.  If 'None' is selected, user will not be added to group and is not required to belong to group.  If 'Add On Check In' is selected, user will be added to group if they don't already belong.  If 'Already Belongs' is selected, user must already be a member of the group or they will not be allowed to check in." />
+                                <Rock:RockDropDownList ID="ddlPrintTo" runat="server" Label="Print Using" 
+                                    Help="When printing check-in labels, should the device's printer or the location's printer be used?  Note: the device has a similiar setting which takes precedence over this setting.">
+                                    <asp:ListItem Text="Device Printer" Value="1" />
+                                    <asp:ListItem Text="Location Printer" Value="2" />
+                                </Rock:RockDropDownList>
                             </div>
                         </div>
                     </Rock:PanelWidget>
