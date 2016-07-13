@@ -53,8 +53,8 @@ namespace church.ccv.Steps
     [DisallowConcurrentExecution]
     public class UpdateStepMeasures : IJob
     {
-        const int StudentLowerAge = 8;
-        const int StudentUpperAge = 18;
+        const int _studentLowerGrade = 7;
+        const int _studentUpperGrade = 12;
         
         const string ATTRIBUTE_GLOBAL_TITHE_THRESHOLD = "TitheThreshold";
         const string ATTRIBUTE_GLOBAL_COACHING_GROUPTYPE_IDS = "CoachingGroupTypeIds";
@@ -107,7 +107,7 @@ namespace church.ccv.Steps
         public void Execute( IJobExecutionContext context )
         {
             // set a working date here so that we can change it easily for debugging.
-            DateTime workingDate = RockDateTime.Now;
+            DateTime workingDate = new DateTime( 2016, 06, 26 ); //RockDateTime.Now;
 
             context.Result = "";
 
@@ -258,7 +258,7 @@ namespace church.ccv.Steps
                     area.PastorPersonAliasId = new PersonAliasService( rockContext ).Queryable().Where( a => a.PersonId == area.PastorPersonId ).Select( a => a.Id ).FirstOrDefault();
                     area.CampusId = new GroupService( rockContext ).Queryable().Where( g => g.Id == area.AreaId ).Select( g => g.CampusId ).FirstOrDefault();
                     area.AdultCount = new DatamartPersonService( rockContext ).Queryable().Where( p => p.NeighborhoodId == area.AreaId && p.FamilyRole == "Adult" && _filteredConnectionStatuses.Contains( p.ConnectionStatusValueId.Value ) ).Count();
-                    area.StudentCount = new DatamartPersonService( rockContext ).Queryable().Where( p => p.NeighborhoodId == area.AreaId && (p.FamilyRole == "Child" && p.Age >= StudentLowerAge && p.Age <= StudentUpperAge) && _filteredConnectionStatuses.Contains( p.ConnectionStatusValueId.Value ) ).Count();
+                    area.StudentCount = new DatamartPersonService( rockContext ).Queryable().Where( p => p.NeighborhoodId == area.AreaId && (p.FamilyRole == "Child" && (p.Grade.HasValue && p.Grade.Value >= _studentLowerGrade && p.Grade.Value <= _studentUpperGrade)) && _filteredConnectionStatuses.Contains( p.ConnectionStatusValueId.Value ) ).Count();
                 }
 
                 // load counts for campuses
@@ -273,7 +273,7 @@ namespace church.ccv.Steps
                                                 .ToList();
 
                 var campusStudentCounts = new DatamartPersonService( rockContext ).Queryable()
-                                                .Where(p => (p.FamilyRole == "Child" && p.Age >= StudentLowerAge && p.Age <= StudentUpperAge) && _filteredConnectionStatuses.Contains( p.ConnectionStatusValueId.Value ) )
+                                                .Where(p => (p.FamilyRole == "Child" && (p.Grade.HasValue && p.Grade.Value >= _studentLowerGrade && p.Grade.Value <= _studentUpperGrade)) && _filteredConnectionStatuses.Contains( p.ConnectionStatusValueId.Value ) )
                                                 .GroupBy( p => p.CampusId )
                                                 .Select( a => new CampusStudentCount
                                                 {
@@ -325,7 +325,7 @@ namespace church.ccv.Steps
                                                 .ToList();
 
                 var measureCountsByCampusStudents = datamartPersonService.Queryable()
-                                                   .Where( p => p.IsBaptized == true && (p.FamilyRole == "Child" && p.Age >= StudentLowerAge && p.Age <= StudentUpperAge) && _filteredConnectionStatuses.Contains( p.ConnectionStatusValueId.Value ) )
+                                                   .Where( p => p.IsBaptized == true && (p.FamilyRole == "Child" && (p.Grade.HasValue && p.Grade.Value >= _studentLowerGrade && p.Grade.Value <= _studentUpperGrade)) && _filteredConnectionStatuses.Contains( p.ConnectionStatusValueId.Value ) )
                                                    .GroupBy( p => p.CampusId )
                                                    .Select( r => new CampusMeasure
                                                    {
@@ -348,7 +348,7 @@ namespace church.ccv.Steps
                     var areaStudentMeasureCount = datamartPersonService.Queryable()
                                                     .Where( p => 
                                                         p.IsBaptized == true 
-                                                        && (p.FamilyRole == "Child" && p.Age >= StudentLowerAge && p.Age <= StudentUpperAge)
+                                                        && (p.FamilyRole == "Child" && (p.Grade.HasValue && p.Grade.Value >= _studentLowerGrade && p.Grade.Value <= _studentUpperGrade))
                                                         && p.NeighborhoodId == area.AreaId 
                                                         && _filteredConnectionStatuses.Contains(p.ConnectionStatusValueId.Value))
                                                     .Count();
@@ -398,7 +398,7 @@ namespace church.ccv.Steps
 
                 var measureCountsByCampusStudents = datamartPersonService.Queryable().AsNoTracking()
                                                 .Where( m =>
-                                                        m.ConnectionStatusValueId == membershipConnectionId && (m.FamilyRole == "Child" && m.Age >= StudentLowerAge && m.Age <= StudentUpperAge) )
+                                                        m.ConnectionStatusValueId == membershipConnectionId && (m.FamilyRole == "Child" && (m.Grade.HasValue && m.Grade.Value >= _studentLowerGrade && m.Grade.Value <= _studentUpperGrade)) )
                                                 .GroupBy( m => m.CampusId )
                                                 .Select( r => new CampusMeasure
                                                 {
@@ -418,7 +418,7 @@ namespace church.ccv.Steps
                                                    .Count();
 
                     var areaStudentMeasureCount = datamartPersonService.Queryable()
-                                                   .Where( p => p.ConnectionStatusValueId == membershipConnectionId && (p.FamilyRole == "Child" && p.Age >= StudentLowerAge && p.Age <= StudentUpperAge) && p.NeighborhoodId == area.AreaId )
+                                                   .Where( p => p.ConnectionStatusValueId == membershipConnectionId && (p.FamilyRole == "Child" && (p.Grade.HasValue && p.Grade.Value >= _studentLowerGrade && p.Grade.Value <= _studentUpperGrade)) && p.NeighborhoodId == area.AreaId )
                                                    .Count();
 
                     AreaMeasure neighborhoodMeasure = new AreaMeasure();
@@ -465,7 +465,7 @@ namespace church.ccv.Steps
 
                 var measureCountsByCampusStudents = datamartPersonService.Queryable().AsNoTracking()
                                             .Where( m =>
-                                                    m.IsEra == true && (m.FamilyRole == "Child" && m.Age >= StudentLowerAge && m.Age <= StudentUpperAge) && _filteredConnectionStatuses.Contains( m.ConnectionStatusValueId.Value ) )
+                                                    m.IsEra == true && (m.FamilyRole == "Child" && (m.Grade.HasValue && m.Grade.Value >= _studentLowerGrade && m.Grade.Value <= _studentUpperGrade)) && _filteredConnectionStatuses.Contains( m.ConnectionStatusValueId.Value ) )
                                             .GroupBy( m => m.CampusId )
                                             .Select( r => new CampusMeasure
                                             {
@@ -483,7 +483,7 @@ namespace church.ccv.Steps
                                                 .Count();
 
                     var areaStudentMeasureCount = datamartPersonService.Queryable()
-                                                .Where( p => p.IsEra == true && (p.FamilyRole == "Child" && p.Age >= StudentLowerAge && p.Age <= StudentUpperAge) && p.NeighborhoodId == area.AreaId && _filteredConnectionStatuses.Contains( p.ConnectionStatusValueId.Value ) )
+                                                .Where( p => p.IsEra == true && (p.FamilyRole == "Child" && (p.Grade.HasValue && p.Grade.Value >= _studentLowerGrade && p.Grade.Value <= _studentUpperGrade)) && p.NeighborhoodId == area.AreaId && _filteredConnectionStatuses.Contains( p.ConnectionStatusValueId.Value ) )
                                                 .Count();
 
                     AreaMeasure neighborhoodMeasure = new AreaMeasure();
@@ -530,16 +530,21 @@ namespace church.ccv.Steps
                                             } )
                                             .ToList();
 
-                var measureCountsByCampusStudents = datamartPersonService.Queryable().AsNoTracking()
+                //JHM Hack 7-12-2016: This temporarily flags Student Giving as TBD. Once they define the criteria, we can
+                // remove this and it'll work gracefully with the rest of the measures.
+                /*var measureCountsByCampusStudents = datamartPersonService.Queryable().AsNoTracking()
                                             .Where( m =>
-                                                    m.GivingLast12Months >= titheThreshold && (m.FamilyRole == "Child" && m.Age >= StudentLowerAge && m.Age <= StudentUpperAge) )
+                                                    m.GivingLast12Months >= titheThreshold && (m.FamilyRole == "Child" && (m.Grade.HasValue && m.Grade.Value >= _studentLowerGrade && m.Grade.Value <= _studentUpperGrade)) )
                                             .GroupBy( m => m.CampusId )
                                             .Select( r => new CampusMeasure
                                             {
                                                 CampusId = r.Key.Value,
                                                 MeasureValue = r.Count()
                                             } )
-                                            .ToList();
+                                            .ToList();*/
+
+                // students should not have giving considered yet.
+                var measureCountsByCampusStudents = campusStudentCounts.Select( a => new CampusMeasure { CampusId = a.CampusId, MeasureValue = 0 } ).ToList();
 
 
 
@@ -551,9 +556,12 @@ namespace church.ccv.Steps
                                                    .Where( p => p.GivingLast12Months >= titheThreshold && p.FamilyRole == "Adult" && p.NeighborhoodId == area.AreaId )
                                                    .Count();
 
-                    var areaStudentMeasureCount = datamartPersonService.Queryable()
-                                                   .Where( p => p.GivingLast12Months >= titheThreshold && (p.FamilyRole == "Child" && p.Age >= StudentLowerAge && p.Age <= StudentUpperAge) && p.NeighborhoodId == area.AreaId )
-                                                   .Count();
+                    //JHM Hack 7-12-2016: This temporarily flags Student Giving as TBD. Once they define the criteria, we can
+                    // remove this and it'll work gracefully with the rest of the measures.
+                    /*var areaStudentMeasureCount = datamartPersonService.Queryable()
+                                                   .Where( p => p.GivingLast12Months >= titheThreshold && (p.FamilyRole == "Child" && (p.Grade.HasValue && p.Grade.Value >= _studentLowerGrade && p.Grade.Value <= _studentUpperGrade)) && p.NeighborhoodId == area.AreaId )
+                                                   .Count();*/
+                    var areaStudentMeasureCount = 0;
 
                     AreaMeasure neighborhoodMeasure = new AreaMeasure();
                     neighborhoodMeasure.PastorPersonAliasId = area.PastorPersonAliasId;
@@ -600,7 +608,7 @@ namespace church.ccv.Steps
 
                 var measureCountsByCampusStudents = datamartPersonService.Queryable().AsNoTracking()
                                                 .Where( m =>
-                                                        m.IsCoaching == true && (m.FamilyRole == "Child" && m.Age >= StudentLowerAge && m.Age <= StudentUpperAge) && _filteredConnectionStatuses.Contains( m.ConnectionStatusValueId.Value ) )
+                                                        m.IsCoaching == true && (m.FamilyRole == "Child" && (m.Grade.HasValue && m.Grade.Value >= _studentLowerGrade && m.Grade.Value <= _studentUpperGrade)) && _filteredConnectionStatuses.Contains( m.ConnectionStatusValueId.Value ) )
                                                 .GroupBy( m => m.CampusId )
                                                 .Select( r => new CampusMeasure
                                                 {
@@ -618,7 +626,7 @@ namespace church.ccv.Steps
                                                    .Count();
 
                     var areaStudentMeasureCount = datamartPersonService.Queryable()
-                                                    .Where( p => p.IsCoaching == true && (p.FamilyRole == "Child" && p.Age >= StudentLowerAge && p.Age <= StudentUpperAge) && p.NeighborhoodId == area.AreaId && _filteredConnectionStatuses.Contains( p.ConnectionStatusValueId.Value ) )
+                                                    .Where( p => p.IsCoaching == true && (p.FamilyRole == "Child" && (p.Grade.HasValue && p.Grade.Value >= _studentLowerGrade && p.Grade.Value <= _studentUpperGrade)) && p.NeighborhoodId == area.AreaId && _filteredConnectionStatuses.Contains( p.ConnectionStatusValueId.Value ) )
                                                     .Count();
 
                     AreaMeasure neighborhoodMeasure = new AreaMeasure();
@@ -666,7 +674,7 @@ namespace church.ccv.Steps
 
                 var measureCountsByCampusStudents = datamartPersonService.Queryable().AsNoTracking()
                                             .Where( m =>
-                                                    m.InNeighborhoodGroup == true && (m.FamilyRole == "Child" && m.Age >= StudentLowerAge && m.Age <= StudentUpperAge) && _filteredConnectionStatuses.Contains( m.ConnectionStatusValueId.Value ) )
+                                                    m.InNeighborhoodGroup == true && (m.FamilyRole == "Child" && (m.Grade.HasValue && m.Grade.Value >= _studentLowerGrade && m.Grade.Value <= _studentUpperGrade)) && _filteredConnectionStatuses.Contains( m.ConnectionStatusValueId.Value ) )
                                             .GroupBy( m => m.CampusId )
                                             .Select( r => new CampusMeasure
                                             {
@@ -684,7 +692,7 @@ namespace church.ccv.Steps
                                                     .Count();
 
                     var areaStudentMeasureCount = datamartPersonService.Queryable()
-                                                     .Where( p => p.InNeighborhoodGroup == true && (p.FamilyRole == "Child" && p.Age >= StudentLowerAge && p.Age <= StudentUpperAge) && p.NeighborhoodId == area.AreaId && _filteredConnectionStatuses.Contains( p.ConnectionStatusValueId.Value ) )
+                                                     .Where( p => p.InNeighborhoodGroup == true && (p.FamilyRole == "Child" && (p.Grade.HasValue && p.Grade.Value >= _studentLowerGrade && p.Grade.Value <= _studentUpperGrade)) && p.NeighborhoodId == area.AreaId && _filteredConnectionStatuses.Contains( p.ConnectionStatusValueId.Value ) )
                                                      .Count();
 
                     AreaMeasure neighborhoodMeasure = new AreaMeasure();
@@ -731,7 +739,7 @@ namespace church.ccv.Steps
 
                 var measureCountsByCampusStudents = datamartPersonService.Queryable().AsNoTracking()
                                                 .Where( m =>
-                                                        m.IsServing == true && (m.FamilyRole == "Child" && m.Age >= StudentLowerAge && m.Age <= StudentUpperAge) && _filteredConnectionStatuses.Contains( m.ConnectionStatusValueId.Value ) )
+                                                        m.IsServing == true && (m.FamilyRole == "Child" && (m.Grade.HasValue && m.Grade.Value >= _studentLowerGrade && m.Grade.Value <= _studentUpperGrade)) && _filteredConnectionStatuses.Contains( m.ConnectionStatusValueId.Value ) )
                                                 .GroupBy( m => m.CampusId )
                                                 .Select( r => new CampusMeasure
                                                 {
@@ -750,7 +758,7 @@ namespace church.ccv.Steps
 
 
                     var areaStudentMeasureCount = datamartPersonService.Queryable()
-                                                   .Where( p => p.IsServing == true && (p.FamilyRole == "Child" && p.Age >= StudentLowerAge && p.Age <= StudentUpperAge) && p.NeighborhoodId == area.AreaId && _filteredConnectionStatuses.Contains( p.ConnectionStatusValueId.Value ) )
+                                                   .Where( p => p.IsServing == true && (p.FamilyRole == "Child" && (p.Grade.HasValue && p.Grade.Value >= _studentLowerGrade && p.Grade.Value <= _studentUpperGrade)) && p.NeighborhoodId == area.AreaId && _filteredConnectionStatuses.Contains( p.ConnectionStatusValueId.Value ) )
                                                    .Count();
 
                     AreaMeasure neighborhoodMeasure = new AreaMeasure();

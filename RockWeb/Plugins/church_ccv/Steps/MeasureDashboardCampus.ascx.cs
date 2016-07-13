@@ -62,6 +62,10 @@ namespace RockWeb.Plugins.church_ccv.Steps
             WeekendAttendance
         };
         public DashboardView DashboardViewState { get; set; }
+
+        //JHM Hack 7-12-2016: This temporarily flags Student Giving as TBD. Once they define the criteria, we can
+        // remove this and it'll work gracefully with the rest of the measures.
+        int _givingMeasureId = 6;
         #endregion
 
         #region Properties
@@ -330,6 +334,11 @@ namespace RockWeb.Plugins.church_ccv.Steps
                                     CampusId = m.CampusId
                                 } )
                                 .ToList();
+
+                                //JHM Hack 7-12-2016: This temporarily flags Student Giving as TBD. Once they define the criteria, we can
+                                // remove this and it'll work gracefully with the rest of the measures.
+                                historicalMeasures.Where( hm => hm.MeasureId == _givingMeasureId ).ToList( ).ForEach( hm => hm.IsTbd = true );
+                                latestMeasures.Where( lm => lm.MeasureId == _givingMeasureId ).ToList( ).ForEach( lm => lm.IsTbd = true );
                             break;
                         }
 
