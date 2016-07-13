@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
@@ -25,7 +26,9 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -70,6 +73,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             rptrGroups.ItemDataBound += rptrGroups_ItemDataBound;
 
             _allowEdit = IsUserAuthorized( Rock.Security.Authorization.EDIT );
+
+            RegisterScripts();
         }
 
         /// <summary>
@@ -107,12 +112,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         pageParams.Add( "PersonId", Person.Id.ToString() );
                         pageParams.Add( "GroupId", group.Id.ToString() );
                         hlEditGroup.NavigateUrl = LinkedPageUrl( "GroupEditPage", pageParams );
-                    }
-
-                    Literal lEditGroup = e.Item.FindControl( "lEditGroup" ) as Literal;
-                    if ( lEditGroup != null )
-                    {
-                        lEditGroup.Text = "Edit " + _groupType.Name;
                     }
 
                     Repeater rptrMembers = e.Item.FindControl( "rptrMembers" ) as Repeater;
@@ -161,6 +160,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
 
                     Repeater rptrAddresses = e.Item.FindControl( "rptrAddresses" ) as Repeater;
+                    if ( rptrAddresses != null )
                     {
                         rptrAddresses.ItemDataBound += rptrAddresses_ItemDataBound;
                         rptrAddresses.ItemCommand += rptrAddresses_ItemCommand;
@@ -169,6 +169,59 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             .OrderBy( l => l.GroupLocationTypeValue.Order )
                             .ToList();
                         rptrAddresses.DataBind();
+                    }
+
+                    Panel pnlGroupAttributes = e.Item.FindControl( "pnlGroupAttributes" ) as Panel;
+                    HyperLink hlShowMoreAttributes = e.Item.FindControl( "hlShowMoreAttributes" ) as HyperLink;
+                    PlaceHolder phGroupAttributes = e.Item.FindControl( "phGroupAttributes" ) as PlaceHolder;
+                    PlaceHolder phMoreGroupAttributes = e.Item.FindControl( "phMoreGroupAttributes" ) as PlaceHolder;
+
+                    if ( pnlGroupAttributes  != null && hlShowMoreAttributes != null && phGroupAttributes != null && phMoreGroupAttributes != null )
+                    {
+                        hlShowMoreAttributes.Visible = false;
+                        phGroupAttributes.Controls.Clear();
+                        phMoreGroupAttributes.Controls.Clear();
+
+                        group.LoadAttributes();
+                        var attributes = group.Attributes
+                            .Select( a => a.Value )
+                            .OrderBy( a => a.Order )
+                            .ToList();
+
+                        foreach( var attribute in attributes )
+                        {
+                            if ( attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                            {
+                                string value = attribute.DefaultValue;
+                                if ( group.AttributeValues.ContainsKey( attribute.Key ) && group.AttributeValues[attribute.Key] != null )
+                                {
+                                    value = group.AttributeValues[attribute.Key].ValueFormatted;
+                                }
+
+                                if ( !string.IsNullOrWhiteSpace( value ) )
+                                {
+                                    var literalControl = new RockLiteral();
+                                    literalControl.ID = string.Format( "familyAttribute_{0}", attribute.Id );
+                                    literalControl.Label = attribute.Name;
+                                    literalControl.Text = value;
+
+                                    var li = new HtmlGenericControl( "li" );
+                                    li.Controls.Add( literalControl );
+
+                                    if ( attribute.IsGridColumn )
+                                    {
+                                        phGroupAttributes.Controls.Add( li );
+                                    }
+                                    else
+                                    {
+                                        hlShowMoreAttributes.Visible = true;
+                                        phMoreGroupAttributes.Controls.Add( li );
+                                    }
+                                }
+                            }
+                        }
+
+                        pnlGroupAttributes.Visible = phGroupAttributes.Controls.Count > 0 || phMoreGroupAttributes.Controls.Count > 0;
                     }
                 }
             }
@@ -421,6 +474,25 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         protected string FormatAsHtmlTitle( string str )
         {
             return str.FormatAsHtmlTitle();
+        }
+
+        private void RegisterScripts()
+        {
+            string script = @"
+    $('a.js-show-more-family-attributes').click(function (e) {
+        var $pnl = $(this).closest('div.js-family-attributes');
+        var $ul = $pnl.find('ul.js-more-family-attributes').first();
+        if ( $ul.is(':visible') ) {
+            $ul.slideUp();
+            $(this).html('<i class=""fa fa-chevron-down""></i> More');
+        } else {
+            $ul.slideDown();
+            $(this).html('<i class=""fa fa-chevron-up""></i> Less');
+        }
+    });
+";
+            ScriptManager.RegisterStartupScript( upGroupMembers, upGroupMembers.GetType(), "showmore", script, true );
+
         }
 
         #endregion

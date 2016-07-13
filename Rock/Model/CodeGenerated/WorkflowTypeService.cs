@@ -51,6 +51,18 @@ namespace Rock.Model
         public bool CanDelete( WorkflowType item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<RegistrationInstance>( Context ).Queryable().Any( a => a.RegistrationWorkflowTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, RegistrationInstance.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<RegistrationTemplate>( Context ).Queryable().Any( a => a.RegistrationWorkflowTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, RegistrationTemplate.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
@@ -100,6 +112,7 @@ namespace Rock.Model
             target.Name = source.Name;
             target.Order = source.Order;
             target.ProcessingIntervalSeconds = source.ProcessingIntervalSeconds;
+            target.WorkflowIdPrefix = source.WorkflowIdPrefix;
             target.WorkTerm = source.WorkTerm;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

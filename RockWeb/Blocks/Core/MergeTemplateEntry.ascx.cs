@@ -309,7 +309,7 @@ namespace RockWeb.Blocks.Core
                             primaryGroupPerson.AdditionalLavaFields = primaryGroupPerson.AdditionalLavaFields ?? new Dictionary<string, object>();
                             if ( groupMember != null )
                             {
-                                primaryGroupPerson.AdditionalLavaFields.Add( "GroupMember", groupMember );
+                                primaryGroupPerson.AdditionalLavaFields.AddOrIgnore( "GroupMember", groupMember );
                             }
                         }
 

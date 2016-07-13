@@ -475,10 +475,15 @@ namespace Rock.Model
                 var routes = RouteTable.Routes;
                 if ( routes != null )
                 {
-                    foreach ( var pageRoute in new PageRouteService( dbContext as RockContext ).Queryable().Where( r => r.PageId == this.Id ) )
-                    {
-                        var existingRoute = routes.OfType<Route>().FirstOrDefault( a => a.RouteId() == pageRoute.Id );
-                        if ( existingRoute != null )
+                    foreach( var existingRoute in RouteTable.Routes.OfType<Route>().Where( r => r.PageIds().Contains( this.Id ) ) )
+                    { 
+                        var pageAndRouteIds = existingRoute.DataTokens["PageRoutes"] as List<Rock.Web.PageAndRouteId>;
+                        pageAndRouteIds = pageAndRouteIds.Where( p => p.PageId != this.Id ).ToList();
+                        if ( pageAndRouteIds.Any() )
+                        {
+                            existingRoute.DataTokens["PageRoutes"] = pageAndRouteIds;
+                        }
+                        else
                         {
                             RouteTable.Routes.Remove( existingRoute );
                         }

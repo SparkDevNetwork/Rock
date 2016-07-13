@@ -143,6 +143,14 @@ namespace Rock.CheckIn
         public bool AgeRequired { get { return GetSetting( "core_checkin_AgeRequired" ).AsBoolean( true ); } }
 
         /// <summary>
+        /// Gets a value indicating whether [grade is required].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [age required]; otherwise, <c>false</c>.
+        /// </value>
+        public bool GradeRequired { get { return GetSetting( "core_checkin_GradeRequired" ).AsBoolean( true ); } }
+
+        /// <summary>
         /// Gets a value indicating whether [display location count].
         /// </summary>
         /// <value>

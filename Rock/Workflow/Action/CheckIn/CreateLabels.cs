@@ -125,7 +125,7 @@ namespace Rock.Workflow.Action.CheckIn
                                             .ToList();
                                         mergeObjects.Add( "GroupMembers", groupMembers );
 
-                                        var label = new CheckInLabel( labelCache, mergeObjects, location.SelectedForSchedule );
+                                        var label = new CheckInLabel( labelCache, mergeObjects );
                                         label.FileGuid = labelCache.Guid;
                                         label.PrintFrom = checkInState.Kiosk.Device.PrintFrom;
                                         label.PrintTo = checkInState.Kiosk.Device.PrintToOverride;

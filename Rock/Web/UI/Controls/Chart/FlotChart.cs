@@ -684,6 +684,7 @@ namespace Rock.Web.UI.Controls
 
             string tooltipScript = ShowTooltip ? string.Format( "Rock.controls.charts.bindTooltip('{0}', {1})", this.ClientID, this.TooltipFormatter ?? "null" ) : null;
             string chartClickScript = GetChartClickScript();
+            string chartData = string.IsNullOrEmpty( ChartData ) ? "[]" : ChartData;
 
             string script = string.Format(
                 scriptFormat.ToString(),
@@ -692,7 +693,7 @@ namespace Rock.Web.UI.Controls
                 tooltipScript,      // {2}
                 chartClickScript,   // {3}
                 this.CombineValues.ToTrueFalse().ToLower(),  // {4}
-                ChartData );        // {5}
+                chartData );        // {5}
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "flot-chart-script_" + this.ClientID, script, true );
         }

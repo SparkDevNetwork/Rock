@@ -20,7 +20,7 @@ GO
 	</code>
 </doc>
 */
-CREATE VIEW [vCheckin_GroupTypeAttendance]
+CREATE VIEW [dbo].[vCheckin_GroupTypeAttendance]
 
 AS
 

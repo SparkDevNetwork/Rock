@@ -377,6 +377,22 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the next check in start time.
+        /// </summary>
+        /// <param name="begindateTime">The begindate time.</param>
+        /// <returns></returns>
+        public virtual DateTime? GetNextCheckInStartTime( DateTime begindateTime )
+        {
+            var checkInTimes = GetCheckInTimes( begindateTime );
+            if ( checkInTimes != null && checkInTimes.Any() )
+            {
+                return checkInTimes.FirstOrDefault().CheckInStart;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Gets a list of scheduled start datetimes between the two specified dates, sorted by datetime.
         /// </summary>
         /// <param name="beginDateTime">The begin date time.</param>

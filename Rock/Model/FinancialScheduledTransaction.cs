@@ -52,6 +52,16 @@ namespace Rock.Model
         public int AuthorizedPersonAliasId { get; set; }
 
         /// <summary>
+        /// Gets or sets the transaction type value identifier.
+        /// </summary>
+        /// <value>
+        /// The transaction type value identifier.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE )]
+        public int? TransactionTypeValueId { get; set; }
+
+        /// <summary>
         /// Gets or sets the source type value identifier.
         /// </summary>
         /// <value>
@@ -208,6 +218,15 @@ namespace Rock.Model
         public virtual PersonAlias AuthorizedPersonAlias { get; set; }
 
         /// <summary>
+        /// Gets or sets the transaction type <see cref="Rock.Model.DefinedValue"/> indicating the type of transaction that occurred.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.DefinedValue"/> indicating the type of transaction that occurred.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue TransactionTypeValue { get; set; }
+
+        /// <summary>
         /// Gets or sets the source type <see cref="Rock.Model.DefinedValue"/> indicating where the transaction originated from; the source of the transaction.
         /// </summary>
         /// <value>
@@ -306,6 +325,7 @@ namespace Rock.Model
         public FinancialScheduledTransactionConfiguration()
         {
             this.HasRequired( t => t.AuthorizedPersonAlias ).WithMany().HasForeignKey( t => t.AuthorizedPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.TransactionTypeValue ).WithMany().HasForeignKey( t => t.TransactionTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.SourceTypeValue ).WithMany().HasForeignKey( t => t.SourceTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.FinancialGateway ).WithMany().HasForeignKey( t => t.FinancialGatewayId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.FinancialPaymentDetail ).WithMany().HasForeignKey( t => t.FinancialPaymentDetailId ).WillCascadeOnDelete( false );

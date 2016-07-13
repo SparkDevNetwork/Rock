@@ -26,7 +26,7 @@
 
                                 <Rock:DataTextBox ID="tbBusinessName" runat="server" Label="Name" SourceTypeName="Rock.Model.Person, Rock" PropertyName="FirstName" ValidationGroup="businessDetail" />
                             
-                                <Rock:AddressControl ID="acAddress" runat="server" UseStateAbbreviation="false" UseCountryAbbreviation="false" />
+                                <Rock:AddressControl ID="acAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" />
 
                                 <div class="row">
                                     <div class="col-sm-6">
@@ -35,7 +35,7 @@
                                     <div class="col-sm-6">
                                         <div class="row">
                                             <div class="col-xs-6">
-                                                <Rock:RockCheckBox ID="cbSms" runat="server" Text="Sms" Label="&nbsp;" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' />
+                                                <Rock:RockCheckBox ID="cbSms" runat="server" Text="SMS" Label="&nbsp;" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' />
                                             </div>
                                             <div class="col-xs-6">
                                                 <Rock:RockCheckBox ID="cbUnlisted" runat="server" Text="Unlisted" Label="&nbsp;" Checked='<%# (bool)Eval("IsUnlisted") %>' />

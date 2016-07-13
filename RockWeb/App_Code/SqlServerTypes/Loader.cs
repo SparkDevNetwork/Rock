@@ -53,7 +53,7 @@ namespace SqlServerTypes
             {
                 throw new Exception(string.Format(
                     "Error loading {0} (ErrorCode: {1})",
-                    assemblyName,
+                    path + " as " + System.Security.Principal.WindowsIdentity.GetCurrent().Name,
                     Marshal.GetLastWin32Error()));
             }
         }

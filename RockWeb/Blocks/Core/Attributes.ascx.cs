@@ -48,6 +48,7 @@ namespace RockWeb.Blocks.Core
     [BooleanField( "Allow Setting of Values", "Should UI be available for setting values of the specified Entity ID?", false, "Advanced", 0 )]
     [IntegerField( "Entity Id", "The entity id that values apply to", false, 0, "Advanced", 1 )]
     [BooleanField( "Enable Show In Grid", "Should the 'Show In Grid' option be displayed when editing attributes?", false, "Advanced", 2 )]
+    [BooleanField( "Enable Ordering", "Should the attributes be allowed to be sorted?", false, "Advanced", 3 )]
 
     public partial class Attributes : RockBlock
     {
@@ -60,6 +61,7 @@ namespace RockWeb.Blocks.Core
         private bool _displayValueEdit = false;
         private int? _entityId = null;
         private bool _canConfigure = false;
+        private bool _enableOrdering = false;
 
         #endregion
 
@@ -74,7 +76,7 @@ namespace RockWeb.Blocks.Core
             base.OnInit( e );
 
             _configuredType = GetAttributeValue( "ConfigureType" ).AsBooleanOrNull() ?? true;
-            edtAttribute.ShowInGridVisible = GetAttributeValue( "DisplayShowInGrid" ).AsBooleanOrNull() ?? false;
+            edtAttribute.ShowInGridVisible = GetAttributeValue( "EnableShowInGrid" ).AsBooleanOrNull() ?? false;
 
             Guid? entityTypeGuid = GetAttributeValue( "Entity" ).AsGuidOrNull();
             if ( entityTypeGuid.HasValue )
@@ -94,24 +96,28 @@ namespace RockWeb.Blocks.Core
 
             _canConfigure = IsUserAuthorized( Rock.Security.Authorization.ADMINISTRATE );
 
+            _enableOrdering = GetAttributeValue( "EnableOrdering" ).AsBoolean();
+
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
 
             if ( _canConfigure )
             {
                 rGrid.DataKeyNames = new string[] { "Id" };
                 rGrid.Actions.ShowAdd = true;
-
+                rGrid.AllowSorting = !_enableOrdering;
+                rGrid.GridReorder += RGrid_GridReorder;
                 rGrid.Actions.AddClick += rGrid_Add;
                 rGrid.GridRebind += rGrid_GridRebind;
                 rGrid.RowDataBound += rGrid_RowDataBound;
 
-                rGrid.Columns[1].Visible = !_configuredType;   // qualifier
+                rGrid.Columns[0].Visible = _enableOrdering;
+                rGrid.Columns[2].Visible = !_configuredType;   // qualifier
 
-                rGrid.Columns[4].Visible = !_displayValueEdit; // default value / value
-                rGrid.Columns[5].Visible = _displayValueEdit; // default value / value
-                rGrid.Columns[6].Visible = _displayValueEdit;  // edit
+                rGrid.Columns[5].Visible = !_displayValueEdit; // default value / value
+                rGrid.Columns[6].Visible = _displayValueEdit; // default value / value
+                rGrid.Columns[7].Visible = _displayValueEdit;  // edit
 
-                SecurityField securityField = rGrid.Columns[7] as SecurityField;
+                SecurityField securityField = rGrid.Columns[8] as SecurityField;
                 securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
 
                 mdAttribute.SaveClick += mdAttribute_SaveClick;
@@ -402,6 +408,25 @@ namespace RockWeb.Blocks.Core
             }
         }
 
+
+        private void RGrid_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            var rockContext = new RockContext();
+            var attributeService = new AttributeService( rockContext );
+            var qry = GetData( rockContext );
+            var updatedAttributeIds = attributeService.Reorder( qry.ToList(), e.OldIndex, e.NewIndex );
+
+            rockContext.SaveChanges();
+
+            foreach ( int id in updatedAttributeIds )
+            {
+                AttributeCache.Flush( id );
+            }
+            AttributeCache.FlushEntityAttributes();
+
+            BindGrid();
+        }
+
         /// <summary>
         /// Handles the SelectedIndexChanged event of the ddlAttrEntityType control.
         /// </summary>
@@ -536,14 +561,11 @@ namespace RockWeb.Blocks.Core
             cpCategoriesFilter.SetValues( selectedIDs );
         }
 
-        /// <summary>
-        /// Binds the grid.
-        /// </summary>
-        private void BindGrid()
+        private IQueryable<Rock.Model.Attribute> GetData( RockContext rockContext )
         {
             IQueryable<Rock.Model.Attribute> query = null;
 
-            AttributeService attributeService = new AttributeService( new RockContext() );
+            AttributeService attributeService = new AttributeService( rockContext );
             if ( _configuredType )
             {
                 query = attributeService.Get( _entityTypeId, _entityQualifierColumn, _entityQualifierValue );
@@ -572,16 +594,32 @@ namespace RockWeb.Blocks.Core
                 query = query.Where( a => a.Categories.Any( c => selectedCategoryIds.Contains( c.Id ) ) );
             }
 
-            SortProperty sortProperty = rGrid.SortProperty;
-            if ( sortProperty != null )
+            if ( _enableOrdering )
             {
-                query = query.Sort( sortProperty );
+                query = query.OrderBy( a => a.Order );
             }
             else
             {
-                query = query.OrderBy( a => a.Key );
+                SortProperty sortProperty = rGrid.SortProperty;
+                if ( sortProperty != null )
+                {
+                    query = query.Sort( sortProperty );
+                }
+                else
+                {
+                    query = query.OrderBy( a => a.Key );
+                }
             }
 
+            return query;
+        }
+
+        /// <summary>
+        /// Binds the grid.
+        /// </summary>
+        private void BindGrid()
+        {
+            var query = GetData( new RockContext() );
             rGrid.DataSource = query.ToList();
             rGrid.DataBind();
         }

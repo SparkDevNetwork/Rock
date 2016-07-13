@@ -20,7 +20,8 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:PagePicker ID="ppPage" runat="server" Label="Page" Required="true" PromptForPageRoute="false"/>
+                            <Rock:PagePicker ID="ppPage" runat="server" Label="Page" Required="true" PromptForPageRoute="false" OnSelectItem="ppPage_SelectItem" />
+                            <Rock:RockLiteral ID="lSite" runat="server" Label="Site" />
                         </div>
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbRoute" runat="server" SourceTypeName="Rock.Model.PageRoute, Rock" PropertyName="Route" />

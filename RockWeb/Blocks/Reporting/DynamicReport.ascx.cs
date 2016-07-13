@@ -409,6 +409,11 @@ namespace RockWeb.Blocks.Reporting
                             // not configurable so just label it with the selection summary
                             filterControl.Label = component.FormatSelection( reportEntityTypeModel, filter.Selection );
                         }
+                        else if ( component is Rock.Reporting.DataFilter.PropertyFilter )
+                        {
+                            // Property Filters already render a Label based on the selected Property Field, so leave the filter control label blank
+                            filterControl.Label = string.Empty;
+                        }
                         else
                         {
                             filterControl.Label = component.GetTitle( reportEntityTypeModel );
