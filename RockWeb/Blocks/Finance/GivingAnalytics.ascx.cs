@@ -1149,11 +1149,11 @@ function(item) {
                     {
                         if ( !DBNull.Value.Equals( row["FirstEverGift"] ) )
                         {
-                            firstEverVals.Add( row["GivingId"].ToString(), (DateTime)row["FirstEverGift"] );
+                            firstEverVals.Add( row["GivingId"].ToString(), row["FirstEverGift"].ToString().AsDateTime().Value );
                         }
                         if ( !DBNull.Value.Equals( row["LastEverGift"] ) )
                         {
-                            lastEverVals.Add( row["GivingId"].ToString(), (DateTime)row["LastEverGift"] );
+                            lastEverVals.Add( row["GivingId"].ToString(), row["LastEverGift"].ToString().AsDateTime().Value );
                         }
                     }
                 }
