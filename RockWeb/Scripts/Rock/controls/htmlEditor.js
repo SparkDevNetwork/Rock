@@ -18,6 +18,7 @@
                     ['para', ['paragraph']],
                     ['plugins1', ['rockmergefield']],
                     ['plugins2', ['rockimagebrowser', 'rockfilebrowser']],
+                    ['plugins3', ['rockpastetext', 'rockpastefromword']],
                     ['help_group1', ['help']]
 	            ],
 
@@ -34,6 +35,7 @@
                     ['para', ['paragraph']],
                     ['plugins1', ['rockmergefield']],
                     ['plugins2', ['rockimagebrowser', 'rockfilebrowser']],
+                    ['plugins3', ['rockpastetext', 'rockpastefromword']],
                     ['help_group1', ['help']]
 
                 ]

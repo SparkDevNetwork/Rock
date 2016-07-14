@@ -497,11 +497,7 @@ namespace Rock.Web.UI.Controls
             if ( this.Visible && !ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
             {
                 RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/summernote/summernote.min.js" ), true );
-                RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/summernote/plugins/RockFileBrowser.js" ), true );
-                RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/summernote/plugins/RockImageBrowser.js" ), true );
-                RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/summernote/plugins/RockMergeField.js" ), true );
-                RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/summernote/plugins/RockCodeEditor.js" ), true );
-                RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/summernote/plugins/summernote-cleaner.js" ), true );
+                RockPage.AddScriptLink( Page, "~/Scripts/Bundles/RockHtmlEditorPlugins", false );
             }
 
             EnsureChildControls();
@@ -609,7 +605,9 @@ $(document).ready( function() {{
             rockfilebrowser: RockFileBrowser,
             rockimagebrowser: RockImageBrowser, 
             rockmergefield: RockMergeField,
-            rockcodeeditor: RockCodeEditor
+            rockcodeeditor: RockCodeEditor,
+            rockpastetext: RockPasteText,
+            rockpastefromword: RockPasteFromWord
         }},
 
         rockFileBrowserOptions: {{ 
@@ -713,15 +711,12 @@ $(document).ready( function() {{
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "summernote_init_script_" + this.ClientID, summernoteInitScript, true );
 
-            // add ace.js on demand only when there will be a codeeditor rendered
+            // add script on demand only when there will be an htmleditor rendered
             if ( ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
             {
                 ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "summernote-lib", ( (RockPage)this.Page ).ResolveRockUrl( "~/Scripts/summernote/summernote.min.js", true ) );
-                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "rock-file-browser-plugin", ( (RockPage)this.Page ).ResolveRockUrl( "~/Scripts/summernote/plugins/RockFileBrowser.js", true ) );
-                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "rock-image-browser-plugin", ( (RockPage)this.Page ).ResolveRockUrl( "~/Scripts/summernote/plugins/RockImageBrowser.js", true ) );
-                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "rock-mergefield-plugin", ( (RockPage)this.Page ).ResolveRockUrl( "~/Scripts/summernote/plugins/RockMergeField.js", true ) );
-                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "rock-codeeditor-plugin", ( (RockPage)this.Page ).ResolveRockUrl( "~/Scripts/summernote/plugins/RockCodeEditor.js", true ) );
-                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "summernote-cleaner-plugin", ( (RockPage)this.Page ).ResolveRockUrl( "~/Scripts/summernote/plugins/summernote-cleaner.js", true ) );
+                var bundleUrl = System.Web.Optimization.BundleResolver.Current.GetBundleUrl( "~/Scripts/Bundles/RockHtmlEditorPlugins" );
+                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "summernote-plugins", bundleUrl );
             }
 
             // set this textbox hidden until we can run the js to attach summernote to it
