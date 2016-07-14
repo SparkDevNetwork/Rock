@@ -61,7 +61,7 @@ namespace church.ccv.Steps
         int _attendingMeasureId = -1;
         int _sharingMeasureId = -1;
 
-        int _searchDateSpan = 365;
+        int _searchDateSpan = 60;
 
         DateTime? lastProcessedDate;
 

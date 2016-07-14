@@ -276,7 +276,18 @@ namespace RockWeb.Plugins.church_ccv.Steps
                         lcChart.Options.series.lines.fill = 0;
                         lcChart.Options.grid.show = false;
                         lcChart.Options.series.shadowSize = 0;
-                        //lcTest.Options.series.lines.fillColor = "#0f0f0fff";
+
+                        // to ensure that all of the charts share the same date range scale add the start and end dates as zero values
+                        // when new campuses/pastors are show they will have fewer data points and the charts won't align
+                        if ( GetDateRange().Start.HasValue )
+                        {
+                            lcChart.Options.xaxis.min = GetDateRange().Start.Value.ToJavascriptMilliseconds();
+                        }
+
+                        if ( GetDateRange().End.HasValue )
+                        {
+                            lcChart.Options.xaxis.max = GetDateRange().End.Value.ToJavascriptMilliseconds();
+                        }
                     }
                     else
                     {
@@ -360,7 +371,18 @@ namespace RockWeb.Plugins.church_ccv.Steps
                         lcChart.Options.series.lines.fill = 0;
                         lcChart.Options.grid.show = false;
                         lcChart.Options.series.shadowSize = 0;
-                        //lcTest.Options.series.lines.fillColor = "#0f0f0fff";
+
+                        // to ensure that all of the charts share the same date range scale add the start and end dates as zero values
+                        // when new campuses/pastors are show they will have fewer data points and the charts won't align
+                        if ( GetDateRange().Start.HasValue )
+                        {
+                            lcChart.Options.xaxis.min = GetDateRange().Start.Value.ToJavascriptMilliseconds();
+                        }
+
+                        if ( GetDateRange().End.HasValue )
+                        {
+                            lcChart.Options.xaxis.max = GetDateRange().End.Value.ToJavascriptMilliseconds();
+                        }
                     }
                     else
                     {
@@ -441,6 +463,18 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     lcChart.Options.series.lines.fill = 0;
                     lcChart.Options.grid.show = false;
                     lcChart.Options.series.shadowSize = 0;
+
+                    // to ensure that all of the charts share the same date range scale add the start and end dates as zero values
+                    // when new campuses/pastors are show they will have fewer data points and the charts won't align
+                    if ( GetDateRange().Start.HasValue )
+                    {
+                        lcChart.Options.xaxis.min = GetDateRange().Start.Value.ToJavascriptMilliseconds();
+                    }
+
+                    if ( GetDateRange().End.HasValue )
+                    {
+                        lcChart.Options.xaxis.max = GetDateRange().End.Value.ToJavascriptMilliseconds();
+                    }
                 }
                 else
                 {
@@ -479,6 +513,17 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     chartData.Add( blankItem );
                 }
 
+                // check that there is at least one last year date to ensure 2 series
+                if ( !chartData.Any( d => d.SeriesName == "Previous Year" ) && chartData.Count > 0 )
+                {
+                    SummaryData blankItem = new SummaryData();
+                    blankItem.SeriesName = "Previous Year";
+                    blankItem.YValue = 0;
+                    blankItem.DateTimeStamp = chartData.OrderBy( d => d.DateTimeStamp ).FirstOrDefault().DateTimeStamp;
+
+                    chartData.Add( blankItem );
+                }
+
                 // sort data
                 chartData = chartData.OrderByDescending( c => c.SeriesName ).ThenBy( c => c.DateTimeStamp ).ToList();
 
@@ -498,6 +543,18 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     lcChart.Options.series.lines.lineWidth = 4;
                     lcChart.Options.xaxis.show = false;
                     lcChart.Options.yaxis.show = false;
+
+                    // to ensure that all of the charts share the same date range scale add the start and end dates as zero values
+                    // when new campuses/pastors are show they will have fewer data points and the charts won't align
+                    if ( GetDateRange().Start.HasValue )
+                    {
+                        lcChart.Options.xaxis.min = GetDateRange().Start.Value.ToJavascriptMilliseconds();
+                    }
+
+                    if ( GetDateRange().End.HasValue )
+                    {
+                        lcChart.Options.xaxis.max = GetDateRange().End.Value.ToJavascriptMilliseconds();
+                    }
 
                     Color measureColor = ColorTranslator.FromHtml( CurrentMeasure.Color );
                     Color measureColorLight = measureColor.ChangeColorBrightness( 0.8f );
