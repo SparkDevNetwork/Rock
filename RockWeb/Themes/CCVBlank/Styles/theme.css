@@ -10900,9 +10900,13 @@ table.inherited-attribute-grid tr td:nth-child(2),
 table.attribute-grid tr th:nth-child(3) {
   width: 550px;
 }
-.group-detail .panel-heading {
-  cursor: pointer;
-}
+/*
+    // commented out 7/6/2016 JME - Not sure why we'd want the cursor changed like this?
+    .group-detail {
+    .panel-heading {
+        cursor: pointer;
+    }
+}*/
 /*
     Used to manage styles for specific blocks.
 
@@ -11457,6 +11461,49 @@ table.attribute-grid tr th:nth-child(3) {
 .personprofilebar-family a {
   color: #5697d0;
 }
+.personprofilebar-family header {
+  background-color: #b9d4ec;
+  margin: -15px -15px 0 -15px;
+  padding: 10px 15px;
+  position: relative;
+  border-bottom: 1px solid #92bce0;
+}
+.personprofilebar-family header:before,
+.personprofilebar-family header:after {
+  content: " ";
+  display: table;
+}
+.personprofilebar-family header:after {
+  clear: both;
+}
+.personprofilebar-family header:before,
+.personprofilebar-family header:after {
+  content: " ";
+  display: table;
+}
+.personprofilebar-family header:after {
+  clear: both;
+}
+.personprofilebar-family header h1 {
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  font-size: 18px;
+  float: left;
+  margin: 0;
+}
+.personprofilebar-family header .edit {
+  position: absolute;
+  right: 0;
+  padding-top: 10px;
+  border-left: 1px solid #92bce0;
+  top: 0;
+  bottom: 0;
+  width: 45px;
+}
+.personprofilebar-family header .edit i {
+  text-align: center;
+  width: 100%;
+}
 .personprofilebar-family .groupmembers .member a {
   border-radius: 4px;
   padding: 8px;
@@ -11479,20 +11526,7 @@ table.attribute-grid tr th:nth-child(3) {
   clear: both;
 }
 .personprofilebar-family .groupmembers .member .person-image {
-  /* For Webkit browsers */
-  /* For IE 6 - 9 */
-  /* Fade to color for Chrome and Safari */
-  /* Firefox 10+, Firefox on Android */
-  filter: grayscale(100%);
-  -webkit-filter: grayscale(100%);
-  /* For Webkit browsers */
-  filter: gray;
-  /* For IE 6 - 9 */
-  -webkit-transition: all .6s ease;
-  /* Fade to color for Chrome and Safari */
-  filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
-  /* Firefox 10+, Firefox on Android */
-  transition: .5s;
+  border-radius: 50%;
   border-color: #a6c8e6;
 }
 .personprofilebar-family .groupmembers .member:hover {
@@ -11503,20 +11537,6 @@ table.attribute-grid tr th:nth-child(3) {
   filter: grayscale(0%);
   -webkit-filter: grayscale(0%);
   filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 1 0\'/></filter></svg>#grayscale");
-}
-.personprofilebar-family .actions {
-  position: absolute;
-  right: 12px;
-  z-index: 999;
-}
-.personprofilebar-family .actions a.btn-action {
-  color: #ffffff;
-  background-color: #6a6a6a;
-  border-color: #5d5d5d;
-}
-.personprofilebar-family header {
-  font-size: 16px;
-  margin-bottom: 7.5px;
 }
 .personprofilebar-family .addresses ul {
   list-style: none;
@@ -12031,6 +12051,7 @@ iframe.email-body {
   37. Custom Buttons
   38. Color Picker
   39. HTML Editor (summernote)
+  40. Person Directory
 */
 .picker {
   position: relative;
@@ -14030,6 +14051,13 @@ ul.list-group-panel .list-group-item:first-child,
 iframe.file-browser {
   border: 0;
 }
+.directory-letters li {
+  width: 3.8455%;
+  min-width: 20px;
+}
+.directory-grid > div.row:nth-child(odd) {
+  background-color: #f7f7f7;
+}
 /*
     Used to manage styles for specific blocks.
 
@@ -15012,6 +15040,53 @@ th[align=center] {
   padding: 15px 0;
   background-color: #f5f9fc;
   margin-bottom: 15px;
+}
+.panel-drawer {
+  background-color: #f5f9fc;
+  width: 100%;
+}
+.drawer-content {
+  padding: 15px;
+}
+.panel-drawer.open > .drawer-content {
+  display: block;
+}
+.drawer-pull {
+  color: #5697d0;
+  padding: 6px 8px;
+  cursor: pointer;
+  border-bottom: 1px solid #cde1f1;
+}
+.drawer-pull:before,
+.drawer-pull:after {
+  content: " ";
+  display: table;
+}
+.drawer-pull:after {
+  clear: both;
+}
+.drawer-pull:before,
+.drawer-pull:after {
+  content: " ";
+  display: table;
+}
+.drawer-pull:after {
+  clear: both;
+}
+.drawer-pull i {
+  float: right;
+}
+.drawer-pull:hover {
+  background-color: #e9f2f9;
+}
+.paneleditor-label {
+  float: left;
+}
+.paneleditor-input {
+  float: left;
+  margin-top: -6px;
+  margin-right: 4px;
+  margin-left: 4px;
 }
 .btn.aspNetDisabled {
   cursor: not-allowed;
