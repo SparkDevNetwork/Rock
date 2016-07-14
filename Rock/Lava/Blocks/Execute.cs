@@ -8,6 +8,8 @@ using DotLiquid;
 using Rock.Data;
 using Rock.Model;
 using CSScriptLibrary;
+using System.Text.RegularExpressions;
+using Microsoft.CSharp;
 
 namespace Rock.Lava.Blocks
 {
@@ -20,6 +22,8 @@ namespace Rock.Lava.Blocks
         private RuntimeType _runtimeType = RuntimeType.SCRIPT;
         private List<string> _imports = new List<string>();
 
+        string _markup = string.Empty;
+
         /// <summary>
         /// Initializes the specified tag name.
         /// </summary>
@@ -28,29 +32,23 @@ namespace Rock.Lava.Blocks
         /// <param name="tokens">The tokens.</param>
         public override void Initialize( string tagName, string markup, List<string> tokens )
         {
-            string[] parms = markup.Split( ' ' );
+            var parms = ParseMarkup( markup );
 
-            foreach ( var parm in parms )
+            if ( parms.Any( p => p.Key == "type" ) )
             {
-                string[] setting = parm.Split( '=' );
-
-                if ( setting.Length == 2 )
+                if (parms["type"].ToLower() == "class" )
                 {
-                    switch ( setting[0] )
-                    {
-                        case "type":
-                            {
-                                string value = CleanInput( setting[1] ).ToUpper();
-                                _runtimeType = value.ConvertToEnum<RuntimeType>( RuntimeType.SCRIPT );
-                                break;
-                            }
-                        case "import":
-                            {
-                                _imports = setting[1].Split( ',' ).ToList();
-                                break;
-                            }
-                    }
+                    _runtimeType = RuntimeType.CLASS;
                 }
+                else
+                {
+                    _runtimeType = RuntimeType.SCRIPT;
+                }
+            }
+
+            if ( parms.Any( p => p.Key == "import" ) )
+            {
+                _imports = parms["import"].Split( ',' ).ToList();
             }
 
             base.Initialize( tagName, markup, tokens );
@@ -130,9 +128,41 @@ namespace Rock.Lava.Blocks
             }
         }
 
+        /// <summary>
+        /// Cleans the input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
         private string CleanInput( string input )
         {
             return input.Replace( "\"", "" ).Replace( @"\", "" );
+        }
+
+        /// <summary>
+        /// Parses the markup.
+        /// </summary>
+        /// <param name="markup">The markup.</param>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Exception">No parameters were found in your command. The syntax for a parameter is parmName:'' (note that you must use single quotes).</exception>
+        private Dictionary<string, string> ParseMarkup( string markup )
+        {
+            var parms = new Dictionary<string, string>();
+
+            var markupItems = Regex.Matches( markup, "(.*?:'[^']+')" )
+                .Cast<Match>()
+                .Select( m => m.Value )
+                .ToList();
+
+            foreach ( var item in markupItems )
+            {
+                var itemParts = item.ToString().Split( ':' );
+                if ( itemParts.Length > 1 )
+                {
+                    parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
+                }
+            }
+            return parms;
         }
     }
 
