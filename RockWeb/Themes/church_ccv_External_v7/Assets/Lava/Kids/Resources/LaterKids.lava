@@ -55,7 +55,18 @@
 <p>Main Point: {{ viewedItem | Attribute: 'MainPoint' }}</p>
 <p>Memory Verses: {{ viewedItem | Attribute: 'MemoryVerses' }}</p>
 <p>Bible Verses: {{ viewedItem | Attribute: 'BibleVerses' }}</p>
-<p>
-  <a class="btn btn-default" href="{{ viewedItem | Attribute: 'IntroVideo' }}">Watch the Intro Video</a>
-  <a class="btn btn-default" href="{{ viewedItem | Attribute: 'MessageVideo' }}">Watch the Message</a>
-</p>
+
+{% assign introVid = viewedItem | Attribute: 'IntroVideo' %}
+{% assign messageVid = viewedItem | Attribute: 'MessageVideo' %}
+
+{% if introVid != '' %}
+  <div class="embed-responsive embed-responsive-16by9">
+    <iframe class="embed-responsive-item" src="https://player.vimeo.com/video/{{ introVid }}" width="320" height="180" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+  </div>
+{% endif %}
+
+{% if messageVid != '' %}
+  <div class="embed-responsive embed-responsive-16by9">
+    <iframe class="embed-responsive-item" src="https://player.vimeo.com/video/{{ messageVid }}" width="320" height="180" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+  </div>
+{% endif %}
