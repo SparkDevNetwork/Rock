@@ -166,20 +166,55 @@ Sys.Application.add_load(function () {
 
     $('#givingForm .js-phone').inputmask()
 
+    var cardType
+           
     // cleanup card if is was already initialized (in case we are in an ajax response)
     if ($('form').data('card')) {
+        var card = $('form').data('card');
+        cardType = card.cardType;
         $('form').data('card', null);
+        card = null;
+        delete card;
     }
 
-    $('form').card({
-        container: '#givingForm .js-card-graphic-holder',
-        formSelectors: {
-            numberInput: '#givingForm .cardinput-number',
-            expiryInput: '#givingForm .cardinput-exp',
-            cvcInput: '#givingForm .cardinput-cvc',
-            nameInput: '#givingForm .js-hf-fullname'
+    if ($('#givingForm .js-card-graphic-holder').length) {
+
+        var card = $('form').data('card');
+        if (!card) {
+            $('form').card({
+                container: '#givingForm .js-card-graphic-holder',
+                formSelectors: {
+                    numberInput: '#givingForm .cardinput-number',
+                    expiryInput: '#givingForm .cardinput-exp',
+                    cvcInput: '#givingForm .cardinput-cvc',
+                    nameInput: '#givingForm .js-hf-fullname'
+                }
+            })
+
+            card = $('form').data('card');
+            card.cardType = cardType;
+
+            // if this is an async postback, we need to ensure that the card display is showing the values
+
+            if ($(card.$numberInput).val()) {
+                $(card.$numberDisplay).html($(card.$numberInput).val());
+
+                $('#givingForm .jp-card').addClass('jp-card-' + card.cardType + ' jp-card-identified')
+            }
+
+            if ($(card.$nameInput).val()) {
+                $(card.$nameDisplay).html($(card.$nameInput).val());
+            }
+
+            if ($(card.$cvcInput).val()) {
+                $(card.$cvcDisplay).html($(card.$cvcInput).val());
+            }
+
+            if ($(card.$expiryInput).val()) {
+                $(card.$expiryDisplay).html($(card.$expiryInput).val());
+            }
         }
-    })
+    }
     
     $('#givingForm .js-repeating-toggle').bootstrapSwitch({
         onColor: 'success',
