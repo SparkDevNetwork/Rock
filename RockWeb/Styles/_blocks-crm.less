@@ -602,18 +602,27 @@
             margin: 0;
         }
 
-        .edit {   
+        .action-wrapper {
             position: absolute;
             right: 0;
-            padding-top: 10px;
-            border-left: 1px solid darken(@persondetails-bio-bg, @const-border-darken-amt);
             top: 0;
             bottom: 0;
-            width: 45px;
 
-            i {
+            .action {
+                width: 45px;
+                height: 100%;
+                display: block;
+                float: right;
+                border-left: 1px solid #c6bdad;
                 text-align: center;
-                width: 100%;
+                cursor: pointer;
+
+                i {
+                    top: 50%;
+                    position: relative;
+                    transform: translateY(-50%);
+                    height: 20px;
+                }
             }
         }
     }
