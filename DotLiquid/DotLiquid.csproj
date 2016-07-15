@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{CB9372CD-9C1D-47AB-92D8-702D4D68324F}</ProjectGuid>
+    <ProjectGuid>{00EDCB8D-EF33-459C-AD62-02876BD24DFF}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>DotLiquid</RootNamespace>

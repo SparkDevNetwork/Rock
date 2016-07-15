@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}</ProjectGuid>
+    <ProjectGuid>{ADD1EDD0-A4CB-4E82-B6AD-6AD1D556DEAE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Rock.Rest</RootNamespace>
