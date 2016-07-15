@@ -117,6 +117,14 @@ var giveForm = new Vue({
 
 Sys.Application.add_load(function () {
 
+    if ($('#givingForm .js-hide-full-input').val() == "1") {
+        $('#givingForm .js-input-fullname').hide();
+        giveForm.lastName = $('#givingForm .js-static-fullname').text()
+    } else {
+        $('#givingForm .js-input-fullname').show();
+    }
+    
+
     var isMobile = {
         Windows: function () {
             return /IEMobile/i.test(navigator.userAgent);
@@ -158,8 +166,13 @@ Sys.Application.add_load(function () {
 
     $('#givingForm .js-phone').inputmask()
 
+    // cleanup card if is was already initialized (in case we are in an ajax response)
+    if ($('form').data('card')) {
+        $('form').data('card', null);
+    }
+
     $('form').card({
-        container: '.js-card-graphic-holder',
+        container: '#givingForm .js-card-graphic-holder',
         formSelectors: {
             numberInput: '#givingForm .cardinput-number',
             expiryInput: '#givingForm .cardinput-exp',

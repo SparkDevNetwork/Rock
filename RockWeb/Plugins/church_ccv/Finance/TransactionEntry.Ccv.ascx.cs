@@ -119,6 +119,10 @@ namespace RockWeb.Plugins.church_ccv.Finance
             {
                 ShowDetail();
             }
+            else
+            {
+
+            }
         }
 
         /// <summary>
@@ -131,7 +135,7 @@ namespace RockWeb.Plugins.church_ccv.Finance
             {
                 hfFullName.Value = CurrentPerson.FullName;
                 hfHideFullNameInput.Value = "1";
-                lFullName.Text = string.Format( "<label class='form-control-static'>{0}</label>", CurrentPerson.FullName );
+                lFullName.Text = string.Format( "<label class='form-control-static js-static-fullname'>{0}</label>", CurrentPerson.FullName );
                 tbFirstName.Value = CurrentPerson.FirstName;
                 tbLastName.Value = CurrentPerson.LastName;
                 tbEmail.Value = CurrentPerson.Email;

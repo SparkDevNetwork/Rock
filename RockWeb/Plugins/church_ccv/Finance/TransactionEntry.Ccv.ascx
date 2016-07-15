@@ -85,7 +85,7 @@
                     <label for="fullName" class="col-sm-3 control-label">Full Name</label>
                     <div class="col-sm-9">
                         <Rock:HiddenFieldWithClass ID="hfHideFullNameInput" CssClass="js-hide-full-input" runat="server" />
-                        <input id="tbFullName" type="text" class="form-control js-input-fullname" placeholder="Full Name" v-on:blur="splitFullName" v-if="showSplitNameField == false" v-model="firstName" />
+                        <input id="tbFullName" type="text" class="form-control js-input-fullname" placeholder="Full Name" v-on:blur="splitFullName" v-if="showSplitNameField == false" v-model="firstName" style="display:none" />
                         
                         <asp:Literal runat="server" ID="lFullName" />
                         <div class="row" v-if="showSplitNameField" v-cloak>
@@ -225,12 +225,7 @@
         <script>
             Sys.Application.add_load(function() {
 
-                if ($('#givingForm .js-hide-full-input').val() == "1") {
-                    $('#givingForm .js-input-fullname').hide();
-                }
-
-                // show/hide card inputs based on selected saved-payment option 
-                $('#givingForm .js-saved-payment-option input').on('click', function () {
+                function showCardInputOption() {
                     if (!$('#givingForm .js-saved-payment-option input:checked').length || $('#givingForm .js-saved-payment-option input:checked').val() == "0") {
                         $('#givingForm .js-new-cardinput').show();
                         $('#givingForm .js-card-graphic-holder').show();
@@ -238,6 +233,13 @@
                         $('#givingForm .js-new-cardinput').hide();
                         $('#givingForm .js-card-graphic-holder').hide();
                     }
+                }
+
+                showCardInputOption();
+
+                // show/hide card inputs based on selected saved-payment option 
+                $('#givingForm .js-saved-payment-option input').on('click', function () {
+                    showCardInputOption();
                 });
                 
                 // do the input validation on the client side 
