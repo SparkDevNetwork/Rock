@@ -6,7 +6,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb(3)", "http://localh
 	ProjectSection(WebsiteProperties) = preProject
 		UseIISExpress = "true"
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5.2"
-		ProjectReferences = "{496ec024-71ed-4ad1-b677-2a3fa60ccd05}|church.ccv.SampleProject.dll;{a5b47749-d8b2-4223-822b-26208bce34f4}|church.ccv.CommandCenter.dll;{10702916-bb67-4be9-a507-e1f8932bd05f}|church.ccv.Authentication.dll;{629a186e-1ed2-49bc-95d4-76d65950ae73}|church.ccv.Residency.dll;{8f8c2a79-24f4-4157-8b99-45f75fa85799}|Rock.dll;{b89dfd33-ce93-44e1-8616-c31acdfe89cb}|Rock.Rest.dll;{CB9372CD-9C1D-47AB-92D8-702D4D68324F}|DotLiquid.dll;{f9f3319c-19d7-43a8-bc3a-4781b0b3f281}|church.ccv.Hr.dll;{8280012c-bb74-46ab-baa7-8a4004570829}|church.ccv.Datamart.dll;{9199bfe3-3c75-486b-afa0-d043da822afa}|church.ccv.Utility.dll;{da93ffd7-95fa-479b-bf60-b60979d846b9}|church.ccv.SafetySecurity.dll;{0ea13d43-bd98-48cf-8a15-d902c8a3ed99}|church.ccv.Badges.dll;{f0e9e6bc-9e66-493a-975a-638162fa22b1}|church.ccv.Reporting.dll;{da1fbd70-3d06-46f7-8aa0-a27f18fdfdcd}|church.ccv.Steps.dll;{f48eed81-6e9f-4b28-8742-e87dc47f9530}|church.ccv.Web.dll;{334e53d7-e955-44ed-b190-14d19164cbb1}|church.ccv.Promotions.dll;{1a03c5da-6ae4-4e30-9266-733f68945794}|church.ccv.Podcast.dll;"
+		ProjectReferences = "{496ec024-71ed-4ad1-b677-2a3fa60ccd05}|church.ccv.SampleProject.dll;{a5b47749-d8b2-4223-822b-26208bce34f4}|church.ccv.CommandCenter.dll;{10702916-bb67-4be9-a507-e1f8932bd05f}|church.ccv.Authentication.dll;{629a186e-1ed2-49bc-95d4-76d65950ae73}|church.ccv.Residency.dll;{f9f3319c-19d7-43a8-bc3a-4781b0b3f281}|church.ccv.Hr.dll;{8280012c-bb74-46ab-baa7-8a4004570829}|church.ccv.Datamart.dll;{9199bfe3-3c75-486b-afa0-d043da822afa}|church.ccv.Utility.dll;{da93ffd7-95fa-479b-bf60-b60979d846b9}|church.ccv.SafetySecurity.dll;{0ea13d43-bd98-48cf-8a15-d902c8a3ed99}|church.ccv.Badges.dll;{f0e9e6bc-9e66-493a-975a-638162fa22b1}|church.ccv.Reporting.dll;{da1fbd70-3d06-46f7-8aa0-a27f18fdfdcd}|church.ccv.Steps.dll;{f48eed81-6e9f-4b28-8742-e87dc47f9530}|church.ccv.Web.dll;{334e53d7-e955-44ed-b190-14d19164cbb1}|church.ccv.Promotions.dll;{1a03c5da-6ae4-4e30-9266-733f68945794}|church.ccv.Podcasts.dll;{00EDCB8D-EF33-459C-AD62-02876BD24DFF}|DotLiquid.dll;{185A31D7-3037-4DAE-8797-0459849A84BD}|Rock.dll;{ADD1EDD0-A4CB-4E82-B6AD-6AD1D556DEAE}|Rock.Rest.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/localhost_50345"
 		Debug.AspNetCompiler.PhysicalPath = "RockWeb\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_50345\"
@@ -32,12 +32,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.CommandCenter", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.Residency", "church.ccv.Residency\church.ccv.Residency.csproj", "{629A186E-1ED2-49BC-95D4-76D65950AE73}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock", "Rock\Rock.csproj", "{8F8C2A79-24F4-4157-8B99-45F75FA85799}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Rest", "Rock.Rest\Rock.Rest.csproj", "{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotLiquid", "DotLiquid\DotLiquid.csproj", "{CB9372CD-9C1D-47AB-92D8-702D4D68324F}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.Hr", "church.ccv.Hr\church.ccv.Hr.csproj", "{F9F3319C-19D7-43A8-BC3A-4781B0B3F281}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.Datamart", "church.ccv.Datamart\church.ccv.Datamart.csproj", "{8280012C-BB74-46AB-BAA7-8A4004570829}"
@@ -57,9 +51,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.Promotions", "church.ccv.Promotions\church.ccv.Promotions.csproj", "{334E53D7-E955-44ED-B190-14D19164CBB1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.Podcast", "church.ccv.Podcast\church.ccv.Podcast.csproj", "{1A03C5DA-6AE4-4E30-9266-733F68945794}"
-	ProjectSection(ProjectDependencies) = postProject
-		{B89DFD33-CE93-44E1-8616-C31ACDFE89CB} = {B89DFD33-CE93-44E1-8616-C31ACDFE89CB}
-	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock", "Rock\Rock.csproj", "{185A31D7-3037-4DAE-8797-0459849A84BD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotLiquid", "DotLiquid\DotLiquid.csproj", "{00EDCB8D-EF33-459C-AD62-02876BD24DFF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Rest", "Rock.Rest\Rock.Rest.csproj", "{ADD1EDD0-A4CB-4E82-B6AD-6AD1D556DEAE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -87,18 +84,6 @@ Global
 		{629A186E-1ED2-49BC-95D4-76D65950AE73}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{629A186E-1ED2-49BC-95D4-76D65950AE73}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{629A186E-1ED2-49BC-95D4-76D65950AE73}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8F8C2A79-24F4-4157-8B99-45F75FA85799}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8F8C2A79-24F4-4157-8B99-45F75FA85799}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8F8C2A79-24F4-4157-8B99-45F75FA85799}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8F8C2A79-24F4-4157-8B99-45F75FA85799}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CB9372CD-9C1D-47AB-92D8-702D4D68324F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CB9372CD-9C1D-47AB-92D8-702D4D68324F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CB9372CD-9C1D-47AB-92D8-702D4D68324F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CB9372CD-9C1D-47AB-92D8-702D4D68324F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F9F3319C-19D7-43A8-BC3A-4781B0B3F281}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F9F3319C-19D7-43A8-BC3A-4781B0B3F281}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F9F3319C-19D7-43A8-BC3A-4781B0B3F281}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -139,6 +124,18 @@ Global
 		{1A03C5DA-6AE4-4E30-9266-733F68945794}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1A03C5DA-6AE4-4E30-9266-733F68945794}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1A03C5DA-6AE4-4E30-9266-733F68945794}.Release|Any CPU.Build.0 = Release|Any CPU
+		{185A31D7-3037-4DAE-8797-0459849A84BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{185A31D7-3037-4DAE-8797-0459849A84BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{185A31D7-3037-4DAE-8797-0459849A84BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{185A31D7-3037-4DAE-8797-0459849A84BD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00EDCB8D-EF33-459C-AD62-02876BD24DFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00EDCB8D-EF33-459C-AD62-02876BD24DFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00EDCB8D-EF33-459C-AD62-02876BD24DFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00EDCB8D-EF33-459C-AD62-02876BD24DFF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ADD1EDD0-A4CB-4E82-B6AD-6AD1D556DEAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ADD1EDD0-A4CB-4E82-B6AD-6AD1D556DEAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADD1EDD0-A4CB-4E82-B6AD-6AD1D556DEAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ADD1EDD0-A4CB-4E82-B6AD-6AD1D556DEAE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
