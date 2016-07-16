@@ -34,7 +34,7 @@
                     </div>
                 </div>
 
-                <div v-cloak v-show="repeating" transition="slidedown">
+                <div class="js-repeating-options" v-cloak v-show="repeating" transition="slidedown">
                     <div class="form-group">
                         <div class="col-sm-9 col-sm-push-3">
                             <div class="form-group">
@@ -88,7 +88,7 @@
                         <input id="tbFullName" type="text" class="form-control js-input-fullname" placeholder="Full Name" v-on:blur="splitFullName" v-if="showSplitNameField == false" v-model="firstName" style="display:none" />
                         
                         <asp:Literal runat="server" ID="lFullName" />
-                        <div class="row" v-if="showSplitNameField" v-cloak>
+                        <div class="row js-splitname-inputs" v-if="showSplitNameField" v-cloak>
                             <div class="col-xs-6">
                                 <input runat="server" type="text" class="js-firstname js-update-name form-control" id="tbFirstName" placeholder="First Name" v-model="firstName" />
                             </div>

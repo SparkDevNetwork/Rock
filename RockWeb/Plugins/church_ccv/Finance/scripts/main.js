@@ -121,9 +121,13 @@ Sys.Application.add_load(function () {
         $('#givingForm .js-input-fullname').hide();
         giveForm.lastName = $('#givingForm .js-static-fullname').text()
     } else {
-        $('#givingForm .js-input-fullname').show();
+        if ($('#givingForm .js-splitname-inputs').length) {
+            $('#givingForm .js-splitname-inputs').show();
+        }
+        else {
+            $('#givingForm .js-input-fullname').show();
+        }
     }
-    
 
     var isMobile = {
         Windows: function () {
@@ -191,14 +195,15 @@ Sys.Application.add_load(function () {
                 }
             })
 
-            card = $('form').data('card');
-            card.cardType = cardType;
 
             // if this is an async postback, we need to ensure that the card display is showing the values
+            card = $('form').data('card');
+            card.cardType = cardType;
 
             if ($(card.$numberInput).val()) {
                 $(card.$numberDisplay).html($(card.$numberInput).val());
 
+                // update the display of the card
                 $('#givingForm .jp-card').addClass('jp-card-' + card.cardType + ' jp-card-identified')
             }
 
@@ -220,6 +225,12 @@ Sys.Application.add_load(function () {
         onColor: 'success',
         onSwitchChange: function (event, state) {
             giveForm.repeating = state
+            
+            if (state) {
+                $('#givingForm .js-repeating-options').slideDown();
+            } else {
+                $('#givingForm .js-repeating-options').slideUp();
+            }
         }
     })
 

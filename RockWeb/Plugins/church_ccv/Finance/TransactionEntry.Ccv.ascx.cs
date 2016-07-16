@@ -598,10 +598,17 @@ namespace RockWeb.Plugins.church_ccv.Finance
                 }
                 else
                 {
-                    var expDateTime = new DateTime( 2000 + cardMMYY[1], cardMMYY[0], 1 );
-                    if ( expDateTime < currentMonth )
+                    try
                     {
-                        // let the gateway complain if it doesn't like the Expiration Date
+                        var expDateTime = new DateTime( 2000 + cardMMYY[1], cardMMYY[0], 1 );
+                        if ( expDateTime < currentMonth )
+                        {
+                            // let the gateway complain if it doesn't like the Expiration Date
+                        }
+                    }
+                    catch ( Exception ex )
+                    {
+                        errorMessages.Add( "Invalid Expiration Date" );
                     }
                 }
 
