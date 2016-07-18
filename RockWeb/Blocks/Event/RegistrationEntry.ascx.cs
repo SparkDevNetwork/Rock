@@ -3197,22 +3197,23 @@ namespace RockWeb.Blocks.Event
                 var src = $('#{7}').val();
                 var $form = $('#iframeStep2').contents().find('#Step2Form');
 
-                $form.find('.cc-first-name').val( $('#{16}').val() );
-                $form.find('.cc-last-name').val( $('#{17}').val() );
-                $form.find('.cc-full-name').val( $('#{18}').val() );
+                $form.find('.js-cc-first-name').val( $('#{16}').val() );
+                $form.find('.js-cc-last-name').val( $('#{17}').val() );
+                $form.find('.js-cc-full-name').val( $('#{18}').val() );
 
-                $form.find('.cc-number').val( $('#{11}').val() );
+                $form.find('.js-cc-number').val( $('#{11}').val() );
                 var mm = $('#{12}_monthDropDownList').val();
                 var yy = $('#{12}_yearDropDownList_').val();
                 mm = mm.length == 1 ? '0' + mm : mm;
                 yy = yy.length == 4 ? yy.substring(2,4) : yy;
-                $form.find('.cc-expiration').val( mm + yy );
-                $form.find('.cc-cvv').val( $('#{13}').val() );
+                $form.find('.js-cc-expiration').val( mm + yy );
+                $form.find('.js-cc-cvv').val( $('#{13}').val() );
 
-                $form.find('.billing-address1').val( $('#{15}_tbStreet1').val() );
-                $form.find('.billing-city').val( $('#{15}_tbCity').val() );
-                $form.find('.billing-state').val( $('#{15}_ddlState').val() );
-                $form.find('.billing-postal').val( $('#{15}_tbPostalCode').val() );
+                $form.find('.js-billing-address1').val( $('#{15}_tbStreet1').val() );
+                $form.find('.js-billing-city').val( $('#{15}_tbCity').val() );
+                $form.find('.js-billing-state').val( $('#{15}_ddlState').val() );
+                $form.find('.js-billing-postal').val( $('#{15}_tbPostalCode').val() );
+                $form.find('.js-billing-country').val( $('#{15}_ddlCountry').val() );
 
                 $form.attr('action', src );
                 $form.submit();
