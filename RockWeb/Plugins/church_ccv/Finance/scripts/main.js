@@ -233,6 +233,10 @@ Sys.Application.add_load(function () {
             }
         }
     })
+    
+    if (giveForm.repeating) {
+        $('#givingForm .js-repeating-options').show();
+    }
 
     if (Modernizr.inputtypes.date == false) {
         $('#givingForm .js-firstgift').datepicker({

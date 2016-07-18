@@ -46,7 +46,7 @@ namespace RockWeb.Plugins.church_ccv.Finance
     </p>
     <dl class='dl-horizontal gift-success'>
         {% if PaymentSchedule.Id %}<dt>Payment Schedule ID</dt><dd>{{ PaymentSchedule.Id }}</dd>{% endif %}
-        <dt>Confirmation Code</dt><dd>{{ PaymentInfo.TransactionCode }}</dd>
+        <dt>Confirmation Code</dt><dd>{{ TransactionCode }}</dd>
         <dt> </dt><dd> </dd>
         <dt>Name</dt><dd>{{ Person.FullName }}</dd>
         {% if PaymentInfo.Phone %}<dt>Phone</dt><dd>{{ PaymentInfo.Phone }}</dd>{% endif %}
@@ -284,7 +284,6 @@ namespace RockWeb.Plugins.church_ccv.Finance
             if ( !ValidateEntries( out errorMessage ) )
             {
                 nbMessage.NotificationBoxType = NotificationBoxType.Danger;
-                nbMessage.Title = "Before we finish...";
                 nbMessage.Text = errorMessage;
                 nbMessage.Visible = true;
                 return;
@@ -447,6 +446,7 @@ namespace RockWeb.Plugins.church_ccv.Finance
             pnlSuccess.Visible = true;
             var successTemplate = this.GetAttributeValue( "SuccessTemplate" );
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage );
+            mergeFields.Add( "TransactionCode", transactionCode );
             mergeFields.Add( "PaymentInfo", DotLiquid.Hash.FromAnonymousObject( paymentInfo ) );
             mergeFields.Add( "PaymentDetail", financialPaymentDetail );
             if ( paymentSchedule != null )
@@ -543,7 +543,7 @@ namespace RockWeb.Plugins.church_ccv.Finance
             var errorMessages = new List<string>();
 
             // Validate that an amount was entered
-            if ( amount <= 0 )
+            if ( amount == 0 )
             {
                 errorMessages.Add( "Make sure you've entered an amount." );
             }
@@ -606,7 +606,7 @@ namespace RockWeb.Plugins.church_ccv.Finance
                             // let the gateway complain if it doesn't like the Expiration Date
                         }
                     }
-                    catch ( Exception ex )
+                    catch
                     {
                         errorMessages.Add( "Invalid Expiration Date" );
                     }
