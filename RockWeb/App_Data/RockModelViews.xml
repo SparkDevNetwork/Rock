@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <views>
-  <mapping-views hash="c94bd228ff3415d436f8325591fa5314000809ea14d6196bb0fc8f4d3f215336" conceptual-container="RockContext" store-container="CodeFirstDatabase">
+  <mapping-views hash="b6b6030997e9b23d3a696a58f54411cc3118853cd06cc04c93bf03ee157fd7f4" conceptual-container="RockContext" store-container="CodeFirstDatabase">
     <view extent="CodeFirstDatabase.AttendanceCode"><![CDATA[
     SELECT VALUE -- Constructing AttendanceCode
         [CodeFirstDatabaseSchema.AttendanceCode](T1.AttendanceCode_Id, T1.AttendanceCode_IssueDateTime, T1.AttendanceCode_Code, T1.AttendanceCode_Guid, T1.AttendanceCode_ForeignId, T1.AttendanceCode_ForeignGuid, T1.AttendanceCode_ForeignKey)
@@ -545,7 +545,7 @@
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.GroupType"><![CDATA[
     SELECT VALUE -- Constructing GroupType
-        [CodeFirstDatabaseSchema.GroupType](T1.GroupType_Id, T1.GroupType_IsSystem, T1.GroupType_Name, T1.GroupType_Description, T1.GroupType_GroupTerm, T1.GroupType_GroupMemberTerm, T1.GroupType_DefaultGroupRoleId, T1.GroupType_AllowMultipleLocations, T1.GroupType_ShowInGroupList, T1.GroupType_ShowInNavigation, T1.GroupType_IconCssClass, T1.GroupType_TakesAttendance, T1.GroupType_AttendanceCountsAsWeekendService, T1.GroupType_SendAttendanceReminder, T1.GroupType_ShowConnectionStatus, T1.GroupType_AttendanceRule, T1.GroupType_GroupCapacityRule, T1.GroupType_AttendancePrintTo, T1.GroupType_Order, T1.GroupType_InheritedGroupTypeId, T1.GroupType_AllowedScheduleTypes, T1.GroupType_LocationSelectionMode, T1.GroupType_EnableLocationSchedules, T1.GroupType_GroupTypePurposeValueId, T1.GroupType_IgnorePersonInactivated, T1.GroupType_CreatedDateTime, T1.GroupType_ModifiedDateTime, T1.GroupType_CreatedByPersonAliasId, T1.GroupType_ModifiedByPersonAliasId, T1.GroupType_Guid, T1.GroupType_ForeignId, T1.GroupType_ForeignGuid, T1.GroupType_ForeignKey)
+        [CodeFirstDatabaseSchema.GroupType](T1.GroupType_Id, T1.GroupType_IsSystem, T1.GroupType_Name, T1.GroupType_Description, T1.GroupType_GroupTerm, T1.GroupType_GroupMemberTerm, T1.GroupType_DefaultGroupRoleId, T1.GroupType_AllowMultipleLocations, T1.GroupType_ShowInGroupList, T1.GroupType_ShowInNavigation, T1.GroupType_IconCssClass, T1.GroupType_TakesAttendance, T1.GroupType_AttendanceCountsAsWeekendService, T1.GroupType_SendAttendanceReminder, T1.GroupType_ShowConnectionStatus, T1.GroupType_AttendanceRule, T1.GroupType_GroupCapacityRule, T1.GroupType_AttendancePrintTo, T1.GroupType_Order, T1.GroupType_InheritedGroupTypeId, T1.GroupType_AllowedScheduleTypes, T1.GroupType_LocationSelectionMode, T1.GroupType_EnableLocationSchedules, T1.GroupType_GroupTypePurposeValueId, T1.GroupType_IgnorePersonInactivated, T1.GroupType_GroupsRequireCampus, T1.GroupType_GroupAttendanceRequiresLocation, T1.GroupType_GroupAttendanceRequiresSchedule, T1.GroupType_CreatedDateTime, T1.GroupType_ModifiedDateTime, T1.GroupType_CreatedByPersonAliasId, T1.GroupType_ModifiedByPersonAliasId, T1.GroupType_Guid, T1.GroupType_ForeignId, T1.GroupType_ForeignGuid, T1.GroupType_ForeignKey)
     FROM (
         SELECT 
             T.Id AS GroupType_Id, 
@@ -573,6 +573,9 @@
             T.EnableLocationSchedules AS GroupType_EnableLocationSchedules, 
             T.GroupTypePurposeValueId AS GroupType_GroupTypePurposeValueId, 
             T.IgnorePersonInactivated AS GroupType_IgnorePersonInactivated, 
+            T.GroupsRequireCampus AS GroupType_GroupsRequireCampus, 
+            T.GroupAttendanceRequiresLocation AS GroupType_GroupAttendanceRequiresLocation, 
+            T.GroupAttendanceRequiresSchedule AS GroupType_GroupAttendanceRequiresSchedule, 
             T.CreatedDateTime AS GroupType_CreatedDateTime, 
             T.ModifiedDateTime AS GroupType_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS GroupType_CreatedByPersonAliasId, 
@@ -1993,7 +1996,7 @@
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.Communication"><![CDATA[
     SELECT VALUE -- Constructing Communication
-        [CodeFirstDatabaseSchema.Communication](T1.Communication_Id, T1.Communication_SenderPersonAliasId, T1.Communication_Subject, T1.Communication_IsBulkCommunication, T1.Communication_FutureSendDateTime, T1.Communication_Status, T1.Communication_ReviewerPersonAliasId, T1.Communication_ReviewedDateTime, T1.Communication_ReviewerNote, T1.Communication_MediumEntityTypeId, T1.Communication_MediumDataJson, T1.Communication_AdditionalMergeFieldsJson, T1.Communication_CreatedDateTime, T1.Communication_ModifiedDateTime, T1.Communication_CreatedByPersonAliasId, T1.Communication_ModifiedByPersonAliasId, T1.Communication_Guid, T1.Communication_ForeignId, T1.Communication_ForeignGuid, T1.Communication_ForeignKey)
+        [CodeFirstDatabaseSchema.Communication](T1.Communication_Id, T1.Communication_SenderPersonAliasId, T1.Communication_Subject, T1.Communication_IsBulkCommunication, T1.Communication_FutureSendDateTime, T1.Communication_Status, T1.Communication_ReviewerPersonAliasId, T1.Communication_ReviewedDateTime, T1.Communication_ReviewerNote, T1.Communication_MediumEntityTypeId, T1.Communication_MediumDataJson, T1.Communication_AdditionalMergeFieldsJson, T1.Communication_EnabledLavaCommands, T1.Communication_CreatedDateTime, T1.Communication_ModifiedDateTime, T1.Communication_CreatedByPersonAliasId, T1.Communication_ModifiedByPersonAliasId, T1.Communication_Guid, T1.Communication_ForeignId, T1.Communication_ForeignGuid, T1.Communication_ForeignKey)
     FROM (
         SELECT 
             T.Id AS Communication_Id, 
@@ -2008,6 +2011,7 @@
             T.MediumEntityTypeId AS Communication_MediumEntityTypeId, 
             T.MediumDataJson AS Communication_MediumDataJson, 
             T.AdditionalMergeFieldsJson AS Communication_AdditionalMergeFieldsJson, 
+            T.EnabledLavaCommands AS Communication_EnabledLavaCommands, 
             T.CreatedDateTime AS Communication_CreatedDateTime, 
             T.ModifiedDateTime AS Communication_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS Communication_CreatedByPersonAliasId, 
@@ -3448,6 +3452,25 @@
             True AS _from0
         FROM RockContext.FollowingEventTypes AS T
     ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.FollowingEventSubscription"><![CDATA[
+    SELECT VALUE -- Constructing FollowingEventSubscription
+        [CodeFirstDatabaseSchema.FollowingEventSubscription](T1.FollowingEventSubscription_Id, T1.FollowingEventSubscription_EventTypeId, T1.FollowingEventSubscription_PersonAliasId, T1.FollowingEventSubscription_CreatedDateTime, T1.FollowingEventSubscription_ModifiedDateTime, T1.FollowingEventSubscription_CreatedByPersonAliasId, T1.FollowingEventSubscription_ModifiedByPersonAliasId, T1.FollowingEventSubscription_Guid, T1.FollowingEventSubscription_ForeignId, T1.FollowingEventSubscription_ForeignGuid, T1.FollowingEventSubscription_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS FollowingEventSubscription_Id, 
+            T.EventTypeId AS FollowingEventSubscription_EventTypeId, 
+            T.PersonAliasId AS FollowingEventSubscription_PersonAliasId, 
+            T.CreatedDateTime AS FollowingEventSubscription_CreatedDateTime, 
+            T.ModifiedDateTime AS FollowingEventSubscription_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS FollowingEventSubscription_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS FollowingEventSubscription_ModifiedByPersonAliasId, 
+            T.Guid AS FollowingEventSubscription_Guid, 
+            T.ForeignId AS FollowingEventSubscription_ForeignId, 
+            T.ForeignGuid AS FollowingEventSubscription_ForeignGuid, 
+            T.ForeignKey AS FollowingEventSubscription_ForeignKey, 
+            True AS _from0
+        FROM RockContext.FollowingEventSubscriptions AS T
+    ) AS T1]]></view>
     <view extent="CodeFirstDatabase.FollowingSuggested"><![CDATA[
     SELECT VALUE -- Constructing FollowingSuggested
         [CodeFirstDatabaseSchema.FollowingSuggested](T1.FollowingSuggested_Id, T1.FollowingSuggested_EntityTypeId, T1.FollowingSuggested_EntityId, T1.FollowingSuggested_PersonAliasId, T1.FollowingSuggested_SuggestionTypeId, T1.FollowingSuggested_LastPromotedDateTime, T1.FollowingSuggested_StatusChangedDateTime, T1.FollowingSuggested_Status, T1.FollowingSuggested_CreatedDateTime, T1.FollowingSuggested_ModifiedDateTime, T1.FollowingSuggested_CreatedByPersonAliasId, T1.FollowingSuggested_ModifiedByPersonAliasId, T1.FollowingSuggested_Guid, T1.FollowingSuggested_ForeignId, T1.FollowingSuggested_ForeignGuid, T1.FollowingSuggested_ForeignKey)
@@ -3496,25 +3519,6 @@
             T.ForeignKey AS FollowingSuggestionType_ForeignKey, 
             True AS _from0
         FROM RockContext.FollowingSuggestionTypes AS T
-    ) AS T1]]></view>
-    <view extent="CodeFirstDatabase.FollowingEventSubscription"><![CDATA[
-    SELECT VALUE -- Constructing FollowingEventSubscription
-        [CodeFirstDatabaseSchema.FollowingEventSubscription](T1.FollowingEventSubscription_Id, T1.FollowingEventSubscription_EventTypeId, T1.FollowingEventSubscription_PersonAliasId, T1.FollowingEventSubscription_CreatedDateTime, T1.FollowingEventSubscription_ModifiedDateTime, T1.FollowingEventSubscription_CreatedByPersonAliasId, T1.FollowingEventSubscription_ModifiedByPersonAliasId, T1.FollowingEventSubscription_Guid, T1.FollowingEventSubscription_ForeignId, T1.FollowingEventSubscription_ForeignGuid, T1.FollowingEventSubscription_ForeignKey)
-    FROM (
-        SELECT 
-            T.Id AS FollowingEventSubscription_Id, 
-            T.EventTypeId AS FollowingEventSubscription_EventTypeId, 
-            T.PersonAliasId AS FollowingEventSubscription_PersonAliasId, 
-            T.CreatedDateTime AS FollowingEventSubscription_CreatedDateTime, 
-            T.ModifiedDateTime AS FollowingEventSubscription_ModifiedDateTime, 
-            T.CreatedByPersonAliasId AS FollowingEventSubscription_CreatedByPersonAliasId, 
-            T.ModifiedByPersonAliasId AS FollowingEventSubscription_ModifiedByPersonAliasId, 
-            T.Guid AS FollowingEventSubscription_Guid, 
-            T.ForeignId AS FollowingEventSubscription_ForeignId, 
-            T.ForeignGuid AS FollowingEventSubscription_ForeignGuid, 
-            T.ForeignKey AS FollowingEventSubscription_ForeignKey, 
-            True AS _from0
-        FROM RockContext.FollowingEventSubscriptions AS T
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.MergeTemplate"><![CDATA[
     SELECT VALUE -- Constructing MergeTemplate
@@ -4123,7 +4127,7 @@
     ) AS T1]]></view>
     <view extent="RockContext.GroupTypes"><![CDATA[
     SELECT VALUE -- Constructing GroupTypes
-        [Rock.Data.GroupType](T1.GroupType_Id, T1.GroupType_IsSystem, T1.GroupType_Name, T1.GroupType_Description, T1.GroupType_GroupTerm, T1.GroupType_GroupMemberTerm, T1.GroupType_DefaultGroupRoleId, T1.GroupType_AllowMultipleLocations, T1.GroupType_ShowInGroupList, T1.GroupType_ShowInNavigation, T1.GroupType_IconCssClass, T1.GroupType_TakesAttendance, T1.GroupType_AttendanceCountsAsWeekendService, T1.GroupType_SendAttendanceReminder, T1.GroupType_ShowConnectionStatus, T1.GroupType_AttendanceRule, T1.GroupType_GroupCapacityRule, T1.GroupType_AttendancePrintTo, T1.GroupType_Order, T1.GroupType_InheritedGroupTypeId, T1.GroupType_AllowedScheduleTypes, T1.GroupType_LocationSelectionMode, T1.GroupType_EnableLocationSchedules, T1.GroupType_GroupTypePurposeValueId, T1.GroupType_IgnorePersonInactivated, T1.GroupType_CreatedDateTime, T1.GroupType_ModifiedDateTime, T1.GroupType_CreatedByPersonAliasId, T1.GroupType_ModifiedByPersonAliasId, T1.GroupType_Guid, T1.GroupType_ForeignId, T1.GroupType_ForeignGuid, T1.GroupType_ForeignKey)
+        [Rock.Data.GroupType](T1.GroupType_Id, T1.GroupType_IsSystem, T1.GroupType_Name, T1.GroupType_Description, T1.GroupType_GroupTerm, T1.GroupType_GroupMemberTerm, T1.GroupType_DefaultGroupRoleId, T1.GroupType_AllowMultipleLocations, T1.GroupType_ShowInGroupList, T1.GroupType_ShowInNavigation, T1.GroupType_IconCssClass, T1.GroupType_TakesAttendance, T1.GroupType_AttendanceCountsAsWeekendService, T1.GroupType_SendAttendanceReminder, T1.GroupType_ShowConnectionStatus, T1.GroupType_AttendanceRule, T1.GroupType_GroupCapacityRule, T1.GroupType_AttendancePrintTo, T1.GroupType_Order, T1.GroupType_InheritedGroupTypeId, T1.GroupType_AllowedScheduleTypes, T1.GroupType_LocationSelectionMode, T1.GroupType_EnableLocationSchedules, T1.GroupType_GroupTypePurposeValueId, T1.GroupType_IgnorePersonInactivated, T1.GroupType_GroupsRequireCampus, T1.GroupType_GroupAttendanceRequiresLocation, T1.GroupType_GroupAttendanceRequiresSchedule, T1.GroupType_CreatedDateTime, T1.GroupType_ModifiedDateTime, T1.GroupType_CreatedByPersonAliasId, T1.GroupType_ModifiedByPersonAliasId, T1.GroupType_Guid, T1.GroupType_ForeignId, T1.GroupType_ForeignGuid, T1.GroupType_ForeignKey)
     FROM (
         SELECT 
             T.Id AS GroupType_Id, 
@@ -4151,6 +4155,9 @@
             T.EnableLocationSchedules AS GroupType_EnableLocationSchedules, 
             T.GroupTypePurposeValueId AS GroupType_GroupTypePurposeValueId, 
             T.IgnorePersonInactivated AS GroupType_IgnorePersonInactivated, 
+            T.GroupsRequireCampus AS GroupType_GroupsRequireCampus, 
+            T.GroupAttendanceRequiresLocation AS GroupType_GroupAttendanceRequiresLocation, 
+            T.GroupAttendanceRequiresSchedule AS GroupType_GroupAttendanceRequiresSchedule, 
             T.CreatedDateTime AS GroupType_CreatedDateTime, 
             T.ModifiedDateTime AS GroupType_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS GroupType_CreatedByPersonAliasId, 
@@ -5571,7 +5578,7 @@
     ) AS T1]]></view>
     <view extent="RockContext.Communications"><![CDATA[
     SELECT VALUE -- Constructing Communications
-        [Rock.Data.Communication](T1.Communication_Id, T1.Communication_SenderPersonAliasId, T1.Communication_Subject, T1.Communication_IsBulkCommunication, T1.Communication_FutureSendDateTime, T1.Communication_Status, T1.Communication_ReviewerPersonAliasId, T1.Communication_ReviewedDateTime, T1.Communication_ReviewerNote, T1.Communication_MediumEntityTypeId, T1.Communication_MediumDataJson, T1.Communication_AdditionalMergeFieldsJson, T1.Communication_CreatedDateTime, T1.Communication_ModifiedDateTime, T1.Communication_CreatedByPersonAliasId, T1.Communication_ModifiedByPersonAliasId, T1.Communication_Guid, T1.Communication_ForeignId, T1.Communication_ForeignGuid, T1.Communication_ForeignKey)
+        [Rock.Data.Communication](T1.Communication_Id, T1.Communication_SenderPersonAliasId, T1.Communication_Subject, T1.Communication_IsBulkCommunication, T1.Communication_FutureSendDateTime, T1.Communication_Status, T1.Communication_ReviewerPersonAliasId, T1.Communication_ReviewedDateTime, T1.Communication_ReviewerNote, T1.Communication_MediumEntityTypeId, T1.Communication_MediumDataJson, T1.Communication_AdditionalMergeFieldsJson, T1.Communication_EnabledLavaCommands, T1.Communication_CreatedDateTime, T1.Communication_ModifiedDateTime, T1.Communication_CreatedByPersonAliasId, T1.Communication_ModifiedByPersonAliasId, T1.Communication_Guid, T1.Communication_ForeignId, T1.Communication_ForeignGuid, T1.Communication_ForeignKey)
     FROM (
         SELECT 
             T.Id AS Communication_Id, 
@@ -5586,6 +5593,7 @@
             T.MediumEntityTypeId AS Communication_MediumEntityTypeId, 
             T.MediumDataJson AS Communication_MediumDataJson, 
             T.AdditionalMergeFieldsJson AS Communication_AdditionalMergeFieldsJson, 
+            T.EnabledLavaCommands AS Communication_EnabledLavaCommands, 
             T.CreatedDateTime AS Communication_CreatedDateTime, 
             T.ModifiedDateTime AS Communication_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS Communication_CreatedByPersonAliasId, 
@@ -7026,6 +7034,25 @@
             True AS _from0
         FROM CodeFirstDatabase.FollowingEventType AS T
     ) AS T1]]></view>
+    <view extent="RockContext.FollowingEventSubscriptions"><![CDATA[
+    SELECT VALUE -- Constructing FollowingEventSubscriptions
+        [Rock.Data.FollowingEventSubscription](T1.FollowingEventSubscription_Id, T1.FollowingEventSubscription_EventTypeId, T1.FollowingEventSubscription_PersonAliasId, T1.FollowingEventSubscription_CreatedDateTime, T1.FollowingEventSubscription_ModifiedDateTime, T1.FollowingEventSubscription_CreatedByPersonAliasId, T1.FollowingEventSubscription_ModifiedByPersonAliasId, T1.FollowingEventSubscription_Guid, T1.FollowingEventSubscription_ForeignId, T1.FollowingEventSubscription_ForeignGuid, T1.FollowingEventSubscription_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS FollowingEventSubscription_Id, 
+            T.EventTypeId AS FollowingEventSubscription_EventTypeId, 
+            T.PersonAliasId AS FollowingEventSubscription_PersonAliasId, 
+            T.CreatedDateTime AS FollowingEventSubscription_CreatedDateTime, 
+            T.ModifiedDateTime AS FollowingEventSubscription_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS FollowingEventSubscription_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS FollowingEventSubscription_ModifiedByPersonAliasId, 
+            T.Guid AS FollowingEventSubscription_Guid, 
+            T.ForeignId AS FollowingEventSubscription_ForeignId, 
+            T.ForeignGuid AS FollowingEventSubscription_ForeignGuid, 
+            T.ForeignKey AS FollowingEventSubscription_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.FollowingEventSubscription AS T
+    ) AS T1]]></view>
     <view extent="RockContext.FollowingSuggesteds"><![CDATA[
     SELECT VALUE -- Constructing FollowingSuggesteds
         [Rock.Data.FollowingSuggested](T1.FollowingSuggested_Id, T1.FollowingSuggested_EntityTypeId, T1.FollowingSuggested_EntityId, T1.FollowingSuggested_PersonAliasId, T1.FollowingSuggested_SuggestionTypeId, T1.FollowingSuggested_LastPromotedDateTime, T1.FollowingSuggested_StatusChangedDateTime, T1.FollowingSuggested_Status, T1.FollowingSuggested_CreatedDateTime, T1.FollowingSuggested_ModifiedDateTime, T1.FollowingSuggested_CreatedByPersonAliasId, T1.FollowingSuggested_ModifiedByPersonAliasId, T1.FollowingSuggested_Guid, T1.FollowingSuggested_ForeignId, T1.FollowingSuggested_ForeignGuid, T1.FollowingSuggested_ForeignKey)
@@ -7074,25 +7101,6 @@
             T.ForeignKey AS FollowingSuggestionType_ForeignKey, 
             True AS _from0
         FROM CodeFirstDatabase.FollowingSuggestionType AS T
-    ) AS T1]]></view>
-    <view extent="RockContext.FollowingEventSubscriptions"><![CDATA[
-    SELECT VALUE -- Constructing FollowingEventSubscriptions
-        [Rock.Data.FollowingEventSubscription](T1.FollowingEventSubscription_Id, T1.FollowingEventSubscription_EventTypeId, T1.FollowingEventSubscription_PersonAliasId, T1.FollowingEventSubscription_CreatedDateTime, T1.FollowingEventSubscription_ModifiedDateTime, T1.FollowingEventSubscription_CreatedByPersonAliasId, T1.FollowingEventSubscription_ModifiedByPersonAliasId, T1.FollowingEventSubscription_Guid, T1.FollowingEventSubscription_ForeignId, T1.FollowingEventSubscription_ForeignGuid, T1.FollowingEventSubscription_ForeignKey)
-    FROM (
-        SELECT 
-            T.Id AS FollowingEventSubscription_Id, 
-            T.EventTypeId AS FollowingEventSubscription_EventTypeId, 
-            T.PersonAliasId AS FollowingEventSubscription_PersonAliasId, 
-            T.CreatedDateTime AS FollowingEventSubscription_CreatedDateTime, 
-            T.ModifiedDateTime AS FollowingEventSubscription_ModifiedDateTime, 
-            T.CreatedByPersonAliasId AS FollowingEventSubscription_CreatedByPersonAliasId, 
-            T.ModifiedByPersonAliasId AS FollowingEventSubscription_ModifiedByPersonAliasId, 
-            T.Guid AS FollowingEventSubscription_Guid, 
-            T.ForeignId AS FollowingEventSubscription_ForeignId, 
-            T.ForeignGuid AS FollowingEventSubscription_ForeignGuid, 
-            T.ForeignKey AS FollowingEventSubscription_ForeignKey, 
-            True AS _from0
-        FROM CodeFirstDatabase.FollowingEventSubscription AS T
     ) AS T1]]></view>
     <view extent="RockContext.MergeTemplates"><![CDATA[
     SELECT VALUE -- Constructing MergeTemplates
