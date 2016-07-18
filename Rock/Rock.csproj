@@ -1513,6 +1513,7 @@
     <Compile Include="Workflow\Action\Groups\RemovePersonFromGroup.cs" />
     <Compile Include="Workflow\Action\Groups\RemovePersonFromGroupAttribute.cs" />
     <Compile Include="Workflow\Action\Groups\SetAttributeToRandomGroupMember.cs" />
+    <Compile Include="Workflow\Action\Groups\SetGroupAttribute.cs" />
     <Compile Include="Workflow\Action\Groups\SetGroupMemberAttribute.cs" />
     <Compile Include="Workflow\Action\Groups\SetGroupMemberNote.cs" />
     <Compile Include="Workflow\Action\Groups\UpdateGroupMemberStatus.cs" />
