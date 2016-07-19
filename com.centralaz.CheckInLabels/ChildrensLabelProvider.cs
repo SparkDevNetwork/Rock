@@ -107,6 +107,7 @@ namespace com.centralaz.CheckInLabels
             label.ClaimCardTitle = checkInLabel.MergeFields.ContainsKey( "CentralAZ.ClaimCardTitle" ) ? checkInLabel.MergeFields["CentralAZ.ClaimCardTitle"] : string.Empty;
             label.HealthNotesTitle = checkInLabel.MergeFields.ContainsKey( "CentralAZ.HealthNotesTitle" ) ? checkInLabel.MergeFields["CentralAZ.HealthNotesTitle"] : string.Empty;
             label.HealthNotes = checkInLabel.MergeFields.ContainsKey( "AllergyNote" ) ? checkInLabel.MergeFields["AllergyNote"] : string.Empty;
+            label.HealthNoteFlag = !string.IsNullOrWhiteSpace( label.HealthNotes );
             label.ParentsInitialsTitle = checkInLabel.MergeFields.ContainsKey( "CentralAZ.ParentsInitialsTitle" ) ? checkInLabel.MergeFields["CentralAZ.ParentsInitialsTitle"] : string.Empty;
             label.ServicesTitle = checkInLabel.MergeFields.ContainsKey( "CentralAZ.ServicesLabel" ) ? checkInLabel.MergeFields["CentralAZ.ServicesLabel"] : string.Empty;
 
@@ -142,24 +143,7 @@ namespace com.centralaz.CheckInLabels
 
             label.EpiPenFlag = checkInLabel.MergeFields.ContainsKey( "EpiPenFlag" ) ? checkInLabel.MergeFields["EpiPenFlag"].AsBoolean() : false;
             label.SelfCheckOutFlag = checkInLabel.MergeFields.ContainsKey( "SelfCheckOutFlag" ) ? checkInLabel.MergeFields["SelfCheckOutFlag"].AsBoolean() : false;
-
-            if ( !string.IsNullOrWhiteSpace( checkInLabel.MergeFields["AllergyNote"] ) )
-            {
-                label.HealthNoteFlag = true;
-                // This was removed after speaking with Laurie (NA 1/26/2009)
-                // Don't print health notes if child greater than 1st grade.
-                //if ( !( attendee.GraduationDate > DateTime.Parse( "1/1/1900" )
-                //    && Person.CalculateGradeLevel( attendee.GraduationDate, organization.GradePromotionDate ) >= 1 ) )
-                //{
-                label.HealthNotes = checkInLabel.MergeFields["AllergyNote"];
-                //}
-            }
-            else
-            {
-                label.HealthNoteFlag = false;
-            }
-
-            label.LegalNoteFlag = (! string.IsNullOrWhiteSpace( checkInLabel.MergeFields["LegalNote"] ) );
+            label.LegalNoteFlag = checkInLabel.MergeFields.ContainsKey( "LegalNote" ) && !string.IsNullOrWhiteSpace( checkInLabel.MergeFields["LegalNote"] ) ? true : false;
         }
 
         /// <summary>
