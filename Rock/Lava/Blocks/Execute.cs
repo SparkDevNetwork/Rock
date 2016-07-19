@@ -83,7 +83,6 @@ namespace Rock.Lava.Blocks
                     _imports.Insert( 0, "Rock.Data" );
                     _imports.Insert( 0, "Rock.Model" );
                     _imports.Insert( 0, "Rock" );
-                    _imports.Insert( 0, "System" );
 
                     // treat this as a script
                     string imports = string.Empty;
@@ -119,7 +118,11 @@ namespace Rock.Lava.Blocks
                 else
                 {
                     // treat this like a class
-                    dynamic csScript = CSScript.Evaluator.LoadCode<ILavaScript>( userScript );
+
+                    // remove any reference to 'using System;' as this will cause an issue
+                    var cleanScript = Regex.Replace( userScript, @"\s*using\s*System;", "" );
+
+                    dynamic csScript = CSScript.Evaluator.LoadCode<ILavaScript>( cleanScript );
                     string scriptResult = csScript.Execute();
                     result.Write( scriptResult );
                 }
@@ -156,7 +159,7 @@ namespace Rock.Lava.Blocks
 
             foreach ( var item in markupItems )
             {
-                var itemParts = item.ToString().Split( ':' );
+                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
                 if ( itemParts.Length > 1 )
                 {
                     parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
