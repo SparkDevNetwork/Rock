@@ -458,28 +458,39 @@ namespace Rock.Data
                 {
                     match = ( previousValue == trigger.EntityTypeQualifierValue );
                 }
-                else if ( hasCurrent && !hasPrevious )
+
+                if ( trigger.WorkflowTriggerType == WorkflowTriggerType.ImmediatePostSave ||
+                    trigger.WorkflowTriggerType == WorkflowTriggerType.PostSave )
                 {
-                    // ...and previous cannot be the same as the current (must be a change)
-                    match = ( currentValue == trigger.EntityTypeQualifierValue &&
-                        currentValue != previousValue );
+                    match = ( currentValue == trigger.EntityTypeQualifierValue );
                 }
-                else if ( !hasCurrent && hasPrevious )
+
+                if ( trigger.WorkflowTriggerType == WorkflowTriggerType.PreSave )
                 {
-                    // ...and previous cannot be the same as the current (must be a change)
-                    match = ( previousValue == trigger.EntityTypeQualifierValuePrevious &&
-                        previousValue != currentValue );
+                    if ( hasCurrent && !hasPrevious )
+                    {
+                        // ...and previous cannot be the same as the current (must be a change)
+                        match = ( currentValue == trigger.EntityTypeQualifierValue &&
+                            currentValue != previousValue );
+                    }
+                    else if ( !hasCurrent && hasPrevious )
+                    {
+                        // ...and previous cannot be the same as the current (must be a change)
+                        match = ( previousValue == trigger.EntityTypeQualifierValuePrevious &&
+                            previousValue != currentValue );
+                    }
+                    else if ( hasCurrent && hasPrevious )
+                    {
+                        match = ( currentValue == trigger.EntityTypeQualifierValue &&
+                            previousValue == trigger.EntityTypeQualifierValuePrevious );
+                    }
+                    else if ( !hasCurrent && !hasPrevious )
+                    {
+                        // If they used an entity type qualifier column, at least one qualifier value is required.
+                        // TODO: log as silent exception? 
+                    }
                 }
-                else if ( hasCurrent && hasPrevious )
-                {
-                    match = ( currentValue == trigger.EntityTypeQualifierValue &&
-                        previousValue == trigger.EntityTypeQualifierValuePrevious );
-                }
-                else if ( !hasCurrent && !hasPrevious )
-                {
-                    // If they used an entity type qualifier column, at least one qualifier value is required.
-                    // TODO: log as silent exception? 
-                }
+
             }
             return match;
         }

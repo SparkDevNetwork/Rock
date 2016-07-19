@@ -187,6 +187,7 @@ namespace RockWeb.Blocks.CheckIn
             if ( KioskCurrentlyActive )
             {
                 var schedules = new List<CheckInSchedule>();
+                bool validateSelection = false; 
 
                 var selectedIDs = hfTimes.Value.SplitDelimitedValues().AsIntegerList();
                 if ( CurrentCheckInType != null && CurrentCheckInType.TypeOfCheckin == TypeOfCheckin.Family )
@@ -195,7 +196,7 @@ namespace RockWeb.Blocks.CheckIn
                         .SelectMany( f => f.GetPeople( true )
                             .SelectMany( p => p.PossibleSchedules.Where( s => selectedIDs.Contains( s.Schedule.Id ) ) ) )
                         .ToList();
-
+                    validateSelection = true;
                 }
                 else
                 {
@@ -211,7 +212,7 @@ namespace RockWeb.Blocks.CheckIn
                 if ( schedules != null && schedules.Any() )
                 {
                     schedules.ForEach( s => s.Selected = true );
-                    ProcessSelection( maWarning );
+                    ProcessSelection( maWarning, validateSelection );
                 }
             }
         }
