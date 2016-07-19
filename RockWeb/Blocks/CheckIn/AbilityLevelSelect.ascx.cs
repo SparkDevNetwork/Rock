@@ -41,6 +41,53 @@ namespace RockWeb.Blocks.CheckIn
         private bool _shouldLowlight = true;
 
         /// <summary>
+        /// Determines if the block requires that a selection be made. This is used to determine if user should
+        /// be redirected to this block or not.
+        /// </summary>
+        /// <returns></returns>
+        public override bool RequiresSelection()
+        {
+            if ( CurrentWorkflow == null || CurrentCheckInState == null )
+            {
+                NavigateToHomePage();
+                return false;
+            }
+
+            var person = CurrentCheckInState.CheckIn.CurrentPerson;
+            if ( person == null )
+            {
+                CancelCheckin();
+                return false;
+            }
+
+            if ( IsOverride || NoConfiguredAbilityLevels( person.GroupTypes ) )
+            {
+                if ( UserBackedUp )
+                {
+                    GoBack( CurrentCheckInState.CheckInType.TypeOfCheckin == TypeOfCheckin.Family );
+                    return false;
+                }
+                else
+                {
+                    NavigateToNextPage( true );
+                    return false;
+                }
+            }
+            else
+            {
+                // If an ability level has already been selected, just process the selection
+                if ( person.StateParameters.ContainsKey( "AbilityLevel" ) )
+                {
+                    return !ProcessSelection();
+                }
+                else
+                {
+                    return true;
+                }
+            }
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -145,7 +192,7 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbBack_Click( object sender, EventArgs e )
         {
-            GoBack();
+            GoBack( true );
         }
 
         /// <summary>
@@ -208,11 +255,11 @@ namespace RockWeb.Blocks.CheckIn
             {
                 if ( UserBackedUp )
                 {
-                    GoBack();
+                    GoBack( true );
                 }
                 else
                 {
-                    NavigateToNextPage();
+                    NavigateToNextPage( true );
                 }
             }
             else
@@ -241,14 +288,15 @@ namespace RockWeb.Blocks.CheckIn
         /// <summary>
         /// Processes the selection.
         /// </summary>
-        protected void ProcessSelection()
+        protected bool ProcessSelection()
         {
             if ( !ProcessSelection( 
                 maWarning, 
                 () => CurrentCheckInState.CheckIn.CurrentPerson.GroupTypes
                     .Where( t => !t.ExcludedByFilter ) 
                     .Count() <= 0,
-                "<p>Sorry, based on your selection, there are currently not any available locations that can be checked into.</p>" ) ) 
+                "<p>Sorry, based on your selection, there are currently not any available locations that can be checked into.</p>",
+                true ) ) 
             {
                 // Clear any filtered items so that user can select another option
                 var person = CurrentCheckInState.CheckIn.CurrentPerson;
@@ -273,6 +321,12 @@ namespace RockWeb.Blocks.CheckIn
                         }
                     }
                 }
+
+                return false;
+            }
+            else
+            {
+                return true;
             }
         }
 
@@ -280,7 +334,8 @@ namespace RockWeb.Blocks.CheckIn
         /// Navigates to previous page.
         /// </summary>
         /// <param name="queryParams">The query parameters.</param>
-        protected override void NavigateToPreviousPage( Dictionary<string, string> queryParams )
+        /// <param name="validateSelectionRequired">if set to <c>true</c> will check that block on previous page has a selection required before redirecting.</param>
+        protected override void NavigateToPreviousPage( Dictionary<string, string> queryParams, bool validateSelectionRequired )
         {
             queryParams = CheckForOverride( queryParams );
 
@@ -294,7 +349,19 @@ namespace RockWeb.Blocks.CheckIn
                     var lastSchedule = currentPerson.PossibleSchedules.Where( p => p.Processed ).Last();
                     lastSchedule.Processed = false;
                     SaveState();
-                    NavigateToLinkedPage( "FamilyRepeatPage", queryParams );
+
+                    if ( validateSelectionRequired )
+                    {
+                        var nextBlock = GetCheckInBlock( "FamilyRepeatPage" );
+                        if ( nextBlock != null && nextBlock.RequiresSelection() )
+                        {
+                            NavigateToLinkedPage( "FamilyRepeatPage", queryParams );
+                        }
+                    }
+                    else
+                    {
+                        NavigateToLinkedPage( "FamilyRepeatPage", queryParams );
+                    }
                 }
                 else
                 {
@@ -318,7 +385,19 @@ namespace RockWeb.Blocks.CheckIn
                         {
                             lastSchedule.Processed = false;
                             SaveState();
-                            NavigateToLinkedPage( "FamilyRepeatPage", queryParams );
+
+                            if ( validateSelectionRequired )
+                            {
+                                var nextBlock = GetCheckInBlock( "FamilyRepeatPage" );
+                                if ( nextBlock != null && nextBlock.RequiresSelection() )
+                                {
+                                    NavigateToLinkedPage( "FamilyRepeatPage", queryParams );
+                                }
+                            }
+                            else
+                            {
+                                NavigateToLinkedPage( "FamilyRepeatPage", queryParams );
+                            }
                         }
                     }
                 }
