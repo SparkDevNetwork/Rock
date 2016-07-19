@@ -527,7 +527,7 @@ namespace Rock.CheckIn
             if ( validateSelectionRequired )
             {
                 var nextBlock = GetCheckInBlock( "NextPage" );
-                if ( nextBlock != null && nextBlock.RequiresSelection() )
+                if ( nextBlock != null && nextBlock.RequiresSelection( false ) )
                 {
                     NavigateToLinkedPage( "NextPage", queryParams );
                 }
@@ -579,7 +579,7 @@ namespace Rock.CheckIn
             if ( validateSelectionRequired )
             {
                 var nextBlock = GetCheckInBlock( "PreviousPage" );
-                if ( nextBlock != null && nextBlock.RequiresSelection() )
+                if ( nextBlock != null && nextBlock.RequiresSelection( true ) )
                 {
                     NavigateToLinkedPage( "PreviousPage", queryParams );
                 }
@@ -609,10 +609,11 @@ namespace Rock.CheckIn
 
         /// <summary>
         /// Determines if the block requires that a selection be made. This is used to determine if user should
-        /// be redirected to this block or not. 
+        /// be redirected to this block or not.
         /// </summary>
+        /// <param name="backingUp">if set to <c>true</c> [backing up].</param>
         /// <returns></returns>
-        public virtual bool RequiresSelection()
+        public virtual bool RequiresSelection( bool backingUp )
         {
             return true;
         }

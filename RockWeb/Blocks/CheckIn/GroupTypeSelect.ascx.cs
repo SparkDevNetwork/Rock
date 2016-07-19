@@ -39,8 +39,9 @@ namespace RockWeb.Blocks.CheckIn
         /// Determines if the block requires that a selection be made. This is used to determine if user should
         /// be redirected to this block or not.
         /// </summary>
+        /// <param name="backingUp">if set to <c>true</c> [backing up].</param>
         /// <returns></returns>
-        public override bool RequiresSelection()
+        public override bool RequiresSelection( bool backingUp )
         {
             if ( CurrentWorkflow == null || CurrentCheckInState == null )
             {
@@ -49,6 +50,8 @@ namespace RockWeb.Blocks.CheckIn
             }
             else
             {
+                ClearSelection();
+
                 var person = CurrentCheckInState.CheckIn.CurrentPerson;
                 if ( person == null )
                 {
@@ -60,7 +63,7 @@ namespace RockWeb.Blocks.CheckIn
                 var availGroupTypes = person.GetAvailableGroupTypes( schedule );
                 if ( availGroupTypes.Count == 1 )
                 {
-                    if ( UserBackedUp )
+                    if ( backingUp )
                     {
                         GoBack( true );
                         return false;
