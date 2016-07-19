@@ -89,7 +89,7 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                 
                 // Bind Devices
                 var deviceService = new DeviceService( rockContext);
-                var devices = deviceService.Queryable().AsNoTracking().ToList();
+                var devices = deviceService.Queryable().AsNoTracking().OrderBy( p => p.Name).ToList();
                 ddlDevice.DataTextField = "Name";
                 ddlDevice.DataValueField = "Guid";
                 ddlDevice.DataSource = devices;
