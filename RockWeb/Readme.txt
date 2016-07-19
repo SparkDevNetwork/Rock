@@ -1,3 +1,21 @@
+Rock McKinley 5.1
+
++ Fixed issue with Family check-in incorrectly navigating to individual check-in page when clicking 'Back' (Fixes #1620).
++ Fixed issue with workflow triggers not getting started (Fixes #1623).
++ Fixed display of heirarchal group types in check-in manager.
++ Fixed display of group type path on the location schedule screen in check-in manager mode (Fixes #121).
++ Fixed positioning of Save button on check-in admin schedule view (Fixes #1609).
++ Updated the saving of attributes so that it does not clear foreign key values and the created by information (Fixes #1596).
++ Fixed new route for check-in to use correct page.
++ Updated the Check-in Manager to allow changing the location threshold value.
++ Updated family check-in to fix issue with schedules not getting selected correctly when only one schedule option is available.
++ Fixed issue with family checkin that would result in first service's selection getting cleared if checking child into multiple services and each service had different location options.
++ Fixed issue with family check-in that would result in ability level being asked twice if selecting multiple service times, and different locations options were available for each service.
++ Fixed issue with View possibly getting created with wrong schema name.
++ Fixed the check-in Grade Required attribute to have correct entity qualifier
++ Fixed exception that would occur if any PreHtml or PostHtml text included any opening and closing brackets (i.e. Lava or Style definitions).
+
+
 Rock McKinley 5.0
 
 API
@@ -227,6 +245,7 @@ MISC
 + Updated person picker results to display a person's connection status.
 + Added option to the Person Attribute/FieldType so that the 'Enable Self Detection' option of the person picker can be enabled.
 + Added ability to set qualifier column/value on the Categories block to further filter entities that categories belong to.
+
 
 Rock McKinley 4.6
 
