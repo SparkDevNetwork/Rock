@@ -2202,7 +2202,11 @@ namespace RockWeb.Blocks.Finance
                 if ( $('#{16}').is(':visible') && $('#{16}').prop('checked') ) {{
                     $form.find('.js-billing-address1').val( $('#{17}_tbStreet1').val() );
                     $form.find('.js-billing-city').val( $('#{17}_tbCity').val() );
-                    $form.find('.js-billing-state').val( $('#{17}_ddlState').val() );
+                    if ( $('#{17}_ddlState').length ) {{
+                        $form.find('.js-billing-state').val( $('#{17}_ddlState').val() );
+                    }} else {{
+                        $form.find('.js-billing-state').val( $('#{17}_tbState').val() );
+                    }}     
                     $form.find('.js-billing-postal').val( $('#{17}_tbPostalCode').val() );
                     $form.find('.js-billing-country').val( $('#{17}_ddlCountry').val() );
                 }}
