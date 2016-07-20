@@ -140,6 +140,7 @@ namespace Rock.Data
         /// The name of the entity type.
         /// </value>
         [NotMapped]
+        [LavaInclude]
         public virtual string TypeName
         {
             get
