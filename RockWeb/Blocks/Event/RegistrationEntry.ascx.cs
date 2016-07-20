@@ -3220,7 +3220,12 @@ namespace RockWeb.Blocks.Event
 
                 $form.find('.js-billing-address1').val( $('#{15}_tbStreet1').val() );
                 $form.find('.js-billing-city').val( $('#{15}_tbCity').val() );
-                $form.find('.js-billing-state').val( $('#{15}_ddlState').val() );
+
+                if ( $('#{15}_ddlState').length ) {{
+                    $form.find('.js-billing-state').val( $('#{15}_ddlState').val() );
+                }} else {{
+                    $form.find('.js-billing-state').val( $('#{15}_tbState').val() );
+                }}            
                 $form.find('.js-billing-postal').val( $('#{15}_tbPostalCode').val() );
                 $form.find('.js-billing-country').val( $('#{15}_ddlCountry').val() );
 

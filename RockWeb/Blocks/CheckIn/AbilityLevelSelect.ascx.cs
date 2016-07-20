@@ -44,8 +44,9 @@ namespace RockWeb.Blocks.CheckIn
         /// Determines if the block requires that a selection be made. This is used to determine if user should
         /// be redirected to this block or not.
         /// </summary>
+        /// <param name="backingUp">if set to <c>true</c> [backing up].</param>
         /// <returns></returns>
-        public override bool RequiresSelection()
+        public override bool RequiresSelection( bool backingUp )
         {
             if ( CurrentWorkflow == null || CurrentCheckInState == null )
             {
@@ -62,7 +63,7 @@ namespace RockWeb.Blocks.CheckIn
 
             if ( IsOverride || NoConfiguredAbilityLevels( person.GroupTypes ) )
             {
-                if ( UserBackedUp )
+                if ( backingUp )
                 {
                     GoBack( CurrentCheckInState.CheckInType.TypeOfCheckin == TypeOfCheckin.Family );
                     return false;
@@ -75,14 +76,22 @@ namespace RockWeb.Blocks.CheckIn
             }
             else
             {
-                // If an ability level has already been selected, just process the selection
-                if ( person.StateParameters.ContainsKey( "AbilityLevel" ) )
+                if ( backingUp )
                 {
-                    return !ProcessSelection();
+                    GoBack( CurrentCheckInState.CheckInType.TypeOfCheckin == TypeOfCheckin.Family );
+                    return false;
                 }
                 else
                 {
-                    return true;
+                    // If an ability level has already been selected, just process the selection
+                    if ( person.StateParameters.ContainsKey( "AbilityLevel" ) )
+                    {
+                        return !ProcessSelection();
+                    }
+                    else
+                    {
+                        return true;
+                    }
                 }
             }
         }
@@ -337,23 +346,56 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="validateSelectionRequired">if set to <c>true</c> will check that block on previous page has a selection required before redirecting.</param>
         protected override void NavigateToPreviousPage( Dictionary<string, string> queryParams, bool validateSelectionRequired )
         {
-            queryParams = CheckForOverride( queryParams );
-
-            // First check for first unprocessed person
-            var currentPerson = CurrentCheckInState.CheckIn.CurrentPerson;
-            if ( currentPerson != null )
+            if ( CurrentCheckInState.CheckInType.TypeOfCheckin == TypeOfCheckin.Family )
             {
-                if ( currentPerson.PossibleSchedules.Any( p => p.Processed ) )
-                {
-                    // The current person has one or more processed schedules, mark last as unprocessed, and return
-                    var lastSchedule = currentPerson.PossibleSchedules.Where( p => p.Processed ).Last();
-                    lastSchedule.Processed = false;
-                    SaveState();
+                bool anythingProcessed = false;
 
+                queryParams = CheckForOverride( queryParams );
+
+                // First check for first unprocessed person
+                var currentPerson = CurrentCheckInState.CheckIn.CurrentPerson;
+                if ( currentPerson != null )
+                {
+                    currentPerson.StateParameters.Remove( "AbilityLevel" );
+
+                    var lastSchedule = currentPerson.PossibleSchedules.Where( p => p.Processed ).LastOrDefault();
+                    if ( lastSchedule != null )
+                    {
+                        // Current person has a processed schedule, unmark that one and continue.
+                        lastSchedule.Processed = false;
+                        anythingProcessed = true;
+                    }
+                    else
+                    {
+                        // current person did not have any processed schedules, so find last processed person, and 
+                        // mark them and their last schedule as not processed.
+                        var family = CurrentCheckInState.CheckIn.CurrentFamily;
+                        if ( family != null )
+                        {
+                            var lastPerson = family.People.Where( p => p.Processed ).LastOrDefault();
+                            if ( lastPerson != null )
+                            {
+                                lastPerson.Processed = false;
+                                lastSchedule = lastPerson.PossibleSchedules.Where( p => p.Processed ).LastOrDefault();
+                                if ( lastSchedule != null )
+                                {
+                                    lastSchedule.Processed = false;
+                                }
+
+                                anythingProcessed = true;
+                            }
+                        }
+                    }
+
+                    SaveState();
+                }
+
+                if ( anythingProcessed )
+                { 
                     if ( validateSelectionRequired )
                     {
                         var nextBlock = GetCheckInBlock( "FamilyRepeatPage" );
-                        if ( nextBlock != null && nextBlock.RequiresSelection() )
+                        if ( nextBlock != null && nextBlock.RequiresSelection( true ) )
                         {
                             NavigateToLinkedPage( "FamilyRepeatPage", queryParams );
                         }
@@ -372,35 +414,7 @@ namespace RockWeb.Blocks.CheckIn
             }
             else
             {
-                // All people have been processed, mark last person and their last schedule as not processed.
-                var family = CurrentCheckInState.CheckIn.CurrentFamily;
-                if ( family != null )
-                {
-                    var lastPerson = family.People.Where( p => p.Processed ).LastOrDefault();
-                    if ( lastPerson != null )
-                    {
-                        lastPerson.Processed = false;
-                        var lastSchedule = lastPerson.PossibleSchedules.Where( p => p.Processed ).LastOrDefault();
-                        if ( lastSchedule != null )
-                        {
-                            lastSchedule.Processed = false;
-                            SaveState();
-
-                            if ( validateSelectionRequired )
-                            {
-                                var nextBlock = GetCheckInBlock( "FamilyRepeatPage" );
-                                if ( nextBlock != null && nextBlock.RequiresSelection() )
-                                {
-                                    NavigateToLinkedPage( "FamilyRepeatPage", queryParams );
-                                }
-                            }
-                            else
-                            {
-                                NavigateToLinkedPage( "FamilyRepeatPage", queryParams );
-                            }
-                        }
-                    }
-                }
+                base.NavigateToPreviousPage( validateSelectionRequired );
             }
         }
 
