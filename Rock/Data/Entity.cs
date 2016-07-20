@@ -123,6 +123,7 @@ namespace Rock.Data
         /// <value>
         /// An <see cref="System.Int32"/> that represents the identifier for the current Entity object type. 
         /// </value>
+        [LavaInclude]
         public virtual int TypeId
         {
             get
