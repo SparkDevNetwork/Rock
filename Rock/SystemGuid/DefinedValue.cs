@@ -321,6 +321,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PERSON_RECORD_STATUS_REASON_DECEASED = "05D35BC4-5816-4210-965F-1BF44F35A16A";
 
+        /// <summary>
+        /// Inactive record status reason of No Activity 
+        /// </summary>
+        public const string PERSON_RECORD_STATUS_REASON_NO_ACTIVITY = "64014FE6-943D-4ACF-8014-FED9F9169AE8";
+
         #endregion
 
         #region Person Record Type
