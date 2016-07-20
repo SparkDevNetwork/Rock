@@ -109,6 +109,7 @@ namespace RockWeb.Blocks.CheckIn
                         lbSelect.Attributes.Add( "data-loading-text", "Printing..." );
 
                         personSchedules = location.Schedules.Where( s => !s.ExcludedByFilter ).ToList();
+                        distinctSchedules = personSchedules;
                     }
 
                     if ( distinctSchedules.Count == 1 )
