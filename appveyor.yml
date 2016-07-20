@@ -27,7 +27,7 @@ skip_tags: true
 #---------------------------------#
 
 # Operating system (build VM template)
-os: Windows Server 2012 R2
+image: Visual Studio 2013
 
 
 # clone directory
@@ -68,6 +68,7 @@ configuration: Release
 
 # scripts to run before build
 before_build:
+  - cmd: nuget restore
   - cmd: npm install --production
   - cmd: node ./node_modules/normajs/bin/norma.js build  # use cached version of norma
   - cmd: git clone -q --depth=1 https://github.com/NewSpring/rock-spiritual-gifts.git ../rock-spiritual-gifts
@@ -83,14 +84,11 @@ matrix:
   fast_finish: true    # set this flag to immediately finish build once one of the jobs fails
 
 
-
 #---------------------------------#
 #       tests configuration       #
 #---------------------------------#
 # to disable automatic tests
 test: off
-
-
 
 
 #---------------------------------#
