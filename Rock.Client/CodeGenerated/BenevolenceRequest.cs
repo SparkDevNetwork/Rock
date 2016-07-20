@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public int? CampusId { get; set; }
+
+        /// <summary />
         public int? CaseWorkerPersonAliasId { get; set; }
 
         /// <summary />
@@ -67,10 +70,8 @@ namespace Rock.Client
         /// <summary />
         public int? LocationId { get; set; }
 
-        /// <summary>
-        /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
-        /// </summary>
-        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+        /// <summary />
+        public string ProvidedNextSteps { get; set; }
 
         /// <summary />
         public DateTime RequestDateTime { get; set; }
@@ -90,24 +91,16 @@ namespace Rock.Client
         /// <summary />
         public string WorkPhoneNumber { get; set; }
 
-        /// <summary>
-        /// Leave this as NULL to let Rock set this
-        /// </summary>
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
-        /// <summary>
-        /// This does not need to be set or changed. Rock will always set this to the current date/time when saved to the database.
-        /// </summary>
+        /// <summary />
         public DateTime? ModifiedDateTime { get; set; }
 
-        /// <summary>
-        /// Leave this as NULL to let Rock set this
-        /// </summary>
+        /// <summary />
         public int? CreatedByPersonAliasId { get; set; }
 
-        /// <summary>
-        /// If you need to set this manually, set ModifiedAuditValuesAlreadyUpdated=True to prevent Rock from setting it
-        /// </summary>
+        /// <summary />
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
@@ -123,6 +116,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( BenevolenceRequest source )
         {
             this.Id = source.Id;
+            this.CampusId = source.CampusId;
             this.CaseWorkerPersonAliasId = source.CaseWorkerPersonAliasId;
             this.CellPhoneNumber = source.CellPhoneNumber;
             this.ConnectionStatusValueId = source.ConnectionStatusValueId;
@@ -134,7 +128,7 @@ namespace Rock.Client
             this.HomePhoneNumber = source.HomePhoneNumber;
             this.LastName = source.LastName;
             this.LocationId = source.LocationId;
-            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.ProvidedNextSteps = source.ProvidedNextSteps;
             this.RequestDateTime = source.RequestDateTime;
             this.RequestedByPersonAliasId = source.RequestedByPersonAliasId;
             this.RequestStatusValueId = source.RequestStatusValueId;
@@ -160,10 +154,16 @@ namespace Rock.Client
         public ICollection<BenevolenceResult> BenevolenceResults { get; set; }
 
         /// <summary />
+        public Campus Campus { get; set; }
+
+        /// <summary />
         public PersonAlias CaseWorkerPersonAlias { get; set; }
 
         /// <summary />
         public DefinedValue ConnectionStatusValue { get; set; }
+
+        /// <summary />
+        public ICollection<BenevolenceRequestDocument> Documents { get; set; }
 
         /// <summary />
         public Location Location { get; set; }
@@ -174,14 +174,5 @@ namespace Rock.Client
         /// <summary />
         public DefinedValue RequestStatusValue { get; set; }
 
-        /// <summary>
-        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
-        /// </summary>
-        public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
-
-        /// <summary>
-        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
-        /// </summary>
-        public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }
 }
