@@ -49,8 +49,8 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     ClearSelection();
 
-                    var personSchedules = new List<CheckInSchedule>();
-                    var distinctSchedules = new List<CheckInSchedule>();
+                    var availSchedules = new List<CheckInSchedule>();
+
                     if ( CurrentCheckInType != null && CurrentCheckInType.TypeOfCheckin == TypeOfCheckin.Family )
                     {
                         CheckInFamily family = CurrentCheckInState.CheckIn.CurrentFamily;
@@ -58,14 +58,12 @@ namespace RockWeb.Blocks.CheckIn
                         {
                             foreach( var schedule in family.GetPeople( true ).SelectMany( p => p.PossibleSchedules ).ToList() )
                             {
-                                personSchedules.Add( schedule );
-                                if ( !distinctSchedules.Any( s => s.Schedule.Id == schedule.Schedule.Id ) )
+                                if ( !availSchedules.Any( s => s.Schedule.Id == schedule.Schedule.Id ))
                                 {
-                                    distinctSchedules.Add( schedule );
+                                    availSchedules.Add( schedule );
                                 }
-
                             }
-
+                            
                         }
                         else
                         {
@@ -108,12 +106,12 @@ namespace RockWeb.Blocks.CheckIn
                         lbSelect.Text = "Check In";
                         lbSelect.Attributes.Add( "data-loading-text", "Printing..." );
 
-                        personSchedules = location.Schedules.Where( s => !s.ExcludedByFilter ).ToList();
+                        availSchedules = location.Schedules.Where( s => !s.ExcludedByFilter ).ToList();
                     }
 
-                    if ( distinctSchedules.Count == 1 )
+                    if ( availSchedules.Count == 1 )
                     {
-                        personSchedules.ForEach( s => s.Selected = true );
+                        availSchedules.FirstOrDefault().Selected = true;
                         ProcessSelection( maWarning );
                     }
                     else
@@ -140,7 +138,7 @@ namespace RockWeb.Blocks.CheckIn
 ", lbSelect.ClientID, hfTimes.ClientID );
                         Page.ClientScript.RegisterClientScriptBlock( this.GetType(), "SelectTime", script );
 
-                        rSelection.DataSource = distinctSchedules
+                        rSelection.DataSource = availSchedules
                             .OrderBy( s => s.StartTime.Value.TimeOfDay )
                             .ThenBy( s => s.Schedule.Name )
                             .ToList();
