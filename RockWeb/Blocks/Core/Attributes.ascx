@@ -79,7 +79,7 @@
                 <Rock:EntityTypePicker ID="ddlAttrEntityType" runat="server" Label="Entity Type" IncludeGlobalOption="true" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlAttrEntityType_SelectedIndexChanged" />
                 <Rock:RockTextBox ID="tbAttrQualifierField" runat="server" Label="Qualifier Field" />
                 <Rock:RockTextBox ID="tbAttrQualifierValue" runat="server" Label="Qualifier Value" />
-                <Rock:AttributeEditor ID="edtAttribute" runat="server" ShowActions="false" ValidationGroup="Attribute" />
+                <Rock:AttributeEditor ID="edtAttribute" runat="server" ShowActions="false" ValidationGroup="Attribute" ShowInGridVisible="true" />
             </Content>
         </Rock:ModalDialog>
 
