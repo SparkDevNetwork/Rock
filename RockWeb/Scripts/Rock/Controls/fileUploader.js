@@ -115,13 +115,14 @@
             $('#' + options.aRemove).click(function () {
                 $(this).hide();
                 var $el = $('#' + options.aFileName);
-                $('#' + options.hfFileId).val('0');
                 $el.attr('href', '#');
                 $el.text('');
                 $el.removeClass('file-exists');
 
-                if (options.postbackScript) {
-                    window.location = "javascript:" + options.postbackScript;
+                if (options.postbackRemovedScript) {
+                    window.location = "javascript:" + options.postbackRemovedScript;
+                } else {
+                    $('#' + options.hfFileId).val('0');
                 }
 
                 return false;

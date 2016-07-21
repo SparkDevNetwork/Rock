@@ -39,6 +39,10 @@ namespace RockWeb.Blocks.Finance
     [SecurityRoleField( "Case Worker Role", "The security role to draw case workers from", true, Rock.SystemGuid.Group.GROUP_BENEVOLENCE )]
     public partial class BenevolenceRequestDetail : Rock.Web.UI.RockBlock
     {
+        #region Properties
+        private List<int> DocumentsState { get; set; }
+        #endregion
+
         #region ViewState and Dynamic Controls
 
         /// <summary>
@@ -116,6 +120,8 @@ namespace RockWeb.Blocks.Finance
 
                 BenevolenceResultsState = brInfoList;
             }
+
+            dlDocuments.ItemDataBound += DlDocuments_ItemDataBound;
         }
 
         /// <summary>
@@ -137,6 +143,34 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
+
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            DocumentsState = ViewState["DocumentsState"] as List<int>;
+            if ( DocumentsState == null )
+            {
+                DocumentsState = new List<int>();
+            }
+        }
+
+        /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            ViewState["DocumentsState"] = DocumentsState;
+
+            return base.SaveViewState();
+        }
         #endregion
 
         #region Events
@@ -358,6 +392,38 @@ namespace RockWeb.Blocks.Finance
 
                     rockContext.SaveChanges();
 
+                    // update related documents
+                    var documentsService = new BenevolenceRequestDocumentService( rockContext );
+
+                    // delete any images that were removed
+                    var orphanedBinaryFileIds = new List<int>();
+                    var documentsInDb = documentsService.Queryable().Where( b => b.BenevolenceRequestId == benevolenceRequest.Id ).ToList();
+
+                    foreach ( var document in documentsInDb.Where( i => !DocumentsState.Contains( i.BinaryFileId ) ) )
+                    {
+                        orphanedBinaryFileIds.Add( document.BinaryFileId );
+                        documentsService.Delete( document );
+                    }
+
+                    // save documents
+                    int documentOrder = 0;
+                    foreach ( var binaryFileId in DocumentsState )
+                    {
+                        // Add or Update the activity type
+                        var document = documentsInDb.FirstOrDefault( i => i.BinaryFileId == binaryFileId );
+                        if ( document == null )
+                        {
+                            document = new BenevolenceRequestDocument();
+                            document.BenevolenceRequestId = benevolenceRequest.Id;
+                            benevolenceRequest.Documents.Add( document );
+                        }
+                        document.BinaryFileId = binaryFileId;
+                        document.Order = documentOrder;
+                        documentOrder++;
+                    }
+                    rockContext.SaveChanges();
+
+                    // redirect back to parent
                     var personId = this.PageParameter( "PersonId" ).AsIntegerOrNull();
                     var qryParams = new Dictionary<string, string>();
                     if ( personId.HasValue )
@@ -458,8 +524,8 @@ namespace RockWeb.Blocks.Finance
                     lapAddress.SetValue( person.GetHomeLocation() );
                     lapAddress.Enabled = false;
 
-                    // set the campus but not on page load, this event is called on page load also
-                    if ( !string.IsNullOrWhiteSpace( hfPersonLoaded.Value ) )
+                    // set the campus but not on page load (e will be null), this event is called on page load also
+                    if ( e != null && !cpCampus.SelectedCampusId.HasValue )
                     {
                         cpCampus.SelectedCampusId = person.GetCampus().Id;
                     }
@@ -482,9 +548,68 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
+        protected void fileUpDoc_FileUploaded( object sender, EventArgs e )
+        {
+            var fileUpDoc = (Rock.Web.UI.Controls.FileUploader)sender;
+
+            if ( fileUpDoc.BinaryFileId.HasValue )
+            {
+                DocumentsState.Add( fileUpDoc.BinaryFileId.Value );
+                BindDocuments( true );
+            }
+        }
+
+        /// <summary>
+        /// Handles the FileRemoved event of the fileUpDoc control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="FileUploaderEventArgs"/> instance containing the event data.</param>
+        protected void fileUpDoc_FileRemoved( object sender, FileUploaderEventArgs e )
+        {
+            var fileUpDoc = (Rock.Web.UI.Controls.FileUploader)sender;
+            if ( e.BinaryFileId.HasValue )
+            {
+                DocumentsState.Remove( e.BinaryFileId.Value );
+                BindDocuments( true );
+            }
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the DlDocuments control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="DataListItemEventArgs"/> instance containing the event data.</param>
+        private void DlDocuments_ItemDataBound( object sender, DataListItemEventArgs e )
+        {
+            Guid binaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.BENEVOLENCE_REQUEST_DOCUMENTS.AsGuid();
+            var fileupDoc = e.Item.FindControl( "fileupDoc" ) as Rock.Web.UI.Controls.FileUploader;
+            if ( fileupDoc != null )
+            {
+                fileupDoc.BinaryFileTypeGuid = binaryFileTypeGuid;
+            }
+        }
+
+
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Binds the documents.
+        /// </summary>
+        /// <param name="canEdit">if set to <c>true</c> [can edit].</param>
+        private void BindDocuments( bool canEdit )
+        {
+            var ds = DocumentsState.ToList();
+
+            if ( ds.Count() < 4 )
+            {
+                ds.Add( 0 );
+            }
+
+            dlDocuments.DataSource = ds;
+            dlDocuments.DataBind();
+        }
 
         /// <summary>
         /// Shows the detail.
@@ -588,6 +713,12 @@ namespace RockWeb.Blocks.Finance
 
             BindGridFromViewState();
 
+            DocumentsState = benevolenceRequest.Documents.OrderBy( s => s.Order ).Select( s => s.BinaryFileId ).ToList();
+            BindDocuments( true );
+
+            benevolenceRequest.LoadAttributes();
+            Rock.Attribute.Helper.AddEditControls( benevolenceRequest, phAttributes, true, BlockValidationGroup, 2 );
+
             // call the OnSelectPerson of the person picker which will update the UI based on the selected person
             ppPerson_SelectPerson( null, null );
         }
@@ -662,5 +793,7 @@ namespace RockWeb.Blocks.Finance
         }
 
         #endregion
+
+        
     }
 }
