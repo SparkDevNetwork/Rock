@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <views>
-  <mapping-views hash="b6b6030997e9b23d3a696a58f54411cc3118853cd06cc04c93bf03ee157fd7f4" conceptual-container="RockContext" store-container="CodeFirstDatabase">
+  <mapping-views hash="1291d781b95d15270b964971230af32331849392eba218e530d388af555bc326" conceptual-container="RockContext" store-container="CodeFirstDatabase">
     <view extent="CodeFirstDatabase.AttendanceCode"><![CDATA[
     SELECT VALUE -- Constructing AttendanceCode
         [CodeFirstDatabaseSchema.AttendanceCode](T1.AttendanceCode_Id, T1.AttendanceCode_IssueDateTime, T1.AttendanceCode_Code, T1.AttendanceCode_Guid, T1.AttendanceCode_ForeignId, T1.AttendanceCode_ForeignGuid, T1.AttendanceCode_ForeignKey)
@@ -2808,7 +2808,7 @@
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.Metric"><![CDATA[
     SELECT VALUE -- Constructing Metric
-        [CodeFirstDatabaseSchema.Metric](T1.Metric_Id, T1.Metric_IsSystem, T1.Metric_Title, T1.Metric_Subtitle, T1.Metric_Description, T1.Metric_IconCssClass, T1.Metric_IsCumulative, T1.Metric_SourceValueTypeId, T1.Metric_SourceSql, T1.Metric_DataViewId, T1.Metric_XAxisLabel, T1.Metric_YAxisLabel, T1.Metric_MetricChampionPersonAliasId, T1.Metric_AdminPersonAliasId, T1.Metric_ScheduleId, T1.Metric_LastRunDateTime, T1.Metric_CreatedDateTime, T1.Metric_ModifiedDateTime, T1.Metric_CreatedByPersonAliasId, T1.Metric_ModifiedByPersonAliasId, T1.Metric_Guid, T1.Metric_ForeignId, T1.Metric_ForeignGuid, T1.Metric_ForeignKey)
+        [CodeFirstDatabaseSchema.Metric](T1.Metric_Id, T1.Metric_IsSystem, T1.Metric_Title, T1.Metric_Subtitle, T1.Metric_Description, T1.Metric_IconCssClass, T1.Metric_IsCumulative, T1.Metric_SourceValueTypeId, T1.Metric_SourceSql, T1.Metric_DataViewId, T1.Metric_XAxisLabel, T1.Metric_YAxisLabel, T1.Metric_MetricChampionPersonAliasId, T1.Metric_AdminPersonAliasId, T1.Metric_ScheduleId, T1.Metric_LastRunDateTime, T1.Metric_NumericDataType, T1.Metric_CreatedDateTime, T1.Metric_ModifiedDateTime, T1.Metric_CreatedByPersonAliasId, T1.Metric_ModifiedByPersonAliasId, T1.Metric_Guid, T1.Metric_ForeignId, T1.Metric_ForeignGuid, T1.Metric_ForeignKey)
     FROM (
         SELECT 
             T.Id AS Metric_Id, 
@@ -2827,6 +2827,7 @@
             T.AdminPersonAliasId AS Metric_AdminPersonAliasId, 
             T.ScheduleId AS Metric_ScheduleId, 
             T.LastRunDateTime AS Metric_LastRunDateTime, 
+            CAST(T.NumericDataType AS [Edm.Int32]) AS Metric_NumericDataType, 
             T.CreatedDateTime AS Metric_CreatedDateTime, 
             T.ModifiedDateTime AS Metric_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS Metric_CreatedByPersonAliasId, 
@@ -6390,7 +6391,7 @@
     ) AS T1]]></view>
     <view extent="RockContext.Metrics"><![CDATA[
     SELECT VALUE -- Constructing Metrics
-        [Rock.Data.Metric](T1.Metric_Id, T1.Metric_IsSystem, T1.Metric_Title, T1.Metric_Subtitle, T1.Metric_Description, T1.Metric_IconCssClass, T1.Metric_IsCumulative, T1.Metric_SourceValueTypeId, T1.Metric_SourceSql, T1.Metric_DataViewId, T1.Metric_XAxisLabel, T1.Metric_YAxisLabel, T1.Metric_MetricChampionPersonAliasId, T1.Metric_AdminPersonAliasId, T1.Metric_ScheduleId, T1.Metric_LastRunDateTime, T1.Metric_CreatedDateTime, T1.Metric_ModifiedDateTime, T1.Metric_CreatedByPersonAliasId, T1.Metric_ModifiedByPersonAliasId, T1.Metric_Guid, T1.Metric_ForeignId, T1.Metric_ForeignGuid, T1.Metric_ForeignKey)
+        [Rock.Data.Metric](T1.Metric_Id, T1.Metric_IsSystem, T1.Metric_Title, T1.Metric_Subtitle, T1.Metric_Description, T1.Metric_IconCssClass, T1.Metric_IsCumulative, T1.Metric_SourceValueTypeId, T1.Metric_SourceSql, T1.Metric_DataViewId, T1.Metric_XAxisLabel, T1.Metric_YAxisLabel, T1.Metric_MetricChampionPersonAliasId, T1.Metric_AdminPersonAliasId, T1.Metric_ScheduleId, T1.Metric_LastRunDateTime, T1.Metric_NumericDataType, T1.Metric_CreatedDateTime, T1.Metric_ModifiedDateTime, T1.Metric_CreatedByPersonAliasId, T1.Metric_ModifiedByPersonAliasId, T1.Metric_Guid, T1.Metric_ForeignId, T1.Metric_ForeignGuid, T1.Metric_ForeignKey)
     FROM (
         SELECT 
             T.Id AS Metric_Id, 
@@ -6409,6 +6410,7 @@
             T.AdminPersonAliasId AS Metric_AdminPersonAliasId, 
             T.ScheduleId AS Metric_ScheduleId, 
             T.LastRunDateTime AS Metric_LastRunDateTime, 
+            CAST(T.NumericDataType AS [Rock.Data.MetricNumericDataType]) AS Metric_NumericDataType, 
             T.CreatedDateTime AS Metric_CreatedDateTime, 
             T.ModifiedDateTime AS Metric_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS Metric_CreatedByPersonAliasId, 

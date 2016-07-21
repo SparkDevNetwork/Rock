@@ -126,8 +126,11 @@ namespace Rock.Model
             target.EnableLocationSchedules = source.EnableLocationSchedules;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.GroupAttendanceRequiresLocation = source.GroupAttendanceRequiresLocation;
+            target.GroupAttendanceRequiresSchedule = source.GroupAttendanceRequiresSchedule;
             target.GroupCapacityRule = source.GroupCapacityRule;
             target.GroupMemberTerm = source.GroupMemberTerm;
+            target.GroupsRequireCampus = source.GroupsRequireCampus;
             target.GroupTerm = source.GroupTerm;
             target.GroupTypePurposeValueId = source.GroupTypePurposeValueId;
             target.IconCssClass = source.IconCssClass;
