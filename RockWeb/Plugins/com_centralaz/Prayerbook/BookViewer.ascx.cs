@@ -346,7 +346,11 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
 
                 if ( !string.IsNullOrEmpty( em.SubMinistry ) )
                 {
-                    em.SubMinistry = DefinedValueCache.Read( em.SubMinistry ).Value;
+                    var sm = DefinedValueCache.Read( em.SubMinistry );
+                    if ( sm != null && !string.IsNullOrEmpty( sm.Value ) )
+                    {
+                        em.SubMinistry = sm.Value;
+                    }
                 }
 
                 entriesWithMinistry.Add( em );
