@@ -4,7 +4,7 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
-            <asp:HiddenField ID="hfPersonLoaded" runat="server" />
+            <asp:HiddenField ID="hfBenevolenceRequestId" runat="server" />
             <div class="panel-heading">
                 <h1 class="panel-title pull-left"><i class="fa fa-paste"></i> Benevolence Request</h1>
 

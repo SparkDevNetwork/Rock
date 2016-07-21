@@ -139,6 +139,17 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
+                var rockContext = new RockContext();
+                BenevolenceRequest item = new BenevolenceRequestService(rockContext).Get( hfBenevolenceRequestId.ValueAsInt());
+                if (item == null )
+                {
+                    item = new BenevolenceRequest();
+                }
+                item.LoadAttributes();
+
+                phAttributes.Controls.Clear();
+                Rock.Attribute.Helper.AddEditControls( item, phAttributes, false, BlockValidationGroup, 2 );
+
                 confirmExit.Enabled = true;
             }
         }
@@ -390,7 +401,15 @@ namespace RockWeb.Blocks.Finance
                         benevolenceRequestService.Add( benevolenceRequest );
                     }
 
-                    rockContext.SaveChanges();
+                    // get attributes
+                    benevolenceRequest.LoadAttributes();
+                    Rock.Attribute.Helper.GetEditValues( phAttributes, benevolenceRequest );
+
+                    rockContext.WrapTransaction( () =>
+                    {
+                        rockContext.SaveChanges();
+                        benevolenceRequest.SaveAttributeValues( rockContext );
+                    } );
 
                     // update related documents
                     var documentsService = new BenevolenceRequestDocumentService( rockContext );
@@ -524,14 +543,12 @@ namespace RockWeb.Blocks.Finance
                     lapAddress.SetValue( person.GetHomeLocation() );
                     lapAddress.Enabled = false;
 
-                    // set the campus but not on page load (e will be null), this event is called on page load also
-                    if ( e != null && !cpCampus.SelectedCampusId.HasValue )
+                    // set the campus but not on page load (e will be null) unless from the person profile page (in which case BenevolenceRequestId in the query string will be 0)
+                    int? requestId = Request["BenevolenceRequestId"].AsIntegerOrNull();
+                    
+                    if ( !cpCampus.SelectedCampusId.HasValue && (e != null || (requestId.HasValue && requestId ==0)) )
                     {
                         cpCampus.SelectedCampusId = person.GetCampus().Id;
-                    }
-                    else
-                    {
-                        hfPersonLoaded.Value = "loaded";
                     }
                 }
             }
@@ -602,7 +619,7 @@ namespace RockWeb.Blocks.Finance
         {
             var ds = DocumentsState.ToList();
 
-            if ( ds.Count() < 4 )
+            if ( ds.Count() < 6 )
             {
                 ds.Add( 0 );
             }
@@ -721,6 +738,8 @@ namespace RockWeb.Blocks.Finance
 
             // call the OnSelectPerson of the person picker which will update the UI based on the selected person
             ppPerson_SelectPerson( null, null );
+
+            hfBenevolenceRequestId.Value = benevolenceRequest.Id.ToString();
         }
 
         /// <summary>
