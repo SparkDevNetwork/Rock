@@ -20,11 +20,12 @@
                             <Rock:RockDropDownList ID="ddlCaseWorker" runat="server" Label="Case Worker" />
                             <Rock:RockDropDownList ID="ddlResult" runat="server" Label="Result" DataTextField="Value" DataValueField="Id" />
                             <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Request Status" DataTextField="Value" DataValueField="Id" />
+                            <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
                         </Rock:GridFilter>
                         <Rock:Grid ID="gList" runat="server" DisplayType="Full" AllowSorting="true" OnRowDataBound="gList_RowDataBound" OnRowSelected="gList_Edit">
                             <Columns>
                                 <Rock:RockBoundField DataField="RequestDateTime" HeaderText="Date" DataFormatString="{0:d}" SortExpression="RequestDateTime" />
-
+                                <Rock:RockBoundField DataField="Campus.Name" HeaderText="Campus" SortExpression="Campus.Name" />
                                 <Rock:RockTemplateField SortExpression="RequestedByPersonAlias.Person.LastName, RequestedByPersonAlias.Person.NickName, LastName, FirstName" HeaderText="Name">
                                     <ItemTemplate>
                                         <asp:Literal ID="lName" runat="server" />

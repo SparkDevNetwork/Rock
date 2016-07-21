@@ -128,6 +128,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( !Page.IsPostBack )
             {
+                cpCampus.Campuses = CampusCache.All();
                 ShowDetail( PageParameter( "BenevolenceRequestId" ).AsInteger() );
             }
             else
@@ -295,6 +296,8 @@ namespace RockWeb.Blocks.Finance
                 benevolenceRequest.Email = ebEmail.Text;
                 benevolenceRequest.RequestText = dtbRequestText.Text;
                 benevolenceRequest.ResultSummary = dtbSummary.Text;
+                benevolenceRequest.CampusId = cpCampus.SelectedCampusId;
+                benevolenceRequest.ProvidedNextSteps = dtbProvidedNextSteps.Text;
                 benevolenceRequest.GovernmentId = dtbGovernmentId.Text;
 
                 if ( lapAddress.Location != null )
@@ -454,6 +457,16 @@ namespace RockWeb.Blocks.Finance
 
                     lapAddress.SetValue( person.GetHomeLocation() );
                     lapAddress.Enabled = false;
+
+                    // set the campus but not on page load, this event is called on page load also
+                    if ( !string.IsNullOrWhiteSpace( hfPersonLoaded.Value ) )
+                    {
+                        cpCampus.SelectedCampusId = person.GetCampus().Id;
+                    }
+                    else
+                    {
+                        hfPersonLoaded.Value = "loaded";
+                    }
                 }
             }
             else
@@ -509,7 +522,17 @@ namespace RockWeb.Blocks.Finance
             ebEmail.Text = benevolenceRequest.Email;
             dtbRequestText.Text = benevolenceRequest.RequestText;
             dtbSummary.Text = benevolenceRequest.ResultSummary;
+            dtbProvidedNextSteps.Text = benevolenceRequest.ProvidedNextSteps;
             dpRequestDate.SelectedDate = benevolenceRequest.RequestDateTime;
+
+            if (benevolenceRequest.Campus != null )
+            {
+                cpCampus.SelectedCampusId = benevolenceRequest.CampusId;
+            }
+            else
+            {
+                cpCampus.SelectedIndex = 0;
+            }
 
             if ( benevolenceRequest.RequestedByPersonAlias != null )
             {

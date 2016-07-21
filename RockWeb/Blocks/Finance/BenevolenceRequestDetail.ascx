@@ -4,7 +4,7 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
-
+            <asp:HiddenField ID="hfPersonLoaded" runat="server" />
             <div class="panel-heading">
                 <h1 class="panel-title pull-left"><i class="fa fa-paste"></i> Benevolence Request</h1>
 
@@ -15,8 +15,11 @@
             <div class="panel-body">
                 <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
                 <div class="row">
-                    <div class="col-md-12">
+                    <div class="col-md-8">
                         <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" OnSelectPerson="ppPerson_SelectPerson" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="RequestedByPersonAlias" />
+                    </div>
+                    <div class="col-md-4">
+                        <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
                     </div>
                 </div>
                 <div class="row">
@@ -42,7 +45,19 @@
                 </div>
 
                 <Rock:DataTextBox ID="dtbRequestText" runat="server" Label="Description of Request" TextMode="MultiLine" Rows="4" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="RequestText" />
-                <Rock:DataTextBox ID="dtbSummary" runat="server" Label="Result Summary" TextMode="MultiLine" Rows="3" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="ResultSummary" />
+               
+                <hr />
+                <h4>Results</h4>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:DataTextBox ID="dtbSummary" runat="server" Label="Result Summary" TextMode="MultiLine" Rows="3" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="ResultSummary" />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:DataTextBox ID="dtbProvidedNextSteps" runat="server" Label="Provided Next Steps" TextMode="MultiLine" Rows="3" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="ResultSummary" />
+                    </div>
+                </div>
+                
                 <Rock:Grid ID="gResults" runat="server" DisplayType="Light" AllowSorting="true" ShowActionRow="true" RowItemText="Result" AllowPaging="false" OnRowSelected="gResults_RowSelected">
                     <Columns>
                         <Rock:RockBoundField DataField="ResultTypeName" HeaderText="Result Type" SortExpression="ResultType" />

@@ -56,7 +56,7 @@ namespace RockWeb.Blocks.Finance
 
         #endregion
 
-        #region
+        #region Private Members
 
         /// <summary>
         /// Holds whether or not the person can add, edit, and delete.
@@ -141,7 +141,7 @@ namespace RockWeb.Blocks.Finance
             rFilter.SaveUserPreference( "Case Worker", "Case Worker", ddlCaseWorker.SelectedItem.Value );
             rFilter.SaveUserPreference( "Result", "Result", ddlResult.SelectedItem.Value );
             rFilter.SaveUserPreference( "Status", "Status", ddlStatus.SelectedItem.Value );
-
+            rFilter.SaveUserPreference( "Campus", "Campus", cpCampus.SelectedCampusId.ToString() );
             BindGrid();
         }
 
@@ -173,6 +173,16 @@ namespace RockWeb.Blocks.Finance
 
                 case "Last Name":
                     return;
+
+                case "Campus":
+                    {
+                        int? campusId = e.Value.AsIntegerOrNull();
+                        if( campusId.HasValue )
+                        {
+                            e.Value = CampusCache.Read( campusId.Value ).Name;
+                        }
+                        return;
+                    }
 
                 case "Government ID":
                     return;
@@ -362,6 +372,9 @@ namespace RockWeb.Blocks.Finance
             drpDate.LowerValue = rFilter.GetUserPreference( "Start Date" ).AsDateTime();
             drpDate.UpperValue = rFilter.GetUserPreference( "End Date" ).AsDateTime();
 
+            cpCampus.Campuses = CampusCache.All();
+            cpCampus.SelectedCampusId = rFilter.GetUserPreference( "Campus" ).AsInteger();
+
             // hide the First/Last name filter if this is being used as a Person block
             tbFirstName.Visible = TargetPerson == null;
             tbLastName.Visible = TargetPerson == null;
@@ -413,6 +426,12 @@ namespace RockWeb.Blocks.Finance
             if ( endDate != null )
             {
                 qry = qry.Where( b => b.RequestDateTime <= endDate );
+            }
+
+            // Filter by Campus
+            if ( cpCampus.SelectedCampusId.HasValue )
+            {
+                qry = qry.Where( b => b.CampusId == cpCampus.SelectedCampusId );
             }
 
             if ( TargetPerson != null )
