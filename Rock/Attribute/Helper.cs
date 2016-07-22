@@ -924,6 +924,26 @@ namespace Rock.Attribute
         /// <param name="supressOrdering">if set to <c>true</c> supresses reording (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
         public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue, string validationGroup, List<string> exclude, bool supressOrdering = false )
         {
+            AddEditControls( item, parentControl, setValue, validationGroup, exclude, supressOrdering, null );
+        }
+
+        public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue, string validationGroup, int? numberOfColumns )
+        {
+            AddEditControls( item, parentControl, setValue, validationGroup, new List<string>(), false, numberOfColumns );
+        }
+
+        /// <summary>
+        /// Adds the edit controls.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="setValue">if set to <c>true</c> [set value].</param>
+        /// <param name="validationGroup">The validation group.</param>
+        /// <param name="numberOfColumns">The number of columns.</param>
+        /// <param name="exclude">The exclude.</param>
+        /// <param name="supressOrdering">if set to <c>true</c> [supress ordering].</param>
+        public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue, string validationGroup, List<string> exclude, bool supressOrdering, int? numberOfColumns = null )
+        {
             if ( item != null && item.Attributes != null )
             {
                 foreach ( var attributeCategory in GetAttributeCategories( item, false, false, supressOrdering ) )
@@ -931,7 +951,7 @@ namespace Rock.Attribute
                     AddEditControls(
                         attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty,
                         attributeCategory.Attributes.Select( a => a.Key ).ToList(),
-                        item, parentControl, validationGroup, setValue, exclude );
+                        item, parentControl, validationGroup, setValue, exclude, numberOfColumns );
                 }
             }
         }
@@ -948,6 +968,28 @@ namespace Rock.Attribute
         /// <param name="exclude">The exclude.</param>
         public static void AddEditControls( string category, List<string> attributeKeys, IHasAttributes item, Control parentControl, string validationGroup, bool setValue, List<string> exclude )
         {
+            AddEditControls( category, attributeKeys, item, parentControl, validationGroup, setValue, exclude, null );
+        }
+
+        /// <summary>
+        /// Adds the edit controls.
+        /// </summary>
+        /// <param name="category">The category.</param>
+        /// <param name="attributeKeys">The attribute keys.</param>
+        /// <param name="item">The item.</param>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="validationGroup">The validation group.</param>
+        /// <param name="setValue">if set to <c>true</c> [set value].</param>
+        /// <param name="exclude">The exclude.</param>
+        /// <param name="numberOfColumns">The number of columns.</param>
+        public static void AddEditControls( string category, List<string> attributeKeys, IHasAttributes item, Control parentControl, string validationGroup, bool setValue, List<string> exclude, int? numberOfColumns )
+        {
+            // ensure valid number of columns
+            if ( numberOfColumns.HasValue && numberOfColumns.Value > 12)
+            {
+                numberOfColumns = 12;
+            }
+
             HtmlGenericControl fieldSet;
             if ( parentControl is DynamicControlsPanel )
             {
@@ -964,9 +1006,33 @@ namespace Rock.Attribute
             if ( !string.IsNullOrEmpty( category ) )
             {
                 HtmlGenericControl legend = new HtmlGenericControl( "h4" );
-                fieldSet.Controls.Add( legend );
+
+                if ( numberOfColumns.HasValue )
+                {
+                    HtmlGenericControl row = new HtmlGenericControl( "div" );
+                    row.AddCssClass( "row" );
+                    fieldSet.Controls.Add( row );
+
+                    HtmlGenericControl col = new HtmlGenericControl( "div" );
+                    col.AddCssClass( "col-md-12" );
+                    row.Controls.Add( col );
+
+                    col.Controls.Add( legend );
+                }
+                else
+                {
+                    fieldSet.Controls.Add( legend );
+                }
+                
                 legend.Controls.Clear();
                 legend.InnerText = category.Trim();
+            }
+
+            HtmlGenericControl attributeRow = new HtmlGenericControl( "div" );
+            if ( numberOfColumns.HasValue )
+            {
+                fieldSet.Controls.Add( attributeRow );
+                attributeRow.AddCssClass( "row" );
             }
 
             foreach ( string key in attributeKeys )
@@ -976,7 +1042,20 @@ namespace Rock.Attribute
                 if ( !exclude.Contains( attribute.Name ) && !exclude.Contains( attribute.Key ) )
                 {
                     // Add the control for editing the attribute value
-                    attribute.AddControl( fieldSet.Controls, item.AttributeValues[attribute.Key].Value, validationGroup, setValue, true );
+
+                    if ( numberOfColumns.HasValue )
+                    {
+                        int colSize = (int)Math.Ceiling((double)12 / numberOfColumns.Value);
+
+                        HtmlGenericControl attributeCol = new HtmlGenericControl( "div" );
+                        attributeRow.Controls.Add( attributeCol );
+                        attributeCol.AddCssClass( string.Format( "col-md-{0}", colSize ) );
+                        attribute.AddControl( attributeCol.Controls, item.AttributeValues[attribute.Key].Value, validationGroup, setValue, true );
+                    }
+                    else
+                    {
+                        attribute.AddControl( fieldSet.Controls, item.AttributeValues[attribute.Key].Value, validationGroup, setValue, true );
+                    }
                 }
             }
         }
@@ -1011,7 +1090,6 @@ namespace Rock.Attribute
         {
             foreach ( var attributeCategory in attributeCategories )
             {
-
                 if ( showHeading )
                 {
                     HtmlGenericControl header = new HtmlGenericControl( "h4" );

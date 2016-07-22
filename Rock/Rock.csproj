@@ -586,6 +586,7 @@
     <Compile Include="Model\Auth.cs" />
     <Compile Include="Model\AuthService.Partial.cs" />
     <Compile Include="Model\BackgroundCheck.cs" />
+    <Compile Include="Model\BenevolenceRequestDocument.cs" />
     <Compile Include="Model\BenevolenceRequest.cs" />
     <Compile Include="Model\BenevolenceResult.cs" />
     <Compile Include="Model\BinaryFile.cs" />
@@ -609,6 +610,7 @@
     <Compile Include="Model\CodeGenerated\AuditService.cs" />
     <Compile Include="Model\CodeGenerated\AuthService.cs" />
     <Compile Include="Model\CodeGenerated\BackgroundCheckService.cs" />
+    <Compile Include="Model\CodeGenerated\BenevolenceRequestDocumentService.cs" />
     <Compile Include="Model\CodeGenerated\BenevolenceRequestService.cs" />
     <Compile Include="Model\CodeGenerated\BenevolenceResultService.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
