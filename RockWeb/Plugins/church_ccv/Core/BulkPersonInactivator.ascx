@@ -47,7 +47,7 @@
                 <Rock:RockLiteral ID="lRecordCount" runat="server" Label="Record Count" />
 
                 <Rock:RockLiteral ID="lUpdatedRecordStatus" runat="server" Label="Update Record Status" />
-                <Rock:RockLiteral ID="lRecordStatusReason" runat="server" Label="Update Record Status Reason" />
+                <Rock:DefinedValuePicker ID="dvpRecordStatusReason" runat="server" Label="Update Record Status Reason" Required="true" />
                 <Rock:RockTextBox ID="tbInactiveReasonNote" runat="server" Label="Inactive Reason Note" Text="Inactive for 8+ months" />
 
                 <div class="js-notification">

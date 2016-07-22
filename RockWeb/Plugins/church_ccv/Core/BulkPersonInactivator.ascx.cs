@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Microsoft.AspNet.SignalR;
@@ -44,6 +45,7 @@ namespace RockWeb.Plugins.church_ccv.Core
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+            dvpRecordStatusReason.DefinedTypeId = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() ).Id;
         }
 
         /// <summary>
@@ -88,7 +90,7 @@ namespace RockWeb.Plugins.church_ccv.Core
             var recordStatusInactive = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
             var inactiveReasonNoActivity = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_NO_ACTIVITY.AsGuid() );
             lUpdatedRecordStatus.Text = recordStatusInactive.Value;
-            lRecordStatusReason.Text = inactiveReasonNoActivity.Value;
+            dvpRecordStatusReason.SelectedValue = inactiveReasonNoActivity.Id.ToString();
             lRecordCount.Text = "-";
 
             var dataViewId = dvpDataview.SelectedValue.AsIntegerOrNull();
@@ -135,14 +137,16 @@ namespace RockWeb.Plugins.church_ccv.Core
             if ( personIds != null )
             {
                 var recordStatusInactive = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
-                var inactiveReasonNoActivity = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_NO_ACTIVITY.AsGuid() );
+                var inactiveReasonValue = DefinedValueCache.Read( dvpRecordStatusReason.SelectedValue.AsInteger() );
                 btnCancel.Visible = true;
                 _cancel = false;
 
+                var threadContext = HttpContext.Current;
 
                 System.Threading.Tasks.Task.Run( () =>
                 {
-                    int currentPersonId = 0;
+                    HttpContext.Current = threadContext;
+                    int _personId = 0;
                     try
                     {
                         int progress = 0;
@@ -152,7 +156,7 @@ namespace RockWeb.Plugins.church_ccv.Core
                         int lastPercent = -1;
                         foreach ( var personId in personIds )
                         {
-                            currentPersonId = personId;
+                            _personId = personId;
                             if ( _cancel )
                             {
                                 // if the webpage time to load back up on the client
@@ -166,13 +170,14 @@ namespace RockWeb.Plugins.church_ccv.Core
                                 var personService = new PersonService( rockContext );
 
                                 var person = personService.Get( personId );
-                                History.EvaluateChange( changes, "Record Status", DefinedValueCache.GetName( person.RecordStatusValueId ), recordStatusInactive.Value );
+                                
                                 if ( person.RecordStatusValueId != recordStatusInactive.Id )
                                 {
+                                    History.EvaluateChange( changes, "Record Status", DefinedValueCache.GetName( person.RecordStatusValueId ), recordStatusInactive.Value );
                                     person.RecordStatusValueId = recordStatusInactive.Id;
 
-                                    History.EvaluateChange( changes, "Inactive Reason", DefinedValueCache.GetName( person.RecordStatusReasonValueId ), inactiveReasonNoActivity.Value );
-                                    person.RecordStatusReasonValueId = inactiveReasonNoActivity.Id;
+                                    History.EvaluateChange( changes, "Inactive Reason", DefinedValueCache.GetName( person.RecordStatusReasonValueId ), inactiveReasonValue.Value );
+                                    person.RecordStatusReasonValueId = inactiveReasonValue.Id;
 
                                     if ( !string.IsNullOrWhiteSpace( newInactiveReasonNote ) )
                                     {
@@ -202,17 +207,18 @@ namespace RockWeb.Plugins.church_ccv.Core
                             }
                         }
 
-                        _hubContext.Clients.All.receiveNotification( _cancel ? "cancelled" : "completed", string.Format(
+                        _hubContext.Clients.All.receiveNotification( "completed", string.Format(
                             @"
 <pre>
+<h2>{3}</h2>
 {0} records selected: 
     {1} records inactivated successfully
     {2} already set to inactive
-</pre>", count, countInactivated, countAlreadyInactive ) );
+</pre>", count, countInactivated, countAlreadyInactive, _cancel ? "Cancelled" : "Completed" ) );
                     }
                     catch ( Exception ex )
                     {
-                        _hubContext.Clients.All.receiveNotification( "exception", string.Format( "PersonId:{0}, Ex:{1}", currentPersonId, ex.Message ) );
+                        _hubContext.Clients.All.receiveNotification( "exception", string.Format( "PersonId:{0}, Ex:{1}", _personId, ex.Message ) );
                     }
                 } );
             }
