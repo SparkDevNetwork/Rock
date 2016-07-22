@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// BenevolenceRequest Service class
+    /// BenevolenceRequestDocument Service class
     /// </summary>
-    public partial class BenevolenceRequestService : Service<BenevolenceRequest>
+    public partial class BenevolenceRequestDocumentService : Service<BenevolenceRequestDocument>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="BenevolenceRequestService"/> class
+        /// Initializes a new instance of the <see cref="BenevolenceRequestDocumentService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public BenevolenceRequestService(RockContext context) : base(context)
+        public BenevolenceRequestDocumentService(RockContext context) : base(context)
         {
         }
 
@@ -48,7 +48,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( BenevolenceRequest item, out string errorMessage )
+        public bool CanDelete( BenevolenceRequestDocument item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -58,55 +58,41 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class BenevolenceRequestExtensionMethods
+    public static partial class BenevolenceRequestDocumentExtensionMethods
     {
         /// <summary>
-        /// Clones this BenevolenceRequest object to a new BenevolenceRequest object
+        /// Clones this BenevolenceRequestDocument object to a new BenevolenceRequestDocument object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static BenevolenceRequest Clone( this BenevolenceRequest source, bool deepCopy )
+        public static BenevolenceRequestDocument Clone( this BenevolenceRequestDocument source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as BenevolenceRequest;
+                return source.Clone() as BenevolenceRequestDocument;
             }
             else
             {
-                var target = new BenevolenceRequest();
+                var target = new BenevolenceRequestDocument();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another BenevolenceRequest object to this BenevolenceRequest object
+        /// Copies the properties from another BenevolenceRequestDocument object to this BenevolenceRequestDocument object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this BenevolenceRequest target, BenevolenceRequest source )
+        public static void CopyPropertiesFrom( this BenevolenceRequestDocument target, BenevolenceRequestDocument source )
         {
             target.Id = source.Id;
-            target.CampusId = source.CampusId;
-            target.CaseWorkerPersonAliasId = source.CaseWorkerPersonAliasId;
-            target.CellPhoneNumber = source.CellPhoneNumber;
-            target.ConnectionStatusValueId = source.ConnectionStatusValueId;
-            target.Email = source.Email;
-            target.FirstName = source.FirstName;
+            target.BenevolenceRequestId = source.BenevolenceRequestId;
+            target.BinaryFileId = source.BinaryFileId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.GovernmentId = source.GovernmentId;
-            target.HomePhoneNumber = source.HomePhoneNumber;
-            target.LastName = source.LastName;
-            target.LocationId = source.LocationId;
-            target.ProvidedNextSteps = source.ProvidedNextSteps;
-            target.RequestDateTime = source.RequestDateTime;
-            target.RequestedByPersonAliasId = source.RequestedByPersonAliasId;
-            target.RequestStatusValueId = source.RequestStatusValueId;
-            target.RequestText = source.RequestText;
-            target.ResultSummary = source.ResultSummary;
-            target.WorkPhoneNumber = source.WorkPhoneNumber;
+            target.Order = source.Order;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
