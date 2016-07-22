@@ -40,7 +40,7 @@
     <div class="form-group">
       <label for="percentage">Percentage</label>
       <div class="row">
-        <div class="col-xs-5 col-sm-3">
+        <div class="col-xs-6 col-sm-5 col-md-4 col-lg-3">
           <div class="input-group">
             <input class="form-control input-lg text-center" type="number" id="percentage" value="10" min="0" max="100" inputmode="numeric" pattern="[0-9]*">
             <div class="input-group-addon">%</div>
