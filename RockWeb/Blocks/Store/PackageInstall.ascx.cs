@@ -135,7 +135,7 @@ namespace RockWeb.Blocks.Store
             {
                 switch ( installResponse.PurchaseResult )
                 {
-                    case PurchaseResult.AuthenicationFailed:
+                    case PurchaseResult.AuthenticationFailed:
                         lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Could Not Authenticate</strong> {0}</div>", installResponse.Message );
                         break;
                     case PurchaseResult.Error:
