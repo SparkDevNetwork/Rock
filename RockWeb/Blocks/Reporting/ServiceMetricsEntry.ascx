@@ -27,16 +27,10 @@
 
             <asp:Panel ID="pnlMetrics" runat="server" Visible="false">
 
-                <div class="form-inline margin-b-lg">
-                    <div class="form-group">
-                        <Rock:ButtonDropDownList ID="bddlCampus" runat="server" Label="Location" OnSelectionChanged="bddl_SelectionChanged" />
-                    </div>
-                    <div class="form-group">
-                        <Rock:ButtonDropDownList ID="bddlWeekend" runat="server" Label="Week of" OnSelectionChanged="bddl_SelectionChanged" />
-                    </div>
-                    <div class="form-group">
-                        <Rock:ButtonDropDownList ID="bddlService" runat="server" Label="Service Time" OnSelectionChanged="bddl_SelectionChanged" />
-                    </div>
+                <div class="btn-group btn-group-justified margin-b-lg" >
+                    <Rock:ButtonDropDownList ID="bddlCampus" runat="server" OnSelectionChanged="bddl_SelectionChanged" />
+                    <Rock:ButtonDropDownList ID="bddlWeekend" runat="server" OnSelectionChanged="bddl_SelectionChanged" />
+                    <Rock:ButtonDropDownList ID="bddlService" runat="server" OnSelectionChanged="bddl_SelectionChanged" />
                 </div>
 
                 <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
