@@ -65,6 +65,73 @@
                         In Bootstrap 3 inputs are <em>display:block;</em>. If you need these sized controls to align horizontally, consider wrapping them with the <em>form-control-group</em> class.
                     </div>
 
+                    <h2 runat="server">Horizontal Forms</h2>
+                    <p>While Rock uses a similar approach to Bootstrap, we've made horizontal forms a bit easier to help facilitate their use when creating forms in workflows and event
+                        registrations. Below is the syntax for declaring a horizontal form.
+                    </p>
+                    <div runat="server" class="r-example">
+<div class="form-horizontal label-sm">
+  <div class="form-group">
+    <label for="inputEmail3" class="control-label">Email</label>
+    <div class="control-wrapper">
+      <input type="email" class="form-control" id="inputEmail3" placeholder="Email">
+    </div>
+  </div>
+</div>
+                    </div>
+
+                    <p>When using this in form generators you'll need to complete two steps. The first is adding a wrapping <code>&lt;div class=&quot;form-group &quot;&gt;</code> in your pre/post fields.</p>
+
+                    <p>The second is an additional class on the form-horizontal element that determines how wide the label column should be. Options include:</p>
+
+                    <ul>
+                        <li><strong>label-sm: </strong> Label column of 2, field column of 10</li>
+                        <li><strong>label-md: </strong> Label column of 4, field column of 8</li>
+                        <li><strong>label-lg: </strong> Label column of 6, field column of 6</li>
+                        <li><strong>label-xl: </strong> Label column of 8, field column of 4</li>
+                    </ul>
+
+                    <div runat="server" class="r-example">
+<div class="form-horizontal label-sm">
+  <div class="form-group">
+    <label for="inputEmail3" class="control-label">Email</label>
+    <div class="control-wrapper">
+      <input type="email" class="form-control" id="inputEmail3" placeholder="Email">
+    </div>
+  </div>
+</div>
+
+<div class="form-horizontal label-md">
+  <div class="form-group">
+    <label for="inputEmail3" class="control-label">Email</label>
+    <div class="control-wrapper">
+      <input type="email" class="form-control" id="inputEmail3" placeholder="Email">
+    </div>
+  </div>
+</div>
+
+<div class="form-horizontal label-lg">
+  <div class="form-group">
+    <label for="inputEmail3" class="control-label">Email</label>
+    <div class="control-wrapper">
+      <input type="email" class="form-control" id="inputEmail3" placeholder="Email">
+    </div>
+  </div>
+</div>
+
+<div class="form-horizontal label-xl">
+  <div class="form-group">
+    <label for="inputEmail3" class="control-label">Email</label>
+    <div class="control-wrapper">
+      <input type="email" class="form-control" id="inputEmail3" placeholder="Email">
+    </div>
+  </div>
+</div>
+
+
+                    </div>
+
+
                     <h2 runat="server">Margins and Padding</h2>
 
                     <div class="alert alert-warning">
@@ -380,11 +447,6 @@
                     <a id="MergeFieldPicker"></a>
                     <div runat="server" class="r-example">
                         <Rock:MergeFieldPicker ID="mfpExample" runat="server" Label="Rock:MergeFieldPicker" />
-                    </div>
-
-                    <a id="MetricEntityPicker"></a>
-                    <div runat="server" class="r-example">
-                        <Rock:MetricEntityPicker ID="mepExample" runat="server" Label="Rock:MetricEntityPicker" />
                     </div>
 
                     <h2 runat="server">BinaryFilePicker, BinaryFileTypePicker</h2>

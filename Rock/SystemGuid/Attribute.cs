@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,6 +27,11 @@ namespace Rock.SystemGuid
         /// The global email link preference
         /// </summary>
         public const string GLOBAL_EMAIL_LINK_PREFERENCE = "F1BECEF9-1047-E89F-4CC8-8F856750E5D0";
+
+        /// <summary>
+        /// The global enabled lava commands
+        /// </summary>
+        public const string GLOBAL_ENABLED_LAVA_COMMANDS = "933CFB7D-C9E1-BDAE-40AD-231002A91626";
 
         /// <summary>
         /// The Facebook link attribute

@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -272,7 +272,7 @@ namespace RockWeb.Blocks.Administration
         private string GetRoutesInfo()
         {
             var routes = new SortedDictionary<string, System.Web.Routing.Route>();
-            foreach ( System.Web.Routing.Route route in System.Web.Routing.RouteTable.Routes )
+            foreach ( System.Web.Routing.Route route in System.Web.Routing.RouteTable.Routes.OfType<System.Web.Routing.Route>() )
             {
                 if ( !routes.ContainsKey( route.Url ) ) routes.Add( route.Url, route );
             }

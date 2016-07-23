@@ -75,7 +75,7 @@
                     <div class="panel-body">
                 
                         <div class="grid grid-panel">
-                            <Rock:Grid ID="gLocations" runat="server" AllowSorting="true" AllowPaging="false" DisplayType="Light">
+                            <Rock:Grid ID="gLocations" runat="server" AllowSorting="true" AllowPaging="false" DisplayType="Light" RowItemText="Address">
                                 <Columns>
                                     <Rock:RockTemplateField HeaderText="Type">
                                         <ItemTemplate>
@@ -126,6 +126,15 @@
 
                     </div>
                 </div>
+
+                <asp:Panel ID="pnlAttributes" runat="server" CssClass="panel panel-widget">
+                    <div class="panel-heading clearfix">
+                        <h4 class="panel-title pull-left"><%=GroupTypeName %> Attributes</h4>
+                    </div>
+                    <div class="panel-body">
+                        <asp:PlaceHolder ID="phGroupAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                    </div>
+                </asp:Panel>
 
                 <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />

@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -293,6 +293,8 @@ namespace RockWeb.Blocks.WorkFlow
                 }
                 if ( _workflow != null )
                 {
+                    hlblWorkflowId.Text = _workflow.WorkflowId;
+
                     _workflow.LoadAttributes();
                     foreach ( var activity in _workflow.Activities )
                     {
@@ -489,6 +491,15 @@ namespace RockWeb.Blocks.WorkFlow
 
                 lheadingText.Text = form.Header.ResolveMergeFields( mergeFields );
                 lFootingText.Text = form.Footer.ResolveMergeFields( mergeFields );
+            }
+
+            if ( _workflow != null && _workflow.CreatedDateTime.HasValue )
+            {
+                hlblDateAdded.Text = String.Format( "Added: {0}", _workflow.CreatedDateTime.Value.ToShortDateString() );
+            }
+            else
+            {
+                hlblDateAdded.Visible = false;
             }
 
             phAttributes.Controls.Clear();

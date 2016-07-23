@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,6 +29,8 @@ namespace Rock.Migrations.HotFixMigrations
         /// </summary>
         public override void Up()
         {
+// NOTE: This was updated again in v5.0
+/*
             Sql( @"
 DECLARE @AttributeId int = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = '01C9BA59-D8D4-4137-90A6-B3C06C70BBC3')
 DECLARE @EntityId int = (SELECT TOP 1 [Id] FROM [PersonBadge] WHERE [Guid] = '66972BFF-42CD-49AB-9A7A-E1B9DECA4EBE')
@@ -49,6 +51,7 @@ BEGIN
 		WHERE [AttributeId] = @AttributeId AND[EntityId] = @EntityId
         AND [CreatedDateTime] = [ModifiedDateTime]
 END" );
+*/
         }
 
         /// <summary>

@@ -150,10 +150,10 @@
                                 <asp:Panel ID="pnlChartAttendanceGrid" runat="server" Visible="false">
 
                                     <div class="grid">
-                                        <Rock:Grid ID="gChartAttendance" runat="server" AllowSorting="true" DataKeyNames="DateTimeStamp,SeriesId" RowItemText="Attendance Summary">
+                                        <Rock:Grid ID="gChartAttendance" runat="server" AllowSorting="true" DataKeyNames="DateTimeStamp,SeriesName" RowItemText="Attendance Summary">
                                             <Columns>
                                                 <Rock:DateField DataField="DateTime" HeaderText="Date" SortExpression="DateTimeStamp" />
-                                                <Rock:RockBoundField DataField="SeriesId" HeaderText="Series" SortExpression="SeriesId" />
+                                                <Rock:RockBoundField DataField="SeriesName" HeaderText="Series" SortExpression="SeriesName" />
                                                 <Rock:RockBoundField DataField="YValue" HeaderText="Count" SortExpression="YValue" />
                                             </Columns>
                                         </Rock:Grid>
@@ -326,7 +326,7 @@
                 // toggle all group checkboxes
                 $('.js-checkbox-selector, .js-group-checkboxes .rock-check-box-list label').on('click', function (e) {
                     
-                    var container = $(this).siblings('.js-group-checkboxes, .controls');
+                    var container = $(this).parent().find('.js-group-checkboxes, .controls');
                     var isChecked = container.hasClass('all-checked');
 
                     container.find('input:checkbox').each(function () {
@@ -347,7 +347,7 @@
                 // toggle campus checkboxes
                 $('.js-campuses-picker label').on('click', function (e) {
 
-                    var container = $(this).siblings('.controls');
+                    var container = $(this).parent().find('.controls');
                     var isChecked = container.hasClass('all-checked');
 
                     container.find('input:checkbox').each(function () {

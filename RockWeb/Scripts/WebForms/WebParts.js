@@ -1,4 +1,4 @@
-//CdnPath=http://ajax.aspnetcdn.com/ajax/4.5/6/WebParts.js
+//CdnPath=http://ajax.aspnetcdn.com/ajax/4.5.1/1/WebParts.js
 var __wpm = null;
 function Point(x, y) {
     this.x = x;

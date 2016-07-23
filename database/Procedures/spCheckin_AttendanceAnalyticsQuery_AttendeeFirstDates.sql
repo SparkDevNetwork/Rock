@@ -9,7 +9,7 @@
 		* TimeAttending
 		* SundayDate
 	</returns>
-	<param name='GroupTypeId' datatype='int'>The Check-in Area Group Type Id (only attendance for this are will be included</param>
+	<param name='GroupTypeIds' datatype='varchar(max)'>The Group Type Ids (only attendance for these group types will be included</param>
 	<param name='StartDate' datatype='datetime'>Beginning date range filter</param>
 	<param name='EndDate' datatype='datetime'>Ending date range filter</param>
 	<param name='GroupIds' datatype='varchar(max)'>Optional list of group ids to limit attendance to</param>
@@ -24,7 +24,7 @@
 */
 
 ALTER PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeFirstDates]
-	  @GroupTypeId int
+	  @GroupTypeIds varchar(max)
 	, @GroupIds varchar(max)
 	, @StartDate datetime = NULL
 	, @EndDate datetime = NULL
@@ -57,7 +57,7 @@ BEGIN
 	)	
 	AND ( @ScheduleIds IS NULL OR A.[ScheduleId] IN ( SELECT * FROM ufnUtility_CsvToTable( @ScheduleIds ) ) )
 
-    -- Get the first 5 times they attended this group type (any group or campus)
+    -- Get the first 5 times they attended any of the selected group types (any group or campus)
 	SELECT 
 		P.[PersonId],
 		D.[TimeAttending],
@@ -70,7 +70,7 @@ BEGIN
         FROM (
             SELECT DISTINCT [StartDate]
 		    FROM [vCheckin_GroupTypeAttendance] A
-		    WHERE A.[GroupTypeId] = @GroupTypeId
+		    WHERE A.[GroupTypeId] in ( SELECT * FROM ufnUtility_CsvToTable( @GroupTypeIds ) )
 		    AND A.[PersonId] = P.[PersonId]
         ) S
 	) D

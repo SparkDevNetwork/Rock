@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -190,6 +190,15 @@ namespace RockWeb.Blocks.Finance
                 nbErrorMessage.Visible = false;
                 nbRefundError.Visible = false;
                 ShowDialog();
+
+                if ( pnlEditDetails.Visible )
+                {
+                    var txn = new FinancialTransaction();
+                    txn.LoadAttributes();
+
+                    phAttributeEdits.Controls.Clear();
+                    Rock.Attribute.Helper.AddEditControls( txn, phAttributeEdits, false, BlockValidationGroup );
+                }
             }
         }
 
@@ -240,7 +249,13 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbEdit_Click( object sender, EventArgs e )
         {
-            ShowEditDetails( GetTransaction( hfTransactionId.Value.AsInteger() ), new RockContext() );
+            var rockContext = new RockContext();
+            var txn = GetTransaction( hfTransactionId.Value.AsInteger(), rockContext );
+            if ( txn != null )
+            {
+                txn.LoadAttributes( rockContext );
+                ShowEditDetails( txn, rockContext );
+            }
         }
 
         /// <summary>
@@ -476,6 +491,10 @@ namespace RockWeb.Blocks.Finance
                         binaryFileService.Delete( binaryFile );
                     }
 
+                    // Update any attributes
+                    txn.LoadAttributes(rockContext);
+                    Rock.Attribute.Helper.GetEditValues(phAttributeEdits, txn);
+
                     // If the transaction is associated with a batch, update that batch's history
                     if ( batchId.HasValue )
                     {
@@ -492,6 +511,7 @@ namespace RockWeb.Blocks.Finance
                     }
 
                     rockContext.SaveChanges();
+                    txn.SaveAttributeValues(rockContext);
 
                 } );
 
@@ -513,7 +533,11 @@ namespace RockWeb.Blocks.Finance
 
                 // Requery the batch to support EF navigation properties
                 var savedTxn = GetTransaction( txn.Id );
-                ShowReadOnlyDetails( savedTxn );
+                if ( savedTxn != null )
+                {
+                    savedTxn.LoadAttributes();
+                    ShowReadOnlyDetails( savedTxn );
+                }
             }
         }
 
@@ -527,7 +551,12 @@ namespace RockWeb.Blocks.Finance
             int txnId = hfTransactionId.ValueAsInt();
             if ( txnId != 0 )
             {
-                ShowReadOnlyDetails( GetTransaction( txnId ) );
+                var txn = GetTransaction( txnId );
+                if ( txn != null )
+                {
+                    txn.LoadAttributes();
+                    ShowReadOnlyDetails( txn );
+                }
             }
             else
             {
@@ -882,8 +911,11 @@ namespace RockWeb.Blocks.Finance
                             rockContext.SaveChanges();
 
                             var updatedTxn = GetTransaction( txn.Id );
-                            ShowReadOnlyDetails( updatedTxn );
-
+                            if ( updatedTxn != null )
+                            {
+                                updatedTxn.LoadAttributes( rockContext );
+                                ShowReadOnlyDetails( updatedTxn );
+                            }
                         }
                         else
                         {
@@ -1052,6 +1084,8 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
+            bool batchEditAllowed = true;
+
             if ( txn == null )
             {
                 txn = new FinancialTransaction { Id = 0 };
@@ -1078,10 +1112,17 @@ namespace RockWeb.Blocks.Finance
                         txn.TransactionDetails.Add( txnDetail );
                     }
                 }
+
+
             }
             else
             {
                 gpPaymentGateway.Visible = true;
+
+                if ( txn.Batch != null && txn.Batch.Status == BatchStatus.Closed )
+                {
+                    batchEditAllowed = false;
+                }
             }
 
             hfTransactionId.Value = txn.Id.ToString();
@@ -1092,8 +1133,8 @@ namespace RockWeb.Blocks.Finance
 
             nbEditModeMessage.Text = string.Empty;
 
-            lbEdit.Visible = editAllowed;
-            lbRefund.Visible = editAllowed && txn.RefundDetails == null;
+            lbEdit.Visible = editAllowed && batchEditAllowed;
+            lbRefund.Visible = editAllowed && batchEditAllowed && txn.RefundDetails == null;
             lbAddTransaction.Visible = editAllowed && batch != null && batch.Status != BatchStatus.Closed;
 
             if ( !editAllowed )
@@ -1101,6 +1142,16 @@ namespace RockWeb.Blocks.Finance
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( FinancialTransaction.FriendlyTypeName );
             }
+            else
+            {
+                if ( !batchEditAllowed )
+                {
+                    readOnly = true;
+                    nbEditModeMessage.Text = string.Format( "<strong>Note</strong> Because this {0} belongs to a batch that is closed, editing is not enabled.", FinancialTransaction.FriendlyTypeName );
+                }
+            }
+
+            txn.LoadAttributes( rockContext );
 
             if ( readOnly )
             {
@@ -1359,6 +1410,8 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
+                Helper.AddDisplayControls(txn, Helper.GetAttributeCategories(txn, false, false), phAttributes, null, false);
+
             }
             else
             {
@@ -1441,6 +1494,9 @@ namespace RockWeb.Blocks.Finance
                 tbSummary.Text = txn.Summary;
 
                 BindImages();
+
+                phAttributeEdits.Controls.Clear();
+                Rock.Attribute.Helper.AddEditControls( txn, phAttributeEdits, true, BlockValidationGroup );
             }
         }
 

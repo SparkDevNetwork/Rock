@@ -7,11 +7,11 @@
 // <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,6 +30,7 @@ namespace Rock.Client.SystemGuid
     public class Attribute
     {
         public const string GLOBAL_EMAIL_LINK_PREFERENCE = "F1BECEF9-1047-E89F-4CC8-8F856750E5D0";
+        public const string GLOBAL_ENABLED_LAVA_COMMANDS = "933CFB7D-C9E1-BDAE-40AD-231002A91626";
         public const string PERSON_ALLERGY = "DBD192C9-0AA1-46EC-92AB-A3DA8E056D31";
         public const string PERSON_ERA_CURRENTLY_AN_ERA = "CE5739C5-2156-E2AB-48E5-1337C38B935E";
         public const string PERSON_ERA_END_DATE = "4711D67E-7526-9582-4A8E-1CD7BBE1B3A2";
@@ -242,6 +243,7 @@ namespace Rock.Client.SystemGuid
         public const string MERGE_TEMPLATE = "CD1DB988-6891-4B0F-8D1B-B0A311A3BC3E";
         public const string METRICCATEGORY = "3D35C859-DF37-433F-A20A-0FFD0FCB9862";
         public const string NOTE = "53DC1E78-14A5-44DE-903F-6A2CB02164E7";
+        public const string PAGE = "E104DCDF-247C-4CED-A119-8CC51632761F";
         public const string PERSON = "72657ED8-D16E-492E-AC12-144C5E7567E7";
         public const string PERSON_ALIAS = "90F5E87B-F0D5-4617-8AE9-EB57E673F36F";
         public const string PROTECT_MY_MINISTRY_PROVIDER = "C16856F4-3C6B-4AFB-A0B8-88A303508206";
@@ -303,6 +305,7 @@ namespace Rock.Client.SystemGuid
         public const string INTEGER = "A75DFC58-7A1B-4799-BF31-451B2BBE38FF";
         public const string INTEGER_RANGE = "9D5F21E0-DEA0-4E8E-BA42-71151F6A8ED4";
         public const string KEY_VALUE_LIST = "73B02051-0D38-4AD9-BF81-A2D477DE4F70";
+        public const string LAVA_COMMANDS = "4BD9088F-5CC6-89B1-45FC-A2AAFFC7CC0D";
         public const string LOCATION = "B0B9EFE3-F09F-4604-AD1B-76B298A85D83";
         public const string MEMO = "C28C7BF3-A552-4D77-9408-DEDCF760CED0";
         public const string METRIC_CATEGORIES = "F5334A8E-B7E2-415C-A6EC-A6D8FA5341C4";
@@ -313,6 +316,7 @@ namespace Rock.Client.SystemGuid
         public const string PERSON = "E4EAB7B2-0B76-429B-AFE4-AD86D7428C70";
         public const string PERSON_BADGES = "3F1AE891-7DC8-46D2-865D-11543B34FB60";
         public const string REMOTE_AUTHS = "ECA90666-E7A0-4406-8559-0153DCB908FD";
+        public const string SCHEDULE = "E9C12C59-98EA-4977-8318-647435BE9A9C";
         public const string SCHEDULES = "EC6A5CAF-F6A2-47A4-9CBA-6E1C53D7E59B";
         public const string SECURITY_ROLE = "7BD25DC9-F34A-478D-BEF9-0C787F5D39B8";
         public const string SINGLE_SELECT = "7525C4CB-EE6B-41D4-9B64-A08048D5A5C0";
@@ -399,6 +403,7 @@ namespace Rock.Client.SystemGuid
         public const string GROUPTYPE_SERVING_TEAM = "2C42B2D4-1C5F-4AD5-A9AD-08631B872AC4";
         public const string GROUPTYPE_SMALL_GROUP = "50FCFB30-F51A-49DF-86F4-2B176EA1820B";
         public const string GROUPTYPE_SMALL_GROUP_SECTION = "FAB75EC6-0402-456A-BE34-252097DE4F20";
+        public const string GROUPTYPE_WEEKLY_SERVICE_CHECKIN_AREA = "FEDD389A-616F-4A53-906C-63D8255631C5";
     }
 
     /// <summary>
@@ -458,8 +463,6 @@ namespace Rock.Client.SystemGuid
         public const string CHECK_IN_ROOT = "CDF2C599-D341-42FD-B7DC-CD402EA96050";
         public const string CHECK_IN_TYPE = "62C70118-0A6F-432A-9D84-A5296655CB9E";
         public const string CHILDPAGES = "D58F205E-E9CC-4BD9-BC79-F3DA86F6E346";
-        public const string CKEDITOR_ROCKFILEBROWSER_PLUGIN_FRAME = "4A4995CA-24F6-4D33-B861-A24274F53AA6";
-        public const string CKEDITOR_ROCKMERGEFIELD_PLUGIN_FRAME = "1FC09F0D-72F2-44E6-9D16-2884F9AF33DD";
         public const string CMS_CONFIGURATION = "B4A24AB7-9369-4055-883F-4F4892C39AE3";
         public const string COMMUNICATION = "60002BC0-790A-4052-8F8D-B08C2C5D261C";
         public const string COMMUNICATION_HISTORY = "CADB44F2-2453-4DB5-AB11-DADA5162AB79";
@@ -548,6 +551,8 @@ namespace Rock.Client.SystemGuid
         public const string HISTORY = "BC8E5377-0F6C-457A-9CF0-0F0A0AB2A418";
         public const string HISTORY_CATEGORIES = "95ACFF8C-B9EE-41C6-BAC0-D117D6E1FADC";
         public const string HTML_CONTENT_APPROVAL = "9DF95EFF-88B4-401A-8F5F-E3B8DB02A308";
+        public const string HTMLEDITOR_ROCKFILEBROWSER_PLUGIN_FRAME = "4A4995CA-24F6-4D33-B861-A24274F53AA6";
+        public const string HTMLEDITOR_ROCKMERGEFIELD_PLUGIN_FRAME = "1FC09F0D-72F2-44E6-9D16-2884F9AF33DD";
         public const string INTERNAL_HOMEPAGE = "20F97A93-7949-4C2A-8A5E-C756FE8585CA";
         public const string ITEM_DETAIL = "56F1DC05-3D7D-49B6-9A30-5CF271C687F4";
         public const string JOBS_ADMINISTRATION = "C58ADA1A-6322-4998-8FED-C3565DE87EFA";

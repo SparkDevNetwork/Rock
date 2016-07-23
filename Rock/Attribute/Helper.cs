@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -629,27 +630,28 @@ namespace Rock.Attribute
         public static Rock.Model.Attribute SaveAttributeEdits( AttributeEditor edtAttribute, int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue, RockContext rockContext = null )
         {
             // Create and update a new attribute object with new values
-            var newAttribute = new Rock.Model.Attribute();
-            edtAttribute.GetAttributeProperties( newAttribute );
-
             rockContext = rockContext ?? new RockContext();
             var internalAttributeService = new AttributeService( rockContext );
-            Rock.Model.Attribute attribute = null;
 
-            if ( newAttribute.Id > 0 )
+            Rock.Model.Attribute attribute = null;
+            var newAttribute = new Rock.Model.Attribute();
+
+            if ( edtAttribute.AttributeId.HasValue )
             {
-                attribute = internalAttributeService.Get( newAttribute.Id );
+                attribute = internalAttributeService.Get( edtAttribute.AttributeId.Value );
             }
 
-            if ( attribute == null )
+            if ( attribute != null )
             {
-                newAttribute.Order = internalAttributeService.Queryable().Max( a => a.Order ) + 1;
+                newAttribute.CopyPropertiesFrom( attribute );
             }
             else
             {
-                newAttribute.Order = attribute.Order;
-            } 
-            
+                newAttribute.Order = internalAttributeService.Queryable().Max( a => a.Order ) + 1;
+            }
+
+            edtAttribute.GetAttributeProperties( newAttribute );
+
             return SaveAttributeEdits( newAttribute, entityTypeId, entityTypeQualifierColumn, entityTypeQualifierValue, rockContext );
         }
 
@@ -798,9 +800,11 @@ namespace Rock.Attribute
                     attributeValueService.Add( attributeValue );
                 }
 
-                attributeValue.Value = newValue;
-
-                rockContext.SaveChanges();
+                if ( attributeValue.Value != newValue )
+                {
+                    attributeValue.Value = newValue;
+                    rockContext.SaveChanges();
+                }
 
                 if ( model.AttributeValues != null && model.AttributeValues.ContainsKey( attribute.Key ) )
                 {
@@ -920,7 +924,7 @@ namespace Rock.Attribute
         /// <param name="supressOrdering">if set to <c>true</c> supresses reording (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
         public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue, string validationGroup, List<string> exclude, bool supressOrdering = false )
         {
-            if ( item.Attributes != null )
+            if ( item != null && item.Attributes != null )
             {
                 foreach ( var attributeCategory in GetAttributeCategories( item, false, false, supressOrdering ) )
                 {
@@ -969,7 +973,7 @@ namespace Rock.Attribute
             {
                 var attribute = item.Attributes[key];
 
-                if ( !exclude.Contains( attribute.Name ) )
+                if ( !exclude.Contains( attribute.Name ) && !exclude.Contains( attribute.Key ) )
                 {
                     // Add the control for editing the attribute value
                     attribute.AddControl( fieldSet.Controls, item.AttributeValues[attribute.Key].Value, validationGroup, setValue, true );
@@ -1023,7 +1027,7 @@ namespace Rock.Attribute
 
                 foreach ( var attribute in attributeCategory.Attributes )
                 {
-                    if ( exclude == null || !exclude.Contains( attribute.Name ) )
+                    if ( exclude == null || ( !exclude.Contains( attribute.Name ) && !exclude.Contains( attribute.Key ) ) )
                     {
                         // Get the Attribute Value formatted for display.
                         string value = attribute.DefaultValue;
@@ -1077,7 +1081,50 @@ namespace Rock.Attribute
             }
         }
 
+        /// <summary>
+        /// Gets the attribute value expression.
+        /// </summary>
+        /// <param name="attributeValues">The attribute values.</param>
+        /// <param name="attributeValueParameter">The attribute value parameter.</param>
+        /// <param name="parentIdProperty">The parent identifier property.</param>
+        /// <param name="attributeId">The attribute identifier.</param>
+        /// <returns></returns>
+        public static Expression GetAttributeValueExpression( IQueryable<AttributeValue> attributeValues, ParameterExpression attributeValueParameter, Expression parentIdProperty, int attributeId )
+        {
+            MemberExpression attributeIdProperty = Expression.Property( attributeValueParameter, "AttributeId" );
+            MemberExpression entityIdProperty = Expression.Property( attributeValueParameter, "EntityId" );
+            Expression attributeIdConstant = Expression.Constant( attributeId );
 
+            Expression attributeIdCompare = Expression.Equal( attributeIdProperty, attributeIdConstant );
+            Expression entityIdCompre = Expression.Equal( entityIdProperty, Expression.Convert( parentIdProperty, typeof( int? ) ) );
+            Expression andExpression = Expression.And( attributeIdCompare, entityIdCompre );
+
+            var match = new Expression[] {
+                Expression.Constant(attributeValues),
+                Expression.Lambda<Func<AttributeValue, bool>>( andExpression, new ParameterExpression[] { attributeValueParameter })
+            };
+
+            Expression whereExpression = Expression.Call( typeof( Queryable ), "Where", new Type[] { typeof( AttributeValue ) }, match );
+
+            var attributeCache = AttributeCache.Read( attributeId );
+            var attributeValueFieldName = "Value";
+            Type attributeValueFieldType = typeof( string );
+            if ( attributeCache != null )
+            {
+                attributeValueFieldName = attributeCache.FieldType.Field.AttributeValueFieldName;
+                attributeValueFieldType = attributeCache.FieldType.Field.AttributeValueFieldType;
+            }
+
+            MemberExpression valueProperty = Expression.Property( attributeValueParameter, attributeValueFieldName );
+
+            Expression valueLambda = Expression.Lambda( valueProperty, new ParameterExpression[] { attributeValueParameter } );
+
+            Expression selectValue = Expression.Call( typeof( Queryable ), "Select", new Type[] { typeof( AttributeValue ), attributeValueFieldType }, whereExpression, valueLambda );
+
+            Expression firstOrDefault = Expression.Call( typeof( Queryable ), "FirstOrDefault", new Type[] { attributeValueFieldType }, selectValue );
+
+            return firstOrDefault;
+        }
     }
 
     /// <summary>

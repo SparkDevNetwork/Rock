@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -469,7 +469,7 @@ namespace Rock
                 return "Error resolving Lava merge fields: " + ex.Message;
             }
         }
-
+        
         /// <summary>
         /// Html Encodes string values that are processed by a lava filter
         /// </summary>
@@ -500,6 +500,12 @@ namespace Rock
         /// <returns></returns>
         public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects, bool encodeStrings = false, bool throwExceptionOnErrors = false )
         {
+            var enabledCommands = GlobalAttributesCache.Read().GetValue( "DefaultEnabledLavaCommands" );
+            return content.ResolveMergeFields( mergeObjects, enabledCommands, encodeStrings, throwExceptionOnErrors );
+        }
+
+        public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects, string enabledCommands, bool encodeStrings = false, bool throwExceptionOnErrors = false )
+        {
             try
             {
                 if ( !content.HasMergeFields() )
@@ -516,7 +522,8 @@ namespace Rock
                 }
 
                 Template template = Template.Parse( content );
-                
+                template.InstanceAssigns.Add( "EnabledCommands", enabledCommands );
+
                 if ( encodeStrings )
                 {
                     // if encodeStrings = true, we want any string values to be XML Encoded ( 

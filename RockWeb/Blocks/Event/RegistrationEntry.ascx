@@ -4,6 +4,7 @@
 <ContentTemplate>
 
     <asp:HiddenField ID="hfTriggerScroll" runat="server" Value="" />
+    <asp:HiddenField ID="hfAllowNavigate" runat="server" Value="" />
 
     <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
     <Rock:NotificationBox ID="nbPaymentValidation" runat="server" NotificationBoxType="Danger" Visible="false" />
@@ -35,7 +36,7 @@
 
         <div class="js-registration-same-family registrationentry-samefamily">
             <asp:Panel ID="pnlFamilyOptions" runat="server" CssClass="well">
-                <Rock:RockRadioButtonList ID="rblFamilyOptions" runat="server" Label="Individual is in the same family as" RepeatDirection="Vertical" Required="true" DataTextField="Value" DataValueField="Key" />
+                <Rock:RockRadioButtonList ID="rblFamilyOptions" runat="server" Label="Individual is in the same family as" RepeatDirection="Vertical" Required="true" RequiredErrorMessage="Answer to which family is required." DataTextField="Value" DataValueField="Key" />
             </asp:Panel>
         </div>
         
@@ -67,10 +68,10 @@
         
         <asp:Panel ID="pnlRegistrarInfo" runat="server" CssClass="well">
             
-            <h4>This <asp:Literal id="lRegistrationTerm2" runat="server" /> Was Completed By</h4>
+            <h4>This <asp:Literal id="lRegistrationTerm" runat="server" /> Was Completed By</h4>
             <div class="row">
                 <div class="col-md-6">
-                    <Rock:RockTextBox ID="tbYourFirstName" runat="server" Label="First Name" Required="true" />
+                    <Rock:RockTextBox ID="tbYourFirstName" runat="server" Label="First Name" CssClass="js-your-first-name" Required="true" />
                 </div>
                 <div class="col-md-6">
                     <Rock:RockTextBox ID="tbYourLastName" runat="server" Label="Last Name" Required="true" />
@@ -79,10 +80,11 @@
             <div class="row">
                 <div class="col-md-6">
                     <Rock:EmailBox ID="tbConfirmationEmail" runat="server" Label="Send Confirmation Emails To" Required="true" />
+                    <Rock:RockCheckBox ID="cbUpdateEmail" runat="server" Text="Should Your Account Be Updated To Use This Email Address?" Visible="false" Checked="true" />
                 </div>
                 <div class="col-md-6">
-                    <asp:Panel ID="pnlRegistrarFamilyOptions" runat="server">
-                        <Rock:RockRadioButtonList ID="rblRegistrarFamilyOptions" runat="server" Label="You are in the same family as" RepeatDirection="Horizontal" Required="true" DataTextField="Value" DataValueField="Key" />
+                    <asp:Panel ID="pnlRegistrarFamilyOptions" runat="server" CssClass="js-registration-same-family">
+                        <Rock:RockRadioButtonList ID="rblRegistrarFamilyOptions" runat="server" Label="You are in the same family as" RepeatDirection="Horizontal" Required="true" DataTextField="Value" DataValueField="Key" RequiredErrorMessage="Answer to which family is required." />
                     </asp:Panel>
                 </div>
             </div>
@@ -160,15 +162,22 @@
 
                     <asp:HiddenField ID="hfPreviouslyPaid" runat="server" />
                     <Rock:RockLiteral ID="lPreviouslyPaid" runat="server" Label="Previously Paid" />
+                    
+                    <%-- For Partial Payments... --%>
 
                     <asp:HiddenField ID="hfMinimumDue" runat="server" />
                     <Rock:RockLiteral ID="lMinimumDue" runat="server" Label="Minimum Due Today" />
-
+                    
                     <div class="form-right">
                         <Rock:CurrencyBox ID="nbAmountPaid" runat="server" CssClass="input-width-md amount-to-pay" NumberType="Currency" Label="Amount To Pay Today" Required="true" />
                     </div>
                                  
                     <Rock:RockLiteral ID="lRemainingDue" runat="server" Label="Amount Remaining" />
+
+
+                    <%-- For Payoff --%>
+                    
+                    <Rock:RockLiteral ID="lAmountDue" runat="server" Label="Amount Due" />
                 </div>
             </div>
                 

@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,8 +27,25 @@ namespace Rock.Model
     /// <summary>
     /// The data access/service class for the <see cref="Rock.Model.Schedule"/> entity. This inherits from the Service class
     /// </summary>
-    public partial class ScheduleService 
+    public partial class ScheduleService
     {
+
+        /// <summary>
+        /// Gets occurrence data for the selected group
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <param name="fromDateTime">From date time.</param>
+        /// <param name="toDateTime">To date time.</param>
+        /// <param name="locationIds">The location ids.</param>
+        /// <param name="scheduleIds">The schedule ids.</param>
+        /// <param name="loadSummaryData">if set to <c>true</c> [load summary data].</param>
+        /// <returns></returns>
+        public List<ScheduleOccurrence> GetGroupOccurrences( Group group, DateTime? fromDateTime, DateTime? toDateTime,
+            List<int> locationIds, List<int> scheduleIds, bool loadSummaryData )
+        {
+            return GetGroupOccurrences( group, fromDateTime, toDateTime, locationIds, scheduleIds, loadSummaryData, null );
+        }
+
         /// <summary>
         /// Gets occurrence data for the selected group
         /// </summary>
@@ -41,7 +58,7 @@ namespace Rock.Model
         /// <param name="campusId">The campus identifier.</param>
         /// <returns></returns>
         public List<ScheduleOccurrence> GetGroupOccurrences( Group group, DateTime? fromDateTime, DateTime? toDateTime, 
-            List<int> locationIds, List<int> scheduleIds, bool loadSummaryData, int? campusId = null )
+            List<int> locationIds, List<int> scheduleIds, bool loadSummaryData, int? campusId )
         {
             var occurrences = new List<ScheduleOccurrence>();
 

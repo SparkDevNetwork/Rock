@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,7 +16,7 @@
 //
 using System;
 using System.Linq;
-
+using System.Text.RegularExpressions;
 using Rock.Data;
 using Rock.Model;
 
@@ -169,9 +169,13 @@ namespace Rock.Transactions
                 PageView pageView = new PageView();
                 pageViewService.Add( pageView );
 
+                // obfuscate rock magic token
+                Regex rgx = new Regex( @"rckipid=([^&]*)" );
+                string cleanUrl = rgx.Replace( this.Url, "rckipid=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
+
                 pageView.PageId = this.PageId;
                 pageView.SiteId = this.SiteId;
-                pageView.Url = this.Url;
+                pageView.Url = cleanUrl;
                 pageView.DateTimeViewed = this.DateViewed;
                 pageView.PersonAliasId = this.PersonAliasId;
                 pageView.PageTitle = this.PageTitle;

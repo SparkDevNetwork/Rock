@@ -381,7 +381,7 @@ FastClick.prototype.onTouchStart = function(event) {
 	this.touchStartY = touch.pageY;
 
 	// Prevent phantom clicks on fast double-tap (issue #36)
-	if ((event.timeStamp - this.lastClickTime) < 200) {
+	if ((event.timeStamp - this.lastClickTime) < 40) {
 		event.preventDefault();
 	}
 
@@ -453,7 +453,7 @@ FastClick.prototype.onTouchEnd = function(event) {
 	}
 
 	// Prevent phantom clicks on fast double-tap (issue #36)
-	if ((event.timeStamp - this.lastClickTime) < 200) {
+	if ((event.timeStamp - this.lastClickTime) < 40) {
 		this.cancelNextClick = true;
 		return true;
 	}

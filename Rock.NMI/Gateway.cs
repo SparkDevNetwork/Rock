@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -65,7 +65,7 @@ namespace Rock.NMI
         {
             get
             {
-                return "~/NMIGatewayStep2.html";
+                return string.Format( "~/NMIGatewayStep2.html?timestamp={0}", RockDateTime.Now.Ticks );
             }
         }
 
@@ -78,6 +78,20 @@ namespace Rock.NMI
         public override bool PromptForNameOnCard( FinancialGateway financialGateway )
         {
             return GetAttributeValue( financialGateway, "PromptForName" ).AsBoolean();
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether gateway provider needs first and last name on credit card as two distinct fields.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [split name on card]; otherwise, <c>false</c>.
+        /// </value>
+        public override bool SplitNameOnCard
+        {
+            get
+            {
+                return true;
+            }
         }
 
         /// <summary>
@@ -720,10 +734,9 @@ namespace Rock.NMI
                                         payment.TransactionDateTime = actionDate.Value;
                                         payment.TransactionCode = GetXElementValue( xTxn, "transaction_id" );
                                         payment.GatewayScheduleId = subscriptionId;
-                                        payment.ScheduleActive = true;
-                                    }
                                     }
                                 }
+                            }
                             if ( payment != null )
                             {
                                 payment.StatusMessage = statusMessage.ToString();

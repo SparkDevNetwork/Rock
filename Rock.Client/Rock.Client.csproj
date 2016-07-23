@@ -43,6 +43,7 @@
     <Compile Include="CodeGenerated\Audit.cs" />
     <Compile Include="CodeGenerated\AuditDetail.cs" />
     <Compile Include="CodeGenerated\Auth.cs" />
+    <Compile Include="CodeGenerated\BackgroundCheck.cs" />
     <Compile Include="CodeGenerated\BenevolenceRequest.cs" />
     <Compile Include="CodeGenerated\BenevolenceResult.cs" />
     <Compile Include="CodeGenerated\BinaryFile.cs" />
@@ -61,7 +62,6 @@
     <Compile Include="CodeGenerated\ConnectionOpportunityCampus.cs" />
     <Compile Include="CodeGenerated\ConnectionOpportunityConnectorGroup.cs" />
     <Compile Include="CodeGenerated\ConnectionOpportunityGroup.cs" />
-    <Compile Include="CodeGenerated\ConnectionOpportunityGroupCampus.cs" />
     <Compile Include="CodeGenerated\ConnectionRequest.cs" />
     <Compile Include="CodeGenerated\ConnectionRequestActivity.cs" />
     <Compile Include="CodeGenerated\ConnectionRequestWorkflow.cs" />
@@ -88,7 +88,6 @@
     <Compile Include="CodeGenerated\EventItemOccurrence.cs" />
     <Compile Include="CodeGenerated\EventItemOccurrenceChannelItem.cs" />
     <Compile Include="CodeGenerated\EventItemOccurrenceGroupMap.cs" />
-    <Compile Include="CodeGenerated\EventItemSchedule.cs" />
     <Compile Include="CodeGenerated\ExceptionLog.cs" />
     <Compile Include="CodeGenerated\FieldType.cs" />
     <Compile Include="CodeGenerated\FinancialAccount.cs" />
@@ -106,13 +105,10 @@
     <Compile Include="CodeGenerated\FinancialTransactionRefund.cs" />
     <Compile Include="CodeGenerated\FinancialTransactionScannedCheck.cs" />
     <Compile Include="CodeGenerated\Following.cs" />
-    <Compile Include="CodeGenerated\FollowingEvent.cs" />
     <Compile Include="CodeGenerated\FollowingEventNotification.cs" />
     <Compile Include="CodeGenerated\FollowingEventSubscription.cs" />
     <Compile Include="CodeGenerated\FollowingEventType.cs" />
     <Compile Include="CodeGenerated\FollowingSuggested.cs" />
-    <Compile Include="CodeGenerated\FollowingSuggestion.cs" />
-    <Compile Include="CodeGenerated\FollowingSuggestionSubscription.cs" />
     <Compile Include="CodeGenerated\FollowingSuggestionType.cs" />
     <Compile Include="CodeGenerated\Group.cs" />
     <Compile Include="CodeGenerated\GroupLocation.cs" />
@@ -134,7 +130,9 @@
     <Compile Include="CodeGenerated\Metaphone.cs" />
     <Compile Include="CodeGenerated\Metric.cs" />
     <Compile Include="CodeGenerated\MetricCategory.cs" />
+    <Compile Include="CodeGenerated\MetricPartition.cs" />
     <Compile Include="CodeGenerated\MetricValue.cs" />
+    <Compile Include="CodeGenerated\MetricValuePartition.cs" />
     <Compile Include="CodeGenerated\Note.cs" />
     <Compile Include="CodeGenerated\NoteType.cs" />
     <Compile Include="CodeGenerated\Page.cs" />
@@ -160,7 +158,6 @@
     <Compile Include="CodeGenerated\RegistrationTemplateDiscount.cs" />
     <Compile Include="CodeGenerated\RegistrationTemplateFee.cs" />
     <Compile Include="CodeGenerated\RegistrationTemplateForm.cs" />
-    <Compile Include="CodeGenerated\RegistrationTemplateFormAttribute.cs" />
     <Compile Include="CodeGenerated\RegistrationTemplateFormField.cs" />
     <Compile Include="CodeGenerated\Report.cs" />
     <Compile Include="CodeGenerated\ReportField.cs" />

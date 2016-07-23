@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -99,6 +99,24 @@ namespace Rock.Model
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.CHECKIN_SEARCH_TYPE )]
         public int? SearchTypeValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value that was entered when searching for family during check-in.
+        /// </summary>
+        /// <value>
+        /// The search value entered.
+        /// </value>
+        [DataMember]
+        public string SearchValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the <see cref="Rock.Model.Group"/> (family) that was selected after searching.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Group"/> (family) that was selected.
+        /// </value>
+        [DataMember]
+        public int? SearchResultGroupId { get; set; }
 
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.AttendanceCode"/> that is associated with this <see cref="Rock.Model.Attendance"/> entity.
@@ -260,6 +278,15 @@ namespace Rock.Model
         public virtual DefinedValue SearchTypeValue { get; set; }
 
         /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.Group"/> (family) that was selected after searching during check-in.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.Group"/> (family) that was selected during check-in.
+        /// </value>        
+        [LavaInclude]
+        public virtual Group SearchResultGroup { get; set; }
+
+        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.AttendanceCode"/> associated with this Attendance.
         /// </summary>
         /// <value>
@@ -349,6 +376,7 @@ namespace Rock.Model
             this.HasOptional( a => a.PersonAlias ).WithMany().HasForeignKey( p => p.PersonAliasId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.Device ).WithMany().HasForeignKey( d => d.DeviceId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.SearchTypeValue ).WithMany().HasForeignKey( v => v.SearchTypeValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.SearchResultGroup ).WithMany().HasForeignKey( p => p.SearchResultGroupId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.Qualifier ).WithMany().HasForeignKey( p => p.QualifierValueId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.AttendanceCode ).WithMany( c => c.Attendances ).HasForeignKey( a => a.AttendanceCodeId ).WillCascadeOnDelete( false );
         }

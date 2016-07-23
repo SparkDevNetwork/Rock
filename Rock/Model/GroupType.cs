@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -207,6 +207,15 @@ namespace Rock.Model
         /// </example>
         [DataMember]
         public AttendanceRule AttendanceRule { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group capacity rule.
+        /// </summary>
+        /// <value>
+        /// The group capacity rule.
+        /// </value>
+        [DataMember]
+        public GroupCapacityRule GroupCapacityRule { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.PrintTo"/> indicating the type of  location of where attendee labels for <see cref="Rock.Model.Group">Groups</see> of this GroupType should print.
@@ -527,6 +536,27 @@ namespace Rock.Model
         /// User must already belong to the group before they will be allowed to check-in
         /// </summary>
         AlreadyBelongs = 2
+    }
+
+    /// <summary>
+    /// Group Capacity Rule
+    /// </summary>
+    public enum GroupCapacityRule
+    {
+        /// <summary>
+        /// The group does not have capacity limitations
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// The group can not go over capacity
+        /// </summary>
+        Hard = 1,
+
+        /// <summary>
+        /// A warning will be shown if a group is going to go over capacity
+        /// </summary>
+        Soft = 2
     }
 
     /// <summary>

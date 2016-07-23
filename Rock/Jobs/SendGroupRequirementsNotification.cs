@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,7 +30,7 @@ using Rock.Web.Cache;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Sends a birthday email
+    /// Sends out reminders to group leaders when group members do not meet all requirements.
     /// </summary>
     [SystemEmailField( "Notification Email Template", required: true, order: 0 )]
     [GroupTypesField( "Group Types", "Group types use to check the group requirements on.", order: 1 )]
@@ -171,32 +171,32 @@ namespace Rock.Jobs
                             notification.GroupId = group.Id;
                             notification.Person = leader.Person;
                             _notificationList.Add( notification );
+                        }
+                            
+                        // notify parents
+                        if ( notificationOption != NotificationOption.None )
+                        {
+                            var parentLeaders = new GroupMemberService( rockContext ).Queryable( "Person" ).AsNoTracking()
+                                                    .Where( m => m.GroupRole.IsLeader && !excludedGroupRoleIds.Contains( m.GroupRoleId ) );
 
-                            // notify parents
-                            if ( notificationOption != NotificationOption.None )
+                            if ( notificationOption == NotificationOption.DirectParent )
                             {
-                                var parentLeaders = new GroupMemberService( rockContext ).Queryable( "Person" ).AsNoTracking()
-                                                        .Where( m => m.GroupRole.IsLeader && !excludedGroupRoleIds.Contains( m.GroupRoleId ) );
+                                // just the parent group
+                                parentLeaders = parentLeaders.Where( m => m.GroupId == group.ParentGroupId );
+                            }
+                            else
+                            {
+                                // all parents in the heirarchy
+                                var parentIds = groupService.GetAllAncestorIds( group.Id );
+                                parentLeaders = parentLeaders.Where( m => parentIds.Contains( m.GroupId ) );
+                            }
 
-                                if ( notificationOption == NotificationOption.DirectParent )
-                                {
-                                    // just the parent group
-                                    parentLeaders = parentLeaders.Where( m => m.GroupId == group.ParentGroupId );
-                                }
-                                else
-                                {
-                                    // all parents in the heirarchy
-                                    var parentIds = groupService.GetAllAncestorIds( group.Id );
-                                    parentLeaders = parentLeaders.Where( m => parentIds.Contains( m.GroupId ) );
-                                }
-
-                                foreach ( var parentLeader in parentLeaders.ToList() )
-                                {
-                                    NotificationItem parentNotification = new NotificationItem();
-                                    parentNotification.Person = parentLeader.Person;
-                                    parentNotification.GroupId = group.Id;
-                                    _notificationList.Add( parentNotification );
-                                }
+                            foreach ( var parentLeader in parentLeaders.ToList() )
+                            {
+                                NotificationItem parentNotification = new NotificationItem();
+                                parentNotification.Person = parentLeader.Person;
+                                parentNotification.GroupId = group.Id;
+                                _notificationList.Add( parentNotification );
                             }
                         }
                     }

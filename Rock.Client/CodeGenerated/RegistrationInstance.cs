@@ -7,11 +7,11 @@
 // <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -88,6 +88,9 @@ namespace Rock.Client
         public int RegistrationTemplateId { get; set; }
 
         /// <summary />
+        public int? RegistrationWorkflowTypeId { get; set; }
+
+        /// <summary />
         public bool ReminderSent { get; set; }
 
         /// <summary />
@@ -146,6 +149,7 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.RegistrationTemplateId = source.RegistrationTemplateId;
+            this.RegistrationWorkflowTypeId = source.RegistrationWorkflowTypeId;
             this.ReminderSent = source.ReminderSent;
             this.SendReminderDateTime = source.SendReminderDateTime;
             this.StartDateTime = source.StartDateTime;
@@ -172,6 +176,9 @@ namespace Rock.Client
 
         /// <summary />
         public RegistrationTemplate RegistrationTemplate { get; set; }
+
+        /// <summary />
+        public WorkflowType RegistrationWorkflowType { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

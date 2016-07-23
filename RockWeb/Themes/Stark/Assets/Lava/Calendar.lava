@@ -15,7 +15,7 @@
       <div class="pull-right">
         {% if eventItemOccurrence.DetailPage != null %}
         <a href="{{ eventItemOccurrence.DetailPage }}">
-          <i> View page -> </i>
+          View Details <i class="fa fa-chevron-right"></i>
         </a>
 		{% else %}
 		<a href="{{ DetailsPage }}?EventOccurrenceId={{ eventItemOccurrence.EventItemOccurrence.Id }}">

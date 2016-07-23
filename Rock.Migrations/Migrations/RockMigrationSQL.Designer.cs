@@ -1396,5 +1396,475 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201603241157527_UpdateIndexes", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @GroupTypeEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = &apos;Rock.Model.GroupType&apos; )
+        ///DECLARE @CheckInTemplatePurposeId int = ( SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = &apos;4A406CB0-495B-4795-B788-52BDFDE00B01&apos; )
+        ///IF @GroupTypeEntityTypeId IS NOT NULL AND @CheckInTemplatePurposeId IS NOT NULL
+        ///BEGIN
+        ///
+        ///    UPDATE [Attribute] SET [EntityTypeQualifierValue] = CAST( @CheckInTemplatePurposeId AS varchar) 
+        ///    WHERE [EntityTypeId] = @GroupTypeEntityTypeId
+        ///    AND [EntityT [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201604251529438_CheckinEnhancement {
+            get {
+                return ResourceManager.GetString("_201604251529438_CheckinEnhancement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /* HtmlContent */
+        ///UPDATE HtmlContent
+        ///SET Content = REPLACE(Content, &apos;GlobalAttribute.OrganizationAddress&apos;, &apos;&apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;OrganizationAddress&apos;&apos;&apos;)
+        ///WHERE [Guid] IN (
+        ///        &apos;9C6D118B-6C7D-46C3-ACEC-4CF586DCE81F&apos;
+        ///        ,&apos;FBC4C931-6B27-4AFA-A1DE-C72DB75493A6&apos;
+        ///        ,&apos;A51C28B4-DC64-4D72-91D5-B73CAF8B5958&apos;
+        ///        ,&apos;320864D0-8872-4E94-A0C0-B53E03645EE4&apos;
+        ///        ,&apos;B89605CF-C111-4A1B-9228-29A78EA9DA25&apos;
+        ///        ,&apos;8458375D-3F98-461C-ACF1-1A1CF08806B8&apos;
+        ///        ,&apos;939ADB18-D2A9-4444-BB07-4E33C1 [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201604251529438_UpdateLegacyLava {
+            get {
+                return ResourceManager.GetString("_201604251529438_UpdateLegacyLava", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeFirstDates]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeFirstDates]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///        This function return people who attended based on selected filter criteria and the first 5 dates they ever attended the selected group type
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* PersonId
+        ///		* TimeAttending
+        ///		* SundayDate
+        ///	&lt;/returns&gt;
+        ///	&lt;param [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201604281205403_AttendanceAnalyticsGroupTypes_AttendeeFirstDates {
+            get {
+                return ResourceManager.GetString("_201604281205403_AttendanceAnalyticsGroupTypes_AttendeeFirstDates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS ( SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[vCheckin_GroupTypeAttendance]&apos;) AND type = N&apos;V&apos; )
+        ///DROP VIEW [dbo].[vCheckin_GroupTypeAttendance]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This view returns distinct attendance dates for a person and group type
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* GroupTypeId
+        ///        * PersonId
+        ///		* SundayDate
+        ///	&lt;/returns&gt;
+        ///	&lt;remarks&gt;	
+        ///	&lt;/remarks&gt;
+        ///	&lt;code&gt;
+        ///		SELECT * FROM [vCheckin_GroupTypeAttendance] WHERE [GroupTypeId] = 14
+        ///	&lt;/code&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///CREATE VI [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201604281205403_AttendanceAnalyticsGroupTypes_GroupTypeAttendance {
+            get {
+                return ResourceManager.GetString("_201604281205403_AttendanceAnalyticsGroupTypes_GroupTypeAttendance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCheckin_AttendanceAnalyticsQuery_NonAttendees]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_NonAttendees]
+        ///GO
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns any person ids for people that have attended previously but who have not attended since the beginning date
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* PersonId 
+        ///		* SundayDate - Last time attended
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;GroupTypeIds&apos; dataty [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201604281205403_AttendanceAnalyticsGroupTypes_NonAttendee {
+            get {
+                return ResourceManager.GetString("_201604281205403_AttendanceAnalyticsGroupTypes_NonAttendee", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCrm_FamilyAnalyticsEraDataset]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spCrm_FamilyAnalyticsEraDataset]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure returns a data set used by the Rock eRA job to add/remove
+        ///		people from being an eRA. It should not be modified as it will be updated in the
+        ///		future to meet additional requirements.
+        ///
+        ///		The goal of the query is to return both those that meet the eRA requiremen [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201605021826400_FamilyAnalyticsUpdates_spCrm_FamilyAnalyticsEraDataset {
+            get {
+                return ResourceManager.GetString("_201605021826400_FamilyAnalyticsUpdates_spCrm_FamilyAnalyticsEraDataset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCrm_FamilyAnalyticsAttendance]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spCrm_FamilyAnalyticsAttendance]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure updates several attributes related to a person&apos;s
+        ///		attendance.
+        ///	&lt;/summary&gt;
+        ///	
+        ///	&lt;remarks&gt;	
+        ///		For eRA we only consider adults for the critieria.
+        ///	&lt;/remarks&gt;
+        ///	&lt;code&gt;
+        ///		EXEC [dbo].[spCrm_FamilyAnalyticsAttendance] 
+        ///	&lt;/code&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///
+        ///CREATE PROCEDURE [dbo [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201605021826400_FamilyAnalyticsUpdates_spCrm_spCrm_FamilyAnalyticsAttendance {
+            get {
+                return ResourceManager.GetString("_201605021826400_FamilyAnalyticsUpdates_spCrm_spCrm_FamilyAnalyticsAttendance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCrm_FamilyAnalyticsUpdateVisitDates]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spCrm_FamilyAnalyticsUpdateVisitDates]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure attempts to update an indivdiual&apos;s first and second visit
+        ///		attributes. Below are a few points of interest on the logic.
+        ///
+        ///		+ A child&apos;s date will only be calculated looking at their check-in data.
+        ///		+ An adult&apos;s date will be calculated looking at t [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201605021826400_FamilyAnalyticsUpdates_spCrm_spCrm_FamilyAnalyticsUpdateVisitDates {
+            get {
+                return ResourceManager.GetString("_201605021826400_FamilyAnalyticsUpdates_spCrm_spCrm_FamilyAnalyticsUpdateVisitDat" +
+                        "es", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCheckin_BadgeAttendance]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spCheckin_BadgeAttendance]
+        ///GO
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns the attendance data needed for the Attendance Badge. If no family role (adult/child)
+        ///		is given it is looked up.  If the individual is an adult it will return family attendance if it&apos;s a child
+        ///		it will return the individual&apos;s attendance. If a person is in two families once a [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201605022007364_AttendanceBadgeSpUpdates_spCheckin_BadgeAttendance {
+            get {
+                return ResourceManager.GetString("_201605022007364_AttendanceBadgeSpUpdates_spCheckin_BadgeAttendance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCheckin_WeeksAttendedInDuration]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spCheckin_WeeksAttendedInDuration]
+        ///GO
+        ///
+        ////*
+        ///    &lt;doc&gt;
+        ///	    &lt;summary&gt;
+        /// 		    This function returns the number of weekends a member of a family has attended a weekend service
+        ///		    in the last X weeks.
+        ///	    &lt;/summary&gt;
+        ///
+        ///	    &lt;returns&gt;
+        ///		    * Number of weeks
+        ///	    &lt;/returns&gt;
+        ///	    &lt;param name=&quot;&quot;PersonId&quot;&quot; datatype=&quot;&quot;int&quot;&quot;&gt;The person id to use [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201605022007364_AttendanceBadgeSpUpdates_spCheckin_WeeksAttendedInDuration {
+            get {
+                return ResourceManager.GetString("_201605022007364_AttendanceBadgeSpUpdates_spCheckin_WeeksAttendedInDuration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns the Mailing Addresses and any CustomMessages for the Contribution Statement, but not the actual transactions
+        ///		The StatementGenerator utility uses this procedure along with querying transactions thru REST to generate statements
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* PersonId
+        ///		* GroupId
+        ///		* AddressPersonNames
+        ///		* Street1
+        ///		* Street2
+        ///		* City
+        ///		* State
+        ///		* PostalCode
+        ///		* StartDate
+        ///		* EndDate
+        ///		* CustomMessage1
+        ///		* CustomMessage2
+        ///	&lt;/returns&gt;
+        ///	&lt;par [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201605180005401_ScheduledTxnSource_ContributionStatementQuery {
+            get {
+                return ResourceManager.GetString("_201605180005401_ScheduledTxnSource_ContributionStatementQuery", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns either the FullName of the specified Person or a list of names of family members
+        ///        In the case of a group (family), it will return the names of the adults of the family. If there are no adults in the family, the names of the non-adults will be listed
+        ///        Example1 (specific person): Bob Smith 
+        ///        Example2 (family with kids): Bill and Sally Jones
+        ///        Example3 (different lastnames): Jim Jackson and Betty Sanders
+        ///        Example4 (just kids [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201605180005401_ScheduledTxnSource_GetFamilyTitle {
+            get {
+                return ResourceManager.GetString("_201605180005401_ScheduledTxnSource_GetFamilyTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- Rename a workflow setting attribute
+        ///UPDATE [Attribute] SET
+        ///    [Name] = &apos;Use Same Options&apos;,
+        ///    [Key] = &apos;core_checkin_UseSameOptions&apos;
+        ///WHERE [Guid] = &apos;EC7FA927-95D0-44A8-8AB3-2D74A9FA2F26&apos;
+        ///
+        ///-- Fix the ordering of the Person Search workflow activity
+        ///DECLARE @ActivityTypeId int = ( SELECT TOP 1 [Id] FROM [WorkflowActivityType] WHERE [Guid] = &apos;EB744DF1-E454-482C-B111-80A54EF8A674&apos; )
+        ///
+        ///DECLARE @EntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = &apos;Rock.Workflow.Action.CheckIn.LoadLo [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201605232234462_FamilyCheckinType {
+            get {
+                return ResourceManager.GetString("_201605232234462_FamilyCheckinType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spFinance_GivingAnalyticsQuery]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns data used by the giving analytics block
+        ///	&lt;/summary&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///CREATE PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery]
+        ///	  @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @MinAmount decimal(18,2) = NULL
+        ///	, @MaxAmount decimal(18,2) = NULL
+        ///	, @ [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201605311330117_GivingAnalyticsLastGift {
+            get {
+                return ResourceManager.GetString("_201605311330117_GivingAnalyticsLastGift", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spFinance_PledgeAnalyticsQuery]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spFinance_PledgeAnalyticsQuery]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns data used by the pledge analytics block
+        ///	&lt;/summary&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///CREATE PROCEDURE [dbo].[spFinance_PledgeAnalyticsQuery]
+        ///	  @AccountId int
+        ///	, @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @MinAmountPledged decimal(18,2) = NULL
+        ///	, @MaxAmountP [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201606061302147_PledgeAnalyticsChildAccounts {
+            get {
+                return ResourceManager.GetString("_201606061302147_PledgeAnalyticsChildAccounts", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spFinance_GivingAnalyticsQuery_AccountTotals]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_AccountTotals]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns account totals for each giving id based on filter values
+        ///	&lt;/summary&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///CREATE PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_AccountTotals]
+        ///	  @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @AccountIds va [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201606091237191_GivingAnalyticsRefactor_AccountTotals {
+            get {
+                return ResourceManager.GetString("_201606091237191_GivingAnalyticsRefactor_AccountTotals", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spFinance_GivingAnalyticsQuery_FirstLastEverDates]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_FirstLastEverDates]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns the first ever, and last ever dates that each giving id
+        ///		gave a contribution to a tax deductible account
+        ///	&lt;/summary&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///CREATE PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_FirstLastEverDates]
+        ///AS
+        ///
+        ///BEGIN        /// [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201606091237191_GivingAnalyticsRefactor_FirstLastEverDates {
+            get {
+                return ResourceManager.GetString("_201606091237191_GivingAnalyticsRefactor_FirstLastEverDates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spFinance_GivingAnalyticsQuery_PersonSummary]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_PersonSummary]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns data used by the giving analytics block
+        ///	&lt;/summary&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///CREATE PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_PersonSummary]
+        ///	  @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @MinAmount decimal(18,2) = NULL [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201606091237191_GivingAnalyticsRefactor_PersonSummary {
+            get {
+                return ResourceManager.GetString("_201606091237191_GivingAnalyticsRefactor_PersonSummary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spFinance_GivingAnalyticsQuery_TransactionData]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_TransactionData]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns account totals for each giving leader based on filter values
+        ///	&lt;/summary&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///CREATE PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_TransactionData]
+        ///	  @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @Acc [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201606091237191_GivingAnalyticsRefactor_TransactionData {
+            get {
+                return ResourceManager.GetString("_201606091237191_GivingAnalyticsRefactor_TransactionData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- Add back defined value indexes that were removed
+        ///IF EXISTS ( SELECT * FROM sys.indexes WHERE name=&apos;IX_QualifierValueId&apos; AND object_id = OBJECT_ID(N&apos;[dbo].[Attendance]&apos;) )
+        ///DROP INDEX [IX_QualifierValueId] ON [dbo].[Attendance]
+        ///GO
+        ///
+        ///CREATE NONCLUSTERED INDEX [IX_QualifierValueId] ON [dbo].[Attendance] ( [QualifierValueId] ASC )
+        ///WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+        ///GO
+        ///
+        ///I [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201606231511599_RegistrationWorkflow_Indexes {
+            get {
+                return ResourceManager.GetString("_201606231511599_RegistrationWorkflow_Indexes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCrm_PersonDuplicateFinder]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spCrm_PersonDuplicateFinder]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure detects potential duplicate person records and stores the results in [PersonDuplicate]
+        ///	&lt;/summary&gt;
+        ///	
+        ///	&lt;remarks&gt;	
+        ///		Uses the following constants:
+        ///			* Group Type - Family: &apos;790E3215-3B10-442B-AF69-616C0DCB998E&apos;
+        ///            * Location Type - Home: &apos;8C52E53C-2A66-435A- [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201607102235065_ScheduledTransactionType {
+            get {
+                return ResourceManager.GetString("_201607102235065_ScheduledTransactionType", resourceCulture);
+            }
+        }
     }
 }

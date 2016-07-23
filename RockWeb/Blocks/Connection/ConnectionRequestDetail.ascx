@@ -101,10 +101,11 @@
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                     <asp:CustomValidator ID="cvConnectionRequest" runat="server" Display="None" />
                     <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" />
+                    <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
                     <div class="row">
                         <div class="col-md-3">
-                            <Rock:PersonPicker runat="server" ID="ppRequestor" Label="Requestor" Required="true" />
+                            <Rock:PersonPicker runat="server" ID="ppRequestor" Label="Requestor" Required="true" OnSelectPerson="ppRequestor_SelectPerson" />
                         </div>
                         <div class="col-md-3">
                             <Rock:RockDropDownList ID="ddlConnectorEdit" runat="server" Label="Connector" />

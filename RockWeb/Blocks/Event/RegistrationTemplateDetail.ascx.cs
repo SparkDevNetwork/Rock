@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -665,6 +665,7 @@ namespace RockWeb.Blocks.Event
             RegistrationTemplate.GroupTypeId = gtpGroupType.SelectedGroupTypeId;
             RegistrationTemplate.GroupMemberRoleId = rpGroupTypeRole.GroupRoleId;
             RegistrationTemplate.GroupMemberStatus = ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>();
+            RegistrationTemplate.RegistrationWorkflowTypeId = wtpRegistrationWorkflow.SelectedValueAsInt();
             RegistrationTemplate.Notify = notify;
             RegistrationTemplate.AddPersonNote = cbAddPersonNote.Checked;
             RegistrationTemplate.LoginRequired = cbLoginRequired.Checked;
@@ -1806,6 +1807,8 @@ namespace RockWeb.Blocks.Event
             {
                 btnEdit.Visible = true;
                 btnDelete.Visible = true;
+
+                btnCopy.ToolTip = "Copy " + registrationTemplate.Name;
                 btnCopy.Visible = true;
 
                 btnSecurity.Title = "Secure " + registrationTemplate.Name;
@@ -1947,6 +1950,7 @@ namespace RockWeb.Blocks.Event
             rpGroupTypeRole.GroupTypeId = RegistrationTemplate.GroupTypeId ?? 0;
             rpGroupTypeRole.GroupRoleId = RegistrationTemplate.GroupMemberRoleId;
             ddlGroupMemberStatus.SetValue( RegistrationTemplate.GroupMemberStatus.ConvertToInt() );
+            wtpRegistrationWorkflow.SetValue( RegistrationTemplate.RegistrationWorkflowTypeId );
 
             foreach( ListItem li in cblNotify.Items )
             {
@@ -2027,6 +2031,9 @@ namespace RockWeb.Blocks.Event
                 RegistrationTemplate.Category.Name : string.Empty;
             lGroupType.Text = RegistrationTemplate.GroupType != null ?
                 RegistrationTemplate.GroupType.Name : string.Empty;
+            lWorkflowType.Text = RegistrationTemplate.RegistrationWorkflowType != null ?
+                RegistrationTemplate.RegistrationWorkflowType.Name : string.Empty;
+            lWorkflowType.Visible = !string.IsNullOrWhiteSpace( lWorkflowType.Text );
 
             rcwForms.Label = string.Format( "<strong>Forms</strong> ({0}) <i class='fa fa-caret-down'></i>", RegistrationTemplate.Forms.Count() );
             if ( RegistrationTemplate.Forms.Any() )

@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -603,6 +603,48 @@ namespace Rock.Lava
             {
                 return Uri.EscapeDataString( input );
             }
+        }
+
+        /// <summary>
+        /// Tests if the inputted string matches the regex
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="expression">The regex expression.</param>
+        /// <returns></returns>
+        public static bool RegExMatch( string input, string expression )
+        {
+            if ( input == null )
+            {
+                return false;
+            }
+
+            Regex regex = new Regex( expression );
+            Match match = regex.Match( input );
+
+            return match.Success;
+        }
+
+        /// <summary>
+        /// The slice filter returns a substring, starting at the specified index.
+        /// </summary>
+        /// <param name="input">The input string.</param>
+        /// <param name="start">If the passed index is negative, it is counted from the end of the string.</param>
+        /// <param name="length">An optional second parameter can be passed to specify the length of the substring.  If no second parameter is given, a substring of one character will be returned.</param>
+        /// <returns></returns>
+        public static String Slice( string input, int start, int length = 1 )
+        {
+            // If a negative start, subtract if from the length
+            if ( start < 0 )
+            {
+                start = input.Length + start;
+            }
+            // Make sure start is never < 0
+            start = start >= 0 ? start : 0;
+
+            // If length takes us off the end, fix it
+            length = length > ( input.Length - start ) ? ( input.Length - start ) : length;
+
+            return input.Substring(start, length);
         }
 
         #endregion
@@ -2331,11 +2373,36 @@ namespace Rock.Lava
             }
             catch
             {
-                // if it didn't deserialize as straight ExpandoObject, try it as a List of ExpandoObjects
-                contentObject = JsonConvert.DeserializeObject<List<ExpandoObject>>( value, converter );
+                try
+                {
+                    // if it didn't deserialize as straight ExpandoObject, try it as a List of ExpandoObjects
+                    contentObject = JsonConvert.DeserializeObject<List<ExpandoObject>>( value, converter );
+                }
+                catch
+                {
+                    // if it didn't deserialize as a List of ExpandoObject, try it as a List of plain objects
+                    contentObject = JsonConvert.DeserializeObject<List<object>>( value, converter );
+                }
             }
 
             return contentObject;
+        }
+
+        /// <summary>
+        /// Converts Markdown to HTML
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string FromMarkdown( string input )
+        {
+            if ( input != null )
+            {
+                return input.ConvertMarkdownToHtml();
+            }
+            else
+            {
+                return input;
+            }
         }
 
         /// <summary>
@@ -2564,7 +2631,9 @@ namespace Rock.Lava
                     if ( value is ILiquidizable )
                     {
                         var liquidObject = value as ILiquidizable;
-                        if ( liquidObject.ContainsKey( filterKey ) && liquidObject[filterKey].Equals( filterValue ) )
+                        var condition = DotLiquid.Condition.Operators["=="];
+
+                        if ( liquidObject.ContainsKey( filterKey ) && condition( liquidObject[filterKey], filterValue ) )
                         {
                             result.Add( liquidObject );
                         }
@@ -2679,3 +2748,4 @@ namespace Rock.Lava
         #endregion
     }
 }
+

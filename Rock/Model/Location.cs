@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -188,6 +188,16 @@ namespace Rock.Model
         public string PostalCode { get; set; }
 
         /// <summary>
+        /// Gets or sets the barcode.
+        /// </summary>
+        /// <value>
+        /// The barcode.
+        /// </value>
+        [MaxLength( 40 )]
+        [DataMember]
+        public string Barcode { get; set; }
+
+        /// <summary>
         /// Gets or sets the Local Assessor's parcel identification value that is linked to the location.
         /// </summary>
         /// <value>
@@ -308,6 +318,24 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? ImageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a threshold that will prevent checkin unless a manager overrides
+        /// </summary>
+        /// <value>
+        /// The soft room threshold.
+        /// </value>
+        [DataMember]
+        public int? SoftRoomThreshold { get; set; }
+
+        /// <summary>
+        /// Gets or sets threshold that will prevent checkin (no option to override)
+        /// </summary>
+        /// <value>
+        /// The firm room threshold.
+        /// </value>
+        [DataMember]
+        public int? FirmRoomThreshold { get; set; }
 
         #endregion
 
@@ -615,11 +643,11 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            string result = this.Name;
+            string result = GetFullStreetAddress();
 
             if ( string.IsNullOrEmpty( result ) )
             {
-                result = GetFullStreetAddress();
+                result = this.Name;
             }
 
             if ( string.IsNullOrWhiteSpace( result ) )

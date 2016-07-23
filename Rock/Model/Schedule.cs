@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -374,6 +374,22 @@ namespace Rock.Model
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Gets the next check in start time.
+        /// </summary>
+        /// <param name="begindateTime">The begindate time.</param>
+        /// <returns></returns>
+        public virtual DateTime? GetNextCheckInStartTime( DateTime begindateTime )
+        {
+            var checkInTimes = GetCheckInTimes( begindateTime );
+            if ( checkInTimes != null && checkInTimes.Any() )
+            {
+                return checkInTimes.FirstOrDefault().CheckInStart;
+            }
+
+            return null;
         }
 
         /// <summary>

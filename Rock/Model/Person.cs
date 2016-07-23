@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -1015,26 +1015,48 @@ namespace Rock.Model
         /// </summary>
         /// <param name="condensed">if set to <c>true</c> age in years is returned without a unit suffix.</param>
         /// <returns></returns>
-        public string FormatAge( bool condensed = false)
+        public string FormatAge(bool condensed = false)
         {
             var age = Age;
-            if (age != null && age > 0 )
+            if (age != null)
             {
                 if (condensed)
                 {
                     return age.ToString();
                 }
-                return age  + (age == 1 ? " yr old " : " yrs old ");
+                if (age > 0)
+                {
+                    return age + (age == 1 ? " yr old " : " yrs old ");
+                }
             }
+
             var today = RockDateTime.Today;
-            if (BirthMonth != null && BirthMonth < today.Month)
+            if (BirthYear != null && BirthMonth != null)
             {
                 int months = today.Month - BirthMonth.Value;
-                return months + (months == 1 ? " mo old " : " mos old ");
+                if (BirthYear < today.Year)
+                {
+                    months = months + 12;
+                }
+                if (BirthDay > today.Day)
+                {
+                    months--;
+                }
+                if (months > 0)
+                {
+                    return months + (months == 1 ? " mo old " : " mos old ");
+                }
             }
-            if (BirthDay != null)
+
+            if (BirthYear != null && BirthMonth != null && BirthDay != null)
             {
                 int days = today.Day - BirthDay.Value;
+                if (days < 0)
+                {
+                    // Add the number of days in the birth month
+                    var birthMonth = new DateTime(BirthYear.Value, BirthMonth.Value, 1);
+                    days = days + birthMonth.AddMonths(1).AddDays(-1).Day;
+                }
                 return days + (days == 1 ? " day old " : " days old ");
             }
             return string.Empty;
@@ -1204,15 +1226,7 @@ namespace Rock.Model
         {
             get
             {
-                if ( !GraduationYear.HasValue )
-                {
-                    return null;
-                }
-                else
-                {
-                    var globalAttributes = GlobalAttributesCache.Read();
-                    return GraduationYear.Value - globalAttributes.CurrentGraduationYear;
-                }
+                return GradeOffsetFromGraduationYear( GraduationYear );
             }
 
             set
@@ -1233,12 +1247,7 @@ namespace Rock.Model
         {
             get
             {
-                if ( GradeOffset.HasValue )
-                {
-                    return GradeOffset < 0;
-                }
-
-                return null;
+                return HasGraduatedFromGradeOffset( GradeOffset );
             }
 
             private set
@@ -1260,23 +1269,7 @@ namespace Rock.Model
         {
             get
             {
-                int? gradeOffset = GradeOffset;
-
-                if ( gradeOffset.HasValue && gradeOffset >= 0 )
-                {
-                    var schoolGrades = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
-                    if ( schoolGrades != null )
-                    {
-                        var sortedGradeValues = schoolGrades.DefinedValues.OrderBy( a => a.Value.AsInteger() );
-                        var schoolGradeValue = sortedGradeValues.Where( a => a.Value.AsInteger() >= gradeOffset.Value ).FirstOrDefault();
-                        if ( schoolGradeValue != null )
-                        {
-                            return schoolGradeValue.Description;
-                        }
-                    }
-                }
-
-                return string.Empty;
+                return GradeFormattedFromGradeOffset( GradeOffset );
             }
 
             private set
@@ -1482,6 +1475,19 @@ namespace Rock.Model
                 this.Aliases.Add( new PersonAlias { AliasPerson = this, AliasPersonGuid = this.Guid, Guid = Guid.NewGuid() } );
             }
 
+            if ( this.AnniversaryDate.HasValue )
+            {
+                var dbPropertyEntry = entry.Property( "AnniversaryDate" );
+                if ( dbPropertyEntry != null && dbPropertyEntry.IsModified )
+                {
+                    var spouse = this.GetSpouse( (RockContext)dbContext );
+                    if ( spouse != null && spouse.AnniversaryDate != this.AnniversaryDate )
+                    {
+                        spouse.AnniversaryDate = this.AnniversaryDate;
+                    }
+                }
+            }
+
             var transaction = new Rock.Transactions.SaveMetaphoneTransaction( this );
             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
         }
@@ -1551,12 +1557,11 @@ namespace Rock.Model
         /// <param name="gender">The gender to use if the photoId is null.</param>
         /// <param name="maxWidth">The maximum width (in px).</param>
         /// <param name="maxHeight">The maximum height (in px).</param>
-        /// <param name="personId">The person identifier.</param>
         /// <returns></returns>
         [Obsolete( "GetPhotoUrl is deprecated, please use GetPersonPhotoUrl instead." )]
-        public static string GetPhotoUrl( int? photoId, Gender gender, int? maxWidth = null, int? maxHeight = null, int? personId = null )
+        public static string GetPhotoUrl( int? photoId, Gender gender, int? maxWidth, int? maxHeight )
         {
-            return GetPhotoUrl( photoId, null, gender, null, maxWidth, maxHeight, personId );
+            return GetPhotoUrl( photoId, null, gender, null, maxWidth, maxHeight, null );
         }
 
         /// <summary>
@@ -1567,12 +1572,11 @@ namespace Rock.Model
         /// <param name="gender">The gender to use if the photoId is null.</param>
         /// <param name="maxWidth">The maximum width (in px).</param>
         /// <param name="maxHeight">The maximum height (in px).</param>
-        /// <param name="personId">The person identifier.</param>
         /// <returns></returns>
         [Obsolete( "GetPhotoUrl is deprecated, please use GetPersonPhotoUrl instead." )]
-        public static string GetPhotoUrl( int? photoId, int? age, Gender gender, int? maxWidth = null, int? maxHeight = null, int? personId = null )
+        public static string GetPhotoUrl( int? photoId, int? age, Gender gender, int? maxWidth, int? maxHeight )
         {
-            return GetPhotoUrl( photoId, age, gender, null, maxWidth, maxHeight, personId );
+            return GetPhotoUrl( photoId, age, gender, null, maxWidth, maxHeight, null );
         }
 
         /// <summary>
@@ -1583,12 +1587,11 @@ namespace Rock.Model
         /// <param name="age">The age.</param>
         /// <param name="maxWidth">The maximum width (in px).</param>
         /// <param name="maxHeight">The maximum height (in px).</param>
-        /// <param name="personId">The person identifier.</param>
         /// <returns></returns>
         [Obsolete( "GetPhotoUrl is deprecated, please use GetPersonPhotoUrl instead." )]
-        public static string GetPhotoUrl( int? photoId, Gender gender, int? age, int? maxWidth = null, int? maxHeight = null, int? personId = null )
+        public static string GetPhotoUrl( int? photoId, Gender gender, int? age, int? maxWidth, int? maxHeight )
         {
-            return GetPhotoUrl( photoId, null, gender, null, maxWidth, maxHeight, personId );
+            return GetPhotoUrl( photoId, age, gender, null, maxWidth, maxHeight, null );
         }
 
         /// <summary>
@@ -1599,14 +1602,28 @@ namespace Rock.Model
         /// <param name="recordTypeValueGuid">The record type value unique identifier.</param>
         /// <param name="maxWidth">The maximum width (in px).</param>
         /// <param name="maxHeight">The maximum height (in px).</param>
-        /// <param name="personId">The person identifier.</param>
         /// <returns></returns>
         [Obsolete( "GetPhotoUrl is deprecated, please use GetPersonPhotoUrl instead." )]
-        public static string GetPhotoUrl( int? photoId, Gender gender, Guid? recordTypeValueGuid, int? maxWidth = null, int? maxHeight = null, int? personId = null )
+        public static string GetPhotoUrl( int? photoId, Gender gender, Guid? recordTypeValueGuid, int? maxWidth, int? maxHeight )
         {
-            return GetPhotoUrl( photoId, null, gender, null, maxWidth, maxHeight, personId );
+            return GetPhotoUrl( photoId, null, gender, recordTypeValueGuid, maxWidth, maxHeight, null );
         }
 
+        /// <summary>
+        /// Gets the photo URL.
+        /// </summary>
+        /// <param name="photoId">The photo identifier.</param>
+        /// <param name="age">The age.</param>
+        /// <param name="gender">The gender to use if the photoId is null.</param>
+        /// <param name="recordTypeValueGuid">The record type value unique identifier.</param>
+        /// <param name="maxWidth">The maximum width (in px).</param>
+        /// <param name="maxHeight">The maximum height (in px).</param>
+        /// <returns></returns>
+        [Obsolete( "GetPhotoUrl is deprecated, please use GetPersonPhotoUrl instead." )]
+        public static string GetPhotoUrl( int? photoId, int? age, Gender gender, Guid? recordTypeValueGuid, int? maxWidth, int? maxHeight )
+        {
+            return GetPhotoUrl( photoId, age, gender, recordTypeValueGuid, maxWidth, maxHeight, null );
+        }
 
         /// <summary>
         /// Gets the photo URL.
@@ -1844,13 +1861,12 @@ namespace Rock.Model
         /// <param name="maxWidth">The maximum width (in px).</param>
         /// <param name="maxHeight">The maximum height (in px).</param>
         /// <param name="className">The css class name to apply to the image.</param>
-        /// <param name="personId">The person identifier.</param>
         /// <returns></returns>
         [Obsolete( "GetPhotoImageTag is deprecated, please use GetPersonPhotoImageTag instead." )]
-        public static string GetPhotoImageTag( PersonAlias personAlias, int? maxWidth = null, int? maxHeight = null, string className = "", int? personId = null )
+        public static string GetPhotoImageTag( PersonAlias personAlias, int? maxWidth = null, int? maxHeight = null, string className = "" )
         {
             Person person = personAlias != null ? personAlias.Person : null;
-            return GetPhotoImageTag( person, maxWidth, maxHeight, className, personId );
+            return GetPhotoImageTag( person, maxWidth, maxHeight, className );
         }
 
         /// <summary>
@@ -1860,16 +1876,16 @@ namespace Rock.Model
         /// <param name="maxWidth">The maximum width (in px).</param>
         /// <param name="maxHeight">The maximum height (in px).</param>
         /// <param name="className">The css class name to apply to the image.</param>
-        /// <param name="personId">The person identifier.</param>
         /// <returns></returns>
         [Obsolete( "GetPhotoImageTag is deprecated, please use GetPersonPhotoImageTag instead." )]
-        public static string GetPhotoImageTag( Person person, int? maxWidth = null, int? maxHeight = null, string className = "", int? personId = null )
+        public static string GetPhotoImageTag( Person person, int? maxWidth = null, int? maxHeight = null, string className = "" )
         {
             int? photoId = null;
             Gender gender = Gender.Male;
             string altText = string.Empty;
             int? age = null;
             Guid? recordTypeValueGuid = null;
+            int? personId = null;
 
             if ( person != null )
             {
@@ -1893,12 +1909,11 @@ namespace Rock.Model
         /// <param name="maxHeight">The maximum height (in px).</param>
         /// <param name="altText">The alt text to use on the image.</param>
         /// <param name="className">The css class name to apply to the image.</param>
-        /// <param name="personId">The person identifier.</param>
         /// <returns></returns>
         [Obsolete( "GetPhotoImageTag is deprecated, please use GetPersonPhotoImageTag instead." )]
-        public static string GetPhotoImageTag( int? photoId, Gender gender, int? maxWidth = null, int? maxHeight = null, string altText = "", string className = "", int? personId = null )
+        public static string GetPhotoImageTag( int? photoId, Gender gender, int? maxWidth = null, int? maxHeight = null, string altText = "", string className = "" )
         {
-            return Person.GetPhotoImageTag( photoId, null, gender, null, maxWidth, maxHeight, altText, className, personId );
+            return Person.GetPhotoImageTag( photoId, null, gender, null, maxWidth, maxHeight, altText, className, null );
         }
 
         /// <summary>
@@ -1911,12 +1926,29 @@ namespace Rock.Model
         /// <param name="maxHeight">The maximum height (in px).</param>
         /// <param name="altText">The alt text to use on the image.</param>
         /// <param name="className">The css class name to apply to the image.</param>
-        /// <param name="personId">The person identifier.</param>
         /// <returns></returns>
         [Obsolete( "GetPhotoImageTag is deprecated, please use GetPersonPhotoImageTag instead." )]
-        public static string GetPhotoImageTag( int? photoId, int? age, Gender gender, int? maxWidth = null, int? maxHeight = null, string altText = "", string className = "", int? personId = null )
+        public static string GetPhotoImageTag( int? photoId, int? age, Gender gender, int? maxWidth = null, int? maxHeight = null, string altText = "", string className = "" )
         {
-            return Person.GetPhotoImageTag( photoId, age, gender, null, maxWidth, maxHeight, altText, className, personId );
+            return Person.GetPhotoImageTag( photoId, age, gender, null, maxWidth, maxHeight, altText, className, null );
+        }
+
+        /// <summary>
+        /// Gets the photo image tag.
+        /// </summary>
+        /// <param name="photoId">The photo identifier.</param>
+        /// <param name="age">The age.</param>
+        /// <param name="gender">The gender.</param>
+        /// <param name="recordTypeValueGuid">The record type value unique identifier.</param>
+        /// <param name="maxWidth">The maximum width (in px).</param>
+        /// <param name="maxHeight">The maximum height (in px).</param>
+        /// <param name="altText">The alt text to use on the image.</param>
+        /// <param name="className">The css class name to apply to the image.</param>
+        /// <returns></returns>
+        [Obsolete( "GetPhotoImageTag is deprecated, please use GetPersonPhotoImageTag instead." )]
+        public static string GetPhotoImageTag( int? photoId, int? age, Gender gender, Guid? recordTypeValueGuid, int? maxWidth = null, int? maxHeight = null, string altText = "", string className = "" )
+        {
+            return Person.GetPhotoImageTag( photoId, age, gender, recordTypeValueGuid, maxWidth, maxHeight, altText, className, null );
         }
 
         /// <summary>
@@ -2270,6 +2302,74 @@ namespace Rock.Model
             }
 
             return null;
+        }
+
+
+        /// <summary>
+        /// Given a graduation year returns the grade offset
+        /// </summary>
+        /// <param name="graduationYear">The graduation year.</param>
+        /// <returns></returns>
+        public static int? GradeOffsetFromGraduationYear( int? graduationYear )
+        {
+            if ( !graduationYear.HasValue )
+            {
+                return null;
+            }
+            else
+            {
+                var globalAttributes = GlobalAttributesCache.Read();
+                return graduationYear.Value - globalAttributes.CurrentGraduationYear;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether person has graduated based on grade offset
+        /// </summary>
+        /// <param name="gradeOffset">The grade offset.</param>
+        /// <returns></returns>
+        public static bool? HasGraduatedFromGradeOffset( int? gradeOffset )
+        {
+            if ( gradeOffset.HasValue )
+            {
+                return gradeOffset < 0;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Formats the grade based on graduation year
+        /// </summary>
+        /// <param name="graduationYear">The graduation year.</param>
+        /// <returns></returns>
+        public static string GradeFormattedFromGraduationYear( int? graduationYear )
+        {
+            return GradeFormattedFromGradeOffset( GradeOffsetFromGraduationYear( graduationYear ) );
+        }
+
+        /// <summary>
+        /// Formats the grade based on grade offset
+        /// </summary>
+        /// <param name="gradeOffset">The grade offset.</param>
+        /// <returns></returns>
+        public static string GradeFormattedFromGradeOffset( int? gradeOffset )
+        {
+            if ( gradeOffset.HasValue && gradeOffset >= 0 )
+            {
+                var schoolGrades = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+                if ( schoolGrades != null )
+                {
+                    var sortedGradeValues = schoolGrades.DefinedValues.OrderBy( a => a.Value.AsInteger() );
+                    var schoolGradeValue = sortedGradeValues.Where( a => a.Value.AsInteger() >= gradeOffset.Value ).FirstOrDefault();
+                    if ( schoolGradeValue != null )
+                    {
+                        return schoolGradeValue.Description;
+                    }
+                }
+            }
+
+            return string.Empty;
         }
 
         #endregion
