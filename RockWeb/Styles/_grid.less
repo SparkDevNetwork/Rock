@@ -339,7 +339,7 @@ td.grid-col-actions {
 .grid .table > thead > tr > th,
 .grid .table > tbody > tr > td { // get buttons and text columns to look good together
 
-    padding: 12px; 
+    padding: 12px;
 
     &.grid-columncommand {
          padding: 6px;
@@ -416,27 +416,26 @@ tr.row-highlight {
     }
 }
 
-// inactive row
-.table > tbody > tr.is-inactive {
-
+.table > tbody {
+  // inactive row
+  > tr.is-inactive {
     > td {
-        color: lighten(@grid-row-even-color, 30%);
+      color: lighten(@grid-row-even-color, 30%);
     }
- }
+  }
 
-.table > tbody > tr.is-inactive-person {
-
+  > tr.is-inactive-person {
     > td {
-        color: lighten(@grid-row-even-color, 30%);
+      color: lighten(@grid-row-even-color, 30%);
     }
- }
+  }
 
-.table > tbody > tr.is-deceased {
-
+  > tr.is-deceased {
     > td {
-        color: @brand-danger;
+      color: @brand-danger;
     }
- }
+  }
+}
 
 // 10. Responsive Columns
 // -------------------------
@@ -449,10 +448,8 @@ tr.row-highlight {
     overflow-x: auto;
     -ms-overflow-style: -ms-autohiding-scrollbar;
     -webkit-overflow-scrolling: touch;
-}
 
-// classes to show and hide columns based on their priority
-.table-responsive {
+  // classes to show and hide columns based on their priority
 
     th[data-priority],
     td[data-priority] {

@@ -1,5 +1,5 @@
 /*
-     
+
      Rock Park Check-in Theme
      Crafted by: Spark Development Network
 
@@ -10,7 +10,7 @@
 // --------------------------------------------------
 
 @import "../../../Styles/FontAwesome/font-awesome.less";
-@import "../../../Styles/Bootstrap/bootstrap.less"; 
+@import "../../../Styles/Bootstrap/bootstrap.less";
 @import "../../../Styles/_checkin-core.less";
 @import "../../../Styles/_modal.less";
 @import "../../../Styles/_helpers.less";
@@ -24,50 +24,54 @@
 
 // regular (weight 'normal' aka 400)
 @font-face {
-    font-family: 'OpenSans';
-    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot');
-    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.woff') format('woff'),
-         url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.ttf') format('truetype'),
-         url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.svg#OpenSansRegular') format('svg');
-    font-weight: 400;
-    font-style: normal;
+  font-family: 'OpenSans';
+  font-style: normal;
+  font-weight: 400;
+
+  src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot');
+  src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+  url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.woff') format('woff'),
+  url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.ttf') format('truetype'),
+  url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.svg#OpenSansRegular') format('svg');
 }
 
 // light (weight 300)
 @font-face {
-    font-family: 'OpenSans';
-    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot');
-    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.woff') format('woff'),
-         url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.ttf') format('truetype'),
-         url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.svg#OpenSansLight') format('svg');
-    font-weight: 300;
-    font-style: normal;
+  font-family: 'OpenSans';
+  font-style: normal;
+  font-weight: 300;
+
+  src: url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot');
+  src: url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot?#iefix') format('embedded-opentype'),
+  url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.woff') format('woff'),
+  url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.ttf') format('truetype'),
+  url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.svg#OpenSansLight') format('svg');
 }
 
 // semi-bold (weight 600)
 @font-face {
-    font-family: 'OpenSans';
-    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot');
-    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.woff') format('woff'),
-         url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.ttf') format('truetype'),
-         url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.svg#OpenSansSemibold') format('svg');
-    font-weight: 600;
-    font-style: normal;
+  font-family: 'OpenSans';
+  font-style: normal;
+  font-weight: 600;
+
+  src: url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot');
+  src: url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot?#iefix') format('embedded-opentype'),
+  url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.woff') format('woff'),
+  url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.ttf') format('truetype'),
+  url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.svg#OpenSansSemibold') format('svg');
 }
 
 // bold (weight 700)
 @font-face {
-    font-family: 'OpenSans';
-    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot');
-    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.woff') format('woff'),
-         url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.ttf') format('truetype'),
-         url('s../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.svg#OpenSansBold') format('svg');
-    font-weight: 700;
-    font-style: normal;
+  font-family: 'OpenSans';
+  font-style: normal;
+  font-weight: 700;
+
+  src: url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot');
+  src: url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot?#iefix') format('embedded-opentype'),
+  url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.woff') format('woff'),
+  url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.ttf') format('truetype'),
+  url('s../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.svg#OpenSansBold') format('svg');
 }
 
 
@@ -75,13 +79,12 @@
 // Mix-ins
 // --------------------------------------------------
 .checkinBackground () {
-  	background: @bg-color @background-image top right no-repeat fixed;
+  background: @bg-color @background-image top right no-repeat fixed;
 }
 
-.checkinBackgroundRetina()
-{
-    background-image: @bg-color @background-image-retina;
-    background-size: @background-image-retina-size;
+.checkinBackgroundRetina() {
+  background-image: @bg-color @background-image-retina;
+  background-size: @background-image-retina-size;
 }
 
 
@@ -93,14 +96,15 @@
 
 .checkin-count h3,
 .checkin-count li {
-	color: #4c4c4b;
+  color: #4c4c4b;
 }
 
 body {
-    -ms-touch-action: manipulation !important;
-    -ms-content-zooming: none; /* Disables zooming */
-    touch-action: manipulation;   /* Disable any special actions on tap/touch */
-    display: none;
+  display: none;
+  -ms-touch-action: manipulation !important;
+      touch-action: manipulation;   /* Disable any special actions on tap/touch */
+
+  -ms-content-zooming: none; /* Disables zooming */
 }
 
 @import "_css-overrides.less";

@@ -1,11 +1,11 @@
 ﻿
 // Load Master Styles
 // -------------------------
-@import "../../../Styles/Bootstrap/variables.less";
-@import "../../../Styles/_rock-core.less";
-@import "../../../Styles/_rock-variables.less";
-@import "_variables.less";
-@import "_print.less";
+// @import "../../../Styles/Bootstrap/variables.less";
+// @import "../../../Styles/_rock-core.less";
+// @import "../../../Styles/_rock-variables.less";
+// @import "_variables.less";
+// @import "_print.less";
 
 
 /*
@@ -22,7 +22,7 @@
 // -------------------------
 
 main {
-  display:block;
+  display: block;
 }
 
 
@@ -34,23 +34,21 @@ main {
 // -------------------------
 
 header {
-  background-color: @header-bg;
-  color: @header-text-color;
   min-height: 80px;
+  color: @header-text-color;
+  background-color: @header-bg;
 }
 
-main {
 
-}
 
 footer {
   position: absolute;
   bottom: 0;
   width: 100%;
-  background-color: @footer-bg;
-  color: @footer-color;
   min-height: 80px;
   padding-top: 24px;
+  color: @footer-color;
+  background-color: @footer-bg;
 }
 
 
@@ -62,7 +60,6 @@ footer {
 
 // Small devices (tablets, 768px and up)
 @media (min-width: @screen-sm-min) {
-
 }
 
 // Medium devices (desktops, 992px and up)
@@ -74,5 +71,4 @@ footer {
 
 // Large devices (large desktops, 1200px and up)
 @media (min-width: @screen-lg-min) {
-
 }
