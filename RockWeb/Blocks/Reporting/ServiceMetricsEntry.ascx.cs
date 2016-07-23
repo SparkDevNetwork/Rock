@@ -92,8 +92,8 @@ namespace RockWeb.Blocks.Reporting
 
             if ( !Page.IsPostBack )
             {
-                //_selectedCampusId = GetBlockUserPreference( "CampusId" ).AsIntegerOrNull();
-                //_selectedServiceId = GetBlockUserPreference( "ScheduleId" ).AsIntegerOrNull();
+                _selectedCampusId = GetBlockUserPreference( "CampusId" ).AsIntegerOrNull();
+                _selectedServiceId = GetBlockUserPreference( "ScheduleId" ).AsIntegerOrNull();
 
                 if ( CheckSelection() )
                 {
@@ -290,7 +290,7 @@ namespace RockWeb.Blocks.Reporting
             if ( !options.Any() && !_selectedWeekend.HasValue )
             {
                 lSelection.Text = "Select Week of:";
-                foreach ( var weekend in GetWeekendDates() )
+                foreach ( var weekend in GetWeekendDates( 1, 0 ) )
                 {
                     options.Add( new ServiceMetricSelectItem( "Weekend", weekend.ToString( "o" ), "Sunday " + weekend.ToShortDateString() ) );
                 }
@@ -351,7 +351,9 @@ namespace RockWeb.Blocks.Reporting
             bddlCampus.SetValue( _selectedCampusId.Value );
 
             // Load Weeks
-            foreach( var date in GetWeekendDates() )
+            var weeksBack = GetAttributeValue( "WeeksBack" ).AsInteger();
+            var weeksAhead = GetAttributeValue( "WeeksAhead" ).AsInteger();
+            foreach ( var date in GetWeekendDates( weeksBack, weeksAhead ) )
             {
                 bddlWeekend.Items.Add( new ListItem( "Sunday " + date.ToShortDateString(), date.ToString( "o" ) ) );
             }
@@ -387,14 +389,14 @@ namespace RockWeb.Blocks.Reporting
         /// Gets the weekend dates.
         /// </summary>
         /// <returns></returns>
-        private List<DateTime> GetWeekendDates()
+        private List<DateTime> GetWeekendDates( int weeksBack, int weeksAhead )
         {
             var dates = new List<DateTime>();
 
             // Load Weeks
             var sundayDate = RockDateTime.Today.SundayDate();
-            var daysBack = GetAttributeValue( "WeeksBack" ).AsInteger() * 7;
-            var daysAhead = GetAttributeValue( "WeeksAhead" ).AsInteger() * 7;
+            var daysBack = weeksBack * 7;
+            var daysAhead = weeksAhead * 7;
             var startDate = sundayDate.AddDays( 0 - daysBack );
             var date = sundayDate.AddDays( daysAhead );
             while ( date >= startDate )
