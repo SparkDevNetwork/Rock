@@ -98,6 +98,13 @@ namespace Rock.Workflow.Action
                                             // update person attribute
                                             person.LoadAttributes();
                                             string originalValue = person.GetAttributeValue( attribute.Key );
+
+                                            // Handle encrypted text fields as well.
+                                            if ( attribute.FieldType.Field is Field.Types.EncryptedTextFieldType )
+                                            {
+                                                updateValue = Security.Encryption.EncryptString( updateValue );
+                                            }
+
                                             Rock.Attribute.Helper.SaveAttributeValue( person, attribute, updateValue, rockContext );
 
                                             if ( ( originalValue ?? string.Empty ).Trim() != ( updateValue ?? string.Empty ).Trim() )
