@@ -114,6 +114,10 @@
     <Compile Include="Migrations\201607222201418_BenevolenceAdditions.Designer.cs">
       <DependentUpon>201607222201418_BenevolenceAdditions.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201607242254385_LabelEditor.cs" />
+    <Compile Include="Migrations\201607242254385_LabelEditor.Designer.cs">
+      <DependentUpon>201607242254385_LabelEditor.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -2207,6 +2211,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201607222201418_BenevolenceAdditions.resx">
       <DependentUpon>201607222201418_BenevolenceAdditions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201607242254385_LabelEditor.resx">
+      <DependentUpon>201607242254385_LabelEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\RockMigrationSQL.resx" />
     <EmbeddedResource Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase.resx">

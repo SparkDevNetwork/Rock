@@ -61,20 +61,30 @@ namespace Rock.Workflow.Action
                     return false;
                 }
 
-                StringBuilder sb = new StringBuilder();
-
-                var contentString = binaryFile.ContentsToString();
-                foreach ( Match match in Regex.Matches( 
-                    contentString,
-                    @"(?<=\^FD)((?!\^FS).)*(?=\^FS)" ) )
-                {
-                    sb.AppendFormat( "{0}^|", match.Value );
-                }
-
                 binaryFile.LoadAttributes();
 
+                // Get the existing merge fields
+                var existingMergeFields = new Dictionary<string, string>();
+                foreach ( var keyAndVal in binaryFile.GetAttributeValue( "MergeCodes" ).Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) )
+                {
+                    var keyVal = keyAndVal.Split( new char[] { '^' } );
+                    if ( keyVal.Length == 2 )
+                    {
+                        existingMergeFields.AddOrIgnore( keyVal[0], keyVal[1] );
+                    }
+                }
+
+                // Build new merge fields
+                var newMergeFields = new List<string>();
+                foreach ( Match match in Regex.Matches( binaryFile.ContentsToString(), @"(?<=\^FD)((?!\^FS).)*(?=\^FS)" ) )
+                {
+                    string value = existingMergeFields.ContainsKey( match.Value ) ? existingMergeFields[match.Value] : "";
+                    newMergeFields.Add( string.Format( "{0}^{1}", match.Value, value ) );
+                }
+
+                // Save attribute value
                 var attributeValue = new AttributeValueCache();
-                attributeValue.Value = sb.ToString();
+                attributeValue.Value = newMergeFields.AsDelimited( "|" );
 
                 binaryFile.AttributeValues["MergeCodes"] = attributeValue;
                 binaryFile.SaveAttributeValues( rockContext );

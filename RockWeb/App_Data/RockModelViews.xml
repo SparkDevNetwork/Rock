@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <views>
-  <mapping-views hash="1291d781b95d15270b964971230af32331849392eba218e530d388af555bc326" conceptual-container="RockContext" store-container="CodeFirstDatabase">
+  <mapping-views hash="f211f5313e2fe9b407d4cde9843a9f199f6983cf0cf9dd25a94a0616c66551ba" conceptual-container="RockContext" store-container="CodeFirstDatabase">
     <view extent="CodeFirstDatabase.AttendanceCode"><![CDATA[
     SELECT VALUE -- Constructing AttendanceCode
         [CodeFirstDatabaseSchema.AttendanceCode](T1.AttendanceCode_Id, T1.AttendanceCode_IssueDateTime, T1.AttendanceCode_Code, T1.AttendanceCode_Guid, T1.AttendanceCode_ForeignId, T1.AttendanceCode_ForeignGuid, T1.AttendanceCode_ForeignKey)
@@ -1675,7 +1675,7 @@
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.BenevolenceRequest"><![CDATA[
     SELECT VALUE -- Constructing BenevolenceRequest
-        [CodeFirstDatabaseSchema.BenevolenceRequest](T1.BenevolenceRequest_Id, T1.BenevolenceRequest_FirstName, T1.BenevolenceRequest_LastName, T1.BenevolenceRequest_Email, T1.BenevolenceRequest_RequestedByPersonAliasId, T1.BenevolenceRequest_RequestText, T1.BenevolenceRequest_RequestDateTime, T1.BenevolenceRequest_HomePhoneNumber, T1.BenevolenceRequest_CellPhoneNumber, T1.BenevolenceRequest_WorkPhoneNumber, T1.BenevolenceRequest_CaseWorkerPersonAliasId, T1.BenevolenceRequest_GovernmentId, T1.BenevolenceRequest_RequestStatusValueId, T1.BenevolenceRequest_ResultSummary, T1.BenevolenceRequest_ConnectionStatusValueId, T1.BenevolenceRequest_LocationId, T1.BenevolenceRequest_CreatedDateTime, T1.BenevolenceRequest_ModifiedDateTime, T1.BenevolenceRequest_CreatedByPersonAliasId, T1.BenevolenceRequest_ModifiedByPersonAliasId, T1.BenevolenceRequest_Guid, T1.BenevolenceRequest_ForeignId, T1.BenevolenceRequest_ForeignGuid, T1.BenevolenceRequest_ForeignKey)
+        [CodeFirstDatabaseSchema.BenevolenceRequest](T1.BenevolenceRequest_Id, T1.BenevolenceRequest_FirstName, T1.BenevolenceRequest_LastName, T1.BenevolenceRequest_Email, T1.BenevolenceRequest_RequestedByPersonAliasId, T1.BenevolenceRequest_RequestText, T1.BenevolenceRequest_RequestDateTime, T1.BenevolenceRequest_HomePhoneNumber, T1.BenevolenceRequest_CellPhoneNumber, T1.BenevolenceRequest_WorkPhoneNumber, T1.BenevolenceRequest_CaseWorkerPersonAliasId, T1.BenevolenceRequest_GovernmentId, T1.BenevolenceRequest_RequestStatusValueId, T1.BenevolenceRequest_ResultSummary, T1.BenevolenceRequest_ConnectionStatusValueId, T1.BenevolenceRequest_LocationId, T1.BenevolenceRequest_ProvidedNextSteps, T1.BenevolenceRequest_CampusId, T1.BenevolenceRequest_CreatedDateTime, T1.BenevolenceRequest_ModifiedDateTime, T1.BenevolenceRequest_CreatedByPersonAliasId, T1.BenevolenceRequest_ModifiedByPersonAliasId, T1.BenevolenceRequest_Guid, T1.BenevolenceRequest_ForeignId, T1.BenevolenceRequest_ForeignGuid, T1.BenevolenceRequest_ForeignKey)
     FROM (
         SELECT 
             T.Id AS BenevolenceRequest_Id, 
@@ -1694,6 +1694,8 @@
             T.ResultSummary AS BenevolenceRequest_ResultSummary, 
             T.ConnectionStatusValueId AS BenevolenceRequest_ConnectionStatusValueId, 
             T.LocationId AS BenevolenceRequest_LocationId, 
+            T.ProvidedNextSteps AS BenevolenceRequest_ProvidedNextSteps, 
+            T.CampusId AS BenevolenceRequest_CampusId, 
             T.CreatedDateTime AS BenevolenceRequest_CreatedDateTime, 
             T.ModifiedDateTime AS BenevolenceRequest_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS BenevolenceRequest_CreatedByPersonAliasId, 
@@ -1725,6 +1727,26 @@
             T.ForeignKey AS BenevolenceResult_ForeignKey, 
             True AS _from0
         FROM RockContext.BenevolenceResults AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.BenevolenceRequestDocument"><![CDATA[
+    SELECT VALUE -- Constructing BenevolenceRequestDocument
+        [CodeFirstDatabaseSchema.BenevolenceRequestDocument](T1.BenevolenceRequestDocument_Id, T1.BenevolenceRequestDocument_BenevolenceRequestId, T1.BenevolenceRequestDocument_BinaryFileId, T1.BenevolenceRequestDocument_Order, T1.BenevolenceRequestDocument_CreatedDateTime, T1.BenevolenceRequestDocument_ModifiedDateTime, T1.BenevolenceRequestDocument_CreatedByPersonAliasId, T1.BenevolenceRequestDocument_ModifiedByPersonAliasId, T1.BenevolenceRequestDocument_Guid, T1.BenevolenceRequestDocument_ForeignId, T1.BenevolenceRequestDocument_ForeignGuid, T1.BenevolenceRequestDocument_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS BenevolenceRequestDocument_Id, 
+            T.BenevolenceRequestId AS BenevolenceRequestDocument_BenevolenceRequestId, 
+            T.BinaryFileId AS BenevolenceRequestDocument_BinaryFileId, 
+            T.[Order] AS BenevolenceRequestDocument_Order, 
+            T.CreatedDateTime AS BenevolenceRequestDocument_CreatedDateTime, 
+            T.ModifiedDateTime AS BenevolenceRequestDocument_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS BenevolenceRequestDocument_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS BenevolenceRequestDocument_ModifiedByPersonAliasId, 
+            T.Guid AS BenevolenceRequestDocument_Guid, 
+            T.ForeignId AS BenevolenceRequestDocument_ForeignId, 
+            T.ForeignGuid AS BenevolenceRequestDocument_ForeignGuid, 
+            T.ForeignKey AS BenevolenceRequestDocument_ForeignKey, 
+            True AS _from0
+        FROM RockContext.BenevolenceRequestDocuments AS T
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.Block"><![CDATA[
     SELECT VALUE -- Constructing Block
@@ -5258,7 +5280,7 @@
     ) AS T1]]></view>
     <view extent="RockContext.BenevolenceRequests"><![CDATA[
     SELECT VALUE -- Constructing BenevolenceRequests
-        [Rock.Data.BenevolenceRequest](T1.BenevolenceRequest_Id, T1.BenevolenceRequest_FirstName, T1.BenevolenceRequest_LastName, T1.BenevolenceRequest_Email, T1.BenevolenceRequest_RequestedByPersonAliasId, T1.BenevolenceRequest_RequestText, T1.BenevolenceRequest_RequestDateTime, T1.BenevolenceRequest_HomePhoneNumber, T1.BenevolenceRequest_CellPhoneNumber, T1.BenevolenceRequest_WorkPhoneNumber, T1.BenevolenceRequest_CaseWorkerPersonAliasId, T1.BenevolenceRequest_GovernmentId, T1.BenevolenceRequest_RequestStatusValueId, T1.BenevolenceRequest_ResultSummary, T1.BenevolenceRequest_ConnectionStatusValueId, T1.BenevolenceRequest_LocationId, T1.BenevolenceRequest_CreatedDateTime, T1.BenevolenceRequest_ModifiedDateTime, T1.BenevolenceRequest_CreatedByPersonAliasId, T1.BenevolenceRequest_ModifiedByPersonAliasId, T1.BenevolenceRequest_Guid, T1.BenevolenceRequest_ForeignId, T1.BenevolenceRequest_ForeignGuid, T1.BenevolenceRequest_ForeignKey)
+        [Rock.Data.BenevolenceRequest](T1.BenevolenceRequest_Id, T1.BenevolenceRequest_FirstName, T1.BenevolenceRequest_LastName, T1.BenevolenceRequest_Email, T1.BenevolenceRequest_RequestedByPersonAliasId, T1.BenevolenceRequest_RequestText, T1.BenevolenceRequest_RequestDateTime, T1.BenevolenceRequest_HomePhoneNumber, T1.BenevolenceRequest_CellPhoneNumber, T1.BenevolenceRequest_WorkPhoneNumber, T1.BenevolenceRequest_CaseWorkerPersonAliasId, T1.BenevolenceRequest_GovernmentId, T1.BenevolenceRequest_RequestStatusValueId, T1.BenevolenceRequest_ResultSummary, T1.BenevolenceRequest_ConnectionStatusValueId, T1.BenevolenceRequest_LocationId, T1.BenevolenceRequest_ProvidedNextSteps, T1.BenevolenceRequest_CampusId, T1.BenevolenceRequest_CreatedDateTime, T1.BenevolenceRequest_ModifiedDateTime, T1.BenevolenceRequest_CreatedByPersonAliasId, T1.BenevolenceRequest_ModifiedByPersonAliasId, T1.BenevolenceRequest_Guid, T1.BenevolenceRequest_ForeignId, T1.BenevolenceRequest_ForeignGuid, T1.BenevolenceRequest_ForeignKey)
     FROM (
         SELECT 
             T.Id AS BenevolenceRequest_Id, 
@@ -5277,6 +5299,8 @@
             T.ResultSummary AS BenevolenceRequest_ResultSummary, 
             T.ConnectionStatusValueId AS BenevolenceRequest_ConnectionStatusValueId, 
             T.LocationId AS BenevolenceRequest_LocationId, 
+            T.ProvidedNextSteps AS BenevolenceRequest_ProvidedNextSteps, 
+            T.CampusId AS BenevolenceRequest_CampusId, 
             T.CreatedDateTime AS BenevolenceRequest_CreatedDateTime, 
             T.ModifiedDateTime AS BenevolenceRequest_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS BenevolenceRequest_CreatedByPersonAliasId, 
@@ -5308,6 +5332,26 @@
             T.ForeignKey AS BenevolenceResult_ForeignKey, 
             True AS _from0
         FROM CodeFirstDatabase.BenevolenceResult AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.BenevolenceRequestDocuments"><![CDATA[
+    SELECT VALUE -- Constructing BenevolenceRequestDocuments
+        [Rock.Data.BenevolenceRequestDocument](T1.BenevolenceRequestDocument_Id, T1.BenevolenceRequestDocument_BenevolenceRequestId, T1.BenevolenceRequestDocument_BinaryFileId, T1.BenevolenceRequestDocument_Order, T1.BenevolenceRequestDocument_CreatedDateTime, T1.BenevolenceRequestDocument_ModifiedDateTime, T1.BenevolenceRequestDocument_CreatedByPersonAliasId, T1.BenevolenceRequestDocument_ModifiedByPersonAliasId, T1.BenevolenceRequestDocument_Guid, T1.BenevolenceRequestDocument_ForeignId, T1.BenevolenceRequestDocument_ForeignGuid, T1.BenevolenceRequestDocument_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS BenevolenceRequestDocument_Id, 
+            T.BenevolenceRequestId AS BenevolenceRequestDocument_BenevolenceRequestId, 
+            T.BinaryFileId AS BenevolenceRequestDocument_BinaryFileId, 
+            T.[Order] AS BenevolenceRequestDocument_Order, 
+            T.CreatedDateTime AS BenevolenceRequestDocument_CreatedDateTime, 
+            T.ModifiedDateTime AS BenevolenceRequestDocument_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS BenevolenceRequestDocument_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS BenevolenceRequestDocument_ModifiedByPersonAliasId, 
+            T.Guid AS BenevolenceRequestDocument_Guid, 
+            T.ForeignId AS BenevolenceRequestDocument_ForeignId, 
+            T.ForeignGuid AS BenevolenceRequestDocument_ForeignGuid, 
+            T.ForeignKey AS BenevolenceRequestDocument_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.BenevolenceRequestDocument AS T
     ) AS T1]]></view>
     <view extent="RockContext.Blocks"><![CDATA[
     SELECT VALUE -- Constructing Blocks
