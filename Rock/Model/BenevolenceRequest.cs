@@ -343,6 +343,12 @@ namespace Rock.Model
         private ICollection<BenevolenceResult> _results;
 
 
+        /// <summary>
+        /// Gets or sets the documents.
+        /// </summary>
+        /// <value>
+        /// The documents.
+        /// </value>
         [DataMember]
         public virtual ICollection<BenevolenceRequestDocument> Documents
         {
