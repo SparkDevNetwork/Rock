@@ -11,93 +11,84 @@
 // -------------------------
 
 .contribution-payment .tab-content {
-    margin-top: @spacing-md-px;
+  margin-top: @spacing-md-px;
 }
 
-.card-visa, .card-mastercard, .card-amex, .card-discover, .card-diners, .card-jcb 
-{
-	display: inline-block;
-	width: 50px;
-	height: @spacing-lg-px;
-	overflow: hidden;
-	text-align: left;
-	text-indent: -999px;
-	background: url(../../../Assets/Images/sprite-cards.png) 0 0 no-repeat;
+.card-visa, .card-mastercard, .card-amex, .card-discover, .card-diners, .card-jcb {
+  display: inline-block;
+  width: 50px;
+  height: @spacing-lg-px;
+  overflow: hidden;
+  text-align: left;
+  text-indent: -999px;
+  background: url(../../../Assets/Images/sprite-cards.png) 0 0 no-repeat;
 }
 
-.card-mastercard 
-{
-	background-position: -55px 0;
+.card-mastercard {
+  background-position: -55px 0;
 }
 
-.card-amex 
-{
-	background-position: -110px 0;
+.card-amex {
+  background-position: -110px 0;
 }
 
-.card-discover 
-{
-	background-position: -165px 0;
+.card-discover {
+  background-position: -165px 0;
 }
 
-.card-diners 
-{
-	background-position: -220px 0;
+.card-diners {
+  background-position: -220px 0;
 }
 
-.card-jcb 
-{
-	background-position: -660px 0;
+.card-jcb {
+  background-position: -660px 0;
 }
 
-.is-visa li, .is-mastercard li, .is-amex li, .is-discover li, .is-diners li, .is-jcb li, .is-nothing li 
-{
-	opacity: .2;
+.is-visa li, .is-mastercard li, .is-amex li, .is-discover li, .is-diners li, .is-jcb li, .is-nothing li {
+  opacity: .2;
 }
 
-.is-visa li.card-visa, .is-mastercard li.card-mastercard, .is-amex li.card-amex, .is-discover li.card-discover, .is-diners li.card-diners, .is-jcb li.card-jcb 
-{
-	opacity: 1;
+.is-visa li.card-visa, .is-mastercard li.card-mastercard, .is-amex li.card-amex, .is-discover li.card-discover, .is-diners li.card-diners, .is-jcb li.card-jcb {
+  opacity: 1;
 }
 
 // 2. Scheduled Transactions
 // -------------------------
 .scheduledtransaction-item {
-    margin-bottom: 12px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid @gray-lighter;
+  padding-bottom: 6px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid @gray-lighter;
 
-    &:last-child {
-        border-bottom: 0;
-    }
+  &:last-child {
+    border-bottom: 0;
+  }
 
-    .actions {
-        margin: 6px 0;
-    }
-
+  .actions {
+    margin: 6px 0;
+  }
 }
 
 // 3. Transaction Matching
 // -------------------------
 .transaction-image {
-    width: 100%;
-    margin-bottom: 12px;
-    border: 2px solid @photo-border;
+  width: 100%;
+  margin-bottom: 12px;
+  border: 2px solid @photo-border;
 }
 
 .transaction-image-thumbnail {
-    max-width: 200px;
-    max-height: 100px;
-    margin: 5px;
-    cursor: pointer;
-    border: 2px solid @photo-border;
+  max-width: 200px;
+  max-height: 100px;
+  margin: 5px;
+  cursor: pointer;
+  border: 2px solid @photo-border;
 }
 
 .transaction-matching {
-    .progress {
-        width: 30%;
-        width: 30%;
-        float: left;
-        margin-bottom: 0;
-    }
+  .progress {
+    float: left;
+    width: 30%;
+    width: 30%;
+    margin-bottom: 0;
+  }
 }
