@@ -317,11 +317,33 @@ th[align=center] {
   }
 
   .panel-settings {
-      margin: -(@panel-body-padding) -(@panel-body-padding) (@panel-body-padding *2) -(@panel-body-padding);
-      background-color: lighten(@panel-heading-bg, 3%);
+      margin: -(@panel-body-padding);
       padding: (@panel-body-padding);
       border-bottom: 1px solid lighten(@panel-heading-border, 3%);
   }
+
+  .panel-settings-group {
+       margin: -(@panel-body-padding);
+
+       .btn {
+           border-radius: 0 !important;
+           border-top-width: 0;
+           border-color: @panel-heading-border;
+           border-right-width: 0;
+       }
+
+       .btn-group:first-child .btn {
+           border-left-width: 0;
+       }
+
+       &.btn-group-justified {
+           width: auto;
+       }
+
+       &.btn-group-justified>.btn-group .dropdown-menu {
+           width: 100%;
+       }
+    }
 }
 
 .panel-widget {
