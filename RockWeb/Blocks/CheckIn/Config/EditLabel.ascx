@@ -39,7 +39,7 @@
                         </Rock:RockControlWrapper>
 
                         <div class="well">
-                            <h4>Labelary Viewer</h4>
+                            <h4>Label Viewer</h4>
                             <div class="form-inline">
                                 <Rock:RockDropDownList ID="ddlPrintDensity" runat="server" Label="Print Density">
                                     <asp:ListItem Text="6 dpmm (152 dpi)" Value="6"></asp:ListItem>
