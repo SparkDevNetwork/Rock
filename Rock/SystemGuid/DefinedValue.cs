@@ -423,5 +423,13 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Benevolence
+        public const string BENEVOLENCE_PENDING = "67B24629-62A9-436A-A98C-30A454642153";
+
+        public const string BENEVOLENCE_APPROVED = "18D3A2DA-F2BA-49AE-83EB-7E60DCD18A3B";
+
+        public const string BENEVOLENCE_DENIED = "3720671E-DA48-405F-A6D5-5E2D47436F9A";
+        #endregion
+
     }
 }

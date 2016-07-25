@@ -64,7 +64,6 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            
             string attributeValue = GetAttributeValue( action, "PersonAttribute" );
             Guid? guid = attributeValue.AsGuidOrNull();
             if (guid.HasValue)
