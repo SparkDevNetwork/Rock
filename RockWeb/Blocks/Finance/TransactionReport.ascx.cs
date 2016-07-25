@@ -59,6 +59,8 @@ namespace RockWeb.Blocks.Finance
             gTransactions.RowItemText = GetAttributeValue( "TransactionLabel" );
             gTransactions.EmptyDataText = string.Format( "No {0} found with the provided criteria.", GetAttributeValue( "TransactionLabel" ).ToLower() );
             gTransactions.GridRebind += gTransactions_GridRebind;
+
+            gTransactions.Actions.ShowMergeTemplate = false;
         }
 
         /// <summary>
