@@ -927,6 +927,14 @@ namespace Rock.Attribute
             AddEditControls( item, parentControl, setValue, validationGroup, exclude, supressOrdering, null );
         }
 
+        /// <summary>
+        /// Adds the edit controls.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="setValue">if set to <c>true</c> [set value].</param>
+        /// <param name="validationGroup">The validation group.</param>
+        /// <param name="numberOfColumns">The number of columns.</param>
         public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue, string validationGroup, int? numberOfColumns )
         {
             AddEditControls( item, parentControl, setValue, validationGroup, new List<string>(), false, numberOfColumns );
