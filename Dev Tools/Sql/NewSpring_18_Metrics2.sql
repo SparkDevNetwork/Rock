@@ -73,7 +73,8 @@ SELECT
 	m.ForeignId AS GroupId,
 	g.Name AS GroupName,
 	mc.CategoryId,
-	NEWID() AS MetricGuid
+	NEWID() AS AttendanceMetricGuid,
+	NEWID() AS UniqueMetricGuid
 INTO #metricTypes
 FROM 
 	Metric m
@@ -86,8 +87,9 @@ WHERE
 	AND pc.ParentCategoryId = @volunteerMetricCategoryId;
 
 /* ====================================================== */
--- insert the new metric
+-- insert the new metrics
 /* ====================================================== */
+-- Attendance
 INSERT INTO Metric (
 	IsSystem,
 	Title,
@@ -108,15 +110,43 @@ SELECT
 	@MetricSourceSQLId AS SourceValueTypeId,
 	'' AS SourceSql,
 	@CreatedDateTime AS CreatedDateTime,
-	mt.MetricGuid AS [Guid],
+	mt.AttendanceMetricGuid AS [Guid],
+	@foreignKey AS ForeignKey,
+	'' AS IconCssClass
+FROM
+	#metricTypes mt;
+
+-- Unique
+INSERT INTO Metric (
+	IsSystem,
+	Title,
+	[Description],
+	IsCumulative,
+	SourceValueTypeId,
+	SourceSql,
+	CreatedDateTime,
+	[Guid],
+	ForeignKey,
+	IconCssClass
+)
+SELECT
+	@IsSystem AS IsSystem,
+	CONCAT(mt.GroupName, ' Unique Volunteer') AS [Title],
+	'Metric to track unique volunteers' AS [Description],
+	0 AS IsCumulative,
+	@MetricSourceSQLId AS SourceValueTypeId,
+	'' AS SourceSql,
+	@CreatedDateTime AS CreatedDateTime,
+	mt.UniqueMetricGuid AS [Guid],
 	@foreignKey AS ForeignKey,
 	'' AS IconCssClass
 FROM
 	#metricTypes mt;
 
 /* ====================================================== */
--- add the new metric to a category
+-- add the new metrics to a category
 /* ====================================================== */
+-- Attendance
 INSERT INTO MetricCategory (
 	MetricId,
 	CategoryId,
@@ -125,7 +155,24 @@ INSERT INTO MetricCategory (
 	ForeignKey
 )
 SELECT
-	(SELECT Id FROM Metric WHERE [Guid] = mt.MetricGuid) AS MetricId,
+	(SELECT Id FROM Metric WHERE [Guid] = mt.AttendanceMetricGuid) AS MetricId,
+	mt.CategoryId,
+	@Order AS [Order],
+	NEWID() AS [Guid],
+	@foreignKey AS ForeignKey
+FROM
+	#metricTypes mt;
+
+-- Unique
+INSERT INTO MetricCategory (
+	MetricId,
+	CategoryId,
+	[Order],
+	[Guid],
+	ForeignKey
+)
+SELECT
+	(SELECT Id FROM Metric WHERE [Guid] = mt.UniqueMetricGuid) AS MetricId,
 	mt.CategoryId,
 	@Order AS [Order],
 	NEWID() AS [Guid],
@@ -134,7 +181,7 @@ FROM
 	#metricTypes mt;
 
 /* ====================================================== */
--- add the new metric partitions
+-- add the new metric partitions for attendance
 /* ====================================================== */
 -- Campus
 INSERT INTO MetricPartition(
@@ -149,7 +196,7 @@ INSERT INTO MetricPartition(
 	ForeignKey
 )
 SELECT 
-	(SELECT Id FROM Metric WHERE [Guid] = mt.MetricGuid) AS MetricId,
+	(SELECT Id FROM Metric WHERE [Guid] = mt.AttendanceMetricGuid) AS MetricId,
 	'Campus' AS Label,
 	67 AS EntityTypeId,
 	@True AS IsRequired,
@@ -174,7 +221,7 @@ INSERT INTO MetricPartition(
 	ForeignKey
 )
 SELECT 
-	(SELECT Id FROM Metric WHERE [Guid] = mt.MetricGuid) AS MetricId,
+	(SELECT Id FROM Metric WHERE [Guid] = mt.AttendanceMetricGuid) AS MetricId,
 	'Group' AS Label,
 	16 AS EntityTypeId,
 	@False AS IsRequired,
@@ -199,7 +246,7 @@ INSERT INTO MetricPartition(
 	ForeignKey
 )
 SELECT 
-	(SELECT Id FROM Metric WHERE [Guid] = mt.MetricGuid) AS MetricId,
+	(SELECT Id FROM Metric WHERE [Guid] = mt.AttendanceMetricGuid) AS MetricId,
 	'Schedule' AS Label,
 	54 AS EntityTypeId,
 	@False AS IsRequired,
@@ -224,7 +271,7 @@ INSERT INTO MetricPartition(
 	ForeignKey
 )
 SELECT 
-	(SELECT Id FROM Metric WHERE [Guid] = mt.MetricGuid) AS MetricId,
+	(SELECT Id FROM Metric WHERE [Guid] = mt.AttendanceMetricGuid) AS MetricId,
 	'Did Attend' AS Label,
 	31 AS EntityTypeId,
 	@False AS IsRequired,
@@ -235,6 +282,85 @@ SELECT
 	@foreignKey AS ForeignKey
 FROM 
 	#metricTypes mt;
+
+/* ====================================================== */
+-- add the new metric partitions for unique
+/* ====================================================== */
+-- Campus
+INSERT INTO MetricPartition(
+	MetricId,
+	Label,
+	EntityTypeId,
+	IsRequired,
+	[Order],
+	EntityTypeQualifierColumn,
+	EntityTypeQualifierValue,
+	[Guid],
+	ForeignKey
+)
+SELECT 
+	(SELECT Id FROM Metric WHERE [Guid] = mt.UniqueMetricGuid) AS MetricId,
+	'Campus' AS Label,
+	67 AS EntityTypeId,
+	@True AS IsRequired,
+	0 AS [Order],
+	'' AS EntityTypeQualifierColumn,
+	'' AS EntityTypeQualifierValue,
+	NEWID() AS [Guid],
+	@foreignKey AS ForeignKey
+FROM 
+	#metricTypes mt;
+
+-- Group
+INSERT INTO MetricPartition(
+	MetricId,
+	Label,
+	EntityTypeId,
+	IsRequired,
+	[Order],
+	EntityTypeQualifierColumn,
+	EntityTypeQualifierValue,
+	[Guid],
+	ForeignKey
+)
+SELECT 
+	(SELECT Id FROM Metric WHERE [Guid] = mt.UniqueMetricGuid) AS MetricId,
+	'Group' AS Label,
+	16 AS EntityTypeId,
+	@False AS IsRequired,
+	1 AS [Order],
+	'' AS EntityTypeQualifierColumn,
+	'' AS EntityTypeQualifierValue,
+	NEWID() AS [Guid],
+	@foreignKey AS ForeignKey
+FROM 
+	#metricTypes mt;
+
+-- Did attend
+INSERT INTO MetricPartition(
+	MetricId,
+	Label,
+	EntityTypeId,
+	IsRequired,
+	[Order],
+	EntityTypeQualifierColumn,
+	EntityTypeQualifierValue,
+	[Guid],
+	ForeignKey
+)
+SELECT 
+	(SELECT Id FROM Metric WHERE [Guid] = mt.UniqueMetricGuid) AS MetricId,
+	'Did Attend' AS Label,
+	31 AS EntityTypeId,
+	@False AS IsRequired,
+	2 AS [Order],
+	'DefinedTypeId' AS EntityTypeQualifierColumn,
+	'72' AS EntityTypeQualifierValue,
+	NEWID() AS [Guid],
+	@foreignKey AS ForeignKey
+FROM 
+	#metricTypes mt;
+
 
 --DELETE FROM Metric WHERE ForeignKey = 'Metrics 2.0'
 
