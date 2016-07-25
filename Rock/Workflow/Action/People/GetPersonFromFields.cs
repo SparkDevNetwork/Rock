@@ -116,7 +116,7 @@ namespace Rock.Workflow.Action
                                 person.RecordStatusValueId = defaultRecordStatus.Id;
                             }
 
-                            var defaultCampus = CampusCache.Read( GetValue( action, "DefaultCampus", rockContext ).AsGuid() );
+                            var defaultCampus = CampusCache.Read( GetAttributeValue( action, "DefaultCampus", true ).AsGuid() );
                             var familyGroup = PersonService.SaveNewPerson( person, rockContext, ( defaultCampus != null ? defaultCampus.Id : (int?)null ), false );
                             if ( familyGroup != null && familyGroup.Members.Any() )
                             {
