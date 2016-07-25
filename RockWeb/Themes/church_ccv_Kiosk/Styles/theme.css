@@ -367,7 +367,7 @@ img.jcrop-preview {
   padding: 10px;
   overflow: auto;
   color: #000;
-  background-color: #ffffff;
+  background-color: #fff;
 }
 .note-editor.note-frame .note-editing-area .note-editable[contenteditable="false"] {
   background-color: #e5e5e5;
@@ -520,7 +520,7 @@ img.jcrop-preview {
   margin: 2px 7px;
   font-size: 12px;
   text-align: center;
-  border-bottom: 1px solid #eeeeee;
+  border-bottom: 1px solid #eee;
 }
 .note-popover .popover-content .note-color .dropdown-menu .btn-group .note-color-reset,
 .panel-heading.note-toolbar .note-color .dropdown-menu .btn-group .note-color-reset {
@@ -539,7 +539,7 @@ img.jcrop-preview {
 }
 .note-popover .popover-content .note-color .dropdown-menu .btn-group .note-color-reset:hover,
 .panel-heading.note-toolbar .note-color .dropdown-menu .btn-group .note-color-reset:hover {
-  background: #eeeeee;
+  background: #eee;
 }
 .note-popover .popover-content .note-para .dropdown-menu,
 .panel-heading.note-toolbar .note-para .dropdown-menu {
@@ -592,11 +592,11 @@ img.jcrop-preview {
   height: 20px;
   padding: 0;
   margin: 0;
-  border: 1px solid #ffffff;
+  border: 1px solid #fff;
 }
 .note-popover .popover-content .note-color-palette div .note-color-btn:hover,
 .panel-heading.note-toolbar .note-color-palette div .note-color-btn:hover {
-  border: 1px solid #000000;
+  border: 1px solid #000;
 }
 .note-dialog > div {
   display: none;
@@ -1177,13 +1177,13 @@ Copyright (c) 2012 Dan Eden*/
 .modal-content.rock-modal,
 .rock-modal .modal-content {
   border: 0;
-  background-color: #111111;
-  color: #ffffff;
+  background-color: #111;
+  color: #fff;
 }
 .modal-content.rock-modal .modal-header,
 .rock-modal .modal-content .modal-header {
-  background-color: #3a3a3a;
-  color: #bbbbbb;
+  background-color: #3A3A3A;
+  color: #bbb;
   padding: 5px 15px;
   min-height: 34px;
 }
@@ -1207,7 +1207,7 @@ Copyright (c) 2012 Dan Eden*/
 .rock-modal .modal-content .modal-header .close {
   margin: 0;
   padding: 6px;
-  color: #bbbbbb;
+  color: #bbb;
   text-shadow: none;
 }
 .modal-content.rock-modal .modal-header .label,
@@ -1222,7 +1222,7 @@ Copyright (c) 2012 Dan Eden*/
 }
 .modal-content.rock-modal .modal-body,
 .rock-modal .modal-content .modal-body {
-  color: #ffffff;
+  color: #fff;
   text-align: left;
 }
 .modal-content.rock-modal .modal-body > .scroll-container,
@@ -1296,7 +1296,7 @@ Copyright (c) 2012 Dan Eden*/
 }*/
 legend {
   font-weight: 300;
-  color: #ffffff;
+  color: #fff;
   border-width: 0;
 }
 .checkbox-inline:first-child,
@@ -1579,12 +1579,12 @@ dl:not(.dl-horizontal) dd {
     11. Components
 */
 .table > tbody > tr > td {
-  color: #ffffff;
+  color: #fff;
 }
 .table-striped > tbody > tr:nth-child(odd) > td,
 .table-striped > tbody > tr:nth-child(odd) > th {
   background-color: #090909;
-  color: #ffffff;
+  color: #fff;
 }
 td.grid-select-cell {
   cursor: pointer;
@@ -1604,7 +1604,7 @@ td.wrap-contents {
   margin-bottom: 15px;
 }
 .grid .grid-table {
-  border: 1px solid #dddddd;
+  border: 1px solid #ddd;
 }
 .grid .grid-table.table-light {
   border: none;
@@ -1634,8 +1634,8 @@ td.wrap-contents {
   background-color: #d5d5d5;
   border-radius: 6px;
   padding: 6px 12px;
-  border-bottom: 1px solid #dddddd;
-  color: #ffffff;
+  border-bottom: 1px solid #ddd;
+  color: #fff;
 }
 .grid-filter header {
   border-radius: 6px 6px 0 0;
@@ -1667,7 +1667,7 @@ td.wrap-contents {
 }
 .grid-filter .picker .picker-label {
   background-color: #d5d5d5;
-  color: #ffffff;
+  color: #fff;
   border-color: #bbbbbb;
 }
 .grid-filter-entry legend + .control-group {
@@ -1684,7 +1684,7 @@ td.wrap-contents {
   font-size: 14px;
   color: #ecf0f3;
   font-weight: 300;
-  border-color: #dddddd;
+  border-color: #ddd;
 }
 .table > thead > tr > th > a:not(.btn) {
   color: #ecf0f3;
@@ -1702,7 +1702,7 @@ td.wrap-contents {
 }
 .table.table-light > thead > tr > th {
   background-color: transparent;
-  color: #ffffff;
+  color: #fff;
   border-color: #ffffff;
 }
 .grid-paging {
@@ -1715,7 +1715,7 @@ td.wrap-contents {
 }
 .grid-paging .pagination li > a {
   background-color: #e1edf7;
-  color: #ffffff;
+  color: #fff;
   border-color: #92bce0;
 }
 .grid-paging .pagination li.active > a {
@@ -1743,15 +1743,15 @@ td.grid-col-actions {
 .grid-actions .btn {
   margin-left: 8px;
   background-color: #f6f6f6;
-  color: #333333;
-  border-color: #333333;
+  color: #333;
+  border-color: #333;
 }
 .table-light {
   background-color: transparent;
 }
 .table-light thead th {
   background-color: inherit;
-  color: #ffffff;
+  color: #fff;
   font-weight: 700;
 }
 .table-light tfoot td {
@@ -1841,7 +1841,7 @@ td.grid-col-actions {
 }
 tr.row-highlight td {
   background-color: #eeeeee !important;
-  color: #ffffff !important;
+  color: #fff !important;
 }
 .table > thead > tr.grid-header-bold th {
   background-color: #222222;
@@ -2379,7 +2379,7 @@ tr.row-highlight td {
 }
 .workflow-action .criteria-exists {
   background-color: #f0ad4e;
-  color: #ffffff;
+  color: #fff;
   border: 1px solid #eea236;
 }
 .workflow-action .conditional-run-criteria {
@@ -2640,13 +2640,13 @@ table.attribute-grid tr th:nth-child(3) {
   margin-right: -52px;
 }
 .personprofilebar-bio .actions a.btn-action {
-  color: #ffffff;
+  color: #fff;
   background-color: #6a6a6a;
   border-color: #515151;
 }
 .personprofilebar-bio .photo {
   padding: 5px 5px 5px 5px;
-  background-color: #3a3a3a;
+  background-color: #3A3A3A;
   border: 1px solid #bdbdbd;
   display: table;
   max-width: 200px;
@@ -3025,13 +3025,13 @@ table.attribute-grid tr th:nth-child(3) {
   }
 }
 .personprofilebar-family {
-  background: #111111;
+  background: #111;
   border-bottom: 1px solid #000000;
-  color: #ffffff;
+  color: #fff;
   min-height: 60px;
 }
 .personprofilebar-family a {
-  color: #ffffff;
+  color: #fff;
 }
 .personprofilebar-family header {
   background-color: #dbd5cb;
@@ -3293,7 +3293,7 @@ tr.inactive td {
   vertical-align: bottom;
   border-radius: 8px 8px 0 0;
   background-color: #a61a1d;
-  color: #ffffff;
+  color: #fff;
 }
 .discchart li.discchart-midpoint {
   height: 70%;
@@ -3455,13 +3455,13 @@ iframe.email-body {
 }
 .calendar-month a {
   text-decoration: none;
-  color: #ffffff !important;
+  color: #fff !important;
 }
 .calendar-month th {
   text-align: center;
 }
 .calendar-month td {
-  color: #ffffff !important;
+  color: #fff !important;
 }
 .calendar-month table.calendar-title td {
   padding: 10px 5px;
@@ -3490,10 +3490,10 @@ iframe.email-body {
 }
 .calendar-month .calendar-selected {
   background-color: #5bc0de !important;
-  color: #ffffff !important;
+  color: #fff !important;
 }
 .calendar-month .calendar-selected a {
-  color: #ffffff !important;
+  color: #fff !important;
 }
 .calendar-month .calendar-last-month a {
   opacity: .2;
@@ -3629,7 +3629,7 @@ iframe.email-body {
   font-size: 18px;
   color: #555555;
   background-color: #eeeeee;
-  border: 1px solid #cccccc;
+  border: 1px solid #ccc;
   border-radius: 6px;
   display: inline-block;
   width: 225px;
@@ -3766,7 +3766,7 @@ iframe.email-body {
 .numberincrement .numberincrement-down {
   background-color: #eeeeee;
   padding: 6px 12px;
-  border: 1px solid #cccccc;
+  border: 1px solid #ccc;
   color: #555555;
   cursor: pointer;
 }
@@ -3783,7 +3783,7 @@ iframe.email-body {
 }
 .numberincrement .numberincrement-value {
   padding: 6px 18px;
-  border-color: #cccccc;
+  border-color: #ccc;
   border-width: 1px 0;
   border-style: solid;
 }
@@ -3818,7 +3818,7 @@ ul.rocktree ul {
   opacity: 1;
 }
 .rocktree .rocktree-item:not(.is-inactive) {
-  color: #ffffff;
+  color: #fff;
 }
 .rocktree .rocktree-item > i {
   cursor: pointer;
@@ -3836,7 +3836,7 @@ ul.rocktree ul {
 .rocktree span:hover,
 .rocktree span:hover a {
   background: #d0e092;
-  color: #ffffff;
+  color: #fff;
 }
 .rocktree .selected,
 .rocktree .selected a {
@@ -3850,7 +3850,7 @@ ul.rocktree ul {
 }
 .rocktree .rocktree-loading {
   margin-left: 10px;
-  color: #ffffff !important;
+  color: #fff !important;
   font-size: 12px;
 }
 .rocktree .rocktree-loading i {
@@ -3957,7 +3957,7 @@ ul.rocktree ul {
 }
 .list-as-blocks ul li a:hover {
   background-color: #999999;
-  color: #ffffff;
+  color: #fff;
   border-color: #8c8c8c;
 }
 .list-as-blocks ul li a:hover i {
@@ -3974,7 +3974,7 @@ ul.rocktree ul {
 }
 .list-as-blocks ul li.active a {
   background-color: #999999;
-  color: #ffffff;
+  color: #fff;
   border-color: #808080;
 }
 .list-as-blocks ul li.active a i {
@@ -4223,7 +4223,7 @@ div.tagsinput .tags_clear {
   border-radius: 6px;
   padding: 2px 6px;
   position: relative;
-  color: #bbbbbb;
+  color: #bbb;
 }
 .smartsearch:focus {
   border-color: #595959;
@@ -4245,7 +4245,7 @@ div.tagsinput .tags_clear {
 .smartsearch input {
   border: 0;
   background: transparent;
-  color: #bbbbbb;
+  color: #bbb;
   border-radius: 0;
   width: 150px;
   margin: 0;
@@ -4266,14 +4266,14 @@ div.tagsinput .tags_clear {
 }
 .smartsearch input.searchinput {
   padding: 4px 4px 4px 25px;
-  color: #bbbbbb;
+  color: #bbb;
   width: 100%;
   border: 0 !important;
   box-shadow: none !important;
 }
 .smartsearch .dropdown .navbar-link {
   text-align: right;
-  color: #bbbbbb;
+  color: #bbb;
 }
 .smartsearch .dropdown .navbar-link span {
   padding-right: 4px;
@@ -4302,12 +4302,12 @@ div.tagsinput .tags_clear {
 .smartsearch input::selection {
   background: #2e2e2e;
   /* Safari */
-  color: #ffffff;
+  color: #fff;
 }
 .smartsearch input::-moz-selection {
   background: #2e2e2e;
   /* Firefox */
-  color: #ffffff;
+  color: #fff;
 }
 fieldset .actions {
   margin-top: 12px;
@@ -4404,7 +4404,7 @@ fieldset .actions {
 .datepicker table td.active,
 .datepicker table td.today {
   background-color: #adca42;
-  color: #ffffff;
+  color: #fff;
 }
 .datepicker table td.day {
   text-align: center;
@@ -4427,7 +4427,7 @@ fieldset .actions {
 }
 .datepicker table td span.month:hover {
   background-color: #adca42;
-  color: #ffffff;
+  color: #fff;
 }
 .datepicker table td span.month:first-child {
   margin-left: 0;
@@ -4442,7 +4442,7 @@ fieldset .actions {
 }
 .datepicker table td span.year:hover {
   background-color: #adca42;
-  color: #ffffff;
+  color: #fff;
   border-radius: 4px;
 }
 .datepicker table td span.year:first-child {
@@ -4576,7 +4576,7 @@ fieldset .actions {
   -webkit-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
   -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
   transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
-  border: 1px solid #cccccc;
+  border: 1px solid #ccc;
   padding: 6px 12px;
   font-size: 12px;
 }
@@ -4624,14 +4624,14 @@ fieldset .actions {
   padding: 2px 6px;
   border-top-left-radius: 6px;
   background-color: #d9534f;
-  color: #ffffff;
+  color: #fff;
   cursor: pointer;
   display: block;
 }
 .imageupload-group .imageupload-dropzone {
   margin-top: 2px;
   height: 30px;
-  border: 1px solid #cccccc;
+  border: 1px solid #ccc;
   border-radius: 0 0 6px 6px;
   background-color: #eeeeee;
   text-align: center;
@@ -4678,7 +4678,7 @@ fieldset .actions {
 .fileupload-group {
   display: table-cell;
   margin-bottom: 15px;
-  border: 1px solid #cccccc;
+  border: 1px solid #ccc;
   border-radius: 6px;
   padding: 2px;
   position: relative;
@@ -4728,7 +4728,7 @@ fieldset .actions {
   padding: 2px 6px;
   border-top-left-radius: 6px;
   background-color: #d9534f;
-  color: #ffffff;
+  color: #fff;
   cursor: pointer;
   display: block;
 }
@@ -4812,7 +4812,7 @@ fieldset .actions {
   font-size: 10px;
 }
 .updateprogress-status .spinner > div {
-  background-color: #ffffff;
+  background-color: #fff;
   height: 100%;
   width: 5px;
   display: inline-block;
@@ -4977,11 +4977,11 @@ ul.rocklist .rocklist-item .file-name {
 }
 ul.rocklist .rocklist-item:hover {
   background: #d0e092;
-  color: #ffffff;
+  color: #fff;
 }
 ul.rocklist .rocklist-item.selected {
   background: #d0e092;
-  color: #ffffff;
+  color: #fff;
 }
 .twitter-typeahead .tt-query,
 .twitter-typeahead .tt-hint {
@@ -5120,7 +5120,7 @@ ul.list-group-panel .list-group-item,
 .panel-collapse .list-group-item {
   border-radius: 0;
   border: 0;
-  border-top: 1px solid #dddddd;
+  border-top: 1px solid #ddd;
 }
 ul.list-group-panel .list-group-item:first-child,
 .panel-collapse .list-group-item:first-child {
@@ -5192,7 +5192,7 @@ ul.list-group-panel .list-group-item:first-child,
   }
 }
 .wizard-item:before {
-  border-top: 4px solid #bbbbbb;
+  border-top: 4px solid #bbb;
   content: "";
   margin: 0 auto;
   /* this centers the line to the full width specified */
@@ -5212,7 +5212,7 @@ ul.list-group-panel .list-group-item:first-child,
   color: #ecf0f3;
 }
 .wizard-item.active .wizard-item-label {
-  color: #ffffff;
+  color: #fff;
 }
 .wizard-item.complete:before {
   border-top: 4px solid #a2a2a2;
@@ -5222,7 +5222,7 @@ ul.list-group-panel .list-group-item:first-child,
   color: #ecf0f3;
 }
 .wizard-item.complete .wizard-item-label {
-  color: #ffffff;
+  color: #fff;
 }
 .wizard-item:first-child:before {
   left: 55px;
@@ -5256,9 +5256,9 @@ ul.list-group-panel .list-group-item:first-child,
   text-align: center;
   padding-top: 10px;
   opacity: .4;
-  color: #ffffff;
+  color: #fff;
   transition: 1s;
-  border-left: 1px solid #3a3a3a;
+  border-left: 1px solid #3A3A3A;
   cursor: pointer;
 }
 .panel-follow-status:before {
@@ -5502,14 +5502,14 @@ ul.list-group-panel .list-group-item:first-child,
   border-color: #cde1f1;
 }
 .note-editor.panel-default > .panel-heading {
-  background-color: #111111;
+  background-color: #111;
 }
 .htmleditor-filebrowser .modal-title {
-  background-color: #3a3a3a;
+  background-color: #3A3A3A;
   margin-top: 0;
   margin: 0 -15px 24px;
   padding: 5px 15px;
-  color: #bbbbbb;
+  color: #bbb;
 }
 .htmleditor-filebrowser .modal-footer {
   background-color: #eeeeee;
@@ -5610,7 +5610,7 @@ iframe.file-browser {
   color: #b94a48;
 }
 .rock-blank {
-  background-color: #111111;
+  background-color: #111;
 }
 .rock-blank main.container {
   margin: 0;
@@ -5647,7 +5647,7 @@ iframe.file-browser {
 }
 .scroll-container .track {
   position: relative;
-  background-color: #aaaaaa;
+  background-color: #aaa;
   border-radius: 4px;
   padding: 0;
 }
@@ -5656,7 +5656,7 @@ iframe.file-browser {
   overflow: hidden;
   position: absolute;
   border-radius: 120px;
-  background-color: #cccccc;
+  background-color: #ccc;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   -khtml-user-select: none;
@@ -5749,29 +5749,29 @@ iframe.file-browser {
 */
 .accent-color {
   background-color: #d5d5d5;
-  color: #ffffff;
+  color: #fff;
 }
 .accent-color-bordered {
   background-color: #d5d5d5;
-  color: #ffffff;
+  color: #fff;
   border: 1px solid #bbbbbb;
 }
 .accent-light-color {
   background-color: #eeeeee;
-  color: #ffffff;
+  color: #fff;
 }
 .accent-light-color-bordered {
   background-color: #eeeeee;
-  color: #ffffff;
+  color: #fff;
   border: 1px solid #d5d5d5;
 }
 .accent-semibold-color {
   background-color: #f6f6f6;
-  color: #333333;
+  color: #333;
 }
 .accent-semibold-color-bordered {
   background-color: #f6f6f6;
-  color: #333333;
+  color: #333;
   border: 1px solid #dddddd;
 }
 .accent-bold-color {
@@ -5785,15 +5785,15 @@ iframe.file-browser {
 }
 .primary-color {
   background-color: #7a1315;
-  color: #ffffff;
+  color: #fff;
 }
 .theme-color-1 {
   background-color: #428bca;
-  color: #ffffff;
+  color: #fff;
 }
 .theme-color-1-bordered {
   background-color: #428bca;
-  color: #ffffff;
+  color: #fff;
   border: 1px solid #3071a9;
 }
 .theme-color-2 {
@@ -5843,18 +5843,18 @@ iframe.file-browser {
 }
 .theme-color-7 {
   background-color: #adca42;
-  color: #ffffff;
+  color: #fff;
 }
 .theme-color-7-bordered {
   background-color: #adca42;
-  color: #ffffff;
+  color: #fff;
   border: 1px solid #8fa930;
 }
 .bg-color {
-  background-color: #111111;
+  background-color: #111;
 }
 .text-color {
-  color: #ffffff;
+  color: #fff;
 }
 .is-inactive {
   opacity: .6;
@@ -6151,7 +6151,7 @@ iframe.file-browser {
   }
 }
 iframe {
-  border: 1px solid #cccccc;
+  border: 1px solid #ccc;
 }
 .clickable {
   cursor: pointer;
@@ -6204,7 +6204,7 @@ a.warning {
 .alert-default {
   background-color: #eeeeee;
   border-color: #d5d5d5;
-  color: #ffffff;
+  color: #fff;
 }
 .alert-default hr {
   border-top-color: #c8c8c8;
@@ -6354,7 +6354,7 @@ th[align=center] {
 }
 .panel .panel-footer {
   background-color: #f5f5f5;
-  color: #ffffff;
+  color: #fff;
 }
 .panel .panel-settings {
   margin: -15px -15px 30px -15px;
@@ -6565,7 +6565,7 @@ th[align=center] {
   box-shadow: none;
 }
 .btn-action {
-  color: #333333;
+  color: #333;
   background-color: #f6f6f6;
   border-color: #e9e9e9;
 }
@@ -6574,7 +6574,7 @@ th[align=center] {
 .btn-action:active,
 .btn-action.active,
 .open > .dropdown-toggle.btn-action {
-  color: #333333;
+  color: #333;
   background-color: #dddddd;
   border-color: #cbcbcb;
 }
@@ -6603,10 +6603,10 @@ fieldset[disabled] .btn-action.active {
 }
 .btn-action .badge {
   color: #f6f6f6;
-  background-color: #333333;
+  background-color: #333;
 }
 .btn-security {
-  color: #333333;
+  color: #333;
   background-color: #f6f6f6;
   border-color: #e9e9e9;
 }
@@ -6615,7 +6615,7 @@ fieldset[disabled] .btn-action.active {
 .btn-security:active,
 .btn-security.active,
 .open > .dropdown-toggle.btn-security {
-  color: #333333;
+  color: #333;
   background-color: #dddddd;
   border-color: #cbcbcb;
 }
@@ -6644,10 +6644,10 @@ fieldset[disabled] .btn-security.active {
 }
 .btn-security .badge {
   color: #f6f6f6;
-  background-color: #333333;
+  background-color: #333;
 }
 .btn-authenication {
-  color: #333333;
+  color: #333;
   background-color: #f6f6f6;
   border-color: #dddddd;
   width: 100%;
@@ -6657,7 +6657,7 @@ fieldset[disabled] .btn-security.active {
 .btn-authenication:active,
 .btn-authenication.active,
 .open > .dropdown-toggle.btn-authenication {
-  color: #333333;
+  color: #333;
   background-color: #dddddd;
   border-color: #bebebe;
 }
@@ -6686,7 +6686,7 @@ fieldset[disabled] .btn-authenication.active {
 }
 .btn-authenication .badge {
   color: #f6f6f6;
-  background-color: #333333;
+  background-color: #333;
 }
 .btn-authenication:hover {
   background-color: #dddddd;
@@ -6914,7 +6914,7 @@ input[type=number]::-webkit-outer-spin-button {
   display: block;
   height: 8px;
   transform: translate(0px, 0px) translateZ(0px);
-  background-color: #000000;
+  background-color: #000;
   opacity: .3;
 }
 .iScrollVerticalScrollbar,
@@ -6986,7 +6986,7 @@ h6,
 }
 .btn-default {
   background: #333333;
-  color: #ffffff;
+  color: #fff;
 }
 .btn-default:hover,
 .btn-default:active {
@@ -7072,4 +7072,7 @@ footer:after {
 .swipe-cards {
   font-size: 24px;
   margin-bottom: 24px;
+}
+.datepicker {
+  color: #555555;
 }
