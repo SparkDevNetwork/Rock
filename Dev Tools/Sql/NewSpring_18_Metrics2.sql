@@ -17,6 +17,7 @@ DECLARE @False bit = 0
 DECLARE @Order int = 0
 DECLARE @MetricSourceSQLId int = (SELECT [Id] FROM DefinedValue WHERE [Guid] = '6A1E1A1B-A636-4E12-B90C-D7FD1BDAE764');
 DECLARE @CreatedDateTime AS DATETIME = GETDATE();
+DECLARE @foreignKey AS NVARCHAR(15) = 'Metrics 2.0';
 
 -- Schedule ids variables
 DECLARE @service0915 AS INT = 12;
@@ -108,8 +109,8 @@ SELECT
 	'' AS SourceSql,
 	@CreatedDateTime AS CreatedDateTime,
 	mt.MetricGuid AS [Guid],
-	'Metrics 2.0' AS ForeignKey,
-	''
+	@foreignKey AS ForeignKey,
+	'' AS IconCssClass
 FROM
 	#metricTypes mt;
 
@@ -128,40 +129,116 @@ SELECT
 	mt.CategoryId,
 	@Order AS [Order],
 	NEWID() AS [Guid],
-	'Metrics 2.0' AS ForeignKey
+	@foreignKey AS ForeignKey
 FROM
+	#metricTypes mt;
+
+/* ====================================================== */
+-- add the new metric partitions
+/* ====================================================== */
+-- Campus
+INSERT INTO MetricPartition(
+	MetricId,
+	Label,
+	EntityTypeId,
+	IsRequired,
+	[Order],
+	EntityTypeQualifierColumn,
+	EntityTypeQualifierValue,
+	[Guid],
+	ForeignKey
+)
+SELECT 
+	(SELECT Id FROM Metric WHERE [Guid] = mt.MetricGuid) AS MetricId,
+	'Campus' AS Label,
+	67 AS EntityTypeId,
+	@True AS IsRequired,
+	0 AS [Order],
+	'' AS EntityTypeQualifierColumn,
+	'' AS EntityTypeQualifierValue,
+	NEWID() AS [Guid],
+	@foreignKey AS ForeignKey
+FROM 
+	#metricTypes mt;
+
+-- Group
+INSERT INTO MetricPartition(
+	MetricId,
+	Label,
+	EntityTypeId,
+	IsRequired,
+	[Order],
+	EntityTypeQualifierColumn,
+	EntityTypeQualifierValue,
+	[Guid],
+	ForeignKey
+)
+SELECT 
+	(SELECT Id FROM Metric WHERE [Guid] = mt.MetricGuid) AS MetricId,
+	'Group' AS Label,
+	16 AS EntityTypeId,
+	@False AS IsRequired,
+	1 AS [Order],
+	'' AS EntityTypeQualifierColumn,
+	'' AS EntityTypeQualifierValue,
+	NEWID() AS [Guid],
+	@foreignKey AS ForeignKey
+FROM 
+	#metricTypes mt;
+
+-- Schedule
+INSERT INTO MetricPartition(
+	MetricId,
+	Label,
+	EntityTypeId,
+	IsRequired,
+	[Order],
+	EntityTypeQualifierColumn,
+	EntityTypeQualifierValue,
+	[Guid],
+	ForeignKey
+)
+SELECT 
+	(SELECT Id FROM Metric WHERE [Guid] = mt.MetricGuid) AS MetricId,
+	'Schedule' AS Label,
+	54 AS EntityTypeId,
+	@False AS IsRequired,
+	2 AS [Order],
+	'' AS EntityTypeQualifierColumn,
+	'' AS EntityTypeQualifierValue,
+	NEWID() AS [Guid],
+	@foreignKey AS ForeignKey
+FROM 
+	#metricTypes mt;
+
+-- Did attend
+INSERT INTO MetricPartition(
+	MetricId,
+	Label,
+	EntityTypeId,
+	IsRequired,
+	[Order],
+	EntityTypeQualifierColumn,
+	EntityTypeQualifierValue,
+	[Guid],
+	ForeignKey
+)
+SELECT 
+	(SELECT Id FROM Metric WHERE [Guid] = mt.MetricGuid) AS MetricId,
+	'Did Attend' AS Label,
+	31 AS EntityTypeId,
+	@False AS IsRequired,
+	3 AS [Order],
+	'DefinedTypeId' AS EntityTypeQualifierColumn,
+	'72' AS EntityTypeQualifierValue,
+	NEWID() AS [Guid],
+	@foreignKey AS ForeignKey
+FROM 
 	#metricTypes mt;
 
 --DELETE FROM Metric WHERE ForeignKey = 'Metrics 2.0'
 
---SELECT * FROM #groupConversion;
---SELECT * FROM #metricTypes
-
 /*
-SELECT 
-	* 
-FROM 
-	MetricCategory 
-WHERE 
-	CategoryId = 451;
-
--- Add partitions
--- INSERT INTO MetricPartition
-SELECT 
-	Id AS MetricId,
-	'Did Attend' AS Label,
-	31 AS EntityTypeId,
-	0 AS IsRequired,
-	3 AS [Order],
-	'DefinedTypeId' AS EntityTypeQualifierColumn,
-	'72' AS EntityTypeQualifierValue,
-	NEWID() AS [Guid]
-FROM Metric WHERE Title LIKE '% Service Attendance';
-
-
-WITH cteNewGroups AS (
-	
-)
 SELECT 
 	m.Title AS MetricTitle,
 	g.Name AS GroupName,
