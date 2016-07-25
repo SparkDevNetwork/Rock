@@ -30,7 +30,7 @@ using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
-namespace church.ccv.Reporting.DataFilter.BinaryFile
+namespace church.ccv.Reporting.DataFilter.Person
 {
     /// <summary>
     /// 

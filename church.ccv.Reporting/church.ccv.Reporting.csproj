@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataFilter\Person\LastLogin.cs" />
     <Compile Include="DataFilter\Person\PhotoSizeFilter.cs" />
     <Compile Include="DataFilter\ContentChannelItem\ItemsFromCategoriesRoute.cs" />
     <Compile Include="DataFilter\ContentChannelItem\RelatedContentChannelItems.cs" />
