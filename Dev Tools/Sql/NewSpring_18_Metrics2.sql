@@ -18,6 +18,9 @@ DECLARE @Order int = 0
 DECLARE @MetricSourceSQLId int = (SELECT [Id] FROM DefinedValue WHERE [Guid] = '6A1E1A1B-A636-4E12-B90C-D7FD1BDAE764');
 DECLARE @CreatedDateTime AS DATETIME = GETDATE();
 DECLARE @foreignKey AS NVARCHAR(15) = 'Metrics 2.0';
+DECLARE @metricValueType AS INT = 0;
+DECLARE @dvTrue AS INT = 826;
+DECLARE @dvFalse AS INT = 827;
 
 -- Schedule ids variables
 DECLARE @service0915 AS INT = 12;
@@ -361,18 +364,18 @@ SELECT
 FROM 
 	#metricTypes mt;
 
+/* ====================================================== */
+-- convert the metric values for service attendance to attendance
+/* ====================================================== */
+IF object_id('tempdb..#attendanceMetricValues') IS NOT NULL
+BEGIN
+	drop table #attendanceMetricValues
+END
 
---DELETE FROM Metric WHERE ForeignKey = 'Metrics 2.0'
-
-/*
 SELECT 
-	m.Title AS MetricTitle,
-	g.Name AS GroupName,
-	ng.GroupName,
-	ng.CampusId,
-	et.FriendlyName,
+	m.Id AS MetricId,
 	mv.YValue,
-	mv.MetricValueDateTime,
+	CONVERT(DATE, mv.MetricValueDateTime) AS MetricDate,
 	CASE 
 		WHEN SUBSTRING(CONVERT(NVARCHAR(30), CONVERT(TIME, mv.MetricValueDateTime)), 0, 3) = '09' THEN @service0915
 		WHEN SUBSTRING(CONVERT(NVARCHAR(30), CONVERT(TIME, mv.MetricValueDateTime)), 0, 3) = '11' THEN @service1115 
@@ -380,19 +383,123 @@ SELECT
 		WHEN SUBSTRING(CONVERT(NVARCHAR(30), CONVERT(TIME, mv.MetricValueDateTime)), 0, 3) = '18' THEN @service1800
 	END AS ScheduleId,
 	1 AS DidAttend,
-	c.Name
+	c.Id AS CampusId,
+	ng.GroupId AS NewGroupId,
+	NEWID() AS MetricValueGuid,
+	mt.AttendanceMetricGuid
+INTO #attendanceMetricValues
 FROM 
 	Metric m
+	JOIN MetricCategory mc ON mc.MetricId = m.Id
+	JOIN #metricTypes mt ON mt.CategoryId = mc.CategoryId
 	JOIN [Group] g ON g.Id = m.ForeignId
 	JOIN MetricPartition mp ON mp.MetricId = m.Id
 	JOIN EntityType et ON et.Id = mp.EntityTypeId
-	JOIN cteNewGroups ng ON ng.OldGroupId = g.Id
+	JOIN #groupConversion ng ON ng.OldGroupId = g.Id
 	JOIN MetricValue mv ON mv.MetricId = m.Id
 	JOIN MetricValuePartition mvp ON mvp.MetricPartitionId = mp.Id AND mvp.MetricValueId = mv.Id AND ng.CampusId = mvp.EntityId
 	JOIN Campus c ON c.Id = ng.CampusId
 WHERE 
-	m.Id = @metricId
-	AND mv.Id = 143917
-ORDER BY 
-	mv.MetricValueDateTime DESC,
-	ng.CampusId;*/
+	m.Title LIKE '% Service Attendance';
+
+-- Add metric values
+INSERT INTO MetricValue(
+	MetricValueType,
+	YValue,
+	MetricId,
+	MetricValueDateTime,
+	CreatedDateTime,
+	[Guid],
+	ForeignKey
+)
+SELECT 
+	@metricValueType,
+	amv.YValue,
+	(SELECT Id FROM Metric WHERE [Guid] = amv.AttendanceMetricGuid) AS MetricId,
+	amv.MetricDate,
+	@CreatedDateTime,
+	amv.MetricValueGuid,
+	@foreignKey
+FROM 
+	#attendanceMetricValues amv;
+
+/* ====================================================== */
+-- add partition values
+/* ====================================================== */
+-- Add partition values for campus
+INSERT INTO MetricValuePartition(
+	MetricPartitionId,
+	MetricValueId,
+	EntityId,
+	CreatedDateTime,
+	[Guid],
+	ForeignKey
+)
+SELECT 
+	(SELECT mp.Id FROM MetricPartition mp JOIN Metric m ON m.Id = mp.MetricId WHERE m.[Guid] = amv.AttendanceMetricGuid AND mp.Label = 'Campus') AS MetricPartitionId,
+	(SELECT Id FROM MetricValue WHERE [Guid] = amv.MetricValueGuid) AS MetricValueId,
+	amv.CampusId AS EntityId,
+	@CreatedDateTime AS CreatedDateTime,
+	NEWID() AS [Guid],
+	@foreignKey AS ForeignKey
+FROM 
+	#attendanceMetricValues amv;
+
+-- Add partition values for group
+INSERT INTO MetricValuePartition(
+	MetricPartitionId,
+	MetricValueId,
+	EntityId,
+	CreatedDateTime,
+	[Guid],
+	ForeignKey
+)
+SELECT 
+	(SELECT mp.Id FROM MetricPartition mp JOIN Metric m ON m.Id = mp.MetricId WHERE m.[Guid] = amv.AttendanceMetricGuid AND mp.Label = 'Group') AS MetricPartitionId,
+	(SELECT Id FROM MetricValue WHERE [Guid] = amv.MetricValueGuid) AS MetricValueId,
+	amv.NewGroupId AS EntityId,
+	@CreatedDateTime AS CreatedDateTime,
+	NEWID() AS [Guid],
+	@foreignKey AS ForeignKey
+FROM 
+	#attendanceMetricValues amv;
+
+-- Add partition values for service
+INSERT INTO MetricValuePartition(
+	MetricPartitionId,
+	MetricValueId,
+	EntityId,
+	CreatedDateTime,
+	[Guid],
+	ForeignKey
+)
+SELECT 
+	(SELECT mp.Id FROM MetricPartition mp JOIN Metric m ON m.Id = mp.MetricId WHERE m.[Guid] = amv.AttendanceMetricGuid AND mp.Label = 'Schedule') AS MetricPartitionId,
+	(SELECT Id FROM MetricValue WHERE [Guid] = amv.MetricValueGuid) AS MetricValueId,
+	amv.ScheduleId AS EntityId,
+	@CreatedDateTime AS CreatedDateTime,
+	NEWID() AS [Guid],
+	@foreignKey AS ForeignKey
+FROM 
+	#attendanceMetricValues amv;
+
+-- Add partition values for did attend
+INSERT INTO MetricValuePartition(
+	MetricPartitionId,
+	MetricValueId,
+	EntityId,
+	CreatedDateTime,
+	[Guid],
+	ForeignKey
+)
+SELECT 
+	(SELECT mp.Id FROM MetricPartition mp JOIN Metric m ON m.Id = mp.MetricId WHERE m.[Guid] = amv.AttendanceMetricGuid AND mp.Label = 'Did Attend') AS MetricPartitionId,
+	(SELECT Id FROM MetricValue WHERE [Guid] = amv.MetricValueGuid) AS MetricValueId,
+	@dvTrue AS EntityId,
+	@CreatedDateTime AS CreatedDateTime,
+	NEWID() AS [Guid],
+	@foreignKey AS ForeignKey
+FROM 
+	#attendanceMetricValues amv;
+
+--DELETE FROM Metric WHERE ForeignKey = 'Metrics 2.0'
