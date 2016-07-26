@@ -32,15 +32,16 @@ namespace Rock.Workflow.Action
     /// Runs a SQL query
     /// </summary>
     [ActionCategory( "Finance" )]
-    [Description( "Sets a benevolence request's attribute." )]
+    [Description( "Adds a new related document to a benevolence request." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Benevolence Request Set Attribute" )]
+    [ExportMetadata( "ComponentName", "Benevolence Request Add Document" )]
     
-    [WorkflowAttribute( "Benevolence Request", "Workflow attribute to set the returned benevolence request to.", false, "", "", 0, null,
+    [WorkflowAttribute( "Benevolence Request", "Workflow attribute to set the returned benevolence request to.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.BenevolenceRequestFieldType" } )]
-    [AttributeField( SystemGuid.EntityType.BENEVOLENCE_REQUEST, "Benevolence Request Attribute", "The benevolence request attribute that should be updated with the provided value.", true, false, "", "", 1 )]
-    [WorkflowTextOrAttribute( "Value", "Attribute Value", "The value or attribute value to set the benevolence request attribute to. <span class='tip tip-lava'></span>", false, "", "", 2, "Value" )]
-    public class BenevolenceRequestSetAttribute : ActionComponent
+
+    [WorkflowAttribute( "Document", "Workflow attribute that contains the document to be added.", true, "", "", 1, null,
+        new string[] { "Rock.Field.Types.FileFieldType" } )]
+    public class BenevolenceRequestAddDocument : ActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -56,7 +57,9 @@ namespace Rock.Workflow.Action
 
             var mergeFields = GetMergeFields( action );
 
-            var benevolenceRequest = new BenevolenceRequestService(rockContext).Get( GetAttributeValue( action, "BenevolenceRequest" ).AsGuid() );
+            BenevolenceRequestService benevolenceRequestService = new BenevolenceRequestService( rockContext );
+
+            var benevolenceRequest = benevolenceRequestService.Get( GetAttributeValue( action, "BenevolenceRequest", true ).AsGuid() );
 
             if (benevolenceRequest == null )
             {
@@ -66,23 +69,22 @@ namespace Rock.Workflow.Action
                 return false;
             }
 
-            var attribute = AttributeCache.Read( GetAttributeValue( action, "BenevolenceRequestAttribute").AsGuid() );
+            var binaryFile = new BinaryFileService(rockContext).Get(GetAttributeValue( action, "Document", true ).AsGuid());
 
-            if (attribute == null )
+            if ( binaryFile == null )
             {
-                var errorMessage = "Could not find a benevolence attribute matching the one provided.";
-                errorMessages.Add( errorMessage );
-                action.AddLogEntry( errorMessage, true );
-                return false;
+                action.AddLogEntry( "The document to add to the benevolence request was not be found.", true );
+                return true; // returning true here to allow the action to run 'successfully' without a document. This allows the action to be easily used when the document is optional without a bunch of action filter tests.
             }
 
-            var attributeValue = GetAttributeValue( action, "BenevolenceRequestAttribute", true ).ResolveMergeFields( mergeFields );
+            BenevolenceRequestDocument requestDocument = new BenevolenceRequestDocument();
+            benevolenceRequest.Documents.Add( requestDocument );
 
-            benevolenceRequest.LoadAttributes();
+            requestDocument.BinaryFileId = binaryFile.Id;
 
-            Rock.Attribute.Helper.SaveAttributeValue( benevolenceRequest, attribute, attributeValue, rockContext );
+            rockContext.SaveChanges();
 
-            action.AddLogEntry( $"Set 'Benevolence Request' attribute '{attribute.Name}' to '{attributeValue}'." );
+            action.AddLogEntry( "Added document to the benevolence request." );
             return true;
         }
     }
