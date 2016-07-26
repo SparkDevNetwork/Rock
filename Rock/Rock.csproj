@@ -436,6 +436,7 @@
     <Compile Include="Field\Types\ComponentsFieldType.cs" />
     <Compile Include="Field\Types\ConnectionActivityTypeFieldType.cs" />
     <Compile Include="Field\Types\ConnectionOpportunityFieldType.cs" />
+    <Compile Include="Field\Types\BenevolenceRequestFieldType.cs" />
     <Compile Include="Field\Types\ConnectionRequestFieldType.cs" />
     <Compile Include="Field\Types\ConnectionStateFieldType.cs" />
     <Compile Include="Field\Types\ConnectionStatusFieldType.cs" />
@@ -1511,6 +1512,9 @@
     <Compile Include="Workflow\Action\Connections\SetConnectionRequestState.cs" />
     <Compile Include="Workflow\Action\Connections\SetConnectionRequestStatus.cs" />
     <Compile Include="Workflow\Action\Connections\TransferConnectionRequest.cs" />
+    <Compile Include="Workflow\Action\Finance\BenevolenceRequestAdd.cs" />
+    <Compile Include="Workflow\Action\Finance\BenevolenceRequestAddDocument.cs" />
+    <Compile Include="Workflow\Action\Finance\BenevolenceRequestSetAttribute.cs" />
     <Compile Include="Workflow\Action\Groups\AddNoteToGroupMember.cs" />
     <Compile Include="Workflow\Action\Groups\AddPersonToGroup.cs" />
     <Compile Include="Workflow\Action\Groups\AddPersonToGroupAttribute.cs" />
