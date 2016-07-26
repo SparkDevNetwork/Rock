@@ -596,10 +596,12 @@
     a {
         color: @persondetails-familybar-color;
     }
+}
 
+.persondetails-group {
     header {
         background-color: @persondetails-bio-bg;
-        margin: -15px -15px 0 -15px;
+        margin: 0 -15px;
         padding: 10px 15px;
         position: relative;
         border-bottom: 1px solid darken(@persondetails-bio-bg, @const-border-darken-amt);
@@ -635,6 +637,10 @@
                 }
             }
         }
+    }
+
+    .group-details {
+        margin-bottom: 12px;
     }
 
     .groupmembers {
@@ -701,7 +707,11 @@
     }
 }
 
-
+.persondetails-group:first-child {
+    header{
+         margin: -15px -15px 0 -15px;
+    }
+}
 
 // 5. Page Tabs
 // -------------------------
