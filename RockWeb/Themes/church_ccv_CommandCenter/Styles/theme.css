@@ -3065,10 +3065,9 @@ table.attribute-grid tr th:nth-child(3) {
   margin: 0;
 }
 .personprofilebar-family header .action-wrapper {
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
+  margin: -10px -15px -10px 0;
+  float: right;
+  height: 39px;
 }
 .personprofilebar-family header .action-wrapper .action {
   width: 45px;
