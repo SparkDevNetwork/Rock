@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <views>
-  <mapping-views hash="223868be1ee592b58c005102f1dffaf2100c51d3edc16604aa340e7d78a8a285" conceptual-container="RockContext" store-container="CodeFirstDatabase">
+  <mapping-views hash="b6b6030997e9b23d3a696a58f54411cc3118853cd06cc04c93bf03ee157fd7f4" conceptual-container="RockContext" store-container="CodeFirstDatabase">
     <view extent="CodeFirstDatabase.AttendanceCode"><![CDATA[
     SELECT VALUE -- Constructing AttendanceCode
         [CodeFirstDatabaseSchema.AttendanceCode](T1.AttendanceCode_Id, T1.AttendanceCode_IssueDateTime, T1.AttendanceCode_Code, T1.AttendanceCode_Guid, T1.AttendanceCode_ForeignId, T1.AttendanceCode_ForeignGuid, T1.AttendanceCode_ForeignKey)
@@ -3542,98 +3542,6 @@
             T.ForeignKey AS MergeTemplate_ForeignKey, 
             True AS _from0
         FROM RockContext.MergeTemplates AS T
-    ) AS T1]]></view>
-    <view extent="CodeFirstDatabase.Reservation"><![CDATA[
-    SELECT VALUE -- Constructing Reservation
-        [CodeFirstDatabaseSchema.Reservation](T1.Reservation_Id, T1.Reservation_Name, T1.Reservation_ScheduleId, T1.Reservation_CampusId, T1.Reservation_MinistryId, T1.Reservation_StatusId, T1.Reservation_RequestorAliasId, T1.Reservation_ApproverAliasId, T1.Reservation_SetupTime, T1.Reservation_CleanupTime, T1.Reservation_NumberAttending, T1.Reservation_IsApproved, T1.Reservation_Note, T1.Reservation_CreatedDateTime, T1.Reservation_ModifiedDateTime, T1.Reservation_CreatedByPersonAliasId, T1.Reservation_ModifiedByPersonAliasId, T1.Reservation_Guid, T1.Reservation_ForeignId, T1.Reservation_ForeignGuid, T1.Reservation_ForeignKey)
-    FROM (
-        SELECT 
-            T.Id AS Reservation_Id, 
-            T.Name AS Reservation_Name, 
-            T.ScheduleId AS Reservation_ScheduleId, 
-            T.CampusId AS Reservation_CampusId, 
-            T.MinistryId AS Reservation_MinistryId, 
-            T.StatusId AS Reservation_StatusId, 
-            T.RequestorAliasId AS Reservation_RequestorAliasId, 
-            T.ApproverAliasId AS Reservation_ApproverAliasId, 
-            T.SetupTime AS Reservation_SetupTime, 
-            T.CleanupTime AS Reservation_CleanupTime, 
-            T.NumberAttending AS Reservation_NumberAttending, 
-            T.IsApproved AS Reservation_IsApproved, 
-            T.Note AS Reservation_Note, 
-            T.CreatedDateTime AS Reservation_CreatedDateTime, 
-            T.ModifiedDateTime AS Reservation_ModifiedDateTime, 
-            T.CreatedByPersonAliasId AS Reservation_CreatedByPersonAliasId, 
-            T.ModifiedByPersonAliasId AS Reservation_ModifiedByPersonAliasId, 
-            T.Guid AS Reservation_Guid, 
-            T.ForeignId AS Reservation_ForeignId, 
-            T.ForeignGuid AS Reservation_ForeignGuid, 
-            T.ForeignKey AS Reservation_ForeignKey, 
-            True AS _from0
-        FROM RockContext.Reservations AS T
-    ) AS T1]]></view>
-    <view extent="CodeFirstDatabase.ReservationLocation"><![CDATA[
-    SELECT VALUE -- Constructing ReservationLocation
-        [CodeFirstDatabaseSchema.ReservationLocation](T1.ReservationLocation_Id, T1.ReservationLocation_ReservationId, T1.ReservationLocation_LocationId, T1.ReservationLocation_IsApproved, T1.ReservationLocation_CreatedDateTime, T1.ReservationLocation_ModifiedDateTime, T1.ReservationLocation_CreatedByPersonAliasId, T1.ReservationLocation_ModifiedByPersonAliasId, T1.ReservationLocation_Guid, T1.ReservationLocation_ForeignId, T1.ReservationLocation_ForeignGuid, T1.ReservationLocation_ForeignKey)
-    FROM (
-        SELECT 
-            T.Id AS ReservationLocation_Id, 
-            T.ReservationId AS ReservationLocation_ReservationId, 
-            T.LocationId AS ReservationLocation_LocationId, 
-            T.IsApproved AS ReservationLocation_IsApproved, 
-            T.CreatedDateTime AS ReservationLocation_CreatedDateTime, 
-            T.ModifiedDateTime AS ReservationLocation_ModifiedDateTime, 
-            T.CreatedByPersonAliasId AS ReservationLocation_CreatedByPersonAliasId, 
-            T.ModifiedByPersonAliasId AS ReservationLocation_ModifiedByPersonAliasId, 
-            T.Guid AS ReservationLocation_Guid, 
-            T.ForeignId AS ReservationLocation_ForeignId, 
-            T.ForeignGuid AS ReservationLocation_ForeignGuid, 
-            T.ForeignKey AS ReservationLocation_ForeignKey, 
-            True AS _from0
-        FROM RockContext.ReservationLocations AS T
-    ) AS T1]]></view>
-    <view extent="CodeFirstDatabase.ReservationResource"><![CDATA[
-    SELECT VALUE -- Constructing ReservationResource
-        [CodeFirstDatabaseSchema.ReservationResource](T1.ReservationResource_Id, T1.ReservationResource_ReservationId, T1.ReservationResource_ResourceId, T1.ReservationResource_Quantity, T1.ReservationResource_IsApproved, T1.ReservationResource_CreatedDateTime, T1.ReservationResource_ModifiedDateTime, T1.ReservationResource_CreatedByPersonAliasId, T1.ReservationResource_ModifiedByPersonAliasId, T1.ReservationResource_Guid, T1.ReservationResource_ForeignId, T1.ReservationResource_ForeignGuid, T1.ReservationResource_ForeignKey)
-    FROM (
-        SELECT 
-            T.Id AS ReservationResource_Id, 
-            T.ReservationId AS ReservationResource_ReservationId, 
-            T.ResourceId AS ReservationResource_ResourceId, 
-            T.Quantity AS ReservationResource_Quantity, 
-            T.IsApproved AS ReservationResource_IsApproved, 
-            T.CreatedDateTime AS ReservationResource_CreatedDateTime, 
-            T.ModifiedDateTime AS ReservationResource_ModifiedDateTime, 
-            T.CreatedByPersonAliasId AS ReservationResource_CreatedByPersonAliasId, 
-            T.ModifiedByPersonAliasId AS ReservationResource_ModifiedByPersonAliasId, 
-            T.Guid AS ReservationResource_Guid, 
-            T.ForeignId AS ReservationResource_ForeignId, 
-            T.ForeignGuid AS ReservationResource_ForeignGuid, 
-            T.ForeignKey AS ReservationResource_ForeignKey, 
-            True AS _from0
-        FROM RockContext.ReservationResources AS T
-    ) AS T1]]></view>
-    <view extent="CodeFirstDatabase.Resource"><![CDATA[
-    SELECT VALUE -- Constructing Resource
-        [CodeFirstDatabaseSchema.Resource](T1.Resource_Id, T1.Resource_Name, T1.Resource_CategoryId, T1.Resource_CampusId, T1.Resource_Quantity, T1.Resource_Note, T1.Resource_CreatedDateTime, T1.Resource_ModifiedDateTime, T1.Resource_CreatedByPersonAliasId, T1.Resource_ModifiedByPersonAliasId, T1.Resource_Guid, T1.Resource_ForeignId, T1.Resource_ForeignGuid, T1.Resource_ForeignKey)
-    FROM (
-        SELECT 
-            T.Id AS Resource_Id, 
-            T.Name AS Resource_Name, 
-            T.CategoryId AS Resource_CategoryId, 
-            T.CampusId AS Resource_CampusId, 
-            T.Quantity AS Resource_Quantity, 
-            T.Note AS Resource_Note, 
-            T.CreatedDateTime AS Resource_CreatedDateTime, 
-            T.ModifiedDateTime AS Resource_ModifiedDateTime, 
-            T.CreatedByPersonAliasId AS Resource_CreatedByPersonAliasId, 
-            T.ModifiedByPersonAliasId AS Resource_ModifiedByPersonAliasId, 
-            T.Guid AS Resource_Guid, 
-            T.ForeignId AS Resource_ForeignId, 
-            T.ForeignGuid AS Resource_ForeignGuid, 
-            T.ForeignKey AS Resource_ForeignKey, 
-            True AS _from0
-        FROM RockContext.Resources AS T
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.DeviceLocation"><![CDATA[
     SELECT VALUE -- Constructing DeviceLocation
@@ -7216,98 +7124,6 @@
             T.ForeignKey AS MergeTemplate_ForeignKey, 
             True AS _from0
         FROM CodeFirstDatabase.MergeTemplate AS T
-    ) AS T1]]></view>
-    <view extent="RockContext.Reservations"><![CDATA[
-    SELECT VALUE -- Constructing Reservations
-        [Rock.Data.Reservation](T1.Reservation_Id, T1.Reservation_Name, T1.Reservation_ScheduleId, T1.Reservation_CampusId, T1.Reservation_MinistryId, T1.Reservation_StatusId, T1.Reservation_RequestorAliasId, T1.Reservation_ApproverAliasId, T1.Reservation_SetupTime, T1.Reservation_CleanupTime, T1.Reservation_NumberAttending, T1.Reservation_IsApproved, T1.Reservation_Note, T1.Reservation_CreatedDateTime, T1.Reservation_ModifiedDateTime, T1.Reservation_CreatedByPersonAliasId, T1.Reservation_ModifiedByPersonAliasId, T1.Reservation_Guid, T1.Reservation_ForeignId, T1.Reservation_ForeignGuid, T1.Reservation_ForeignKey)
-    FROM (
-        SELECT 
-            T.Id AS Reservation_Id, 
-            T.Name AS Reservation_Name, 
-            T.ScheduleId AS Reservation_ScheduleId, 
-            T.CampusId AS Reservation_CampusId, 
-            T.MinistryId AS Reservation_MinistryId, 
-            T.StatusId AS Reservation_StatusId, 
-            T.RequestorAliasId AS Reservation_RequestorAliasId, 
-            T.ApproverAliasId AS Reservation_ApproverAliasId, 
-            T.SetupTime AS Reservation_SetupTime, 
-            T.CleanupTime AS Reservation_CleanupTime, 
-            T.NumberAttending AS Reservation_NumberAttending, 
-            T.IsApproved AS Reservation_IsApproved, 
-            T.Note AS Reservation_Note, 
-            T.CreatedDateTime AS Reservation_CreatedDateTime, 
-            T.ModifiedDateTime AS Reservation_ModifiedDateTime, 
-            T.CreatedByPersonAliasId AS Reservation_CreatedByPersonAliasId, 
-            T.ModifiedByPersonAliasId AS Reservation_ModifiedByPersonAliasId, 
-            T.Guid AS Reservation_Guid, 
-            T.ForeignId AS Reservation_ForeignId, 
-            T.ForeignGuid AS Reservation_ForeignGuid, 
-            T.ForeignKey AS Reservation_ForeignKey, 
-            True AS _from0
-        FROM CodeFirstDatabase.Reservation AS T
-    ) AS T1]]></view>
-    <view extent="RockContext.ReservationLocations"><![CDATA[
-    SELECT VALUE -- Constructing ReservationLocations
-        [Rock.Data.ReservationLocation](T1.ReservationLocation_Id, T1.ReservationLocation_ReservationId, T1.ReservationLocation_LocationId, T1.ReservationLocation_IsApproved, T1.ReservationLocation_CreatedDateTime, T1.ReservationLocation_ModifiedDateTime, T1.ReservationLocation_CreatedByPersonAliasId, T1.ReservationLocation_ModifiedByPersonAliasId, T1.ReservationLocation_Guid, T1.ReservationLocation_ForeignId, T1.ReservationLocation_ForeignGuid, T1.ReservationLocation_ForeignKey)
-    FROM (
-        SELECT 
-            T.Id AS ReservationLocation_Id, 
-            T.ReservationId AS ReservationLocation_ReservationId, 
-            T.LocationId AS ReservationLocation_LocationId, 
-            T.IsApproved AS ReservationLocation_IsApproved, 
-            T.CreatedDateTime AS ReservationLocation_CreatedDateTime, 
-            T.ModifiedDateTime AS ReservationLocation_ModifiedDateTime, 
-            T.CreatedByPersonAliasId AS ReservationLocation_CreatedByPersonAliasId, 
-            T.ModifiedByPersonAliasId AS ReservationLocation_ModifiedByPersonAliasId, 
-            T.Guid AS ReservationLocation_Guid, 
-            T.ForeignId AS ReservationLocation_ForeignId, 
-            T.ForeignGuid AS ReservationLocation_ForeignGuid, 
-            T.ForeignKey AS ReservationLocation_ForeignKey, 
-            True AS _from0
-        FROM CodeFirstDatabase.ReservationLocation AS T
-    ) AS T1]]></view>
-    <view extent="RockContext.ReservationResources"><![CDATA[
-    SELECT VALUE -- Constructing ReservationResources
-        [Rock.Data.ReservationResource](T1.ReservationResource_Id, T1.ReservationResource_ReservationId, T1.ReservationResource_ResourceId, T1.ReservationResource_Quantity, T1.ReservationResource_IsApproved, T1.ReservationResource_CreatedDateTime, T1.ReservationResource_ModifiedDateTime, T1.ReservationResource_CreatedByPersonAliasId, T1.ReservationResource_ModifiedByPersonAliasId, T1.ReservationResource_Guid, T1.ReservationResource_ForeignId, T1.ReservationResource_ForeignGuid, T1.ReservationResource_ForeignKey)
-    FROM (
-        SELECT 
-            T.Id AS ReservationResource_Id, 
-            T.ReservationId AS ReservationResource_ReservationId, 
-            T.ResourceId AS ReservationResource_ResourceId, 
-            T.Quantity AS ReservationResource_Quantity, 
-            T.IsApproved AS ReservationResource_IsApproved, 
-            T.CreatedDateTime AS ReservationResource_CreatedDateTime, 
-            T.ModifiedDateTime AS ReservationResource_ModifiedDateTime, 
-            T.CreatedByPersonAliasId AS ReservationResource_CreatedByPersonAliasId, 
-            T.ModifiedByPersonAliasId AS ReservationResource_ModifiedByPersonAliasId, 
-            T.Guid AS ReservationResource_Guid, 
-            T.ForeignId AS ReservationResource_ForeignId, 
-            T.ForeignGuid AS ReservationResource_ForeignGuid, 
-            T.ForeignKey AS ReservationResource_ForeignKey, 
-            True AS _from0
-        FROM CodeFirstDatabase.ReservationResource AS T
-    ) AS T1]]></view>
-    <view extent="RockContext.Resources"><![CDATA[
-    SELECT VALUE -- Constructing Resources
-        [Rock.Data.Resource](T1.Resource_Id, T1.Resource_Name, T1.Resource_CategoryId, T1.Resource_CampusId, T1.Resource_Quantity, T1.Resource_Note, T1.Resource_CreatedDateTime, T1.Resource_ModifiedDateTime, T1.Resource_CreatedByPersonAliasId, T1.Resource_ModifiedByPersonAliasId, T1.Resource_Guid, T1.Resource_ForeignId, T1.Resource_ForeignGuid, T1.Resource_ForeignKey)
-    FROM (
-        SELECT 
-            T.Id AS Resource_Id, 
-            T.Name AS Resource_Name, 
-            T.CategoryId AS Resource_CategoryId, 
-            T.CampusId AS Resource_CampusId, 
-            T.Quantity AS Resource_Quantity, 
-            T.Note AS Resource_Note, 
-            T.CreatedDateTime AS Resource_CreatedDateTime, 
-            T.ModifiedDateTime AS Resource_ModifiedDateTime, 
-            T.CreatedByPersonAliasId AS Resource_CreatedByPersonAliasId, 
-            T.ModifiedByPersonAliasId AS Resource_ModifiedByPersonAliasId, 
-            T.Guid AS Resource_Guid, 
-            T.ForeignId AS Resource_ForeignId, 
-            T.ForeignGuid AS Resource_ForeignGuid, 
-            T.ForeignKey AS Resource_ForeignKey, 
-            True AS _from0
-        FROM CodeFirstDatabase.Resource AS T
     ) AS T1]]></view>
     <view extent="RockContext.Device_Locations"><![CDATA[
     SELECT VALUE -- Constructing Device_Locations
