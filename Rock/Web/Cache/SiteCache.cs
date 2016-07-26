@@ -446,6 +446,8 @@ namespace Rock.Web.Cache
             }
         }
 
+        public bool RequiresEncryption { get; set; }
+
         #endregion
 
         #region Public Methods
@@ -487,6 +489,7 @@ namespace Rock.Web.Cache
                 this.PageHeaderContent = site.PageHeaderContent;
                 this.AllowIndexing = site.AllowIndexing;
                 this.ChangePasswordPageId = site.ChangePasswordPageId;
+                this.RequiresEncryption = site.RequiresEncryption;
 
                 foreach ( var domain in site.SiteDomains.Select( d => d.Domain ).ToList() )
                 {
