@@ -48,7 +48,7 @@ namespace Rock.Workflow.Action
 
     [WorkflowAttribute( "Benevolence Request", "Workflow attribute to set the returned benevolence request to.", false, "", "", 6, null,
         new string[] { "Rock.Field.Types.BenevolenceRequestFieldType" } )]
-    public class BenevolenceRequestAddDocument : ActionComponent
+    public class BenevolenceRequestAdd : ActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.

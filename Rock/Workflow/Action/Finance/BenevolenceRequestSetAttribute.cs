@@ -35,11 +35,12 @@ namespace Rock.Workflow.Action
     [Description( "Sets a benevolence request's attribute." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Benevolence Request Set Attribute" )]
-    
-    [WorkflowAttribute( "Benevolence Request", "Workflow attribute to set the returned benevolence request to.", false, "", "", 0, null,
+
+    [WorkflowAttribute( "Benevolence Request", "Workflow attribute to set the returned benevolence request to.", true, "", "", 0, "BenevolenceRequest",
         new string[] { "Rock.Field.Types.BenevolenceRequestFieldType" } )]
     [AttributeField( SystemGuid.EntityType.BENEVOLENCE_REQUEST, "Benevolence Request Attribute", "The benevolence request attribute that should be updated with the provided value.", true, false, "", "", 1 )]
-    [WorkflowTextOrAttribute( "Value", "Attribute Value", "The value or attribute value to set the benevolence request attribute to. <span class='tip tip-lava'></span>", false, "", "", 2, "Value" )]
+    [WorkflowTextOrAttribute( "Value", "Attribute Value", "The value or attribute value to set the benevolence request attribute to. <span class='tip tip-lava'></span>", true, "", "", 2, "Value" )]
+    [BooleanField("Use Blank Value", "If the provided value is an empty string should it be used to blank out the attribute value or should it be ignored? If true the empty value will be used to blank out the attribute.", true, order: 3)]
     public class BenevolenceRequestSetAttribute : ActionComponent
     {
         /// <summary>
@@ -56,9 +57,9 @@ namespace Rock.Workflow.Action
 
             var mergeFields = GetMergeFields( action );
 
-            var benevolenceRequest = new BenevolenceRequestService(rockContext).Get( GetAttributeValue( action, "BenevolenceRequest" ).AsGuid() );
+            var benevolenceRequest = new BenevolenceRequestService( rockContext ).Get( GetAttributeValue( action, "BenevolenceRequest", true ).AsGuid() );
 
-            if (benevolenceRequest == null )
+            if ( benevolenceRequest == null )
             {
                 var errorMessage = "Benevolence request could not be found.";
                 errorMessages.Add( errorMessage );
@@ -66,9 +67,9 @@ namespace Rock.Workflow.Action
                 return false;
             }
 
-            var attribute = AttributeCache.Read( GetAttributeValue( action, "BenevolenceRequestAttribute").AsGuid() );
+            var attribute = AttributeCache.Read( GetAttributeValue( action, "BenevolenceRequestAttribute" ).AsGuid() );
 
-            if (attribute == null )
+            if ( attribute == null )
             {
                 var errorMessage = "Could not find a benevolence attribute matching the one provided.";
                 errorMessages.Add( errorMessage );
@@ -76,13 +77,17 @@ namespace Rock.Workflow.Action
                 return false;
             }
 
-            var attributeValue = GetAttributeValue( action, "BenevolenceRequestAttribute", true ).ResolveMergeFields( mergeFields );
+            var attributeValue = GetAttributeValue( action, "Value", true ).ResolveMergeFields( mergeFields );
+            bool useBlankValues = GetActionAttributeValue( action, "UseBlankValue" ).AsBoolean();
 
-            benevolenceRequest.LoadAttributes();
+            if ( !string.IsNullOrWhiteSpace( attributeValue ) ||  useBlankValues)
+            {
+                benevolenceRequest.LoadAttributes();
 
-            Rock.Attribute.Helper.SaveAttributeValue( benevolenceRequest, attribute, attributeValue, rockContext );
+                Rock.Attribute.Helper.SaveAttributeValue( benevolenceRequest, attribute, attributeValue, rockContext );
+                action.AddLogEntry( $"Updated benevolence attribute '{attribute.Name}' to '{attributeValue}'." );
+            }
 
-            action.AddLogEntry( $"Set 'Benevolence Request' attribute '{attribute.Name}' to '{attributeValue}'." );
             return true;
         }
     }
