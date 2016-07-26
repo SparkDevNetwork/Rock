@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <views>
-  <mapping-views hash="c4f62c7bd240757003f0641ec32b7c595023373c5536a097332cbf5a9ba887dc" conceptual-container="RockContext" store-container="CodeFirstDatabase">
+  <mapping-views hash="c8703ec45e7ab8355f7e9a20f1100daaecd591eb94ac275a66471c8a1bf1f7dd" conceptual-container="RockContext" store-container="CodeFirstDatabase">
     <view extent="CodeFirstDatabase.AttendanceCode"><![CDATA[
     SELECT VALUE -- Constructing AttendanceCode
         [CodeFirstDatabaseSchema.AttendanceCode](T1.AttendanceCode_Id, T1.AttendanceCode_IssueDateTime, T1.AttendanceCode_Code, T1.AttendanceCode_Guid, T1.AttendanceCode_ForeignId, T1.AttendanceCode_ForeignGuid, T1.AttendanceCode_ForeignKey)
@@ -545,7 +545,7 @@
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.GroupType"><![CDATA[
     SELECT VALUE -- Constructing GroupType
-        [CodeFirstDatabaseSchema.GroupType](T1.GroupType_Id, T1.GroupType_IsSystem, T1.GroupType_Name, T1.GroupType_Description, T1.GroupType_GroupTerm, T1.GroupType_GroupMemberTerm, T1.GroupType_DefaultGroupRoleId, T1.GroupType_AllowMultipleLocations, T1.GroupType_ShowInGroupList, T1.GroupType_ShowInNavigation, T1.GroupType_IconCssClass, T1.GroupType_TakesAttendance, T1.GroupType_AttendanceCountsAsWeekendService, T1.GroupType_SendAttendanceReminder, T1.GroupType_ShowConnectionStatus, T1.GroupType_AttendanceRule, T1.GroupType_GroupCapacityRule, T1.GroupType_AttendancePrintTo, T1.GroupType_Order, T1.GroupType_InheritedGroupTypeId, T1.GroupType_AllowedScheduleTypes, T1.GroupType_LocationSelectionMode, T1.GroupType_EnableLocationSchedules, T1.GroupType_GroupTypePurposeValueId, T1.GroupType_IgnorePersonInactivated, T1.GroupType_CreatedDateTime, T1.GroupType_ModifiedDateTime, T1.GroupType_CreatedByPersonAliasId, T1.GroupType_ModifiedByPersonAliasId, T1.GroupType_Guid, T1.GroupType_ForeignId, T1.GroupType_ForeignGuid, T1.GroupType_ForeignKey)
+        [CodeFirstDatabaseSchema.GroupType](T1.GroupType_Id, T1.GroupType_IsSystem, T1.GroupType_Name, T1.GroupType_Description, T1.GroupType_GroupTerm, T1.GroupType_GroupMemberTerm, T1.GroupType_DefaultGroupRoleId, T1.GroupType_AllowMultipleLocations, T1.GroupType_ShowInGroupList, T1.GroupType_ShowInNavigation, T1.GroupType_IconCssClass, T1.GroupType_TakesAttendance, T1.GroupType_AttendanceCountsAsWeekendService, T1.GroupType_SendAttendanceReminder, T1.GroupType_ShowConnectionStatus, T1.GroupType_AttendanceRule, T1.GroupType_GroupCapacityRule, T1.GroupType_AttendancePrintTo, T1.GroupType_Order, T1.GroupType_InheritedGroupTypeId, T1.GroupType_AllowedScheduleTypes, T1.GroupType_LocationSelectionMode, T1.GroupType_EnableLocationSchedules, T1.GroupType_GroupTypePurposeValueId, T1.GroupType_IgnorePersonInactivated, T1.GroupType_GroupsRequireCampus, T1.GroupType_GroupAttendanceRequiresLocation, T1.GroupType_GroupAttendanceRequiresSchedule, T1.GroupType_CreatedDateTime, T1.GroupType_ModifiedDateTime, T1.GroupType_CreatedByPersonAliasId, T1.GroupType_ModifiedByPersonAliasId, T1.GroupType_Guid, T1.GroupType_ForeignId, T1.GroupType_ForeignGuid, T1.GroupType_ForeignKey)
     FROM (
         SELECT 
             T.Id AS GroupType_Id, 
@@ -573,6 +573,9 @@
             T.EnableLocationSchedules AS GroupType_EnableLocationSchedules, 
             T.GroupTypePurposeValueId AS GroupType_GroupTypePurposeValueId, 
             T.IgnorePersonInactivated AS GroupType_IgnorePersonInactivated, 
+            T.GroupsRequireCampus AS GroupType_GroupsRequireCampus, 
+            T.GroupAttendanceRequiresLocation AS GroupType_GroupAttendanceRequiresLocation, 
+            T.GroupAttendanceRequiresSchedule AS GroupType_GroupAttendanceRequiresSchedule, 
             T.CreatedDateTime AS GroupType_CreatedDateTime, 
             T.ModifiedDateTime AS GroupType_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS GroupType_CreatedByPersonAliasId, 
@@ -1672,7 +1675,7 @@
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.BenevolenceRequest"><![CDATA[
     SELECT VALUE -- Constructing BenevolenceRequest
-        [CodeFirstDatabaseSchema.BenevolenceRequest](T1.BenevolenceRequest_Id, T1.BenevolenceRequest_FirstName, T1.BenevolenceRequest_LastName, T1.BenevolenceRequest_Email, T1.BenevolenceRequest_RequestedByPersonAliasId, T1.BenevolenceRequest_RequestText, T1.BenevolenceRequest_RequestDateTime, T1.BenevolenceRequest_HomePhoneNumber, T1.BenevolenceRequest_CellPhoneNumber, T1.BenevolenceRequest_WorkPhoneNumber, T1.BenevolenceRequest_CaseWorkerPersonAliasId, T1.BenevolenceRequest_GovernmentId, T1.BenevolenceRequest_RequestStatusValueId, T1.BenevolenceRequest_ResultSummary, T1.BenevolenceRequest_ConnectionStatusValueId, T1.BenevolenceRequest_LocationId, T1.BenevolenceRequest_CreatedDateTime, T1.BenevolenceRequest_ModifiedDateTime, T1.BenevolenceRequest_CreatedByPersonAliasId, T1.BenevolenceRequest_ModifiedByPersonAliasId, T1.BenevolenceRequest_Guid, T1.BenevolenceRequest_ForeignId, T1.BenevolenceRequest_ForeignGuid, T1.BenevolenceRequest_ForeignKey)
+        [CodeFirstDatabaseSchema.BenevolenceRequest](T1.BenevolenceRequest_Id, T1.BenevolenceRequest_FirstName, T1.BenevolenceRequest_LastName, T1.BenevolenceRequest_Email, T1.BenevolenceRequest_RequestedByPersonAliasId, T1.BenevolenceRequest_RequestText, T1.BenevolenceRequest_RequestDateTime, T1.BenevolenceRequest_HomePhoneNumber, T1.BenevolenceRequest_CellPhoneNumber, T1.BenevolenceRequest_WorkPhoneNumber, T1.BenevolenceRequest_CaseWorkerPersonAliasId, T1.BenevolenceRequest_GovernmentId, T1.BenevolenceRequest_RequestStatusValueId, T1.BenevolenceRequest_ResultSummary, T1.BenevolenceRequest_ConnectionStatusValueId, T1.BenevolenceRequest_LocationId, T1.BenevolenceRequest_ProvidedNextSteps, T1.BenevolenceRequest_CampusId, T1.BenevolenceRequest_CreatedDateTime, T1.BenevolenceRequest_ModifiedDateTime, T1.BenevolenceRequest_CreatedByPersonAliasId, T1.BenevolenceRequest_ModifiedByPersonAliasId, T1.BenevolenceRequest_Guid, T1.BenevolenceRequest_ForeignId, T1.BenevolenceRequest_ForeignGuid, T1.BenevolenceRequest_ForeignKey)
     FROM (
         SELECT 
             T.Id AS BenevolenceRequest_Id, 
@@ -1691,6 +1694,8 @@
             T.ResultSummary AS BenevolenceRequest_ResultSummary, 
             T.ConnectionStatusValueId AS BenevolenceRequest_ConnectionStatusValueId, 
             T.LocationId AS BenevolenceRequest_LocationId, 
+            T.ProvidedNextSteps AS BenevolenceRequest_ProvidedNextSteps, 
+            T.CampusId AS BenevolenceRequest_CampusId, 
             T.CreatedDateTime AS BenevolenceRequest_CreatedDateTime, 
             T.ModifiedDateTime AS BenevolenceRequest_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS BenevolenceRequest_CreatedByPersonAliasId, 
@@ -1722,6 +1727,26 @@
             T.ForeignKey AS BenevolenceResult_ForeignKey, 
             True AS _from0
         FROM RockContext.BenevolenceResults AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.BenevolenceRequestDocument"><![CDATA[
+    SELECT VALUE -- Constructing BenevolenceRequestDocument
+        [CodeFirstDatabaseSchema.BenevolenceRequestDocument](T1.BenevolenceRequestDocument_Id, T1.BenevolenceRequestDocument_BenevolenceRequestId, T1.BenevolenceRequestDocument_BinaryFileId, T1.BenevolenceRequestDocument_Order, T1.BenevolenceRequestDocument_CreatedDateTime, T1.BenevolenceRequestDocument_ModifiedDateTime, T1.BenevolenceRequestDocument_CreatedByPersonAliasId, T1.BenevolenceRequestDocument_ModifiedByPersonAliasId, T1.BenevolenceRequestDocument_Guid, T1.BenevolenceRequestDocument_ForeignId, T1.BenevolenceRequestDocument_ForeignGuid, T1.BenevolenceRequestDocument_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS BenevolenceRequestDocument_Id, 
+            T.BenevolenceRequestId AS BenevolenceRequestDocument_BenevolenceRequestId, 
+            T.BinaryFileId AS BenevolenceRequestDocument_BinaryFileId, 
+            T.[Order] AS BenevolenceRequestDocument_Order, 
+            T.CreatedDateTime AS BenevolenceRequestDocument_CreatedDateTime, 
+            T.ModifiedDateTime AS BenevolenceRequestDocument_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS BenevolenceRequestDocument_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS BenevolenceRequestDocument_ModifiedByPersonAliasId, 
+            T.Guid AS BenevolenceRequestDocument_Guid, 
+            T.ForeignId AS BenevolenceRequestDocument_ForeignId, 
+            T.ForeignGuid AS BenevolenceRequestDocument_ForeignGuid, 
+            T.ForeignKey AS BenevolenceRequestDocument_ForeignKey, 
+            True AS _from0
+        FROM RockContext.BenevolenceRequestDocuments AS T
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.Block"><![CDATA[
     SELECT VALUE -- Constructing Block
@@ -1881,7 +1906,7 @@
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.Site"><![CDATA[
     SELECT VALUE -- Constructing Site
-        [CodeFirstDatabaseSchema.Site](T1.Site_Id, T1.Site_IsSystem, T1.Site_Name, T1.Site_Description, T1.Site_Theme, T1.Site_DefaultPageId, T1.Site_DefaultPageRouteId, T1.Site_LoginPageId, T1.Site_LoginPageRouteId, T1.Site_ChangePasswordPageId, T1.Site_ChangePasswordPageRouteId, T1.Site_RegistrationPageId, T1.Site_RegistrationPageRouteId, T1.Site_PageNotFoundPageId, T1.Site_PageNotFoundPageRouteId, T1.Site_CommunicationPageId, T1.Site_CommunicationPageRouteId, T1.Site_ErrorPage, T1.Site_GoogleAnalyticsCode, T1.Site_EnableMobileRedirect, T1.Site_MobilePageId, T1.Site_ExternalUrl, T1.Site_AllowedFrameDomains, T1.Site_RedirectTablets, T1.Site_EnablePageViews, T1.Site_PageViewRetentionPeriodDays, T1.Site_PageHeaderContent, T1.Site_AllowIndexing, T1.Site_CreatedDateTime, T1.Site_ModifiedDateTime, T1.Site_CreatedByPersonAliasId, T1.Site_ModifiedByPersonAliasId, T1.Site_Guid, T1.Site_ForeignId, T1.Site_ForeignGuid, T1.Site_ForeignKey)
+        [CodeFirstDatabaseSchema.Site](T1.Site_Id, T1.Site_IsSystem, T1.Site_Name, T1.Site_Description, T1.Site_Theme, T1.Site_DefaultPageId, T1.Site_DefaultPageRouteId, T1.Site_LoginPageId, T1.Site_LoginPageRouteId, T1.Site_ChangePasswordPageId, T1.Site_ChangePasswordPageRouteId, T1.Site_RegistrationPageId, T1.Site_RegistrationPageRouteId, T1.Site_PageNotFoundPageId, T1.Site_PageNotFoundPageRouteId, T1.Site_CommunicationPageId, T1.Site_CommunicationPageRouteId, T1.Site_ErrorPage, T1.Site_GoogleAnalyticsCode, T1.Site_EnableMobileRedirect, T1.Site_MobilePageId, T1.Site_ExternalUrl, T1.Site_AllowedFrameDomains, T1.Site_RedirectTablets, T1.Site_EnablePageViews, T1.Site_PageViewRetentionPeriodDays, T1.Site_PageHeaderContent, T1.Site_AllowIndexing, T1.Site_RequiresEncryption, T1.Site_CreatedDateTime, T1.Site_ModifiedDateTime, T1.Site_CreatedByPersonAliasId, T1.Site_ModifiedByPersonAliasId, T1.Site_Guid, T1.Site_ForeignId, T1.Site_ForeignGuid, T1.Site_ForeignKey)
     FROM (
         SELECT 
             T.Id AS Site_Id, 
@@ -1912,6 +1937,7 @@
             T.PageViewRetentionPeriodDays AS Site_PageViewRetentionPeriodDays, 
             T.PageHeaderContent AS Site_PageHeaderContent, 
             T.AllowIndexing AS Site_AllowIndexing, 
+            T.RequiresEncryption AS Site_RequiresEncryption, 
             T.CreatedDateTime AS Site_CreatedDateTime, 
             T.ModifiedDateTime AS Site_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS Site_CreatedByPersonAliasId, 
@@ -1993,7 +2019,7 @@
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.Communication"><![CDATA[
     SELECT VALUE -- Constructing Communication
-        [CodeFirstDatabaseSchema.Communication](T1.Communication_Id, T1.Communication_SenderPersonAliasId, T1.Communication_Subject, T1.Communication_IsBulkCommunication, T1.Communication_FutureSendDateTime, T1.Communication_Status, T1.Communication_ReviewerPersonAliasId, T1.Communication_ReviewedDateTime, T1.Communication_ReviewerNote, T1.Communication_MediumEntityTypeId, T1.Communication_MediumDataJson, T1.Communication_AdditionalMergeFieldsJson, T1.Communication_CreatedDateTime, T1.Communication_ModifiedDateTime, T1.Communication_CreatedByPersonAliasId, T1.Communication_ModifiedByPersonAliasId, T1.Communication_Guid, T1.Communication_ForeignId, T1.Communication_ForeignGuid, T1.Communication_ForeignKey)
+        [CodeFirstDatabaseSchema.Communication](T1.Communication_Id, T1.Communication_SenderPersonAliasId, T1.Communication_Subject, T1.Communication_IsBulkCommunication, T1.Communication_FutureSendDateTime, T1.Communication_Status, T1.Communication_ReviewerPersonAliasId, T1.Communication_ReviewedDateTime, T1.Communication_ReviewerNote, T1.Communication_MediumEntityTypeId, T1.Communication_MediumDataJson, T1.Communication_AdditionalMergeFieldsJson, T1.Communication_EnabledLavaCommands, T1.Communication_CreatedDateTime, T1.Communication_ModifiedDateTime, T1.Communication_CreatedByPersonAliasId, T1.Communication_ModifiedByPersonAliasId, T1.Communication_Guid, T1.Communication_ForeignId, T1.Communication_ForeignGuid, T1.Communication_ForeignKey)
     FROM (
         SELECT 
             T.Id AS Communication_Id, 
@@ -2008,6 +2034,7 @@
             T.MediumEntityTypeId AS Communication_MediumEntityTypeId, 
             T.MediumDataJson AS Communication_MediumDataJson, 
             T.AdditionalMergeFieldsJson AS Communication_AdditionalMergeFieldsJson, 
+            T.EnabledLavaCommands AS Communication_EnabledLavaCommands, 
             T.CreatedDateTime AS Communication_CreatedDateTime, 
             T.ModifiedDateTime AS Communication_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS Communication_CreatedByPersonAliasId, 
@@ -2804,7 +2831,7 @@
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.Metric"><![CDATA[
     SELECT VALUE -- Constructing Metric
-        [CodeFirstDatabaseSchema.Metric](T1.Metric_Id, T1.Metric_IsSystem, T1.Metric_Title, T1.Metric_Subtitle, T1.Metric_Description, T1.Metric_IconCssClass, T1.Metric_IsCumulative, T1.Metric_SourceValueTypeId, T1.Metric_SourceSql, T1.Metric_DataViewId, T1.Metric_XAxisLabel, T1.Metric_YAxisLabel, T1.Metric_MetricChampionPersonAliasId, T1.Metric_AdminPersonAliasId, T1.Metric_ScheduleId, T1.Metric_LastRunDateTime, T1.Metric_CreatedDateTime, T1.Metric_ModifiedDateTime, T1.Metric_CreatedByPersonAliasId, T1.Metric_ModifiedByPersonAliasId, T1.Metric_Guid, T1.Metric_ForeignId, T1.Metric_ForeignGuid, T1.Metric_ForeignKey)
+        [CodeFirstDatabaseSchema.Metric](T1.Metric_Id, T1.Metric_IsSystem, T1.Metric_Title, T1.Metric_Subtitle, T1.Metric_Description, T1.Metric_IconCssClass, T1.Metric_IsCumulative, T1.Metric_SourceValueTypeId, T1.Metric_SourceSql, T1.Metric_DataViewId, T1.Metric_XAxisLabel, T1.Metric_YAxisLabel, T1.Metric_MetricChampionPersonAliasId, T1.Metric_AdminPersonAliasId, T1.Metric_ScheduleId, T1.Metric_LastRunDateTime, T1.Metric_NumericDataType, T1.Metric_CreatedDateTime, T1.Metric_ModifiedDateTime, T1.Metric_CreatedByPersonAliasId, T1.Metric_ModifiedByPersonAliasId, T1.Metric_Guid, T1.Metric_ForeignId, T1.Metric_ForeignGuid, T1.Metric_ForeignKey)
     FROM (
         SELECT 
             T.Id AS Metric_Id, 
@@ -2823,6 +2850,7 @@
             T.AdminPersonAliasId AS Metric_AdminPersonAliasId, 
             T.ScheduleId AS Metric_ScheduleId, 
             T.LastRunDateTime AS Metric_LastRunDateTime, 
+            CAST(T.NumericDataType AS [Edm.Int32]) AS Metric_NumericDataType, 
             T.CreatedDateTime AS Metric_CreatedDateTime, 
             T.ModifiedDateTime AS Metric_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS Metric_CreatedByPersonAliasId, 
@@ -4413,7 +4441,7 @@
     ) AS T1]]></view>
     <view extent="RockContext.GroupTypes"><![CDATA[
     SELECT VALUE -- Constructing GroupTypes
-        [Rock.Data.GroupType](T1.GroupType_Id, T1.GroupType_IsSystem, T1.GroupType_Name, T1.GroupType_Description, T1.GroupType_GroupTerm, T1.GroupType_GroupMemberTerm, T1.GroupType_DefaultGroupRoleId, T1.GroupType_AllowMultipleLocations, T1.GroupType_ShowInGroupList, T1.GroupType_ShowInNavigation, T1.GroupType_IconCssClass, T1.GroupType_TakesAttendance, T1.GroupType_AttendanceCountsAsWeekendService, T1.GroupType_SendAttendanceReminder, T1.GroupType_ShowConnectionStatus, T1.GroupType_AttendanceRule, T1.GroupType_GroupCapacityRule, T1.GroupType_AttendancePrintTo, T1.GroupType_Order, T1.GroupType_InheritedGroupTypeId, T1.GroupType_AllowedScheduleTypes, T1.GroupType_LocationSelectionMode, T1.GroupType_EnableLocationSchedules, T1.GroupType_GroupTypePurposeValueId, T1.GroupType_IgnorePersonInactivated, T1.GroupType_CreatedDateTime, T1.GroupType_ModifiedDateTime, T1.GroupType_CreatedByPersonAliasId, T1.GroupType_ModifiedByPersonAliasId, T1.GroupType_Guid, T1.GroupType_ForeignId, T1.GroupType_ForeignGuid, T1.GroupType_ForeignKey)
+        [Rock.Data.GroupType](T1.GroupType_Id, T1.GroupType_IsSystem, T1.GroupType_Name, T1.GroupType_Description, T1.GroupType_GroupTerm, T1.GroupType_GroupMemberTerm, T1.GroupType_DefaultGroupRoleId, T1.GroupType_AllowMultipleLocations, T1.GroupType_ShowInGroupList, T1.GroupType_ShowInNavigation, T1.GroupType_IconCssClass, T1.GroupType_TakesAttendance, T1.GroupType_AttendanceCountsAsWeekendService, T1.GroupType_SendAttendanceReminder, T1.GroupType_ShowConnectionStatus, T1.GroupType_AttendanceRule, T1.GroupType_GroupCapacityRule, T1.GroupType_AttendancePrintTo, T1.GroupType_Order, T1.GroupType_InheritedGroupTypeId, T1.GroupType_AllowedScheduleTypes, T1.GroupType_LocationSelectionMode, T1.GroupType_EnableLocationSchedules, T1.GroupType_GroupTypePurposeValueId, T1.GroupType_IgnorePersonInactivated, T1.GroupType_GroupsRequireCampus, T1.GroupType_GroupAttendanceRequiresLocation, T1.GroupType_GroupAttendanceRequiresSchedule, T1.GroupType_CreatedDateTime, T1.GroupType_ModifiedDateTime, T1.GroupType_CreatedByPersonAliasId, T1.GroupType_ModifiedByPersonAliasId, T1.GroupType_Guid, T1.GroupType_ForeignId, T1.GroupType_ForeignGuid, T1.GroupType_ForeignKey)
     FROM (
         SELECT 
             T.Id AS GroupType_Id, 
@@ -4441,6 +4469,9 @@
             T.EnableLocationSchedules AS GroupType_EnableLocationSchedules, 
             T.GroupTypePurposeValueId AS GroupType_GroupTypePurposeValueId, 
             T.IgnorePersonInactivated AS GroupType_IgnorePersonInactivated, 
+            T.GroupsRequireCampus AS GroupType_GroupsRequireCampus, 
+            T.GroupAttendanceRequiresLocation AS GroupType_GroupAttendanceRequiresLocation, 
+            T.GroupAttendanceRequiresSchedule AS GroupType_GroupAttendanceRequiresSchedule, 
             T.CreatedDateTime AS GroupType_CreatedDateTime, 
             T.ModifiedDateTime AS GroupType_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS GroupType_CreatedByPersonAliasId, 
@@ -5540,7 +5571,7 @@
     ) AS T1]]></view>
     <view extent="RockContext.BenevolenceRequests"><![CDATA[
     SELECT VALUE -- Constructing BenevolenceRequests
-        [Rock.Data.BenevolenceRequest](T1.BenevolenceRequest_Id, T1.BenevolenceRequest_FirstName, T1.BenevolenceRequest_LastName, T1.BenevolenceRequest_Email, T1.BenevolenceRequest_RequestedByPersonAliasId, T1.BenevolenceRequest_RequestText, T1.BenevolenceRequest_RequestDateTime, T1.BenevolenceRequest_HomePhoneNumber, T1.BenevolenceRequest_CellPhoneNumber, T1.BenevolenceRequest_WorkPhoneNumber, T1.BenevolenceRequest_CaseWorkerPersonAliasId, T1.BenevolenceRequest_GovernmentId, T1.BenevolenceRequest_RequestStatusValueId, T1.BenevolenceRequest_ResultSummary, T1.BenevolenceRequest_ConnectionStatusValueId, T1.BenevolenceRequest_LocationId, T1.BenevolenceRequest_CreatedDateTime, T1.BenevolenceRequest_ModifiedDateTime, T1.BenevolenceRequest_CreatedByPersonAliasId, T1.BenevolenceRequest_ModifiedByPersonAliasId, T1.BenevolenceRequest_Guid, T1.BenevolenceRequest_ForeignId, T1.BenevolenceRequest_ForeignGuid, T1.BenevolenceRequest_ForeignKey)
+        [Rock.Data.BenevolenceRequest](T1.BenevolenceRequest_Id, T1.BenevolenceRequest_FirstName, T1.BenevolenceRequest_LastName, T1.BenevolenceRequest_Email, T1.BenevolenceRequest_RequestedByPersonAliasId, T1.BenevolenceRequest_RequestText, T1.BenevolenceRequest_RequestDateTime, T1.BenevolenceRequest_HomePhoneNumber, T1.BenevolenceRequest_CellPhoneNumber, T1.BenevolenceRequest_WorkPhoneNumber, T1.BenevolenceRequest_CaseWorkerPersonAliasId, T1.BenevolenceRequest_GovernmentId, T1.BenevolenceRequest_RequestStatusValueId, T1.BenevolenceRequest_ResultSummary, T1.BenevolenceRequest_ConnectionStatusValueId, T1.BenevolenceRequest_LocationId, T1.BenevolenceRequest_ProvidedNextSteps, T1.BenevolenceRequest_CampusId, T1.BenevolenceRequest_CreatedDateTime, T1.BenevolenceRequest_ModifiedDateTime, T1.BenevolenceRequest_CreatedByPersonAliasId, T1.BenevolenceRequest_ModifiedByPersonAliasId, T1.BenevolenceRequest_Guid, T1.BenevolenceRequest_ForeignId, T1.BenevolenceRequest_ForeignGuid, T1.BenevolenceRequest_ForeignKey)
     FROM (
         SELECT 
             T.Id AS BenevolenceRequest_Id, 
@@ -5559,6 +5590,8 @@
             T.ResultSummary AS BenevolenceRequest_ResultSummary, 
             T.ConnectionStatusValueId AS BenevolenceRequest_ConnectionStatusValueId, 
             T.LocationId AS BenevolenceRequest_LocationId, 
+            T.ProvidedNextSteps AS BenevolenceRequest_ProvidedNextSteps, 
+            T.CampusId AS BenevolenceRequest_CampusId, 
             T.CreatedDateTime AS BenevolenceRequest_CreatedDateTime, 
             T.ModifiedDateTime AS BenevolenceRequest_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS BenevolenceRequest_CreatedByPersonAliasId, 
@@ -5590,6 +5623,26 @@
             T.ForeignKey AS BenevolenceResult_ForeignKey, 
             True AS _from0
         FROM CodeFirstDatabase.BenevolenceResult AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.BenevolenceRequestDocuments"><![CDATA[
+    SELECT VALUE -- Constructing BenevolenceRequestDocuments
+        [Rock.Data.BenevolenceRequestDocument](T1.BenevolenceRequestDocument_Id, T1.BenevolenceRequestDocument_BenevolenceRequestId, T1.BenevolenceRequestDocument_BinaryFileId, T1.BenevolenceRequestDocument_Order, T1.BenevolenceRequestDocument_CreatedDateTime, T1.BenevolenceRequestDocument_ModifiedDateTime, T1.BenevolenceRequestDocument_CreatedByPersonAliasId, T1.BenevolenceRequestDocument_ModifiedByPersonAliasId, T1.BenevolenceRequestDocument_Guid, T1.BenevolenceRequestDocument_ForeignId, T1.BenevolenceRequestDocument_ForeignGuid, T1.BenevolenceRequestDocument_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS BenevolenceRequestDocument_Id, 
+            T.BenevolenceRequestId AS BenevolenceRequestDocument_BenevolenceRequestId, 
+            T.BinaryFileId AS BenevolenceRequestDocument_BinaryFileId, 
+            T.[Order] AS BenevolenceRequestDocument_Order, 
+            T.CreatedDateTime AS BenevolenceRequestDocument_CreatedDateTime, 
+            T.ModifiedDateTime AS BenevolenceRequestDocument_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS BenevolenceRequestDocument_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS BenevolenceRequestDocument_ModifiedByPersonAliasId, 
+            T.Guid AS BenevolenceRequestDocument_Guid, 
+            T.ForeignId AS BenevolenceRequestDocument_ForeignId, 
+            T.ForeignGuid AS BenevolenceRequestDocument_ForeignGuid, 
+            T.ForeignKey AS BenevolenceRequestDocument_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.BenevolenceRequestDocument AS T
     ) AS T1]]></view>
     <view extent="RockContext.Blocks"><![CDATA[
     SELECT VALUE -- Constructing Blocks
@@ -5749,7 +5802,7 @@
     ) AS T1]]></view>
     <view extent="RockContext.Sites"><![CDATA[
     SELECT VALUE -- Constructing Sites
-        [Rock.Data.Site](T1.Site_Id, T1.Site_IsSystem, T1.Site_Name, T1.Site_Description, T1.Site_Theme, T1.Site_DefaultPageId, T1.Site_DefaultPageRouteId, T1.Site_LoginPageId, T1.Site_LoginPageRouteId, T1.Site_ChangePasswordPageId, T1.Site_ChangePasswordPageRouteId, T1.Site_RegistrationPageId, T1.Site_RegistrationPageRouteId, T1.Site_PageNotFoundPageId, T1.Site_PageNotFoundPageRouteId, T1.Site_CommunicationPageId, T1.Site_CommunicationPageRouteId, T1.Site_ErrorPage, T1.Site_GoogleAnalyticsCode, T1.Site_EnableMobileRedirect, T1.Site_MobilePageId, T1.Site_ExternalUrl, T1.Site_AllowedFrameDomains, T1.Site_RedirectTablets, T1.Site_EnablePageViews, T1.Site_PageViewRetentionPeriodDays, T1.Site_PageHeaderContent, T1.Site_AllowIndexing, T1.Site_CreatedDateTime, T1.Site_ModifiedDateTime, T1.Site_CreatedByPersonAliasId, T1.Site_ModifiedByPersonAliasId, T1.Site_Guid, T1.Site_ForeignId, T1.Site_ForeignGuid, T1.Site_ForeignKey)
+        [Rock.Data.Site](T1.Site_Id, T1.Site_IsSystem, T1.Site_Name, T1.Site_Description, T1.Site_Theme, T1.Site_DefaultPageId, T1.Site_DefaultPageRouteId, T1.Site_LoginPageId, T1.Site_LoginPageRouteId, T1.Site_ChangePasswordPageId, T1.Site_ChangePasswordPageRouteId, T1.Site_RegistrationPageId, T1.Site_RegistrationPageRouteId, T1.Site_PageNotFoundPageId, T1.Site_PageNotFoundPageRouteId, T1.Site_CommunicationPageId, T1.Site_CommunicationPageRouteId, T1.Site_ErrorPage, T1.Site_GoogleAnalyticsCode, T1.Site_EnableMobileRedirect, T1.Site_MobilePageId, T1.Site_ExternalUrl, T1.Site_AllowedFrameDomains, T1.Site_RedirectTablets, T1.Site_EnablePageViews, T1.Site_PageViewRetentionPeriodDays, T1.Site_PageHeaderContent, T1.Site_AllowIndexing, T1.Site_RequiresEncryption, T1.Site_CreatedDateTime, T1.Site_ModifiedDateTime, T1.Site_CreatedByPersonAliasId, T1.Site_ModifiedByPersonAliasId, T1.Site_Guid, T1.Site_ForeignId, T1.Site_ForeignGuid, T1.Site_ForeignKey)
     FROM (
         SELECT 
             T.Id AS Site_Id, 
@@ -5780,6 +5833,7 @@
             T.PageViewRetentionPeriodDays AS Site_PageViewRetentionPeriodDays, 
             T.PageHeaderContent AS Site_PageHeaderContent, 
             T.AllowIndexing AS Site_AllowIndexing, 
+            T.RequiresEncryption AS Site_RequiresEncryption, 
             T.CreatedDateTime AS Site_CreatedDateTime, 
             T.ModifiedDateTime AS Site_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS Site_CreatedByPersonAliasId, 
@@ -5861,7 +5915,7 @@
     ) AS T1]]></view>
     <view extent="RockContext.Communications"><![CDATA[
     SELECT VALUE -- Constructing Communications
-        [Rock.Data.Communication](T1.Communication_Id, T1.Communication_SenderPersonAliasId, T1.Communication_Subject, T1.Communication_IsBulkCommunication, T1.Communication_FutureSendDateTime, T1.Communication_Status, T1.Communication_ReviewerPersonAliasId, T1.Communication_ReviewedDateTime, T1.Communication_ReviewerNote, T1.Communication_MediumEntityTypeId, T1.Communication_MediumDataJson, T1.Communication_AdditionalMergeFieldsJson, T1.Communication_CreatedDateTime, T1.Communication_ModifiedDateTime, T1.Communication_CreatedByPersonAliasId, T1.Communication_ModifiedByPersonAliasId, T1.Communication_Guid, T1.Communication_ForeignId, T1.Communication_ForeignGuid, T1.Communication_ForeignKey)
+        [Rock.Data.Communication](T1.Communication_Id, T1.Communication_SenderPersonAliasId, T1.Communication_Subject, T1.Communication_IsBulkCommunication, T1.Communication_FutureSendDateTime, T1.Communication_Status, T1.Communication_ReviewerPersonAliasId, T1.Communication_ReviewedDateTime, T1.Communication_ReviewerNote, T1.Communication_MediumEntityTypeId, T1.Communication_MediumDataJson, T1.Communication_AdditionalMergeFieldsJson, T1.Communication_EnabledLavaCommands, T1.Communication_CreatedDateTime, T1.Communication_ModifiedDateTime, T1.Communication_CreatedByPersonAliasId, T1.Communication_ModifiedByPersonAliasId, T1.Communication_Guid, T1.Communication_ForeignId, T1.Communication_ForeignGuid, T1.Communication_ForeignKey)
     FROM (
         SELECT 
             T.Id AS Communication_Id, 
@@ -5876,6 +5930,7 @@
             T.MediumEntityTypeId AS Communication_MediumEntityTypeId, 
             T.MediumDataJson AS Communication_MediumDataJson, 
             T.AdditionalMergeFieldsJson AS Communication_AdditionalMergeFieldsJson, 
+            T.EnabledLavaCommands AS Communication_EnabledLavaCommands, 
             T.CreatedDateTime AS Communication_CreatedDateTime, 
             T.ModifiedDateTime AS Communication_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS Communication_CreatedByPersonAliasId, 
@@ -6672,7 +6727,7 @@
     ) AS T1]]></view>
     <view extent="RockContext.Metrics"><![CDATA[
     SELECT VALUE -- Constructing Metrics
-        [Rock.Data.Metric](T1.Metric_Id, T1.Metric_IsSystem, T1.Metric_Title, T1.Metric_Subtitle, T1.Metric_Description, T1.Metric_IconCssClass, T1.Metric_IsCumulative, T1.Metric_SourceValueTypeId, T1.Metric_SourceSql, T1.Metric_DataViewId, T1.Metric_XAxisLabel, T1.Metric_YAxisLabel, T1.Metric_MetricChampionPersonAliasId, T1.Metric_AdminPersonAliasId, T1.Metric_ScheduleId, T1.Metric_LastRunDateTime, T1.Metric_CreatedDateTime, T1.Metric_ModifiedDateTime, T1.Metric_CreatedByPersonAliasId, T1.Metric_ModifiedByPersonAliasId, T1.Metric_Guid, T1.Metric_ForeignId, T1.Metric_ForeignGuid, T1.Metric_ForeignKey)
+        [Rock.Data.Metric](T1.Metric_Id, T1.Metric_IsSystem, T1.Metric_Title, T1.Metric_Subtitle, T1.Metric_Description, T1.Metric_IconCssClass, T1.Metric_IsCumulative, T1.Metric_SourceValueTypeId, T1.Metric_SourceSql, T1.Metric_DataViewId, T1.Metric_XAxisLabel, T1.Metric_YAxisLabel, T1.Metric_MetricChampionPersonAliasId, T1.Metric_AdminPersonAliasId, T1.Metric_ScheduleId, T1.Metric_LastRunDateTime, T1.Metric_NumericDataType, T1.Metric_CreatedDateTime, T1.Metric_ModifiedDateTime, T1.Metric_CreatedByPersonAliasId, T1.Metric_ModifiedByPersonAliasId, T1.Metric_Guid, T1.Metric_ForeignId, T1.Metric_ForeignGuid, T1.Metric_ForeignKey)
     FROM (
         SELECT 
             T.Id AS Metric_Id, 
@@ -6691,6 +6746,7 @@
             T.AdminPersonAliasId AS Metric_AdminPersonAliasId, 
             T.ScheduleId AS Metric_ScheduleId, 
             T.LastRunDateTime AS Metric_LastRunDateTime, 
+            CAST(T.NumericDataType AS [Rock.Data.MetricNumericDataType]) AS Metric_NumericDataType, 
             T.CreatedDateTime AS Metric_CreatedDateTime, 
             T.ModifiedDateTime AS Metric_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS Metric_CreatedByPersonAliasId, 
