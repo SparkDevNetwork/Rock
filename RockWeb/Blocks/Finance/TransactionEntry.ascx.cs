@@ -2243,29 +2243,34 @@ namespace RockWeb.Blocks.Finance
                 var $form = $('#iframeStep2').contents().find('#Step2Form');
 
                 if ( $('#{16}').is(':visible') && $('#{16}').prop('checked') ) {{
-                    $form.find('.billing-address1').val( $('#{17}_tbStreet1').val() );
-                    $form.find('.billing-city').val( $('#{17}_tbCity').val() );
-                    $form.find('.billing-state').val( $('#{17}_ddlState').val() );
-                    $form.find('.billing-postal').val( $('#{17}_tbPostalCode').val() );
+                    $form.find('.js-billing-address1').val( $('#{17}_tbStreet1').val() );
+                    $form.find('.js-billing-city').val( $('#{17}_tbCity').val() );
+                    if ( $('#{17}_ddlState').length ) {{
+                        $form.find('.js-billing-state').val( $('#{17}_ddlState').val() );
+                    }} else {{
+                        $form.find('.js-billing-state').val( $('#{17}_tbState').val() );
+                    }}     
+                    $form.find('.js-billing-postal').val( $('#{17}_tbPostalCode').val() );
+                    $form.find('.js-billing-country').val( $('#{17}_ddlCountry').val() );
                 }}
         
                 if ( $('#{1}').val() == 'CreditCard' ) {{
-                    $form.find('.cc-first-name').val( $('#{18}').val() );
-                    $form.find('.cc-last-name').val( $('#{19}').val() );
-                    $form.find('.cc-full-name').val( $('#{20}').val() );
-                    $form.find('.cc-number').val( $('#{8}').val() );
+                    $form.find('.js-cc-first-name').val( $('#{18}').val() );
+                    $form.find('.js-cc-last-name').val( $('#{19}').val() );
+                    $form.find('.js-cc-full-name').val( $('#{20}').val() );
+                    $form.find('.js-cc-number').val( $('#{8}').val() );
                     var mm = $('#{9}_monthDropDownList').val();
                     var yy = $('#{9}_yearDropDownList_').val();
                     mm = mm.length == 1 ? '0' + mm : mm;
                     yy = yy.length == 4 ? yy.substring(2,4) : yy;
-                    $form.find('.cc-expiration').val( mm + yy );
-                    $form.find('.cc-cvv').val( $('#{10}').val() );
+                    $form.find('.js-cc-expiration').val( mm + yy );
+                    $form.find('.js-cc-cvv').val( $('#{10}').val() );
                 }} else {{
-                    $form.find('.account-name').val( $('#{11}').val() );
-                    $form.find('.account-number').val( $('#{12}').val() );
-                    $form.find('.routing-number').val( $('#{13}').val() );
-                    $form.find('.account-type').val( $('#{14}').find('input:checked').val() );
-                    $form.find('.entity-type').val( 'personal' );
+                    $form.find('.js-account-name').val( $('#{11}').val() );
+                    $form.find('.js-account-number').val( $('#{12}').val() );
+                    $form.find('.js-routing-number').val( $('#{13}').val() );
+                    $form.find('.js-account-type').val( $('#{14}').find('input:checked').val() );
+                    $form.find('.js-entity-type').val( 'personal' );
                 }}
 
                 $form.attr('action', src );

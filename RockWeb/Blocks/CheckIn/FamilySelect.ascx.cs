@@ -151,7 +151,7 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
-        protected override void NavigateToNextPage( Dictionary<string, string> queryParams )
+        protected override void NavigateToNextPage( Dictionary<string, string> queryParams, bool validateSelectionRequired )
         {
             string pageAttributeKey = "NextPage";
             if ( CurrentCheckInType != null &&

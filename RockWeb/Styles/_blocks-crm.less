@@ -46,6 +46,40 @@
     background-color: @persondetails-bio-bg;
     border-bottom: 1px solid darken(@persondetails-bio-bg, @const-border-darken-amt);
     color: @persondetails-bio-color;
+    position: relative;
+    padding-top: 50px;
+
+    .action-wrapper {
+        position: absolute;
+        right: 0;
+        top: 0;
+        height: 39px;
+        z-index: 2;
+
+        .action {
+            float: left;
+            width: 45px;
+            border-width: 0 0 1px 1px;
+            border-color: darken(@persondetails-bio-bg, @const-border-darken-amt);
+            border-style: solid;
+            text-align: center;
+            color: lighten(@persondetails-bio-color, 15%);
+            height: 100%;
+            cursor: pointer;
+
+            & > i {
+                top: 50%;
+                position: relative;
+                transform: translateY(-50%);
+                height: 20px;
+            }
+        }
+
+        .action-extended {
+            width: auto;
+            padding-top: 6px;
+        }
+    }
 
     .name {
         text-align: center;
@@ -64,35 +98,12 @@
     }
 
     .nav li .persondetails-actions {
-        padding: 2px 0 0 15px;
+        padding: 2px 15px 0 15px;
+        color: lighten(@persondetails-bio-color, 15%);
 
         &:hover,
         &:focus {
             background-color: transparent;
-        }
-    }
-
-    .nav-actions {
-        width: 120px;
-        margin: 0 auto 12px auto;
-
-        @media @md {
-            float: right;
-            margin: 0;
-        }
-    }
-
-    .actions { // edit individual button
-        position: absolute;
-        right: 50%;
-        bottom: 6px;
-        z-index: 10;
-        margin-right: -52px;
-
-        a.btn-action {
-            color: @persondetails-bio-action-color;
-            background-color: @persondetails-bio-action-bg;
-            border-color: darken(@persondetails-bio-action-border, 5%);
         }
     }
 
@@ -602,18 +613,27 @@
             margin: 0;
         }
 
-        .edit {   
+        .action-wrapper {
             position: absolute;
             right: 0;
-            padding-top: 10px;
-            border-left: 1px solid darken(@persondetails-bio-bg, @const-border-darken-amt);
             top: 0;
             bottom: 0;
-            width: 45px;
 
-            i {
+            .action {
+                width: 45px;
+                height: 100%;
+                display: block;
+                float: right;
+                border-left: 1px solid darken(@persondetails-bio-bg, @const-border-darken-amt);
                 text-align: center;
-                width: 100%;
+                cursor: pointer;
+
+                i {
+                    top: 50%;
+                    position: relative;
+                    transform: translateY(-50%);
+                    height: 20px;
+                }
             }
         }
     }
@@ -758,11 +778,6 @@ span.field-value {
     // bio bar
     .personprofilebar-bio {
         padding: @spacing-md-px;
-
-        .actions {
-            right: 12px;
-            margin-right: 0;
-        }
 
         .name {
             text-align: left;

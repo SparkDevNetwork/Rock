@@ -427,6 +427,9 @@ namespace RockWeb.Blocks.Groups
             groupType.ShowConnectionStatus = cbShowConnectionStatus.Checked;
             groupType.IconCssClass = tbIconCssClass.Text;
             groupType.TakesAttendance = cbTakesAttendance.Checked;
+            groupType.GroupsRequireCampus = cbGroupsRequireCampus.Checked;
+            groupType.GroupAttendanceRequiresLocation = cbGroupAttendanceRequiresLocation.Checked;
+            groupType.GroupAttendanceRequiresSchedule = cbGroupAttendanceRequiresSchedule.Checked;
             groupType.AttendanceCountsAsWeekendService = cbWeekendService.Checked;
             groupType.SendAttendanceReminder = cbSendAttendanceReminder.Checked;
             groupType.AttendanceRule = ddlAttendanceRule.SelectedValueAsEnum<AttendanceRule>();
@@ -687,6 +690,8 @@ namespace RockWeb.Blocks.Groups
             groupType.ChildGroupTypes.ToList().ForEach( a => ChildGroupTypesList.Add( a.Id ) );
             BindChildGroupTypesGrid();
 
+            cbGroupsRequireCampus.Checked = groupType.GroupsRequireCampus;
+
             // Display
             cbShowInGroupList.Checked = groupType.ShowInGroupList;
             cbShowInNavigation.Checked = groupType.ShowInNavigation;
@@ -729,6 +734,8 @@ namespace RockWeb.Blocks.Groups
             cbSendAttendanceReminder.Checked = groupType.SendAttendanceReminder;
             ddlAttendanceRule.SetValue( (int)groupType.AttendanceRule );
             ddlPrintTo.SetValue( (int)groupType.AttendancePrintTo );
+            cbGroupAttendanceRequiresSchedule.Checked = groupType.GroupAttendanceRequiresSchedule;
+            cbGroupAttendanceRequiresLocation.Checked = groupType.GroupAttendanceRequiresLocation;
 
             // Attributes
             gtpInheritedGroupType.Enabled = !groupType.IsSystem;

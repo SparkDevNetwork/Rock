@@ -48,12 +48,13 @@ namespace RockWeb.Blocks.Communication
 
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve new communications." )]
 
-    [ComponentsField( "Rock.Communication.MediumContainer, Rock", "Mediums", "The Mediums that should be available to user to send through (If none are selected, all active mediums will be available).", false, "", "", 0  )]
-    [CommunicationTemplateField("Default Template", "The default template to use for a new communication.  (Note: This will only be used if the template is for the same medium as the communication.)", false, "", "", 1)]
-    [IntegerField( "Maximum Recipients", "The maximum number of recipients allowed before communication will need to be approved", false, 0, "", 2 )]
-    [IntegerField( "Display Count", "The initial number of recipients to display prior to expanding list", false, 0, "", 3  )]
-    [BooleanField( "Send When Approved", "Should communication be sent once it's approved (vs. just being queued for scheduled job to send)?", true, "", 4 )]
-    [CustomDropdownListField("Mode", "The mode to use ( 'Simple' mode will prevent uers from searching/adding new people to communication).", "Full,Simple", true, "Full", "", 5)]
+    [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be enabled for this HTML block.", false, order: 0 )]
+    [ComponentsField( "Rock.Communication.MediumContainer, Rock", "Mediums", "The Mediums that should be available to user to send through (If none are selected, all active mediums will be available).", false, "", "", 1  )]
+    [CommunicationTemplateField("Default Template", "The default template to use for a new communication.  (Note: This will only be used if the template is for the same medium as the communication.)", false, "", "", 2)]
+    [IntegerField( "Maximum Recipients", "The maximum number of recipients allowed before communication will need to be approved", false, 0, "", 3 )]
+    [IntegerField( "Display Count", "The initial number of recipients to display prior to expanding list", false, 0, "", 4  )]
+    [BooleanField( "Send When Approved", "Should communication be sent once it's approved (vs. just being queued for scheduled job to send)?", true, "", 5 )]
+    [CustomDropdownListField("Mode", "The mode to use ( 'Simple' mode will prevent uers from searching/adding new people to communication).", "Full,Simple", true, "Full", "", 6)]
     public partial class CommunicationEntry : RockBlock
     {
 
@@ -491,6 +492,7 @@ namespace RockWeb.Blocks.Communication
                     testCommunication.MediumEntityTypeId = communication.MediumEntityTypeId;
                     testCommunication.MediumDataJson = communication.MediumDataJson;
                     testCommunication.AdditionalMergeFieldsJson = communication.AdditionalMergeFieldsJson;
+                    testCommunication.EnabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
 
                     testCommunication.FutureSendDateTime = null;
                     testCommunication.Status = CommunicationStatus.Approved;
@@ -696,6 +698,7 @@ namespace RockWeb.Blocks.Communication
             {
                 communication = new Rock.Model.Communication() { Status = CommunicationStatus.Transient };
                 communication.SenderPersonAliasId = CurrentPersonAliasId;
+                communication.EnabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
                 lTitle.Text = "New Communication".FormatAsHtmlTitle();
 
                 int? personId = PageParameter( "Person" ).AsIntegerOrNull();
@@ -1133,6 +1136,8 @@ namespace RockWeb.Blocks.Communication
                 communication.SenderPersonAliasId = CurrentPersonAliasId;
                 communicationService.Add( communication );
             }
+
+            communication.EnabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
 
             if (qryRecipients == null)
             {
