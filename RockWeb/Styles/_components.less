@@ -39,6 +39,8 @@
   36. Range Editors
   37. Custom Buttons
   38. Color Picker
+  39. HTML Editor (summernote)
+  40. Person Directory
 */
 
 // 1. Pickers
@@ -1527,6 +1529,13 @@ fieldset .actions {
 
     .fileupload-button {
         border-radius: @border-radius-base;
+        background-color: @brand-primary;
+        border: 1px solid @btn-primary-border;
+        padding: 6px 12px;
+        
+        span {
+            color: #fff;
+        }
     }
 
     .upload-progress {
@@ -2189,3 +2198,106 @@ ul.list-group-panel, .panel-collapse {
 // -------------------------
 @import (less) "./bootstrap-colorpicker/colorpicker.less";
 @imgPath: "../../../Assets/Images/bootstrap-colorpicker/";
+
+// 39. HTML Editor
+// -------------------------
+
+.note-editor.panel-default {
+    border-color: @panel-border;
+}
+
+.note-editor.panel-default > .panel-heading {
+    background-color: @panel-bg;
+}
+
+.htmleditor-filebrowser {
+    .modal-title {
+        background-color: @modal-header-bg;
+        margin-top: 0;
+        margin: 0 -15px 24px;
+        padding: 5px 15px;
+        color: @modal-header-text-color;
+    }
+
+    .modal-footer {
+        background-color: @modal-footer-bg;
+        color: @modal-footer-text-color;
+        margin-left: -15px;
+        margin-right: -15px;
+        padding: 8px 24px;
+    }
+}
+
+.picker-folders,
+.picker-files {
+
+    @media (min-width: @screen-xs-min) {
+        float: left;
+    }
+
+    .scroll-container-vertical {
+        width: auto;
+
+        .viewport {
+            width: auto;
+        }
+    }
+}
+
+.picker-folders {
+    @media (min-width: @screen-xs-min) {
+        width: 40%;
+    }
+
+    .actions {
+        margin-bottom: @spacing-md-px;
+    }
+
+    @media (max-width: @screen-xs-max) {
+        .scroll-container-vertical .viewport { height: 100px; }
+    }
+}
+
+.picker-files {
+    @media (min-width: @screen-xs-min) {
+        width: 60%;
+    }
+
+    .fileupload-group {
+        display: inline-block;
+        border: none;
+        padding: 0;
+        width: 100%;
+
+        .fileupload-button {
+            display: inline-block;
+            float: right;
+        }
+    }
+
+    img.file-browser-image {
+        width: 50px;
+        height: 50px;
+    }
+}
+
+iframe.file-browser {
+    border: 0;
+}
+
+// 40. Person Directory
+// -------------------------
+
+.directory-letters {
+    li {
+        width: 3.8455%;
+        min-width: 20px;
+    }
+}
+
+.directory-grid { 
+    
+    & > div.row:nth-child(odd) {
+        background-color: @grid-row-odd-bg;
+    }
+}

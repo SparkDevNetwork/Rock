@@ -46,6 +46,40 @@
     background-color: @persondetails-bio-bg;
     border-bottom: 1px solid darken(@persondetails-bio-bg, @const-border-darken-amt);
     color: @persondetails-bio-color;
+    position: relative;
+    padding-top: 50px;
+
+    .action-wrapper {
+        position: absolute;
+        right: 0;
+        top: 0;
+        height: 39px;
+        z-index: 2;
+
+        .action {
+            float: left;
+            width: 45px;
+            border-width: 0 0 1px 1px;
+            border-color: darken(@persondetails-bio-bg, @const-border-darken-amt);
+            border-style: solid;
+            text-align: center;
+            color: lighten(@persondetails-bio-color, 15%);
+            height: 100%;
+            cursor: pointer;
+
+            & > i {
+                top: 50%;
+                position: relative;
+                transform: translateY(-50%);
+                height: 20px;
+            }
+        }
+
+        .action-extended {
+            width: auto;
+            padding-top: 6px;
+        }
+    }
 
     .name {
         text-align: center;
@@ -64,35 +98,12 @@
     }
 
     .nav li .persondetails-actions {
-        padding: 2px 0 0 15px;
+        padding: 2px 15px 0 15px;
+        color: lighten(@persondetails-bio-color, 15%);
 
         &:hover,
         &:focus {
             background-color: transparent;
-        }
-    }
-
-    .nav-actions {
-        width: 120px;
-        margin: 0 auto 12px auto;
-
-        @media @md {
-            float: right;
-            margin: 0;
-        }
-    }
-
-    .actions { // edit individual button
-        position: absolute;
-        right: 50%;
-        bottom: 6px;
-        z-index: 10;
-        margin-right: -52px;
-
-        a.btn-action {
-            color: @persondetails-bio-action-color;
-            background-color: @persondetails-bio-action-bg;
-            border-color: darken(@persondetails-bio-action-border, 5%);
         }
     }
 
@@ -586,6 +597,47 @@
         color: @persondetails-familybar-color;
     }
 
+    header {
+        background-color: @persondetails-bio-bg;
+        margin: -15px -15px 0 -15px;
+        padding: 10px 15px;
+        position: relative;
+        border-bottom: 1px solid darken(@persondetails-bio-bg, @const-border-darken-amt);
+        .clearfix();
+
+        h1 {
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            font-size: 18px;
+            float: left;
+            margin: 0;
+        }
+
+        .action-wrapper {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+
+            .action {
+                width: 45px;
+                height: 100%;
+                display: block;
+                float: right;
+                border-left: 1px solid darken(@persondetails-bio-bg, @const-border-darken-amt);
+                text-align: center;
+                cursor: pointer;
+
+                i {
+                    top: 50%;
+                    position: relative;
+                    transform: translateY(-50%);
+                    height: 20px;
+                }
+            }
+        }
+    }
+
     .groupmembers {
         .member {
             a {
@@ -596,17 +648,7 @@
             }
 
             .person-image {
-                filter: grayscale(100%);
-                -webkit-filter: grayscale(100%); /* For Webkit browsers */
-                filter: gray; /* For IE 6 - 9 */
-                -webkit-transition: all .6s ease; /* Fade to color for Chrome and Safari */
-                filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale"); /* Firefox 10+, Firefox on Android */
-                filter: grayscale(100%);
-                -webkit-filter: grayscale(100%); /* For Webkit browsers */
-                filter: gray; /* For IE 6 - 9 */
-                -webkit-transition: all .6s ease; /* Fade to color for Chrome and Safari */
-                filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale"); /* Firefox 10+, Firefox on Android */
-                transition: .5s;
+                border-radius: 50%;
                 border-color: @persondetails-familybar-photo-bg;
             }
 
@@ -621,23 +663,6 @@
                 }
             }
         }
-    }
-
-    .actions { // edit family button
-        position: absolute;
-        right: 12px;
-        z-index: 999;
-
-        a.btn-action {
-            color: @persondetails-familybar-action-color;
-            background-color: @persondetails-familybar-action-bg;
-            border-color: @persondetails-familybar-action-border;
-        }
-    }
-
-    header {
-        font-size: 16px;
-        margin-bottom: @spacing-sm-px;
     }
 
     .addresses ul {
@@ -753,11 +778,6 @@ span.field-value {
     // bio bar
     .personprofilebar-bio {
         padding: @spacing-md-px;
-
-        .actions {
-            right: 12px;
-            margin-right: 0;
-        }
 
         .name {
             text-align: left;

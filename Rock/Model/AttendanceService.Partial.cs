@@ -225,7 +225,7 @@ namespace Rock.Model
                 {
                     DateTimeStamp = a.Key.SummaryDateTime.ToJavascriptMilliseconds(),
                     DateTime = a.Key.SummaryDateTime,
-                    SeriesId = "Total",
+                    SeriesName = "Total",
                     YValue = a.Count
                 } ).ToList();
             }
@@ -237,7 +237,7 @@ namespace Rock.Model
                 {
                     DateTimeStamp = a.Key.SummaryDateTime.ToJavascriptMilliseconds(),
                     DateTime = a.Key.SummaryDateTime,
-                    SeriesId = a.Key.Series.Name,
+                    SeriesName = a.Key.Series.Name,
                     YValue = a.Count
                 } ).ToList();
             }
@@ -249,7 +249,7 @@ namespace Rock.Model
                 {
                     DateTimeStamp = a.Key.SummaryDateTime.ToJavascriptMilliseconds(),
                     DateTime = a.Key.SummaryDateTime,
-                    SeriesId = a.Key.Series.Name,
+                    SeriesName = a.Key.Series.Name,
                     YValue = a.Count
                 } ).ToList();
             }
@@ -261,7 +261,7 @@ namespace Rock.Model
                 {
                     DateTimeStamp = a.Key.SummaryDateTime.ToJavascriptMilliseconds(),
                     DateTime = a.Key.SummaryDateTime,
-                    SeriesId = a.Key.Series.Name,
+                    SeriesName = a.Key.Series.Name,
                     YValue = a.Count
                 } ).ToList();
             }
@@ -273,7 +273,7 @@ namespace Rock.Model
                 {
                     DateTimeStamp = a.Key.SummaryDateTime.ToJavascriptMilliseconds(),
                     DateTime = a.Key.SummaryDateTime,
-                    SeriesId = a.Key.Series.Name,
+                    SeriesName = a.Key.Series.Name,
                     YValue = a.Count
                 } ).ToList();
             }

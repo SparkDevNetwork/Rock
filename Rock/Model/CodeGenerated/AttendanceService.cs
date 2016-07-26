@@ -104,7 +104,9 @@ namespace Rock.Model
             target.QualifierValueId = source.QualifierValueId;
             target.RSVP = source.RSVP;
             target.ScheduleId = source.ScheduleId;
+            target.SearchResultGroupId = source.SearchResultGroupId;
             target.SearchTypeValueId = source.SearchTypeValueId;
+            target.SearchValue = source.SearchValue;
             target.StartDateTime = source.StartDateTime;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

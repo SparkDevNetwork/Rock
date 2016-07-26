@@ -16,11 +16,10 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
-using System.Web.Http;
 using System.Web.Http.OData;
-using System.Web.Routing;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -45,9 +44,8 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/MetricValues/GetByMetricId/{metricId}" )]
         public IQueryable<MetricValue> GetByMetricId( int metricId, MetricValueType? metricValueType = null )
         {
-            var metric = new MetricService( new RockContext() ).Get( metricId );
-
-            var result = Get().Where( a => a.MetricId == metricId );
+            // include MetricValuePartitions and each MetricValuePartition's MetricPartition so that MetricValuePartitionEntityIds doesn't have to lazy load
+            var result = Get().Include( a => a.MetricValuePartitions.Select( b => b.MetricPartition ) ).Where( a => a.MetricId == metricId );
             if ( metricValueType.HasValue )
             {
                 result = result.Where( a => a.MetricValueType == metricValueType );
@@ -87,14 +85,11 @@ namespace Rock.Rest.Controllers
                 qry = qry.Where( a => a.MetricValueDateTime < endDate.Value );
             }
 
-            //// if an entityTypeId/EntityId filter was specified, and the entityTypeId is the same as the metrics.EntityTypeId, filter the values to the specified entityId
-            //// Note: If a Metric or it's Metric Value doesn't have a context, include it regardless of Context setting
-            if ( entityTypeId.HasValue )
+            //// if an entityTypeId/EntityId filter was specified, and the entityTypeId is the same as the metric's partitions' EntityTypeId, filter the values to the specified entityId
+            //// Note: if a Metric or it's Metric Value doesn't have a context, include it regardless of Context setting
+            if ( entityTypeId.HasValue && entityId.HasValue )
             {
-                if ( entityId.HasValue )
-                {
-                    qry = qry.Where( a => ( a.Metric.EntityTypeId == entityTypeId && a.EntityId == entityId ) || ( a.Metric.EntityTypeId == null) || ( a.EntityId == null ) );
-                }
+                qry = qry.Where( a => a.MetricValuePartitions.Any( p => p.EntityId == entityId.Value && p.MetricPartition.EntityTypeId == entityTypeId ) );
             }
 
             var groupBySum = qry
@@ -121,14 +116,44 @@ namespace Rock.Rest.Controllers
         /// </summary>
         public class MetricSummary
         {
+            /// <summary>
+            /// Gets or sets the metric identifier.
+            /// </summary>
+            /// <value>
+            /// The metric identifier.
+            /// </value>
             public int MetricId { get; set; }
 
+            /// <summary>
+            /// Gets or sets the metric title.
+            /// </summary>
+            /// <value>
+            /// The metric title.
+            /// </value>
             public string MetricTitle { get; set; }
 
+            /// <summary>
+            /// Gets or sets the y value total.
+            /// </summary>
+            /// <value>
+            /// The y value total.
+            /// </value>
             public decimal? YValueTotal { get; set; }
 
+            /// <summary>
+            /// Gets or sets the start date time stamp.
+            /// </summary>
+            /// <value>
+            /// The start date time stamp.
+            /// </value>
             public long StartDateTimeStamp { get; set; }
 
+            /// <summary>
+            /// Gets or sets the end date time stamp.
+            /// </summary>
+            /// <value>
+            /// The end date time stamp.
+            /// </value>
             public long EndDateTimeStamp { get; set; }
         }
 
@@ -139,29 +164,80 @@ namespace Rock.Rest.Controllers
         /// <param name="seriesId">The series identifier.</param>
         /// <returns></returns>
         [System.Web.Http.Route( "api/MetricValues/GetSeriesName/{metricId}/{seriesId}" )]
+        [Obsolete( "Use api/MetricValues/GetSeriesPartitionName/{metricId}/{metricValuePartitionEntityIds}" )]
         public string GetSeriesName( int metricId, int seriesId )
         {
-            var rockContext = new RockContext();
-            int? entityTypeId = new MetricService( rockContext ).Queryable().Where( a => a.Id == metricId ).Select( s => s.EntityTypeId ).FirstOrDefault();
-            if ( entityTypeId.HasValue )
-            {
-                var entityTypeCache = EntityTypeCache.Read( entityTypeId.Value );
-                if ( entityTypeCache != null )
+            return string.Format( "Series{0}", seriesId );
+        }
+
+        /// <summary>
+        /// Gets the name of the series partition.
+        /// </summary>
+        /// <param name="metricId">The metric identifier.</param>
+        /// <param name="metricValuePartitionEntityIds">The metric value partition as a comma-delimited list of EntityTypeId|EntityId.</param>
+        /// <returns></returns>
+        [System.Web.Http.Route( "api/MetricValues/GetSeriesPartitionName/{metricId}/{metricValuePartitionEntityIds}" )]
+        public string GetSeriesPartitionName( int metricId, string metricValuePartitionEntityIds )
+        {
+            var entityTypeEntityIdList = metricValuePartitionEntityIds.Split( ',' ).Select( a => a.Split( '|' ) ).Select( a =>
+                new
                 {
-                    Type[] modelType = { entityTypeCache.GetEntityType() };
-                    Type genericServiceType = typeof( Rock.Data.Service<> );
-                    Type modelServiceType = genericServiceType.MakeGenericType( modelType );
-                    var serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { rockContext } ) as IService;
-                    MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
-                    var result = getMethod.Invoke( serviceInstance, new object[] { seriesId } );
-                    if ( result != null )
+                    EntityTypeId = a[0].AsIntegerOrNull(),
+                    EntityId = a[1].AsIntegerOrNull()
+                } );
+
+            var rockContext = new RockContext();
+
+            List<string> seriesPartitionValues = new List<string>();
+
+            foreach ( var entityTypeEntity in entityTypeEntityIdList )
+            {
+                if ( entityTypeEntity.EntityTypeId.HasValue && entityTypeEntity.EntityId.HasValue )
+                {
+                    var entityTypeCache = EntityTypeCache.Read( entityTypeEntity.EntityTypeId.Value );
+                    if ( entityTypeCache != null )
                     {
-                        return result.ToString();
+                        if ( entityTypeCache.Id == EntityTypeCache.GetId<Campus>() )
+                        {
+                            var campus = CampusCache.Read( entityTypeEntity.EntityId.Value );
+                            if ( campus != null )
+                            {
+                                seriesPartitionValues.Add( campus.Name );
+                            }
+                        }
+                        else if ( entityTypeCache.Id == EntityTypeCache.GetId<DefinedValue>() )
+                        {
+                            var definedValue = DefinedValueCache.Read( entityTypeEntity.EntityId.Value );
+                            if ( definedValue != null )
+                            {
+                                seriesPartitionValues.Add( definedValue.ToString() );
+                            }
+                        }
+                        else
+                        {
+                            Type[] modelType = { entityTypeCache.GetEntityType() };
+                            Type genericServiceType = typeof( Rock.Data.Service<> );
+                            Type modelServiceType = genericServiceType.MakeGenericType( modelType );
+                            var serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { rockContext } ) as IService;
+                            MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
+                            var result = getMethod.Invoke( serviceInstance, new object[] { entityTypeEntity.EntityId } );
+                            if ( result != null )
+                            {
+                                seriesPartitionValues.Add( result.ToString() );
+                            }
+                        }
                     }
                 }
             }
 
-            return null;
+            if ( seriesPartitionValues.Any() )
+            {
+                return seriesPartitionValues.AsDelimited( "," );
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }

@@ -76,8 +76,8 @@ a.aspNetDisabled {
 }
 
 .form-horizontal {
-    .form-group {
-        
+    &[class*="label-"] {
+        .form-group {
             label {
                 position: relative;
                 min-height: 1px;
@@ -96,6 +96,7 @@ a.aspNetDisabled {
             .control-wrapper {
                 .make-sm-column(10);
             }
+        }
     }
 
     &.label-md {

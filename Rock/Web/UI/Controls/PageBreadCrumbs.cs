@@ -25,12 +25,11 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:PageBreadCrumbs runat=server></{0}:PageBreadCrumbs>" )]
     public class PageBreadCrumbs : Control
     {
-
         /// <summary>
-        /// Gets or sets the javascript that will get executed when the ckeditor 'on key' event occurs
+        /// Gets or sets the pre text.
         /// </summary>
         /// <value>
-        /// The on key press script.
+        /// The pre text.
         /// </value>
         public string PreText
         {

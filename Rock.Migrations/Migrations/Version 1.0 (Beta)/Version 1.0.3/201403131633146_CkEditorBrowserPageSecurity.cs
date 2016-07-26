@@ -29,7 +29,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            AddSecurityAuthForPage( Rock.SystemGuid.Page.CKEDITOR_ROCKFILEBROWSER_PLUGIN_FRAME, 0, "View", true, null, Model.SpecialRole.AllAuthenticatedUsers, "08138684-F4DC-4848-A8D5-342EED87FD85" );
+            AddSecurityAuthForPage( Rock.SystemGuid.Page.HTMLEDITOR_ROCKFILEBROWSER_PLUGIN_FRAME, 0, "View", true, null, Model.SpecialRole.AllAuthenticatedUsers, "08138684-F4DC-4848-A8D5-342EED87FD85" );
         }
         
         /// <summary>

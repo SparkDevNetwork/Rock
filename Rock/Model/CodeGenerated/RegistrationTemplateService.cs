@@ -121,6 +121,7 @@ namespace Rock.Model
             target.RegistrantsSameFamily = source.RegistrantsSameFamily;
             target.RegistrantTerm = source.RegistrantTerm;
             target.RegistrationTerm = source.RegistrationTerm;
+            target.RegistrationWorkflowTypeId = source.RegistrationWorkflowTypeId;
             target.ReminderEmailTemplate = source.ReminderEmailTemplate;
             target.ReminderFromEmail = source.ReminderFromEmail;
             target.ReminderFromName = source.ReminderFromName;

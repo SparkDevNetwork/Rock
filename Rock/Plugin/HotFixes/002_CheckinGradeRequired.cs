@@ -27,9 +27,10 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.GroupType", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "GroupTypePurposeValueId", "", "Grade Required", "", 0, "False", "A4899874-9EDF-4549-B054-4F593F4C4362", "core_checkin_GradeRequired" );
-            RockMigrationHelper.UpdateAttributeQualifier( "A4899874-9EDF-4549-B054-4F593F4C4362", "falsetext", "No", "B61ED891-C631-4172-A05D-D86265CA2A1D" );
-            RockMigrationHelper.UpdateAttributeQualifier( "A4899874-9EDF-4549-B054-4F593F4C4362", "truetext", "Yes", "D4C52849-6ED4-414A-95D7-2F7F805CF9A3" );
+            // Moved to core migration: 201606231322565_RegistrationWorkflow
+            //RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.GroupType", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "GroupTypePurposeValueId", "", "Grade Required", "", 0, "False", "A4899874-9EDF-4549-B054-4F593F4C4362", "core_checkin_GradeRequired" );
+            //RockMigrationHelper.UpdateAttributeQualifier( "A4899874-9EDF-4549-B054-4F593F4C4362", "falsetext", "No", "B61ED891-C631-4172-A05D-D86265CA2A1D" );
+            //RockMigrationHelper.UpdateAttributeQualifier( "A4899874-9EDF-4549-B054-4F593F4C4362", "truetext", "Yes", "D4C52849-6ED4-414A-95D7-2F7F805CF9A3" );
         }
 
         /// <summary>
@@ -37,7 +38,7 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Down()
         {
-            RockMigrationHelper.DeleteAttribute( "46C8DC94-D57E-4B9A-8FB9-1A797DD3D525" );
+            //RockMigrationHelper.DeleteAttribute( "46C8DC94-D57E-4B9A-8FB9-1A797DD3D525" );
         }
     }
 }

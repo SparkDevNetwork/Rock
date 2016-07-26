@@ -27,11 +27,12 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            Sql( @"
-    UPDATE [SystemEmail] 
-    SET [Body] = REPLACE( [Body], ' != '' %', ' != '''' %' )
-    WHERE [Body] LIKE '% != '' \%%' ESCAPE '\'
-" );
+            // Moved to 201606281347449_PersonDirectory
+//            Sql( @"
+//    UPDATE [SystemEmail] 
+//    SET [Body] = REPLACE( [Body], ' != '' %', ' != '''' %' )
+//    WHERE [Body] LIKE '% != '' \%%' ESCAPE '\'
+//" );
         }
 
         /// <summary>

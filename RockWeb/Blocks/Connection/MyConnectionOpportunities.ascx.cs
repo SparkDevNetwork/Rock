@@ -18,11 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
+using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -44,6 +44,27 @@ namespace RockWeb.Blocks.Connection
     [LinkedPage( "Detail Page", "Page used to view details of an requests.", true, "", "", 1 )]
     [ConnectionTypesField("Connection Types", "Optional list of connection types to limit the display to (All will be displayed by default).", false, order:2 )]
     [BooleanField( "Show Last Activity Note", "If enabled, the block will show the last activity note for each request in the list.", false, order:3 )]
+
+    [CodeEditorField( "StatusTemplate", "Lava Template that can be used to customize what is displayed in the status bar. Includes common merge fields plus ConnectionOpportunities, ConnectionTypes and the default IdleTooltip.", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue:
+@"<div class='pull-left badge-legend padding-r-md'>
+    <span class='pull-left badge badge-info js-legend-badge' data-toggle='tooltip' data-original-title='Assigned To You'>&nbsp;</span>
+    <span class='pull-left badge badge-warning js-legend-badge' data-toggle='tooltip' data-original-title='Unassigned Item'>&nbsp;</span>
+    <span class='pull-left badge badge-critical js-legend-badge' data-toggle='tooltip' data-original-title='Critical Status'>&nbsp;</span>
+    <span class='pull-left badge badge-danger js-legend-badge' data-toggle='tooltip' data-original-title='{{ IdleTooltip }}'>&nbsp;</span> 
+</div>", order:4
+)]
+
+    [CodeEditorField( "OpportunitySummaryTemplate", "Lava Template that can be used to customize what is displayed in each Opportunity Summary. Includes common merge fields plus the OpportunitySummary, ConnectionOpportunity, and its ConnectionRequests.", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue:
+@"<i class='{{ OpportunitySummary.IconCssClass }}'></i>
+<h3>{{ OpportunitySummary.Name }}</h3>
+<div class='status-list'>
+    <span class='badge badge-info'>{{ OpportunitySummary.AssignedToYou | Format:'#,###,###' }}</span>
+    <span class='badge badge-warning'>{{ OpportunitySummary.UnassignedCount | Format:'#,###,###' }}</span>
+    <span class='badge badge-critical'>{{ OpportunitySummary.CriticalCount | Format:'#,###,###' }}</span>
+    <span class='badge badge-danger'>{{ OpportunitySummary.IdleCount | Format:'#,###,###' }}</span>
+</div>
+", order: 5
+)]
     public partial class MyConnectionOpportunities : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -210,6 +231,31 @@ namespace RockWeb.Blocks.Connection
 
                 lConnectionTypeName.Text = String.Format( "<h4 class='block-title'>{0}</h4>", connectionType.Name );
             }
+        }
+
+        /// <summary>
+        /// Gets the opportunity summary HTML.
+        /// </summary>
+        /// <param name="opportunitySummaryId">The opportunity summary identifier.</param>
+        /// <returns></returns>
+        public string GetOpportunitySummaryHtml( OpportunitySummary opportunitySummary )
+        {
+            var template = this.GetAttributeValue( "OpportunitySummaryTemplate" );
+
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            mergeFields.Add( "OpportunitySummary", DotLiquid.Hash.FromAnonymousObject( opportunitySummary ) );
+
+            string result = null; 
+            using ( var rockContext = new RockContext() )
+            {
+                var connectionOpportunity = new ConnectionOpportunityService( rockContext ).Queryable().AsNoTracking().FirstOrDefault( a => a.Id == opportunitySummary.Id );
+                mergeFields.Add( "ConnectionOpportunity", connectionOpportunity );
+                mergeFields.Add( "ConnectionRequests", connectionOpportunity.ConnectionRequests );
+
+                result = template.ResolveMergeFields( mergeFields );
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -458,20 +504,23 @@ namespace RockWeb.Blocks.Connection
                     }
 
                     // Count number of idle requests (no activity in past X days)
-                    int idleCount = opportunity.ConnectionRequests
+
+                    var connectionRequestsQry = new ConnectionRequestService( rockContext ).Queryable().Where( a => a.ConnectionOpportunityId == opportunity.Id );
+                    var currentDateTime = RockDateTime.Now;
+                    int idleCount = connectionRequestsQry
                                         .Where( cr => 
                                             (
                                                 cr.ConnectionState == ConnectionState.Active 
                                                 || (cr.ConnectionState == ConnectionState.FutureFollowUp && cr.FollowupDate.HasValue && cr.FollowupDate.Value < _midnightToday)
                                             )
                                             && (
-                                                ( cr.ConnectionRequestActivities.Count() > 0 && cr.ConnectionRequestActivities.OrderByDescending( ra => ra.CreatedDateTime ).Select( ra => ra.CreatedDateTime ).FirstOrDefault() < RockDateTime.Now.AddDays( -cr.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle ) ) )
-                                                || ( cr.ConnectionRequestActivities.Count() == 0 && cr.CreatedDateTime < RockDateTime.Now.AddDays( -cr.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle ) )
+                                                ( cr.ConnectionRequestActivities.Any() && cr.ConnectionRequestActivities.Max(ra => ra.CreatedDateTime) < SqlFunctions.DateAdd( "day", -cr.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle, currentDateTime )) )
+                                                || ( !cr.ConnectionRequestActivities.Any() && cr.CreatedDateTime < SqlFunctions.DateAdd( "day", -cr.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle, currentDateTime ) )
                                                )
                                         .Count();
 
                     // Count the number requests that have a status that is considered critical.
-                    int criticalCount = opportunity.ConnectionRequests
+                    int criticalCount = connectionRequestsQry
                                             .Where( r => 
                                                 r.ConnectionStatus.IsCritical 
                                                 && (
@@ -557,8 +606,13 @@ namespace RockWeb.Blocks.Connection
                 }
                 sb.Append( "</ul>" );
             }
-            lIdleToolTip.Text = String.Format( "<span class='pull-left badge badge-danger js-legend-badge' data-toggle='tooltip' data-original-title=\"{0}\">&nbsp;</span>", sb.ToString() );
 
+            var statusTemplate = this.GetAttributeValue( "StatusTemplate" );
+            var statusMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields(this.RockPage);
+            statusMergeFields.Add( "ConnectionOpportunities", allOpportunities );
+            statusMergeFields.Add( "ConnectionTypes", connectionTypes );
+            statusMergeFields.Add( "IdleTooltip", sb.ToString() );
+            lStatusBarContent.Text = statusTemplate.ResolveMergeFields( statusMergeFields );
             BindSummaryData();
         }
 

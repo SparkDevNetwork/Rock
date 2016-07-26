@@ -671,6 +671,7 @@ namespace RockWeb.Blocks.WorkFlow
                 activity.LoadAttributes();
             }
 
+
             lReadOnlyTitle.Text = Workflow.Name.FormatAsHtmlTitle();
             if ( Workflow.CompletedDateTime.HasValue )
             {
@@ -683,6 +684,7 @@ namespace RockWeb.Blocks.WorkFlow
                 hlState.Text = "Active";
             }
             hlType.Text = Workflow.WorkflowType.Name;
+            hlblWorkflowId.Text = Workflow.WorkflowId;
 
             ShowReadonlyDetails();
         }

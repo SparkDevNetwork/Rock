@@ -307,6 +307,32 @@ namespace Rock.Model
         [DataMember]
         public bool IgnorePersonInactivated { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [groups require campus].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [groups require campus]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool GroupsRequireCampus { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [group attendance requires location].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [group attendance requires location]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool GroupAttendanceRequiresLocation { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [group attendance requires schedule].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [group attendance requires schedule]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool GroupAttendanceRequiresSchedule { get; set; }
         #endregion
 
         #region Virtual Properties
