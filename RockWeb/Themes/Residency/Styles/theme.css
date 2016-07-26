@@ -2600,6 +2600,36 @@ table.attribute-grid tr th:nth-child(3) {
   background-color: #b9d4ec;
   border-bottom: 1px solid #92bce0;
   color: #245682;
+  position: relative;
+  padding-top: 50px;
+}
+.personprofilebar-bio .action-wrapper {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 39px;
+  z-index: 2;
+}
+.personprofilebar-bio .action-wrapper .action {
+  float: left;
+  width: 45px;
+  border-width: 0 0 1px 1px;
+  border-color: #92bce0;
+  border-style: solid;
+  text-align: center;
+  color: #357ebd;
+  height: 100%;
+  cursor: pointer;
+}
+.personprofilebar-bio .action-wrapper .action > i {
+  top: 50%;
+  position: relative;
+  transform: translateY(-50%);
+  height: 20px;
+}
+.personprofilebar-bio .action-wrapper .action-extended {
+  width: auto;
+  padding-top: 6px;
 }
 .personprofilebar-bio .name {
   text-align: center;
@@ -2616,33 +2646,12 @@ table.attribute-grid tr th:nth-child(3) {
   text-align: center;
 }
 .personprofilebar-bio .nav li .persondetails-actions {
-  padding: 2px 0 0 15px;
+  padding: 2px 15px 0 15px;
+  color: #357ebd;
 }
 .personprofilebar-bio .nav li .persondetails-actions:hover,
 .personprofilebar-bio .nav li .persondetails-actions:focus {
   background-color: transparent;
-}
-.personprofilebar-bio .nav-actions {
-  width: 120px;
-  margin: 0 auto 12px auto;
-}
-@media (min-width: 992px) {
-  .personprofilebar-bio .nav-actions {
-    float: right;
-    margin: 0;
-  }
-}
-.personprofilebar-bio .actions {
-  position: absolute;
-  right: 50%;
-  bottom: 6px;
-  z-index: 10;
-  margin-right: -52px;
-}
-.personprofilebar-bio .actions a.btn-action {
-  color: #ffffff;
-  background-color: #6a6a6a;
-  border-color: #515151;
 }
 .personprofilebar-bio .photo {
   padding: 5px 5px 5px 5px;
@@ -3055,18 +3064,26 @@ table.attribute-grid tr th:nth-child(3) {
   float: left;
   margin: 0;
 }
-.personprofilebar-family header .edit {
+.personprofilebar-family header .action-wrapper {
   position: absolute;
   right: 0;
-  padding-top: 10px;
-  border-left: 1px solid #92bce0;
   top: 0;
   bottom: 0;
-  width: 45px;
 }
-.personprofilebar-family header .edit i {
+.personprofilebar-family header .action-wrapper .action {
+  width: 45px;
+  height: 100%;
+  display: block;
+  float: right;
+  border-left: 1px solid #92bce0;
   text-align: center;
-  width: 100%;
+  cursor: pointer;
+}
+.personprofilebar-family header .action-wrapper .action i {
+  top: 50%;
+  position: relative;
+  transform: translateY(-50%);
+  height: 20px;
 }
 .personprofilebar-family .groupmembers .member a {
   border-radius: 4px;
@@ -3160,10 +3177,6 @@ span.field-value {
 @media (min-width: 768px), print {
   .personprofilebar-bio {
     padding: 15px;
-  }
-  .personprofilebar-bio .actions {
-    right: 12px;
-    margin-right: 0;
   }
   .personprofilebar-bio .name {
     text-align: left;
@@ -4314,6 +4327,10 @@ fieldset .actions {
 }
 .code-editor {
   position: relative;
+}
+.note-editor .ace_editor {
+  border-radius: 0;
+  margin: 0;
 }
 .label a {
   color: #fff;
@@ -6357,10 +6374,27 @@ th[align=center] {
   color: #333333;
 }
 .panel .panel-settings {
-  margin: -15px -15px 30px -15px;
-  background-color: #ffffff;
+  margin: -15px;
   padding: 15px;
   border-bottom: 1px solid #8ab7de;
+}
+.panel .panel-settings-group {
+  margin: -15px;
+}
+.panel .panel-settings-group .btn {
+  border-radius: 0 !important;
+  border-top-width: 0;
+  border-color: #7eb0db;
+  border-right-width: 0;
+}
+.panel .panel-settings-group .btn-group:first-child .btn {
+  border-left-width: 0;
+}
+.panel .panel-settings-group.btn-group-justified {
+  width: auto;
+}
+.panel .panel-settings-group.btn-group-justified > .btn-group .dropdown-menu {
+  width: 100%;
 }
 .panel-widget {
   border-color: #cde1f1;
@@ -6646,62 +6680,62 @@ fieldset[disabled] .btn-security.active {
   color: #999999;
   background-color: #ffffff;
 }
-.btn-authenication {
+.btn-authentication {
   color: #ffffff;
   background-color: #999999;
   border-color: #808080;
   width: 100%;
 }
-.btn-authenication:hover,
-.btn-authenication:focus,
-.btn-authenication:active,
-.btn-authenication.active,
-.open > .dropdown-toggle.btn-authenication {
+.btn-authentication:hover,
+.btn-authentication:focus,
+.btn-authentication:active,
+.btn-authentication.active,
+.open > .dropdown-toggle.btn-authentication {
   color: #ffffff;
   background-color: #808080;
   border-color: #616161;
 }
-.btn-authenication:active,
-.btn-authenication.active,
-.open > .dropdown-toggle.btn-authenication {
+.btn-authentication:active,
+.btn-authentication.active,
+.open > .dropdown-toggle.btn-authentication {
   background-image: none;
 }
-.btn-authenication.disabled,
-.btn-authenication[disabled],
-fieldset[disabled] .btn-authenication,
-.btn-authenication.disabled:hover,
-.btn-authenication[disabled]:hover,
-fieldset[disabled] .btn-authenication:hover,
-.btn-authenication.disabled:focus,
-.btn-authenication[disabled]:focus,
-fieldset[disabled] .btn-authenication:focus,
-.btn-authenication.disabled:active,
-.btn-authenication[disabled]:active,
-fieldset[disabled] .btn-authenication:active,
-.btn-authenication.disabled.active,
-.btn-authenication[disabled].active,
-fieldset[disabled] .btn-authenication.active {
+.btn-authentication.disabled,
+.btn-authentication[disabled],
+fieldset[disabled] .btn-authentication,
+.btn-authentication.disabled:hover,
+.btn-authentication[disabled]:hover,
+fieldset[disabled] .btn-authentication:hover,
+.btn-authentication.disabled:focus,
+.btn-authentication[disabled]:focus,
+fieldset[disabled] .btn-authentication:focus,
+.btn-authentication.disabled:active,
+.btn-authentication[disabled]:active,
+fieldset[disabled] .btn-authentication:active,
+.btn-authentication.disabled.active,
+.btn-authentication[disabled].active,
+fieldset[disabled] .btn-authentication.active {
   background-color: #999999;
   border-color: #808080;
 }
-.btn-authenication .badge {
+.btn-authentication .badge {
   color: #999999;
   background-color: #ffffff;
 }
-.btn-authenication:hover {
+.btn-authentication:hover {
   background-color: #808080;
 }
-.btn-authenication.facebook:before {
+.btn-authentication.facebook:before {
   font-family: 'FontAwesome';
   content: "\f09a";
   margin-right: 12px;
 }
-.btn-authenication.google:before {
+.btn-authentication.google:before {
   font-family: 'FontAwesome';
   content: "\f1a0";
   margin-right: 12px;
 }
-.btn-authenication.twitter:before {
+.btn-authentication.twitter:before {
   font-family: 'FontAwesome';
   content: "\f099";
   margin-right: 12px;
