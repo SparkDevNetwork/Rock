@@ -63,8 +63,10 @@
                                 </dl>
                             </div>
                             <div class="col-md-6">
-                                <dt>Last Modified By</dt>
-                                <dd><asp:Literal ID="lLastModifiedBy" runat="server" /></dd>
+                                <dl>
+                                    <dt>Last Modified By</dt>
+                                    <dd><asp:Literal ID="lLastModifiedBy" runat="server" /></dd>
+                                </dl>
                             </div>
                         </div>
                     </div>

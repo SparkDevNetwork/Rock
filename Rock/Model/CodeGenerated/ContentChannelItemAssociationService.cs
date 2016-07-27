@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// ContentChannelItem Service class
+    /// ContentChannelItemAssociation Service class
     /// </summary>
-    public partial class ContentChannelItemService : Service<ContentChannelItem>
+    public partial class ContentChannelItemAssociationService : Service<ContentChannelItemAssociation>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ContentChannelItemService"/> class
+        /// Initializes a new instance of the <see cref="ContentChannelItemAssociationService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public ContentChannelItemService(RockContext context) : base(context)
+        public ContentChannelItemAssociationService(RockContext context) : base(context)
         {
         }
 
@@ -48,15 +48,9 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( ContentChannelItem item, out string errorMessage )
+        public bool CanDelete( ContentChannelItemAssociation item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<ContentChannelItemAssociation>( Context ).Queryable().Any( a => a.ChildContentChannelItemId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", ContentChannelItem.FriendlyTypeName, ContentChannelItemAssociation.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
@@ -64,50 +58,41 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class ContentChannelItemExtensionMethods
+    public static partial class ContentChannelItemAssociationExtensionMethods
     {
         /// <summary>
-        /// Clones this ContentChannelItem object to a new ContentChannelItem object
+        /// Clones this ContentChannelItemAssociation object to a new ContentChannelItemAssociation object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static ContentChannelItem Clone( this ContentChannelItem source, bool deepCopy )
+        public static ContentChannelItemAssociation Clone( this ContentChannelItemAssociation source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as ContentChannelItem;
+                return source.Clone() as ContentChannelItemAssociation;
             }
             else
             {
-                var target = new ContentChannelItem();
+                var target = new ContentChannelItemAssociation();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another ContentChannelItem object to this ContentChannelItem object
+        /// Copies the properties from another ContentChannelItemAssociation object to this ContentChannelItemAssociation object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this ContentChannelItem target, ContentChannelItem source )
+        public static void CopyPropertiesFrom( this ContentChannelItemAssociation target, ContentChannelItemAssociation source )
         {
             target.Id = source.Id;
-            target.ApprovedByPersonAliasId = source.ApprovedByPersonAliasId;
-            target.ApprovedDateTime = source.ApprovedDateTime;
-            target.Content = source.Content;
-            target.ContentChannelId = source.ContentChannelId;
-            target.ContentChannelTypeId = source.ContentChannelTypeId;
-            target.ExpireDateTime = source.ExpireDateTime;
+            target.ChildContentChannelItemId = source.ChildContentChannelItemId;
+            target.ContentChannelItemId = source.ContentChannelItemId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.Order = source.Order;
-            target.Permalink = source.Permalink;
-            target.Priority = source.Priority;
-            target.StartDateTime = source.StartDateTime;
-            target.Status = source.Status;
-            target.Title = source.Title;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

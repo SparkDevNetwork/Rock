@@ -27,30 +27,18 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for ContentChannel that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for ContentChannelItemAssociation that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class ContentChannelEntity
+    public partial class ContentChannelItemAssociationEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public string ChannelUrl { get; set; }
+        public int ChildContentChannelItemId { get; set; }
 
         /// <summary />
-        public bool ChildItemsManuallyOrdered { get; set; }
-
-        /// <summary />
-        public int ContentChannelTypeId { get; set; }
-
-        /// <summary />
-        public Rock.Client.Enums.ContentControlType ContentControlType { get; set; }
-
-        /// <summary />
-        public string Description { get; set; }
-
-        /// <summary />
-        public bool EnableRss { get; set; }
+        public int ContentChannelItemId { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -58,31 +46,13 @@ namespace Rock.Client
         /// <summary />
         public string ForeignKey { get; set; }
 
-        /// <summary />
-        public string IconCssClass { get; set; }
-
-        /// <summary />
-        public bool ItemsManuallyOrdered { get; set; }
-
-        /// <summary />
-        public string ItemUrl { get; set; }
-
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public string Name { get; set; }
-
-        /// <summary />
-        public bool RequiresApproval { get; set; }
-
-        /// <summary />
-        public string RootImageDirectory { get; set; }
-
-        /// <summary />
-        public int? TimeToLive { get; set; }
+        public int Order { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -111,28 +81,18 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source ContentChannel object
+        /// Copies the base properties from a source ContentChannelItemAssociation object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( ContentChannel source )
+        public void CopyPropertiesFrom( ContentChannelItemAssociation source )
         {
             this.Id = source.Id;
-            this.ChannelUrl = source.ChannelUrl;
-            this.ChildItemsManuallyOrdered = source.ChildItemsManuallyOrdered;
-            this.ContentChannelTypeId = source.ContentChannelTypeId;
-            this.ContentControlType = source.ContentControlType;
-            this.Description = source.Description;
-            this.EnableRss = source.EnableRss;
+            this.ChildContentChannelItemId = source.ChildContentChannelItemId;
+            this.ContentChannelItemId = source.ContentChannelItemId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.IconCssClass = source.IconCssClass;
-            this.ItemsManuallyOrdered = source.ItemsManuallyOrdered;
-            this.ItemUrl = source.ItemUrl;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.Name = source.Name;
-            this.RequiresApproval = source.RequiresApproval;
-            this.RootImageDirectory = source.RootImageDirectory;
-            this.TimeToLive = source.TimeToLive;
+            this.Order = source.Order;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -144,15 +104,12 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for ContentChannel that includes all the fields that are available for GETs. Use this for GETs (use ContentChannelEntity for POST/PUTs)
+    /// Client model for ContentChannelItemAssociation that includes all the fields that are available for GETs. Use this for GETs (use ContentChannelItemAssociationEntity for POST/PUTs)
     /// </summary>
-    public partial class ContentChannel : ContentChannelEntity
+    public partial class ContentChannelItemAssociation : ContentChannelItemAssociationEntity
     {
         /// <summary />
-        public ICollection<ContentChannel> ChildContentChannels { get; set; }
-
-        /// <summary />
-        public ContentChannelType ContentChannelType { get; set; }
+        public ContentChannelItem ChildContentChannelItem { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

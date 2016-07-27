@@ -145,6 +145,7 @@
     <Compile Include="Controllers\CodeGenerated\ConnectionStatusController.cs" />
     <Compile Include="Controllers\CodeGenerated\ConnectionTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\ConnectionWorkflowsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ContentChannelItemAssociationsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentChannelItemsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentChannelsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentChannelTypesController.cs" />
