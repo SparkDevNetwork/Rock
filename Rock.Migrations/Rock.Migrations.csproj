@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{704740D8-B539-4560-9F8C-681670C9D6AD}</ProjectGuid>
+    <ProjectGuid>{957B1DBE-B921-4FAE-8E5E-B7AD7F01B161}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Rock.Migrations</RootNamespace>

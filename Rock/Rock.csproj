@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{185A31D7-3037-4DAE-8797-0459849A84BD}</ProjectGuid>
+    <ProjectGuid>{8F8C2A79-24F4-4157-8B99-45F75FA85799}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Rock</RootNamespace>
@@ -54,10 +54,6 @@
     </Reference>
     <Reference Include="DDay.iCal, Version=1.0.2.575, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\DDay.iCal.1.0.2.575\lib\DDay.iCal.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="DevOne.Security.Cryptography.BCrypt, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\BCrypt.1.0.0.0\lib\DevOne.Security.Cryptography.BCrypt.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="DocumentFormat.OpenXml, Version=2.6.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -1087,7 +1083,17 @@
     <Compile Include="Service References\MelissaData.AddressCheck\Reference.cs">
       <SubType>code</SubType>
     </Compile>
+    <Compile Include="Service References\MelissaData.AddressCheck\Reference1.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
     <Compile Include="Service References\ServiceObjects.GeoCoder\Reference.cs" />
+    <Compile Include="Service References\ServiceObjects.GeoCoder\Reference1.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
     <Compile Include="Services\NuGet\NuGetExtensionsMethods.cs" />
     <Compile Include="Services\NuGet\PackageService.cs" />
     <Compile Include="Services\NuGet\RockPackagePathResolver.cs" />
