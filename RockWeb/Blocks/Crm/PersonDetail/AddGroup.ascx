@@ -42,7 +42,7 @@
                         </div>
 
                         <div class="col-md-8">
-                            <Rock:AddressControl ID="acAddress" runat="server" UseStateAbbreviation="false" UseCountryAbbreviation="false" />
+                            <Rock:AddressControl ID="acAddress" Label="Address" runat="server" UseStateAbbreviation="false" UseCountryAbbreviation="false" />
                         </div>
                     </div>
 
