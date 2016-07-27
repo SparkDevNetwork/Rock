@@ -873,6 +873,8 @@ $(document).ready(function() {
                     kvlOrder.CustomKeys.Add( "Status", "Status" );
                     kvlOrder.CustomKeys.Add( "StartDateTime", "Start" );
                     kvlOrder.CustomKeys.Add( "ExpireDateTime", "Expire" );
+                    kvlOrder.CustomKeys.Add( "Order", "Order" );
+
 
                     // add attributes to the meta description and meta image attribute list
                     ddlMetaDescriptionAttribute.Items.Clear();

@@ -1433,8 +1433,9 @@ namespace RockWeb.Blocks.Groups
             lGroupIconHtml.Text = groupIconHtml;
             lReadOnlyTitle.Text = group.Name.FormatAsHtmlTitle();
 
-            lCreatedBy.Text = string.Format( "{0} <small>({1})</small>", group.CreatedByPersonName, group.CreatedDateTime );
-            lLastModifiedBy.Text = string.Format( "{0} <small>({1})</small>", group.ModifiedByPersonName, group.ModifiedDateTime );
+            string rootUrl = ResolveRockUrl( "~" );
+            lCreatedBy.Text = group.GetCreatedAuditHtml( rootUrl );
+            lLastModifiedBy.Text = group.GetModifiedAuditHtml( rootUrl );
 
             if ( !string.IsNullOrWhiteSpace( group.Description ) )
             {

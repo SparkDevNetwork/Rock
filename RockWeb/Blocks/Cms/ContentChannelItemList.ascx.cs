@@ -47,6 +47,8 @@ namespace RockWeb.Blocks.Cms
         #region Fields
 
         private int? _channelId = null;
+        private bool _manuallyOrdered = false;
+
         private int _typeId = 0;
         private Person _person = null;
 
@@ -92,27 +94,29 @@ namespace RockWeb.Blocks.Cms
                     string startHeading = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Active";
                     bool isRange = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange;
 
-                    gItems.Columns[1].HeaderText = startHeading;
-                    gItems.Columns[3].HeaderText = startHeading;
+                    _manuallyOrdered = contentChannel.ItemsManuallyOrdered;
+
+                    gItems.Columns[2].HeaderText = startHeading;
+                    gItems.Columns[4].HeaderText = startHeading;
 
                     ddlStatus.Visible = contentChannel.RequiresApproval;
 
                     if ( contentChannel.ContentChannelType.IncludeTime )
                     {
-                        gItems.Columns[1].Visible = true;
-                        gItems.Columns[2].Visible = isRange;
-                        gItems.Columns[3].Visible = false;
+                        gItems.Columns[2].Visible = true;
+                        gItems.Columns[3].Visible = isRange;
                         gItems.Columns[4].Visible = false;
+                        gItems.Columns[5].Visible = false;
                     }
                     else
                     {
-                        gItems.Columns[1].Visible = false;
                         gItems.Columns[2].Visible = false;
-                        gItems.Columns[3].Visible = true;
-                        gItems.Columns[4].Visible = isRange;
+                        gItems.Columns[3].Visible = false;
+                        gItems.Columns[4].Visible = true;
+                        gItems.Columns[5].Visible = isRange;
                     }
 
-                    gItems.Columns[5].Visible = !contentChannel.ContentChannelType.DisablePriority;
+                    gItems.Columns[6].Visible = !contentChannel.ContentChannelType.DisablePriority;
                     lContentChannel.Text = contentChannel.Name;
                     _typeId = contentChannel.ContentChannelTypeId;
 
@@ -131,10 +135,13 @@ namespace RockWeb.Blocks.Cms
                 gfFilter.DisplayFilterValue += gfFilter_DisplayFilterValue;
 
                 gItems.DataKeyNames = new string[] { "Id" };
+                gItems.AllowSorting = !_manuallyOrdered;
                 gItems.Actions.ShowAdd = canAddEditDelete;
                 gItems.IsDeleteEnabled = canAddEditDelete;
                 gItems.Actions.AddClick += gItems_Add;
                 gItems.GridRebind += gItems_GridRebind;
+                gItems.GridReorder += GItems_GridReorder;
+                gItems.EntityTypeId = EntityTypeCache.Read<ContentChannelItem>().Id;
 
                 AddAttributeColumns();
 
@@ -294,6 +301,29 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
+        /// Handles the GridReorder event of the GItems control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        private void GItems_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                bool isFiltered = false;
+                var items = GetItems( rockContext, out isFiltered );
+
+                if ( !isFiltered )
+                {
+                    var service = new ContentChannelItemService( rockContext );
+                    service.Reorder( items, e.OldIndex, e.NewIndex );
+                    rockContext.SaveChanges();
+                }
+            }
+
+            BindGrid();
+        }
+
+        /// <summary>
         /// Handles the BlockUpdated event of the control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -377,56 +407,18 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindGrid()
         {
-            if ( _channelId.HasValue )
+            bool isFiltered = false;
+            var items = GetItems( new RockContext(), out isFiltered );
+
+            if ( _manuallyOrdered && !isFiltered )
             {
-                ContentChannelItemService contentItemService = new ContentChannelItemService( new RockContext() );
-                var contentItems = contentItemService.Queryable()
-                    .Where( c => c.ContentChannelId == _channelId.Value );
-
-                var drp = new DateRangePicker();
-                drp.DelimitedValues = gfFilter.GetUserPreference( "Date Range" );
-                if ( drp.LowerValue.HasValue )
-                {
-                    contentItems = contentItems.Where( i =>
-                        ( i.ExpireDateTime.HasValue && i.ExpireDateTime.Value >= drp.LowerValue.Value ) ||
-                        ( !i.ExpireDateTime.HasValue && i.StartDateTime >= drp.LowerValue.Value ) );
-                }
-                if ( drp.UpperValue.HasValue )
-                {
-                    DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
-                    contentItems = contentItems.Where( i => i.StartDateTime <= upperDate );
-                }
-
-                var status = gfFilter.GetUserPreference( "Status" ).ConvertToEnumOrNull<ContentChannelItemStatus>();
-                if ( status.HasValue )
-                {
-                    contentItems = contentItems.Where( i => i.Status == status );
-                }
-
-                string title = gfFilter.GetUserPreference( "Title" );
-                if ( !string.IsNullOrWhiteSpace( title ) )
-                {
-                    contentItems = contentItems.Where( i => i.Title.Contains( title ) );
-                }
-
-                // if the block has a person context filter requests for just them
-                if ( _person != null )
-                {
-                    contentItems = contentItems.Where( i => i.CreatedByPersonAlias != null && i.CreatedByPersonAlias.PersonId == _person.Id );
-                }
-
-                // TODO: Checking security of every item will take longer and longer as more items are added.  
-                // Eventually we should implement server-side paging so that we only need to check security for
-                // the items on the current page
-
-                var items = new List<ContentChannelItem>();
-                foreach ( var item in contentItems.ToList())
-                {
-                    if ( item.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ))
-                    {
-                        items.Add(item);
-                    }
-                }
+                gItems.Columns[0].Visible = true;
+                gItems.AllowSorting = false;
+            }
+            else
+            {
+                gItems.Columns[0].Visible = false;
+                gItems.AllowSorting = true;
 
                 SortProperty sortProperty = gItems.SortProperty;
                 if ( sortProperty != null )
@@ -437,23 +429,100 @@ namespace RockWeb.Blocks.Cms
                 {
                     items = items.OrderByDescending( p => p.StartDateTime ).ToList();
                 }
+            }
 
-                gItems.ObjectList = new Dictionary<string, object>();
-                items.ForEach( i => gItems.ObjectList.Add( i.Id.ToString(), i ) );
-                gItems.EntityTypeId = EntityTypeCache.Read<ContentChannelItem>().Id;
+            gItems.ObjectList = new Dictionary<string, object>();
+            items.ForEach( i => gItems.ObjectList.Add( i.Id.ToString(), i ) );
 
-                gItems.DataSource = items.Select( i => new
+            gItems.DataSource = items.Select( i => new
+            {
+                i.Id,
+                i.Guid,
+                i.Title,
+                i.StartDateTime,
+                i.ExpireDateTime,
+                i.Priority,
+                Status = DisplayStatus( i.Status ),
+                Occurrences = i.EventItemOccurrences.Any()
+            } ).ToList();
+            gItems.DataBind();
+        }
+
+        /// <summary>
+        /// Binds the grid.
+        /// </summary>
+        private List<ContentChannelItem> GetItems( RockContext rockContext, out bool isFiltered )
+        {
+            isFiltered = false;
+
+            var items = new List<ContentChannelItem>();
+
+            if ( _channelId.HasValue )
+            {
+                ContentChannelItemService contentItemService = new ContentChannelItemService( rockContext );
+                var contentItems = contentItemService.Queryable()
+                    .Where( c => c.ContentChannelId == _channelId.Value );
+
+                var drp = new DateRangePicker();
+                drp.DelimitedValues = gfFilter.GetUserPreference( "Date Range" );
+                if ( drp.LowerValue.HasValue )
                 {
-                    i.Id,
-                    i.Guid,
-                    i.Title,
-                    i.StartDateTime,
-                    i.ExpireDateTime,
-                    i.Priority,
-                    Status = DisplayStatus( i.Status ),
-                    Occurrences = i.EventItemOccurrences.Any()
-                } ).ToList();
-                gItems.DataBind();
+                    isFiltered = true;
+                    contentItems = contentItems.Where( i =>
+                        ( i.ExpireDateTime.HasValue && i.ExpireDateTime.Value >= drp.LowerValue.Value ) ||
+                        ( !i.ExpireDateTime.HasValue && i.StartDateTime >= drp.LowerValue.Value ) );
+                }
+                if ( drp.UpperValue.HasValue )
+                {
+                    isFiltered = true;
+                    DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
+                    contentItems = contentItems.Where( i => i.StartDateTime <= upperDate );
+                }
+
+                var status = gfFilter.GetUserPreference( "Status" ).ConvertToEnumOrNull<ContentChannelItemStatus>();
+                if ( status.HasValue )
+                {
+                    isFiltered = true;
+                    contentItems = contentItems.Where( i => i.Status == status );
+                }
+
+                string title = gfFilter.GetUserPreference( "Title" );
+                if ( !string.IsNullOrWhiteSpace( title ) )
+                {
+                    isFiltered = true;
+                    contentItems = contentItems.Where( i => i.Title.Contains( title ) );
+                }
+
+                // if the block has a person context filter requests for just them
+                if ( _person != null )
+                {
+                    isFiltered = true;
+                    contentItems = contentItems.Where( i => i.CreatedByPersonAlias != null && i.CreatedByPersonAlias.PersonId == _person.Id );
+                }
+
+                // TODO: Checking security of every item will take longer and longer as more items are added.  
+                // Eventually we should implement server-side paging so that we only need to check security for
+                // the items on the current page
+                foreach ( var item in contentItems.ToList() )
+                {
+                    if ( item.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                    {
+                        items.Add( item );
+                    }
+                    else
+                    {
+                        isFiltered = true;
+                    }
+                }
+            }
+
+            if ( _manuallyOrdered && !isFiltered )
+            {
+                return items.OrderBy( i => i.Order ).ToList();
+            }
+            else
+            {
+                return items;
             }
         }
 

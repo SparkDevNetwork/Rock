@@ -636,6 +636,7 @@
     <Compile Include="Model\CodeGenerated\ConnectionStatusService.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionTypeService.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionWorkflowService.cs" />
+    <Compile Include="Model\CodeGenerated\ContentChannelItemAssociationService.cs" />
     <Compile Include="Model\CodeGenerated\ContentChannelItemService.cs" />
     <Compile Include="Model\CodeGenerated\ContentChannelService.cs" />
     <Compile Include="Model\CodeGenerated\ContentChannelTypeService.cs" />
@@ -812,6 +813,7 @@
     <Compile Include="Model\FinancialTransaction.cs" />
     <Compile Include="Model\FinancialTransactionDetail.cs" />
     <Compile Include="Model\FinancialTransactionDetailService.Partial.cs" />
+    <Compile Include="Model\ContentChannelItemAssociation.cs" />
     <Compile Include="Model\FinancialTransactionImage.cs" />
     <Compile Include="Model\FinancialTransactionRefund.cs" />
     <Compile Include="Model\FinancialTransactionService.Partial.cs" />
@@ -838,6 +840,7 @@
     <Compile Include="Model\GroupTypeLocationType.cs" />
     <Compile Include="Model\GroupTypeRole.cs" />
     <Compile Include="Model\GroupTypeRoleService.Partial.cs" />
+    <Compile Include="Model\ContentChannelService.Partial.cs" />
     <Compile Include="Model\GroupTypeService.Partial.cs" />
     <Compile Include="Model\History.cs" />
     <Compile Include="Model\HistoryService.Partial.cs" />
