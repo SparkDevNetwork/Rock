@@ -484,14 +484,14 @@ namespace RockWeb.Blocks.Reporting
 
                             GridFilter = new GridFilter()
                             {
-                                ID = "gfFilter"
+                                ID = string.Format("gfFilter{0}", tableId )
                             };
 
                             div.Controls.Add( GridFilter );
                             GridFilter.ApplyFilterClick += ApplyFilterClick;
                             GridFilter.DisplayFilterValue += DisplayFilterValue;
-                            GridFilter.Visible = showGridFilterControls;
-
+                            GridFilter.Visible = showGridFilterControls && (dataSet.Tables.Count == 1);
+               
                             var grid = new Grid();
                             div.Controls.Add( grid );
                             grid.ID = string.Format( "dynamic_data_{0}", tableId++ );
@@ -800,7 +800,7 @@ namespace RockWeb.Blocks.Reporting
                 dataView.RowFilter = null;
                 return;
             }
-
+            
             var query = new List<string>();
 
             foreach ( var control in GridFilter.Controls.OfType<Control>() )
