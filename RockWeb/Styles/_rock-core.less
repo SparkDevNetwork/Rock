@@ -17,6 +17,9 @@
 @import "./FontAwesome/variables.less";
 @import "./JCrop/jcrop.less";
 
+// import as less files so they are concatenated properly
+@import (less) "./summernote/summernote.css";
+
 @import "_page-admin.less";
 @import "_modal.less";
 @import "_forms.less";
@@ -42,11 +45,6 @@
 @import "_scroll.less";
 @import "_global-variables.less";
 @import "_helpers.less";
-
-// import as less files so they are concatenated properly
-@import (less) "./summernote/summernote.css";
-
-@import "_summernote-editor.less";
 
 @import "./Bootstrap/mixins.less";
 
@@ -466,6 +464,56 @@ th[align=center] {
     background-color: @panel-heading-bg;
     margin-bottom: 15px;
   }
+}
+
+// styles for panel drawers
+@drawer-bg: @panel-heading-bg;
+
+.panel-drawer {
+    background-color: @drawer-bg;
+    width: 100%;
+}
+
+.drawer-content {
+    padding: @panel-body-padding;
+}
+
+.panel-drawer.open > .drawer-content {
+    display: block;
+}
+
+.drawer-pull {
+    color: @panel-heading-text-color;
+    padding: 6px 8px;
+    cursor: pointer;
+    .clearfix();
+    border-bottom: 1px solid @panel-border;
+
+    i {
+        float: right;
+    }
+}
+
+.drawer-pull:hover{
+    background-color: darken(@drawer-bg, 3%);
+}
+
+
+// paneleditor is used to provide a small edit surface in a panel header. 
+// example: threshold editor on checkin manager for locations
+.paneleditor {
+
+}
+
+.paneleditor-label {
+    float: left;
+}
+
+.paneleditor-input {
+    float: left;
+    margin-top: -6px;
+    margin-right: 4px;
+    margin-left: 4px;
 }
 
 // extensions for buttons    ->   .button-variant(@color; @background; @border) {}

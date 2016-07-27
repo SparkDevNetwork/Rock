@@ -314,7 +314,18 @@ namespace RockWeb.Blocks.Reporting
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( Authorization.EDIT ) )
+
+            bool canEdit = UserCanEdit;
+            if ( !canEdit && metricId.HasValue && metricId.Value > 0 )
+            {
+                var metric = new MetricService( new RockContext() ).Get( metricId.Value );
+                if ( metric != null && metric.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) 
+                {
+                    canEdit = true;
+                }
+            }
+
+            if ( !canEdit )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( MetricValue.FriendlyTypeName );

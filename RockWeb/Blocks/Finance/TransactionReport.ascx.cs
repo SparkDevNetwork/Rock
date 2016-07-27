@@ -39,6 +39,8 @@ namespace RockWeb.Blocks.Finance
     [TextField( "Transaction Label", "The label to use to describe the transactions (e.g. 'Gifts', 'Donations', etc.)", true, "Gifts", "", 1 )]
     [TextField( "Account Label", "The label to use to describe accounts.", true, "Accounts", "", 2 )]
     [AccountsField( "Accounts", "List of accounts to allow the person to view", false, "", "", 3 )]
+
+    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE, "Transaction Types", "Optional list of transation types to limit the list to (if none are selected all types will be included).", false, true, "", "", 4 )]
     public partial class TransactionReport : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -201,6 +203,16 @@ namespace RockWeb.Blocks.Finance
                 var lastDate = drpFilterDates.UpperValue.Value.AddDays( 1 ); // add one day to ensure we get all transactions till midnight
                 qry = qry.Where( t => t.TransactionDateTime.Value < lastDate );
             }
+
+            // Transaction Types
+            var transactionTypeValueIdList = GetAttributeValue( "TransactionTypes" ).SplitDelimitedValues().AsGuidList().Select( a => DefinedValueCache.Read( a ) ).Where( a => a != null ).Select( a => a.Id ).ToList();
+
+            if ( transactionTypeValueIdList.Any() )
+            {
+                qry = qry.Where( t => transactionTypeValueIdList.Contains( t.TransactionTypeValueId ) );
+            }
+
+            qry = qry.OrderByDescending( a => a.TransactionDateTime );
 
             var txns = qry.ToList();
 

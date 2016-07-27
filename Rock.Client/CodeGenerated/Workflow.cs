@@ -70,6 +70,9 @@ namespace Rock.Client
         public string Status { get; set; }
 
         /// <summary />
+        public int WorkflowIdNumber { get; set; }
+
+        /// <summary />
         public int WorkflowTypeId { get; set; }
 
         /// <summary>
@@ -116,6 +119,7 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.Status = source.Status;
+            this.WorkflowIdNumber = source.WorkflowIdNumber;
             this.WorkflowTypeId = source.WorkflowTypeId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
@@ -137,6 +141,9 @@ namespace Rock.Client
 
         /// <summary />
         public PersonAlias InitiatorPersonAlias { get; set; }
+
+        /// <summary />
+        public string WorkflowId { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

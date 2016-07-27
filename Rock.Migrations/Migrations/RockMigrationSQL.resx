@@ -355,4 +355,10 @@
   <data name="_201606091237191_GivingAnalyticsRefactor_TransactionData" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201606091237191_givinganalyticsrefactor_transactiondata.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_201606231511599_RegistrationWorkflow_Indexes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201606231511599_registrationworkflow_indexes.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201607102235065_ScheduledTransactionType" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201607102235065_scheduledtransactiontype.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>

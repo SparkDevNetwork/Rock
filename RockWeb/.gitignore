@@ -10,3 +10,11 @@
 /Plugins/cc_newspring/*
 
 
+/bin/*/*.dll
+/bin/*.dll
+/bin/*.pdb
+/bin/*.xml
+
+/*.suo
+/*.user
+

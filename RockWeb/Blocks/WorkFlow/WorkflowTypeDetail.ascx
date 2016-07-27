@@ -24,6 +24,7 @@
             <div class="panel-body container-fluid">
 
                 <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <Rock:NotificationBox ID="nbValidationError" runat="server" NotificationBoxType="Danger" EnableViewState="false" />
 
                 <div id="pnlEditDetails" runat="server">
 
@@ -49,7 +50,8 @@
                                 <Rock:CategoryPicker ID="cpCategory" runat="server" Required="true" Label="Category" EntityTypeName="Rock.Model.WorkflowType" />
                                 <Rock:RockTextBox ID="tbIconCssClass" runat="server" Label="Icon CSS Class" Help="The Icon to use when displaying this type of workflow." />
                             </div>
-                                <div class="col-md-6">
+                            <div class="col-md-6">
+                                <Rock:RockTextBox ID="tbNumberPrefix" runat="server" Label="Workflow Number Prefix" Help="The number prefix to use for workflows of this type. For example, to have workflows of this type numbered like 'WF0001, WF0002' use a prefix of 'WF'. Prefixes do need to be unique between workflow types." />
                                 <Rock:RockTextBox ID="tbProcessingInterval" runat="server" Label="Processing Interval (minutes)"
                                     Help="The minimum length of time, in minutes, that must pass before the same persisted workflow instance of this type can be processed again.  If blank, active workflows will be processed each time that the workflow job is run." />
                                 <Rock:RockDropDownList ID="ddlLoggingLevel" Help="The level you would like to audit.  Start and stop times can be logged for each workflow, workflow activity, or activity action." runat="server" Label="Logging Level" />

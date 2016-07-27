@@ -103,6 +103,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             upnlContent.OnPostBack += upnlContent_OnPostBack;
 
             rptNavItems.ItemDataBound += rptNavItems_ItemDataBound;
+            rptNavItems.ItemCommand += RptNavItems_ItemCommand;
             rptPeople.ItemDataBound += rptPeople_ItemDataBound;
 
             _configuredMode = GetAttributeValue( "Mode" );
@@ -370,10 +371,39 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         CurrentNavPath, navItem.TypeKey, navItem.Id ) );
                 }
 
+                var loc = navItem as NavigationLocation;
+
+                var lbl = e.Item.FindControl( "lblCurrentCount" ) as Label;
+                if ( lbl != null )
+                {
+                    lbl.Text = navItem.CurrentCount.ToString( "N0" );
+                    if ( loc != null && loc.SoftThreshold.HasValue )
+                    {
+                        lbl.Text = string.Format( "{0:N0}/{1:N0}", navItem.CurrentCount, loc.SoftThreshold.Value );
+                        if ( loc.CurrentCount >= loc.SoftThreshold )
+                        {
+                            lbl.AddCssClass( "badge-danger" );
+                        }
+                        else
+                        {
+                            if ( navItem.CurrentCount > 0 )
+                            {
+                                lbl.AddCssClass( "badge-success" );
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if ( navItem.CurrentCount > 0 )
+                        {
+                            lbl.AddCssClass( "badge-success" );
+                        }
+                    }
+                }
+
                 var tgl = e.Item.FindControl( "tglRoom" ) as Toggle;
                 if ( tgl != null )
                 {
-                    var loc = navItem as NavigationLocation;
                     if ( loc != null )
                     {
                         tgl.Visible = loc.HasGroups;
@@ -385,7 +415,41 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         tgl.Visible = false;
                     }
                 }
+
             }
+        }
+
+        /// <summary>
+        /// Handles the ItemCommand event of the RptNavItems control.
+        /// </summary>
+        /// <param name="source">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
+        private void RptNavItems_ItemCommand( object source, RepeaterCommandEventArgs e )
+        {
+            if ( e.CommandName == "RefreshThreshold" )
+            {
+                int? id = e.CommandArgument.ToString().AsIntegerOrNull();
+                var nb = e.Item.FindControl( "nbThreshold" ) as NumberBox;
+                if ( id.HasValue && nb != null )
+                {
+                    int? threshold = nb.Text.AsIntegerOrNull();
+
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var location = new LocationService( rockContext ).Get( id.Value );
+                        if ( location != null && location.SoftRoomThreshold != threshold )
+                        {
+                            location.SoftRoomThreshold = threshold;
+                            rockContext.SaveChanges();
+                            Rock.CheckIn.KioskDevice.FlushAll();
+                        }
+                    }
+
+                    NavData.Locations.Where( l => l.Id == id.Value ).ToList().ForEach( l => l.SoftThreshold = threshold );
+                }
+            }
+
+            BuildNavigationControls();
         }
 
         /// <summary>
@@ -486,23 +550,47 @@ namespace RockWeb.Blocks.CheckIn.Manager
         protected void tglRoom_CheckedChanged( object sender, EventArgs e )
         {
             var tgl = sender as Toggle;
-            int? id = tgl.Attributes["data-key"].AsIntegerOrNull();
-            if ( id.HasValue )
+            if ( tgl != null )
             {
-                using ( var rockContext = new RockContext() )
+                int? id = tgl.Attributes["data-key"].AsIntegerOrNull();
+                if ( id.HasValue )
                 {
-                    var location = new LocationService( rockContext ).Get( id.Value );
-                    if ( location != null )
+                    using ( var rockContext = new RockContext() )
                     {
-                        if ( location.IsActive != tgl.Checked )
+                        var location = new LocationService( rockContext ).Get( id.Value );
+                        if ( location != null && location.IsActive != tgl.Checked )
                         {
                             location.IsActive = tgl.Checked;
                             rockContext.SaveChanges();
                             Rock.CheckIn.KioskDevice.FlushAll();
                         }
                     }
+                    NavData.Locations.Where( l => l.Id == id.Value ).ToList().ForEach( l => l.IsActive = tgl.Checked );
                 }
-                NavData.Locations.Where( l => l.Id == id.Value ).ToList().ForEach( l => l.IsActive = tgl.Checked );
+            }
+
+            BuildNavigationControls();
+        }
+
+
+        protected void lbUpdateThreshold_Click( object sender, EventArgs e )
+        {
+            int? id = lbUpdateThreshold.Attributes["data-key"].AsIntegerOrNull();
+            if ( id.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    int? softThreshold = nbThreshold.Text.AsIntegerOrNull();
+                    var location = new LocationService( rockContext ).Get( id.Value );
+                    if ( location != null && location.SoftRoomThreshold != softThreshold )
+                    {
+                        location.SoftRoomThreshold = nbThreshold.Text.AsIntegerOrNull();
+                        rockContext.SaveChanges();
+                        Rock.CheckIn.KioskDevice.FlushAll();
+
+                        NavData.Locations.Where( l => l.Id == id.Value ).ToList().ForEach( l => l.SoftThreshold = softThreshold );
+                    }
+                }
             }
 
             BuildNavigationControls();
@@ -683,6 +771,24 @@ namespace RockWeb.Blocks.CheckIn.Manager
     var data = eval($('#{1}').val());
     var options = {2};
     $.plot( $('#{0}'), data, options );
+
+    $('.js-threshold-btn-edit').click(function(e){{
+        var $parentDiv = $(this).closest('div.js-threshold');
+        $parentDiv.find('.js-threshold-nb').val($parentDiv.find('.js-threshold-hf').val());
+        $parentDiv.find('.js-threshold-view').hide();
+        $parentDiv.find('.js-threshold-edit').show();
+    }});
+
+    $('a.js-threshold-edit').click(function(e){{
+        var $parentDiv = $(this).closest('div.js-threshold');
+        $parentDiv.find('.js-threshold-edit').hide();
+        $parentDiv.find('.js-threshold-view').show();
+        return true;
+    }});
+
+    $('.js-threshold').click(function(e){{
+        e.stopPropagation();
+    }});
 ",
                 pnlChart.ClientID, hfChartData.ClientID,
                 JsonConvert.SerializeObject(
@@ -754,7 +860,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     {
                         foreach ( var childGroupType in parentGroupType.ChildGroupTypes )
                         {
-                            AddGroupType( childGroupType, chartTimes );
+                            AddGroupType( null, childGroupType, chartTimes );
                         }
                     }
 
@@ -814,7 +920,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                             .ToList();
                     }
 
-                    // Remove any grouptype without groups
+                    // Remove any grouptype without groups or child group types
                     var emptyGroupTypeIds = NavData.GroupTypes
                         .Where( t => !t.ChildGroupIds.Any() && !t.ChildGroupTypeIds.Any() )
                         .Select( t => t.Id )
@@ -989,16 +1095,18 @@ namespace RockWeb.Blocks.CheckIn.Manager
             return times;
         }
 
-        private void AddGroupType( GroupTypeCache groupType, List<DateTime> chartTimes )
+        private void AddGroupType( int? parentGroupTypeId, GroupTypeCache groupType, List<DateTime> chartTimes )
         {
             if ( groupType != null && !NavData.GroupTypes.Exists( g => g.Id == groupType.Id ) )
             {
                 var navGroupType = new NavigationGroupType( groupType, chartTimes );
+                navGroupType.ParentId = parentGroupTypeId;
+
                 NavData.GroupTypes.Add( navGroupType );
 
                 foreach ( var childGroupType in groupType.ChildGroupTypes )
                 {
-                    AddGroupType( childGroupType, chartTimes );
+                    AddGroupType( groupType.Id, childGroupType, chartTimes );
                     navGroupType.ChildGroupTypeIds.Add( childGroupType.Id );
                 }
             }
@@ -1247,6 +1355,12 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         tglHeadingRoom.Checked = locationItem.IsActive;
                         tglHeadingRoom.Attributes["data-key"] = locationItem.Id.ToString();
 
+                        pnlThreshold.Visible = locationItem.SoftThreshold.HasValue || locationItem.FirmThreshold.HasValue;
+                        hfThreshold.Value = locationItem.SoftThreshold.HasValue ? locationItem.SoftThreshold.Value.ToString() : "";
+                        lThreshold.Text = locationItem.SoftThreshold.HasValue ? locationItem.SoftThreshold.Value.ToString( "N0" ) : "none";
+                        nbThreshold.MaximumValue = locationItem.FirmThreshold.HasValue ? locationItem.FirmThreshold.Value.ToString() : "";
+                        lbUpdateThreshold.Attributes["data-key"] = locationItem.Id.ToString();
+
                         var rockContext = new RockContext();
                         var activeSchedules = new List<int>();
                         foreach ( var schedule in new ScheduleService( rockContext )
@@ -1302,6 +1416,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     else
                     {
                         tglHeadingRoom.Visible = false;
+                        pnlThreshold.Visible = false;
                         rptPeople.Visible = false;
                     }
                 }
@@ -1331,9 +1446,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         public class NavigationData
         {
             public List<NavigationLocation> Locations { get; set; }
-
             public List<NavigationGroupType> GroupTypes { get; set; }
-
             public List<NavigationGroup> Groups { get; set; }
 
             public NavigationData()
@@ -1385,19 +1498,12 @@ namespace RockWeb.Blocks.CheckIn.Manager
         public abstract class NavigationItem
         {
             public int? ParentId { get; set; }
-
             public int Id { get; set; }
-
             public string Name { get; set; }
-
             public int Order { get; set; }
-
             public List<int> CurrentPersonIds { get; set; }
-
             public int CurrentCount { get { return CurrentPersonIds.Count(); } }
-
             public Dictionary<DateTime, List<int>> RecentPersonIds { get; set; }
-
             public virtual string TypeKey { get { return ""; } }
         }
 
@@ -1405,11 +1511,10 @@ namespace RockWeb.Blocks.CheckIn.Manager
         public class NavigationLocation : NavigationItem
         {
             public override string TypeKey { get { return "L"; } }
-
             public bool IsActive { get; set; }
-
+            public int? SoftThreshold { get; set; }
+            public int? FirmThreshold { get; set; }
             public List<int> ChildLocationIds { get; set; }
-
             public bool HasGroups { get; set; }
 
             public NavigationLocation( Location location, List<DateTime> chartTimes )
@@ -1420,6 +1525,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 RecentPersonIds = new Dictionary<DateTime, List<int>>();
                 chartTimes.ForEach( t => RecentPersonIds.Add( t, new List<int>() ) );
                 IsActive = location.IsActive;
+                SoftThreshold = location.SoftRoomThreshold;
+                FirmThreshold = location.FirmRoomThreshold;
                 ChildLocationIds = new List<int>();
             }
         }
@@ -1428,9 +1535,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         public class NavigationGroupType : NavigationItem
         {
             public override string TypeKey { get { return "T"; } }
-
             public List<int> ChildGroupTypeIds { get; set; }
-
             public List<int> ChildGroupIds { get; set; }
 
             public NavigationGroupType( GroupTypeCache groupType, List<DateTime> chartTimes )
@@ -1450,11 +1555,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
         public class NavigationGroup : NavigationItem
         {
             public override string TypeKey { get { return "G"; } }
-
             public int GroupTypeId { get; set; }
-
             public List<int> ChildLocationIds { get; set; }
-
             public List<int> ChildGroupIds { get; set; }
 
             public NavigationGroup( Group group, List<DateTime> chartTimes )
@@ -1474,23 +1576,14 @@ namespace RockWeb.Blocks.CheckIn.Manager
         public class PersonResult
         {
             public int Id { get; set; }
-
             public Guid Guid { get; set; }
-
             public string Name { get; set; }
-
             public Gender Gender { get; set; }
-
             public int? PhotoId { get; set; }
-
             public DateTime? LastCheckin { get; set; }
-
             public bool CheckedInNow { get; set; }
-
             public string ScheduleGroupNames { get; set; }
-
             public string Age { get; set; }
-
             public bool ShowCancel { get; set; }
 
             public PersonResult()
@@ -1524,5 +1617,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         }
 
         #endregion
+
+
     }
 }

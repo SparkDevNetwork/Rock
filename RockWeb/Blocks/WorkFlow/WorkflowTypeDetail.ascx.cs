@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 
@@ -145,6 +146,8 @@ namespace RockWeb.Blocks.WorkFlow
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            nbValidationError.Visible = false;
 
             if ( !Page.IsPostBack )
             {
@@ -511,6 +514,30 @@ namespace RockWeb.Blocks.WorkFlow
                 workflowType = new WorkflowType();
             }
 
+            var validationErrors = new List<string>();
+
+            // check for unique prefix
+            string prefix = tbNumberPrefix.UntrimmedText;
+            if ( !string.IsNullOrWhiteSpace( prefix ) &&
+                prefix.ToUpper() != ( workflowType.WorkflowIdPrefix ?? string.Empty ).ToUpper() )
+            {
+                if ( service.Queryable().AsNoTracking()
+                    .Any( w =>
+                        w.Id != workflowType.Id &&
+                        w.WorkflowIdPrefix == prefix ) )
+                {
+                    validationErrors.Add( "Workflow Number Prefix is already being used by another workflow type.  Please use a unique prefix." );
+                }
+                else
+                {
+                    workflowType.WorkflowIdPrefix = prefix;
+                }
+            }
+            else
+            {
+                workflowType.WorkflowIdPrefix = prefix;
+            }
+
             workflowType.IsActive = cbIsActive.Checked;
             workflowType.Name = tbName.Text;
             workflowType.Description = tbDescription.Text;
@@ -533,6 +560,15 @@ namespace RockWeb.Blocks.WorkFlow
             workflowType.IsPersisted = cbIsPersisted.Checked;
             workflowType.LoggingLevel = ddlLoggingLevel.SelectedValueAsEnum<WorkflowLoggingLevel>();
             workflowType.IconCssClass = tbIconCssClass.Text;
+
+            if ( validationErrors.Any() )
+            {
+                nbValidationError.Text = string.Format( "Please Correct the Following<ul><li>{0}</li></ul>",
+                    validationErrors.AsDelimited( "</li><li>" ) );
+                nbValidationError.Visible = true;
+
+                return;
+            }
 
             if ( !Page.IsValid || !workflowType.IsValid )
             {
@@ -1328,6 +1364,7 @@ namespace RockWeb.Blocks.WorkFlow
             tbDescription.Text = workflowType.Description;
             cpCategory.SetValue( workflowType.CategoryId );
             tbWorkTerm.Text = workflowType.WorkTerm;
+            tbNumberPrefix.Text = workflowType.WorkflowIdPrefix;
 
             if ( workflowType.ProcessingIntervalSeconds.HasValue )
             {

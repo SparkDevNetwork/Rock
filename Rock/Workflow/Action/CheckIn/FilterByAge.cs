@@ -54,12 +54,11 @@ namespace Rock.Workflow.Action.CheckIn
                 if ( family != null )
                 {
                     var remove = GetAttributeValue( action, "Remove" ).AsBoolean();
+                    bool ageRequired = checkInState.CheckInType == null || checkInState.CheckInType.AgeRequired;
 
                     foreach ( var person in family.People )
                     {
                         double? age = person.Person.AgePrecise;
-                        bool ageRequired = checkInState.CheckInType == null || checkInState.CheckInType.AgeRequired;
-
                         if ( age == null && !ageRequired )
                         {
                             continue;

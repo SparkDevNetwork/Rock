@@ -150,10 +150,10 @@
                                 <asp:Panel ID="pnlChartAttendanceGrid" runat="server" Visible="false">
 
                                     <div class="grid">
-                                        <Rock:Grid ID="gChartAttendance" runat="server" AllowSorting="true" DataKeyNames="DateTimeStamp,SeriesId" RowItemText="Attendance Summary">
+                                        <Rock:Grid ID="gChartAttendance" runat="server" AllowSorting="true" DataKeyNames="DateTimeStamp,SeriesName" RowItemText="Attendance Summary">
                                             <Columns>
                                                 <Rock:DateField DataField="DateTime" HeaderText="Date" SortExpression="DateTimeStamp" />
-                                                <Rock:RockBoundField DataField="SeriesId" HeaderText="Series" SortExpression="SeriesId" />
+                                                <Rock:RockBoundField DataField="SeriesName" HeaderText="Series" SortExpression="SeriesName" />
                                                 <Rock:RockBoundField DataField="YValue" HeaderText="Count" SortExpression="YValue" />
                                             </Columns>
                                         </Rock:Grid>

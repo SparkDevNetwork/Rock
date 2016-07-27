@@ -672,12 +672,16 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
-            if ( !group.IsValid )
+            // if the groupMember IsValid is false, and the UI controls didn't report any errors, it is probably because the custom rules of GroupMember didn't pass.
+            // So, make sure a message is displayed in the validation summary
+            cvGroup.IsValid = group.IsValid;
+
+            if ( !cvGroup.IsValid )
             {
-                // Controls will render the error messages                    
+                cvGroup.ErrorMessage = group.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
                 return;
             }
-
+            
             // use WrapTransaction since SaveAttributeValues does it's own RockContext.SaveChanges()
             rockContext.WrapTransaction( () =>
             {
@@ -1131,6 +1135,9 @@ namespace RockWeb.Blocks.Groups
             if ( group.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( Group.FriendlyTypeName ).FormatAsHtmlTitle();
+
+                // hide the panel drawer that show created and last modified dates
+                divPanelDrawer.Visible = false;
             }
             else
             {
@@ -1425,6 +1432,9 @@ namespace RockWeb.Blocks.Groups
             hfGroupId.SetValue( group.Id );
             lGroupIconHtml.Text = groupIconHtml;
             lReadOnlyTitle.Text = group.Name.FormatAsHtmlTitle();
+
+            lCreatedBy.Text = string.Format( "{0} <small>({1})</small>", group.CreatedByPersonName, group.CreatedDateTime );
+            lLastModifiedBy.Text = string.Format( "{0} <small>({1})</small>", group.ModifiedByPersonName, group.ModifiedDateTime );
 
             if ( !string.IsNullOrWhiteSpace( group.Description ) )
             {
