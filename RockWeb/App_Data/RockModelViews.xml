@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <views>
-  <mapping-views hash="f211f5313e2fe9b407d4cde9843a9f199f6983cf0cf9dd25a94a0616c66551ba" conceptual-container="RockContext" store-container="CodeFirstDatabase">
+  <mapping-views hash="42fbefc65dd58c9dda07df110b3ca5df2ed99f4ca485db38f79ed595ef1ffb52" conceptual-container="RockContext" store-container="CodeFirstDatabase">
     <view extent="CodeFirstDatabase.AttendanceCode"><![CDATA[
     SELECT VALUE -- Constructing AttendanceCode
         [CodeFirstDatabaseSchema.AttendanceCode](T1.AttendanceCode_Id, T1.AttendanceCode_IssueDateTime, T1.AttendanceCode_Code, T1.AttendanceCode_Guid, T1.AttendanceCode_ForeignId, T1.AttendanceCode_ForeignGuid, T1.AttendanceCode_ForeignKey)
@@ -1906,7 +1906,7 @@
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.Site"><![CDATA[
     SELECT VALUE -- Constructing Site
-        [CodeFirstDatabaseSchema.Site](T1.Site_Id, T1.Site_IsSystem, T1.Site_Name, T1.Site_Description, T1.Site_Theme, T1.Site_DefaultPageId, T1.Site_DefaultPageRouteId, T1.Site_LoginPageId, T1.Site_LoginPageRouteId, T1.Site_ChangePasswordPageId, T1.Site_ChangePasswordPageRouteId, T1.Site_RegistrationPageId, T1.Site_RegistrationPageRouteId, T1.Site_PageNotFoundPageId, T1.Site_PageNotFoundPageRouteId, T1.Site_CommunicationPageId, T1.Site_CommunicationPageRouteId, T1.Site_ErrorPage, T1.Site_GoogleAnalyticsCode, T1.Site_EnableMobileRedirect, T1.Site_MobilePageId, T1.Site_ExternalUrl, T1.Site_AllowedFrameDomains, T1.Site_RedirectTablets, T1.Site_EnablePageViews, T1.Site_PageViewRetentionPeriodDays, T1.Site_PageHeaderContent, T1.Site_AllowIndexing, T1.Site_CreatedDateTime, T1.Site_ModifiedDateTime, T1.Site_CreatedByPersonAliasId, T1.Site_ModifiedByPersonAliasId, T1.Site_Guid, T1.Site_ForeignId, T1.Site_ForeignGuid, T1.Site_ForeignKey)
+        [CodeFirstDatabaseSchema.Site](T1.Site_Id, T1.Site_IsSystem, T1.Site_Name, T1.Site_Description, T1.Site_Theme, T1.Site_DefaultPageId, T1.Site_DefaultPageRouteId, T1.Site_LoginPageId, T1.Site_LoginPageRouteId, T1.Site_ChangePasswordPageId, T1.Site_ChangePasswordPageRouteId, T1.Site_RegistrationPageId, T1.Site_RegistrationPageRouteId, T1.Site_PageNotFoundPageId, T1.Site_PageNotFoundPageRouteId, T1.Site_CommunicationPageId, T1.Site_CommunicationPageRouteId, T1.Site_ErrorPage, T1.Site_GoogleAnalyticsCode, T1.Site_EnableMobileRedirect, T1.Site_MobilePageId, T1.Site_ExternalUrl, T1.Site_AllowedFrameDomains, T1.Site_RedirectTablets, T1.Site_EnablePageViews, T1.Site_PageViewRetentionPeriodDays, T1.Site_PageHeaderContent, T1.Site_AllowIndexing, T1.Site_RequiresEncryption, T1.Site_CreatedDateTime, T1.Site_ModifiedDateTime, T1.Site_CreatedByPersonAliasId, T1.Site_ModifiedByPersonAliasId, T1.Site_Guid, T1.Site_ForeignId, T1.Site_ForeignGuid, T1.Site_ForeignKey)
     FROM (
         SELECT 
             T.Id AS Site_Id, 
@@ -1937,6 +1937,7 @@
             T.PageViewRetentionPeriodDays AS Site_PageViewRetentionPeriodDays, 
             T.PageHeaderContent AS Site_PageHeaderContent, 
             T.AllowIndexing AS Site_AllowIndexing, 
+            T.RequiresEncryption AS Site_RequiresEncryption, 
             T.CreatedDateTime AS Site_CreatedDateTime, 
             T.ModifiedDateTime AS Site_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS Site_CreatedByPersonAliasId, 
@@ -5511,7 +5512,7 @@
     ) AS T1]]></view>
     <view extent="RockContext.Sites"><![CDATA[
     SELECT VALUE -- Constructing Sites
-        [Rock.Data.Site](T1.Site_Id, T1.Site_IsSystem, T1.Site_Name, T1.Site_Description, T1.Site_Theme, T1.Site_DefaultPageId, T1.Site_DefaultPageRouteId, T1.Site_LoginPageId, T1.Site_LoginPageRouteId, T1.Site_ChangePasswordPageId, T1.Site_ChangePasswordPageRouteId, T1.Site_RegistrationPageId, T1.Site_RegistrationPageRouteId, T1.Site_PageNotFoundPageId, T1.Site_PageNotFoundPageRouteId, T1.Site_CommunicationPageId, T1.Site_CommunicationPageRouteId, T1.Site_ErrorPage, T1.Site_GoogleAnalyticsCode, T1.Site_EnableMobileRedirect, T1.Site_MobilePageId, T1.Site_ExternalUrl, T1.Site_AllowedFrameDomains, T1.Site_RedirectTablets, T1.Site_EnablePageViews, T1.Site_PageViewRetentionPeriodDays, T1.Site_PageHeaderContent, T1.Site_AllowIndexing, T1.Site_CreatedDateTime, T1.Site_ModifiedDateTime, T1.Site_CreatedByPersonAliasId, T1.Site_ModifiedByPersonAliasId, T1.Site_Guid, T1.Site_ForeignId, T1.Site_ForeignGuid, T1.Site_ForeignKey)
+        [Rock.Data.Site](T1.Site_Id, T1.Site_IsSystem, T1.Site_Name, T1.Site_Description, T1.Site_Theme, T1.Site_DefaultPageId, T1.Site_DefaultPageRouteId, T1.Site_LoginPageId, T1.Site_LoginPageRouteId, T1.Site_ChangePasswordPageId, T1.Site_ChangePasswordPageRouteId, T1.Site_RegistrationPageId, T1.Site_RegistrationPageRouteId, T1.Site_PageNotFoundPageId, T1.Site_PageNotFoundPageRouteId, T1.Site_CommunicationPageId, T1.Site_CommunicationPageRouteId, T1.Site_ErrorPage, T1.Site_GoogleAnalyticsCode, T1.Site_EnableMobileRedirect, T1.Site_MobilePageId, T1.Site_ExternalUrl, T1.Site_AllowedFrameDomains, T1.Site_RedirectTablets, T1.Site_EnablePageViews, T1.Site_PageViewRetentionPeriodDays, T1.Site_PageHeaderContent, T1.Site_AllowIndexing, T1.Site_RequiresEncryption, T1.Site_CreatedDateTime, T1.Site_ModifiedDateTime, T1.Site_CreatedByPersonAliasId, T1.Site_ModifiedByPersonAliasId, T1.Site_Guid, T1.Site_ForeignId, T1.Site_ForeignGuid, T1.Site_ForeignKey)
     FROM (
         SELECT 
             T.Id AS Site_Id, 
@@ -5542,6 +5543,7 @@
             T.PageViewRetentionPeriodDays AS Site_PageViewRetentionPeriodDays, 
             T.PageHeaderContent AS Site_PageHeaderContent, 
             T.AllowIndexing AS Site_AllowIndexing, 
+            T.RequiresEncryption AS Site_RequiresEncryption, 
             T.CreatedDateTime AS Site_CreatedDateTime, 
             T.ModifiedDateTime AS Site_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS Site_CreatedByPersonAliasId, 
