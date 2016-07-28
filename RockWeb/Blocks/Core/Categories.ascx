@@ -11,7 +11,7 @@
             <div class="panel-body">
 
                 <div class="grid grid-panel">
-                    <Rock:Grid ID="gCategories" runat="server" RowItemText="Category" OnRowSelected="gCategories_Select" TooltipField="Description">
+                    <Rock:Grid ID="gCategories" runat="server" RowItemText="Category" TooltipField="Description">
                         <Columns>
                             <Rock:ReorderField />
                             <Rock:RockBoundField DataField="Name" HeaderText="Category" />
