@@ -24,13 +24,20 @@
     <asp:Panel ID="pnlConfirmed" runat="server" Visible="false" CssClass="alert alert-success success">
         <asp:Literal ID="lConfirmed" runat="server"></asp:Literal>
     </asp:Panel>
+    
+    <asp:Panel ID="pnlResetUnavailable" runat="server" CssClass="alert alert-danger error">
+        <asp:Literal ID="lResetUnavailable" runat="server" ></asp:Literal> 
+    </asp:Panel>
 
     <asp:Panel ID="pnlResetPassword" runat="server" Visible="false">
+        
+        <Rock:NotificationBox id="nbMessage" runat="server" Visible="false" />
     
         <asp:Literal ID="lResetPassword" runat="server"></asp:Literal>
 
         <fieldset>
             <legend>Enter New Password</legend>
+
             <Rock:RockTextBox ID="tbPassword" runat="server" Label="New Password" Required="true" TextMode="Password" ></Rock:RockTextBox>
             <Rock:RockTextBox ID="tbPasswordConfirm" runat="server" Label="Confirm Password" Required="true" TextMode="Password" ></Rock:RockTextBox>
             <asp:CompareValidator ID="covalPassword" runat="server" ControlToCompare="tbPassword" ControlToValidate="tbPasswordConfirm" ErrorMessage="New Password and Confirm Password do not match" Display="Dynamic" CssClass="validation-error"></asp:CompareValidator>
@@ -46,9 +53,6 @@
         <asp:Literal ID="lResetSuccess" runat="server"></asp:Literal>
     </asp:Panel>
 
-    <asp:Panel ID="pnlResetUnavailable" runat="server" CssClass="alert alert-danger error">
-        <asp:Literal ID="lResetUnavailable" runat="server" ></asp:Literal> 
-    </asp:Panel>
 
     <asp:Panel ID="pnlDelete" runat="server" Visible="false">
 
