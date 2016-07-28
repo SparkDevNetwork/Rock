@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.Core
     [EntityTypeField("Entity Type", "The entity type to manage categories for.", true, "", 0)]
     [TextField("Entity Qualifier Column", "Column to evaluate to determine entities that this category applies to.", false, "", "", 1)]
     [TextField("Entity Qualifier Value", "The value of the column that this category applies to.", false, "", "", 2)]
+    [BooleanField( "Enable Hierarchy", "When set allows you to drill down through the category hierarchy.", true, "", 3)]
     public partial class Categories : RockBlock
     {
         #region Fields
@@ -95,6 +96,11 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
+            if ( GetAttributeValue( "EnableHierarchy" ).AsBoolean() )
+            {
+                gCategories.RowSelected += gCategories_Select;
+            }
+
             if ( !Page.IsPostBack )
             {
                 if ( _canConfigure )
