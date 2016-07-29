@@ -435,6 +435,8 @@ namespace RockWeb.Blocks.Finance
                         }
                     }
 
+                    tbSummary.Text = transactionToMatch.Summary;
+
                     if ( transactionToMatch.Images.Any() )
                     {
                         var primaryImage = transactionToMatch.Images
@@ -704,6 +706,8 @@ namespace RockWeb.Blocks.Finance
                         History.EvaluateChange( changes, accountBox.Label, 0.0M.FormatAsCurrency(), amount.Value.FormatAsCurrency() );
                     }
                 }
+
+                financialTransaction.Summary = tbSummary.Text;
 
                 financialTransaction.ProcessedByPersonAliasId = this.CurrentPersonAlias.Id;
                 financialTransaction.ProcessedDateTime = RockDateTime.Now;
