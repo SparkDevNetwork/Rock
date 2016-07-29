@@ -58,7 +58,7 @@
                         <Rock:NotificationBox ID="nbSaveSuccess" runat="server" NotificationBoxType="Success" Text="Changes have been saved." Visible="false" />
 
                         <Rock:CheckinArea ID="checkinArea" runat="server" Visible="false" OnAddCheckinLabelClick="checkinArea_AddCheckinLabelClick" OnDeleteCheckinLabelClick="checkinArea_DeleteCheckinLabelClick" />
-                        <Rock:CheckinGroup ID="checkinGroup" runat="server" Visible="false" OnAddLocationClick="checkinGroup_AddLocationClick" OnDeleteLocationClick="checkinGroup_DeleteLocationClick" />
+                        <Rock:CheckinGroup ID="checkinGroup" runat="server" Visible="false" OnAddLocationClick="checkinGroup_AddLocationClick" OnDeleteLocationClick="checkinGroup_DeleteLocationClick" OnReorderLocationClick="checkinGroup_ReorderLocationClick" />
 
                         <div class="actions margin-t-md">
                             <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" Visible="false" />
