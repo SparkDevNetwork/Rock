@@ -3,17 +3,21 @@
 <asp:UpdatePanel ID="upGroupMembers" runat="server">
     <ContentTemplate>
 
-        <asp:Repeater ID="rptrGroups" runat="server">
+        <div class="persondetails-grouplist">
+            <asp:Repeater ID="rptrGroups" runat="server" >
             <ItemTemplate>
 
-                <div class="persondetails-group rollover-container">
+                <div class="persondetails-group js-persondetails-group">
                     <header>
                         <h1><%# FormatAsHtmlTitle(Eval("Name").ToString()) %></h1>
 
-                        <asp:HyperLink ID="hlEditGroup" runat="server" AccessKey="O" CssClass="edit"><i class="fa fa-pencil"></i></asp:HyperLink>              
+                        <div class="action-wrapper">
+                            <asp:HyperLink ID="hlShowMoreAttributes" runat="server" CssClass="action js-show-more-family-attributes"><i class="fa fa-chevron-down"></i></asp:HyperLink>
+                            <asp:HyperLink ID="hlEditGroup" runat="server" AccessKey="O" CssClass="action"><i class="fa fa-pencil"></i></asp:HyperLink>
+                        </div>              
                     </header>
 
-                    <div class="row">
+                    <div class="row group-details">
                         <div class="col-md-8 clearfix">
                             <ul class="groupmembers">
                                 <asp:Repeater ID="rptrMembers" runat="server">
@@ -60,22 +64,20 @@
 
                     </div>
 
-                    <asp:panel ID="pnlGroupAttributes" runat="server" CssClass="margin-l-md js-family-attributes" style="min-height: 22px;" >
-                        <div class="actions pull-right">
-                            <asp:HyperLink ID="hlShowMoreAttributes" runat="server" Visible="false" CssClass="btn btn-xs btn-default js-show-more-family-attributes"><i class="fa fa-chevron-down"></i> More</asp:HyperLink>
-                        </div>
-                        <ul class="list-inline">
+                    <asp:panel ID="pnlGroupAttributes" runat="server" CssClass="margin-l-md js-group-attributes" style="min-height: 22px;" >
+                        <div class="row">
                             <asp:PlaceHolder ID="phGroupAttributes" runat="server" />
-                        </ul>
-                        <ul class="list-inline js-more-family-attributes" style="display:none">
+                        </div>
+                        <div class="row js-more-group-attributes" style="display:none">
                             <asp:PlaceHolder ID="phMoreGroupAttributes" runat="server" />
-                        </ul>
+                        </div>
                     </asp:panel>
 
                 </div>
 
             </ItemTemplate>
         </asp:Repeater>
+        </div>
 
     </ContentTemplate>
 </asp:UpdatePanel>

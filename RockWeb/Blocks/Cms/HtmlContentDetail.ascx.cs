@@ -44,16 +44,17 @@ namespace RockWeb.Blocks.Cms
     [SecurityAction( Authorization.EDIT, "The roles and/or users that can edit the HTML content.")]
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve HTML content." )]
 
-    [BooleanField( "Use Code Editor", "Use the code editor instead of the WYSIWYG editor", true, "", 0 )]
-    [TextField("Document Root Folder", "The folder to use as the root when browsing or uploading documents.", false, "~/Content", "", 1 )]
-    [TextField( "Image Root Folder", "The folder to use as the root when browsing or uploading images.", false, "~/Content", "", 2 )]
-    [BooleanField( "User Specific Folders", "Should the root folders be specific to current user?", false, "", 3 )]
-    [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 3600, "", 4 )]
-    [TextField( "Context Parameter", "Query string parameter to use for 'personalizing' content based on unique values.", false, "", "", 5 )]
-    [TextField( "Context Name", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false, "", "", 6 )]
-    [BooleanField( "Enable Versioning", "If checked, previous versions of the content will be preserved. Versioning is required if you want to require approval.", false, "", 7, "SupportVersions" )]
-    [BooleanField( "Require Approval", "Require that content be approved?", false, "", 8 )]
-    [BooleanField( "Enable Debug", "Show lava merge fields.", false, "", 9 )]
+    [LavaCommandsField("Enabled Lava Commands", "The Lava commands that should be enabled for this HTML block.", false, order: 0)]
+    [BooleanField( "Use Code Editor", "Use the code editor instead of the WYSIWYG editor", true, "", 1 )]
+    [TextField("Document Root Folder", "The folder to use as the root when browsing or uploading documents.", false, "~/Content", "", 2 )]
+    [TextField( "Image Root Folder", "The folder to use as the root when browsing or uploading images.", false, "~/Content", "", 3 )]
+    [BooleanField( "User Specific Folders", "Should the root folders be specific to current user?", false, "", 4 )]
+    [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 3600, "", 5 )]
+    [TextField( "Context Parameter", "Query string parameter to use for 'personalizing' content based on unique values.", false, "", "", 6 )]
+    [TextField( "Context Name", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false, "", "", 7 )]
+    [BooleanField( "Enable Versioning", "If checked, previous versions of the content will be preserved. Versioning is required if you want to require approval.", false, "", 8, "SupportVersions" )]
+    [BooleanField( "Require Approval", "Require that content be approved?", false, "", 9 )]
+    [BooleanField( "Enable Debug", "Show lava merge fields.", false, "", 10 )]
 
     [ContextAware]
     public partial class HtmlContentDetail : RockBlockCustomSettings
@@ -596,7 +597,7 @@ namespace RockWeb.Blocks.Cms
                             mergeFields.Add( "CurrentPersonCanEdit", IsUserAuthorized( Authorization.EDIT ) );
                             mergeFields.Add( "CurrentPersonCanAdministrate", IsUserAuthorized( Authorization.ADMINISTRATE ) );
 
-                            html = content.Content.ResolveMergeFields( mergeFields );
+                            html = content.Content.ResolveMergeFields( mergeFields, GetAttributeValue("EnabledLavaCommands") );
 
                             // show merge fields if enable debug true
                             if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )

@@ -1,14 +1,57 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ContentChannelItemDetail.ascx.cs" Inherits="RockWeb.Blocks.Cms.ContentChannelItemDetail" %>
 
+<script type="text/javascript">
+    Sys.Application.add_load( function () {
+        $(".js-drawerpull").on("click", function () {
+            $(this).closest('.panel-drawer').toggleClass('open');
+            $(this).siblings('.drawer-content').slideToggle();
+
+            var icon = $(this).find('i');
+            var iconOpenClass = icon.attr('data-icon-open') || 'fa fa-chevron-up';
+            var iconCloseClass = icon.attr('data-icon-closed') || 'fa fa-chevron-down';
+
+            console.log('icon: ' + icon);
+
+            if ($(this).closest('.panel-drawer').hasClass('open')) {
+                icon.attr('class', iconOpenClass);
+            }
+            else {
+                icon.attr('class', iconCloseClass);
+            }
+        });
+    });
+</script>
+
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" >
 
+            <asp:HiddenField ID="hfIsDirty" runat="server" Value="false" />
             <asp:HiddenField ID="hfId" runat="server" />
             <asp:HiddenField ID="hfChannelId" runat="server" />
             <asp:HiddenField ID="hfApprovalStatusPersonAliasId" runat="server" />
             <asp:HiddenField ID="hfApprovalStatus" runat="server" />
+
+            <div id="divPanelDrawer" class="panel-drawer" runat="server">
+                <div class="drawer-content" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl>
+                                <dt>Created By</dt>
+                                <dd><asp:Literal ID="lCreatedBy" runat="server" /></dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <dl>
+                                <dt>Last Modified By</dt>
+                                <dd><asp:Literal ID="lLastModifiedBy" runat="server" /></dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+                <div class="drawer-pull js-drawerpull"><i class="fa fa-chevron-down" data-icon-closed="fa fa-chevron-down" data-icon-open="fa fa-chevron-up"></i></div>
+            </div>
 
             <div class="panel-heading">
                 <h1 class="panel-title">
@@ -28,7 +71,7 @@
                 <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
-                <asp:Panel ID="pnlEditDetails" runat="server">
+                <asp:Panel ID="pnlEditDetails" runat="server" CssClass="js-item-details">
 
                     <div class="row">
                         <div class="col-md-6">
@@ -54,17 +97,9 @@
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <Rock:RockLiteral ID="lCreatedBy" runat="server" Label="Created By"></Rock:RockLiteral>
+                            <Rock:NumberBox ID="nbPriority" runat="server" Label="Priority" />
                         </div>
                     </div>
-
-                    <div class="row">
-                        <div class="col-md-12">
-                            <Rock:HtmlEditor ID="htmlContent" runat="server" Label="Content" ResizeMaxWidth="720" Height="500" />
-                            <Rock:CodeEditor ID="ceContent" runat="server" Label="Content" EditorHeight="500" EditorMode="Html" EditorTheme="Rock"  />
-                        </div>
-                    </div>
-
 
                     <div class="row">
                         <div class="col-md-6">
@@ -78,13 +113,65 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-6">
-                            <Rock:NumberBox ID="nbPriority" runat="server" Label="Priority" />
-                            <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false" />
-                        </div>
-                        <div class="col-md-6">
+                        <div class="col-md-12">
+                            <Rock:HtmlEditor ID="htmlContent" runat="server" Label="Content" ResizeMaxWidth="720" Height="300" />
                         </div>
                     </div>
+
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false" />
+                        </div>
+                    </div>
+
+                    <asp:Panel ID="pnlChildrenParents" runat="server" CssClass="panel panel-widget">
+
+                        <div class="panel-heading">
+                            <asp:Literal ID="lChildrenParentsTitle" runat="server" Text="Related Items" />
+                        </div>
+                        
+                        <div class="panel-body">
+                            <asp:HiddenField ID="hfActivePill" runat="server" />
+                            <asp:PlaceHolder ID="phPills" runat="server">
+                                <ul class="nav nav-pills">
+                                    <li id="liChildren" runat="server" class="active"><a href='#<%=divChildItems.ClientID%>' data-toggle="pill">Child Items</a></li>
+                                    <li id="liParents" runat="server"><a href='#<%=divParentItems.ClientID%>' data-toggle="pill">Parent Items</a></li>
+                                </ul>
+                            </asp:PlaceHolder>
+
+                            <div class="tab-content margin-t-lg">
+                                <div id="divChildItems" runat="server" class="tab-pane active">
+                                    <Rock:Grid ID="gChildItems" runat="server" DisplayType="Light" EmptyDataText="No Child Items" RowItemText="Child Item"  ShowConfirmDeleteDialog="false" OnRowSelected="gChildItems_RowSelected" >
+                                        <Columns>
+                                            <Rock:ReorderField />
+                                            <Rock:RockBoundField DataField="Title" HeaderText="Title" SortExpression="Title" />
+                                            <Rock:DateField DataField="StartDateTime" HeaderText="Start" SortExpression="StartDateTime" />
+                                            <Rock:DateField DataField="ExpireDateTime" HeaderText="Expire" SortExpression="ExpireDateTime" />
+                                            <Rock:RockBoundField DataField="Priority" HeaderText="Priority" SortExpression="Priority" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" />
+                                            <Rock:RockBoundField DataField="Status" HeaderText="Priority" SortExpression="Status" HtmlEncode="false" />
+                                            <Rock:RockBoundField DataField="CreatedBy" HeaderText="Created By" />
+                                            <Rock:DeleteField OnClick="gChildItems_Delete" />
+                                        </Columns>
+                                    </Rock:Grid>
+                                </div>
+                                <div id="divParentItems" runat="server" class="tab-pane">
+                                    <Rock:Grid ID="gParentItems" runat="server" DisplayType="Light" EmptyDataText="No Child Items" RowItemText="Child Item" OnRowSelected="gParentItems_RowSelected" >
+                                        <Columns>
+                                            <Rock:RockBoundField DataField="Title" HeaderText="Title" SortExpression="Title" />
+                                            <Rock:DateField DataField="StartDateTime" HeaderText="Start" SortExpression="StartDateTime" />
+                                            <Rock:DateField DataField="ExpireDateTime" HeaderText="Expire" SortExpression="ExpireDateTime" />
+                                            <Rock:RockBoundField DataField="Priority" HeaderText="Priority" SortExpression="Priority" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" />
+                                            <Rock:RockBoundField DataField="Status" HeaderText="Priority" SortExpression="Status" HtmlEncode="false" />
+                                            <Rock:RockBoundField DataField="CreatedBy" HeaderText="Created By" />
+                                        </Columns>
+                                    </Rock:Grid>
+                                </div>
+                            </div>
+
+                        </div> 
+
+                    </asp:Panel>
 
                     <div class="actions">
                         <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
@@ -97,6 +184,34 @@
             </div>
 
         </asp:Panel>
+
+        <asp:HiddenField ID="hfActiveDialog" runat="server" />
+
+        <Rock:ModalDialog ID="dlgAddChild" runat="server" Title="Add Child Item" OnCancelScript="clearActiveDialog();" CancelLinkVisible="false" ValidationGroup="AddChild" >
+            <Content>
+                <div class="row">
+                    <div class="col-md-6">
+                        <asp:ValidationSummary ID="valSummaryAddChildNew" runat="server" ValidationGroup="AddChildNew" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                        <Rock:RockDropDownList ID="ddlAddNewItemChannel" runat="server" Label="Add New Item" ValidationGroup="AddChildNew" Required="true"></Rock:RockDropDownList>
+                        <asp:LinkButton ID="lbAddNewChildItem" runat="server" CssClass="btn btn-primary" Text="Add" ValidationGroup="AddChildNew" OnClick="lbAddNewChildItem_Click" />
+                    </div>
+                    <div class="col-md-6">
+                        <asp:ValidationSummary ID="valSummaryAddChildExisting" runat="server" ValidationGroup="AddChildExisting" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                        <Rock:RockDropDownList ID="ddlAddExistingItemChannel" runat="server" Label="Add Existing Item" ValidationGroup="AddChildExisting" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlAddExistingItemChannel_SelectedIndexChanged" CausesValidation="false"></Rock:RockDropDownList>
+                        <Rock:RockDropDownList ID="ddlAddExistingItem" runat="server" Label="Item" ValidationGroup="AddChildExisting" Required="true"></Rock:RockDropDownList>
+                        <asp:LinkButton ID="lbAddExistingChildItem" runat="server" CssClass="btn btn-primary" Text="Add" ValidationGroup="AddChildExisting" OnClick="lbAddExistingChildItem_Click"  />
+                    </div>
+                </div>
+            </Content>
+        </Rock:ModalDialog>
+
+        <Rock:ModalDialog ID="dlgRemoveChild" runat="server" Title="Remove Child Item" OnCancelScript="clearActiveDialog();" CancelLinkVisible="false" ValidationGroup="RemoveChild" >
+            <Content>
+                <asp:HiddenField ID="hfRemoveChildItem" runat="server" />
+                <asp:LinkButton ID="lbRemoveChildItem" runat="server" CssClass="btn btn-primary btn-block" Text="Remove Child Item" OnClick="lbRemoveChildItem_Click" />
+                <asp:LinkButton ID="lbDeleteChildItem" runat="server" CssClass="btn btn-primary btn-block" Text="Delete Child Item" onclick="lbDeleteChildItem_Click"/>
+            </Content>
+        </Rock:ModalDialog>
 
         <script>
             $('.js-date-rollover').tooltip();

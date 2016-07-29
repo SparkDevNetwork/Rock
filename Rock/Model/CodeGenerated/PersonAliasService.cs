@@ -136,6 +136,18 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<BenevolenceRequestDocument>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, BenevolenceRequestDocument.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<BenevolenceRequestDocument>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, BenevolenceRequestDocument.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<BenevolenceResult>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, BenevolenceResult.FriendlyTypeName );
@@ -499,6 +511,18 @@ namespace Rock.Model
             if ( new Service<ContentChannelItem>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ContentChannelItem.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<ContentChannelItemAssociation>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ContentChannelItemAssociation.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<ContentChannelItemAssociation>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ContentChannelItemAssociation.FriendlyTypeName );
                 return false;
             }  
  

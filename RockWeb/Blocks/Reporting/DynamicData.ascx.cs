@@ -79,6 +79,7 @@ namespace RockWeb.Blocks.Reporting
         /// Gets or sets the GridFilter.
         /// </summary>
         public GridFilter GridFilter { get; set; }
+        public Dictionary<Control, string> GridFilterColumnLookup;
 
         /// <summary>
         /// Gets the settings tool tip.
@@ -483,14 +484,14 @@ namespace RockWeb.Blocks.Reporting
 
                             GridFilter = new GridFilter()
                             {
-                                ID = "gfFilter"
+                                ID = string.Format("gfFilter{0}", tableId )
                             };
 
                             div.Controls.Add( GridFilter );
                             GridFilter.ApplyFilterClick += ApplyFilterClick;
                             GridFilter.DisplayFilterValue += DisplayFilterValue;
-                            GridFilter.Visible = showGridFilterControls;
-
+                            GridFilter.Visible = showGridFilterControls && (dataSet.Tables.Count == 1);
+               
                             var grid = new Grid();
                             div.Controls.Add( grid );
                             grid.ID = string.Format( "dynamic_data_{0}", tableId++ );
@@ -645,6 +646,8 @@ namespace RockWeb.Blocks.Reporting
                 grid.Columns.Add( new SelectField() );
             }
 
+            GridFilterColumnLookup = new Dictionary<Control, string>();
+
             foreach ( DataColumn dataTableColumn in dataTable.Columns )
             {
                 if ( columnList.Count > 0 &&
@@ -663,13 +666,15 @@ namespace RockWeb.Blocks.Reporting
 
                     if ( GridFilter != null )
                     {
-                        var id = "ddl" + dataTableColumn.ColumnName;
+                        var id = "ddl" + dataTableColumn.ColumnName.RemoveSpecialCharacters();
 
                         var filterControl = new RockDropDownList()
                         {
                             Label = splitCaseName,
                             ID = id
                         };
+
+                        GridFilterColumnLookup.Add( filterControl, dataTableColumn.ColumnName );
 
                         filterControl.Items.Add( BoolToString( null ) );
                         filterControl.Items.Add( BoolToString( true ) );
@@ -704,13 +709,15 @@ namespace RockWeb.Blocks.Reporting
 
                     if ( GridFilter != null )
                     {
-                        var id = "drp" + dataTableColumn.ColumnName;
+                        var id = "drp" + dataTableColumn.ColumnName.RemoveSpecialCharacters();
 
                         var filterControl = new DateRangePicker()
                         {
                             Label = splitCaseName,
-                            ID = id
+                            ID = id,
                         };
+
+                        GridFilterColumnLookup.Add( filterControl, dataTableColumn.ColumnName );
 
                         GridFilter.Controls.Add( filterControl );
 
@@ -735,12 +742,14 @@ namespace RockWeb.Blocks.Reporting
 
                     if ( GridFilter != null )
                     {
-                        var id = "tb" + dataTableColumn.ColumnName;
+                        var id = "tb" + dataTableColumn.ColumnName.RemoveSpecialCharacters();
                         var filterControl = new RockTextBox()
                         {
                             Label = splitCaseName,
                             ID = id
                         };
+
+                        GridFilterColumnLookup.Add( filterControl, dataTableColumn.ColumnName );
 
                         GridFilter.Controls.Add( filterControl );
                         var key = filterControl.ID;
@@ -791,26 +800,27 @@ namespace RockWeb.Blocks.Reporting
                 dataView.RowFilter = null;
                 return;
             }
-
+            
             var query = new List<string>();
 
-            foreach ( var control in GridFilter.Controls )
+            foreach ( var control in GridFilter.Controls.OfType<Control>() )
             {
                 if ( control is DateRangePicker )
                 {
                     var dateRangePicker = control as DateRangePicker;
                     var minValue = dateRangePicker.LowerValue;
                     var maxValue = dateRangePicker.UpperValue;
-                    var colName = string.Format( "[{0}]", dateRangePicker.ID.Remove( 0, 3 ) );
+                    
+                    var colName = GridFilterColumnLookup[control];
 
                     if ( minValue.HasValue )
                     {
-                        query.Add( string.Format( "{0} >= #{1}#", colName, minValue.Value ) );
+                        query.Add( string.Format( "[{0}] >= #{1}#", colName, minValue.Value ) );
                     }
 
                     if ( maxValue.HasValue )
                     {
-                        query.Add( string.Format( "{0} < #{1}#", colName, maxValue.Value.AddDays( 1 ) ) );
+                        query.Add( string.Format( "[{0}] < #{1}#", colName, maxValue.Value.AddDays( 1 ) ) );
                     }
                 }
                 else if ( control is RockDropDownList )
@@ -821,15 +831,15 @@ namespace RockWeb.Blocks.Reporting
                     if ( doFilter )
                     {
                         var value = dropDownList.SelectedValue == true.ToYesNo() ? "1" : "0";
-                        var colName = string.Format( "[{0}]", dropDownList.ID.Remove( 0, 3 ) );
-                        query.Add( string.Format( "{0} = {1}", colName, value ) );
+                        var colName = GridFilterColumnLookup[control];
+                        query.Add( string.Format( "[{0}] = {1}", colName, value ) );
                     }
                 }
                 else if ( control is RockTextBox )
                 {
                     var textBox = control as RockTextBox;
                     var value = textBox.Text;
-                    var colName = textBox.ID.Remove( 0, 2 );
+                    var colName = GridFilterColumnLookup[control]; 
                     var colIndex = dataView.Table.Columns.IndexOf( colName );
 
                     if ( colIndex != -1 && !string.IsNullOrWhiteSpace( value ) )

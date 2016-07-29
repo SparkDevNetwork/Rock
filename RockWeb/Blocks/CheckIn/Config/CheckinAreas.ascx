@@ -37,7 +37,7 @@
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
 
-        <asp:Panel ID="pnlDetails" runat="server" CssClass="panel panel-block">
+        <asp:Panel ID="pnlDetails" runat="server" CssClass="panel panel-block js-panel-details">
             <div class="panel-heading"><h3 class="panel-title"><i class="fa fa-list"></i> Areas and Groups</h3></div>
             <div class="panel-body">
     
@@ -104,9 +104,9 @@
                     }
 
                     // Used to scroll to the top of the 'details' section when it's currently off-screen.
-                    // We tried using the "if (!$('.js-area-group-details').visible(true))" approach but it wasn't as awesome.
+                    // We tried using the "if (!$('.js-panel-details').visible(true))" approach but it wasn't as awesome.
                     $('html, body').animate({
-                        scrollTop: $('.js-area-group-details').offset().top + 'px'
+                        scrollTop: $('.js-panel-details').offset().top + 'px'
                     }, 400);
                 });
 

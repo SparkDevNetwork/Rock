@@ -318,6 +318,15 @@ namespace Rock.Model
         }
         private bool _allowIndexing = true;
 
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [requires encryption].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [requires encryption]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool RequiresEncryption { get; set; }
         #endregion
 
         #region Virtual Properties

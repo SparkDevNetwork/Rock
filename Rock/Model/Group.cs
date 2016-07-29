@@ -531,6 +531,41 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public override bool IsValid
+        {
+            get
+            {
+                var result = base.IsValid;
+                if ( result )
+                {
+                    string errorMessage;
+                    using ( var rockContext = new RockContext() )
+                    {
+                        // validate that a campus is not required
+                        var groupType = this.GroupType ?? new GroupTypeService( rockContext ).Queryable().Where( g => g.Id == this.GroupTypeId ).FirstOrDefault();
+
+                        if (groupType != null )
+                        {
+                            if (groupType.GroupsRequireCampus && this.CampusId == null )
+                            {
+                                errorMessage = string.Format( "{0} require a campus.", groupType.Name.Pluralize() );
+                                ValidationResults.Add( new ValidationResult( errorMessage ));
+                                result = false;
+                            }
+                        }
+                    }
+                }
+
+                return result;
+            }
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> containing the Name of the Group that represents this instance.
         /// </summary>
         /// <returns>

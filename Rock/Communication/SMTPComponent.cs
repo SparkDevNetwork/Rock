@@ -158,8 +158,8 @@ namespace Rock.Communication.Transport
                     }
 
                     // Resolve any possible merge fields in the from address
-                    fromAddress = fromAddress.ResolveMergeFields( mergeFields, currentPerson );
-                    fromName = fromName.ResolveMergeFields( mergeFields, currentPerson );
+                    fromAddress = fromAddress.ResolveMergeFields( mergeFields, currentPerson, communication.EnabledLavaCommands );
+                    fromName = fromName.ResolveMergeFields( mergeFields, currentPerson, communication.EnabledLavaCommands );
 
                     MailMessage message = new MailMessage();
                     message.From = new MailAddress( fromAddress, fromName );
@@ -250,7 +250,7 @@ namespace Rock.Communication.Transport
                                         var mergeObjects = recipient.CommunicationMergeValues( mergeFields );
 
                                         // Subject
-                                        message.Subject = communication.Subject.ResolveMergeFields( mergeObjects, currentPerson );
+                                        message.Subject = communication.Subject.ResolveMergeFields( mergeObjects, currentPerson, communication.EnabledLavaCommands );
 
                                         // convert any special microsoft word characters to normal chars so they don't look funny (for example "Hey â€œdouble-quotesâ€ from â€˜single quoteâ€™")
                                         message.Subject = message.Subject.ReplaceWordChars();
@@ -454,7 +454,9 @@ namespace Rock.Communication.Transport
                                 subject = subject.Replace( "~/", appRoot );
                                 body = body.Replace( "~/", appRoot );
                                 body = body.Replace( @" src=""/", @" src=""" + appRoot );
+                                body = body.Replace( @" src='/", @" src='" + appRoot );
                                 body = body.Replace( @" href=""/", @" href=""" + appRoot );
+                                body = body.Replace( @" href='/", @" href='" + appRoot );
                             }
 
                             message.Subject = subject;

@@ -63,8 +63,10 @@
                                 </dl>
                             </div>
                             <div class="col-md-6">
-                                <dt>Last Modified By</dt>
-                                <dd><asp:Literal ID="lLastModifiedBy" runat="server" /></dd>
+                                <dl>
+                                    <dt>Last Modified By</dt>
+                                    <dd><asp:Literal ID="lLastModifiedBy" runat="server" /></dd>
+                                </dl>
                             </div>
                         </div>
                     </div>
@@ -79,7 +81,8 @@
                     <Rock:NotificationBox ID="nbInvalidParentGroup" runat="server" NotificationBoxType="Danger" Visible="false"
                         Text="The selected parent group does not allow child groups of the selected group type." />
                     <Rock:NotificationBox ID="nbGroupCapacityMessage" runat="server" NotificationBoxType="Warning" Visible="false" />
-                    <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                    <asp:ValidationSummary ID="vsGroup" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                    <asp:CustomValidator ID="cvGroup" runat="server" Display="None" />
 
                     <div id="pnlEditDetails" runat="server">
 

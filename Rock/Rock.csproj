@@ -30,6 +30,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Rock.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Antlr3.Runtime, Version=3.4.1.9004, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
@@ -435,6 +436,7 @@
     <Compile Include="Field\Types\ComponentsFieldType.cs" />
     <Compile Include="Field\Types\ConnectionActivityTypeFieldType.cs" />
     <Compile Include="Field\Types\ConnectionOpportunityFieldType.cs" />
+    <Compile Include="Field\Types\BenevolenceRequestFieldType.cs" />
     <Compile Include="Field\Types\ConnectionRequestFieldType.cs" />
     <Compile Include="Field\Types\ConnectionStateFieldType.cs" />
     <Compile Include="Field\Types\ConnectionStatusFieldType.cs" />
@@ -558,6 +560,7 @@
     <Compile Include="Lava\Blocks\Execute.cs" />
     <Compile Include="Lava\Blocks\RockEntity.cs" />
     <Compile Include="Lava\Blocks\RockLavaBlockBase.cs" />
+    <Compile Include="Lava\Blocks\WebRequest.cs" />
     <Compile Include="Lava\Blocks\Sql.cs" />
     <Compile Include="Lava\CommonMergeFieldsOptions.cs" />
     <Compile Include="Lava\ILiquidizable.cs" />
@@ -584,6 +587,7 @@
     <Compile Include="Model\Auth.cs" />
     <Compile Include="Model\AuthService.Partial.cs" />
     <Compile Include="Model\BackgroundCheck.cs" />
+    <Compile Include="Model\BenevolenceRequestDocument.cs" />
     <Compile Include="Model\BenevolenceRequest.cs" />
     <Compile Include="Model\BenevolenceResult.cs" />
     <Compile Include="Model\BinaryFile.cs" />
@@ -607,6 +611,7 @@
     <Compile Include="Model\CodeGenerated\AuditService.cs" />
     <Compile Include="Model\CodeGenerated\AuthService.cs" />
     <Compile Include="Model\CodeGenerated\BackgroundCheckService.cs" />
+    <Compile Include="Model\CodeGenerated\BenevolenceRequestDocumentService.cs" />
     <Compile Include="Model\CodeGenerated\BenevolenceRequestService.cs" />
     <Compile Include="Model\CodeGenerated\BenevolenceResultService.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
@@ -631,6 +636,7 @@
     <Compile Include="Model\CodeGenerated\ConnectionStatusService.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionTypeService.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionWorkflowService.cs" />
+    <Compile Include="Model\CodeGenerated\ContentChannelItemAssociationService.cs" />
     <Compile Include="Model\CodeGenerated\ContentChannelItemService.cs" />
     <Compile Include="Model\CodeGenerated\ContentChannelService.cs" />
     <Compile Include="Model\CodeGenerated\ContentChannelTypeService.cs" />
@@ -807,6 +813,7 @@
     <Compile Include="Model\FinancialTransaction.cs" />
     <Compile Include="Model\FinancialTransactionDetail.cs" />
     <Compile Include="Model\FinancialTransactionDetailService.Partial.cs" />
+    <Compile Include="Model\ContentChannelItemAssociation.cs" />
     <Compile Include="Model\FinancialTransactionImage.cs" />
     <Compile Include="Model\FinancialTransactionRefund.cs" />
     <Compile Include="Model\FinancialTransactionService.Partial.cs" />
@@ -833,6 +840,7 @@
     <Compile Include="Model\GroupTypeLocationType.cs" />
     <Compile Include="Model\GroupTypeRole.cs" />
     <Compile Include="Model\GroupTypeRoleService.Partial.cs" />
+    <Compile Include="Model\ContentChannelService.Partial.cs" />
     <Compile Include="Model\GroupTypeService.Partial.cs" />
     <Compile Include="Model\History.cs" />
     <Compile Include="Model\HistoryService.Partial.cs" />
@@ -946,6 +954,7 @@
     <Compile Include="Plugin\HotFixes\003_FixSystemEmailQuote.cs" />
     <Compile Include="Plugin\HotFixes\004_FixGradeRequiredAttribute.cs" />
     <Compile Include="Plugin\HotFixes\005_FixCheckinAdminRoute.cs" />
+    <Compile Include="Plugin\HotFixes\006_FixCheckinPrevPages.cs" />
     <Compile Include="Plugin\Migration.cs" />
     <Compile Include="Plugin\VersionAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -1506,6 +1515,9 @@
     <Compile Include="Workflow\Action\Connections\SetConnectionRequestState.cs" />
     <Compile Include="Workflow\Action\Connections\SetConnectionRequestStatus.cs" />
     <Compile Include="Workflow\Action\Connections\TransferConnectionRequest.cs" />
+    <Compile Include="Workflow\Action\Finance\BenevolenceRequestAdd.cs" />
+    <Compile Include="Workflow\Action\Finance\BenevolenceRequestAddDocument.cs" />
+    <Compile Include="Workflow\Action\Finance\BenevolenceRequestSetAttribute.cs" />
     <Compile Include="Workflow\Action\Groups\AddNoteToGroupMember.cs" />
     <Compile Include="Workflow\Action\Groups\AddPersonToGroup.cs" />
     <Compile Include="Workflow\Action\Groups\AddPersonToGroupAttribute.cs" />
@@ -1513,6 +1525,7 @@
     <Compile Include="Workflow\Action\Groups\RemovePersonFromGroup.cs" />
     <Compile Include="Workflow\Action\Groups\RemovePersonFromGroupAttribute.cs" />
     <Compile Include="Workflow\Action\Groups\SetAttributeToRandomGroupMember.cs" />
+    <Compile Include="Workflow\Action\Groups\SetGroupAttribute.cs" />
     <Compile Include="Workflow\Action\Groups\SetGroupMemberAttribute.cs" />
     <Compile Include="Workflow\Action\Groups\SetGroupMemberNote.cs" />
     <Compile Include="Workflow\Action\Groups\UpdateGroupMemberStatus.cs" />

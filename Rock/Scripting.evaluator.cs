@@ -21,6 +21,8 @@ using System.Diagnostics;
 //
 // One of the possible approaches would be to use EvaluatorEngine.CodeDom during the active development and later on switch to Mono/Roslyn.
 
+#pragma warning disable
+
 namespace CSScriptEvaluatorApi
 {
     public class HostApp
