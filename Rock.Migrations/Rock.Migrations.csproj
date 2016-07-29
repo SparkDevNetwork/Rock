@@ -126,6 +126,10 @@
     <Compile Include="Migrations\201607272008099_ContentItemHierarchy.Designer.cs">
       <DependentUpon>201607272008099_ContentItemHierarchy.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201607291424499_AddGroupLocationOrder.cs" />
+    <Compile Include="Migrations\201607291424499_AddGroupLocationOrder.Designer.cs">
+      <DependentUpon>201607291424499_AddGroupLocationOrder.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -2228,6 +2232,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201607272008099_ContentItemHierarchy.resx">
       <DependentUpon>201607272008099_ContentItemHierarchy.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201607291424499_AddGroupLocationOrder.resx">
+      <DependentUpon>201607291424499_AddGroupLocationOrder.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\RockMigrationSQL.resx" />
     <EmbeddedResource Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase.resx">
