@@ -3,8 +3,8 @@
 {% endcomment %}
 
 
-{% assign fullRosterPage = "/page/1270" %}
-{% assign memberDetailPage = "/page/1271" %}
+{% assign fullRosterPage = "/page/1271" %}
+{% assign memberDetailPage = "/page/1270" %}
 
 {% if AllowedActions.View == true || AllowedActions.Edit == true || AllowedActions.Administrate == true %}
 
