@@ -230,9 +230,9 @@ namespace Rock.Model
         /// <param name="batchNamePrefix">The batch name prefix.</param>
         /// <param name="payments">The payments.</param>
         /// <param name="batchUrlFormat">The batch URL format.</param>
-        /// <param name="recieptEmail">The reciept email.</param>
+        /// <param name="receiptEmail">The receipt email.</param>
         /// <returns></returns>
-        public static string ProcessPayments( FinancialGateway gateway, string batchNamePrefix, List<Payment> payments, string batchUrlFormat = "", Guid? recieptEmail = null )
+        public static string ProcessPayments( FinancialGateway gateway, string batchNamePrefix, List<Payment> payments, string batchUrlFormat = "", Guid? receiptEmail = null )
         {
             int totalPayments = 0;
             int totalAlreadyDownloaded = 0;
@@ -426,7 +426,7 @@ namespace Rock.Model
 
                             batch.Transactions.Add( transaction );
 
-                            if ( txnAmount > 0.0M && recieptEmail.HasValue )
+                            if ( txnAmount > 0.0M && receiptEmail.HasValue )
                             {
                                 newTransactions.Add( transaction );
                             }
@@ -471,12 +471,12 @@ namespace Rock.Model
                 var updatePaymentStatusTxn = new Rock.Transactions.UpdatePaymentStatusTransaction( gateway.Id, scheduledTransactionIds );
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( updatePaymentStatusTxn );
 
-                if ( recieptEmail.HasValue )
+                if ( receiptEmail.HasValue )
                 {
-                    // Queue a transaction to send reciepts
+                    // Queue a transaction to send receipts
                     var newTransactionIds = newTransactions.Select( t => t.Id ).ToList();
-                    var sendPaymentRecieptsTxn = new Rock.Transactions.SendPaymentReciepts( recieptEmail.Value, newTransactionIds );
-                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( sendPaymentRecieptsTxn );
+                    var sendPaymentReceiptsTxn = new Rock.Transactions.SendPaymentReceipts( receiptEmail.Value, newTransactionIds );
+                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( sendPaymentReceiptsTxn );
                 }
             }
              

@@ -27,7 +27,7 @@ namespace Rock.Transactions
     /// <summary>
     /// Runs a job now
     /// </summary>
-    public class SendPaymentReciepts : ITransaction
+    public class SendPaymentReceipts : ITransaction
     {
 
         /// <summary>
@@ -47,11 +47,11 @@ namespace Rock.Transactions
         public List<int> TransactionIds { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SendPaymentReciepts"/> class.
+        /// Initializes a new instance of the <see cref="SendPaymentReceipts"/> class.
         /// </summary>
         /// <param name="systemEmailGuid">The system email unique identifier.</param>
         /// <param name="transactionIds">The transaction ids.</param>
-        public SendPaymentReciepts( Guid systemEmailGuid, List<int> transactionIds )
+        public SendPaymentReceipts( Guid systemEmailGuid, List<int> transactionIds )
         {
             SystemEmailGuid = systemEmailGuid;
             TransactionIds = transactionIds;
