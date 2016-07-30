@@ -120,9 +120,9 @@ namespace Rock.Migrations
 
             RockMigrationHelper.UpdateBinaryFileType( "0AA42802-04FD-4AEC-B011-FEB127FC85CD", "Digitally Signed Documents", "Documents that are digitally signed", "", "40871411-4E2D-45C2-9E21-D9FCBA5FC340", false, true );
 
-            RockMigrationHelper.AddPage( "0B213645-FA4E-44A5-8E4C-B2D8EF054985", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Signature Documents", "", "CB1C42A2-285C-4BC5-BB2C-DC442C8A97C2", "fa fa-file-text-o" ); // Site:Rock RMS
+            RockMigrationHelper.AddPage( "0B213645-FA4E-44A5-8E4C-B2D8EF054985", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Signature Documents", "", "CB1C42A2-285C-4BC5-BB2C-DC442C8A97C2", "fa fa-pencil-square-o" ); // Site:Rock RMS
             RockMigrationHelper.AddPage( "CB1C42A2-285C-4BC5-BB2C-DC442C8A97C2", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Document Type", "", "7096FA12-07A5-489C-83B0-EE55494A3484", "fa fa-file-text-o" ); // Site:Rock RMS
-            RockMigrationHelper.AddPage( "C831428A-6ACD-4D49-9B2D-046D399E3123", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Signature Document Providers", "", "FAA6A2F2-4CFD-4B97-A0C2-8F4F9CE841F3", "fa fa-file-text-o", "53F1B7D9-806A-4541-93BC-4CCF5DFF90B3" ); // Site:Rock RMS
+            RockMigrationHelper.AddPage( "C831428A-6ACD-4D49-9B2D-046D399E3123", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Signature Document Providers", "", "FAA6A2F2-4CFD-4B97-A0C2-8F4F9CE841F3", "fa fa-pencil-square-o", "53F1B7D9-806A-4541-93BC-4CCF5DFF90B3" ); // Site:Rock RMS
             RockMigrationHelper.AddPage( "7096FA12-07A5-489C-83B0-EE55494A3484", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Document", "", "52DD4262-D55E-4749-9249-9A919BBB2309", "fa fa-file-text-o" ); // Site:Rock RMS
 
             RockMigrationHelper.UpdateBlockType( "Signature Document Detail", "Displays the details of a given signature document.", "~/Blocks/Core/SignatureDocumentDetail.ascx", "Core", "01D23E86-51DC-496D-BB3E-0CEF5094F304" );
