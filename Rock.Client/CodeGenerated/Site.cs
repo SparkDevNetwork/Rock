@@ -129,6 +129,9 @@ namespace Rock.Client
         public int? RegistrationPageRouteId { get; set; }
 
         /// <summary />
+        public bool RequiresEncryption { get; set; }
+
+        /// <summary />
         public string Theme { get; set; }
 
         /// <summary>
@@ -193,6 +196,7 @@ namespace Rock.Client
             this.RedirectTablets = source.RedirectTablets;
             this.RegistrationPageId = source.RegistrationPageId;
             this.RegistrationPageRouteId = source.RegistrationPageRouteId;
+            this.RequiresEncryption = source.RequiresEncryption;
             this.Theme = source.Theme;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;

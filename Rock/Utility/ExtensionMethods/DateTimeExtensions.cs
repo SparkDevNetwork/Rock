@@ -118,7 +118,7 @@ namespace Rock
             if ( timeSpan.TotalHours < 24 && includeTime )
             {
                 // Less than one second
-                if ( timeSpan.TotalSeconds <= 1 )
+                if ( timeSpan.TotalSeconds < 2 )
                     duration = string.Format( "1{0}", condensed ? "sec" : " Second" );
                 else if ( timeSpan.TotalSeconds < 60 )
                     duration = string.Format( "{0:N0}{1}", Math.Truncate( timeSpan.TotalSeconds ), condensed ? "sec" : " Seconds" );
@@ -134,7 +134,7 @@ namespace Rock
 
             if ( duration == "" )
             {
-                if ( timeSpan.TotalDays <= 1 )
+                if ( timeSpan.TotalDays < 2 )
                     duration = string.Format( "1{0}", condensed ? "day" : " Day" );
                 else if ( timeSpan.TotalDays < 31 )
                     duration = string.Format( "{0:N0}{1}", Math.Truncate( timeSpan.TotalDays ), condensed ? "days" : " Days" );

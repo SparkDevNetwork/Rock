@@ -1479,6 +1479,48 @@ namespace RockWeb.Blocks.Event
                 {
                     if ( isNewRegistration )
                     {
+                        if ( RegistrationTemplate.RequiredSignatureDocumentTypeId.HasValue )
+                        {
+                            string email = newRegistration.ConfirmationEmail;
+                            if ( string.IsNullOrWhiteSpace( email ) && newRegistration.PersonAlias != null && newRegistration.PersonAlias.Person != null )
+                            {
+                                email = newRegistration.PersonAlias.Person.Email;
+                            }
+
+                            Guid? adultRole = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
+                            var groupMemberService = new GroupMemberService( rockContext );
+
+                            foreach ( var registrant in newRegistration.Registrants.Where( r => r.PersonAlias != null && r.PersonAlias.Person != null ) )
+                            {
+                                var assignedTo = registrant.PersonAlias.Person;
+
+                                var registrantIsAdult = adultRole.HasValue && groupMemberService
+                                    .Queryable().AsNoTracking()
+                                    .Any( m =>
+                                        m.PersonId == registrant.PersonAlias.PersonId &&
+                                        m.GroupRole.Guid.Equals( adultRole.Value ) );
+                                if ( !registrantIsAdult && newRegistration.PersonAlias != null && newRegistration.PersonAlias.Person != null )
+                                {
+                                    assignedTo = newRegistration.PersonAlias.Person;
+                                }
+                                else
+                                {
+                                    if ( !string.IsNullOrWhiteSpace( registrant.PersonAlias.Person.Email ) )
+                                    {
+                                        email = registrant.PersonAlias.Person.Email;
+                                    }
+                                }
+
+                                var sendDocumentTxn = new Rock.Transactions.SendDigitalSignatureRequestTransaction();
+                                sendDocumentTxn.SignatureDocumentTypeId = RegistrationTemplate.RequiredSignatureDocumentTypeId.Value;
+                                sendDocumentTxn.AppliesToPersonAliasId = registrant.PersonAlias.Id;
+                                sendDocumentTxn.AssignedToPersonAliasId = assignedTo.PrimaryAliasId ?? 0;
+                                sendDocumentTxn.DocumentName = RegistrationInstanceState.Name;
+                                sendDocumentTxn.Email = email;
+                                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( sendDocumentTxn );
+                            }
+                        }
+
                         newRegistration.LaunchWorkflow( RegistrationTemplate.RegistrationWorkflowTypeId, newRegistration.ToString() );
                         newRegistration.LaunchWorkflow( RegistrationInstanceState.RegistrationWorkflowTypeId, newRegistration.ToString() );
                     }

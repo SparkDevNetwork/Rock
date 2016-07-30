@@ -456,6 +456,24 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum SignatureDocumentAction
+    {
+        Email = 0x0,
+        Embed = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum SignatureDocumentStatus
+    {
+        None = 0x0,
+        Sent = 0x1,
+        Signed = 0x2,
+        Cancelled = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum SpecialRole
     {
         None = 0x0,
