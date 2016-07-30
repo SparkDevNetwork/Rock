@@ -1,0 +1,32 @@
+﻿<style>
+	
+</style>
+
+{% assign item = Items | First %}
+{% if item  %}
+	
+	<artcile class="message-detail">
+		<h1>{{ item.Title }}</h1>
+	
+		<p>
+			<strong> {{ item | Attribute:'Speaker' }} - {{ item.StartDateTime | Date:'M/d/yyyy' }}</strong>
+		</p>
+	
+		<div class="row">
+			<div class="col-md-8">
+				{{ item.Content }}
+			</div>
+			<div class="col-md-4">
+				<div class="panel panel-default">
+					<div class="panel-heading">Downloads & Resources</div>
+					<div class="list-group">
+						<a href="" class="list-group-item">hi</a>
+					</div>
+				</div>
+			</div>
+		</row>
+	</article>
+	
+{% else %}
+	<h1>Could not find message.</h1>
+{% endif %}
