@@ -33,26 +33,6 @@
             <asp:HiddenField ID="hfApprovalStatusPersonAliasId" runat="server" />
             <asp:HiddenField ID="hfApprovalStatus" runat="server" />
 
-            <div id="divPanelDrawer" class="panel-drawer" runat="server">
-                <div class="drawer-content" style="display: none;">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <dl>
-                                <dt>Created By</dt>
-                                <dd><asp:Literal ID="lCreatedBy" runat="server" /></dd>
-                            </dl>
-                        </div>
-                        <div class="col-md-6">
-                            <dl>
-                                <dt>Last Modified By</dt>
-                                <dd><asp:Literal ID="lLastModifiedBy" runat="server" /></dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-                <div class="drawer-pull js-drawerpull"><i class="fa fa-chevron-down" data-icon-closed="fa fa-chevron-down" data-icon-open="fa fa-chevron-up"></i></div>
-            </div>
-
             <div class="panel-heading">
                 <h1 class="panel-title">
                     <asp:Literal ID="lIcon" runat="server" />
@@ -64,7 +44,25 @@
                     <asp:PlaceHolder ID="phOccurrences" runat="server" />
                 </div>
             </div>
-
+            <div id="divPanelDrawer" class="panel-drawer" runat="server">
+                    <div class="drawer-content" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <dl>
+                                    <dt>Created By</dt>
+                                    <dd><asp:Literal ID="lCreatedBy" runat="server" /></dd>
+                                </dl>
+                            </div>
+                            <div class="col-md-6">
+                                <dl>
+                                    <dt>Last Modified By</dt>
+                                    <dd><asp:Literal ID="lLastModifiedBy" runat="server" /></dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="drawer-pull js-drawerpull"><i class="fa fa-chevron-down" data-icon-closed="fa fa-chevron-down" data-icon-open="fa fa-chevron-up"></i></div>
+                </div>
             <div class="panel-body">
 
                 <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
@@ -125,53 +123,7 @@
                         </div>
                     </div>
 
-                    <asp:Panel ID="pnlChildrenParents" runat="server" CssClass="panel panel-widget">
-
-                        <div class="panel-heading">
-                            <asp:Literal ID="lChildrenParentsTitle" runat="server" Text="Related Items" />
-                        </div>
-                        
-                        <div class="panel-body">
-                            <asp:HiddenField ID="hfActivePill" runat="server" />
-                            <asp:PlaceHolder ID="phPills" runat="server">
-                                <ul class="nav nav-pills">
-                                    <li id="liChildren" runat="server" class="active"><a href='#<%=divChildItems.ClientID%>' data-toggle="pill">Child Items</a></li>
-                                    <li id="liParents" runat="server"><a href='#<%=divParentItems.ClientID%>' data-toggle="pill">Parent Items</a></li>
-                                </ul>
-                            </asp:PlaceHolder>
-
-                            <div class="tab-content margin-t-lg">
-                                <div id="divChildItems" runat="server" class="tab-pane active">
-                                    <Rock:Grid ID="gChildItems" runat="server" DisplayType="Light" EmptyDataText="No Child Items" RowItemText="Child Item"  ShowConfirmDeleteDialog="false" OnRowSelected="gChildItems_RowSelected" >
-                                        <Columns>
-                                            <Rock:ReorderField />
-                                            <Rock:RockBoundField DataField="Title" HeaderText="Title" SortExpression="Title" />
-                                            <Rock:DateField DataField="StartDateTime" HeaderText="Start" SortExpression="StartDateTime" />
-                                            <Rock:DateField DataField="ExpireDateTime" HeaderText="Expire" SortExpression="ExpireDateTime" />
-                                            <Rock:RockBoundField DataField="Priority" HeaderText="Priority" SortExpression="Priority" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" />
-                                            <Rock:RockBoundField DataField="Status" HeaderText="Priority" SortExpression="Status" HtmlEncode="false" />
-                                            <Rock:RockBoundField DataField="CreatedBy" HeaderText="Created By" />
-                                            <Rock:DeleteField OnClick="gChildItems_Delete" />
-                                        </Columns>
-                                    </Rock:Grid>
-                                </div>
-                                <div id="divParentItems" runat="server" class="tab-pane">
-                                    <Rock:Grid ID="gParentItems" runat="server" DisplayType="Light" EmptyDataText="No Child Items" RowItemText="Child Item" OnRowSelected="gParentItems_RowSelected" >
-                                        <Columns>
-                                            <Rock:RockBoundField DataField="Title" HeaderText="Title" SortExpression="Title" />
-                                            <Rock:DateField DataField="StartDateTime" HeaderText="Start" SortExpression="StartDateTime" />
-                                            <Rock:DateField DataField="ExpireDateTime" HeaderText="Expire" SortExpression="ExpireDateTime" />
-                                            <Rock:RockBoundField DataField="Priority" HeaderText="Priority" SortExpression="Priority" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" />
-                                            <Rock:RockBoundField DataField="Status" HeaderText="Priority" SortExpression="Status" HtmlEncode="false" />
-                                            <Rock:RockBoundField DataField="CreatedBy" HeaderText="Created By" />
-                                        </Columns>
-                                    </Rock:Grid>
-                                </div>
-                            </div>
-
-                        </div> 
-
-                    </asp:Panel>
+                    
 
                     <div class="actions">
                         <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
@@ -184,6 +136,54 @@
             </div>
 
         </asp:Panel>
+
+        <asp:Panel ID="pnlChildrenParents" runat="server" CssClass="panel panel-widget">
+
+                <div class="panel-heading">
+                    <asp:Literal ID="lChildrenParentsTitle" runat="server" Text="Related Items" />
+                </div>
+                        
+                <div class="panel-body">
+                    <asp:HiddenField ID="hfActivePill" runat="server" />
+                    <asp:PlaceHolder ID="phPills" runat="server">
+                        <ul class="nav nav-pills">
+                            <li id="liChildren" runat="server" class="active"><a href='#<%=divChildItems.ClientID%>' data-toggle="pill">Child Items</a></li>
+                            <li id="liParents" runat="server"><a href='#<%=divParentItems.ClientID%>' data-toggle="pill">Parent Items</a></li>
+                        </ul>
+                    </asp:PlaceHolder>
+
+                    <div class="tab-content margin-t-lg">
+                        <div id="divChildItems" runat="server" class="tab-pane active">
+                            <Rock:Grid ID="gChildItems" runat="server" DisplayType="Light" EmptyDataText="No Child Items" RowItemText="Child Item"  ShowConfirmDeleteDialog="false" OnRowSelected="gChildItems_RowSelected" >
+                                <Columns>
+                                    <Rock:ReorderField />
+                                    <Rock:RockBoundField DataField="Title" HeaderText="Title" SortExpression="Title" />
+                                    <Rock:DateField DataField="StartDateTime" HeaderText="Start" SortExpression="StartDateTime" ColumnPriority="Desktop" />
+                                    <Rock:DateField DataField="ExpireDateTime" HeaderText="Expire" SortExpression="ExpireDateTime" ColumnPriority="Desktop" />
+                                    <Rock:RockBoundField DataField="Priority" HeaderText="Priority" SortExpression="Priority" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" ColumnPriority="Desktop" />
+                                    <Rock:RockBoundField DataField="Status" HeaderText="Status" SortExpression="Status" HtmlEncode="false" ColumnPriority="Desktop" />
+                                    <Rock:RockBoundField DataField="CreatedBy" HeaderText="Created By" ColumnPriority="Desktop" />
+                                    <Rock:DeleteField OnClick="gChildItems_Delete" />
+                                </Columns>
+                            </Rock:Grid>
+                        </div>
+                        <div id="divParentItems" runat="server" class="tab-pane">
+                            <Rock:Grid ID="gParentItems" runat="server" DisplayType="Light" EmptyDataText="No Child Items" RowItemText="Child Item" OnRowSelected="gParentItems_RowSelected" >
+                                <Columns>
+                                    <Rock:RockBoundField DataField="Title" HeaderText="Title" SortExpression="Title" />
+                                    <Rock:DateField DataField="StartDateTime" HeaderText="Start" SortExpression="StartDateTime" ColumnPriority="Desktop" />
+                                    <Rock:DateField DataField="ExpireDateTime" HeaderText="Expire" SortExpression="ExpireDateTime" ColumnPriority="Desktop" />
+                                    <Rock:RockBoundField DataField="Priority" HeaderText="Priority" SortExpression="Priority" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right"  ColumnPriority="Desktop"/>
+                                    <Rock:RockBoundField DataField="Status" HeaderText="Priority" SortExpression="Status" HtmlEncode="false" ColumnPriority="Desktop" />
+                                    <Rock:RockBoundField DataField="CreatedBy" HeaderText="Created By" />
+                                </Columns>
+                            </Rock:Grid>
+                        </div>
+                    </div>
+
+                </div> 
+
+            </asp:Panel>
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
 

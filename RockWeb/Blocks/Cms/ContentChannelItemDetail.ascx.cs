@@ -580,12 +580,12 @@ namespace RockWeb.Blocks.Cms
                 phPills.Visible = canHaveChildren && canHaveParents;
                 if ( canHaveChildren && !canHaveParents )
                 {
-                    lChildrenParentsTitle.Text = "Child Items";
+                    lChildrenParentsTitle.Text = "<i class='fa fa-arrow-circle-down'></i> Child Items";
                 }
 
                 if ( !canHaveChildren && canHaveParents )
                 {
-                    lChildrenParentsTitle.Text = "Parent Items";
+                    lChildrenParentsTitle.Text = "<i class='fa fa-arrow-circle-up'></i> Parent Items";
                     divParentItems.AddCssClass( "active" );
                 }
 
@@ -948,6 +948,7 @@ namespace RockWeb.Blocks.Cms
                 Status = DisplayStatus( i.Status ),
                 CreatedBy = i.CreatedByPersonAlias != null && i.CreatedByPersonAlias.Person != null ? i.CreatedByPersonAlias.Person.NickName + " " + i.CreatedByPersonAlias.Person.LastName : ""
             } ).ToList();
+
             gChildItems.DataBind();
         }
 
