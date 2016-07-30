@@ -65,7 +65,7 @@ namespace Rock.Model
         /// This property will be  <c>CommunicationRecipientStatus.Pending</c> when Rock is waiting to send the <see cref="Rock.Model.Communication"/> to the recipient;
         /// <c>CommunicationRecipientStatus.Success</c> when Rock has successfully sent the <see cref="Rock.Model.Communication"/> to the recipient;
         /// <c>CommunicationRecipientStatus.Failed</c> when the attempt to send the <see cref="Rock.Model.Communication"/> failed.
-        /// <c>CommunicaitonRecipientStatus.Cancelled</c> when the attempt to send the <see cref="Rock.Model.Communication"/> was canceled.
+        /// <c>CommunicationRecipientStatus.Cancelled</c> when the attempt to send the <see cref="Rock.Model.Communication"/> was canceled.
         /// </value>
         [DataMember]
         public CommunicationRecipientStatus Status { get; set; }
