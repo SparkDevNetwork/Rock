@@ -2,7 +2,7 @@ Rock McKinley 5.1
 
 + Fixed issue with Family check-in incorrectly navigating to individual check-in page when clicking 'Back' (Fixes #1620).
 + Fixed issue with workflow triggers not getting started (Fixes #1623).
-+ Fixed display of heirarchal group types in check-in manager.
++ Fixed display of hierarchical group types in check-in manager.
 + Fixed display of group type path on the location schedule screen in check-in manager mode (Fixes #121).
 + Fixed positioning of Save button on check-in admin schedule view (Fixes #1609).
 + Updated the saving of attributes so that it does not clear foreign key values and the created by information (Fixes #1596).
@@ -292,7 +292,7 @@ Rock McKinley 4.4
 + Fixed error in the People REST endpoint (Fixes #1388).
 + Updated Lava debug display to only display each object type/id once, and limit iterations to first two items (Fixes #1365).
 + Changed z-index of the admin toolbar to keep it from being hidden when editing page zones. (Fixes #1397)
-+ Changed the ConnectionRequestDetail block to allow a request to be Connected even if there is no placement group. 
++ Changed the ConnectionRequestDetail block to allow a request to be Connected even if there is no placement group.
 + Fixed Communication Entry block so that the Subject is cleared if a selected template does not specify a subject (Fixes #1393).
 + Fixed issue where creating a new communication from a dataview caused the block to timeout before the configured database timeout occurred. (Fixes #909).
 + Update communication send job so that it ignores any inactive mediums and/or transports (Fixes #1527).
@@ -886,7 +886,7 @@ Rock McKinley 1.2
 + Fix report data view filters that use an attribute date filter (Fixes #629)
 + Include last name of family members if the last name is different than the current person being viewed (Fixes #618).
 + Fixed issue with StatementGenerator that was causing it to only work on x64 machines (Fixes #613).
-+ Fix person age calculation to not be dependent on current culture being in mm/dd/yy format (Fixes #607).        
++ Fix person age calculation to not be dependent on current culture being in mm/dd/yy format (Fixes #607).
 + Fix the ordering of Content Channel Dynamic items when retrieving items from cache.
 + Update the Content Channel Dynamic block so that it does not default to a specific channel when first added to a page.
 + Update ordering of defined type attributes to clear the attribute cache so that editing values immediately reflects the updated order.
