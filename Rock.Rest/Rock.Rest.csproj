@@ -109,6 +109,8 @@
     <Compile Include="Controllers\AttributesController.Partial.cs" />
     <Compile Include="Controllers\AuthController.cs" />
     <Compile Include="Controllers\BinaryFilesController.Partial.cs" />
+    <Compile Include="Controllers\CodeGenerated\SignatureDocumentsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\SignatureDocumentTypesController.cs" />
     <Compile Include="Controllers\BlocksController.Partial.cs" />
     <Compile Include="Controllers\CategoriesController.Partial.cs" />
     <Compile Include="Controllers\CodeGenerated\AttendanceCodesController.cs" />

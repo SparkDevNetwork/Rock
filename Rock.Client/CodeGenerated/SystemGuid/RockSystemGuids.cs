@@ -56,10 +56,12 @@ namespace Rock.Client.SystemGuid
         public const string CONTENT_CHANNEL_ITEM_IMAGE = "8DBF874C-F3C2-4848-8137-C963C431EB0B";
         public const string CONTRIBUTION_IMAGE = "6D18A9C4-34AB-444A-B95B-C644019465AC";
         public const string DEFAULT = "C1142570-8CD6-4A20-83B1-ACB47C1CD377";
+        public const string DIGITALLY_SIGNED_DOCUMENTS = "40871411-4E2D-45C2-9E21-D9FCBA5FC340";
         public const string LOCATION_IMAGE = "DAB74416-3272-4411-BA69-70944B549A4B";
         public const string MEDIA_FILE = "6CBEA3B0-E983-40C1-9712-BD3FA2466EAE";
         public const string MERGE_TEMPLATE = "BD63EC0C-2DF8-4C55-97E3-616870C67C59";
         public const string PERSON_IMAGE = "03BD8476-8A9F-4078-B628-5B538F967AFC";
+        public const string SIGNED_DOCUMENT_FILE_TYPE = "8C9C5A97-005A-46E5-AF7B-AC2F359B738A";
     }
 
     /// <summary>
@@ -156,6 +158,9 @@ namespace Rock.Client.SystemGuid
     /// </summary>
     public class DefinedValue
     {
+        public const string BENEVOLENCE_APPROVED = "18D3A2DA-F2BA-49AE-83EB-7E60DCD18A3B";
+        public const string BENEVOLENCE_DENIED = "3720671E-DA48-405F-A6D5-5E2D47436F9A";
+        public const string BENEVOLENCE_PENDING = "67B24629-62A9-436A-A98C-30A454642153";
         public const string CHART_STYLE_FLOT = "B45DA8E1-B9A6-46FD-9A2B-E8440D7D6AAC";
         public const string CHART_STYLE_ROCK = "2ABB2EA0-B551-476C-8F6B-478CD08C2227";
         public const string CHECKIN_SEARCH_TYPE_NAME = "071D6DAA-3063-463A-B8A1-7D9A1BE1BB31";
@@ -225,6 +230,7 @@ namespace Rock.Client.SystemGuid
     public class EntityType
     {
         public const string AUTHENTICATION_DATABASE = "4E9B798F-BB68-4C0E-9707-0928D15AB020";
+        public const string BENEVOLENCE_REQUEST = "CF0CE5C1-9286-4310-9B50-10D040F8EBD2";
         public const string BLOCK = "D89555CA-9AE4-4D62-8AF1-E5E463C1EF65";
         public const string COMMUNICATION_MEDIUM_EMAIL = "5A653EBE-6803-44B4-85D2-FB7B8146D55D";
         public const string COMMUNICATION_MEDIUM_SMS = "4BC02764-512A-4A10-ACDE-586F71D8A8BD";

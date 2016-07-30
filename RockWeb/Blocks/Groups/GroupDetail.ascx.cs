@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
@@ -555,6 +556,7 @@ namespace RockWeb.Blocks.Groups
             group.GroupTypeId = CurrentGroupTypeId;
             group.ParentGroupId = gpParentGroup.SelectedValueAsInt();
             group.GroupCapacity = nbGroupCapacity.Text.AsIntegerOrNull();
+            group.RequiredSignatureDocumentTypeId = ddlSignatureDocumentType.SelectedValueAsInt();
             group.IsSecurityRole = cbIsSecurityRole.Checked;
             group.IsActive = cbIsActive.Checked;
             group.IsPublic = cbIsPublic.Checked;
@@ -1163,8 +1165,9 @@ namespace RockWeb.Blocks.Groups
             var groupService = new GroupService( rockContext );
             var attributeService = new AttributeService( rockContext );
 
-            LoadDropDowns();
+            LoadDropDowns( rockContext );
 
+            ddlSignatureDocumentType.SetValue( group.RequiredSignatureDocumentTypeId );
             gpParentGroup.SetValue( group.ParentGroup ?? groupService.Get( group.ParentGroupId ?? 0 ) );
 
             // hide sync and requirements panel if no admin access
@@ -1257,6 +1260,7 @@ namespace RockWeb.Blocks.Groups
             GroupLocationsState = group.GroupLocations.ToList();
 
             var groupTypeCache = CurrentGroupTypeCache;
+            nbGroupCapacity.Visible = groupTypeCache != null && groupTypeCache.GroupCapacityRule != GroupCapacityRule.None;
             SetScheduleControls( groupTypeCache, group );
             ShowGroupTypeEditDetails( groupTypeCache, group, true );
 
@@ -1449,6 +1453,11 @@ namespace RockWeb.Blocks.Groups
                 descriptionList.Add( "Parent Group", group.ParentGroup.Name );
             }
 
+            if ( group.RequiredSignatureDocumentType != null )
+            {
+                descriptionList.Add( "Required Signed Document", group.RequiredSignatureDocumentType.Name );
+            }
+
             if ( group.Schedule != null )
             {
                 descriptionList.Add( "Schedule", group.Schedule.ToString() );
@@ -1464,16 +1473,11 @@ namespace RockWeb.Blocks.Groups
                 hlCampus.Visible = false;
             }
 
-            
-            // configure group capacity
-            if ( group.GroupType == null || group.GroupType.GroupCapacityRule == GroupCapacityRule.None )
-            {
-                nbGroupCapacity.Visible = false;
-            }
-            else
-            {
-                nbGroupCapacity.Visible = true;
 
+            // configure group capacity
+            nbGroupCapacityMessage.Visible = false;
+            if ( group.GroupType != null && group.GroupType.GroupCapacityRule != GroupCapacityRule.None )
+            {
                 // check if we're over capacity and if so show warning
                 if ( group.GroupCapacity.HasValue )
                 {
@@ -1729,11 +1733,20 @@ namespace RockWeb.Blocks.Groups
         /// <summary>
         /// Loads the drop downs.
         /// </summary>
-        private void LoadDropDowns()
+        private void LoadDropDowns( RockContext rockContext )
         {
             ddlCampus.DataSource = CampusCache.All();
             ddlCampus.DataBind();
             ddlCampus.Items.Insert( 0, new ListItem( None.Text, None.IdValue ) );
+
+            ddlSignatureDocumentType.Items.Clear();
+            ddlSignatureDocumentType.Items.Add( new ListItem() );
+            foreach ( var documentType in new SignatureDocumentTypeService( rockContext )
+                .Queryable().AsNoTracking()
+                .OrderBy( t => t.Name ) )
+            {
+                ddlSignatureDocumentType.Items.Add( new ListItem( documentType.Name, documentType.Id.ToString() ) );
+            }
         }
 
         /// <summary>

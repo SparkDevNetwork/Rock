@@ -57,6 +57,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFileType.FriendlyTypeName, BinaryFile.FriendlyTypeName );
                 return false;
             }  
+ 
+            if ( new Service<SignatureDocumentType>( Context ).Queryable().Any( a => a.BinaryFileTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFileType.FriendlyTypeName, SignatureDocumentType.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

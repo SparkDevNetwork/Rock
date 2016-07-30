@@ -26,6 +26,17 @@
                 <asp:CustomValidator ID="cvGroupMember" runat="server" Display="None" />
                 <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" />
 
+                <asp:Panel ID="pnlRequiredSignatureDocument" runat="server" CssClass="alert alert-warning" Visible="false" >
+                    <asp:Literal ID="lRequiredSignatureDocumentMessage" runat="server" />
+                    <div class="actions margin-t-md">
+                        <asp:LinkButton ID="lbResendDocumentRequest" runat="server" Text="Send Signature Request" CssClass="btn btn-default" OnClick="lbResendDocumentRequest_Click" />
+                    </div>
+                    <Rock:ModalAlert ID="maSignatureRequestSent" runat="server" Text="A Signature Request Has Been Sent!" Visible="false" />
+                </asp:Panel>
+
+                <Rock:NotificationBox ID="NotificationBox1" runat="server" NotificationBoxType="Danger">
+                </Rock:NotificationBox>
+
                 <div id="pnlEditDetails" runat="server">
 
                     <div class="row">
