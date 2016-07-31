@@ -10,9 +10,22 @@
         });
     </script>
 
-    <div id="divBio" runat="server" class="rollover-container">
-        <div class="actions rollover-item">
-            <asp:LinkButton ID="lbEditPerson" runat="server" AccessKey="I" CssClass="edit btn btn-action btn-xs" OnClick="lbEditPerson_Click"><i class="fa fa-pencil"></i> Edit Individual</asp:LinkButton>
+    <div id="divBio" runat="server" class="">
+        <div class="action-wrapper">
+
+            <ul id="ulActions" runat="server" class="nav nav-actions action action-extended">
+                <li class="dropdown">
+                    <a class="persondetails-actions dropdown-toggle" data-toggle="dropdown" href="#" tabindex="0">
+                        <span>Actions</span>
+                        <b class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-right">
+                        <asp:Literal ID="lActions" runat="server" />
+                    </ul>
+                </li>
+            </ul>
+
+            <asp:LinkButton ID="lbEditPerson" runat="server" AccessKey="I" CssClass="action" OnClick="lbEditPerson_Click"><i class="fa fa-pencil"></i></asp:LinkButton>
         </div>
 
         <div class="row">
@@ -33,26 +46,8 @@
             </div>
             <div class="col-sm-9 col-md-10 xs-text-center">
 
-                <div class="row">
-                    <div class="col-sm-9 xs-text-center">
-                        <h1 class="title name"><asp:Literal ID="lName" runat="server" /></h1>
-                    </div>
-                    <div class="col-sm-3">
-                        <ul id="ulActions" runat="server" class="nav nav-actions">
-                            <li class="dropdown">
-                                <a class="persondetails-actions dropdown-toggle" data-toggle="dropdown" href="#" tabindex="0">
-                                    <i class="fa fa-cog"></i>
-                                    <span>Actions</span>
-                                    <b class="caret"></b>
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-right">
-                                    <asp:Literal ID="lActions" runat="server" />
-                                </ul>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
+                <h1 class="title name"><asp:Literal ID="lName" runat="server" /></h1>
+                
                 <Rock:PersonProfileBadgeList ID="blStatus" runat="server" />
 
                 <Rock:TagList ID="taglPersonTags" runat="server" CssClass="clearfix" />

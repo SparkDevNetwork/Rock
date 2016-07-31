@@ -88,7 +88,13 @@ namespace Rock.Client
         public int? ScheduleId { get; set; }
 
         /// <summary />
+        public int? SearchResultGroupId { get; set; }
+
+        /// <summary />
         public int? SearchTypeValueId { get; set; }
+
+        /// <summary />
+        public string SearchValue { get; set; }
 
         /// <summary />
         public DateTime StartDateTime { get; set; }
@@ -143,7 +149,9 @@ namespace Rock.Client
             this.QualifierValueId = source.QualifierValueId;
             this.RSVP = source.RSVP;
             this.ScheduleId = source.ScheduleId;
+            this.SearchResultGroupId = source.SearchResultGroupId;
             this.SearchTypeValueId = source.SearchTypeValueId;
+            this.SearchValue = source.SearchValue;
             this.StartDateTime = source.StartDateTime;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;

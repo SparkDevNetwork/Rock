@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.Finance
 
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK, Order = 0 )]
     [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", false, Order = 1 )]
-    [BooleanField("Hide View By Options", "Should the View By options be hidden (Giver, Adults, Children, Family)?", Order = 2 )]
+    [BooleanField( "Hide View By Options", "Should the View By options be hidden (Giver, Adults, Children, Family)?", Order = 2 )]
     public partial class GivingAnalytics : RockBlock
     {
         #region Fields
@@ -152,7 +152,7 @@ namespace RockWeb.Blocks.Finance
                         LoadChartAndGrids();
                     }
                 }
-                catch( Exception exception )
+                catch ( Exception exception )
                 {
                     LogAndShowException( exception );
                 }
@@ -212,7 +212,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gChartAmount_GridRebind( object sender, EventArgs e )
         {
-            BindChartAmountGrid(GetGivingChartData());
+            BindChartAmountGrid( GetGivingChartData() );
         }
 
         /// <summary>
@@ -222,7 +222,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The e.</param>
         protected void lcAmount_ChartClick( object sender, ChartClickArgs e )
         {
-            if ( GetAttributeValue("DetailPage").AsGuidOrNull().HasValue )
+            if ( GetAttributeValue( "DetailPage" ).AsGuidOrNull().HasValue )
             {
                 Dictionary<string, string> qryString = new Dictionary<string, string>();
                 qryString.Add( "YValue", e.YValue.ToString() );
@@ -249,7 +249,7 @@ namespace RockWeb.Blocks.Finance
                 pnlChartAmountGrid.Visible = true;
                 lShowChartAmountGrid.Text = "Hide Data <i class='fa fa-chevron-up'></i>";
                 lShowChartAmountGrid.ToolTip = "Hide Data";
-                BindChartAmountGrid(GetGivingChartData());
+                BindChartAmountGrid( GetGivingChartData() );
             }
         }
 
@@ -262,7 +262,7 @@ namespace RockWeb.Blocks.Finance
         {
             btnApply_Click( sender, e );
         }
-        
+
         /// <summary>
         /// Handles the Click event of the btnApply control.
         /// </summary>
@@ -352,7 +352,7 @@ namespace RockWeb.Blocks.Finance
                     Guid contributionGuid = Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid();
                     var contributionAccountIds = new FinancialTransactionDetailService( rockContext )
                         .Queryable().AsNoTracking()
-                        .Where( d => 
+                        .Where( d =>
                             d.Transaction != null &&
                             d.Transaction.TransactionTypeValue != null &&
                             d.Transaction.TransactionTypeValue.Guid.Equals( contributionGuid ) )
@@ -362,7 +362,7 @@ namespace RockWeb.Blocks.Finance
 
                     foreach ( var campusAccounts in new FinancialAccountService( rockContext )
                         .Queryable().AsNoTracking()
-                        .Where( a => 
+                        .Where( a =>
                             a.IsActive &&
                             contributionAccountIds.Contains( a.Id ) )
                         .GroupBy( a => a.CampusId ?? 0 )
@@ -383,12 +383,12 @@ namespace RockWeb.Blocks.Finance
 
             phAccounts.Controls.Clear();
 
-            foreach( var campusId in _campusAccounts )
+            foreach ( var campusId in _campusAccounts )
             {
                 var cbList = new RockCheckBoxList();
                 cbList.ID = "cblAccounts" + campusId.Key.ToString();
 
-                if ( campusId.Key > 0)
+                if ( campusId.Key > 0 )
                 {
                     var campus = CampusCache.Read( campusId.Key );
                     cbList.Label = campus != null ? campus.Name + " Accounts" : "Campus " + campusId.Key.ToString();
@@ -427,7 +427,7 @@ namespace RockWeb.Blocks.Finance
 
             lcAmount.ShowTooltip = true;
             bcAmount.ShowTooltip = true;
-            if ( GetAttributeValue("DetailPage").AsGuidOrNull().HasValue )
+            if ( GetAttributeValue( "DetailPage" ).AsGuidOrNull().HasValue )
             {
                 lcAmount.ChartClick += lcAmount_ChartClick;
                 bcAmount.ChartClick += lcAmount_ChartClick;
@@ -949,12 +949,13 @@ function(item) {
                     {
                         result = transactionInfoList
                             .Where( c => c.SummaryDate.HasValue )
-                            .GroupBy( c => new { c.SummaryDate.Value, c.AccountName } )
+                            .GroupBy( c => new { c.SummaryDate.Value, c.AccountName, c.GLCode } )
                             .Select( r => new SummaryData
                             {
                                 DateTimeStamp = r.Key.Value.ToJavascriptMilliseconds(),
                                 DateTime = r.Key.Value,
                                 SeriesName = r.Key.AccountName,
+                                SeriesAddlInfo = r.Key.GLCode,
                                 YValue = r.Sum( a => a.Amount )
                             } )
                             .OrderBy( r => r.DateTime )
@@ -972,7 +973,7 @@ function(item) {
         private void BindChartAmountGrid( IEnumerable<Rock.Chart.IChartData> chartData )
         {
             var graphBy = hfGraphBy.Value.ConvertToEnumOrNull<TransactionGraphBy>() ?? TransactionGraphBy.Total;
-            switch( graphBy )
+            switch ( graphBy )
             {
                 case TransactionGraphBy.Campus:
                     gChartAmount.Columns[1].Visible = true;
@@ -1017,13 +1018,13 @@ function(item) {
 
             var minAmount = nreAmount.LowerValue;
             var maxAmount = nreAmount.UpperValue;
-            
+
             var currencyTypeIds = new List<int>();
             cblCurrencyTypes.SelectedValues.ForEach( i => currencyTypeIds.Add( i.AsInteger() ) );
-            
+
             var sourceIds = new List<int>();
             cblTransactionSource.SelectedValues.ForEach( i => sourceIds.Add( i.AsInteger() ) );
-            
+
             var accountIds = new List<int>();
             foreach ( var cblAccounts in phAccounts.Controls.OfType<RockCheckBoxList>() )
             {
@@ -1148,11 +1149,11 @@ function(item) {
                     {
                         if ( !DBNull.Value.Equals( row["FirstEverGift"] ) )
                         {
-                            firstEverVals.Add( row["GivingId"].ToString(), (DateTime)row["FirstEverGift"] );
+                            firstEverVals.Add( row["GivingId"].ToString(), row["FirstEverGift"].ToString().AsDateTime().Value );
                         }
                         if ( !DBNull.Value.Equals( row["LastEverGift"] ) )
                         {
-                            lastEverVals.Add( row["GivingId"].ToString(), (DateTime)row["LastEverGift"] );
+                            lastEverVals.Add( row["GivingId"].ToString(), row["LastEverGift"].ToString().AsDateTime().Value );
                         }
                     }
                 }
@@ -1190,7 +1191,7 @@ function(item) {
                 // Clear all the existing grid columns
                 var selectField = new SelectField();
                 var oldSelectField = gGiversGifts.ColumnsOfType<SelectField>().FirstOrDefault();
-                if (oldSelectField != null )
+                if ( oldSelectField != null )
                 {
                     selectField.SelectedKeys.AddRange( oldSelectField.SelectedKeys );
                 }
@@ -1199,6 +1200,17 @@ function(item) {
 
                 // Add a column for selecting rows
                 gGiversGifts.Columns.Add( selectField );
+
+                // Add a hidden column for person id
+                gGiversGifts.Columns.Add(
+                    new RockBoundField
+                    {
+                        DataField = "Id",
+                        HeaderText = "Person Id",
+                        SortExpression = "Id",
+                        Visible = false,
+                        ExcelExportBehavior = ExcelExportBehavior.AlwaysInclude
+                    } );
 
                 // Add a column for the person's name
                 gGiversGifts.Columns.Add(
@@ -1256,12 +1268,12 @@ function(item) {
 
                 // Add a column for the number of gifts
                 var numberGiftsField = new RockBoundField
-                    {
-                        DataField = "NumberGifts",
-                        HeaderText = "Number of Gifts",
-                        SortExpression = "NumberGifts",
-                        DataFormatString = "{0:N0}",
-                    };
+                {
+                    DataField = "NumberGifts",
+                    HeaderText = "Number of Gifts",
+                    SortExpression = "NumberGifts",
+                    DataFormatString = "{0:N0}",
+                };
                 numberGiftsField.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
                 gGiversGifts.Columns.Add( numberGiftsField );
 
@@ -1332,7 +1344,8 @@ function(item) {
                 foreach ( var person in new PersonService( _rockContext )
                     .Queryable().AsNoTracking()
                     .Where( p => dataViewPersonIds.Contains( p.Id ) )
-                    .Select( p => new {
+                    .Select( p => new
+                    {
                         p.Id,
                         p.GivingId,
                         p.GivingLeaderId,
@@ -1439,7 +1452,7 @@ function(item) {
                 }
 
                 personInfoList = personInfoList
-                    .Where( p => 
+                    .Where( p =>
                         !previousGivingIds.Contains( p.GivingId ) &&
                         p.NumberGifts >= minCount )
                     .ToList();

@@ -453,6 +453,20 @@ namespace Rock
         /// <returns></returns>
         public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects, Person currentPersonOverride )
         {
+            var enabledCommands = GlobalAttributesCache.Read().GetValue( "DefaultEnabledLavaCommands" );
+            return content.ResolveMergeFields( mergeObjects, currentPersonOverride, enabledCommands );
+        }
+
+        /// <summary>
+        /// Resolves the merge fields.
+        /// </summary>
+        /// <param name="content">The content.</param>
+        /// <param name="mergeObjects">The merge objects.</param>
+        /// <param name="currentPersonOverride">The current person override.</param>
+        /// <param name="enabledLavaCommands">The enabled lava commands.</param>
+        /// <returns></returns>
+        public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects, Person currentPersonOverride, string enabledLavaCommands )
+        {
             try
             {
                 if ( !content.HasMergeFields() )
@@ -461,6 +475,7 @@ namespace Rock
                 }
 
                 Template template = Template.Parse( content );
+                template.InstanceAssigns.Add( "EnabledCommands", enabledLavaCommands );
                 template.InstanceAssigns.Add( "CurrentPerson", currentPersonOverride );
                 return template.Render( Hash.FromDictionary( mergeObjects ) );
             }
@@ -500,6 +515,12 @@ namespace Rock
         /// <returns></returns>
         public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects, bool encodeStrings = false, bool throwExceptionOnErrors = false )
         {
+            var enabledCommands = GlobalAttributesCache.Read().GetValue( "DefaultEnabledLavaCommands" );
+            return content.ResolveMergeFields( mergeObjects, enabledCommands, encodeStrings, throwExceptionOnErrors );
+        }
+
+        public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects, string enabledLavaCommands, bool encodeStrings = false, bool throwExceptionOnErrors = false )
+        {
             try
             {
                 if ( !content.HasMergeFields() )
@@ -516,7 +537,8 @@ namespace Rock
                 }
 
                 Template template = Template.Parse( content );
-                
+                template.InstanceAssigns.Add( "EnabledCommands", enabledLavaCommands );
+
                 if ( encodeStrings )
                 {
                     // if encodeStrings = true, we want any string values to be XML Encoded ( 

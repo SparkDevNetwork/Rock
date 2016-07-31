@@ -1174,7 +1174,7 @@ namespace Rock.Web.UI
 
                 if ( !_pageCache.AllowIndexing || !_pageCache.Layout.Site.AllowIndexing )
                 {
-                    Page.Header.Controls.Add( new LiteralControl( "<meta name=\"robots\" content=\"noindex, nofollow\">" ) );
+                    Page.Header.Controls.Add( new LiteralControl( "<meta name=\"robots\" content=\"noindex, nofollow\"/>" ) );
                 }
                 
                 if ( showDebugTimings )

@@ -1,4 +1,4 @@
-﻿var RockCodeEditor = function (context) {
+﻿var RockCodeEditor = function (context, keepEditorContent) {
     var ui = $.summernote.ui;
     var $codeEditor = $('#codeeditor-div-' + context.options.codeEditorOptions.controlId);
     var $codeEditorContainer = $codeEditor.closest('.code-editor-container');
@@ -6,7 +6,7 @@
     $codeEditorContainer.height(context.layoutInfo.editingArea.height());
     $inCodeEditorModeHiddenField = $('#' + context.options.codeEditorOptions.inCodeEditorModeHiddenFieldId);
     $inCodeEditorModeHiddenField.val("0");
-    
+
     // move code editor into summernote div
     var element = $codeEditorContainer.detach();
     context.layoutInfo.editingArea.closest('.note-editor').append(element);
@@ -30,15 +30,19 @@
                 $codeEditorContainer.height(context.layoutInfo.editingArea.height());
 
                 // make sure it has at least some usable height
-                if ($codeEditorContainer.height() < 100)
-                {
+                if ($codeEditorContainer.height() < 100) {
                     $codeEditorContainer.height(100)
                 }
 
                 context.layoutInfo.editingArea.hide();
                 context.layoutInfo.statusbar.hide();
-                var content = context.code();
-                ace.edit($codeEditor.attr('id')).setValue(content);
+
+                // HtmlEditor.cs will initialize this with keepEditorContent = true and set the codeEditor content instead of the summernoteNote editor content
+                // this will prevent bad html or scripts from trying to render when startInCodeEditor mode is enabled
+                if (!keepEditorContent) {
+                    var content = context.code();
+                    ace.edit($codeEditor.attr('id')).setValue(content);
+                }
                 $codeEditorContainer.show();
 
                 // set the hiddenfield so we know which editor to get the value from on postback
@@ -47,6 +51,6 @@
             }
         }
     });
-    
+
     return button.render();   // return button as jquery object 
 }

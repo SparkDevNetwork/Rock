@@ -139,6 +139,9 @@ namespace Rock.Client
         public string RegistrationTerm { get; set; }
 
         /// <summary />
+        public int? RegistrationWorkflowTypeId { get; set; }
+
+        /// <summary />
         public string ReminderEmailTemplate { get; set; }
 
         /// <summary />
@@ -229,6 +232,7 @@ namespace Rock.Client
             this.RegistrantsSameFamily = source.RegistrantsSameFamily;
             this.RegistrantTerm = source.RegistrantTerm;
             this.RegistrationTerm = source.RegistrationTerm;
+            this.RegistrationWorkflowTypeId = source.RegistrationWorkflowTypeId;
             this.ReminderEmailTemplate = source.ReminderEmailTemplate;
             this.ReminderFromEmail = source.ReminderFromEmail;
             this.ReminderFromName = source.ReminderFromName;
@@ -263,6 +267,9 @@ namespace Rock.Client
 
         /// <summary />
         public ICollection<RegistrationTemplateForm> Forms { get; set; }
+
+        /// <summary />
+        public WorkflowType RegistrationWorkflowType { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

@@ -26,18 +26,18 @@
                     var url = Rock.settings.get('baseUrl') + 'api/MergeFields/' + encodeURIComponent(mergeFields);
                     $.get(url, function (data) {
                         {
-                            var node = document.createElement('div');
-                            node.innerHTML = data;
                             context.invoke('editor.restoreRange');
-                            context.invoke('editor.insertNode', node);
+                            context.invoke('editor.pasteHTML', data);
                         }
                     });
                 });
+
+                $modalPopupIFrame.contents().on('click', '.js-cancel-mergefield-button', function () {
+                    Rock.controls.modal.close();
+                });
             });
 
-            $modalPopupIFrame.contents().on('click', '.js-cancel-mergefield-button', function () {
-                Rock.controls.modal.close();
-            });
+            
         }
     });
     

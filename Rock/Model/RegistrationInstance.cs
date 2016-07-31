@@ -204,6 +204,15 @@ namespace Rock.Model
         [DataMember]
         public string AdditionalConfirmationDetails { get; set; }
 
+        /// <summary>
+        /// Optional workflow type to launch at end of registration
+        /// </summary>
+        /// <value>
+        /// The workflow type id.
+        /// </value>        
+        [DataMember]
+        public int? RegistrationWorkflowTypeId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -234,6 +243,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual PersonAlias ContactPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the workflow type to launch at end of registration.
+        /// </summary>
+        /// <value>
+        /// The Workflow Type.
+        /// </value>
+        [DataMember]
+        public virtual WorkflowType RegistrationWorkflowType { get; set; }
 
         /// <summary>
         /// Gets or sets the registrations.
@@ -309,6 +327,7 @@ namespace Rock.Model
             this.HasRequired( i => i.RegistrationTemplate ).WithMany( t => t.Instances ).HasForeignKey( i => i.RegistrationTemplateId ).WillCascadeOnDelete( true );
             this.HasOptional( i => i.Account ).WithMany().HasForeignKey( i => i.AccountId ).WillCascadeOnDelete( false );
             this.HasOptional( i => i.ContactPersonAlias ).WithMany().HasForeignKey( i => i.ContactPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.RegistrationWorkflowType ).WithMany().HasForeignKey( t => t.RegistrationWorkflowTypeId ).WillCascadeOnDelete( false );
         }
     }
 

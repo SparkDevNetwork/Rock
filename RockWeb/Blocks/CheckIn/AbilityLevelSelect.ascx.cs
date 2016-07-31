@@ -113,6 +113,9 @@ namespace RockWeb.Blocks.CheckIn
                     //person.Person.LoadAttributes();
                     _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" ).ToUpper();
 
+                    // Save the fact that user has already selected an ability level so they won't be asked again
+                    person.StateParameters.AddOrReplace( "AbilityLevel", _personAbilityLevelGuid.ToString() );
+
                     // Only save the ability level if it's changed
                     if ( _personAbilityLevelGuid != selectedAbilityLevelGuid )
                     {
@@ -214,14 +217,22 @@ namespace RockWeb.Blocks.CheckIn
             }
             else
             {
-                person.Person.LoadAttributes();
-                _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" ).ToUpper();
-
-                var abilityLevelDType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL_TYPE.AsGuid() );
-                if ( abilityLevelDType != null )
+                // If an ability level has already been selected, just process the selection
+                if ( person.StateParameters.ContainsKey( "AbilityLevel" ) )
                 {
-                    rSelection.DataSource = abilityLevelDType.DefinedValues.ToList();
-                    rSelection.DataBind();
+                    ProcessSelection();
+                }
+                else
+                {
+                    person.Person.LoadAttributes();
+                    _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" ).ToUpper();
+
+                    var abilityLevelDType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL_TYPE.AsGuid() );
+                    if ( abilityLevelDType != null )
+                    {
+                        rSelection.DataSource = abilityLevelDType.DefinedValues.ToList();
+                        rSelection.DataBind();
+                    }
                 }
             }
 

@@ -62,6 +62,16 @@ namespace Rock.Model
         public bool? IsActive { get; set; }
 
         /// <summary>
+        /// Gets or sets the workflow identifier prefix.
+        /// </summary>
+        /// <value>
+        /// The workflow identifier prefix.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string WorkflowIdPrefix { get; set; }
+
+        /// <summary>
         /// Gets or sets the friendly Name of the WorkflowType. This property is required.
         /// </summary>
         /// <value>
@@ -225,6 +235,35 @@ namespace Rock.Model
 
         #region Methods
 
+        /// <summary>
+        /// Pres the save changes.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state )
+        {
+            if ( state == System.Data.Entity.EntityState.Deleted )
+            {
+                // manually clear any registrations using this workflow type
+                foreach ( var template in new RegistrationTemplateService( dbContext as RockContext )
+                    .Queryable()
+                    .Where( r =>
+                        r.RegistrationWorkflowTypeId.HasValue &&
+                        r.RegistrationWorkflowTypeId.Value == this.Id ) )
+                {
+                    template.RegistrationWorkflowTypeId = null;
+                }
+
+                foreach ( var instance in new RegistrationInstanceService( dbContext as RockContext )
+                    .Queryable()
+                    .Where( r =>
+                        r.RegistrationWorkflowTypeId.HasValue &&
+                        r.RegistrationWorkflowTypeId.Value == this.Id ) )
+                {
+                    instance.RegistrationWorkflowTypeId = null;
+                }
+            }
+        }
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this WorkflowType.
         /// </summary>

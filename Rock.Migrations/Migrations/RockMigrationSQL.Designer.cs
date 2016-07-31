@@ -1770,11 +1770,10 @@ namespace Rock.Migrations.Migrations {
         ///	&lt;/summary&gt;
         ///&lt;/doc&gt;
         ///*/
-        ///ALTER PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_FirstLastEverDates]
+        ///CREATE PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_FirstLastEverDates]
         ///AS
         ///
-        ///BEGIN
-        /// [rest of string was truncated]&quot;;.
+        ///BEGIN        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201606091237191_GivingAnalyticsRefactor_FirstLastEverDates {
             get {
@@ -1783,22 +1782,21 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeFirstDates]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
-        ///DROP PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeFirstDates]
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spFinance_GivingAnalyticsQuery_PersonSummary]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_PersonSummary]
         ///GO
         ///
         ////*
         ///&lt;doc&gt;
         ///	&lt;summary&gt;
-        ///        This function return people who attended based on selected filter criteria and the first 5 dates they ever attended the selected group type
+        ///		This stored procedure returns data used by the giving analytics block
         ///	&lt;/summary&gt;
-        ///
-        ///	&lt;returns&gt;
-        ///		* PersonId
-        ///		* TimeAttending
-        ///		* SundayDate
-        ///	&lt;/returns&gt;
-        ///	&lt;param [rest of string was truncated]&quot;;.
+        ///&lt;/doc&gt;
+        ///*/
+        ///CREATE PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_PersonSummary]
+        ///	  @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @MinAmount decimal(18,2) = NULL [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201606091237191_GivingAnalyticsRefactor_PersonSummary {
             get {
@@ -1807,26 +1805,65 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeFirstDates]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
-        ///DROP PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeFirstDates]
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spFinance_GivingAnalyticsQuery_TransactionData]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_TransactionData]
         ///GO
         ///
         ////*
         ///&lt;doc&gt;
         ///	&lt;summary&gt;
-        ///        This function return people who attended based on selected filter criteria and the first 5 dates they ever attended the selected group type
+        ///		This stored procedure returns account totals for each giving leader based on filter values
         ///	&lt;/summary&gt;
-        ///
-        ///	&lt;returns&gt;
-        ///		* PersonId
-        ///		* TimeAttending
-        ///		* SundayDate
-        ///	&lt;/returns&gt;
-        ///	&lt;param [rest of string was truncated]&quot;;.
+        ///&lt;/doc&gt;
+        ///*/
+        ///CREATE PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_TransactionData]
+        ///	  @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @Acc [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201606091237191_GivingAnalyticsRefactor_TransactionData {
             get {
                 return ResourceManager.GetString("_201606091237191_GivingAnalyticsRefactor_TransactionData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- Add back defined value indexes that were removed
+        ///IF EXISTS ( SELECT * FROM sys.indexes WHERE name=&apos;IX_QualifierValueId&apos; AND object_id = OBJECT_ID(N&apos;[dbo].[Attendance]&apos;) )
+        ///DROP INDEX [IX_QualifierValueId] ON [dbo].[Attendance]
+        ///GO
+        ///
+        ///CREATE NONCLUSTERED INDEX [IX_QualifierValueId] ON [dbo].[Attendance] ( [QualifierValueId] ASC )
+        ///WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+        ///GO
+        ///
+        ///I [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201606231511599_RegistrationWorkflow_Indexes {
+            get {
+                return ResourceManager.GetString("_201606231511599_RegistrationWorkflow_Indexes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCrm_PersonDuplicateFinder]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spCrm_PersonDuplicateFinder]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure detects potential duplicate person records and stores the results in [PersonDuplicate]
+        ///	&lt;/summary&gt;
+        ///	
+        ///	&lt;remarks&gt;	
+        ///		Uses the following constants:
+        ///			* Group Type - Family: &apos;790E3215-3B10-442B-AF69-616C0DCB998E&apos;
+        ///            * Location Type - Home: &apos;8C52E53C-2A66-435A- [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201607102235065_ScheduledTransactionType {
+            get {
+                return ResourceManager.GetString("_201607102235065_ScheduledTransactionType", resourceCulture);
             }
         }
     }

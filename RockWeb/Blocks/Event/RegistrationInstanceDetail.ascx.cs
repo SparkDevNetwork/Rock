@@ -384,6 +384,8 @@ namespace RockWeb.Blocks.Event
         {
             RegistrationInstance instance = null;
 
+            bool newInstance = false;
+
             using ( var rockContext = new RockContext() )
             {
                 var service = new RegistrationInstanceService( rockContext );
@@ -399,6 +401,7 @@ namespace RockWeb.Blocks.Event
                     instance = new RegistrationInstance();
                     instance.RegistrationTemplateId = PageParameter( "RegistrationTemplateId" ).AsInteger();
                     service.Add( instance );
+                    newInstance = true;
                 }
 
                 rieDetails.GetValue( instance );
@@ -411,21 +414,32 @@ namespace RockWeb.Blocks.Event
                 rockContext.SaveChanges();
             }
 
-            // Reload instance and show readonly view
-            using ( var rockContext = new RockContext() )
+            if ( newInstance )
             {
-                instance = new RegistrationInstanceService( rockContext ).Get( instance.Id );
-                ShowReadonlyDetails( instance );
-            }
-
-            // show send payment reminder link
-            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentReminderPage" ) ) && ( ( instance.RegistrationTemplate.SetCostOnInstance.HasValue && instance.RegistrationTemplate.SetCostOnInstance == true && instance.Cost.HasValue && instance.Cost.Value > 0 ) || instance.RegistrationTemplate.Cost > 0 ) )
-            {
-                btnSendPaymentReminder.Visible = true;
+                var qryParams = new Dictionary<string, string>();
+                qryParams.Add( "RegistrationTemplateId", PageParameter( "RegistrationTemplateId" ) );
+                qryParams.Add( "RegistrationInstanceId", instance.Id.ToString() );
+                NavigateToCurrentPage( qryParams );
             }
             else
             {
-                btnSendPaymentReminder.Visible = false;
+
+                // Reload instance and show readonly view
+                using ( var rockContext = new RockContext() )
+                {
+                    instance = new RegistrationInstanceService( rockContext ).Get( instance.Id );
+                    ShowReadonlyDetails( instance );
+                }
+
+                // show send payment reminder link
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentReminderPage" ) ) && ( ( instance.RegistrationTemplate.SetCostOnInstance.HasValue && instance.RegistrationTemplate.SetCostOnInstance == true && instance.Cost.HasValue && instance.Cost.Value > 0 ) || instance.RegistrationTemplate.Cost > 0 ) )
+                {
+                    btnSendPaymentReminder.Visible = true;
+                }
+                else
+                {
+                    btnSendPaymentReminder.Visible = false;
+                }
             }
         }
 
@@ -1694,6 +1708,9 @@ namespace RockWeb.Blocks.Event
 
             lMaxAttendees.Visible = RegistrationInstance.MaxAttendees > 0;
             lMaxAttendees.Text = RegistrationInstance.MaxAttendees.ToString( "N0" );
+            lWorkflowType.Text = RegistrationInstance.RegistrationWorkflowType != null ?
+                RegistrationInstance.RegistrationWorkflowType.Name : string.Empty;
+            lWorkflowType.Visible = !string.IsNullOrWhiteSpace( lWorkflowType.Text );
 
             lDetails.Visible = !string.IsNullOrWhiteSpace( RegistrationInstance.Details );
             lDetails.Text = RegistrationInstance.Details;

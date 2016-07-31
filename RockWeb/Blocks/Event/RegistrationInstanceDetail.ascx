@@ -88,6 +88,7 @@
                             <div class="col-md-6">
                                 <Rock:RockLiteral ID="lName" runat="server" Label="Name" />
                                 <Rock:RockLiteral ID="lMaxAttendees" runat="server" Label="Maximum Attendees" />
+                                <Rock:RockLiteral ID="lWorkflowType" runat="server" Label="Registration Workflow" />
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockLiteral ID="lCost" runat="server" Label="Cost" />

@@ -90,7 +90,7 @@ BEGIN
     CREATE TABLE #PersonDuplicateByEmailTable (
          Email NVARCHAR(75) NOT NULL
         ,PersonAliasId INT NOT NULL
-        ,CONSTRAINT [pk_PersonDuplicateByEmailTable] PRIMARY KEY CLUSTERED (Email, PersonAliasId)
+        ,PRIMARY KEY CLUSTERED (Email, PersonAliasId)
         );
 
     INSERT INTO #PersonDuplicateByEmailTable (
@@ -100,7 +100,7 @@ BEGIN
     SELECT [e].[Email] [Email]
         ,[pa].[Id] [PersonAliasId]
     FROM (
-        SELECT [a].[Email]
+  SELECT [a].[Email]
         FROM (
             SELECT [Email]
                 ,COUNT(*) [EmailCount]
@@ -123,7 +123,7 @@ BEGIN
          First2 NVARCHAR(50) NOT NULL -- intentionally 50 vs 2 for performance reasons (sql server spends time on the length constraint if it's shorter than the source column)
         ,LastName NVARCHAR(50) NOT NULL
         ,PersonAliasId INT NOT NULL
-        ,CONSTRAINT [pk_PersonDuplicateByNameTable] PRIMARY KEY CLUSTERED (First2, LastName, PersonAliasId)
+        ,PRIMARY KEY CLUSTERED (First2, LastName, PersonAliasId)
         );
 
     INSERT INTO #PersonDuplicateByNameTable (
@@ -167,7 +167,7 @@ BEGIN
         ,NumberTypeValueId INT NOT NULL
 		,GroupId INT NOT NULL
         ,PersonAliasId INT NOT NULL
-        ,CONSTRAINT [pk_PersonDuplicateByPhoneTable] PRIMARY KEY CLUSTERED (Number, Extension, CountryCode, NumberTypeValueId, GroupId, PersonAliasId)
+        ,PRIMARY KEY CLUSTERED (Number, Extension, CountryCode, NumberTypeValueId, GroupId, PersonAliasId)
         );
 
     INSERT INTO #PersonDuplicateByPhoneTable (
@@ -230,7 +230,7 @@ BEGIN
         ,GroupRoleId INT NOT NULL
 		,GroupId INT NOT NULL
         ,PersonAliasId INT NOT NULL
-        ,CONSTRAINT [pk_PersonDuplicateByAddressTable] PRIMARY KEY CLUSTERED (LocationId, GroupRoleId, GroupId, PersonAliasId)
+        ,PRIMARY KEY CLUSTERED (LocationId, GroupRoleId, GroupId, PersonAliasId)
         );
 
     INSERT INTO #PersonDuplicateByAddressTable (

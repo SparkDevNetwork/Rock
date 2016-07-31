@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -9,9 +9,8 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Rock.Version</RootNamespace>
     <AssemblyName>Rock.Version</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <BuildServer>false</BuildServer>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -38,6 +37,7 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -52,20 +52,4 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <PropertyGroup>
-    <UnescapedMSBuildProjectDirectory>$([MSBuild]::Unescape('$(MSBuildProjectDirectory)'))</UnescapedMSBuildProjectDirectory>
-    <MSBuildCommunityTasksPath Condition="'$(MSBuildCommunityTasksPath)' == ''">$(UnescapedMSBuildProjectDirectory)\..\Build\MSBuildCommunityTasks</MSBuildCommunityTasksPath>
-  </PropertyGroup>
-  <Import Project="$(UnescapedMSBuildProjectDirectory)\..\Build\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets" Condition=" '$(Configuration)' == 'Release' and '$(BuildServer)' == 'true' " />
-  <Target Name="BeforeBuild" Condition=" '$(Configuration)' == 'Release' and '$(BuildServer)' == 'true' ">
-    <Message Text="Incrementing version number for Rock.Version into Properties\AssemblyInfo.partial.cs" />
-    <Version VersionFile="Properties\version.txt" Major="0" Minor="1" Build="0" BuildType="None" RevisionType="Increment">
-      <Output TaskParameter="Major" PropertyName="Major" />
-      <Output TaskParameter="Minor" PropertyName="Minor" />
-      <Output TaskParameter="Build" PropertyName="Build" />
-      <Output TaskParameter="Revision" PropertyName="Revision" />
-    </Version>
-    <AssemblyInfo CodeLanguage="CS" OutputFile="Properties\AssemblyInfo.partial.cs" AssemblyFileVersion="$(Major).$(Minor).$(Build).$(Revision)" />
-  </Target>
-  <!-- We'll also have a target that then invokes the package building tool here... -->
 </Project>

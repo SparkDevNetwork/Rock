@@ -6,20 +6,19 @@
         <asp:Repeater ID="rptrGroups" runat="server">
             <ItemTemplate>
 
-                <div class="persondetails-group rollover-container">
+                <div class="persondetails-group js-persondetails-group">
+                    <header>
+                        <h1><%# FormatAsHtmlTitle(Eval("Name").ToString()) %></h1>
 
-                    <div class="actions rollover-item">
-                        <asp:HyperLink ID="hlEditGroup" runat="server" AccessKey="O" CssClass="edit btn btn-action btn-xs"><i class="fa fa-pencil"></i> <asp:Literal ID="lEditGroup" runat="server" /></asp:HyperLink>
-                    </div>
+                        <div class="action-wrapper">
+                            <asp:HyperLink ID="hlShowMoreAttributes" runat="server" CssClass="action js-show-more-family-attributes"><i class="fa fa-chevron-down"></i></asp:HyperLink>
+                            <asp:HyperLink ID="hlEditGroup" runat="server" AccessKey="O" CssClass="action"><i class="fa fa-pencil"></i></asp:HyperLink>
+                        </div>              
+                    </header>
 
                     <div class="row">
-                
                         <div class="col-md-8 clearfix">
-
-                            <header class="title"><%# FormatAsHtmlTitle(Eval("Name").ToString()) %></header>
-
                             <ul class="groupmembers">
-
                                 <asp:Repeater ID="rptrMembers" runat="server">
                                     <ItemTemplate>
                                         <li class='<%# FormatPersonCssClass( (bool)Eval("Person.IsDeceased") ) %>'>
@@ -33,15 +32,11 @@
                                         </li>
                                     </ItemTemplate>
                                 </asp:Repeater>
-
                             </ul>
-
                         </div>
 
                         <div class="col-md-4 addresses clearfix">
-
-                            <ul class="list-unstyled">
-
+                            <ul class="list-unstyled margin-t-md">
                                 <asp:Repeater ID="rptrAddresses" runat="server">
                                     <ItemTemplate>
                                         <li class="address rollover-container clearfix">
@@ -63,12 +58,19 @@
                                         </li>
                                     </ItemTemplate>
                                 </asp:Repeater>
-
                             </ul>
-
                         </div>
 
                     </div>
+
+                    <asp:panel ID="pnlGroupAttributes" runat="server" CssClass="margin-l-md js-group-attributes" style="min-height: 22px;" >
+                        <div class="row">
+                            <asp:PlaceHolder ID="phGroupAttributes" runat="server" />
+                        </div>
+                        <div class="row js-more-group-attributes" style="display:none">
+                            <asp:PlaceHolder ID="phMoreGroupAttributes" runat="server" />
+                        </div>
+                    </asp:panel>
 
                 </div>
 

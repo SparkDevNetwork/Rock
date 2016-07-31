@@ -14,8 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
@@ -95,17 +97,26 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext"></param>
         /// <param name="entry"></param>
-        public override void PreSaveChanges( DbContext dbContext, DbEntityEntry entry )
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
         {
             if ( entry.State == System.Data.Entity.EntityState.Deleted )
             {
                 var routes = RouteTable.Routes;
                 if ( routes != null )
                 {
-                    var existingRoute = routes.OfType<Route>().FirstOrDefault( a => a.RouteId() == this.Id );
+                    var existingRoute = RouteTable.Routes.OfType<Route>().FirstOrDefault( a => a.RouteIds().Contains( this.Id ) );
                     if ( existingRoute != null )
                     {
-                        RouteTable.Routes.Remove( existingRoute );
+                        var pageAndRouteIds = existingRoute.DataTokens["PageRoutes"] as List<Rock.Web.PageAndRouteId>;
+                        pageAndRouteIds = pageAndRouteIds.Where( p => p.RouteId != this.Id ).ToList();
+                        if ( pageAndRouteIds.Any() )
+                        {
+                            existingRoute.DataTokens["PageRoutes"] = pageAndRouteIds;
+                        }
+                        else
+                        {
+                            RouteTable.Routes.Remove( existingRoute );
+                        }
                     }
                 }
             }

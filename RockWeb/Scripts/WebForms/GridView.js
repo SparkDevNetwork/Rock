@@ -1,4 +1,4 @@
-//CdnPath=http://ajax.aspnetcdn.com/ajax/4.5/6/GridView.js
+//CdnPath=http://ajax.aspnetcdn.com/ajax/4.5.1/1/GridView.js
 function GridView() {
     this.pageIndex = null;
     this.sortExpression = null;

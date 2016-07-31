@@ -14,6 +14,7 @@
                             <asp:Literal ID="lTitle" runat="server" >Workflow Entry</asp:Literal>
                         </h1>
                         <div class="panel-labels">
+                            <Rock:HighlightLabel ID="hlblWorkflowId" runat="server" LabelType="Info" />
                             <Rock:HighlightLabel ID="hlblDateAdded" runat="server" LabelType="Default" />
                         </div>
                     </div>
