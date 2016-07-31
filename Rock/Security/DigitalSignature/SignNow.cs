@@ -222,12 +222,49 @@ namespace Rock.Security.DigitalSignature
                 return null;
             }
 
-            // Send the invite
-            dynamic inviteObj = new
+            // Get the document to determine the roles (if any) are needed
+            JObject getDocumentRes = CudaSign.Document.Get( accessToken, documentId );
+            errors = ParseErrors( getDocumentRes );
+            if ( errors.Any() )
             {
-                from = GetAttributeValue( "Username" ),
-                to = email
-            };
+                errorMessage = errors.AsDelimited( "; " );
+                return null;
+            }
+
+            dynamic inviteObj = null;
+            JArray roles = getDocumentRes.Value<JArray>( "roles" );
+            if ( roles != null && roles.Count > 0 )
+            {
+                var to = new List<dynamic>();
+                foreach ( JObject role in roles )
+                {
+                    to.Add( new
+                    {
+                        email = email,
+                        role_id = string.Empty,
+                        role = role.Value<string>( "name" ),
+                        order = role.Value<int>( "signing_order" ),
+                        expiration_days = 15,
+                        reminder = 5
+                    } );
+                }
+
+                inviteObj = new
+                {
+                    from = GetAttributeValue( "Username" ),
+                    to = to.ToArray()
+                };
+            }
+            else
+            {
+                inviteObj = new
+                {
+                    from = GetAttributeValue( "Username" ),
+                    to = email
+                };
+            }
+
+            // Send the invite
             JObject inviteRes = CudaSign.Document.Invite( accessToken, documentId, inviteObj );
             errors = ParseErrors( inviteRes );
             if ( errors.Any() )
