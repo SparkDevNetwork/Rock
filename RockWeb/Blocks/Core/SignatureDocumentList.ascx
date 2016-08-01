@@ -17,7 +17,6 @@
                             <Columns>
                                 <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                                 <Rock:RockBoundField DataField="SignatureDocumentType.Name" HeaderText="Document Type" SortExpression="SignatureDocumentType.Name" />
-                                <Rock:RockBoundField DataField="DocumentKey" HeaderText="Document Key" SortExpression="DocumentKey" />
                                 <Rock:DateTimeField DataField="RequestDate" HeaderText="Request Date" SortExpression="RequestDate" />
                                 <Rock:PersonField DataField="AppliesToPersonAlias.Person" HeaderText="Applies To" />
                                 <Rock:PersonField DataField="AssignedToPersonAlias.Person" HeaderText="Assigned To" />
