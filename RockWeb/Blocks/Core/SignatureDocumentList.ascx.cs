@@ -42,12 +42,6 @@ namespace RockWeb.Blocks.Core
     [ContextAware( typeof( Person ) )]
     public partial class SignatureDocumentList : RockBlock, ISecondaryBlock
     {
-        #region Private Variables
-
-        private SignatureDocumentType _signatureDocumentType = null;
-
-        #endregion
-
         #region Properties 
 
         protected Person TargetPerson { get; private set; }

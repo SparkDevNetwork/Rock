@@ -25,8 +25,6 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
-    /// <seealso cref="Rock.Data.Model{Rock.Model.ContentChannelItemAssociation}" />
-    /// <seealso cref="Rock.Data.IOrdered" />
     [Table( "ContentChannelItemAssociation" )]
     [DataContract]
     public partial class ContentChannelItemAssociation : Model<ContentChannelItemAssociation>, IOrdered

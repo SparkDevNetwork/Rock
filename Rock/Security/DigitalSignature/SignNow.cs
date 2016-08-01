@@ -362,6 +362,13 @@ namespace Rock.Security.DigitalSignature
             return true;
         }
 
+        /// <summary>
+        /// Gets the document.
+        /// </summary>
+        /// <param name="document">The document.</param>
+        /// <param name="folderPath">The folder path.</param>
+        /// <param name="errors">The errors.</param>
+        /// <returns></returns>
         public override string GetDocument( SignatureDocument document, string folderPath, out List<string> errors )
         {
             errors = new List<string>();
