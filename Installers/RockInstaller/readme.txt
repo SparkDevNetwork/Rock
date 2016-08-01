@@ -81,28 +81,28 @@ ___ 10. Open the SQL file and make the following edits:
 
          * The script will have issues inserting into the [AttributeValue] table wiht its persisted
            computed column so:
-           1. Remove this line from the create table for [AttributeValue]
+           1. Remove the line from the create table for [AttributeValue] that is SIMILAR TO this (copy it for later):
                 [ValueAsNumeric]  AS (case when len([value])<(100) then case when isnumeric([value])=(1) AND NOT [value] like '%[^0-9.]%' then TRY_CAST([value] AS [numeric](38,10))  end  end) PERSISTED;
 
            2. Search for the lines
               SET IDENTITY_INSERT [dbo].[AttributeValue] OFF
               SET ANSI_PADDING OFF
          
-           ... and place the lines below under it ...
+           ... and place the lines below under it using the copy you made earlier...
               SET ANSI_NULLS ON
               GO
               SET QUOTED_IDENTIFIER ON
               GO
               SET ANSI_PADDING ON
               GO
-              ALTER TABLE [AttributeValue]
-                     ADD [ValueAsNumeric]  AS (case when len([value])<(100) then case when isnumeric([value])=(1) AND NOT [value] like '%[^0-9.]%' then TRY_CAST([value] AS [numeric](38,10))  end  end) PERSISTED;
+              ALTER TABLE [AttributeValue] ADD
+             		[ValueAsNumeric]  AS (case when len([value])<(100) then case when isnumeric([value])=(1) AND NOT [value] like '%[^0-9.]%' then TRY_CAST([value] AS [numeric](38,10))  end  end) PERSISTED;
 
-		 * Remove the following "WITH" options from any "CREATE SPATIAL INDEX" statements (to avoid problems with Azure SQL V2):
-			PAD_INDEX = OFF,
-			SORT_IN_TEMPDB = OFF,
-			ALLOW_ROW_LOCKS = ON,
-			ALLOW_PAGE_LOCKS = ON
+           3. Remove the following "WITH" options from any "CREATE SPATIAL INDEX" statements (to avoid problems with Azure SQL V2):
+              PAD_INDEX = OFF,
+              SORT_IN_TEMPDB = OFF,
+              ALLOW_ROW_LOCKS = ON,
+              ALLOW_PAGE_LOCKS = ON
 
 ___ 11. Zip the file into a new file named 'sql-latest.zip'
 
