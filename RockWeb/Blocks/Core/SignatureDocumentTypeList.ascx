@@ -15,8 +15,7 @@
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:RockBoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
                             <Rock:RockBoundField DataField="BinaryFileType" HeaderText="File Type" SortExpression="BinaryFileType.Name" />
-                            <Rock:RockBoundField DataField="ProviderTemplateKey" HeaderText="Provider Key" SortExpression="ProviderTemplateKey" />
-                            <Rock:RockBoundField DataField="Documents" HeaderText="Documents" SortExpression="Documents" DataFormatString="{0:N0}" />
+                            <Rock:RockBoundField DataField="Documents" HeaderText="Requested Documents" SortExpression="Documents" DataFormatString="{0:N0}" />
                             <Rock:SecurityField TitleField="Name" />
                             <Rock:DeleteField OnClick="gSignatureDocumentType_Delete" />
                         </Columns>

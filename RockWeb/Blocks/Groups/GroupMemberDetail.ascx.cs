@@ -594,23 +594,16 @@ namespace RockWeb.Blocks.Groups
                         documents.Where( d => d.Status == SignatureDocumentStatus.Sent ).Max( d => d.RequestDate ) : (DateTime?)null;
                     pnlRequiredSignatureDocument.Visible = true;
 
-                    StringBuilder sb = new StringBuilder();
-                    sb.AppendFormat(
-                            "This group requires that each member sign a {0} document and {1} has not yet signed this type of document",
-                            group.RequiredSignatureDocumentType.Name, groupMember.Person.NickName );
-
                     if ( lastSent.HasValue )
                     {
                         lbResendDocumentRequest.Text = "Resend Signature Request";
-                        sb.AppendFormat( " (a request was sent {0})", lastSent.Value.ToElapsedString() );
+                        lRequiredSignatureDocumentMessage.Text =string.Format("A signed {0} document has not yet been received for {1}. The last request was sent {2}.", group.RequiredSignatureDocumentType.Name, groupMember.Person.NickName, lastSent.Value.ToElapsedString() );
                     }
                     else
                     {
                         lbResendDocumentRequest.Text = "Send Signature Request";
+                        lRequiredSignatureDocumentMessage.Text = string.Format("The required {0} document has not yet been sent to {1} for signing.", group.RequiredSignatureDocumentType.Name, groupMember.Person.NickName );
                     }
-                    sb.Append( "." );
-
-                    lRequiredSignatureDocumentMessage.Text = sb.ToString();
                 }
                 else
                 {

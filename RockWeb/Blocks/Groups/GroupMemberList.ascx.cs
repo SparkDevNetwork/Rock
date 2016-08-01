@@ -1086,12 +1086,15 @@ namespace RockWeb.Blocks.Groups
                         Name =
                         ( isExporting ? m.Person.LastName + ", " + m.Person.NickName : string.Format( photoFormat, m.PersonId, m.Person.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-male.svg" ) ) +
                             m.Person.NickName + " " + m.Person.LastName
-                            + ( ( hasGroupRequirements && groupMemberIdsThatLackGroupRequirements.Contains( m.Id ) ) || personIdsThatHaventSigned.Contains( m.PersonId ) 
+                            + ( ( hasGroupRequirements && groupMemberIdsThatLackGroupRequirements.Contains( m.Id ) ) 
                                 ? " <i class='fa fa-exclamation-triangle text-warning'></i>"
                                 : string.Empty )
                             + ( !string.IsNullOrEmpty( m.Note )
                                 ? " <i class='fa fa-file-text-o text-info'></i>"
-                                : string.Empty ) ),
+                                : string.Empty )
+                            + ((personIdsThatHaventSigned.Contains( m.PersonId ))
+                                ? " <i class='fa fa-pencil-square-o text-danger'></i>"
+                                : string.Empty)),
                         m.Person.BirthDate,
                         m.Person.Age,
                         m.Person.ConnectionStatusValueId,

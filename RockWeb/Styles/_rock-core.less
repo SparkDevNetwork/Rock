@@ -138,6 +138,30 @@ a.warning {
     .alert-variant(@alert-default-bg; @alert-default-border; @alert-default-text);
 }
 
+// fix btn colors that are inside of panels
+.alert-warning {
+    .btn-warning {
+        color: @btn-warning-color;
+    }
+}
+
+.alert-danger {
+    .btn-danger {
+        color: @btn-danger-color;
+    }
+}
+
+.alert-info {
+    .btn-info {
+        color: @btn-info-color;
+    }
+}
+
+.alert-success {
+    .btn-success {
+        color: @btn-success-color;
+    }
+}
 
 // grid controls in asp.net center content using align=center but bootstrap overrides this 
 th[align=center] {

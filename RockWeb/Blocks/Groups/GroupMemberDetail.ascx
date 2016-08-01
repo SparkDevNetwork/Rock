@@ -27,11 +27,16 @@
                 <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" />
 
                 <asp:Panel ID="pnlRequiredSignatureDocument" runat="server" CssClass="alert alert-warning" Visible="false" >
-                    <asp:Literal ID="lRequiredSignatureDocumentMessage" runat="server" />
-                    <div class="actions margin-t-md">
-                        <asp:LinkButton ID="lbResendDocumentRequest" runat="server" Text="Send Signature Request" CssClass="btn btn-default" OnClick="lbResendDocumentRequest_Click" />
+                    
+                    <div class="row">
+                        <div class="col-md-9">
+                            <asp:Literal ID="lRequiredSignatureDocumentMessage" runat="server" />
+                        </div>
+                        <div class="col-md-3 text-right">
+                            <asp:LinkButton ID="lbResendDocumentRequest" runat="server" Text="Send Signature Request" CssClass="btn btn-warning btn-sm" OnClick="lbResendDocumentRequest_Click" />
+                        </div>
                     </div>
-                    <Rock:ModalAlert ID="maSignatureRequestSent" runat="server" Text="A Signature Request Has Been Sent!" Visible="false" />
+                    <Rock:ModalAlert ID="maSignatureRequestSent" runat="server" Text="A Signature Request Has Been Sent." Visible="false" />
                 </asp:Panel>
 
                 <Rock:NotificationBox ID="NotificationBox1" runat="server" NotificationBoxType="Danger">
