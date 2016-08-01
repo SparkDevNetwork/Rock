@@ -37,6 +37,8 @@ namespace Rock.Model
         /// <param name="appliesToPerson">The person.</param>
         /// <param name="assignedToPerson">The assigned to person.</param>
         /// <param name="documentName">Name of the document.</param>
+        /// <param name="alternateEmail">The alternate email.</param>
+        /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         public bool SendDocument( SignatureDocumentType signatureDocumentType, Person appliesToPerson, Person assignedToPerson, string documentName, string alternateEmail, out List<string> errorMessages )
         {

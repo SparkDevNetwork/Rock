@@ -446,6 +446,12 @@ namespace Rock.Web.Cache
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [requires encryption].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [requires encryption]; otherwise, <c>false</c>.
+        /// </value>
         public bool RequiresEncryption { get; set; }
 
         #endregion

@@ -38,7 +38,6 @@ namespace Rock.Security
         /// <summary>
         /// Abstract method for requesting a document be sent to recipient for signature
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="documentType">Type of the document.</param>
         /// <param name="email">The email.</param>
         /// <param name="documentName">Name of the document.</param>
@@ -49,7 +48,6 @@ namespace Rock.Security
         /// <summary>
         /// Resends the document.
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="document">The document.</param>
         /// <param name="email">The email.</param>
         /// <param name="errors">The errors.</param>
@@ -60,7 +58,6 @@ namespace Rock.Security
         /// <summary>
         /// Cancels the document.
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="document">The document.</param>
         /// <param name="errors">The errors.</param>
         /// <returns></returns>
