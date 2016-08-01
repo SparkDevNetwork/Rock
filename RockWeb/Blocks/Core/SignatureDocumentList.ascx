@@ -16,8 +16,8 @@
                         <Rock:Grid ID="gSignatureDocuments" runat="server" AllowPaging="true" OnRowSelected="gSignatureDocuments_Edit"  RowItemText="Document">
                             <Columns>
                                 <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                                <Rock:RockBoundField DataField="SignatureDocumentType.Name" HeaderText="Document Type" SortExpression="SignatureDocumentType.Name" />
-                                <Rock:DateTimeField DataField="RequestDate" HeaderText="Request Date" SortExpression="RequestDate" />
+                                <Rock:RockBoundField DataField="SignatureDocumentTemplate.Name" HeaderText="Document Type" SortExpression="SignatureDocumentTemplate.Name" />
+                                <Rock:DateTimeField DataField="LastInviteDate" HeaderText="Last Invite Date" SortExpression="LastInviteDate" />
                                 <Rock:PersonField DataField="AppliesToPersonAlias.Person" HeaderText="Applies To" />
                                 <Rock:PersonField DataField="AssignedToPersonAlias.Person" HeaderText="Assigned To" />
                                 <Rock:PersonField DataField="SignedByPersonAlias.Person" HeaderText="Signed By" />

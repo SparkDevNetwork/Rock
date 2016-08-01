@@ -980,13 +980,13 @@ namespace RockWeb.Blocks.Groups
 
                     // If there is a required signed document that member has not signed, show an icon in the grid
                     var personIdsThatHaventSigned = new List<int>();
-                    if ( _group.RequiredSignatureDocumentTypeId.HasValue )
+                    if ( _group.RequiredSignatureDocumentTemplateId.HasValue )
                     {
                         var memberPersonIds = groupMembersList.Select( m => m.PersonId ).ToList();
                         var personIdsThatHaveSigned = new SignatureDocumentService( rockContext )
                             .Queryable().AsNoTracking()
                             .Where( d =>
-                                d.SignatureDocumentTypeId == _group.RequiredSignatureDocumentTypeId.Value &&
+                                d.SignatureDocumentTemplateId == _group.RequiredSignatureDocumentTemplateId.Value &&
                                 d.Status == SignatureDocumentStatus.Signed &&
                                 memberPersonIds.Contains( d.AppliesToPersonAlias.PersonId ) )
                             .Select( d => d.AppliesToPersonAlias.PersonId )

@@ -49,10 +49,6 @@
       <HintPath>..\packages\CronExpressionDescriptor.1.19.0\lib\net45\CronExpressionDescriptor.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="CSLibrary, Version=2.0.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\CudaSign.2.0.5\lib\CSLibrary.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="CSScriptLibrary, Version=3.13.2.0, Culture=neutral, PublicKeyToken=70fcc3d18c749033, processorArchitecture=MSIL">
       <HintPath>..\packages\CS-Script.bin.3.13.2.0\lib\net45\CSScriptLibrary.dll</HintPath>
       <Private>True</Private>
@@ -548,6 +544,7 @@
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Jobs\LocationServicesVerify.cs" />
+    <Compile Include="Jobs\ProcessSignatureDocuments.cs" />
     <Compile Include="Jobs\ProcessWorkflows.cs" />
     <Compile Include="Jobs\RockCleanup.cs" />
     <Compile Include="Jobs\RockJobListener.cs" />
@@ -735,7 +732,7 @@
     <Compile Include="Model\CodeGenerated\ServiceJobService.cs" />
     <Compile Include="Model\CodeGenerated\ServiceLogService.cs" />
     <Compile Include="Model\CodeGenerated\SignatureDocumentService.cs" />
-    <Compile Include="Model\CodeGenerated\SignatureDocumentTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\SignatureDocumentTemplateService.cs" />
     <Compile Include="Model\CodeGenerated\SiteDomainService.cs" />
     <Compile Include="Model\CodeGenerated\SiteService.cs" />
     <Compile Include="Model\CodeGenerated\SystemEmailService.cs" />
@@ -917,8 +914,8 @@
     <Compile Include="Model\ServiceLog.cs" />
     <Compile Include="Model\SignatureDocument.cs" />
     <Compile Include="Model\SignatureDocumentService.Partial.cs" />
-    <Compile Include="Model\SignatureDocumentType.cs" />
-    <Compile Include="Model\SignatureDocumentTypeService.Partial.cs" />
+    <Compile Include="Model\SignatureDocumentTemplate.cs" />
+    <Compile Include="Model\SignatureDocumentTemplateService.Partial.cs" />
     <Compile Include="Model\Site.cs" />
     <Compile Include="Model\SiteDomain.cs" />
     <Compile Include="Model\SiteDomainService.Partial.cs" />
@@ -1100,7 +1097,6 @@
     <Compile Include="Security\BackgroundCheck\ProtectMyMinistry.cs" />
     <Compile Include="Security\DigitalSignatureComponent.cs" />
     <Compile Include="Security\DigitalSignatureContainer.cs" />
-    <Compile Include="Security\DigitalSignature\SignNow.cs" />
     <Compile Include="Security\Encryption.cs" />
     <Compile Include="Security\GlobalDefault.cs" />
     <Compile Include="Security\ISecured.cs" />

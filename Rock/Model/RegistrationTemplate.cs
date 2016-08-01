@@ -436,7 +436,7 @@ namespace Rock.Model
         /// The required signature document type identifier.
         /// </value>
         [DataMember]
-        public int? RequiredSignatureDocumentTypeId { get; set; }
+        public int? RequiredSignatureDocumentTemplateId { get; set; }
 
         /// <summary>
         /// Gets or sets the signature documentaction.
@@ -492,7 +492,7 @@ namespace Rock.Model
         /// The type of the required signature document.
         /// </value>
         [DataMember]
-        public virtual SignatureDocumentType RequiredSignatureDocumentType { get; set; }
+        public virtual SignatureDocumentTemplate RequiredSignatureDocumentTemplate { get; set; }
 
         /// <summary>
         /// Gets or sets the discounts.
@@ -584,7 +584,7 @@ namespace Rock.Model
             this.HasOptional( t => t.GroupType ).WithMany().HasForeignKey( t => t.GroupTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.FinancialGateway ).WithMany().HasForeignKey( t => t.FinancialGatewayId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.RegistrationWorkflowType ).WithMany().HasForeignKey( t => t.RegistrationWorkflowTypeId ).WillCascadeOnDelete( false );
-            this.HasOptional( t => t.RequiredSignatureDocumentType ).WithMany().HasForeignKey( t => t.RequiredSignatureDocumentTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.RequiredSignatureDocumentTemplate ).WithMany().HasForeignKey( t => t.RequiredSignatureDocumentTemplateId ).WillCascadeOnDelete( false );
         }
     }
 

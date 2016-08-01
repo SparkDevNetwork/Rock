@@ -35,13 +35,13 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the SignatureDocumentTypeId of the <see cref="Rock.Model.SignatureDocumentType"/> that this SignatureDocument instance is executing.
+        /// Gets or sets the SignatureDocumentTemplateId of the <see cref="Rock.Model.SignatureDocumentTemplate"/> that this SignatureDocument instance is executing.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the SignatureDocumentTypeId fo the <see cref="Rock.Model.SignatureDocumentType"/> that is being executed.
+        /// A <see cref="System.Int32"/> representing the SignatureDocumentTemplateId fo the <see cref="Rock.Model.SignatureDocumentTemplate"/> that is being executed.
         /// </value>
         [DataMember]
-        public int SignatureDocumentTypeId { get; set; }
+        public int SignatureDocumentTemplateId { get; set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -71,7 +71,16 @@ namespace Rock.Model
         /// The request date.
         /// </value>
         [DataMember]
-        public DateTime? RequestDate { get; set; }
+        public DateTime? LastInviteDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the invite count.
+        /// </summary>
+        /// <value>
+        /// The invite count.
+        /// </value>
+        [DataMember]
+        public int InviteCount { get; set; }
 
         /// <summary>
         /// Gets or sets the applies to person alias identifier.
@@ -132,13 +141,13 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.SignatureDocumentType"/> that is being executed in this persisted SignatureDocument instance.
+        /// Gets or sets the <see cref="Rock.Model.SignatureDocumentTemplate"/> that is being executed in this persisted SignatureDocument instance.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.SignatureDocumentType"/> that is being executed in this persisted SignatureDocument instance.
+        /// The <see cref="Rock.Model.SignatureDocumentTemplate"/> that is being executed in this persisted SignatureDocument instance.
         /// </value>
         [LavaInclude]
-        public virtual SignatureDocumentType SignatureDocumentType { get; set; }
+        public virtual SignatureDocumentTemplate SignatureDocumentTemplate { get; set; }
 
         /// <summary>
         /// Gets or sets the applies to person alias.
@@ -186,7 +195,7 @@ namespace Rock.Model
         {
             get
             {
-                return this.SignatureDocumentType != null ? this.SignatureDocumentType : base.ParentAuthority;
+                return this.SignatureDocumentTemplate != null ? this.SignatureDocumentTemplate : base.ParentAuthority;
             }
         }
 
@@ -221,7 +230,7 @@ namespace Rock.Model
         /// </summary>
         public SignatureDocumentConfiguration()
         {
-            this.HasRequired( d => d.SignatureDocumentType ).WithMany( t => t.Documents ).HasForeignKey( d => d.SignatureDocumentTypeId ).WillCascadeOnDelete( true );
+            this.HasRequired( d => d.SignatureDocumentTemplate ).WithMany( t => t.Documents ).HasForeignKey( d => d.SignatureDocumentTemplateId ).WillCascadeOnDelete( true );
             this.HasOptional( d => d.AppliesToPersonAlias ).WithMany().HasForeignKey( d => d.AppliesToPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( d => d.AssignedToPersonAlias ).WithMany().HasForeignKey( d => d.AssignedToPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( d => d.BinaryFile ).WithMany().HasForeignKey( d => d.BinaryFileId ).WillCascadeOnDelete( false );

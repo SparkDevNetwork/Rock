@@ -30,7 +30,7 @@ namespace Rock.Migrations
         public override void Up()
         {
             CreateTable(
-                "dbo.SignatureDocumentType",
+                "dbo.SignatureDocumentTemplate",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -71,7 +71,7 @@ namespace Rock.Migrations
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
-                        SignatureDocumentTypeId = c.Int(nullable: false),
+                        SignatureDocumentTemplateId = c.Int(nullable: false),
                         Name = c.String(nullable: false, maxLength: 250),
                         DocumentKey = c.String(maxLength: 200),
                         RequestDate = c.DateTime(),
@@ -96,9 +96,9 @@ namespace Rock.Migrations
                 .ForeignKey("dbo.BinaryFile", t => t.BinaryFileId)
                 .ForeignKey("dbo.PersonAlias", t => t.CreatedByPersonAliasId)
                 .ForeignKey("dbo.PersonAlias", t => t.ModifiedByPersonAliasId)
-                .ForeignKey("dbo.SignatureDocumentType", t => t.SignatureDocumentTypeId, cascadeDelete: true)
+                .ForeignKey("dbo.SignatureDocumentTemplate", t => t.SignatureDocumentTemplateId, cascadeDelete: true)
                 .ForeignKey("dbo.PersonAlias", t => t.SignedByPersonAliasId)
-                .Index(t => t.SignatureDocumentTypeId)
+                .Index(t => t.SignatureDocumentTemplateId)
                 .Index(t => t.AppliesToPersonAliasId)
                 .Index(t => t.AssignedToPersonAliasId)
                 .Index(t => t.BinaryFileId)
@@ -110,13 +110,13 @@ namespace Rock.Migrations
                 .Index(t => t.ForeignGuid)
                 .Index(t => t.ForeignKey);
             
-            AddColumn("dbo.Group", "RequiredSignatureDocumentTypeId", c => c.Int());
-            AddColumn("dbo.RegistrationTemplate", "RequiredSignatureDocumentTypeId", c => c.Int());
+            AddColumn("dbo.Group", "RequiredSignatureDocumentTemplateId", c => c.Int());
+            AddColumn("dbo.RegistrationTemplate", "RequiredSignatureDocumentTemplateId", c => c.Int());
             AddColumn("dbo.RegistrationTemplate", "SignatureDocumentAction", c => c.Int(nullable: false));
-            CreateIndex("dbo.Group", "RequiredSignatureDocumentTypeId");
-            CreateIndex("dbo.RegistrationTemplate", "RequiredSignatureDocumentTypeId");
-            AddForeignKey("dbo.RegistrationTemplate", "RequiredSignatureDocumentTypeId", "dbo.SignatureDocumentType", "Id");
-            AddForeignKey("dbo.Group", "RequiredSignatureDocumentTypeId", "dbo.SignatureDocumentType", "Id");
+            CreateIndex("dbo.Group", "RequiredSignatureDocumentTemplateId");
+            CreateIndex("dbo.RegistrationTemplate", "RequiredSignatureDocumentTemplateId");
+            AddForeignKey("dbo.RegistrationTemplate", "RequiredSignatureDocumentTemplateId", "dbo.SignatureDocumentTemplate", "Id");
+            AddForeignKey("dbo.Group", "RequiredSignatureDocumentTemplateId", "dbo.SignatureDocumentTemplate", "Id");
 
             RockMigrationHelper.UpdateBinaryFileType( "0AA42802-04FD-4AEC-B011-FEB127FC85CD", "Digitally Signed Documents", "Documents that are digitally signed", "", "40871411-4E2D-45C2-9E21-D9FCBA5FC340", false, true );
 
@@ -127,8 +127,8 @@ namespace Rock.Migrations
 
             RockMigrationHelper.UpdateBlockType( "Signature Document Detail", "Displays the details of a given signature document.", "~/Blocks/Core/SignatureDocumentDetail.ascx", "Core", "01D23E86-51DC-496D-BB3E-0CEF5094F304" );
             RockMigrationHelper.UpdateBlockType( "Signature Document List", "Block for viewing values for a signature document type.", "~/Blocks/Core/SignatureDocumentList.ascx", "Core", "256F6FDB-B241-4DE6-9C38-0E9DA0270A22" );
-            RockMigrationHelper.UpdateBlockType( "Signature Document Type Detail", "Displays the details of the given signature document type.", "~/Blocks/Core/SignatureDocumentTypeDetail.ascx", "Core", "9F26A1DA-74AE-4CB7-BABC-6AE81A581A06" );
-            RockMigrationHelper.UpdateBlockType( "Signature Document Type List", "Lists all the signature document types and allows for managing them.", "~/Blocks/Core/SignatureDocumentTypeList.ascx", "Core", "2E413152-B790-4EC2-84A9-9B48D2717D63" );
+            RockMigrationHelper.UpdateBlockType( "Signature Document Type Detail", "Displays the details of the given signature document type.", "~/Blocks/Core/SignatureDocumentTemplateDetail.ascx", "Core", "9F26A1DA-74AE-4CB7-BABC-6AE81A581A06" );
+            RockMigrationHelper.UpdateBlockType( "Signature Document Type List", "Lists all the signature document types and allows for managing them.", "~/Blocks/Core/SignatureDocumentTemplateList.ascx", "Core", "2E413152-B790-4EC2-84A9-9B48D2717D63" );
 
             // Add Block to Page: Signature Documents, Site: Rock RMS
             RockMigrationHelper.AddBlock( "CB1C42A2-285C-4BC5-BB2C-DC442C8A97C2", "", "2E413152-B790-4EC2-84A9-9B48D2717D63", "Signature Document Type List", "Main", "", "", 0, "29D8EF57-A485-4996-931C-6289256BE1E5" );
@@ -215,19 +215,19 @@ namespace Rock.Migrations
             RockMigrationHelper.DeletePage( "7096FA12-07A5-489C-83B0-EE55494A3484" ); //  Page: Document Type, Layout: Full Width, Site: Rock RMS
             RockMigrationHelper.DeletePage( "CB1C42A2-285C-4BC5-BB2C-DC442C8A97C2" ); //  Page: Signature Documents, Layout: Full Width, Site: Rock RMS
 
-            DropForeignKey( "dbo.Group", "RequiredSignatureDocumentTypeId", "dbo.SignatureDocumentType");
-            DropForeignKey("dbo.RegistrationTemplate", "RequiredSignatureDocumentTypeId", "dbo.SignatureDocumentType");
-            DropForeignKey("dbo.SignatureDocumentType", "ProviderEntityTypeId", "dbo.EntityType");
-            DropForeignKey("dbo.SignatureDocumentType", "ModifiedByPersonAliasId", "dbo.PersonAlias");
+            DropForeignKey( "dbo.Group", "RequiredSignatureDocumentTemplateId", "dbo.SignatureDocumentTemplate");
+            DropForeignKey("dbo.RegistrationTemplate", "RequiredSignatureDocumentTemplateId", "dbo.SignatureDocumentTemplate");
+            DropForeignKey("dbo.SignatureDocumentTemplate", "ProviderEntityTypeId", "dbo.EntityType");
+            DropForeignKey("dbo.SignatureDocumentTemplate", "ModifiedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.SignatureDocument", "SignedByPersonAliasId", "dbo.PersonAlias");
-            DropForeignKey("dbo.SignatureDocument", "SignatureDocumentTypeId", "dbo.SignatureDocumentType");
+            DropForeignKey("dbo.SignatureDocument", "SignatureDocumentTemplateId", "dbo.SignatureDocumentTemplate");
             DropForeignKey("dbo.SignatureDocument", "ModifiedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.SignatureDocument", "CreatedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.SignatureDocument", "BinaryFileId", "dbo.BinaryFile");
             DropForeignKey("dbo.SignatureDocument", "AssignedToPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.SignatureDocument", "AppliesToPersonAliasId", "dbo.PersonAlias");
-            DropForeignKey("dbo.SignatureDocumentType", "CreatedByPersonAliasId", "dbo.PersonAlias");
-            DropForeignKey("dbo.SignatureDocumentType", "BinaryFileTypeId", "dbo.BinaryFileType");
+            DropForeignKey("dbo.SignatureDocumentTemplate", "CreatedByPersonAliasId", "dbo.PersonAlias");
+            DropForeignKey("dbo.SignatureDocumentTemplate", "BinaryFileTypeId", "dbo.BinaryFileType");
             DropIndex("dbo.SignatureDocument", new[] { "ForeignKey" });
             DropIndex("dbo.SignatureDocument", new[] { "ForeignGuid" });
             DropIndex("dbo.SignatureDocument", new[] { "ForeignId" });
@@ -238,22 +238,22 @@ namespace Rock.Migrations
             DropIndex("dbo.SignatureDocument", new[] { "BinaryFileId" });
             DropIndex("dbo.SignatureDocument", new[] { "AssignedToPersonAliasId" });
             DropIndex("dbo.SignatureDocument", new[] { "AppliesToPersonAliasId" });
-            DropIndex("dbo.SignatureDocument", new[] { "SignatureDocumentTypeId" });
-            DropIndex("dbo.SignatureDocumentType", new[] { "ForeignKey" });
-            DropIndex("dbo.SignatureDocumentType", new[] { "ForeignGuid" });
-            DropIndex("dbo.SignatureDocumentType", new[] { "ForeignId" });
-            DropIndex("dbo.SignatureDocumentType", new[] { "Guid" });
-            DropIndex("dbo.SignatureDocumentType", new[] { "ModifiedByPersonAliasId" });
-            DropIndex("dbo.SignatureDocumentType", new[] { "CreatedByPersonAliasId" });
-            DropIndex("dbo.SignatureDocumentType", new[] { "BinaryFileTypeId" });
-            DropIndex("dbo.SignatureDocumentType", new[] { "ProviderEntityTypeId" });
-            DropIndex("dbo.RegistrationTemplate", new[] { "RequiredSignatureDocumentTypeId" });
-            DropIndex("dbo.Group", new[] { "RequiredSignatureDocumentTypeId" });
+            DropIndex("dbo.SignatureDocument", new[] { "SignatureDocumentTemplateId" });
+            DropIndex("dbo.SignatureDocumentTemplate", new[] { "ForeignKey" });
+            DropIndex("dbo.SignatureDocumentTemplate", new[] { "ForeignGuid" });
+            DropIndex("dbo.SignatureDocumentTemplate", new[] { "ForeignId" });
+            DropIndex("dbo.SignatureDocumentTemplate", new[] { "Guid" });
+            DropIndex("dbo.SignatureDocumentTemplate", new[] { "ModifiedByPersonAliasId" });
+            DropIndex("dbo.SignatureDocumentTemplate", new[] { "CreatedByPersonAliasId" });
+            DropIndex("dbo.SignatureDocumentTemplate", new[] { "BinaryFileTypeId" });
+            DropIndex("dbo.SignatureDocumentTemplate", new[] { "ProviderEntityTypeId" });
+            DropIndex("dbo.RegistrationTemplate", new[] { "RequiredSignatureDocumentTemplateId" });
+            DropIndex("dbo.Group", new[] { "RequiredSignatureDocumentTemplateId" });
             DropColumn("dbo.RegistrationTemplate", "SignatureDocumentAction");
-            DropColumn("dbo.RegistrationTemplate", "RequiredSignatureDocumentTypeId");
-            DropColumn("dbo.Group", "RequiredSignatureDocumentTypeId");
+            DropColumn("dbo.RegistrationTemplate", "RequiredSignatureDocumentTemplateId");
+            DropColumn("dbo.Group", "RequiredSignatureDocumentTemplateId");
             DropTable("dbo.SignatureDocument");
-            DropTable("dbo.SignatureDocumentType");
+            DropTable("dbo.SignatureDocumentTemplate");
         }
     }
 }

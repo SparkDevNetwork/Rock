@@ -10,7 +10,7 @@
             <div class="panel-body">
                 <div class="grid grid-panel">
                     <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-                    <Rock:Grid ID="gSignatureDocumentTemplates" runat="server" AllowSorting="true" OnRowSelected="gSignatureDocumentTemplate_Edit" TooltipField="Description" RowItemText="Document Template">
+                    <Rock:Grid ID="gSignatureDocumentTemplate" runat="server" AllowSorting="true" OnRowSelected="gSignatureDocumentTemplate_Edit" TooltipField="Description" RowItemText="Document Template">
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:RockBoundField DataField="Description" HeaderText="Description" SortExpression="Description" />

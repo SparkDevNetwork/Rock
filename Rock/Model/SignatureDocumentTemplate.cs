@@ -26,20 +26,20 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// SignatureDocumentType Entity.
+    /// SignatureDocumentTemplate Entity.
     /// </summary>
-    [Table( "SignatureDocumentType" )]
+    [Table( "SignatureDocumentTemplate" )]
     [DataContract]
-    public partial class SignatureDocumentType : Model<SignatureDocumentType>
+    public partial class SignatureDocumentTemplate : Model<SignatureDocumentTemplate>
     {
 
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the friendly Name of the SignatureDocumentType. This property is required.
+        /// Gets or sets the friendly Name of the SignatureDocumentTemplate. This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the friendly Name of the SignatureDocumentType.
+        /// A <see cref="System.String"/> representing the friendly Name of the SignatureDocumentTemplate.
         /// </value>
         [Required]
         [MaxLength( 100 )]
@@ -48,10 +48,10 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets a user defined description or summary about the SignatureDocumentType.
+        /// Gets or sets a user defined description or summary about the SignatureDocumentTemplate.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing a description/summary of the SignatureDocumentType.
+        /// A <see cref="System.String"/> representing a description/summary of the SignatureDocumentTemplate.
         /// </value>
         [DataMember]
         public string Description { get; set; }
@@ -85,40 +85,13 @@ namespace Rock.Model
         public int? BinaryFileTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the request email template from.
+        /// Gets or sets the invite system email identifier.
         /// </summary>
         /// <value>
-        /// The name of the request email template from.
+        /// The invite system email identifier.
         /// </value>
         [DataMember]
-        public string RequestEmailTemplateFromName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the request email template from address.
-        /// </summary>
-        /// <value>
-        /// The request email template from address.
-        /// </value>
-        [DataMember]
-        public string RequestEmailTemplateFromAddress { get; set; }
-
-        /// <summary>
-        /// Gets or sets the request email template subject.
-        /// </summary>
-        /// <value>
-        /// The request email template subject.
-        /// </value>
-        [DataMember]
-        public string RequestEmailTemplateSubject { get; set; }
-
-        /// <summary>
-        /// Gets or sets the request email template body.
-        /// </summary>
-        /// <value>
-        /// The request email template body.
-        /// </value>
-        [DataMember]
-        public string RequestEmailTemplateBody { get; set; }
+        public int? InviteSystemEmailId { get; set; }
 
         #endregion
 
@@ -143,6 +116,15 @@ namespace Rock.Model
         public virtual BinaryFileType BinaryFileType { get; set; }
 
         /// <summary>
+        /// Gets or sets the type of the binary file.
+        /// </summary>
+        /// <value>
+        /// The type of the binary file.
+        /// </value>
+        [DataMember]
+        public virtual SystemEmail InviteSystemEmail { get; set; }
+
+        /// <summary>
         /// Gets or sets the documents.
         /// </summary>
         /// <value>
@@ -160,10 +142,10 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this SignatureDocumentType.
+        /// Returns a <see cref="System.String" /> that represents this SignatureDocumentTemplate.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String" /> that represents this SignatureDocumentType.
+        /// A <see cref="System.String" /> that represents this SignatureDocumentTemplate.
         /// </returns>
         public override string ToString()
         {
@@ -178,17 +160,18 @@ namespace Rock.Model
     #region Entity Configuration
 
     /// <summary>
-    /// SignatureDocumentType Configuration class.
+    /// SignatureDocumentTemplate Configuration class.
     /// </summary>
-    public partial class SignatureDocumentTypeConfiguration : EntityTypeConfiguration<SignatureDocumentType>
+    public partial class SignatureDocumentTemplateConfiguration : EntityTypeConfiguration<SignatureDocumentTemplate>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="SignatureDocumentTypeConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="SignatureDocumentTemplateConfiguration"/> class.
         /// </summary>
-        public SignatureDocumentTypeConfiguration()
+        public SignatureDocumentTemplateConfiguration()
         {
-            this.HasOptional( m => m.BinaryFileType ).WithMany().HasForeignKey( m => m.BinaryFileTypeId ).WillCascadeOnDelete( false );
-            this.HasOptional( m => m.ProviderEntityType ).WithMany().HasForeignKey( a => a.ProviderEntityTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.BinaryFileType ).WithMany().HasForeignKey( t => t.BinaryFileTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.ProviderEntityType ).WithMany().HasForeignKey( t => t.ProviderEntityTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.InviteSystemEmail ).WithMany().HasForeignKey( t => t.InviteSystemEmailId ).WillCascadeOnDelete( false );
         }
     }
 

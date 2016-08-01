@@ -2,7 +2,7 @@
 
 <asp:UpdatePanel ID="upnlSettings" runat="server">
     <ContentTemplate>
-        <asp:HiddenField ID="hfSignatureDocumentTypeId" runat="server" />
+        <asp:HiddenField ID="hfSignatureDocumentTemplateId" runat="server" />
 
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" Visible="false">
 
@@ -19,7 +19,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DataTextBox ID="tbTypeName" runat="server" SourceTypeName="Rock.Model.SignatureDocumentType, Rock" PropertyName="Name" />
+                            <Rock:DataTextBox ID="tbTypeName" runat="server" SourceTypeName="Rock.Model.SignatureDocumentTemplate, Rock" PropertyName="Name" />
                         </div>
                         <div class="col-md-6">
                         </div>
@@ -27,18 +27,20 @@
 
                     <div class="row">
                         <div class="col-md-12">
-                            <Rock:DataTextBox ID="tbTypeDescription" runat="server" SourceTypeName="Rock.Model.SignatureDocumentType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" ValidateRequestMode="Disabled" />
+                            <Rock:DataTextBox ID="tbTypeDescription" runat="server" SourceTypeName="Rock.Model.SignatureDocumentTemplate, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" ValidateRequestMode="Disabled" />
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:ComponentPicker ID="cpProvider" runat="server" ContainerType="Rock.Security.DigitalSignatureContainer, Rock" Label="Digital Signature Provider" OnSelectedIndexChanged="cpProvider_SelectedIndexChanged" AutoPostBack="true" Required="true" />
-                            <Rock:RockDropDownList ID="ddlTemplate" runat="server" Label="Template" Help="A template that has been created with your digital signature provider" />
+                            <Rock:RockDropDownList ID="ddlTemplate" runat="server" Label="Template" Help="A template that has been created with your digital signature provider" Required="true" />
                         </div>
                         <div class="col-md-6">
                             <Rock:BinaryFileTypePicker ID="bftpFileType" runat="server" Label="File Type" Required="true" 
                                 Help="The file type to use when saving signed documents of this type." />
+                            <Rock:RockDropDownList ID="ddlSystemEmail" runat="server" Label="Invite Email" Required="true"
+                                Help="The System Email that should be sent when requesting a signature for documents of this type." />
                         </div>
                     </div>
 

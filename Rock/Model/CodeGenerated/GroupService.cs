@@ -149,7 +149,7 @@ namespace Rock.Model
             target.Name = source.Name;
             target.Order = source.Order;
             target.ParentGroupId = source.ParentGroupId;
-            target.RequiredSignatureDocumentTypeId = source.RequiredSignatureDocumentTypeId;
+            target.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
             target.ScheduleId = source.ScheduleId;
             target.SyncDataViewId = source.SyncDataViewId;
             target.WelcomeSystemEmailId = source.WelcomeSystemEmailId;

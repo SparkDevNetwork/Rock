@@ -1479,7 +1479,7 @@ namespace RockWeb.Blocks.Event
                 {
                     if ( isNewRegistration )
                     {
-                        if ( RegistrationTemplate.RequiredSignatureDocumentTypeId.HasValue )
+                        if ( RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue )
                         {
                             string email = newRegistration.ConfirmationEmail;
                             if ( string.IsNullOrWhiteSpace( email ) && newRegistration.PersonAlias != null && newRegistration.PersonAlias.Person != null )
@@ -1512,10 +1512,10 @@ namespace RockWeb.Blocks.Event
                                 }
 
                                 var sendDocumentTxn = new Rock.Transactions.SendDigitalSignatureRequestTransaction();
-                                sendDocumentTxn.SignatureDocumentTypeId = RegistrationTemplate.RequiredSignatureDocumentTypeId.Value;
+                                sendDocumentTxn.SignatureDocumentTemplateId = RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value;
                                 sendDocumentTxn.AppliesToPersonAliasId = registrant.PersonAlias.Id;
                                 sendDocumentTxn.AssignedToPersonAliasId = assignedTo.PrimaryAliasId ?? 0;
-                                sendDocumentTxn.DocumentName = RegistrationInstanceState.Name;
+                                sendDocumentTxn.DocumentName = string.Format( "{0}_{1}", RegistrationInstanceState.Name.RemoveSpecialCharacters(), assignedTo.FullName.RemoveSpecialCharacters() );
                                 sendDocumentTxn.Email = email;
                                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( sendDocumentTxn );
                             }

@@ -556,7 +556,7 @@ namespace RockWeb.Blocks.Groups
             group.GroupTypeId = CurrentGroupTypeId;
             group.ParentGroupId = gpParentGroup.SelectedValueAsInt();
             group.GroupCapacity = nbGroupCapacity.Text.AsIntegerOrNull();
-            group.RequiredSignatureDocumentTypeId = ddlSignatureDocumentType.SelectedValueAsInt();
+            group.RequiredSignatureDocumentTemplateId = ddlSignatureDocumentTemplate.SelectedValueAsInt();
             group.IsSecurityRole = cbIsSecurityRole.Checked;
             group.IsActive = cbIsActive.Checked;
             group.IsPublic = cbIsPublic.Checked;
@@ -1167,7 +1167,7 @@ namespace RockWeb.Blocks.Groups
 
             LoadDropDowns( rockContext );
 
-            ddlSignatureDocumentType.SetValue( group.RequiredSignatureDocumentTypeId );
+            ddlSignatureDocumentTemplate.SetValue( group.RequiredSignatureDocumentTemplateId );
             gpParentGroup.SetValue( group.ParentGroup ?? groupService.Get( group.ParentGroupId ?? 0 ) );
 
             // hide sync and requirements panel if no admin access
@@ -1453,9 +1453,9 @@ namespace RockWeb.Blocks.Groups
                 descriptionList.Add( "Parent Group", group.ParentGroup.Name );
             }
 
-            if ( group.RequiredSignatureDocumentType != null )
+            if ( group.RequiredSignatureDocumentTemplate != null )
             {
-                descriptionList.Add( "Required Signed Document", group.RequiredSignatureDocumentType.Name );
+                descriptionList.Add( "Required Signed Document", group.RequiredSignatureDocumentTemplate.Name );
             }
 
             if ( group.Schedule != null )
@@ -1739,13 +1739,13 @@ namespace RockWeb.Blocks.Groups
             ddlCampus.DataBind();
             ddlCampus.Items.Insert( 0, new ListItem( None.Text, None.IdValue ) );
 
-            ddlSignatureDocumentType.Items.Clear();
-            ddlSignatureDocumentType.Items.Add( new ListItem() );
-            foreach ( var documentType in new SignatureDocumentTypeService( rockContext )
+            ddlSignatureDocumentTemplate.Items.Clear();
+            ddlSignatureDocumentTemplate.Items.Add( new ListItem() );
+            foreach ( var documentType in new SignatureDocumentTemplateService( rockContext )
                 .Queryable().AsNoTracking()
                 .OrderBy( t => t.Name ) )
             {
-                ddlSignatureDocumentType.Items.Add( new ListItem( documentType.Name, documentType.Id.ToString() ) );
+                ddlSignatureDocumentTemplate.Items.Add( new ListItem( documentType.Name, documentType.Id.ToString() ) );
             }
         }
 

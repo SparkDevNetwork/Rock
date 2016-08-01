@@ -29,15 +29,15 @@ namespace Rock.Model
     public partial class SignatureDocumentService 
     {
         /// <summary>
-        /// Returns an enumerable collection of <see cref="Rock.Model.SignatureDocument">SignatureDocuments</see> that belong to a specified <see cref="Rock.Model.SignatureDocumentType"/> retrieved by the SignatureDocumentType's SignatureDocumentTypeId.
+        /// Returns an enumerable collection of <see cref="Rock.Model.SignatureDocument">SignatureDocuments</see> that belong to a specified <see cref="Rock.Model.SignatureDocumentTemplate"/> retrieved by the SignatureDocumentTemplate's SignatureDocumentTemplateId.
         /// </summary>
-        /// <param name="definedTypeId">A <see cref="System.Int32"/> representing the SignatureDocumentTypeId of the <see cref="Rock.Model.SignatureDocumentType"/> to retrieve <see cref="Rock.Model.SignatureDocument">SignatureDocuments</see> for.</param>
-        /// <returns>An enumerable collection of <see cref="Rock.Model.SignatureDocument">SignatureDocuments</see> that belong to the specified <see cref="Rock.Model.SignatureDocumentType"/>. The <see cref="Rock.Model.SignatureDocument">SignatureDocuments</see> will 
+        /// <param name="definedTypeId">A <see cref="System.Int32"/> representing the SignatureDocumentTemplateId of the <see cref="Rock.Model.SignatureDocumentTemplate"/> to retrieve <see cref="Rock.Model.SignatureDocument">SignatureDocuments</see> for.</param>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.SignatureDocument">SignatureDocuments</see> that belong to the specified <see cref="Rock.Model.SignatureDocumentTemplate"/>. The <see cref="Rock.Model.SignatureDocument">SignatureDocuments</see> will 
         /// be ordered by the <see cref="SignatureDocument">SignatureDocument's</see> Order property.</returns>
-        public IOrderedQueryable<SignatureDocument> GetBySignatureDocumentTypeId( int definedTypeId )
+        public IOrderedQueryable<SignatureDocument> GetBySignatureDocumentTemplateId( int definedTypeId )
         {
             return Queryable()
-                .Where( t => t.SignatureDocumentTypeId == definedTypeId )
+                .Where( t => t.SignatureDocumentTemplateId == definedTypeId )
                 .OrderBy( t => t.Name );
         }
 

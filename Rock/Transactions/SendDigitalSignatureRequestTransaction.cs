@@ -32,7 +32,7 @@ namespace Rock.Transactions
         /// <value>
         /// The signature document type identifier.
         /// </value>
-        public int SignatureDocumentTypeId { get; set; }
+        public int SignatureDocumentTemplateId { get; set; }
 
         /// <summary>
         /// Gets or sets the applies to person alias identifier.
@@ -77,11 +77,11 @@ namespace Rock.Transactions
                 var appliesPerson = personAliasService.GetPerson( AppliesToPersonAliasId );
                 var assignedPerson = personAliasService.GetPerson( AssignedToPersonAliasId );
 
-                var documentTypeService = new SignatureDocumentTypeService( rockContext );
-                var signatureDocumentType = documentTypeService.Get( SignatureDocumentTypeId );
+                var documentTypeService = new SignatureDocumentTemplateService( rockContext );
+                var SignatureDocumentTemplate = documentTypeService.Get( SignatureDocumentTemplateId );
 
                 var errorMessages = new List<string>();
-                if ( documentTypeService.SendDocument( signatureDocumentType, appliesPerson, assignedPerson, DocumentName, Email, out errorMessages ) )
+                if ( documentTypeService.SendDocument( SignatureDocumentTemplate, appliesPerson, assignedPerson, DocumentName, Email, out errorMessages ) )
                 {
                     rockContext.SaveChanges();
                 }

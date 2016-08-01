@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <views>
-  <mapping-views hash="b2fdca97eb84ad83a970109d986e0413ede2101cd703c01865bac30b83dc76d2" conceptual-container="RockContext" store-container="CodeFirstDatabase">
+  <mapping-views hash="fc116b3415545758c118eb48e0de829287a44950f93947b9ac5148cb3f0789bf" conceptual-container="RockContext" store-container="CodeFirstDatabase">
     <view extent="CodeFirstDatabase.AttendanceCode"><![CDATA[
     SELECT VALUE -- Constructing AttendanceCode
         [CodeFirstDatabaseSchema.AttendanceCode](T1.AttendanceCode_Id, T1.AttendanceCode_IssueDateTime, T1.AttendanceCode_Code, T1.AttendanceCode_Guid, T1.AttendanceCode_ForeignId, T1.AttendanceCode_ForeignGuid, T1.AttendanceCode_ForeignKey)
@@ -266,7 +266,7 @@
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.Group"><![CDATA[
     SELECT VALUE -- Constructing Group
-        [CodeFirstDatabaseSchema.Group](T1.Group_Id, T1.Group_IsSystem, T1.Group_ParentGroupId, T1.Group_GroupTypeId, T1.Group_CampusId, T1.Group_ScheduleId, T1.Group_Name, T1.Group_Description, T1.Group_IsSecurityRole, T1.Group_IsActive, T1.Group_Order, T1.Group_AllowGuests, T1.Group_WelcomeSystemEmailId, T1.Group_ExitSystemEmailId, T1.Group_SyncDataViewId, T1.Group_AddUserAccountsDuringSync, T1.Group_MustMeetRequirementsToAddMember, T1.Group_IsPublic, T1.Group_GroupCapacity, T1.Group_RequiredSignatureDocumentTypeId, T1.Group_CreatedDateTime, T1.Group_ModifiedDateTime, T1.Group_CreatedByPersonAliasId, T1.Group_ModifiedByPersonAliasId, T1.Group_Guid, T1.Group_ForeignId, T1.Group_ForeignGuid, T1.Group_ForeignKey)
+        [CodeFirstDatabaseSchema.Group](T1.Group_Id, T1.Group_IsSystem, T1.Group_ParentGroupId, T1.Group_GroupTypeId, T1.Group_CampusId, T1.Group_ScheduleId, T1.Group_Name, T1.Group_Description, T1.Group_IsSecurityRole, T1.Group_IsActive, T1.Group_Order, T1.Group_AllowGuests, T1.Group_WelcomeSystemEmailId, T1.Group_ExitSystemEmailId, T1.Group_SyncDataViewId, T1.Group_AddUserAccountsDuringSync, T1.Group_MustMeetRequirementsToAddMember, T1.Group_IsPublic, T1.Group_GroupCapacity, T1.Group_RequiredSignatureDocumentTemplateId, T1.Group_CreatedDateTime, T1.Group_ModifiedDateTime, T1.Group_CreatedByPersonAliasId, T1.Group_ModifiedByPersonAliasId, T1.Group_Guid, T1.Group_ForeignId, T1.Group_ForeignGuid, T1.Group_ForeignKey)
     FROM (
         SELECT 
             T.Id AS Group_Id, 
@@ -288,7 +288,7 @@
             T.MustMeetRequirementsToAddMember AS Group_MustMeetRequirementsToAddMember, 
             T.IsPublic AS Group_IsPublic, 
             T.GroupCapacity AS Group_GroupCapacity, 
-            T.RequiredSignatureDocumentTypeId AS Group_RequiredSignatureDocumentTypeId, 
+            T.RequiredSignatureDocumentTemplateId AS Group_RequiredSignatureDocumentTemplateId, 
             T.CreatedDateTime AS Group_CreatedDateTime, 
             T.ModifiedDateTime AS Group_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS Group_CreatedByPersonAliasId, 
@@ -1356,7 +1356,7 @@
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.RegistrationTemplate"><![CDATA[
     SELECT VALUE -- Constructing RegistrationTemplate
-        [CodeFirstDatabaseSchema.RegistrationTemplate](T1.RegistrationTemplate_Id, T1.RegistrationTemplate_Name, T1.RegistrationTemplate_CategoryId, T1.RegistrationTemplate_GroupTypeId, T1.RegistrationTemplate_GroupMemberRoleId, T1.RegistrationTemplate_GroupMemberStatus, T1.RegistrationTemplate_Notify, T1.RegistrationTemplate_FeeTerm, T1.RegistrationTemplate_RegistrantTerm, T1.RegistrationTemplate_RegistrationTerm, T1.RegistrationTemplate_DiscountCodeTerm, T1.RegistrationTemplate_ConfirmationFromName, T1.RegistrationTemplate_ConfirmationFromEmail, T1.RegistrationTemplate_ConfirmationSubject, T1.RegistrationTemplate_ConfirmationEmailTemplate, T1.RegistrationTemplate_ReminderFromName, T1.RegistrationTemplate_ReminderFromEmail, T1.RegistrationTemplate_ReminderSubject, T1.RegistrationTemplate_ReminderEmailTemplate, T1.RegistrationTemplate_SetCostOnInstance, T1.RegistrationTemplate_Cost, T1.RegistrationTemplate_MinimumInitialPayment, T1.RegistrationTemplate_LoginRequired, T1.RegistrationTemplate_RegistrantsSameFamily, T1.RegistrationTemplate_RequestEntryName, T1.RegistrationTemplate_SuccessTitle, T1.RegistrationTemplate_SuccessText, T1.RegistrationTemplate_AllowMultipleRegistrants, T1.RegistrationTemplate_MaxRegistrants, T1.RegistrationTemplate_FinancialGatewayId, T1.RegistrationTemplate_IsActive, T1.RegistrationTemplate_AddPersonNote, T1.RegistrationTemplate_AllowGroupPlacement, T1.RegistrationTemplate_PaymentReminderFromName, T1.RegistrationTemplate_PaymentReminderFromEmail, T1.RegistrationTemplate_PaymentReminderSubject, T1.RegistrationTemplate_PaymentReminderEmailTemplate, T1.RegistrationTemplate_PaymentReminderTimeSpan, T1.RegistrationTemplate_BatchNamePrefix, T1.RegistrationTemplate_AllowExternalRegistrationUpdates, T1.RegistrationTemplate_RegistrationWorkflowTypeId, T1.RegistrationTemplate_RequiredSignatureDocumentTypeId, T1.RegistrationTemplate_SignatureDocumentAction, T1.RegistrationTemplate_CreatedDateTime, T1.RegistrationTemplate_ModifiedDateTime, T1.RegistrationTemplate_CreatedByPersonAliasId, T1.RegistrationTemplate_ModifiedByPersonAliasId, T1.RegistrationTemplate_Guid, T1.RegistrationTemplate_ForeignId, T1.RegistrationTemplate_ForeignGuid, T1.RegistrationTemplate_ForeignKey)
+        [CodeFirstDatabaseSchema.RegistrationTemplate](T1.RegistrationTemplate_Id, T1.RegistrationTemplate_Name, T1.RegistrationTemplate_CategoryId, T1.RegistrationTemplate_GroupTypeId, T1.RegistrationTemplate_GroupMemberRoleId, T1.RegistrationTemplate_GroupMemberStatus, T1.RegistrationTemplate_Notify, T1.RegistrationTemplate_FeeTerm, T1.RegistrationTemplate_RegistrantTerm, T1.RegistrationTemplate_RegistrationTerm, T1.RegistrationTemplate_DiscountCodeTerm, T1.RegistrationTemplate_ConfirmationFromName, T1.RegistrationTemplate_ConfirmationFromEmail, T1.RegistrationTemplate_ConfirmationSubject, T1.RegistrationTemplate_ConfirmationEmailTemplate, T1.RegistrationTemplate_ReminderFromName, T1.RegistrationTemplate_ReminderFromEmail, T1.RegistrationTemplate_ReminderSubject, T1.RegistrationTemplate_ReminderEmailTemplate, T1.RegistrationTemplate_SetCostOnInstance, T1.RegistrationTemplate_Cost, T1.RegistrationTemplate_MinimumInitialPayment, T1.RegistrationTemplate_LoginRequired, T1.RegistrationTemplate_RegistrantsSameFamily, T1.RegistrationTemplate_RequestEntryName, T1.RegistrationTemplate_SuccessTitle, T1.RegistrationTemplate_SuccessText, T1.RegistrationTemplate_AllowMultipleRegistrants, T1.RegistrationTemplate_MaxRegistrants, T1.RegistrationTemplate_FinancialGatewayId, T1.RegistrationTemplate_IsActive, T1.RegistrationTemplate_AddPersonNote, T1.RegistrationTemplate_AllowGroupPlacement, T1.RegistrationTemplate_PaymentReminderFromName, T1.RegistrationTemplate_PaymentReminderFromEmail, T1.RegistrationTemplate_PaymentReminderSubject, T1.RegistrationTemplate_PaymentReminderEmailTemplate, T1.RegistrationTemplate_PaymentReminderTimeSpan, T1.RegistrationTemplate_BatchNamePrefix, T1.RegistrationTemplate_AllowExternalRegistrationUpdates, T1.RegistrationTemplate_RegistrationWorkflowTypeId, T1.RegistrationTemplate_RequiredSignatureDocumentTemplateId, T1.RegistrationTemplate_SignatureDocumentAction, T1.RegistrationTemplate_CreatedDateTime, T1.RegistrationTemplate_ModifiedDateTime, T1.RegistrationTemplate_CreatedByPersonAliasId, T1.RegistrationTemplate_ModifiedByPersonAliasId, T1.RegistrationTemplate_Guid, T1.RegistrationTemplate_ForeignId, T1.RegistrationTemplate_ForeignGuid, T1.RegistrationTemplate_ForeignKey)
     FROM (
         SELECT 
             T.Id AS RegistrationTemplate_Id, 
@@ -1400,7 +1400,7 @@
             T.BatchNamePrefix AS RegistrationTemplate_BatchNamePrefix, 
             T.AllowExternalRegistrationUpdates AS RegistrationTemplate_AllowExternalRegistrationUpdates, 
             T.RegistrationWorkflowTypeId AS RegistrationTemplate_RegistrationWorkflowTypeId, 
-            T.RequiredSignatureDocumentTypeId AS RegistrationTemplate_RequiredSignatureDocumentTypeId, 
+            T.RequiredSignatureDocumentTemplateId AS RegistrationTemplate_RequiredSignatureDocumentTemplateId, 
             CAST(T.SignatureDocumentAction AS [Edm.Int32]) AS RegistrationTemplate_SignatureDocumentAction, 
             T.CreatedDateTime AS RegistrationTemplate_CreatedDateTime, 
             T.ModifiedDateTime AS RegistrationTemplate_ModifiedDateTime, 
@@ -1506,42 +1506,40 @@
             True AS _from0
         FROM RockContext.RegistrationTemplateFormFields AS T
     ) AS T1]]></view>
-    <view extent="CodeFirstDatabase.SignatureDocumentType"><![CDATA[
-    SELECT VALUE -- Constructing SignatureDocumentType
-        [CodeFirstDatabaseSchema.SignatureDocumentType](T1.SignatureDocumentType_Id, T1.SignatureDocumentType_Name, T1.SignatureDocumentType_Description, T1.SignatureDocumentType_ProviderEntityTypeId, T1.SignatureDocumentType_ProviderTemplateKey, T1.SignatureDocumentType_BinaryFileTypeId, T1.SignatureDocumentType_RequestEmailTemplateFromName, T1.SignatureDocumentType_RequestEmailTemplateFromAddress, T1.SignatureDocumentType_RequestEmailTemplateSubject, T1.SignatureDocumentType_RequestEmailTemplateBody, T1.SignatureDocumentType_CreatedDateTime, T1.SignatureDocumentType_ModifiedDateTime, T1.SignatureDocumentType_CreatedByPersonAliasId, T1.SignatureDocumentType_ModifiedByPersonAliasId, T1.SignatureDocumentType_Guid, T1.SignatureDocumentType_ForeignId, T1.SignatureDocumentType_ForeignGuid, T1.SignatureDocumentType_ForeignKey)
+    <view extent="CodeFirstDatabase.SignatureDocumentTemplate"><![CDATA[
+    SELECT VALUE -- Constructing SignatureDocumentTemplate
+        [CodeFirstDatabaseSchema.SignatureDocumentTemplate](T1.SignatureDocumentTemplate_Id, T1.SignatureDocumentTemplate_Name, T1.SignatureDocumentTemplate_Description, T1.SignatureDocumentTemplate_ProviderEntityTypeId, T1.SignatureDocumentTemplate_ProviderTemplateKey, T1.SignatureDocumentTemplate_BinaryFileTypeId, T1.SignatureDocumentTemplate_InviteSystemEmailId, T1.SignatureDocumentTemplate_CreatedDateTime, T1.SignatureDocumentTemplate_ModifiedDateTime, T1.SignatureDocumentTemplate_CreatedByPersonAliasId, T1.SignatureDocumentTemplate_ModifiedByPersonAliasId, T1.SignatureDocumentTemplate_Guid, T1.SignatureDocumentTemplate_ForeignId, T1.SignatureDocumentTemplate_ForeignGuid, T1.SignatureDocumentTemplate_ForeignKey)
     FROM (
         SELECT 
-            T.Id AS SignatureDocumentType_Id, 
-            T.Name AS SignatureDocumentType_Name, 
-            T.Description AS SignatureDocumentType_Description, 
-            T.ProviderEntityTypeId AS SignatureDocumentType_ProviderEntityTypeId, 
-            T.ProviderTemplateKey AS SignatureDocumentType_ProviderTemplateKey, 
-            T.BinaryFileTypeId AS SignatureDocumentType_BinaryFileTypeId, 
-            T.RequestEmailTemplateFromName AS SignatureDocumentType_RequestEmailTemplateFromName, 
-            T.RequestEmailTemplateFromAddress AS SignatureDocumentType_RequestEmailTemplateFromAddress, 
-            T.RequestEmailTemplateSubject AS SignatureDocumentType_RequestEmailTemplateSubject, 
-            T.RequestEmailTemplateBody AS SignatureDocumentType_RequestEmailTemplateBody, 
-            T.CreatedDateTime AS SignatureDocumentType_CreatedDateTime, 
-            T.ModifiedDateTime AS SignatureDocumentType_ModifiedDateTime, 
-            T.CreatedByPersonAliasId AS SignatureDocumentType_CreatedByPersonAliasId, 
-            T.ModifiedByPersonAliasId AS SignatureDocumentType_ModifiedByPersonAliasId, 
-            T.Guid AS SignatureDocumentType_Guid, 
-            T.ForeignId AS SignatureDocumentType_ForeignId, 
-            T.ForeignGuid AS SignatureDocumentType_ForeignGuid, 
-            T.ForeignKey AS SignatureDocumentType_ForeignKey, 
+            T.Id AS SignatureDocumentTemplate_Id, 
+            T.Name AS SignatureDocumentTemplate_Name, 
+            T.Description AS SignatureDocumentTemplate_Description, 
+            T.ProviderEntityTypeId AS SignatureDocumentTemplate_ProviderEntityTypeId, 
+            T.ProviderTemplateKey AS SignatureDocumentTemplate_ProviderTemplateKey, 
+            T.BinaryFileTypeId AS SignatureDocumentTemplate_BinaryFileTypeId, 
+            T.InviteSystemEmailId AS SignatureDocumentTemplate_InviteSystemEmailId, 
+            T.CreatedDateTime AS SignatureDocumentTemplate_CreatedDateTime, 
+            T.ModifiedDateTime AS SignatureDocumentTemplate_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS SignatureDocumentTemplate_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS SignatureDocumentTemplate_ModifiedByPersonAliasId, 
+            T.Guid AS SignatureDocumentTemplate_Guid, 
+            T.ForeignId AS SignatureDocumentTemplate_ForeignId, 
+            T.ForeignGuid AS SignatureDocumentTemplate_ForeignGuid, 
+            T.ForeignKey AS SignatureDocumentTemplate_ForeignKey, 
             True AS _from0
-        FROM RockContext.SignatureDocumentTypes AS T
+        FROM RockContext.SignatureDocumentTemplates AS T
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.SignatureDocument"><![CDATA[
     SELECT VALUE -- Constructing SignatureDocument
-        [CodeFirstDatabaseSchema.SignatureDocument](T1.SignatureDocument_Id, T1.SignatureDocument_SignatureDocumentTypeId, T1.SignatureDocument_Name, T1.SignatureDocument_DocumentKey, T1.SignatureDocument_RequestDate, T1.SignatureDocument_AppliesToPersonAliasId, T1.SignatureDocument_AssignedToPersonAliasId, T1.SignatureDocument_Status, T1.SignatureDocument_LastStatusDate, T1.SignatureDocument_BinaryFileId, T1.SignatureDocument_SignedByPersonAliasId, T1.SignatureDocument_CreatedDateTime, T1.SignatureDocument_ModifiedDateTime, T1.SignatureDocument_CreatedByPersonAliasId, T1.SignatureDocument_ModifiedByPersonAliasId, T1.SignatureDocument_Guid, T1.SignatureDocument_ForeignId, T1.SignatureDocument_ForeignGuid, T1.SignatureDocument_ForeignKey)
+        [CodeFirstDatabaseSchema.SignatureDocument](T1.SignatureDocument_Id, T1.SignatureDocument_SignatureDocumentTemplateId, T1.SignatureDocument_Name, T1.SignatureDocument_DocumentKey, T1.SignatureDocument_LastInviteDate, T1.SignatureDocument_InviteCount, T1.SignatureDocument_AppliesToPersonAliasId, T1.SignatureDocument_AssignedToPersonAliasId, T1.SignatureDocument_Status, T1.SignatureDocument_LastStatusDate, T1.SignatureDocument_BinaryFileId, T1.SignatureDocument_SignedByPersonAliasId, T1.SignatureDocument_CreatedDateTime, T1.SignatureDocument_ModifiedDateTime, T1.SignatureDocument_CreatedByPersonAliasId, T1.SignatureDocument_ModifiedByPersonAliasId, T1.SignatureDocument_Guid, T1.SignatureDocument_ForeignId, T1.SignatureDocument_ForeignGuid, T1.SignatureDocument_ForeignKey)
     FROM (
         SELECT 
             T.Id AS SignatureDocument_Id, 
-            T.SignatureDocumentTypeId AS SignatureDocument_SignatureDocumentTypeId, 
+            T.SignatureDocumentTemplateId AS SignatureDocument_SignatureDocumentTemplateId, 
             T.Name AS SignatureDocument_Name, 
             T.DocumentKey AS SignatureDocument_DocumentKey, 
-            T.RequestDate AS SignatureDocument_RequestDate, 
+            T.LastInviteDate AS SignatureDocument_LastInviteDate, 
+            T.InviteCount AS SignatureDocument_InviteCount, 
             T.AppliesToPersonAliasId AS SignatureDocument_AppliesToPersonAliasId, 
             T.AssignedToPersonAliasId AS SignatureDocument_AssignedToPersonAliasId, 
             CAST(T.Status AS [Edm.Int32]) AS SignatureDocument_Status, 
@@ -3962,7 +3960,7 @@
     ) AS T1]]></view>
     <view extent="RockContext.Groups"><![CDATA[
     SELECT VALUE -- Constructing Groups
-        [Rock.Data.Group](T1.Group_Id, T1.Group_IsSystem, T1.Group_ParentGroupId, T1.Group_GroupTypeId, T1.Group_CampusId, T1.Group_ScheduleId, T1.Group_Name, T1.Group_Description, T1.Group_IsSecurityRole, T1.Group_IsActive, T1.Group_Order, T1.Group_AllowGuests, T1.Group_WelcomeSystemEmailId, T1.Group_ExitSystemEmailId, T1.Group_SyncDataViewId, T1.Group_AddUserAccountsDuringSync, T1.Group_MustMeetRequirementsToAddMember, T1.Group_IsPublic, T1.Group_GroupCapacity, T1.Group_RequiredSignatureDocumentTypeId, T1.Group_CreatedDateTime, T1.Group_ModifiedDateTime, T1.Group_CreatedByPersonAliasId, T1.Group_ModifiedByPersonAliasId, T1.Group_Guid, T1.Group_ForeignId, T1.Group_ForeignGuid, T1.Group_ForeignKey)
+        [Rock.Data.Group](T1.Group_Id, T1.Group_IsSystem, T1.Group_ParentGroupId, T1.Group_GroupTypeId, T1.Group_CampusId, T1.Group_ScheduleId, T1.Group_Name, T1.Group_Description, T1.Group_IsSecurityRole, T1.Group_IsActive, T1.Group_Order, T1.Group_AllowGuests, T1.Group_WelcomeSystemEmailId, T1.Group_ExitSystemEmailId, T1.Group_SyncDataViewId, T1.Group_AddUserAccountsDuringSync, T1.Group_MustMeetRequirementsToAddMember, T1.Group_IsPublic, T1.Group_GroupCapacity, T1.Group_RequiredSignatureDocumentTemplateId, T1.Group_CreatedDateTime, T1.Group_ModifiedDateTime, T1.Group_CreatedByPersonAliasId, T1.Group_ModifiedByPersonAliasId, T1.Group_Guid, T1.Group_ForeignId, T1.Group_ForeignGuid, T1.Group_ForeignKey)
     FROM (
         SELECT 
             T.Id AS Group_Id, 
@@ -3984,7 +3982,7 @@
             T.MustMeetRequirementsToAddMember AS Group_MustMeetRequirementsToAddMember, 
             T.IsPublic AS Group_IsPublic, 
             T.GroupCapacity AS Group_GroupCapacity, 
-            T.RequiredSignatureDocumentTypeId AS Group_RequiredSignatureDocumentTypeId, 
+            T.RequiredSignatureDocumentTemplateId AS Group_RequiredSignatureDocumentTemplateId, 
             T.CreatedDateTime AS Group_CreatedDateTime, 
             T.ModifiedDateTime AS Group_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS Group_CreatedByPersonAliasId, 
@@ -5052,7 +5050,7 @@
     ) AS T1]]></view>
     <view extent="RockContext.RegistrationTemplates"><![CDATA[
     SELECT VALUE -- Constructing RegistrationTemplates
-        [Rock.Data.RegistrationTemplate](T1.RegistrationTemplate_Id, T1.RegistrationTemplate_Name, T1.RegistrationTemplate_CategoryId, T1.RegistrationTemplate_GroupTypeId, T1.RegistrationTemplate_GroupMemberRoleId, T1.RegistrationTemplate_GroupMemberStatus, T1.RegistrationTemplate_Notify, T1.RegistrationTemplate_FeeTerm, T1.RegistrationTemplate_RegistrantTerm, T1.RegistrationTemplate_RegistrationTerm, T1.RegistrationTemplate_DiscountCodeTerm, T1.RegistrationTemplate_ConfirmationFromName, T1.RegistrationTemplate_ConfirmationFromEmail, T1.RegistrationTemplate_ConfirmationSubject, T1.RegistrationTemplate_ConfirmationEmailTemplate, T1.RegistrationTemplate_ReminderFromName, T1.RegistrationTemplate_ReminderFromEmail, T1.RegistrationTemplate_ReminderSubject, T1.RegistrationTemplate_ReminderEmailTemplate, T1.RegistrationTemplate_SetCostOnInstance, T1.RegistrationTemplate_Cost, T1.RegistrationTemplate_MinimumInitialPayment, T1.RegistrationTemplate_LoginRequired, T1.RegistrationTemplate_RegistrantsSameFamily, T1.RegistrationTemplate_RequestEntryName, T1.RegistrationTemplate_SuccessTitle, T1.RegistrationTemplate_SuccessText, T1.RegistrationTemplate_AllowMultipleRegistrants, T1.RegistrationTemplate_MaxRegistrants, T1.RegistrationTemplate_FinancialGatewayId, T1.RegistrationTemplate_IsActive, T1.RegistrationTemplate_AddPersonNote, T1.RegistrationTemplate_AllowGroupPlacement, T1.RegistrationTemplate_PaymentReminderFromName, T1.RegistrationTemplate_PaymentReminderFromEmail, T1.RegistrationTemplate_PaymentReminderSubject, T1.RegistrationTemplate_PaymentReminderEmailTemplate, T1.RegistrationTemplate_PaymentReminderTimeSpan, T1.RegistrationTemplate_BatchNamePrefix, T1.RegistrationTemplate_AllowExternalRegistrationUpdates, T1.RegistrationTemplate_RegistrationWorkflowTypeId, T1.RegistrationTemplate_RequiredSignatureDocumentTypeId, T1.RegistrationTemplate_SignatureDocumentAction, T1.RegistrationTemplate_CreatedDateTime, T1.RegistrationTemplate_ModifiedDateTime, T1.RegistrationTemplate_CreatedByPersonAliasId, T1.RegistrationTemplate_ModifiedByPersonAliasId, T1.RegistrationTemplate_Guid, T1.RegistrationTemplate_ForeignId, T1.RegistrationTemplate_ForeignGuid, T1.RegistrationTemplate_ForeignKey)
+        [Rock.Data.RegistrationTemplate](T1.RegistrationTemplate_Id, T1.RegistrationTemplate_Name, T1.RegistrationTemplate_CategoryId, T1.RegistrationTemplate_GroupTypeId, T1.RegistrationTemplate_GroupMemberRoleId, T1.RegistrationTemplate_GroupMemberStatus, T1.RegistrationTemplate_Notify, T1.RegistrationTemplate_FeeTerm, T1.RegistrationTemplate_RegistrantTerm, T1.RegistrationTemplate_RegistrationTerm, T1.RegistrationTemplate_DiscountCodeTerm, T1.RegistrationTemplate_ConfirmationFromName, T1.RegistrationTemplate_ConfirmationFromEmail, T1.RegistrationTemplate_ConfirmationSubject, T1.RegistrationTemplate_ConfirmationEmailTemplate, T1.RegistrationTemplate_ReminderFromName, T1.RegistrationTemplate_ReminderFromEmail, T1.RegistrationTemplate_ReminderSubject, T1.RegistrationTemplate_ReminderEmailTemplate, T1.RegistrationTemplate_SetCostOnInstance, T1.RegistrationTemplate_Cost, T1.RegistrationTemplate_MinimumInitialPayment, T1.RegistrationTemplate_LoginRequired, T1.RegistrationTemplate_RegistrantsSameFamily, T1.RegistrationTemplate_RequestEntryName, T1.RegistrationTemplate_SuccessTitle, T1.RegistrationTemplate_SuccessText, T1.RegistrationTemplate_AllowMultipleRegistrants, T1.RegistrationTemplate_MaxRegistrants, T1.RegistrationTemplate_FinancialGatewayId, T1.RegistrationTemplate_IsActive, T1.RegistrationTemplate_AddPersonNote, T1.RegistrationTemplate_AllowGroupPlacement, T1.RegistrationTemplate_PaymentReminderFromName, T1.RegistrationTemplate_PaymentReminderFromEmail, T1.RegistrationTemplate_PaymentReminderSubject, T1.RegistrationTemplate_PaymentReminderEmailTemplate, T1.RegistrationTemplate_PaymentReminderTimeSpan, T1.RegistrationTemplate_BatchNamePrefix, T1.RegistrationTemplate_AllowExternalRegistrationUpdates, T1.RegistrationTemplate_RegistrationWorkflowTypeId, T1.RegistrationTemplate_RequiredSignatureDocumentTemplateId, T1.RegistrationTemplate_SignatureDocumentAction, T1.RegistrationTemplate_CreatedDateTime, T1.RegistrationTemplate_ModifiedDateTime, T1.RegistrationTemplate_CreatedByPersonAliasId, T1.RegistrationTemplate_ModifiedByPersonAliasId, T1.RegistrationTemplate_Guid, T1.RegistrationTemplate_ForeignId, T1.RegistrationTemplate_ForeignGuid, T1.RegistrationTemplate_ForeignKey)
     FROM (
         SELECT 
             T.Id AS RegistrationTemplate_Id, 
@@ -5096,7 +5094,7 @@
             T.BatchNamePrefix AS RegistrationTemplate_BatchNamePrefix, 
             T.AllowExternalRegistrationUpdates AS RegistrationTemplate_AllowExternalRegistrationUpdates, 
             T.RegistrationWorkflowTypeId AS RegistrationTemplate_RegistrationWorkflowTypeId, 
-            T.RequiredSignatureDocumentTypeId AS RegistrationTemplate_RequiredSignatureDocumentTypeId, 
+            T.RequiredSignatureDocumentTemplateId AS RegistrationTemplate_RequiredSignatureDocumentTemplateId, 
             CAST(T.SignatureDocumentAction AS [Rock.Data.SignatureDocumentAction]) AS RegistrationTemplate_SignatureDocumentAction, 
             T.CreatedDateTime AS RegistrationTemplate_CreatedDateTime, 
             T.ModifiedDateTime AS RegistrationTemplate_ModifiedDateTime, 
@@ -5202,42 +5200,40 @@
             True AS _from0
         FROM CodeFirstDatabase.RegistrationTemplateFormField AS T
     ) AS T1]]></view>
-    <view extent="RockContext.SignatureDocumentTypes"><![CDATA[
-    SELECT VALUE -- Constructing SignatureDocumentTypes
-        [Rock.Data.SignatureDocumentType](T1.SignatureDocumentType_Id, T1.SignatureDocumentType_Name, T1.SignatureDocumentType_Description, T1.SignatureDocumentType_ProviderEntityTypeId, T1.SignatureDocumentType_ProviderTemplateKey, T1.SignatureDocumentType_BinaryFileTypeId, T1.SignatureDocumentType_RequestEmailTemplateFromName, T1.SignatureDocumentType_RequestEmailTemplateFromAddress, T1.SignatureDocumentType_RequestEmailTemplateSubject, T1.SignatureDocumentType_RequestEmailTemplateBody, T1.SignatureDocumentType_CreatedDateTime, T1.SignatureDocumentType_ModifiedDateTime, T1.SignatureDocumentType_CreatedByPersonAliasId, T1.SignatureDocumentType_ModifiedByPersonAliasId, T1.SignatureDocumentType_Guid, T1.SignatureDocumentType_ForeignId, T1.SignatureDocumentType_ForeignGuid, T1.SignatureDocumentType_ForeignKey)
+    <view extent="RockContext.SignatureDocumentTemplates"><![CDATA[
+    SELECT VALUE -- Constructing SignatureDocumentTemplates
+        [Rock.Data.SignatureDocumentTemplate](T1.SignatureDocumentTemplate_Id, T1.SignatureDocumentTemplate_Name, T1.SignatureDocumentTemplate_Description, T1.SignatureDocumentTemplate_ProviderEntityTypeId, T1.SignatureDocumentTemplate_ProviderTemplateKey, T1.SignatureDocumentTemplate_BinaryFileTypeId, T1.SignatureDocumentTemplate_InviteSystemEmailId, T1.SignatureDocumentTemplate_CreatedDateTime, T1.SignatureDocumentTemplate_ModifiedDateTime, T1.SignatureDocumentTemplate_CreatedByPersonAliasId, T1.SignatureDocumentTemplate_ModifiedByPersonAliasId, T1.SignatureDocumentTemplate_Guid, T1.SignatureDocumentTemplate_ForeignId, T1.SignatureDocumentTemplate_ForeignGuid, T1.SignatureDocumentTemplate_ForeignKey)
     FROM (
         SELECT 
-            T.Id AS SignatureDocumentType_Id, 
-            T.Name AS SignatureDocumentType_Name, 
-            T.Description AS SignatureDocumentType_Description, 
-            T.ProviderEntityTypeId AS SignatureDocumentType_ProviderEntityTypeId, 
-            T.ProviderTemplateKey AS SignatureDocumentType_ProviderTemplateKey, 
-            T.BinaryFileTypeId AS SignatureDocumentType_BinaryFileTypeId, 
-            T.RequestEmailTemplateFromName AS SignatureDocumentType_RequestEmailTemplateFromName, 
-            T.RequestEmailTemplateFromAddress AS SignatureDocumentType_RequestEmailTemplateFromAddress, 
-            T.RequestEmailTemplateSubject AS SignatureDocumentType_RequestEmailTemplateSubject, 
-            T.RequestEmailTemplateBody AS SignatureDocumentType_RequestEmailTemplateBody, 
-            T.CreatedDateTime AS SignatureDocumentType_CreatedDateTime, 
-            T.ModifiedDateTime AS SignatureDocumentType_ModifiedDateTime, 
-            T.CreatedByPersonAliasId AS SignatureDocumentType_CreatedByPersonAliasId, 
-            T.ModifiedByPersonAliasId AS SignatureDocumentType_ModifiedByPersonAliasId, 
-            T.Guid AS SignatureDocumentType_Guid, 
-            T.ForeignId AS SignatureDocumentType_ForeignId, 
-            T.ForeignGuid AS SignatureDocumentType_ForeignGuid, 
-            T.ForeignKey AS SignatureDocumentType_ForeignKey, 
+            T.Id AS SignatureDocumentTemplate_Id, 
+            T.Name AS SignatureDocumentTemplate_Name, 
+            T.Description AS SignatureDocumentTemplate_Description, 
+            T.ProviderEntityTypeId AS SignatureDocumentTemplate_ProviderEntityTypeId, 
+            T.ProviderTemplateKey AS SignatureDocumentTemplate_ProviderTemplateKey, 
+            T.BinaryFileTypeId AS SignatureDocumentTemplate_BinaryFileTypeId, 
+            T.InviteSystemEmailId AS SignatureDocumentTemplate_InviteSystemEmailId, 
+            T.CreatedDateTime AS SignatureDocumentTemplate_CreatedDateTime, 
+            T.ModifiedDateTime AS SignatureDocumentTemplate_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS SignatureDocumentTemplate_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS SignatureDocumentTemplate_ModifiedByPersonAliasId, 
+            T.Guid AS SignatureDocumentTemplate_Guid, 
+            T.ForeignId AS SignatureDocumentTemplate_ForeignId, 
+            T.ForeignGuid AS SignatureDocumentTemplate_ForeignGuid, 
+            T.ForeignKey AS SignatureDocumentTemplate_ForeignKey, 
             True AS _from0
-        FROM CodeFirstDatabase.SignatureDocumentType AS T
+        FROM CodeFirstDatabase.SignatureDocumentTemplate AS T
     ) AS T1]]></view>
     <view extent="RockContext.SignatureDocuments"><![CDATA[
     SELECT VALUE -- Constructing SignatureDocuments
-        [Rock.Data.SignatureDocument](T1.SignatureDocument_Id, T1.SignatureDocument_SignatureDocumentTypeId, T1.SignatureDocument_Name, T1.SignatureDocument_DocumentKey, T1.SignatureDocument_RequestDate, T1.SignatureDocument_AppliesToPersonAliasId, T1.SignatureDocument_AssignedToPersonAliasId, T1.SignatureDocument_Status, T1.SignatureDocument_LastStatusDate, T1.SignatureDocument_BinaryFileId, T1.SignatureDocument_SignedByPersonAliasId, T1.SignatureDocument_CreatedDateTime, T1.SignatureDocument_ModifiedDateTime, T1.SignatureDocument_CreatedByPersonAliasId, T1.SignatureDocument_ModifiedByPersonAliasId, T1.SignatureDocument_Guid, T1.SignatureDocument_ForeignId, T1.SignatureDocument_ForeignGuid, T1.SignatureDocument_ForeignKey)
+        [Rock.Data.SignatureDocument](T1.SignatureDocument_Id, T1.SignatureDocument_SignatureDocumentTemplateId, T1.SignatureDocument_Name, T1.SignatureDocument_DocumentKey, T1.SignatureDocument_LastInviteDate, T1.SignatureDocument_InviteCount, T1.SignatureDocument_AppliesToPersonAliasId, T1.SignatureDocument_AssignedToPersonAliasId, T1.SignatureDocument_Status, T1.SignatureDocument_LastStatusDate, T1.SignatureDocument_BinaryFileId, T1.SignatureDocument_SignedByPersonAliasId, T1.SignatureDocument_CreatedDateTime, T1.SignatureDocument_ModifiedDateTime, T1.SignatureDocument_CreatedByPersonAliasId, T1.SignatureDocument_ModifiedByPersonAliasId, T1.SignatureDocument_Guid, T1.SignatureDocument_ForeignId, T1.SignatureDocument_ForeignGuid, T1.SignatureDocument_ForeignKey)
     FROM (
         SELECT 
             T.Id AS SignatureDocument_Id, 
-            T.SignatureDocumentTypeId AS SignatureDocument_SignatureDocumentTypeId, 
+            T.SignatureDocumentTemplateId AS SignatureDocument_SignatureDocumentTemplateId, 
             T.Name AS SignatureDocument_Name, 
             T.DocumentKey AS SignatureDocument_DocumentKey, 
-            T.RequestDate AS SignatureDocument_RequestDate, 
+            T.LastInviteDate AS SignatureDocument_LastInviteDate, 
+            T.InviteCount AS SignatureDocument_InviteCount, 
             T.AppliesToPersonAliasId AS SignatureDocument_AppliesToPersonAliasId, 
             T.AssignedToPersonAliasId AS SignatureDocument_AssignedToPersonAliasId, 
             CAST(T.Status AS [Rock.Data.SignatureDocumentStatus]) AS SignatureDocument_Status, 
