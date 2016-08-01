@@ -36,15 +36,15 @@ using Newtonsoft.Json.Linq;
 namespace RockWeb.Blocks.Core
 {
     /// <summary>
-    /// User controls for managing signature document types
+    /// User controls for managing signature document templates
     /// </summary>
-    [DisplayName( "Signature Document Type Detail" )]
+    [DisplayName( "Signature Document Template Detail" )]
     [Category( "Core" )]
-    [Description( "Displays the details of the given signature document type." )]
+    [Description( "Displays the details of the given signature document template." )]
 
-    [BinaryFileTypeField( "Default File Type", "The default file type to use when creating new document types.", false, 
+    [BinaryFileTypeField( "Default File Type", "The default file type to use when creating new documents.", false, 
         Rock.SystemGuid.BinaryFiletype.SIGNED_DOCUMENT_FILE_TYPE, "", 0 )]
-    public partial class SignatureDocumentTypeDetail : RockBlock, IDetailBlock
+    public partial class SignatureDocumentTemplateDetail : RockBlock, IDetailBlock
     {
         #region Base Control Methods
 
@@ -75,7 +75,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "signatureDocumentTypeId" ).AsInteger() );
+                ShowDetail( PageParameter( "SignatureDocumentTemplateId" ).AsInteger() );
             }
         }
 
@@ -90,7 +90,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            ShowDetail( PageParameter( "signatureDocumentTypeId" ).AsInteger() );
+            ShowDetail( PageParameter( "SignatureDocumentTemplateId" ).AsInteger() );
         }
 
         /// <summary>
@@ -161,7 +161,7 @@ namespace RockWeb.Blocks.Core
             {
                 if ( !signatureDocumentType.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
                 {
-                    mdDeleteWarning.Show( "Sorry, You are not authorized to delete this document Type.", ModalAlertType.Information );
+                    mdDeleteWarning.Show( "Sorry, You are not authorized to delete this document template.", ModalAlertType.Information );
                     return;
                 }
 
@@ -315,7 +315,7 @@ namespace RockWeb.Blocks.Core
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="signatureDocumentTypeId">The signature document type identifier.</param>
+        /// <param name="signatureDocumentTypeId">The signature document templates identifier.</param>
         public void ShowDetail( int signatureDocumentTypeId )
         {
             pnlDetails.Visible = true;
