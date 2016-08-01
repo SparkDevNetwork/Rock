@@ -344,8 +344,8 @@ namespace RockWeb.Blocks.Groups
                         var sendErrorMessages = new List<string>();
 
                         string documentName = string.Format( "{0}_{1}", groupMember.Group.Name.RemoveSpecialCharacters(), groupMember.Person.FullName.RemoveSpecialCharacters() );
-                        if ( new SignatureDocumentTypeService( rockContext ).SendDocument(
-                            groupMember.Group.RequiredSignatureDocumentType, groupMember.Person, groupMember.Person, documentName, groupMember.Person.Email, out sendErrorMessages ) )
+                        if ( new SignatureDocumentTemplateService( rockContext ).SendDocument(
+                            groupMember.Group.RequiredSignatureDocumentTemplate, groupMember.Person, groupMember.Person, documentName, groupMember.Person.Email, out sendErrorMessages ) )
                         {
                             rockContext.SaveChanges();
                             maSignatureRequestSent.Show( "A Signature Request Has Been Sent!", Rock.Web.UI.Controls.ModalAlertType.Information );
@@ -580,18 +580,18 @@ namespace RockWeb.Blocks.Groups
 
         private void ShowRequiredDocumentStatus( RockContext rockContext, GroupMember groupMember, Group group )
         {
-            if ( groupMember.Person != null && group.RequiredSignatureDocumentType != null )
+            if ( groupMember.Person != null && group.RequiredSignatureDocumentTemplate != null )
             {
                 var documents = new SignatureDocumentService( rockContext )
                     .Queryable().AsNoTracking()
                     .Where( d =>
-                        d.SignatureDocumentTypeId == group.RequiredSignatureDocumentType.Id &&
+                        d.SignatureDocumentTemplateId == group.RequiredSignatureDocumentTemplate.Id &&
                         d.AppliesToPersonAlias.PersonId == groupMember.Person.Id )
                     .ToList();
                 if ( !documents.Any( d => d.Status == SignatureDocumentStatus.Signed ) )
                 {
                     var lastSent = documents.Any( d => d.Status == SignatureDocumentStatus.Sent ) ?
-                        documents.Where( d => d.Status == SignatureDocumentStatus.Sent ).Max( d => d.RequestDate ) : (DateTime?)null;
+                        documents.Where( d => d.Status == SignatureDocumentStatus.Sent ).Max( d => d.LastInviteDate ) : (DateTime?)null;
                     pnlRequiredSignatureDocument.Visible = true;
 
                     if ( lastSent.HasValue )

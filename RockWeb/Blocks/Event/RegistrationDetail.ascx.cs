@@ -1014,8 +1014,8 @@ namespace RockWeb.Blocks.Event
                             }
 
                             var sendErrorMessages = new List<string>();
-                            if ( new SignatureDocumentTypeService( rockContext ).SendDocument(
-                                Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentType,
+                            if ( new SignatureDocumentTemplateService( rockContext ).SendDocument(
+                                Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplate,
                                 registrant.PersonAlias.Person, 
                                 assignedTo,
                                 Registration.RegistrationInstance.Name,
@@ -1401,13 +1401,13 @@ namespace RockWeb.Blocks.Event
 
             if ( registration.RegistrationInstance != null && 
                 registration.RegistrationInstance.RegistrationTemplate != null &&
-                registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTypeId.HasValue )
+                registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue )
             {
                 var personIds = RegistrantsState.Select( r => r.PersonId ).ToList();
                 var documents = new SignatureDocumentService( rockContext )
                     .Queryable().AsNoTracking()
                     .Where( d =>
-                        d.SignatureDocumentTypeId == registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTypeId.Value &&
+                        d.SignatureDocumentTemplateId == registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value &&
                         d.AppliesToPersonAlias != null &&
                         personIds.Contains( d.AppliesToPersonAlias.PersonId ) )
                     .ToList();
@@ -1416,7 +1416,7 @@ namespace RockWeb.Blocks.Event
                 {
                     var myDocuments = documents.Where( d => d.AppliesToPersonAlias.PersonId == registrantInfo.PersonId ).ToList();
                     registrantInfo.SignatureDocumentSigned = documents.Any( d => d.Status == SignatureDocumentStatus.Signed );
-                    registrantInfo.SignatureDocumentLastSent = myDocuments.Max( d => (DateTime?)d.RequestDate );
+                    registrantInfo.SignatureDocumentLastSent = myDocuments.Max( d => (DateTime?)d.LastInviteDate );
                 }
             }
 
@@ -2035,7 +2035,7 @@ namespace RockWeb.Blocks.Event
             if ( Registration != null && 
                 Registration.RegistrationInstance != null && 
                 Registration.RegistrationInstance.RegistrationTemplate != null &&
-                Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentType != null &&
+                Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplate != null &&
                 !registrant.SignatureDocumentSigned )
             {
                 var template = Registration.RegistrationInstance.RegistrationTemplate;
@@ -2046,7 +2046,7 @@ namespace RockWeb.Blocks.Event
                 StringBuilder sb = new StringBuilder();
                 sb.AppendFormat(
                     "There is not a signed {0} for {1}",
-                    template.RequiredSignatureDocumentType.Name,
+                    template.RequiredSignatureDocumentTemplate.Name,
                     registrant.GetFirstName( template ) );
 
                 if ( registrant.SignatureDocumentLastSent.HasValue )
@@ -2066,7 +2066,7 @@ namespace RockWeb.Blocks.Event
                 var lbResendDocumentRequest = new LinkButton();
                 lbResendDocumentRequest.CausesValidation = false;
                 lbResendDocumentRequest.ID = string.Format( "lbResendDocumentRequest_{0}", registrant.Id );
-                lbResendDocumentRequest.Text = "Send Signature Request";
+                lbResendDocumentRequest.Text = registrant.SignatureDocumentLastSent.HasValue ? "Resend Signature Request" : "Send Signature Request";
                 lbResendDocumentRequest.CssClass = "btn btn-default";
                 lbResendDocumentRequest.Click += lbResendDocumentRequest_Click;
                 divSigAlert.Controls.Add( lbResendDocumentRequest );

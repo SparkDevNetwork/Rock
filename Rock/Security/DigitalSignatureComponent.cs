@@ -39,11 +39,20 @@ namespace Rock.Security
         /// Abstract method for requesting a document be sent to recipient for signature
         /// </summary>
         /// <param name="documentType">Type of the document.</param>
-        /// <param name="email">The email.</param>
+        /// <param name="recipient">The recipient.</param>
         /// <param name="documentName">Name of the document.</param>
         /// <param name="errors">The errors.</param>
         /// <returns></returns>
-        public abstract string SendDocument( SignatureDocumentType documentType, string email, string documentName, out List<string> errors );
+        public abstract string CreateDocument( SignatureDocumentTemplate documentType, Person recipient, string documentName, out List<string> errors );
+
+        /// <summary>
+        /// Gets the invite link.
+        /// </summary>
+        /// <param name="document">The document.</param>
+        /// <param name="recipient">The recipient.</param>
+        /// <param name="errors">The errors.</param>
+        /// <returns></returns>
+        public abstract string GetInviteLink( SignatureDocument document, Person recipient, out List<string> errors );
 
         /// <summary>
         /// Resends the document.
@@ -71,6 +80,14 @@ namespace Rock.Security
         /// <param name="errors">The errors.</param>
         /// <returns></returns>
         public abstract string GetDocument( SignatureDocument document, string folderPath, out List<string> errors );
+
+        /// <summary>
+        /// Updates the document status.
+        /// </summary>
+        /// <param name="document">The document.</param>
+        /// <param name="errors">The errors.</param>
+        /// <returns></returns>
+        public abstract bool UpdateDocumentStatus( SignatureDocument document, out List<string> errors );
     }
 
 }

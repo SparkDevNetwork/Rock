@@ -21,14 +21,16 @@ using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 
+using Rock.Security;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.Cache;
 
 using Newtonsoft.Json.Linq;
 using System.Web;
+using Rock.Communication;
 
-namespace Rock.Security.DigitalSignature
+namespace Rock.SignNow
 {
     /// <summary>
     /// SignNow Digital Signature Provider
@@ -195,12 +197,12 @@ namespace Rock.Security.DigitalSignature
         /// <summary>
         /// Sends the document.
         /// </summary>
-        /// <param name="documentType">Type of the document.</param>
-        /// <param name="email">The email.</param>
+        /// <param name="documentTemplate">Type of the document.</param>
+        /// <param name="recipient">The recipient.</param>
         /// <param name="documentName">Name of the document.</param>
         /// <param name="errors">The errors.</param>
         /// <returns></returns>
-        public override string SendDocument( SignatureDocumentType documentType, string email, string documentName, out List<string> errors )
+        public override string CreateDocument( SignatureDocumentTemplate documentTemplate, Person recipient, string documentName, out List<string> errors )
         {
             errors = new List<string>();
 
@@ -214,7 +216,7 @@ namespace Rock.Security.DigitalSignature
             }
 
             // Create a docuemnt from the template
-            JObject copyTemplateRes = CudaSign.Template.Copy( accessToken, documentType.ProviderTemplateKey, documentName );
+            JObject copyTemplateRes = CudaSign.Template.Copy( accessToken, documentTemplate.ProviderTemplateKey, documentName );
             string documentId = copyTemplateRes.Value<string>( "id" );
             if ( string.IsNullOrWhiteSpace( documentId ) )
             {
@@ -222,57 +224,94 @@ namespace Rock.Security.DigitalSignature
                 return null;
             }
 
-            // Get the document to determine the roles (if any) are needed
-            JObject getDocumentRes = CudaSign.Document.Get( accessToken, documentId );
-            errors = ParseErrors( getDocumentRes );
-            if ( errors.Any() )
-            {
-                errorMessage = errors.AsDelimited( "; " );
-                return null;
-            }
+            //// Get the document to determine the roles (if any) are needed
+            //JObject getDocumentRes = CudaSign.Document.Get( accessToken, documentId );
+            //errors = ParseErrors( getDocumentRes );
+            //if ( errors.Any() )
+            //{
+            //    errorMessage = errors.AsDelimited( "; " );
+            //    return null;
+            //}
 
-            dynamic inviteObj = null;
-            JArray roles = getDocumentRes.Value<JArray>( "roles" );
-            if ( roles != null && roles.Count > 0 )
-            {
-                var to = new List<dynamic>();
-                foreach ( JObject role in roles )
-                {
-                    to.Add( new
-                    {
-                        email = email,
-                        role_id = string.Empty,
-                        role = role.Value<string>( "name" ),
-                        order = role.Value<int>( "signing_order" ),
-                        expiration_days = 15,
-                        reminder = 5
-                    } );
-                }
+            //dynamic inviteObj = null;
+            //JArray roles = getDocumentRes.Value<JArray>( "roles" );
+            //if ( roles != null && roles.Count > 0 )
+            //{
+            //    var to = new List<dynamic>();
+            //    foreach ( JObject role in roles )
+            //    {
+            //        to.Add( new
+            //        {
+            //            email = email,
+            //            role_id = string.Empty,
+            //            role = role.Value<string>( "name" ),
+            //            order = role.Value<int>( "signing_order" ),
+            //            expiration_days = 15,
+            //            reminder = 5
+            //        } );
+            //    }
 
-                inviteObj = new
-                {
-                    from = GetAttributeValue( "Username" ),
-                    to = to.ToArray()
-                };
-            }
-            else
-            {
-                inviteObj = new
-                {
-                    from = GetAttributeValue( "Username" ),
-                    to = email
-                };
-            }
+            //    inviteObj = new
+            //    {
+            //        from = GetAttributeValue( "Username" ),
+            //        to = to.ToArray()
+            //    };
+            //}
+            //else
+            //{
+            //    inviteObj = new
+            //    {
+            //        from = GetAttributeValue( "Username" ),
+            //        to = email
+            //    };
+            //}
 
-            // Send the invite
-            JObject inviteRes = CudaSign.Document.Invite( accessToken, documentId, inviteObj );
-            errors = ParseErrors( inviteRes );
-            if ( errors.Any() )
-            {
-                return null;
-            }
+            //// Send the invite
+            //JObject inviteRes = CudaSign.Document.Invite( accessToken, documentId, inviteObj );
+            //errors = ParseErrors( inviteRes );
+            //if ( errors.Any() )
+            //{
+            //    return null;
+            //}
 
             return documentId;
+        }
+
+        /// <summary>
+        /// Gets the invite link.
+        /// </summary>
+        /// <param name="document">The document.</param>
+        /// <param name="recipient">The recipient.</param>
+        /// <param name="errors">The errors.</param>
+        /// <returns></returns>
+        public override string GetInviteLink( SignatureDocument document, Person recipient, out List<string> errors )
+        {
+            errors = new List<string>();
+
+            if ( document == null )
+            {
+                errors.Add( "Invalid Document!" );
+                return null;
+            }
+
+            // Get the access token
+            string errorMessage = string.Empty;
+            string accessToken = GetAccessToken( false, out errorMessage );
+            if ( string.IsNullOrWhiteSpace( accessToken ) )
+            {
+                errors.Add( errorMessage );
+                return null;
+            }
+
+            JObject inviteLinkRes = CudaSign.Link.Create( accessToken, document.DocumentKey );
+            string inviteLink = inviteLinkRes.Value<string>( "url_no_signup" );
+            if ( string.IsNullOrWhiteSpace( inviteLink ) )
+            {
+                errors = ParseErrors( inviteLinkRes );
+                return null;
+            }
+
+            return inviteLink;
         }
 
         /// <summary>
@@ -325,7 +364,6 @@ namespace Rock.Security.DigitalSignature
 
             return true;
         }
-
 
         /// <summary>
         /// Cancels the document.
@@ -410,6 +448,43 @@ namespace Rock.Security.DigitalSignature
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Updates the document status.
+        /// </summary>
+        /// <param name="document">The document.</param>
+        /// <param name="errors">The errors.</param>
+        /// <returns></returns>
+        public override bool UpdateDocumentStatus( SignatureDocument document, out List<string> errors )
+        {
+            errors = new List<string>();
+
+            if ( document == null )
+            {
+                errors.Add( "Invalid Document!" );
+                return false;
+            }
+
+            // Get the access token
+            string errorMessage = string.Empty;
+            string accessToken = GetAccessToken( false, out errorMessage );
+            if ( string.IsNullOrWhiteSpace( accessToken ) )
+            {
+                errors.Add( errorMessage );
+                return false;
+            }
+
+            // Get the document to determine the roles (if any) are needed
+            JObject getDocumentRes = CudaSign.Document.Get( accessToken, document.DocumentKey );
+            errors = ParseErrors( getDocumentRes );
+            if ( errors.Any() )
+            {
+                errorMessage = errors.AsDelimited( "; " );
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>

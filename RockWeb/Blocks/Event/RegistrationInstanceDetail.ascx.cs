@@ -2098,7 +2098,7 @@ namespace RockWeb.Blocks.Event
             ddlInGroup.SetValue( fRegistrants.GetUserPreference( "In Group" ) );
 
             ddlSignedDocument.SetValue( fRegistrants.GetUserPreference( "Signed Document" ) );
-            ddlSignedDocument.Visible = instance != null && instance.RegistrationTemplate != null && instance.RegistrationTemplate.RequiredSignatureDocumentTypeId.HasValue;
+            ddlSignedDocument.Visible = instance != null && instance.RegistrationTemplate != null && instance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue;
         }
 
         /// <summary>
@@ -2116,12 +2116,12 @@ namespace RockWeb.Blocks.Event
                     IQueryable<int> signers = null;
                     if ( registrationInstance != null &&
                         registrationInstance.RegistrationTemplate != null &&
-                        registrationInstance.RegistrationTemplate.RequiredSignatureDocumentTypeId.HasValue )
+                        registrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue )
                     {
                         signers = new SignatureDocumentService( rockContext )
                             .Queryable().AsNoTracking()
                             .Where( d =>
-                                d.SignatureDocumentTypeId == registrationInstance.RegistrationTemplate.RequiredSignatureDocumentTypeId.Value &&
+                                d.SignatureDocumentTemplateId == registrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value &&
                                 d.Status == SignatureDocumentStatus.Signed )
                             .Select( d => d.AppliesToPersonAlias.PersonId );
                         SignedPersonIds = signers.ToList();

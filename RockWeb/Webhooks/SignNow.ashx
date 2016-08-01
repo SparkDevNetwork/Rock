@@ -84,7 +84,7 @@ public class SignNow : IHttpHandler
                         BinaryFile binaryFile = new BinaryFile();
                         binaryFile.Guid = Guid.NewGuid();
                         binaryFile.IsTemporary = false;
-                        binaryFile.BinaryFileTypeId = document.SignatureDocumentType.BinaryFileTypeId;
+                        binaryFile.BinaryFileTypeId = document.SignatureDocumentTemplate.BinaryFileTypeId;
                         binaryFile.MimeType = "application/pdf";
                         binaryFile.FileName = new FileInfo( documentPath ).Name;
                         binaryFile.ContentStream = new FileStream( documentPath, FileMode.Open );

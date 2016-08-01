@@ -62,7 +62,7 @@ namespace RockWeb.Blocks.Core
             ddlDocumentType.Items.Clear();
             using ( var rockContext = new RockContext() )
             {
-                ddlDocumentType.DataSource = new SignatureDocumentTypeService( rockContext )
+                ddlDocumentType.DataSource = new SignatureDocumentTemplateService( rockContext )
                     .Queryable().AsNoTracking()
                     .OrderBy( t => t.Name )
                     .Select( t => new
@@ -144,7 +144,7 @@ namespace RockWeb.Blocks.Core
             signatureDocument.AssignedToPersonAliasId = ppAssignedTo.PersonAliasId;
             signatureDocument.SignedByPersonAliasId = ppSignedBy.PersonAliasId;
 
-            signatureDocument.SignatureDocumentTypeId = ddlDocumentType.SelectedValueAsInt() ?? 0;
+            signatureDocument.SignatureDocumentTemplateId = ddlDocumentType.SelectedValueAsInt() ?? 0;
 
             origBinaryFileId = signatureDocument.BinaryFileId;
             signatureDocument.BinaryFileId = fuDocument.BinaryFileId;
@@ -179,7 +179,7 @@ namespace RockWeb.Blocks.Core
             rockContext.SaveChanges();
 
             var qryParams = new Dictionary<string, string>();
-            qryParams.Add( "signatureDocumentTypeId", PageParameter( "signatureDocumentTypeId" ) );
+            qryParams.Add( "SignatureDocumentTemplateId", PageParameter( "SignatureDocumentTemplateId" ) );
             qryParams.Add( "personId", PageParameter( "personId" ) );
             NavigateToParentPage( qryParams );
         }
@@ -192,7 +192,7 @@ namespace RockWeb.Blocks.Core
         protected void btnCancel_Click( object sender, EventArgs e )
         {
             var qryParams = new Dictionary<string, string>();
-            qryParams.Add( "signatureDocumentTypeId", PageParameter( "signatureDocumentTypeId" ) );
+            qryParams.Add( "SignatureDocumentTemplateId", PageParameter( "SignatureDocumentTemplateId" ) );
             qryParams.Add( "personId", PageParameter( "personId" ) );
             NavigateToParentPage( qryParams );
         }
@@ -220,9 +220,9 @@ namespace RockWeb.Blocks.Core
 
             lDetails.Add( "Document Key", signatureDocument.DocumentKey );
 
-            if ( signatureDocument.RequestDate.HasValue )
+            if ( signatureDocument.LastInviteDate.HasValue )
             {
-                lDetails.Add( "Last Request Date", string.Format( "<span title='{0}'>{1}</span>", signatureDocument.RequestDate.Value.ToString(), signatureDocument.RequestDate.Value.ToElapsedString() ) );
+                lDetails.Add( "Last Request Date", string.Format( "<span title='{0}'>{1}</span>", signatureDocument.LastInviteDate.Value.ToString(), signatureDocument.LastInviteDate.Value.ToElapsedString() ) );
             }
 
             if ( signatureDocument.AppliesToPersonAlias != null && signatureDocument.AppliesToPersonAlias.Person != null )
@@ -240,9 +240,9 @@ namespace RockWeb.Blocks.Core
                 rDetails.Add( "Signed By", signatureDocument.SignedByPersonAlias.Person.FullName );
             }
 
-            if ( signatureDocument.SignatureDocumentType != null )
+            if ( signatureDocument.SignatureDocumentTemplate != null )
             {
-                lDetails.Add( "Signature Document Type", signatureDocument.SignatureDocumentType.Name );
+                lDetails.Add( "Signature Document Type", signatureDocument.SignatureDocumentTemplate.Name );
             }
 
             lLeftDetails.Text = lDetails.Html;
@@ -256,7 +256,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="signatureDocument">Type of the defined.</param>
         private void ShowEditDetails( SignatureDocument signatureDocument )
         {
-            string titleName = signatureDocument.SignatureDocumentType != null ? signatureDocument.SignatureDocumentType.Name + " Document" : SignatureDocument.FriendlyTypeName;
+            string titleName = signatureDocument.SignatureDocumentTemplate != null ? signatureDocument.SignatureDocumentTemplate.Name + " Document" : SignatureDocument.FriendlyTypeName;
             if ( signatureDocument.Id > 0 )
             {
                 lTitle.Text = ActionTitle.Edit( titleName ).FormatAsHtmlTitle();
@@ -280,21 +280,21 @@ namespace RockWeb.Blocks.Core
             ppAssignedTo.SetValue( signatureDocument.AssignedToPersonAlias != null ? signatureDocument.AssignedToPersonAlias.Person : null );
             ppSignedBy.SetValue( signatureDocument.SignedByPersonAlias != null ? signatureDocument.SignedByPersonAlias.Person : null );
 
-            ddlDocumentType.Visible = signatureDocument.SignatureDocumentType == null;
-            ddlDocumentType.SetValue( signatureDocument.SignatureDocumentTypeId );
+            ddlDocumentType.Visible = signatureDocument.SignatureDocumentTemplate == null;
+            ddlDocumentType.SetValue( signatureDocument.SignatureDocumentTemplateId );
 
-            if ( signatureDocument.SignatureDocumentType != null && signatureDocument.SignatureDocumentType.BinaryFileType != null )
+            if ( signatureDocument.SignatureDocumentTemplate != null && signatureDocument.SignatureDocumentTemplate.BinaryFileType != null )
             {
-                fuDocument.BinaryFileTypeGuid = signatureDocument.SignatureDocumentType.BinaryFileType.Guid;
+                fuDocument.BinaryFileTypeGuid = signatureDocument.SignatureDocumentTemplate.BinaryFileType.Guid;
             }
             fuDocument.BinaryFileId = signatureDocument.BinaryFileId;
 
             lDocumentKey.Text = signatureDocument.DocumentKey;
             lDocumentKey.Visible = !string.IsNullOrWhiteSpace( signatureDocument.DocumentKey );
 
-            lRequestDate.Visible = signatureDocument.RequestDate.HasValue;
-            lRequestDate.Text = signatureDocument.RequestDate.HasValue ?
-                string.Format( "<span title='{0}'>{1}</span>", signatureDocument.RequestDate.Value.ToString(), signatureDocument.RequestDate.Value.ToElapsedString() ) :
+            lRequestDate.Visible = signatureDocument.LastInviteDate.HasValue;
+            lRequestDate.Text = signatureDocument.LastInviteDate.HasValue ?
+                string.Format( "<span title='{0}'>{1}</span>", signatureDocument.LastInviteDate.Value.ToString(), signatureDocument.LastInviteDate.Value.ToElapsedString() ) :
                 string.Empty;
 
         }
@@ -349,14 +349,14 @@ namespace RockWeb.Blocks.Core
                         }
                     }
 
-                    int? documentTypeId = PageParameter( "signatureDocumentTypeId" ).AsIntegerOrNull();
+                    int? documentTypeId = PageParameter( "SignatureDocumentTemplateId" ).AsIntegerOrNull();
                     if ( documentTypeId.HasValue )
                     {
-                        var documentType = new SignatureDocumentTypeService( rockContext ).Get( documentTypeId.Value );
+                        var documentType = new SignatureDocumentTemplateService( rockContext ).Get( documentTypeId.Value );
                         if ( documentType != null )
                         {
-                            signatureDocument.SignatureDocumentType= documentType;
-                            signatureDocument.SignatureDocumentTypeId = documentType.Id;
+                            signatureDocument.SignatureDocumentTemplate= documentType;
+                            signatureDocument.SignatureDocumentTemplateId = documentType.Id;
                         }
                     }
                 }

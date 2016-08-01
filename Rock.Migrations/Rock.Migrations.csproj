@@ -134,6 +134,10 @@
     <Compile Include="Migrations\201607301400275_DigitalSignatures.Designer.cs">
       <DependentUpon>201607301400275_DigitalSignatures.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201608011827342_DigitalSignature2.cs" />
+    <Compile Include="Migrations\201608011827342_DigitalSignature2.Designer.cs">
+      <DependentUpon>201608011827342_DigitalSignature2.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -2242,6 +2246,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201607301400275_DigitalSignatures.resx">
       <DependentUpon>201607301400275_DigitalSignatures.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201608011827342_DigitalSignature2.resx">
+      <DependentUpon>201608011827342_DigitalSignature2.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\RockMigrationSQL.resx" />
     <EmbeddedResource Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase.resx">

@@ -120,7 +120,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:DataDropDownList ID="ddlCampus" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" Label="Campus" />
-                                    <Rock:RockDropDownList ID="ddlSignatureDocumentType" runat="server" Label="Require Signed Document" 
+                                    <Rock:RockDropDownList ID="ddlSignatureDocumentTemplate" runat="server" Label="Require Signed Document" 
                                         Help="If members of this group need to have signed a document, select that document type here." />
                                 </div>
                             </div>

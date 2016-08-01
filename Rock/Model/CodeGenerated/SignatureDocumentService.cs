@@ -94,10 +94,11 @@ namespace Rock.Model
             target.DocumentKey = source.DocumentKey;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.InviteCount = source.InviteCount;
+            target.LastInviteDate = source.LastInviteDate;
             target.LastStatusDate = source.LastStatusDate;
             target.Name = source.Name;
-            target.RequestDate = source.RequestDate;
-            target.SignatureDocumentTypeId = source.SignatureDocumentTypeId;
+            target.SignatureDocumentTemplateId = source.SignatureDocumentTemplateId;
             target.SignedByPersonAliasId = source.SignedByPersonAliasId;
             target.Status = source.Status;
             target.CreatedDateTime = source.CreatedDateTime;

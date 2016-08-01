@@ -26,10 +26,10 @@ using Rock.Model;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// SignatureDocumentTypes REST API
+    /// SignatureDocumentTemplates REST API
     /// </summary>
-    public partial class SignatureDocumentTypesController : Rock.Rest.ApiController<Rock.Model.SignatureDocumentType>
+    public partial class SignatureDocumentTemplatesController : Rock.Rest.ApiController<Rock.Model.SignatureDocumentTemplate>
     {
-        public SignatureDocumentTypesController() : base( new Rock.Model.SignatureDocumentTypeService( new Rock.Data.RockContext() ) ) { } 
+        public SignatureDocumentTemplatesController() : base( new Rock.Model.SignatureDocumentTemplateService( new Rock.Data.RockContext() ) ) { } 
     }
 }
