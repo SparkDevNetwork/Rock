@@ -107,9 +107,9 @@ namespace RockWeb.Blocks.Core
         {
             var rockContext = new RockContext();
             var signatureDocumentService = new SignatureDocumentService( rockContext );
-            var SignatureDocumentTemplateService = new SignatureDocumentTemplateService( rockContext );
+            var signatureDocumentTemplateService = new SignatureDocumentTemplateService( rockContext );
 
-            SignatureDocumentTemplate type = SignatureDocumentTemplateService.Get( e.RowKeyId );
+            SignatureDocumentTemplate type = signatureDocumentTemplateService.Get( e.RowKeyId );
 
             if ( type != null )
             {
@@ -120,13 +120,13 @@ namespace RockWeb.Blocks.Core
                 }
 
                 string errorMessage;
-                if ( !SignatureDocumentTemplateService.CanDelete( type, out errorMessage ) )
+                if ( !signatureDocumentTemplateService.CanDelete( type, out errorMessage ) )
                 {
                     mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                     return;
                 }
 
-                SignatureDocumentTemplateService.Delete( type );
+                signatureDocumentTemplateService.Delete( type );
 
                 rockContext.SaveChanges();
             }

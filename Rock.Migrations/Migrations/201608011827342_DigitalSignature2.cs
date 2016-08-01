@@ -46,12 +46,65 @@ namespace Rock.Migrations
             DropColumn("dbo.SignatureDocumentTemplate", "RequestEmailTemplateSubject");
             DropColumn("dbo.SignatureDocumentTemplate", "RequestEmailTemplateBody");
             DropColumn("dbo.SignatureDocument", "RequestDate");
+
+            Sql( @"
+    --update the block types
+    UPDATE[BlockType]
+    SET[Path] = '~/Blocks/Core/SignatureDocumentTemplateDetail.ascx'
+    WHERE[Path] = '~/Blocks/Core/SignatureDocumentTypeDetail.ascx'
+
+    UPDATE[BlockType]
+    SET[Path] = '~/Blocks/Core/SignatureDocumentTemplateList.ascx'
+    WHERE[Path] = '~/Blocks/Core/SignatureDocumentTypeList.ascx'
+
+    -- update the page names
+    UPDATE[Page] SET
+        [PageTitle] = 'Document Templates',
+        [BrowserTitle] = 'Document Templates',
+	    [InternalName] = 'Document Templates',
+	    [IconCssClass] = 'fa fa-pencil-square-o'
+    WHERE[Guid] = '7096FA12-07A5-489C-83B0-EE55494A3484'
+" );
+
+            //Add the system email
+            RockMigrationHelper.UpdateSystemEmail( "System", "Digital Signature Invite", "", "", "", "", "", "{{  SignatureDocument.SignatureDocumentTemplate.Name }} Signature Request for {{ 'Global' | Attribute:'OrganizationName' }}", @"{{ 'Global' | Attribute:'EmailHeader' }}
+
+<p>
+    This email contains a secure link to provide a digital signature for the {{  SignatureDocument.SignatureDocumentTemplate.Name }} document. Please 
+    do not forward or share this email, link, or access code with others. If you believe this email was sent to you in 
+    error, please let us know at {{ 'Global' | Attribute:'OrganizationEmail' }}. 
+</p>
+
+<p>
+    <table align=""left"" style=""width: 29%; min-width: 190px; margin-bottom: 12px;"" cellpadding=""0"" cellspacing=""0"">
+     <tr>
+       <td>
+    
+    		<div><!--[if mso]>
+    		  <v:roundrect xmlns:v=""urn:schemas-microsoft-com:vml"" xmlns:w=""urn:schemas-microsoft-com:office:word"" href=""{{ ButtonLink }}"" style=""height:38px;v-text-anchor:middle;width:175px;"" arcsize=""11%"" strokecolor=""#e76812"" fillcolor=""#ee7624"">
+    			<w:anchorlock/>
+    			<center style=""color:#ffffff;font-family:sans-serif;font-size:13px;font-weight:normal;"">{{ ButtonText }}</center>
+    		  </v:roundrect>
+    		<![endif]--><a href=""{{ InviteLink }}""
+    		style=""background-color:#ee7624;border:1px solid #e76812;border-radius:4px;color:#ffffff;display:inline-block;font-family:sans-serif;font-size:13px;font-weight:normal;line-height:38px;text-align:center;text-decoration:none;width:175px;-webkit-text-size-adjust:none;mso-hide:all;"">Sign Now</a></div>
+    
+    	</td>
+     </tr>
+    </table>
+</p>
+
+<p>
+    This invite will expire in 15 days.
+</p>
+
+{{ 'Global' | Attribute:'EmailFooter' }}", "791F2DE4-5A59-60AE-4F2F-FDC3EBC4FFA9" );
+
         }
-        
-        /// <summary>
-        /// Operations to be performed during the downgrade process.
-        /// </summary>
-        public override void Down()
+
+    /// <summary>
+    /// Operations to be performed during the downgrade process.
+    /// </summary>
+    public override void Down()
         {
             AddColumn("dbo.SignatureDocument", "RequestDate", c => c.DateTime());
             AddColumn("dbo.SignatureDocumentTemplate", "RequestEmailTemplateBody", c => c.String());
