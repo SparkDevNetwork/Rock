@@ -37,7 +37,7 @@
                         <div class="col-md-6">
                             <Rock:FileUploader ID="fuDocument" runat="server" Label="Document" />
                             <Rock:RockLiteral ID="lDocumentKey" runat="server" Label="Document Key" />
-                            <Rock:RockLiteral ID="lRequestDate" runat="server" Label="Last Request Date" />
+                            <Rock:RockLiteral ID="lRequestDate" runat="server" Label="Last Invite Date" />
                         </div>
                         <div class="col-md-6">
                             <Rock:PersonPicker ID="ppAppliesTo" runat="server" Label="Applies To" Required="true"

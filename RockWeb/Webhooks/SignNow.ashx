@@ -22,6 +22,7 @@ using System.Net;
 using System.Web;
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 using Rock;
 using Rock.Data;
@@ -61,40 +62,51 @@ public class SignNow : IHttpHandler
             return;
         }
 
-        if ( signNowData.meta.event_name == "document.update" )
+        var signNowComponent = DigitalSignatureContainer.GetComponent( "Rock.SignNow.SignNow" ) as Rock.SignNow.SignNow;
+        if ( signNowComponent != null )
         {
-            using ( var rockContext = new RockContext() )
+            if ( signNowData.meta.event_name == "document.update" )
             {
-                var document = new SignatureDocumentService( rockContext ).GetByDocumentKey( signNowData.content.document_id );
-                if ( document != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    document.Status = SignatureDocumentStatus.Signed;
-                    document.LastStatusDate = RockDateTime.Now;
-                }
-                rockContext.SaveChanges();
-
-                var signNowComponent = DigitalSignatureContainer.GetComponent( "Rock.Security.DigitalSignature.SignNow" );
-                if ( signNowComponent != null )
-                {
-                    var errorMessages = new List<string>();
-                    string documentPath = signNowComponent.GetDocument( document, context.Server.MapPath( "~/App_Data/Cache/SignNow" ), out errorMessages );
-                    if ( !string.IsNullOrWhiteSpace( documentPath ) )
+                    var signatureDocumentService = new SignatureDocumentService( rockContext );
+                    var document = signatureDocumentService.GetByDocumentKey( signNowData.content.document_id );
+                    if ( document == null )
                     {
-                        var binaryFileService = new BinaryFileService( rockContext );
-                        BinaryFile binaryFile = new BinaryFile();
-                        binaryFile.Guid = Guid.NewGuid();
-                        binaryFile.IsTemporary = false;
-                        binaryFile.BinaryFileTypeId = document.SignatureDocumentTemplate.BinaryFileTypeId;
-                        binaryFile.MimeType = "application/pdf";
-                        binaryFile.FileName = new FileInfo( documentPath ).Name;
-                        binaryFile.ContentStream = new FileStream( documentPath, FileMode.Open );
-                        binaryFileService.Add( binaryFile );
+                        var originalDocumentId = GetOriginalDocumentId( signNowComponent, signNowData.content.document_id );
+                        if ( !string.IsNullOrWhiteSpace( originalDocumentId ) )
+                        {
+                            document = signatureDocumentService.GetByDocumentKey( originalDocumentId );
+                        }
+                    }
+
+                    if ( document != null )
+                    {
+                        document.DocumentKey = signNowData.content.document_id;
+                        document.Status = SignatureDocumentStatus.Signed;
+                        document.LastStatusDate = RockDateTime.Now;
                         rockContext.SaveChanges();
 
-                        document.BinaryFileId = binaryFile.Id;
-                        rockContext.SaveChanges();
+                        var errorMessages = new List<string>();
+                        string documentPath = signNowComponent.GetDocument( document, context.Server.MapPath( "~/App_Data/Cache/SignNow" ), out errorMessages );
+                        if ( !string.IsNullOrWhiteSpace( documentPath ) )
+                        {
+                            var binaryFileService = new BinaryFileService( rockContext );
+                            BinaryFile binaryFile = new BinaryFile();
+                            binaryFile.Guid = Guid.NewGuid();
+                            binaryFile.IsTemporary = false;
+                            binaryFile.BinaryFileTypeId = document.SignatureDocumentTemplate.BinaryFileTypeId;
+                            binaryFile.MimeType = "application/pdf";
+                            binaryFile.FileName = new FileInfo( documentPath ).Name;
+                            binaryFile.ContentStream = new FileStream( documentPath, FileMode.Open );
+                            binaryFileService.Add( binaryFile );
+                            rockContext.SaveChanges();
 
-                        File.Delete( documentPath );
+                            document.BinaryFileId = binaryFile.Id;
+                            rockContext.SaveChanges();
+
+                            File.Delete( documentPath );
+                        }
                     }
                 }
             }
@@ -102,6 +114,20 @@ public class SignNow : IHttpHandler
             response.Write( String.Format( "Successfully processed '{0}' message", signNowData.meta.event_name ) );
             response.StatusCode = 200;
         }
+    }
+
+    private string GetOriginalDocumentId( Rock.SignNow.SignNow component, string documentId )
+    {
+        // Get the access token
+        string errorMessage = string.Empty;
+        string accessToken = component.GetAccessToken( false, out errorMessage );
+        if ( !string.IsNullOrWhiteSpace( accessToken ) )
+        {
+            JObject getDocumentRes = CudaSign.Document.Get( accessToken, documentId );
+            return getDocumentRes.Value<string>( "origin_document_id" );
+        }
+
+        return string.Empty;
     }
 
     public bool IsReusable

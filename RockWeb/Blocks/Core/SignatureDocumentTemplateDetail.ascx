@@ -39,7 +39,7 @@
                         <div class="col-md-6">
                             <Rock:BinaryFileTypePicker ID="bftpFileType" runat="server" Label="File Type" Required="true" 
                                 Help="The file type to use when saving signed documents of this type." />
-                            <Rock:RockDropDownList ID="ddlSystemEmail" runat="server" Label="Invite Email" Required="true"
+                            <Rock:RockDropDownList ID="ddlSystemEmail" runat="server" Label="Invite Email" Required="true" Visible="false"
                                 Help="The System Email that should be sent when requesting a signature for documents of this type." />
                         </div>
                     </div>

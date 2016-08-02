@@ -39,11 +39,13 @@ namespace Rock.Security
         /// Abstract method for requesting a document be sent to recipient for signature
         /// </summary>
         /// <param name="documentType">Type of the document.</param>
-        /// <param name="recipient">The recipient.</param>
+        /// <param name="appliesTo">The applies to.</param>
+        /// <param name="assignedTo">The assigned to.</param>
         /// <param name="documentName">Name of the document.</param>
         /// <param name="errors">The errors.</param>
+        /// <param name="sendInvite">if set to <c>true</c> [send invite].</param>
         /// <returns></returns>
-        public abstract string CreateDocument( SignatureDocumentTemplate documentType, Person recipient, string documentName, out List<string> errors );
+        public abstract string CreateDocument( SignatureDocumentTemplate documentType, Person appliesTo, Person assignedTo, string documentName, out List<string> errors, bool sendInvite );
 
         /// <summary>
         /// Gets the invite link.
@@ -58,10 +60,9 @@ namespace Rock.Security
         /// Resends the document.
         /// </summary>
         /// <param name="document">The document.</param>
-        /// <param name="email">The email.</param>
         /// <param name="errors">The errors.</param>
         /// <returns></returns>
-        public abstract bool ResendDocument( SignatureDocument document, string email, out List<string> errors );
+        public abstract bool ResendDocument( SignatureDocument document, out List<string> errors );
 
 
         /// <summary>
@@ -82,12 +83,12 @@ namespace Rock.Security
         public abstract string GetDocument( SignatureDocument document, string folderPath, out List<string> errors );
 
         /// <summary>
-        /// Updates the document status.
+        /// Determines whether [is document signed] [the specified document].
         /// </summary>
         /// <param name="document">The document.</param>
         /// <param name="errors">The errors.</param>
         /// <returns></returns>
-        public abstract bool UpdateDocumentStatus( SignatureDocument document, out List<string> errors );
+        public abstract bool IsDocumentSigned( SignatureDocument document, out List<string> errors );
     }
 
 }
