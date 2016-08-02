@@ -264,7 +264,12 @@ namespace RockWeb.Blocks.CheckIn
         var labelData = {0};
 
 		function onDeviceReady() {{
-			printLabels();
+            try {{			
+                printLabels();
+            }} 
+            catch (err) {{
+                console.log('An error occurred printing labels: ' + err);
+            }}
 		}}
 		
 		function alertDismissed() {{

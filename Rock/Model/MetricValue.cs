@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -116,7 +117,12 @@ namespace Rock.Model
         /// The metric value partitions.
         /// </value>
         [DataMember]
-        public virtual ICollection<MetricValuePartition> MetricValuePartitions { get; set; }
+        public virtual ICollection<MetricValuePartition> MetricValuePartitions
+        {
+            get { return _metricValuePartitions; }
+            set { _metricValuePartitions = value; }
+        }
+        private ICollection<MetricValuePartition> _metricValuePartitions;
 
         #endregion
 
@@ -219,6 +225,19 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.YValue.ToString();
+        }
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MetricValue"/> class.
+        /// </summary>
+        public MetricValue()
+            : base()
+        {
+            _metricValuePartitions = new Collection<MetricValuePartition>();
         }
 
         #endregion

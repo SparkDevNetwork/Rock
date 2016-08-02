@@ -8,6 +8,10 @@ using DotLiquid;
 
 namespace Rock.Lava.Blocks
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="DotLiquid.Block" />
     public class RockLavaBlockBase : DotLiquid.Block
     {
         /// <summary>

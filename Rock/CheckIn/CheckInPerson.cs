@@ -268,7 +268,7 @@ namespace Rock.CheckIn
         {
             get
             {
-                var availableKeys = new List<string> { "FamilyMember", "LastCheckIn", "FirstTime", "SecurityCode" };
+                var availableKeys = new List<string> { "FamilyMember", "LastCheckIn", "FirstTime", "SecurityCode", "GroupTypes" };
                 if ( this.Person != null )
                 {
                     availableKeys.AddRange( this.Person.AvailableKeys );
@@ -292,11 +292,12 @@ namespace Rock.CheckIn
             {
                switch( key.ToStringSafe() )
                {
-                   case "FamilyMember": return FamilyMember;
-                   case "LastCheckIn": return LastCheckIn;
-                   case "FirstTime": return FirstTime;
-                   case "SecurityCode": return SecurityCode;
-                   default: return Person[key];
+                    case "FamilyMember": return FamilyMember;
+                    case "LastCheckIn": return LastCheckIn;
+                    case "FirstTime": return FirstTime;
+                    case "SecurityCode": return SecurityCode;
+                    case "GroupTypes": return GetGroupTypes( true );
+                    default: return Person[key];
                }
             }
         }
@@ -308,7 +309,7 @@ namespace Rock.CheckIn
         /// <returns></returns>
         public bool ContainsKey( object key )
         {
-            var additionalKeys = new List<string> { "FamilyMember", "LastCheckIn", "FirstTime", "SecurityCode" };
+            var additionalKeys = new List<string> { "FamilyMember", "LastCheckIn", "FirstTime", "SecurityCode", "GroupTypes" };
             if ( additionalKeys.Contains( key.ToStringSafe() ) )
             {
                 return true;

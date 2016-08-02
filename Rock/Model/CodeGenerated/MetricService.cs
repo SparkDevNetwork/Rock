@@ -98,6 +98,7 @@ namespace Rock.Model
             target.IsSystem = source.IsSystem;
             target.LastRunDateTime = source.LastRunDateTime;
             target.MetricChampionPersonAliasId = source.MetricChampionPersonAliasId;
+            target.NumericDataType = source.NumericDataType;
             target.ScheduleId = source.ScheduleId;
             target.SourceSql = source.SourceSql;
             target.SourceValueTypeId = source.SourceValueTypeId;
