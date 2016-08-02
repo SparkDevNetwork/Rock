@@ -1023,7 +1023,7 @@ namespace RockWeb.Blocks.Event
                                 out sendErrorMessages ) )
                             {
                                 rockContext.SaveChanges();
-                                maSignatureRequestSent.Show( "A Signature Request Has Been Sent!", Rock.Web.UI.Controls.ModalAlertType.Information );
+                                maSignatureRequestSent.Show( "A Signature Request Has Been Sent.", Rock.Web.UI.Controls.ModalAlertType.Information );
                             }
                             else
                             {
@@ -2044,6 +2044,8 @@ namespace RockWeb.Blocks.Event
                 divBody.Controls.Add( divSigAlert );
 
                 StringBuilder sb = new StringBuilder();
+                sb.Append( "<div class='row'><div class='col-md-9'>" );
+
                 sb.AppendFormat(
                     "There is not a signed {0} for {1}",
                     template.RequiredSignatureDocumentTemplate.Name,
@@ -2055,21 +2057,23 @@ namespace RockWeb.Blocks.Event
                         " (a request was sent {0})",
                         registrant.SignatureDocumentLastSent.Value.ToElapsedString() );
                 }
-                sb.Append( "." );
+                sb.Append( ".</div>" );
 
                 divSigAlert.Controls.Add( new LiteralControl( sb.ToString() ) );
 
                 var divSigAction = new HtmlGenericControl( "div" );
-                divSigAction.AddCssClass( "actions margin-t-md" );
+                divSigAction.AddCssClass( "col-md-3 text-right" );
                 divSigAlert.Controls.Add( divSigAction );
 
                 var lbResendDocumentRequest = new LinkButton();
                 lbResendDocumentRequest.CausesValidation = false;
                 lbResendDocumentRequest.ID = string.Format( "lbResendDocumentRequest_{0}", registrant.Id );
                 lbResendDocumentRequest.Text = registrant.SignatureDocumentLastSent.HasValue ? "Resend Signature Request" : "Send Signature Request";
-                lbResendDocumentRequest.CssClass = "btn btn-default";
+                lbResendDocumentRequest.CssClass = "btn btn-warning btn-sm";
                 lbResendDocumentRequest.Click += lbResendDocumentRequest_Click;
-                divSigAlert.Controls.Add( lbResendDocumentRequest );
+                divSigAction.Controls.Add( lbResendDocumentRequest );
+
+                divSigAlert.Controls.Add( new LiteralControl( "</div>" ) );
             }
 
             var divRow = new HtmlGenericControl( "div" );

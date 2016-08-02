@@ -325,9 +325,9 @@ namespace RockWeb.Blocks.Core
             tbName.Text = signatureDocument.Name;
 
             rbStatus.SelectedValue = signatureDocument.Status.ConvertToInt().ToString();
-            lStatusLastUpdated.Visible = signatureDocument.LastStatusDate.HasValue;
-            lStatusLastUpdated.Text = signatureDocument.LastStatusDate.HasValue ?
-                string.Format( "<span title='{0}'>{1}</span>", signatureDocument.LastStatusDate.Value.ToString(), signatureDocument.LastStatusDate.Value.ToElapsedString() ) :
+            hlStatusLastUpdated.Visible = signatureDocument.LastStatusDate.HasValue;
+            hlStatusLastUpdated.Text = signatureDocument.LastStatusDate.HasValue ?
+                string.Format( "<span title='{0}'>Last Status Update: {1}</span>", signatureDocument.LastStatusDate.Value.ToString(), signatureDocument.LastStatusDate.Value.ToElapsedString() ) :
                 string.Empty;
 
             ppAppliesTo.SetValue( signatureDocument.AppliesToPersonAlias != null ? signatureDocument.AppliesToPersonAlias.Person : null );
