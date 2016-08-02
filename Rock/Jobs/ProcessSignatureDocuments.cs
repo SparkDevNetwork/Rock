@@ -35,7 +35,7 @@ namespace Rock.Jobs
     /// </summary>
     [IntegerField( "Resend Invite After Number Days", "Number of days after sending last invite to sign, that a new invite should be resent.", false, 5, "", 0 )]
     [IntegerField( "Max Invites", "Maximum number of times an invite should be sent", false, 2, "", 1 )]
-
+    [TextField( "Temp Folder Path", "The temporary folder to use for downloading signed document", true, "", "", 3)]
     [DisallowConcurrentExecution]
     public class ProcessSignatureDocuments : IJob
     {
@@ -65,6 +65,11 @@ namespace Rock.Jobs
         /// </remarks>
         public virtual void Execute( IJobExecutionContext context )
         {
+            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            int resendDays = dataMap.GetString( "ResendInviteAfterNumberDays" ).AsIntegerOrNull() ?? 5;
+            int maxInvites = dataMap.GetString( "MaxInvites" ).AsIntegerOrNull() ?? 2;
+            string folderPath = dataMap.GetString( "TempFolderPath" );
+
             var errorMessages = new List<string>();
             int signatureRequestsSent = 0;
             int documentsUpdated = 0;
@@ -72,7 +77,9 @@ namespace Rock.Jobs
             // Send documents
             using ( var rockContext = new RockContext() )
             {
+                var maxInviteDate = RockDateTime.Today.AddDays( 0 - resendDays );
                 var docTypeService = new SignatureDocumentTemplateService( rockContext );
+                var docService = new SignatureDocumentService( rockContext );
 
                 // Check for status updates
                 foreach ( var document in new SignatureDocumentService( rockContext ).Queryable()
@@ -80,7 +87,7 @@ namespace Rock.Jobs
                 {
                     var updateErrorMessages = new List<string>();
                     var status = document.Status;
-                    if ( docTypeService.UpdateDocumentStatus( document, out updateErrorMessages ) )
+                    if ( docTypeService.UpdateDocumentStatus( document, folderPath, out updateErrorMessages ) )
                     {
                         if ( status != document.Status )
                         {
@@ -104,7 +111,10 @@ namespace Rock.Jobs
                         m.Person.Email != "" &&
                         m.Group.RequiredSignatureDocumentTemplate != null &&
                         !m.Group.RequiredSignatureDocumentTemplate.Documents.Any( d =>
-                            d.AppliesToPersonAlias.PersonId == m.PersonId )
+                            d.AppliesToPersonAlias.PersonId == m.PersonId &&
+                            d.AssignedToPersonAlias.PersonId == m.PersonId &&
+                            ( d.Status == SignatureDocumentStatus.Signed || d.Status == SignatureDocumentStatus.Cancelled )
+                        )
                     )
                     .Select( m => new
                     {
@@ -130,17 +140,30 @@ namespace Rock.Jobs
                         docsSent.Add( gm.Person.Id, new List<int> { gm.DocumentType.Id } );
                     }
 
-                    string documentName = string.Format( "{0}_{1}", gm.GroupName.RemoveSpecialCharacters(), gm.Person.FullName.RemoveSpecialCharacters() );
+                    var document = docService.Queryable()
+                        .Where( d =>
+                            d.SignatureDocumentTemplateId == gm.DocumentType.Id &&
+                            d.AppliesToPersonAlias.PersonId == gm.Person.Id &&
+                            d.AssignedToPersonAlias.PersonId == gm.Person.Id &&
+                            ( d.Status == SignatureDocumentStatus.None || d.Status == SignatureDocumentStatus.Sent )
+                        )
+                        .OrderByDescending( d => d.CreatedDateTime )
+                        .FirstOrDefault();
 
-                    var sendErrorMessages = new List<string>();
-                    if ( docTypeService.SendDocument( gm.DocumentType, gm.Person, gm.Person, documentName, gm.Person.Email, out sendErrorMessages ) )
+                    if ( document == null || ( document.InviteCount < maxInvites && document.LastInviteDate < maxInviteDate ) )
                     {
-                        rockContext.SaveChanges();
-                        signatureRequestsSent++;
-                    }
-                    else
-                    {
-                        errorMessages.AddRange( sendErrorMessages );
+                        string documentName = string.Format( "{0}_{1}", gm.GroupName.RemoveSpecialCharacters(), gm.Person.FullName.RemoveSpecialCharacters() );
+
+                        var sendErrorMessages = new List<string>();
+                        if ( docTypeService.SendDocument( gm.DocumentType, gm.Person, gm.Person, documentName, gm.Person.Email, out sendErrorMessages ) )
+                        {
+                            rockContext.SaveChanges();
+                            signatureRequestsSent++;
+                        }
+                        else
+                        {
+                            errorMessages.AddRange( sendErrorMessages );
+                        }
                     }
                 }
             }

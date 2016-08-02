@@ -15,6 +15,7 @@
                 <div id="pnlEditDetails" runat="server">
 
                     <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                    <Rock:NotificationBox ID="nbSend" runat="server" Visible="false" />
 
                     <div class="row">
                         <div class="col-md-6">
@@ -52,6 +53,7 @@
                     <div class="actions">
                         <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                         <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                        <asp:LinkButton ID="btnSend" runat="server" Text="Send" CssClass="btn btn-link pull-right" CausesValidation="false" OnClick="btnSend_Click" Visible="false" />
                     </div>
 
                 </div>

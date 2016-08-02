@@ -84,6 +84,8 @@ namespace RockWeb.Blocks.Core
         {
             base.OnLoad( e );
 
+            nbSend.Visible = false;
+
             if ( !Page.IsPostBack )
             {
                 ShowDetail( PageParameter( "signatureDocumentId" ).AsInteger() );
@@ -198,6 +200,55 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Handles the Click event of the btnSend control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSend_Click( object sender, EventArgs e )
+        {
+            int? signatureDocumentId = hfSignatureDocumentId.Value.AsIntegerOrNull();
+            if ( signatureDocumentId.HasValue && signatureDocumentId.Value > 0 )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var signatureDocument = new SignatureDocumentService( rockContext ).Get( signatureDocumentId.Value );
+                    if ( signatureDocument != null && signatureDocument.SignatureDocumentTemplate != null &&
+                        signatureDocument.AppliesToPersonAlias != null && signatureDocument.AssignedToPersonAlias != null )
+                    {
+                        var errorMessages = new List<string>();
+                        if ( new SignatureDocumentTemplateService( rockContext ).SendDocument(
+                            signatureDocument.SignatureDocumentTemplate, signatureDocument.AssignedToPersonAlias.Person,
+                            signatureDocument.AssignedToPersonAlias.Person,
+                            signatureDocument.Name, signatureDocument.AppliesToPersonAlias.Person.Email, out errorMessages ) )
+                        {
+                            var lastInviteDate = RockDateTime.Now;
+                            lRequestDate.Text = string.Format( "<span title='{0}'>{1}</span>", lastInviteDate.ToString(), lastInviteDate.ToElapsedString() );
+
+                            nbSend.Title = string.Empty;
+                            nbSend.Text = "Signature Invite Was Successfully Sent";
+                            nbSend.NotificationBoxType = NotificationBoxType.Success;
+                            nbSend.Visible = true;
+                        }
+                        else
+                        {
+                            nbSend.Title = "Error Sending Signature Invite";
+                            nbSend.Text = string.Format( "<ul><li>{0}</li></ul>", errorMessages.AsDelimited( "</li><li>" ) );
+                            nbSend.NotificationBoxType = NotificationBoxType.Danger;
+                            nbSend.Visible = true;
+                        }
+                    }
+                    else
+                    {
+                        nbSend.Title = "Error Sending Signature Invite";
+                        nbSend.Text = "<ul><li>'Applies To' and 'Assigned To' values are required</li></ul>";
+                        nbSend.NotificationBoxType = NotificationBoxType.Warning;
+                        nbSend.Visible = true;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Shows the readonly details.
         /// </summary>
         /// <param name="signatureDocument">Type of the defined.</param>
@@ -265,6 +316,9 @@ namespace RockWeb.Blocks.Core
             {
                 lTitle.Text = ActionTitle.Add( titleName ).FormatAsHtmlTitle();
             }
+
+            btnSend.Visible = signatureDocument.Id > 0 && signatureDocument.Status != SignatureDocumentStatus.Signed;
+            btnSend.Text = signatureDocument.Status == SignatureDocumentStatus.Sent ? "Resend Invite" : "Send Invite";
 
             SetEditMode( true );
 
