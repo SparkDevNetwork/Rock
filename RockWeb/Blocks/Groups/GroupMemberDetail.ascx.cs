@@ -348,7 +348,7 @@ namespace RockWeb.Blocks.Groups
                             groupMember.Group.RequiredSignatureDocumentTemplate, groupMember.Person, groupMember.Person, documentName, groupMember.Person.Email, out sendErrorMessages ) )
                         {
                             rockContext.SaveChanges();
-                            maSignatureRequestSent.Show( "A Signature Request Has Been Sent!", Rock.Web.UI.Controls.ModalAlertType.Information );
+                            maSignatureRequestSent.Show( "A Signature Request Has Been Sent.", Rock.Web.UI.Controls.ModalAlertType.Information );
                             ShowRequiredDocumentStatus( rockContext, groupMember, groupMember.Group );
                         }
                         else
