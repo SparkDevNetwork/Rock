@@ -1399,7 +1399,7 @@ namespace RockWeb.Blocks.Event
                         // If there is a valid registration, and nothing went wrong processing the payment, add registrants to group and send the notifications
                         if ( registration != null && !registration.IsTemporary )
                         {
-                            ProcessPostSave( isNewRegistration, registrationService, registration, previousRegistrantIds, rockContext );
+                            ProcessPostSave( isNewRegistration, registration, previousRegistrantIds, rockContext );
                         }
                     }
 
@@ -1446,7 +1446,7 @@ namespace RockWeb.Blocks.Event
             return registration != null ? registration.Id : (int?)null;
         }
 
-        private void ProcessPostSave( bool isNewRegistration, RegistrationService registrationService, Registration registration, List<int> previousRegistrantIds, RockContext rockContext )
+        private void ProcessPostSave( bool isNewRegistration, Registration registration, List<int> previousRegistrantIds, RockContext rockContext )
         {
             try
             {
@@ -1471,10 +1471,8 @@ namespace RockWeb.Blocks.Event
                     Rock.Transactions.RockQueue.TransactionQueue.Enqueue( notification );
                 }
 
-                var newRegistration = registrationService
-                    .Queryable( "Registrants.PersonAlias.Person,Registrants.GroupMember,RegistrationInstance.Account,RegistrationInstance.RegistrationTemplate.Fees,RegistrationInstance.RegistrationTemplate.Discounts,RegistrationInstance.RegistrationTemplate.Forms.Fields.Attribute,RegistrationInstance.RegistrationTemplate.FinancialGateway" )
-                    .Where( r => r.Id == registration.Id )
-                    .FirstOrDefault();
+                var registrationService = new RegistrationService( new RockContext() );
+                var newRegistration = registrationService.Get( registration.Id );
                 if ( newRegistration != null )
                 {
                     if ( isNewRegistration )
@@ -1515,7 +1513,7 @@ namespace RockWeb.Blocks.Event
                                 sendDocumentTxn.SignatureDocumentTemplateId = RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value;
                                 sendDocumentTxn.AppliesToPersonAliasId = registrant.PersonAlias.Id;
                                 sendDocumentTxn.AssignedToPersonAliasId = assignedTo.PrimaryAliasId ?? 0;
-                                sendDocumentTxn.DocumentName = string.Format( "{0}_{1}", RegistrationInstanceState.Name.RemoveSpecialCharacters(), assignedTo.FullName.RemoveSpecialCharacters() );
+                                sendDocumentTxn.DocumentName = string.Format( "{0}_{1}", RegistrationInstanceState.Name.RemoveSpecialCharacters(), registrant.PersonAlias.Person.FullName.RemoveSpecialCharacters() );
                                 sendDocumentTxn.Email = email;
                                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( sendDocumentTxn );
                             }
