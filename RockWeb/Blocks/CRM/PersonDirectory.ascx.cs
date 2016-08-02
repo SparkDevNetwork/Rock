@@ -55,6 +55,7 @@ namespace RockWeb.Blocks.Crm
     [BooleanField( "Show Birthday", "Should email address be included in the directory?", true, "", 9 )]
     [BooleanField( "Show Gender", "Should email address be included in the directory?", true, "", 10 )]
     [BooleanField( "Show Grade", "Should grade be included in the directory?", false, "", 11 )]
+    [IntegerField( "Max Results", "The maximum number of results to show on the page.", true, 1500)]
     public partial class PersonDirectory : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -497,6 +498,7 @@ namespace RockWeb.Blocks.Crm
             var people = personQry
                 .OrderBy( p => p.LastName )
                 .ThenBy( p => p.NickName )
+                .Take( GetAttributeValue( "MaxResults" ).AsInteger() )
                 .Select( p => new PersonDirectoryItem
                 {
                     Id = p.Id,
@@ -639,6 +641,7 @@ namespace RockWeb.Blocks.Crm
                 Name = m.Group.Name
             } )
             .Distinct()
+            .Take( GetAttributeValue( "MaxResults" ).AsInteger() )
             .ToList();
 
             rptFamilies.DataSource = families;
