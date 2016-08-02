@@ -589,17 +589,25 @@ $(document).ready(function() {
 
         private Template GetTemplate()
         {
-            var template = GetCacheItem( TEMPLATE_CACHE_KEY ) as Template;
-            if ( template == null )
-            {
-                template = Template.Parse( GetAttributeValue( "Template" ) );
+            Template template = null;
 
-                int? cacheDuration = GetAttributeValue( "CacheDuration" ).AsInteger();
-                if ( cacheDuration > 0 )
+            try {
+                template = GetCacheItem( TEMPLATE_CACHE_KEY ) as Template;
+                if ( template == null )
                 {
-                    var cacheItemPolicy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( cacheDuration.Value ) };
-                    AddCacheItem( TEMPLATE_CACHE_KEY, template, cacheItemPolicy );
+                    template = Template.Parse( GetAttributeValue( "Template" ) );
+
+                    int? cacheDuration = GetAttributeValue( "CacheDuration" ).AsInteger();
+                    if ( cacheDuration > 0 )
+                    {
+                        var cacheItemPolicy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( cacheDuration.Value ) };
+                        AddCacheItem( TEMPLATE_CACHE_KEY, template, cacheItemPolicy );
+                    }
                 }
+            }
+            catch(Exception ex )
+            {
+                template = Template.Parse( string.Format("Lava error: {0}", ex.Message ) );
             }
 
             return template;
