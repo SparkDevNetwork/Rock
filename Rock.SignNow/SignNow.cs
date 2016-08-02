@@ -198,11 +198,13 @@ namespace Rock.SignNow
         /// Sends the document.
         /// </summary>
         /// <param name="documentTemplate">Type of the document.</param>
-        /// <param name="recipient">The recipient.</param>
+        /// <param name="appliesTo">The applies to.</param>
+        /// <param name="assignedTo">The recipient.</param>
         /// <param name="documentName">Name of the document.</param>
         /// <param name="errors">The errors.</param>
+        /// <param name="sendInvite">if set to <c>true</c> [send invite].</param>
         /// <returns></returns>
-        public override string CreateDocument( SignatureDocumentTemplate documentTemplate, Person recipient, string documentName, out List<string> errors )
+        public override string CreateDocument( SignatureDocumentTemplate documentTemplate, Person appliesTo, Person assignedTo, string documentName, out List<string> errors, bool sendInvite )
         {
             errors = new List<string>();
 
@@ -224,56 +226,72 @@ namespace Rock.SignNow
                 return null;
             }
 
-            //// Get the document to determine the roles (if any) are needed
-            //JObject getDocumentRes = CudaSign.Document.Get( accessToken, documentId );
-            //errors = ParseErrors( getDocumentRes );
-            //if ( errors.Any() )
-            //{
-            //    errorMessage = errors.AsDelimited( "; " );
-            //    return null;
-            //}
+            if ( sendInvite && assignedTo != null && !string.IsNullOrEmpty( assignedTo.Email ) )
+            {
+                string orgAbbrev = GlobalAttributesCache.Value( "OrganizationAbbreviation" );
+                if ( string.IsNullOrWhiteSpace( orgAbbrev) )
+                {
+                    orgAbbrev = GlobalAttributesCache.Value( "OrganizationName" );
+                }
 
-            //dynamic inviteObj = null;
-            //JArray roles = getDocumentRes.Value<JArray>( "roles" );
-            //if ( roles != null && roles.Count > 0 )
-            //{
-            //    var to = new List<dynamic>();
-            //    foreach ( JObject role in roles )
-            //    {
-            //        to.Add( new
-            //        {
-            //            email = email,
-            //            role_id = string.Empty,
-            //            role = role.Value<string>( "name" ),
-            //            order = role.Value<int>( "signing_order" ),
-            //            expiration_days = 15,
-            //            reminder = 5
-            //        } );
-            //    }
+                string subject = string.Format( "Digital Signature Request from {0}", orgAbbrev );
+                string message = string.Format( "{0} has requested a digital signature for a '{1}' document for {2}.",
+                    GlobalAttributesCache.Value( "OrganizationName" ), documentTemplate.Name, appliesTo != null ? appliesTo.FullName : assignedTo.FullName );
 
-            //    inviteObj = new
-            //    {
-            //        from = GetAttributeValue( "Username" ),
-            //        to = to.ToArray()
-            //    };
-            //}
-            //else
-            //{
-            //    inviteObj = new
-            //    {
-            //        from = GetAttributeValue( "Username" ),
-            //        to = email
-            //    };
-            //}
+                // Get the document to determine the roles (if any) are needed
+                JObject getDocumentRes = CudaSign.Document.Get( accessToken, documentId );
+                errors = ParseErrors( getDocumentRes );
+                if ( errors.Any() )
+                {
+                    errorMessage = errors.AsDelimited( "; " );
+                    return null;
+                }
 
-            //// Send the invite
-            //JObject inviteRes = CudaSign.Document.Invite( accessToken, documentId, inviteObj );
-            //errors = ParseErrors( inviteRes );
-            //if ( errors.Any() )
-            //{
-            //    return null;
-            //}
+                dynamic inviteObj = null;
+                JArray roles = getDocumentRes.Value<JArray>( "roles" );
+                if ( roles != null && roles.Count > 0 )
+                {
+                    var to = new List<dynamic>();
+                    foreach ( JObject role in roles )
+                    {
+                        to.Add( new
+                        {
+                            email = assignedTo.Email,
+                            role_id = string.Empty,
+                            role = role.Value<string>( "name" ),
+                            order = role.Value<int>( "signing_order" ),
+                            expiration_days = 15,
+                            reminder = 5
+                        } );
+                    }
 
+                    inviteObj = new
+                    {
+                        to = to.ToArray(),
+                        from = GetAttributeValue( "Username" ),
+                        subject = subject,
+                        message = message
+                    };
+                }
+                else
+                {
+                    inviteObj = new
+                    {
+                        to = assignedTo.Email,
+                        from = GetAttributeValue( "Username" ),
+                        subject = subject,
+                        message = message
+                    };
+                }
+
+                // Send the invite
+                JObject inviteRes = CudaSign.Document.Invite( accessToken, documentId, inviteObj );
+                errors = ParseErrors( inviteRes );
+                if ( errors.Any() )
+                {
+                    return null;
+                }
+            }
             return documentId;
         }
 
@@ -318,10 +336,9 @@ namespace Rock.SignNow
         /// Resends the document.
         /// </summary>
         /// <param name="document">The document.</param>
-        /// <param name="email">The email.</param>
         /// <param name="errors">The errors.</param>
         /// <returns></returns>
-        public override bool ResendDocument( SignatureDocument document, string email, out List<string> errors )
+        public override bool ResendDocument( SignatureDocument document, out List<string> errors )
         {
             errors = new List<string>();
 
@@ -330,9 +347,10 @@ namespace Rock.SignNow
                 errors.Add( "Invalid Document!" );
             }
 
-            if ( string.IsNullOrWhiteSpace( email ) )
+            if ( document.AssignedToPersonAlias == null || document.AssignedToPersonAlias.Person == null ||
+                string.IsNullOrWhiteSpace( document.AssignedToPersonAlias.Person.Email ) )
             {
-                errors.Add( "Invalid Email!" );
+                errors.Add( "Invalid Assigned To Person or Email!" );
             }
             
             if ( errors.Any() )
@@ -349,12 +367,65 @@ namespace Rock.SignNow
                 return false;
             }
 
-            // Send the invite
-            dynamic inviteObj = new
+            // Get the document to determine the roles (if any) are needed
+            JObject getDocumentRes = CudaSign.Document.Get( accessToken, document.DocumentKey );
+            errors = ParseErrors( getDocumentRes );
+            if ( errors.Any() )
             {
-                from = GetAttributeValue( "Username" ),
-                to = email
-            };
+                errorMessage = errors.AsDelimited( "; " );
+                return false;
+            }
+
+            string orgAbbrev = GlobalAttributesCache.Value( "OrganizationAbbreviation" );
+            if ( string.IsNullOrWhiteSpace( orgAbbrev ) )
+            {
+                orgAbbrev = GlobalAttributesCache.Value( "OrganizationName" );
+            }
+
+            string subject = string.Format( "Digital Signature Request from {0}", orgAbbrev );
+            string message = string.Format( "{0} has requested a digital signature for a '{1}' document for {2}.",
+                GlobalAttributesCache.Value( "OrganizationName" ), document.SignatureDocumentTemplate.Name, 
+                document.AppliesToPersonAlias != null ? document.AppliesToPersonAlias.Person.FullName : document.AssignedToPersonAlias.Person.FullName );
+
+
+            dynamic inviteObj = null;
+            JArray roles = getDocumentRes.Value<JArray>( "roles" );
+            if ( roles != null && roles.Count > 0 )
+            {
+                var to = new List<dynamic>();
+                foreach ( JObject role in roles )
+                {
+                    to.Add( new
+                    {
+                        email = document.AssignedToPersonAlias.Person.Email,
+                        role_id = string.Empty,
+                        role = role.Value<string>( "name" ),
+                        order = role.Value<int>( "signing_order" ),
+                        expiration_days = 15,
+                        reminder = 5
+                    } );
+                }
+
+                inviteObj = new
+                {
+                    to = to.ToArray(),
+                    from = GetAttributeValue( "Username" ),
+                    subject = subject,
+                    message = message
+                };
+            }
+            else
+            {
+                inviteObj = new
+                {
+                    to = document.AssignedToPersonAlias.Person.Email,
+                    from = GetAttributeValue( "Username" ),
+                    subject = subject,
+                    message = message
+                };
+            }
+
+            // Send the invite
             JObject inviteRes = CudaSign.Document.Invite( accessToken, document.DocumentKey, inviteObj );
             errors = ParseErrors( inviteRes );
             if ( errors.Any() )
@@ -451,12 +522,12 @@ namespace Rock.SignNow
         }
 
         /// <summary>
-        /// Updates the document status.
+        /// Determines whether [is document signed] [the specified document].
         /// </summary>
         /// <param name="document">The document.</param>
         /// <param name="errors">The errors.</param>
         /// <returns></returns>
-        public override bool UpdateDocumentStatus( SignatureDocument document, out List<string> errors )
+        public override bool IsDocumentSigned( SignatureDocument document, out List<string> errors )
         {
             errors = new List<string>();
 
@@ -483,8 +554,13 @@ namespace Rock.SignNow
                 errorMessage = errors.AsDelimited( "; " );
                 return false;
             }
+            JArray signatures = getDocumentRes.Value<JArray>( "signatures" );
+            if ( signatures != null )
+            {
+                return true;
+            }
 
-            return true;
+            return false;
         }
 
         /// <summary>
@@ -529,7 +605,7 @@ namespace Rock.SignNow
             return accessToken;
         }
 
-        private List<string> ParseErrors( JObject jObject )
+        public List<string> ParseErrors( JObject jObject )
         {
             var msgs = new List<string>();
 

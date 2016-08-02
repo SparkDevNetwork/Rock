@@ -22,6 +22,8 @@ using System.IO;
 
 using Quartz;
 
+using Rock;
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Data;
 
@@ -31,6 +33,9 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to process the signature documents
     /// </summary>
+    [IntegerField( "Resend Invite After Number Days", "Number of days after sending last invite to sign, that a new invite should be resent.", false, 5, "", 0 )]
+    [IntegerField( "Max Invites", "Maximum number of times an invite should be sent", false, 2, "", 1 )]
+
     [DisallowConcurrentExecution]
     public class ProcessSignatureDocuments : IJob
     {
@@ -106,7 +111,8 @@ namespace Rock.Jobs
                         GroupName = m.Group.Name,
                         Person = m.Person,
                         DocumentType = m.Group.RequiredSignatureDocumentTemplate
-                    } ) )
+                    } )
+                    .ToList() )
                 {
                     if ( docsSent.ContainsKey( gm.Person.Id ) )
                     {

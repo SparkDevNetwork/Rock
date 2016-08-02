@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Rock.Communication;
 using Rock.Data;
@@ -88,7 +89,7 @@ namespace Rock.Model
                             .FirstOrDefault();
                         if ( document == null )
                         {
-                            string documentKey = provider.CreateDocument( signatureDocumentTemplate, assignedToPerson, documentName, out sendErrors );
+                            string documentKey = provider.CreateDocument( signatureDocumentTemplate, appliesToPerson, assignedToPerson, documentName, out sendErrors, true );
                             if ( documentKey != null )
                             {
                                 document = new SignatureDocument();
@@ -100,28 +101,24 @@ namespace Rock.Model
                                 document.AssignedToPersonAliasId = assignedToPerson.PrimaryAliasId;
                                 documentService.Add( document );
 
-                                if ( signatureDocumentTemplate.InviteSystemEmailId.HasValue )
-                                {
-                                    string inviteLink = provider.GetInviteLink( document, assignedToPerson, out sendErrors );
-                                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, assignedToPerson );
-                                    mergeFields.Add( "SignatureDocument", document );
-                                    mergeFields.Add( "InviteLink", inviteLink );
-
-                                    var recipients = new List<RecipientData>();
-                                    recipients.Add( new RecipientData( assignedToPerson.Email, mergeFields ) );
-
-                                    var systemEmail = new SystemEmailService( rockContext ).Get( signatureDocumentTemplate.InviteSystemEmailId.Value );
-                                    if ( systemEmail != null )
-                                    {
-                                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" );
-                                        Email.Send( systemEmail.Guid, recipients, appRoot, string.Empty, false );
-                                    }
-                                }
+                                // Code to send a guest invite and use system email
+                                //var inviteErrors = new List<string>();
+                                //if ( !SendInvite( rockContext, provider, document, assignedToPerson, out inviteErrors ) )
+                                //{
+                                //    errorMessages.AddRange( inviteErrors );
+                                //}
                             }
                         }
                         else
                         {
-                            provider.ResendDocument( document, email, out sendErrors );
+                            provider.ResendDocument( document, out sendErrors );
+
+                            // Code to send a guest invite and use system email
+                            //var inviteErrors = new List<string>();
+                            //if ( !SendInvite( rockContext, provider, document, assignedToPerson, out inviteErrors ) )
+                            //{
+                            //    errorMessages.AddRange( inviteErrors );
+                            //}
                         }
 
                         if ( !sendErrors.Any() )
@@ -145,6 +142,50 @@ namespace Rock.Model
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Sends the invite.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="component">The component.</param>
+        /// <param name="document">The document.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="errors">The errors.</param>
+        /// <returns></returns>
+        private bool SendInvite( RockContext rockContext, DigitalSignatureComponent component, SignatureDocument document, Person person, out List<string> errors )
+        {
+            errors = new List<string>();
+            if ( document != null &&
+                document.SignatureDocumentTemplate != null && 
+                document.SignatureDocumentTemplate.InviteSystemEmailId.HasValue &&
+                person != null &&
+                !string.IsNullOrWhiteSpace( person.Email ) )
+            {
+                string inviteLink = component.GetInviteLink( document, person, out errors );
+                if ( !errors.Any() )
+                {
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, person );
+                    mergeFields.Add( "SignatureDocument", document );
+                    mergeFields.Add( "InviteLink", inviteLink );
+
+                    var recipients = new List<RecipientData>();
+                    recipients.Add( new RecipientData( person.Email, mergeFields ) );
+
+                    var systemEmail = new SystemEmailService( rockContext ).Get( document.SignatureDocumentTemplate.InviteSystemEmailId.Value );
+                    if ( systemEmail != null )
+                    {
+                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" );
+                        Email.Send( systemEmail.Guid, recipients, appRoot, string.Empty, false );
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -175,7 +216,32 @@ namespace Rock.Model
                 }
                 else
                 {
-                    provider.UpdateDocumentStatus( signatureDocument, out errorMessages );
+                    //if ( provider.IsDocumentSigned( signatureDocument, out errorMessages ) )
+                    //{
+                    //    using ( var rockContext = new RockContext() )
+                    //    {
+                    //        string path = GlobalAttributesCache.Value( "InternalApplicationRoot" );
+                    //        string documentPath = provider.GetDocument( signatureDocument, context.Server.MapPath( "~/App_Data/Cache/SignNow" ), out errorMessages );
+                    //        if ( !string.IsNullOrWhiteSpace( documentPath ) )
+                    //        {
+                    //            var binaryFileService = new BinaryFileService( rockContext );
+                    //            BinaryFile binaryFile = new BinaryFile();
+                    //            binaryFile.Guid = Guid.NewGuid();
+                    //            binaryFile.IsTemporary = false;
+                    //            binaryFile.BinaryFileTypeId = signatureDocument.SignatureDocumentTemplate.BinaryFileTypeId;
+                    //            binaryFile.MimeType = "application/pdf";
+                    //            binaryFile.FileName = new FileInfo( documentPath ).Name;
+                    //            binaryFile.ContentStream = new FileStream( documentPath, FileMode.Open );
+                    //            binaryFileService.Add( binaryFile );
+                    //            rockContext.SaveChanges();
+
+                    //            signatureDocument.BinaryFileId = binaryFile.Id;
+
+                    //            File.Delete( documentPath );
+                    //        }
+                    //    }
+                    //}
+
                 }
             }
 
