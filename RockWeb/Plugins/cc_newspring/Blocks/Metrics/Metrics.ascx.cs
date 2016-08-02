@@ -40,7 +40,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
     [Description( "Custom church metrics block using the Chart.js library" )]
     [CustomDropdownListField( "Number of Columns", "", "1,2,3,4,5,6,7,8,9,10,11,12", false, DefaultValue = "4", Order = 1 )]
 
-    [MetricCategoriesField( "Primary Metric Source", "Select the primary metric(s) to include in this chart.", false, Order = 2 )]
+    [MetricCategoriesField( "Metric Source", "Select the primary metric(s) to include in this chart.", false, Order = 2 )]
     [BooleanField("Respect Campus Context", "Respect the group context even if the Campus context selector isn't included on the page.", true, Order = 3)]
     [BooleanField("Respect Group Context", "Respect the group context even if the GroupType context selector isn't included on the page.", true, Order = 4)]
     [BooleanField("Respect Date Context", "Respect the date context even if the DateRange context selector isn't included on the page.", true, Order = 5)]
@@ -63,6 +63,9 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
     public partial class Metrics : RockBlock
     {
         #region Fields
+
+        private List<Guid> MetricSourceGuids = null;
+        private List<Guid> ComparisonMetricSourceGuids = null;
 
         /// <summary>
         /// The string used for setting a Date Range Context
@@ -89,40 +92,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether the metric should compare to last year.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if the metric should compare to last year; otherwise, <c>false</c>.
-        /// </value>
-        //protected string MetricCompareLastYear
-        //{
-        //    get
-        //    {
-        //        var viewStateValue = ViewState[string.Format( "MetricCompareLastYear_{0}", BlockId )] as string;
-        //        return viewStateValue ?? string.Empty;
-        //    }
-        //    set
-        //    {
-        //        ViewState[string.Format( "MetricCompareLastYear_{0}", BlockId )] = value;
-        //    }
-        //}
-
-        // Let's create null context values so they are available
-        protected IEntity CampusContext = null;
-
-        protected IEntity ScheduleContext = null;
-
-        protected IEntity GroupContext = null;
-
-        protected IEntity GroupTypeContext = null;
-
-        protected string DateRangeContext = null;
-
-        protected string PrimaryMetricKey = string.Empty;
-
-        protected string ComparisonMetricKey = string.Empty;
-
         #endregion
 
         #region Control Methods
@@ -135,99 +104,37 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         {
             base.OnLoad( e );
 
-            if ( !Page.IsPostBack )
+            if (Page.IsPostBack)
             {
-                // Get Current Campus Context
-                if ( GetAttributeValue( "RespectCampusContext" ).AsBoolean() )
-                {
-                    CampusContext = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( Campus ) ) );
-                }
-
-                // Get Current Group Context
-                if ( GetAttributeValue( "RespectGroupContext" ).AsBoolean() )
-                {
-                    GroupTypeContext = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( GroupType ) ) );
-                    GroupContext = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( Group ) ) );
-                }
-
-                // Get Current Date Range Context
-                if ( GetAttributeValue( "RespectDateContext" ).AsBoolean() )
-                {
-                    DateRangeContext = RockPage.GetUserPreference( ContextPreferenceName );
-                }
-
-                // Get Current Schedule Context
-                if ( GetAttributeValue( "RespectScheduleContext" ).AsBoolean() )
-                {
-                    ScheduleContext = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( Schedule ) ) );
-                }
-
-                // Output variables direct to the ascx
-                metricBlockNumber.Value = BlockId.ToString();
-                metricBlockId.Value = BlockName.Replace( " ", "" ).ToString();
-                metricTitle.Value = BlockName;
-                metricDisplay.Value = GetAttributeValue( "MetricDisplayType" );
-                metricWidth.Value = GetAttributeValue( "NumberofColumns" );
-
-                PrimaryMetricKey = GetAttributeValue( "PrimaryMetricKey" );
-                ComparisonMetricKey = GetAttributeValue( "ComparisonMetricKey" );
-
-                var churchMetricPeriod = GetAttributeValue( "MetricPeriod" );
-                var metricComparison = GetAttributeValue( "MetricComparison" );
-                var metricDisplayType = GetAttributeValue( "MetricDisplayType" );
-
-                var rockContext = new RockContext();
-                var metricService = new MetricService( rockContext );
-
-                var primarySourceGuids = GetAttributeValue( "PrimaryMetricSource" )
-                    .SplitDelimitedValues()
-                    .AsGuidList();
-
-                var comparisonSourceGuids = GetAttributeValue( "ComparisonMetricSource" )
-                    .SplitDelimitedValues()
-                    .AsGuidList();
-
-                // lookup the metric sources
-                List<int> primaryMetricSource = metricService.GetByGuids( primarySourceGuids )
-                    .Select( a => a.Id ).ToList();
-
-                List<int> comparisonMetricSource = metricService.GetByGuids( comparisonSourceGuids )
-                    .Select( a => a.Id ).ToList();
-
-                // set date range according to the context
-                DateRange dateRange = null;
-                if ( !string.IsNullOrEmpty( DateRangeContext ) )
-                {
-                    dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( DateRangeContext );
-                }
-
-                // Show data if metric source is selected
-                if ( primaryMetricSource.Any() || !string.IsNullOrEmpty( PrimaryMetricKey ) )
-                {
-                    if ( metricDisplayType.Equals( "Text" ) )
-                    {
-                        DisplayTextValue( dateRange, primaryMetricSource, comparisonMetricSource );
-                    }
-                    else if ( metricDisplayType.Equals( "Line" ) )
-                    {
-                        DisplayLineValue( dateRange, primaryMetricSource );
-                    }
-                    else if ( metricDisplayType.Equals( "Donut" ) )
-                    {
-                        DisplayDonutValue( dateRange, primaryMetricSource );
-                    }
-                }
-                else
-                {
-                    // nothing selected, display an error message
-                    churchMetricWarning.Visible = true;
-                }
+                return;
             }
 
-            // unused variables
-            // var metricCustomDates = GetAttributeValue( "CustomDates" );
-            // MetricCompareLastYear = GetAttributeValue( "CompareAgainstLastYear" ).ToString();
-            // var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( this.GetAttributeValue( "SlidingDateRange" ) ?? string.Empty );
+            LoadSourceGuids();
+
+            // Output variables direct to the ascx
+            metricBlockNumber.Value = BlockId.ToString();
+            metricBlockId.Value = BlockName.Replace( " ", "" ).ToString();
+            metricTitle.Value = BlockName;
+            metricDisplay.Value = GetAttributeValue( "MetricDisplayType" );
+            metricWidth.Value = GetAttributeValue( "NumberofColumns" );
+
+            var churchMetricPeriod = GetAttributeValue( "MetricPeriod" );
+            var metricComparison = GetAttributeValue( "MetricComparison" );
+            var metricDisplayType = GetAttributeValue( "MetricDisplayType" );
+
+            var rockContext = new RockContext();
+            var metricService = new MetricService( rockContext );
+
+            // Show data if metric source is selected
+            if ( MetricSourceGuids.Any() )
+            {
+                DisplayTextValue();
+            }
+            else
+            {
+                // nothing selected, display an error message
+                churchMetricWarning.Visible = true;
+            }
         }
 
         #endregion
@@ -241,15 +148,15 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         /// <param name="percentageMetricSource">The percentage metric source.</param>
         /// <param name="dateRange">The date range.</param>
         /// <returns></returns>
-        protected decimal FormatValues( List<int> primaryMetricSource, List<int> comparisonMetricSource, DateRange dateRange )
+        protected decimal FormatValues()
         {
-            var primaryMetricValues = GetMetricValues( primaryMetricSource, dateRange, PrimaryMetricKey );
+            var primaryMetricValues = GetMetricValues( true );
             var primaryValueSum = primaryMetricValues.Select( a => a.YValue ).Sum() ?? 0.0M;
 
             // if comparing values, make sure we have a valid percentage source
-            if ( primaryValueSum > 0 && ( comparisonMetricSource.Any() || !string.IsNullOrEmpty( ComparisonMetricKey ) ) )
+            if ( primaryValueSum > 0 && ComparisonMetricSourceGuids.Any() )
             {
-                var comparisonMetricValues = GetMetricValues( comparisonMetricSource, dateRange, ComparisonMetricKey );
+                var comparisonMetricValues = GetMetricValues( false );
                 var comparisonValueSum = comparisonMetricValues.Select( a => a.YValue ).Sum() ?? 0.0M;
 
                 if ( comparisonValueSum > 0 )
@@ -274,66 +181,76 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             return primaryValueSum;
         }
 
-        /// <summary>
-        /// Builds the metric query.
-        /// </summary>
-        /// <param name="metricSource">The metric source.</param>
-        /// <param name="dateRange">The date range.</param>
-        /// <returns></returns>
-        protected List<MetricValue> GetMetricValues( List<int> metricSource, DateRange dateRange, string metricKey )
+        protected List<MetricValue> GetMetricValues( bool isPrimary )
         {
             var rockContext = new RockContext();
             var metricService = new MetricService( rockContext );
             var metricQueryable = new MetricService( rockContext ).Queryable();
+            List<Guid> sourceGuids = null;
+            var preKey = isPrimary ? string.Empty : "Comparison";
 
-            if ( !string.IsNullOrEmpty( metricKey ) )
-            {
-                metricQueryable = metricService.Queryable().Where( a => a.Title.EndsWith( metricKey ) );
-            }
-            else
-            {
-                metricQueryable = metricService.GetByIds( metricSource );
-            }
+            var attributeValue = GetAttributeValue(preKey + "MetricSource");
 
-            var metricValueQueryable = metricQueryable.SelectMany( a => a.MetricValues ).AsQueryable().AsNoTracking();
-
-            // filter by date context
-            if ( dateRange != null )
+            if(attributeValue == null)
             {
-                metricValueQueryable = metricValueQueryable.Where( a => a.MetricValueDateTime >= dateRange.Start && a.MetricValueDateTime <= dateRange.End );
+                return null;
             }
 
-            // filter by campus context
-            if ( CampusContext != null )
+            sourceGuids = attributeValue.SplitDelimitedValues().AsGuidList();
+            var metricValues = metricService.GetByGuids(sourceGuids).SelectMany(m => m.MetricValues);
+
+            if (GetAttributeValue(preKey + "RespectCampusContext").AsBoolean())
             {
-                //metricValueQueryable = metricValueQueryable.Where( a => a.EntityId == CampusContext.Id );
+                var campusContext = RockPage.GetCurrentContext(EntityTypeCache.Read(typeof(Campus)));
+
+                if (campusContext != null)
+                {
+                    metricValues = metricValues.Where(a => a.MetricValuePartitions.Any(mvp => mvp.MetricPartition.Label == "Campus" && mvp.EntityId == campusContext.Id));
+                }
             }
 
-            // filter by schedule context
-            if ( ScheduleContext != null )
+            // Get Current Group Context
+            if (GetAttributeValue(preKey + "RespectGroupContext").AsBoolean())
             {
-                var scheduleTime = new ScheduleService( rockContext ).Get( ScheduleContext.Guid ).StartTimeOfDay;
-                metricValueQueryable = metricValueQueryable.Where( a => scheduleTime == DbFunctions.CreateTime(
-                        a.MetricValueDateTime.Value.Hour,
-                        a.MetricValueDateTime.Value.Minute,
-                        a.MetricValueDateTime.Value.Second
-                    )
-                );
+                var groupTypeContext = RockPage.GetCurrentContext(EntityTypeCache.Read(typeof(GroupType)));
+                var groupContext = RockPage.GetCurrentContext(EntityTypeCache.Read(typeof(Group)));
+
+                if (groupContext != null)
+                {
+                    metricValues = metricValues.Where(a => a.MetricValuePartitions.Any(mvp => mvp.MetricPartition.Label == "Group" && mvp.EntityId == groupContext.Id));
+                }
+                else if (groupTypeContext != null)
+                {
+                    var groupTypeIds = new GroupTypeService(rockContext).GetAllAssociatedDescendents(groupTypeContext.Id).Select(gt => gt.Id);
+                    var groupIds = new GroupService(rockContext).Queryable().Where(g => groupTypeIds.Contains(g.GroupTypeId)).Select(g => g.Id);
+                    metricValues = metricValues.Where(a => a.MetricValuePartitions.Any(mvp => mvp.MetricPartition.Label == "Group" && groupIds.Any(i => i == mvp.EntityId)));
+                }
             }
 
-            // filter by group context
-            if ( GroupContext != null )
+            // Get Current Date Range Context
+            if (GetAttributeValue(preKey + "RespectDateContext").AsBoolean())
             {
-                metricValueQueryable = metricValueQueryable.Where( a => a.Metric.ForeignId == GroupContext.Id );
-            }
-            else if ( GroupTypeContext != null )
-            {
-                var groupTypeIds = new GroupTypeService( rockContext ).GetAllAssociatedDescendents( GroupTypeContext.Id ).Select( gt => gt.Id );
-                var groupIds = new GroupService( rockContext ).Queryable().Where( g => groupTypeIds.Contains( g.GroupTypeId ) ).Select( g => g.Id );
-                metricValueQueryable = metricValueQueryable.Where( mv => mv.Metric.ForeignId.HasValue && groupIds.Contains( mv.Metric.ForeignId.Value ) );
+                var dateRangeString = RockPage.GetUserPreference(ContextPreferenceName);
+
+                if (!string.IsNullOrWhiteSpace(dateRangeString))
+                {
+                    var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues(dateRangeString);
+                    metricValues = metricValues.Where(v => v.MetricValueDateTime >= dateRange.Start && v.MetricValueDateTime <= dateRange.End);
+                }
             }
 
-            return metricValueQueryable.ToList();
+            // Get Current Schedule Context
+            if (GetAttributeValue(preKey + "RespectScheduleContext").AsBoolean())
+            {
+                var scheduleContext = RockPage.GetCurrentContext(EntityTypeCache.Read(typeof(Schedule)));
+
+                if (scheduleContext != null)
+                {
+                    metricValues = metricValues.Where(a => a.MetricValuePartitions.Any(mvp => mvp.MetricPartition.Label == "Schedule" && mvp.EntityId == scheduleContext.Id));
+                }
+            }
+
+            return metricValues.ToList();
         }
 
         #endregion
@@ -346,29 +263,11 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         /// <param name="dateRange">The date range.</param>
         /// <param name="primaryMetricSource">The primary metric source.</param>
         /// <param name="comparisonMetricSource">The comparison metric source.</param>
-        private void DisplayTextValue( DateRange dateRange, List<int> primaryMetricSource, List<int> comparisonMetricSource )
+        private void DisplayTextValue()
         {
             // this may be a little complicated to compare date ranges while accepting two metric keys/sources
-            decimal currentMetricValues = FormatValues( primaryMetricSource, comparisonMetricSource, dateRange );
+            decimal currentMetricValues = FormatValues();
             decimal comparisonMetricValues = 0;
-
-            // if doing a date comparison
-            //DateTime dateRangeStart = dateRange.Start ?? DateTime.Now;
-            //DateTime dateRangeEnd = dateRange.End ?? DateTime.Now;
-            //TimeSpan ts = dateRangeEnd - dateRangeStart;
-
-            //if ( ts.Days > 0 )
-            //{
-            //    var differenceInDays = ts.Days + 1;
-
-            //    var comparisonDateRange = new DateRange
-            //    {
-            //        Start = dateRange.Start.Value.AddDays( -differenceInDays ),
-            //        End = dateRange.End.Value.AddDays( -differenceInDays )
-            //    };
-
-            //    comparisonMetricValues = FormatValues( primaryMetricSource, percentageMetricSource, comparisonDateRange );
-            //}
 
             if ( currentMetricValues > 0 )
             {
@@ -386,7 +285,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                     }
                 }
 
-                if ( ( comparisonMetricSource.Any() || !string.IsNullOrEmpty( ComparisonMetricKey ) ) && GetAttributeValue( "DisplayComparisonAs" ).Equals( "Percentage" ) )
+                if ( ComparisonMetricSourceGuids.Any() && GetAttributeValue( "DisplayComparisonAs" ).Equals( "Percentage" ) )
                 {
                     metricComparisonDisplay.Value = "%";
                 }
@@ -395,181 +294,18 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             {
                 currentMetricValue.Value = "—";
             }
-
-            //if ( MetricCompareLastYear == "Yes" )
-            //{
-            //    var comparePreviousYearMetricValue = new DateRange
-            //    {
-            //        Start = dateRange.Start.Value.AddYears( -1 ),
-            //        End = dateRange.End.Value.AddYears( -1 )
-            //    };
-
-            //    decimal? previousYearRangeMetricValue = MetricValueFunction( primaryMetricSource, comparePreviousYearMetricValue, campusContext, groupContext, scheduleContext );
-
-            //    previousMetricValue.Value = string.Format( "{0:n0}", previousYearRangeMetricValue );
-            //}
-
-            // This Week Last Year
-            //else if ( metricCustomDates == "This Week Last Year" )
-            //{
-            //currentMetricValue.Value = string.Format( "{0:n0}", newMetric.MetricValues
-            //.Where( a => calendar.GetWeekOfYear( a.MetricValueDateTime.Value.Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ) == calendar.GetWeekOfYear( DateTime.Now.AddYears( -1 ).Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ) && a.MetricValueDateTime.Value.Year.ToString() == DateTime.Now.AddYears( -1 ).ToString() )
-            //.Select( a => a.YValue )
-            //.Sum()
-            //);
-            //}
-        }
-
-        /// <summary>
-        /// Displays the line value.
-        /// </summary>
-        /// <param name="dateRange">The date range.</param>
-        /// <param name="primaryMetricSource">The primary metric source.</param>
-        private void DisplayLineValue( DateRange dateRange, List<int> primaryMetricSource )
-        {
-            var metricLegend = new List<string>();
-            var metricCurrentYearValues = new List<string>();
-
-            // if compare to previous year was set, also grab values from the previous year
-
-            //var previousYearValues = GetMetricValues( primaryMetricSource, dateRange, PrimaryMetricKey );
-
-            //if ( GetAttributeValue( "CompareAgainstLastYear" ) == "Yes" )
-            //{
-            //    metricPreviousYear = newMetric.MetricValues
-            //        .Where( a => a.MetricValueDateTime >= dateRange.Start.Value.AddYears( -1 ) && a.MetricValueDateTime <= dateRange.End.Value.AddYears( -1 ) && a.EntityId.ToString() == CampusContext.Id.ToString() )
-            //        .OrderBy( a => a.MetricValueDateTime )
-            //        .Select( a => new MetricJson
-            //        {
-            //            date = a.MetricValueDateTime.Value.Date,
-            //            week = calendar.GetWeekOfYear( a.MetricValueDateTime.Value.Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ),
-            //            year = a.MetricValueDateTime.Value.Year,
-            //            value = string.Format( "{0:0}", a.YValue )
-            //        } )
-            //        .ToList();
-            //}
-
-            var currentDateValues = GetMetricValues( primaryMetricSource, dateRange, PrimaryMetricKey );
-
-            foreach ( var currentValue in currentDateValues )
-            {
-                var metricDate = currentValue.MetricValueDateTime.Value.Date;
-                var currentMetricValue = string.Format( "{0:0}", currentValue.YValue );
-
-                var currentMetricLabel = new DateTime( metricDate.Year, metricDate.Month, metricDate.Day )
-                    .ToString( "MMMM dd" );
-
-                // format these with ticks so the JS can parse it as an array
-                // possibly pass this as a ToArray call and see what happens?
-                currentMetricLabel = string.Format( "'{0}'", currentMetricLabel );
-                currentMetricValue = string.Format( "'{0}'", currentMetricValue );
-
-                metricLegend.Add( currentMetricLabel );
-                metricCurrentYearValues.Add( currentMetricValue );
-
-                // if compare to previous year
-                // var metricPreviousYear = new List<MetricJson>();
-                //if ( metricPreviousYear.Count > 0 )
-                //{
-                //    var count = 0;
-
-                //    foreach ( var previousMetric in metricPreviousYear )
-                //    {
-                //        var previousMetricCount = count++;
-                //        if ( currentMetric.week == previousMetric.week )
-                //        {
-                //            metricPreviousYearValues.Add( previousMetric.value );
-                //            break;
-                //        }
-                //        else if ( count == metricPreviousYear.Count )
-                //        {
-                //            metricPreviousYearValues.Add( "0" );
-                //            break;
-                //        }
-                //    }
-                //}
-                //else
-                //{
-                //    metricPreviousYearValues.Add( "0" );
-                //}
-            }
-
-            metricLabels.Value = string.Format( "'{0}'", metricLegend.ToString() );
-
-            metricDataPointsCurrent.Value = string.Format( "'{0}'", metricCurrentYearValues.ToString() );
-        }
-
-        /// <summary>
-        /// Displays the metric as a donut value.
-        /// </summary>
-        /// <param name="pageContext">The page context.</param>
-        /// <param name="dateRange">The date range.</param>
-        /// <param name="primaryMetricSource">The primary metric source.</param>
-        private void DisplayDonutValue( DateRange dateRange, List<int> primaryMetricSource )
-        {
-            var currentWeekValues = GetMetricValues( primaryMetricSource, dateRange, PrimaryMetricKey );
-
-            // does a donut compare to the previous week?
-            //var previousWeekValues = GetMetricValues( primaryMetricSource, dateRange - 7 , PrimaryMetricKey );
-
-            var blockValues = new List<MetricValueItem>();
-
-            int currentItemId = 0;
-            foreach ( var currentValue in currentWeekValues )
-            {
-                // color each metric by offset
-                string metricItemColor = "#6bac43";
-
-                if ( currentItemId % 2 != 0 )
-                {
-                    metricItemColor = "#1c683e";
-                }
-                else if ( currentItemId % 3 == 0 )
-                {
-                    metricItemColor = "#2a4930";
-                }
-
-                // Create JSON array of data
-                if ( currentValue != null )
-                {
-                    blockValues.Add( new MetricValueItem()
-                    {
-                        value = (int)currentValue.YValue,
-                        color = metricItemColor,
-                        highlight = metricItemColor,
-                        label = currentValue.Metric.Title
-                    } );
-                }
-                else
-                {
-                    // i don't think this ever gets hit
-                    blockValues.Add( new MetricValueItem()
-                    {
-                        value = 0,
-                        color = metricItemColor,
-                        highlight = metricItemColor,
-                        label = currentValue.Metric.Title
-                    } );
-                }
-
-                currentItemId++;
-            }
-
-            MetricBlockValues = JsonConvert.SerializeObject( blockValues.ToArray() );
-
-            //unused variables
-            //var calendar = DateTimeFormatInfo.CurrentInfo.Calendar;
-
-            //var donutMetrics = new MetricService( new RockContext() ).GetByIds( primaryMetricSource );
-
-            //// Current Week of Year
-            //var currentWeekOfYear = calendar.GetWeekOfYear( DateTime.Now, CalendarWeekRule.FirstDay, DayOfWeek.Sunday );
-
-            //// Last Week
-            //var lastWeekOfYear = calendar.GetWeekOfYear( DateTime.Now.AddDays( -7 ), CalendarWeekRule.FirstDay, DayOfWeek.Sunday );
-        }
+        }       
 
         #endregion
+
+        private void LoadSourceGuids()
+        {
+            var metricSourceString = GetAttributeValue("MetricSource");
+            MetricSourceGuids = metricSourceString != null ? metricSourceString.SplitDelimitedValues().AsGuidList() : null;
+
+            metricSourceString = GetAttributeValue("ComparisonMetricSource");
+            ComparisonMetricSourceGuids = metricSourceString != null ? metricSourceString.SplitDelimitedValues().AsGuidList() : null;            
+        }
 
         #region Classes
 
