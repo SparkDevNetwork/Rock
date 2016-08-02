@@ -194,7 +194,7 @@ namespace Rock.Model
         /// <param name="signatureDocument">The signature document.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public bool UpdateDocumentStatus( SignatureDocument signatureDocument, out List<string> errorMessages )
+        public bool UpdateDocumentStatus( SignatureDocument signatureDocument, string tempFolderPath, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
             if ( signatureDocument == null )
@@ -216,31 +216,32 @@ namespace Rock.Model
                 }
                 else
                 {
-                    //if ( provider.IsDocumentSigned( signatureDocument, out errorMessages ) )
-                    //{
-                    //    using ( var rockContext = new RockContext() )
-                    //    {
-                    //        string path = GlobalAttributesCache.Value( "InternalApplicationRoot" );
-                    //        string documentPath = provider.GetDocument( signatureDocument, context.Server.MapPath( "~/App_Data/Cache/SignNow" ), out errorMessages );
-                    //        if ( !string.IsNullOrWhiteSpace( documentPath ) )
-                    //        {
-                    //            var binaryFileService = new BinaryFileService( rockContext );
-                    //            BinaryFile binaryFile = new BinaryFile();
-                    //            binaryFile.Guid = Guid.NewGuid();
-                    //            binaryFile.IsTemporary = false;
-                    //            binaryFile.BinaryFileTypeId = signatureDocument.SignatureDocumentTemplate.BinaryFileTypeId;
-                    //            binaryFile.MimeType = "application/pdf";
-                    //            binaryFile.FileName = new FileInfo( documentPath ).Name;
-                    //            binaryFile.ContentStream = new FileStream( documentPath, FileMode.Open );
-                    //            binaryFileService.Add( binaryFile );
-                    //            rockContext.SaveChanges();
+                    if ( provider.IsDocumentSigned( signatureDocument, out errorMessages ) )
+                    {
+                        using ( var rockContext = new RockContext() )
+                        {
+                            string documentPath = provider.GetDocument( signatureDocument, tempFolderPath, out errorMessages );
+                            if ( !string.IsNullOrWhiteSpace( documentPath ) )
+                            {
+                                var binaryFileService = new BinaryFileService( rockContext );
+                                BinaryFile binaryFile = new BinaryFile();
+                                binaryFile.Guid = Guid.NewGuid();
+                                binaryFile.IsTemporary = false;
+                                binaryFile.BinaryFileTypeId = signatureDocument.SignatureDocumentTemplate.BinaryFileTypeId;
+                                binaryFile.MimeType = "application/pdf";
+                                binaryFile.FileName = new FileInfo( documentPath ).Name;
+                                binaryFile.ContentStream = new FileStream( documentPath, FileMode.Open );
+                                binaryFileService.Add( binaryFile );
+                                rockContext.SaveChanges();
 
-                    //            signatureDocument.BinaryFileId = binaryFile.Id;
+                                signatureDocument.BinaryFileId = binaryFile.Id;
+                                signatureDocument.Status = SignatureDocumentStatus.Signed;
+                                signatureDocument.LastStatusDate = RockDateTime.Now;
 
-                    //            File.Delete( documentPath );
-                    //        }
-                    //    }
-                    //}
+                                File.Delete( documentPath );
+                            }
+                        }
+                    }
 
                 }
             }

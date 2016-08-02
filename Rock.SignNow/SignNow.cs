@@ -376,6 +376,14 @@ namespace Rock.SignNow
                 return false;
             }
 
+            // Cancel existing invite
+            JObject CancelRes = CudaSign.Document.CancelInvite( accessToken, document.DocumentKey );
+            errors = ParseErrors( CancelRes );
+            if ( errors.Any() )
+            {
+                return false;
+            }
+
             string orgAbbrev = GlobalAttributesCache.Value( "OrganizationAbbreviation" );
             if ( string.IsNullOrWhiteSpace( orgAbbrev ) )
             {
@@ -555,7 +563,7 @@ namespace Rock.SignNow
                 return false;
             }
             JArray signatures = getDocumentRes.Value<JArray>( "signatures" );
-            if ( signatures != null )
+            if ( signatures != null && signatures.Count > 0 )
             {
                 return true;
             }
