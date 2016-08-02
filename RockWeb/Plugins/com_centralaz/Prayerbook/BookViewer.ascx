@@ -44,32 +44,15 @@
                         </div>
                     </div>
                     <dl>
-                        <dt>Praise</dt>
-                        <dd class="well">
-                            <asp:Literal runat="server" ID="txtPraise1" /></dd>
-
-                        <dt>Ministry Needs</dt>
-                        <dd class="well">
-                            <ol>
-                                <li runat="server" id="lMinistryNeed1">
-                                    <asp:Literal runat="server" ID="txtMinistryNeed1" /></li>
-                                <li runat="server" id="lMinistryNeed2">
-                                    <asp:Literal runat="server" ID="txtMinistryNeed2" /></li>
-                                <li runat="server" id="lMinistryNeed3">
-                                    <asp:Literal runat="server" ID="txtMinistryNeed3" /></li>
-                            </ol>
-                        </dd>
-
-                        <dt>Personal Requests </dt>
-                        <dd class="well">
-                            <li runat="server" id="lPersonalRequest1">
-                                <asp:Literal runat="server" ID="txtPersonalRequest1" /></li>
-                            <li runat="server" id="lPersonalRequest2">
-                                <asp:Literal runat="server" ID="txtPersonalRequest2" /></li>
-                        </dd>
+                        <asp:Literal runat="server" ID="lPraise1" />
+                        <asp:Literal runat="server" ID="lMinistryNeed1" />
+                        <asp:Literal runat="server" ID="lMinistryNeed2" />
+                        <asp:Literal runat="server" ID="lMinistryNeed3" />
+                        <asp:Literal runat="server" ID="lPersonalRequest1" />
+                        <asp:Literal runat="server" ID="lPersonalRequest2" />
                     </dl>
-                    <a href="#" class="btn btn-sm btn-default" onclick="scroller('#entriesList'); return false;"><i class="fa fa-arrow-up"></i> top </a>
-                    <asp:LinkButton ID="lbNext" TabIndex="1" runat="server" CssClass="btn btn-primary pull-right" OnClick="lbNext_Click" >Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
+                    <a href="#" class="btn btn-sm btn-default" onclick="scroller('#entriesList'); return false;"><i class="fa fa-arrow-up"></i>top </a>
+                    <asp:LinkButton ID="lbNext" TabIndex="1" runat="server" CssClass="btn btn-primary pull-right" OnClick="lbNext_Click">Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
                 </div>
             </div>
         </div>

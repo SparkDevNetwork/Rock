@@ -77,10 +77,7 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-        }
 
-        protected void Page_Load( object sender, EventArgs e )
-        {
             editEnabled = IsUserAuthorized( Authorization.EDIT );
             administrateEnabled = IsUserAuthorized( Authorization.ADMINISTRATE );
 
@@ -106,7 +103,7 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
 
                 //The contributor
                 Person contributor;
-
+           
                 //If an entryId was passed in from the URL
                 if ( entryId > 0 )
                 {
@@ -145,12 +142,35 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
                         ddlSubministry.SelectedValue = entrySubministryAttributeValue.Id.ToString();
                     }
 
-                    // insert the text of the submissions
+                    // Load textboxes.
+                    dtbPraise1.Required = entry.Attributes["Praise1"].IsRequired;
+                    dtbPraise1.Label = entry.Attributes["Praise1"].Description;
+                    dtbPraise1.Visible = entry.Attributes["Praise1"].IsGridColumn;
                     dtbPraise1.Text = entry.AttributeValues["Praise1"].Value;
+
+                    dtbPersonalRequest1.Required = entry.Attributes["PersonalRequest1"].IsRequired;
+                    dtbPersonalRequest1.Label = entry.Attributes["PersonalRequest1"].Description;
+                    dtbPersonalRequest1.Visible = entry.Attributes["PersonalRequest1"].IsGridColumn;
                     dtbPersonalRequest1.Text = entry.AttributeValues["PersonalRequest1"].Value;
+
+                    dtbPersonalRequest2.Required = entry.Attributes["PersonalRequest2"].IsRequired;
+                    dtbPersonalRequest2.Label = entry.Attributes["PersonalRequest2"].Description;
+                    dtbPersonalRequest2.Visible = entry.Attributes["PersonalRequest2"].IsGridColumn;
                     dtbPersonalRequest2.Text = entry.AttributeValues["PersonalRequest2"].Value;
+
+                    dtbMinistryNeed1.Required = entry.Attributes["MinistryNeed1"].IsRequired;
+                    dtbMinistryNeed1.Label = entry.Attributes["MinistryNeed1"].Description;
+                    dtbMinistryNeed1.Visible = entry.Attributes["MinistryNeed1"].IsGridColumn;
                     dtbMinistryNeed1.Text = entry.AttributeValues["MinistryNeed1"].Value;
+
+                    dtbMinistryNeed2.Required = entry.Attributes["MinistryNeed2"].IsRequired;
+                    dtbMinistryNeed2.Label = entry.Attributes["MinistryNeed2"].Description;
+                    dtbMinistryNeed2.Visible = entry.Attributes["MinistryNeed2"].IsGridColumn;
                     dtbMinistryNeed2.Text = entry.AttributeValues["MinistryNeed2"].Value;
+
+                    dtbMinistryNeed3.Required = entry.Attributes["MinistryNeed3"].IsRequired;
+                    dtbMinistryNeed3.Label = entry.Attributes["MinistryNeed3"].Description;
+                    dtbMinistryNeed3.Visible = entry.Attributes["MinistryNeed3"].IsGridColumn;
                     dtbMinistryNeed3.Text = entry.AttributeValues["MinistryNeed3"].Value;
 
                     //set the contributor for this entry
@@ -184,6 +204,32 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
 
                     //Load contributor control
                     BuildContributorsDropDownList( book );
+
+                    // Load textboxes.
+                    var attributes = new AttributeService( rockContext ).GetGroupMemberAttributesCombined( book.Id, book.GroupTypeId ).ToDictionary(a=> a.Key); ;
+                    dtbPraise1.Required = attributes["Praise1"].IsRequired;
+                    dtbPraise1.Label = attributes["Praise1"].Description;
+                    dtbPraise1.Visible = attributes["Praise1"].IsGridColumn;
+
+                    dtbPersonalRequest1.Required = attributes["PersonalRequest1"].IsRequired;
+                    dtbPersonalRequest1.Label = attributes["PersonalRequest1"].Description;
+                    dtbPersonalRequest1.Visible = attributes["PersonalRequest1"].IsGridColumn;
+
+                    dtbPersonalRequest2.Required = attributes["PersonalRequest2"].IsRequired;
+                    dtbPersonalRequest2.Label = attributes["PersonalRequest2"].Description;
+                    dtbPersonalRequest2.Visible = attributes["PersonalRequest2"].IsGridColumn;
+
+                    dtbMinistryNeed1.Required = attributes["MinistryNeed1"].IsRequired;
+                    dtbMinistryNeed1.Label = attributes["MinistryNeed1"].Description;
+                    dtbMinistryNeed1.Visible = attributes["MinistryNeed1"].IsGridColumn;
+
+                    dtbMinistryNeed2.Required = attributes["MinistryNeed2"].IsRequired;
+                    dtbMinistryNeed2.Label = attributes["MinistryNeed2"].Description;
+                    dtbMinistryNeed2.Visible = attributes["MinistryNeed2"].IsGridColumn;
+
+                    dtbMinistryNeed3.Required = attributes["MinistryNeed3"].IsRequired;
+                    dtbMinistryNeed3.Label = attributes["MinistryNeed3"].Description;
+                    dtbMinistryNeed3.Visible = attributes["MinistryNeed3"].IsGridColumn;
 
                     //display the contributors dropdown
                     lName.Visible = false;

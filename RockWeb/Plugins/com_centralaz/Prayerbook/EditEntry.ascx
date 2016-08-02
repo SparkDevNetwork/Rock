@@ -24,12 +24,12 @@
                     <Rock:RockDropDownList ID="ddlSubministry" runat="server" Label="Subministry" DataValueField="Id" DataTextField="Value" CausesValidation="false" SourceTypeName="Rock.Model.DefinedValue, Rock" />
                 </div>
             </div>
-            <Rock:RockTextBox ID="dtbPraise1" runat="server" Label="Praise 1" CausesValidation="false" Rows="4" TextMode="MultiLine" Required="true" />
-            <Rock:RockTextBox ID="dtbMinistryNeed1" runat="server" Label="Ministry Need 1" CausesValidation="false" Rows="4" TextMode="MultiLine" Required="true" />
-            <Rock:RockTextBox ID="dtbMinistryNeed2" runat="server" Label="Ministry Need 2" CausesValidation="false" Rows="4" TextMode="MultiLine" />
-            <Rock:RockTextBox ID="dtbMinistryNeed3" runat="server" Label="Ministry Need 3" CausesValidation="false" Rows="4" TextMode="MultiLine" />
-            <Rock:RockTextBox ID="dtbPersonalRequest1" runat="server" Label="Personal Request 1" CausesValidation="false" Rows="4" TextMode="MultiLine" Required="true" />
-            <Rock:RockTextBox ID="dtbPersonalRequest2" runat="server" Label="PersonalRequest 2" CausesValidation="false" Rows="4" TextMode="MultiLine" />
+            <Rock:RockTextBox ID="dtbPraise1" runat="server" CausesValidation="false" Rows="4" TextMode="MultiLine" />
+            <Rock:RockTextBox ID="dtbMinistryNeed1" runat="server" CausesValidation="false" Rows="4" TextMode="MultiLine" />
+            <Rock:RockTextBox ID="dtbMinistryNeed2" runat="server" CausesValidation="false" Rows="4" TextMode="MultiLine" />
+            <Rock:RockTextBox ID="dtbMinistryNeed3" runat="server" CausesValidation="false" Rows="4" TextMode="MultiLine" />
+            <Rock:RockTextBox ID="dtbPersonalRequest1" runat="server" CausesValidation="false" Rows="4" TextMode="MultiLine" />
+            <Rock:RockTextBox ID="dtbPersonalRequest2" runat="server" CausesValidation="false" Rows="4" TextMode="MultiLine" />
 
             <div class="container-fluid">
                 <div class="row">

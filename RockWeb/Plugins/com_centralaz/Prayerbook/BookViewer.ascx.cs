@@ -210,8 +210,8 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
                 int entryId = entryIds[index];
                 ViewEntry( entryId );
             }
-            
-            if (currentNumber == entryIds.Count )
+
+            if ( currentNumber == entryIds.Count )
             {
                 lbNext.Enabled = false;
             }
@@ -277,30 +277,32 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
                 lSubministry.Text = string.Empty;
             }
 
-            // insert the text of the submissions
-            txtPraise1.Text = entry.AttributeValues["Praise1"].Value;
-            txtMinistryNeed1.Text = entry.AttributeValues["MinistryNeed1"].Value;
-            txtMinistryNeed2.Text = entry.AttributeValues["MinistryNeed2"].Value;
-            txtMinistryNeed3.Text = entry.AttributeValues["MinistryNeed3"].Value;
-            txtPersonalRequest1.Text = entry.AttributeValues["PersonalRequest1"].Value;
-            txtPersonalRequest2.Text = entry.AttributeValues["PersonalRequest2"].Value;
+            // Load textboxes.
+            lPraise1.Text = String.Format( "<dt>{0}</dt><dd class='well'>{1}</dd>", entry.Attributes["Praise1"].Description, entry.AttributeValues["Praise1"].Value );
+            lPraise1.Visible = entry.Attributes["Praise1"].IsGridColumn && !String.IsNullOrWhiteSpace( entry.AttributeValues["Praise1"].Value );
+
+            lMinistryNeed1.Text = String.Format( "<dt>{0}</dt><dd class='well'>{1}</dd>", entry.Attributes["MinistryNeed1"].Description, entry.AttributeValues["MinistryNeed1"].Value );
+            lMinistryNeed1.Visible = entry.Attributes["MinistryNeed1"].IsGridColumn && !String.IsNullOrWhiteSpace( entry.AttributeValues["MinistryNeed1"].Value );
+
+            lMinistryNeed2.Text = String.Format( "<dt>{0}</dt><dd class='well'>{1}</dd>", entry.Attributes["MinistryNeed2"].Description, entry.AttributeValues["MinistryNeed2"].Value );
+            lMinistryNeed2.Visible = entry.Attributes["MinistryNeed2"].IsGridColumn && !String.IsNullOrWhiteSpace( entry.AttributeValues["MinistryNeed2"].Value );
+
+            lMinistryNeed3.Text = String.Format( "<dt>{0}</dt><dd class='well'>{1}</dd>", entry.Attributes["MinistryNeed3"].Description, entry.AttributeValues["MinistryNeed3"].Value );
+            lMinistryNeed3.Visible = entry.Attributes["MinistryNeed3"].IsGridColumn && !String.IsNullOrWhiteSpace( entry.AttributeValues["MinistryNeed3"].Value );
+
+            lPersonalRequest1.Text = String.Format( "<dt>{0}</dt><dd class='well'>{1}</dd>", entry.Attributes["PersonalRequest1"].Description, entry.AttributeValues["PersonalRequest1"].Value );
+            lPersonalRequest1.Visible = entry.Attributes["PersonalRequest1"].IsGridColumn && !String.IsNullOrWhiteSpace( entry.AttributeValues["PersonalRequest1"].Value );
+
+            lPersonalRequest2.Text = String.Format( "<dt>{0}</dt><dd class='well'>{1}</dd>", entry.Attributes["PersonalRequest2"].Description, entry.AttributeValues["PersonalRequest2"].Value );
+            lPersonalRequest2.Visible = entry.Attributes["PersonalRequest2"].IsGridColumn && !String.IsNullOrWhiteSpace( entry.AttributeValues["PersonalRequest2"].Value );
 
             // Hide fields that are empty...
             lMinistry.Visible = !string.IsNullOrEmpty( lMinistry.Text );
             lSubministry.Visible = !string.IsNullOrEmpty( lSubministry.Text );
 
-            txtPraise1.Visible = !string.IsNullOrEmpty( txtPraise1.Text );
-
-            lMinistryNeed1.Visible = !string.IsNullOrEmpty( txtMinistryNeed1.Text );
-            lMinistryNeed2.Visible = !string.IsNullOrEmpty( txtMinistryNeed2.Text );
-            lMinistryNeed3.Visible = !string.IsNullOrEmpty( txtMinistryNeed3.Text );
-
-            lPersonalRequest1.Visible = !string.IsNullOrEmpty( txtPersonalRequest1.Text );
-            lPersonalRequest2.Visible = !string.IsNullOrEmpty( txtPersonalRequest2.Text );
-
             // Decide if we should disable the Next button.
             List<int> entryIds = (List<int>)Session[_sessionKey];
-            if ( entryIds.Count <= 1 || entryIds.IndexOf( entryId ) == entryIds.Count-1)
+            if ( entryIds.Count <= 1 || entryIds.IndexOf( entryId ) == entryIds.Count - 1 )
             {
                 lbNext.Enabled = false;
             }
