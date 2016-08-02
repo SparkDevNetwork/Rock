@@ -34,8 +34,7 @@ namespace Rock.Jobs
     /// Job to process the signature documents
     /// </summary>
     [IntegerField( "Resend Invite After Number Days", "Number of days after sending last invite to sign, that a new invite should be resent.", false, 5, "", 0 )]
-    [IntegerField( "Max Invites", "Maximum number of times an invite should be sent", false, 2, "", 1 )]
-    [TextField( "Temp Folder Path", "The temporary folder to use for downloading signed document", true, "", "", 3)]
+    [IntegerField( "Max Invites", "Maximum number of times an invite should be sent", false, 3, "", 1 )]
     [DisallowConcurrentExecution]
     public class ProcessSignatureDocuments : IJob
     {
@@ -68,7 +67,7 @@ namespace Rock.Jobs
             JobDataMap dataMap = context.JobDetail.JobDataMap;
             int resendDays = dataMap.GetString( "ResendInviteAfterNumberDays" ).AsIntegerOrNull() ?? 5;
             int maxInvites = dataMap.GetString( "MaxInvites" ).AsIntegerOrNull() ?? 2;
-            string folderPath = dataMap.GetString( "TempFolderPath" );
+            string folderPath = System.Web.Hosting.HostingEnvironment.MapPath( "~/App_Data/Cache/SignNow" );
 
             var errorMessages = new List<string>();
             int signatureRequestsSent = 0;
@@ -83,7 +82,8 @@ namespace Rock.Jobs
 
                 // Check for status updates
                 foreach ( var document in new SignatureDocumentService( rockContext ).Queryable()
-                    .Where( d => d.Status == SignatureDocumentStatus.Sent ) )
+                    .Where( d => d.Status == SignatureDocumentStatus.Sent )
+                    .ToList() )
                 {
                     var updateErrorMessages = new List<string>();
                     var status = document.Status;
