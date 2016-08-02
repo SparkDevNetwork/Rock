@@ -107,7 +107,7 @@ namespace church.ccv.Steps
         public void Execute( IJobExecutionContext context )
         {
             // set a working date here so that we can change it easily for debugging.
-            DateTime workingDate = new DateTime( 2016, 06, 26 ); //RockDateTime.Now;
+            DateTime workingDate = RockDateTime.Now;
 
             context.Result = "";
 
