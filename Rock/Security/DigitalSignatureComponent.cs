@@ -83,12 +83,12 @@ namespace Rock.Security
         public abstract string GetDocument( SignatureDocument document, string folderPath, out List<string> errors );
 
         /// <summary>
-        /// Determines whether [is document signed] [the specified document].
+        /// Updates the document status
         /// </summary>
         /// <param name="document">The document.</param>
         /// <param name="errors">The errors.</param>
         /// <returns></returns>
-        public abstract bool IsDocumentSigned( SignatureDocument document, out List<string> errors );
+        public abstract bool UpdateDocumentStatus( SignatureDocument document, out List<string> errors );
     }
 
 }

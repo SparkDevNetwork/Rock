@@ -81,8 +81,8 @@ namespace Rock.Transactions
                 var assignedPerson = personAliasService.GetPerson( AssignedToPersonAliasId );
 
                 if ( !documentService.Queryable().Any( d =>
-                        d.AppliesToPersonAliasId.HasValue && d.AppliesToPersonAliasId.Value == AppliesToPersonAliasId &&
-                        d.AssignedToPersonAliasId.HasValue && d.AssignedToPersonAliasId.Value == AssignedToPersonAliasId &&
+                        d.AppliesToPersonAliasId.HasValue && 
+                        d.AppliesToPersonAliasId.Value == AppliesToPersonAliasId &&
                         d.Status == SignatureDocumentStatus.Signed ) )
                 {
                     var documentTypeService = new SignatureDocumentTemplateService( rockContext );

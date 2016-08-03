@@ -530,12 +530,12 @@ namespace Rock.SignNow
         }
 
         /// <summary>
-        /// Determines whether [is document signed] [the specified document].
+        /// updates the document status
         /// </summary>
         /// <param name="document">The document.</param>
         /// <param name="errors">The errors.</param>
         /// <returns></returns>
-        public override bool IsDocumentSigned( SignatureDocument document, out List<string> errors )
+        public override bool UpdateDocumentStatus( SignatureDocument document, out List<string> errors )
         {
             errors = new List<string>();
 
@@ -565,10 +565,26 @@ namespace Rock.SignNow
             JArray signatures = getDocumentRes.Value<JArray>( "signatures" );
             if ( signatures != null && signatures.Count > 0 )
             {
-                return true;
+                document.Status = SignatureDocumentStatus.Signed;
+            }
+            else
+            {
+                JArray invites = getDocumentRes.Value<JArray>( "field_invites" );
+                if ( invites != null )
+                {
+                    foreach( JObject invite in invites )
+                    {
+                        string inviteStatus = invite.Value<string>( "status" );
+                        if ( inviteStatus == "expired" )
+                        {
+                            document.Status = SignatureDocumentStatus.Expired;
+                            break;
+                        }
+                    }
+                }
             }
 
-            return false;
+            return true;
         }
 
         /// <summary>

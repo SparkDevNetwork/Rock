@@ -247,7 +247,6 @@ namespace Rock.Model
     /// </summary>
     public enum SignatureDocumentStatus
     {
-
         /// <summary>
         /// Document has not yet been sent
         /// </summary>
@@ -266,7 +265,12 @@ namespace Rock.Model
         /// <summary>
         /// Document was cancelled
         /// </summary>
-        Cancelled = 3
+        Cancelled = 3,
+
+        /// <summary>
+        /// Document Invite had expired
+        /// </summary>
+        Expired = 4
     }
 
     #endregion

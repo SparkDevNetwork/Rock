@@ -85,7 +85,7 @@ namespace RockWeb.Blocks.Event
         /// <value>
         /// The signed person ids.
         /// </value>
-        private List<int> SignedPersonIds { get; set; }
+        private List<int> Signers { get; set; }
 
         /// <summary>
         /// Gets or sets the group links.
@@ -1000,7 +1000,10 @@ namespace RockWeb.Blocks.Event
                 {
                     if ( registrant.PersonAlias != null && registrant.PersonAlias.Person != null )
                     {
-                        lRegistrant.Text = registrant.PersonAlias.Person.FullNameReversed;
+                        lRegistrant.Text = registrant.PersonAlias.Person.FullNameReversed +
+                            ( Signers != null && !Signers.Contains( registrant.PersonAlias.PersonId ) ?
+                                " <i class='fa fa-pencil-square-o text-danger'></i>" :
+                                string.Empty  );
                     }
                     else
                     {
@@ -1015,16 +1018,6 @@ namespace RockWeb.Blocks.Event
                     if ( lGroup != null )
                     {
                         lGroup.Text = GroupLinks[registrant.GroupMember.GroupId];
-                    }
-                }
-
-                // Set the signed document flag
-                if ( SignedPersonIds.Any() && registrant.PersonAlias != null && SignedPersonIds.Contains( registrant.PersonAlias.PersonId ) )
-                {
-                    var lSignedDocument = e.Row.FindControl( "lSignedDocument" ) as Literal;
-                    if ( lSignedDocument != null )
-                    {
-                        lSignedDocument.Text = "<i class=\"fa fa-check\"></i>";
                     }
                 }
 
@@ -2113,20 +2106,21 @@ namespace RockWeb.Blocks.Event
                 {
                     var registrationInstance = new RegistrationInstanceService( rockContext ).Get( instanceId.Value );
 
-                    IQueryable<int> signers = null;
                     if ( registrationInstance != null &&
                         registrationInstance.RegistrationTemplate != null &&
                         registrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue )
                     {
-                        signers = new SignatureDocumentService( rockContext )
+                        Signers = new SignatureDocumentService( rockContext )
                             .Queryable().AsNoTracking()
                             .Where( d =>
                                 d.SignatureDocumentTemplateId == registrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value &&
-                                d.Status == SignatureDocumentStatus.Signed )
-                            .Select( d => d.AppliesToPersonAlias.PersonId );
-                        SignedPersonIds = signers.ToList();
+                                d.Status == SignatureDocumentStatus.Signed &&
+                                d.BinaryFileId.HasValue &&
+                                d.AppliesToPersonAlias != null )
+                            .OrderByDescending( d => d.LastStatusDate )
+                            .Select( d => d.AppliesToPersonAlias.PersonId )
+                            .ToList();
                     }
-                    gRegistrants.ColumnsOfType<RockTemplateField>().Where( c => c.HeaderText == "Signed Document" ).First().Visible = signers != null;
 
                     // Start query for registrants
                     var qry = new RegistrationRegistrantService( rockContext )
@@ -2167,15 +2161,16 @@ namespace RockWeb.Blocks.Event
                             r.PersonAlias.Person.LastName.StartsWith( rlname ) );
                     }
 
-                    if ( signers != null )
+                    // Filter by signed documents
+                    if ( Signers != null )
                     {
                         if ( ddlSignedDocument.SelectedValue.AsBooleanOrNull() == true )
                         {
-                            qry = qry.Where( r => signers.Contains( r.PersonAlias.PersonId ) );
+                            qry = qry.Where( r => Signers.Contains( r.PersonAlias.PersonId ) );
                         }
                         else if ( ddlSignedDocument.SelectedValue.AsBooleanOrNull() == false )
                         {
-                            qry = qry.Where( r => !signers.Contains( r.PersonAlias.PersonId ) );
+                            qry = qry.Where( r => !Signers.Contains( r.PersonAlias.PersonId ) );
                         }
                     }
 

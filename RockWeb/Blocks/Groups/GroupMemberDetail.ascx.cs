@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -193,26 +192,43 @@ namespace RockWeb.Blocks.Groups
             {
                 var rockContext = new RockContext();
 
-                GroupMemberService groupMemberService = new GroupMemberService( rockContext );
-                GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
-                GroupMember groupMember;
+                // Verify valid group
+                var groupService = new GroupService( rockContext );
+                var group = groupService.Get( hfGroupId.ValueAsInt() );
+                if ( group == null )
+                {
+                    nbErrorMessage.Title = "Please select a Role";
+                    return;
+                }
 
-                int groupMemberId = int.Parse( hfGroupMemberId.Value );
-
-                GroupTypeRole role = new GroupTypeRoleService( rockContext ).Get( ddlGroupRole.SelectedValueAsInt() ?? 0 );
+                // Check to see if a person was selected
+                int? personId = ppGroupMemberPerson.PersonId;
+                int? personAliasId = ppGroupMemberPerson.PersonAliasId;
+                if ( !personId.HasValue || !personAliasId.HasValue )
+                {
+                    nbErrorMessage.Title = "Please select a Person";
+                    return;
+                }
 
                 // check to see if the user selected a role
+                var role = new GroupTypeRoleService( rockContext ).Get( ddlGroupRole.SelectedValueAsInt() ?? 0 );
                 if ( role == null )
                 {
                     nbErrorMessage.Title = "Please select a Role";
                     return;
                 }
 
+                var groupMemberService = new GroupMemberService( rockContext );
+                var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
+                GroupMember groupMember;
+
+                int groupMemberId = int.Parse( hfGroupMemberId.Value );
+
                 // if adding a new group member 
                 if ( groupMemberId.Equals( 0 ) )
                 {
                     groupMember = new GroupMember { Id = 0 };
-                    groupMember.GroupId = hfGroupId.ValueAsInt();
+                    groupMember.GroupId = group.Id;
                 }
                 else
                 {
@@ -220,7 +236,7 @@ namespace RockWeb.Blocks.Groups
                     groupMember = groupMemberService.Get( groupMemberId );
                 }
 
-                groupMember.PersonId = ppGroupMemberPerson.PersonId.Value;
+                groupMember.PersonId = personId.Value;
                 groupMember.GroupRoleId = role.Id;
                 groupMember.Note = tbNote.Text;
                 groupMember.GroupMemberStatus = rblStatus.SelectedValueAsEnum<GroupMemberStatus>();
@@ -264,6 +280,62 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
+                if ( group.RequiredSignatureDocumentTemplate != null )
+                {
+                    var person = new PersonService( rockContext ).Get( personId.Value );
+
+                    var documentService = new SignatureDocumentService( rockContext );
+                    var binaryFileService = new BinaryFileService( rockContext );
+                    SignatureDocument document = null;
+
+                    int? signatureDocumentId = hfSignedDocumentId.Value.AsIntegerOrNull();
+                    int? binaryFileId = fuSignedDocument.BinaryFileId;
+                    if ( signatureDocumentId.HasValue )
+                    {
+                        document = documentService.Get( signatureDocumentId.Value );
+                    }
+
+                    if ( document == null && binaryFileId.HasValue )
+                    {
+                        document = new SignatureDocument();
+                        document.SignatureDocumentTemplateId = group.RequiredSignatureDocumentTemplate.Id;
+                        document.AppliesToPersonAliasId = personAliasId.Value;
+                        document.AssignedToPersonAliasId = personAliasId.Value;
+                        document.Name = string.Format( "{0}_{1}",
+                            group.Name.RemoveSpecialCharacters(),
+                            ( person != null ? person.FullName.RemoveSpecialCharacters() : string.Empty ) );
+                        document.Status = SignatureDocumentStatus.Signed;
+                        document.LastStatusDate = RockDateTime.Now;
+                        documentService.Add( document );
+                    }
+
+                    if ( document != null )
+                    {
+                        int? origBinaryFileId = document.BinaryFileId;
+                        document.BinaryFileId = binaryFileId;
+
+                        if ( origBinaryFileId.HasValue && origBinaryFileId.Value != document.BinaryFileId )
+                        {
+                            // if a new the binaryFile was uploaded, mark the old one as Temporary so that it gets cleaned up
+                            var oldBinaryFile = binaryFileService.Get( origBinaryFileId.Value );
+                            if ( oldBinaryFile != null && !oldBinaryFile.IsTemporary )
+                            {
+                                oldBinaryFile.IsTemporary = true;
+                            }
+                        }
+
+                        // ensure the IsTemporary is set to false on binaryFile associated with this document
+                        if ( document.BinaryFileId.HasValue )
+                        {
+                            var binaryFile = binaryFileService.Get( document.BinaryFileId.Value );
+                            if ( binaryFile != null && binaryFile.IsTemporary )
+                            {
+                                binaryFile.IsTemporary = false;
+                            }
+                        }
+                    }
+                }
+
                 groupMember.LoadAttributes();
 
                 Rock.Attribute.Helper.GetEditValues( phAttributes, groupMember );
@@ -297,7 +369,6 @@ namespace RockWeb.Blocks.Groups
 
                 groupMember.CalculateRequirements( rockContext, true );
 
-                Group group = new GroupService( rockContext ).Get( groupMember.GroupId );
                 if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
                 {
                     Rock.Security.Role.Flush( group.Id );
@@ -553,6 +624,39 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 rcwLinkedRegistrations.Visible = false;
+            }
+
+            if ( groupMember.Group.RequiredSignatureDocumentTemplate != null )
+            {
+                fuSignedDocument.Label = groupMember.Group.RequiredSignatureDocumentTemplate.Name;
+                if ( groupMember.Group.RequiredSignatureDocumentTemplate.BinaryFileType != null )
+                {
+                    fuSignedDocument.BinaryFileTypeGuid = groupMember.Group.RequiredSignatureDocumentTemplate.BinaryFileType.Guid;
+                }
+
+                var signatureDocument = new SignatureDocumentService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( d =>
+                        d.SignatureDocumentTemplateId == groupMember.Group.RequiredSignatureDocumentTemplateId.Value &&
+                        d.AppliesToPersonAlias != null &&
+                        d.AppliesToPersonAlias.PersonId == groupMember.PersonId &&
+                        d.LastStatusDate.HasValue &&
+                        d.Status == SignatureDocumentStatus.Signed &&
+                        d.BinaryFile != null )
+                    .OrderByDescending( d => d.LastStatusDate.Value )
+                    .FirstOrDefault();
+
+                if ( signatureDocument != null )
+                {
+                    hfSignedDocumentId.Value = signatureDocument.Id.ToString();
+                    fuSignedDocument.BinaryFileId = signatureDocument.BinaryFileId;
+                }
+
+                fuSignedDocument.Visible = true;
+            }
+            else
+            {
+                fuSignedDocument.Visible = false;
             }
 
             groupMember.LoadAttributes();

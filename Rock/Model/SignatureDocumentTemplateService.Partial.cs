@@ -145,6 +145,45 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Cancels the document.
+        /// </summary>
+        /// <param name="document">The document.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
+        public bool CancelDocument( SignatureDocument document, out List<string> errorMessages )
+        {
+            errorMessages = new List<string>();
+            if ( document == null || document.SignatureDocumentTemplate == null )
+            {
+                errorMessages.Add( "Invalid Document or Template." );
+            }
+
+            if ( !errorMessages.Any() )
+            {
+                var provider = DigitalSignatureContainer.GetComponent( document.SignatureDocumentTemplate.ProviderEntityType.Name );
+                if ( provider == null || !provider.IsActive )
+                {
+                    errorMessages.Add( "Digital Signature provider was not found or is not active." );
+                }
+                else
+                {
+                    if ( provider.CancelDocument( document, out errorMessages ) )
+                    {
+                        if ( document.Status != SignatureDocumentStatus.Cancelled )
+                        {
+                            document.LastStatusDate = RockDateTime.Now;
+                        }
+                        document.Status = SignatureDocumentStatus.Cancelled;
+
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Sends the invite.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -216,29 +255,33 @@ namespace Rock.Model
                 }
                 else
                 {
-                    if ( provider.IsDocumentSigned( signatureDocument, out errorMessages ) )
+                    var originalStatus = signatureDocument.Status;
+                    if ( provider.UpdateDocumentStatus( signatureDocument, out errorMessages ) )
                     {
-                        using ( var rockContext = new RockContext() )
+                        if ( signatureDocument.Status != originalStatus && signatureDocument.Status == SignatureDocumentStatus.Signed )
                         {
-                            string documentPath = provider.GetDocument( signatureDocument, tempFolderPath, out errorMessages );
-                            if ( !string.IsNullOrWhiteSpace( documentPath ) )
+                            using ( var rockContext = new RockContext() )
                             {
-                                var binaryFileService = new BinaryFileService( rockContext );
-                                BinaryFile binaryFile = new BinaryFile();
-                                binaryFile.Guid = Guid.NewGuid();
-                                binaryFile.IsTemporary = false;
-                                binaryFile.BinaryFileTypeId = signatureDocument.SignatureDocumentTemplate.BinaryFileTypeId;
-                                binaryFile.MimeType = "application/pdf";
-                                binaryFile.FileName = new FileInfo( documentPath ).Name;
-                                binaryFile.ContentStream = new FileStream( documentPath, FileMode.Open );
-                                binaryFileService.Add( binaryFile );
-                                rockContext.SaveChanges();
+                                string documentPath = provider.GetDocument( signatureDocument, tempFolderPath, out errorMessages );
+                                if ( !string.IsNullOrWhiteSpace( documentPath ) )
+                                {
+                                    var binaryFileService = new BinaryFileService( rockContext );
+                                    BinaryFile binaryFile = new BinaryFile();
+                                    binaryFile.Guid = Guid.NewGuid();
+                                    binaryFile.IsTemporary = false;
+                                    binaryFile.BinaryFileTypeId = signatureDocument.SignatureDocumentTemplate.BinaryFileTypeId;
+                                    binaryFile.MimeType = "application/pdf";
+                                    binaryFile.FileName = new FileInfo( documentPath ).Name;
+                                    binaryFile.ContentStream = new FileStream( documentPath, FileMode.Open );
+                                    binaryFileService.Add( binaryFile );
+                                    rockContext.SaveChanges();
 
-                                signatureDocument.BinaryFileId = binaryFile.Id;
-                                signatureDocument.Status = SignatureDocumentStatus.Signed;
-                                signatureDocument.LastStatusDate = RockDateTime.Now;
+                                    signatureDocument.BinaryFileId = binaryFile.Id;
+                                    signatureDocument.Status = SignatureDocumentStatus.Signed;
+                                    signatureDocument.LastStatusDate = RockDateTime.Now;
 
-                                File.Delete( documentPath );
+                                    File.Delete( documentPath );
+                                }
                             }
                         }
                     }
