@@ -125,16 +125,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             var rockContext = new RockContext();
             var metricService = new MetricService( rockContext );
 
-            // Show data if metric source is selected
-            if ( MetricSourceGuids.Any() )
-            {
-                DisplayTextValue();
-            }
-            else
-            {
-                // nothing selected, display an error message
-                churchMetricWarning.Visible = true;
-            }
+            DisplayTextValue();
         }
 
         #endregion
@@ -154,7 +145,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             var primaryValueSum = primaryMetricValues.Select( a => a.YValue ).Sum() ?? 0.0M;
 
             // if comparing values, make sure we have a valid percentage source
-            if ( primaryValueSum > 0 && ComparisonMetricSourceGuids.Any() )
+            if ( primaryValueSum > 0 && ComparisonMetricSourceGuids != null )
             {
                 var comparisonMetricValues = GetMetricValues( false );
                 var comparisonValueSum = comparisonMetricValues.Select( a => a.YValue ).Sum() ?? 0.0M;
@@ -185,19 +176,31 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         {
             var rockContext = new RockContext();
             var metricService = new MetricService( rockContext );
-            var metricQueryable = new MetricService( rockContext ).Queryable();
             List<Guid> sourceGuids = null;
             var preKey = isPrimary ? string.Empty : "Comparison";
+            IQueryable<MetricValue> metricValues = null;
 
             var attributeValue = GetAttributeValue(preKey + "MetricSource");
 
             if(attributeValue == null)
             {
-                return null;
+                attributeValue = string.Empty;
             }
 
             sourceGuids = attributeValue.SplitDelimitedValues().AsGuidList();
-            var metricValues = metricService.GetByGuids(sourceGuids).SelectMany(m => m.MetricValues);
+
+            if (sourceGuids.Any())
+            {
+                metricValues = metricService.GetByGuids(sourceGuids).SelectMany(m => m.MetricValues);
+            }
+            else if(GetAttributeValue(preKey + "MetricType").Equals("Unique"))
+            {
+                metricValues = metricService.Queryable().Where(m => m.Title.EndsWith("Unique Volunteer")).SelectMany(m => m.MetricValues);
+            }
+            else
+            {
+                metricValues = metricService.Queryable().Where(m => m.Title.EndsWith("Attendance")).SelectMany(m => m.MetricValues);
+            }
 
             if (GetAttributeValue(preKey + "RespectCampusContext").AsBoolean())
             {
@@ -285,7 +288,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                     }
                 }
 
-                if ( ComparisonMetricSourceGuids.Any() && GetAttributeValue( "DisplayComparisonAs" ).Equals( "Percentage" ) )
+                if ( ComparisonMetricSourceGuids != null && GetAttributeValue( "DisplayComparisonAs" ).Equals( "Percentage" ) )
                 {
                     metricComparisonDisplay.Value = "%";
                 }
@@ -301,10 +304,10 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         private void LoadSourceGuids()
         {
             var metricSourceString = GetAttributeValue("MetricSource");
-            MetricSourceGuids = metricSourceString != null ? metricSourceString.SplitDelimitedValues().AsGuidList() : null;
+            MetricSourceGuids = string.IsNullOrWhiteSpace(metricSourceString) ? null : metricSourceString.SplitDelimitedValues().AsGuidList();
 
             metricSourceString = GetAttributeValue("ComparisonMetricSource");
-            ComparisonMetricSourceGuids = metricSourceString != null ? metricSourceString.SplitDelimitedValues().AsGuidList() : null;            
+            ComparisonMetricSourceGuids = string.IsNullOrWhiteSpace(metricSourceString) ? null : metricSourceString.SplitDelimitedValues().AsGuidList();
         }
 
         #region Classes
