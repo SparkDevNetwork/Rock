@@ -795,12 +795,12 @@ Registration By: {0} Total Cost/Fees:{1}
         public Dictionary<int, List<FeeInfo>> FeeValues { get; set; }
 
         /// <summary>
-        /// Gets or sets the signature document signed.
+        /// Gets or sets the signature document Id.
         /// </summary>
         /// <value>
-        /// The signature document signed.
+        /// The signature document Id.
         /// </value>
-        public bool SignatureDocumentSigned { get; set; }
+        public int? SignatureDocumentId { get; set; }
 
         /// <summary>
         /// Gets or sets the signature document last sent.

@@ -1408,15 +1408,17 @@ namespace RockWeb.Blocks.Event
                     .Queryable().AsNoTracking()
                     .Where( d =>
                         d.SignatureDocumentTemplateId == registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value &&
-                        d.AppliesToPersonAlias != null &&
-                        personIds.Contains( d.AppliesToPersonAlias.PersonId ) )
+                        d.Status == SignatureDocumentStatus.Signed &&
+                        d.BinaryFileId.HasValue &&
+                        d.AppliesToPersonAlias != null && personIds.Contains( d.AppliesToPersonAlias.PersonId ) )
+                    .OrderByDescending( d => d.LastStatusDate )
                     .ToList();
 
                 foreach( var registrantInfo in RegistrantsState )
                 {
-                    var myDocuments = documents.Where( d => d.AppliesToPersonAlias.PersonId == registrantInfo.PersonId ).ToList();
-                    registrantInfo.SignatureDocumentSigned = documents.Any( d => d.Status == SignatureDocumentStatus.Signed );
-                    registrantInfo.SignatureDocumentLastSent = myDocuments.Max( d => (DateTime?)d.LastInviteDate );
+                    var document = documents.Where( d => d.AppliesToPersonAlias.PersonId == registrantInfo.PersonId ).FirstOrDefault();
+                    registrantInfo.SignatureDocumentId = document != null ? document.BinaryFileId : (int?)null;
+                    registrantInfo.SignatureDocumentLastSent = document != null ? document.LastInviteDate : (DateTime?)null;
                 }
             }
 
@@ -2032,11 +2034,17 @@ namespace RockWeb.Blocks.Event
             divBody.AddCssClass( "panel-body" );
             divPanel.Controls.Add( divBody );
 
-            if ( Registration != null && 
-                Registration.RegistrationInstance != null && 
+            SignatureDocumentTemplate documentTemplate = null;
+
+            if ( Registration != null &&
+                Registration.RegistrationInstance != null &&
                 Registration.RegistrationInstance.RegistrationTemplate != null &&
-                Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplate != null &&
-                !registrant.SignatureDocumentSigned )
+                Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplate != null )
+            {
+                documentTemplate = Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplate;
+            }
+
+            if ( documentTemplate != null && !registrant.SignatureDocumentId.HasValue )
             {
                 var template = Registration.RegistrationInstance.RegistrationTemplate;
                 var divSigAlert = new HtmlGenericControl( "div" );
@@ -2080,13 +2088,13 @@ namespace RockWeb.Blocks.Event
             divRow.AddCssClass( "row" );
             divBody.Controls.Add( divRow );
 
-            var divFields = new HtmlGenericControl( "div" );
-            divFields.AddCssClass( "col-md-6");
-            divRow.Controls.Add( divFields );
+            var divLeftColumn = new HtmlGenericControl( "div" );
+            divLeftColumn.AddCssClass( "col-md-6");
+            divRow.Controls.Add( divLeftColumn );
 
-            var divFees = new HtmlGenericControl( "div" );
-            divFees.AddCssClass( "col-md-6");
-            divRow.Controls.Add( divFees );
+            var divRightColumn = new HtmlGenericControl( "div" );
+            divRightColumn.AddCssClass( "col-md-6");
+            divRow.Controls.Add( divRightColumn );
 
             if ( RegistrationTemplateState != null &&
                 RegistrationTemplateState.GroupTypeId.HasValue &&
@@ -2098,7 +2106,7 @@ namespace RockWeb.Blocks.Event
                 {
                     var rcwGroupMember = new RockControlWrapper();
                     rcwGroupMember.ID = string.Format( "rcwGroupMember_{0}", registrant.Id );
-                    divFields.Controls.Add( rcwGroupMember );
+                    divLeftColumn.Controls.Add( rcwGroupMember );
                     rcwGroupMember.Label = "Group";
 
                     var pGroupMember = new HtmlGenericControl( "p" );
@@ -2139,7 +2147,7 @@ namespace RockWeb.Blocks.Event
                     var fieldControl = BuildRegistrantFieldControl( field, registrant, setValues );
                     if ( fieldControl != null )
                     {
-                        divFields.Controls.Add( fieldControl );
+                        divLeftColumn.Controls.Add( fieldControl );
                     }
                 }
             }
@@ -2150,7 +2158,7 @@ namespace RockWeb.Blocks.Event
                 rlCost.ID = string.Format( "rlCost_{0}", registrant.Id );
                 rlCost.Label = "Cost";
                 rlCost.Text = registrant.Cost.FormatAsCurrency();
-                divFees.Controls.Add( rlCost );
+                divRightColumn.Controls.Add( rlCost );
             }
 
             foreach ( var fee in registrant.FeeValues )
@@ -2163,12 +2171,21 @@ namespace RockWeb.Blocks.Event
                         var feeControl = BuildRegistrantFeeControl( templateFee, feeInfo, registrant, setValues );
                         if ( feeControl != null )
                         {
-                            divFees.Controls.Add( feeControl );
+                            divRightColumn.Controls.Add( feeControl );
                         }
                     }
                 }
             }
 
+            if ( documentTemplate != null && registrant.SignatureDocumentId.HasValue )
+            {
+                var rlDocumentLink = new RockLiteral();
+                rlDocumentLink.ID = string.Format( "rlDocumentLink_{0}", registrant.Id );
+                rlDocumentLink.Label = documentTemplate.Name;
+                rlDocumentLink.Text = string.Format( "<a href='{0}?id={1}' target='_blank'>View Document</a>",
+                    ResolveRockUrl( "~/GetFile.ashx" ), registrant.SignatureDocumentId.Value );
+                divRightColumn.Controls.Add( rlDocumentLink );
+            }
 
             var divActions = new HtmlGenericControl( "Div" );
             divActions.AddCssClass( "actions" );

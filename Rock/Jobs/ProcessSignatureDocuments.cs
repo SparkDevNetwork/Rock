@@ -112,8 +112,7 @@ namespace Rock.Jobs
                         m.Group.RequiredSignatureDocumentTemplate != null &&
                         !m.Group.RequiredSignatureDocumentTemplate.Documents.Any( d =>
                             d.AppliesToPersonAlias.PersonId == m.PersonId &&
-                            d.AssignedToPersonAlias.PersonId == m.PersonId &&
-                            ( d.Status == SignatureDocumentStatus.Signed || d.Status == SignatureDocumentStatus.Cancelled )
+                            d.Status == SignatureDocumentStatus.Signed 
                         )
                     )
                     .Select( m => new
@@ -145,7 +144,7 @@ namespace Rock.Jobs
                             d.SignatureDocumentTemplateId == gm.DocumentType.Id &&
                             d.AppliesToPersonAlias.PersonId == gm.Person.Id &&
                             d.AssignedToPersonAlias.PersonId == gm.Person.Id &&
-                            ( d.Status == SignatureDocumentStatus.None || d.Status == SignatureDocumentStatus.Sent )
+                            d.Status != SignatureDocumentStatus.Signed
                         )
                         .OrderByDescending( d => d.CreatedDateTime )
                         .FirstOrDefault();

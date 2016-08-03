@@ -69,6 +69,8 @@
                                     </asp:Repeater>
                                 </ul>
                             </Rock:RockControlWrapper>
+                            <asp:HiddenField ID="hfSignedDocumentId" runat="server" />
+                            <Rock:FileUploader ID="fuSignedDocument" runat="server" Label="Signed Document" />
                         </div>
                     </div>
 
