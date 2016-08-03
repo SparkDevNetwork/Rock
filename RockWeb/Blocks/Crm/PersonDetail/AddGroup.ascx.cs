@@ -513,7 +513,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     if ( cellPhoneNumber != null )
                     {
                         contactInfoRow.CellPhoneNumber = PhoneNumber.FormattedNumber( cellPhoneNumber.CountryCode, cellPhoneNumber.Number );
-                        contactInfoRow.CellPhoneCountryCode = cellPhoneNumber.CountryCode;                     
+                        contactInfoRow.CellPhoneCountryCode = cellPhoneNumber.CountryCode;
+                        contactInfoRow.IsMessagingEnabled = cellPhoneNumber.IsMessagingEnabled;           
                     }
                     else
                     {
