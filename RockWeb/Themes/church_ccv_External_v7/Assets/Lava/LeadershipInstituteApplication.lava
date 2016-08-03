@@ -54,7 +54,7 @@
     <div class="form-group">
       <label class="control-label col-sm-3" for="HomeTown">Home Town</label>
       <div class="col-sm-9">
-        <input id="HomeTown" name="StreetAddress" type="text" placeholder="Town Name, State" class="input-xlarge form-control">
+        <input id="HomeTown" name="HomeTown" type="text" placeholder="Town Name, State" class="input-xlarge form-control">
       </div>
     </div>
     <!-- Text input-->
