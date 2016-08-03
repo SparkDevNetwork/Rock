@@ -4,6 +4,7 @@
     <ContentTemplate>
 
         <Rock:NotificationBox ID="nbNotice" runat="server" Visible="false" NotificationBoxType="Danger"/>
+        <Rock:NotificationBox ID="nbWarning" runat="server" Visible="false" NotificationBoxType="Warning" />
 
         <asp:Panel ID="pnlView" runat="server">
 

@@ -58,7 +58,8 @@ namespace RockWeb.Blocks.Groups
     [GroupTypeField( "Geofenced Group Type", "", false, "", "CustomSetting" )]
     [TextField( "ScheduleFilters", "", false, "", "CustomSetting" )]
     [BooleanField( "Display Campus Filter", "", false, "CustomSetting" )]
-    [BooleanField( "Enable Campus Context", "", false , "CustomSetting" )]
+    [BooleanField( "Enable Campus Context", "", false, "CustomSetting" )]
+    [BooleanField( "Hide Overcapacity Groups", "When set to true, groups that are at capacity or whose default GroupTypeRole are at capacity are hidden.", true )]
     [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Attribute Filters", "", false, true, "", "CustomSetting" )]
 
     // Map Settings
@@ -842,6 +843,21 @@ namespace RockWeb.Blocks.Groups
                 {
                     groupQry = groupQry.Where( c => searchCampuses.Contains( c.CampusId ?? -1 ) );
                 }
+            }
+
+            // This hides the groups that are at or over capacity by doing two things:
+            // 1) If the group has a GroupCapacity, check that we haven't met or exceeded that.
+            // 2) When someone registers for a group on the front-end website, they automatically get added with the group's default
+            //    GroupTypeRole. If that role exists and has a MaxCount, check that we haven't met or exceeded it yet.
+            if ( GetAttributeValue( "HideOvercapacityGroups" ).AsBoolean() )
+            {
+                groupQry = groupQry.Where( g => g.GroupCapacity == null || g.Members.Count() < g.GroupCapacity );
+
+                groupQry = groupQry.Where( g =>
+                     g.GroupType == null ||
+                     g.GroupType.DefaultGroupRole == null ||
+                     g.GroupType.DefaultGroupRole.MaxCount == null ||
+                     g.Members.Where( m => m.GroupRoleId == g.GroupType.DefaultGroupRole.Id ).Count() < g.GroupType.DefaultGroupRole.MaxCount );
             }
 
             // Filter query by any configured attribute filters
