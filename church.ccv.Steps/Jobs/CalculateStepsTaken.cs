@@ -565,20 +565,27 @@ GROUP BY st.PersonAliasId, st.stepmeasureid)";
                             StepTakenService stepTakenService = new StepTakenService( updateContext );
 
                             Person person = new PersonService( rockContext ).Get( start.EntityId );
-
                             if ( person != null )
                             {
-                                // create new step
-                                StepTaken step = new StepTaken();
-                                step.DateTaken = start.CreatedDateTime.Value;
-                                step.StepMeasureId = measureId;
-                                step.PersonAliasId = person.PrimaryAliasId.Value;
-                                step.CampusId = person.GetCampus().Id;
+                                // JHM 8-3-2016: make sure this person still has a campus. This job and its UI
+                                // assume they do and ignore anyone who doesn't. Since some people in Rock get merged into
+                                // families with no campus (say that family gave online ONLY, and never told us their campus)
+                                // we need to ignore them if they don't have one.
+                                Campus campus = person.GetCampus( );
+                                if ( campus != null )
+                                {
+                                    // create new step
+                                    StepTaken step = new StepTaken();
+                                    step.DateTaken = start.CreatedDateTime.Value;
+                                    step.StepMeasureId = measureId;
+                                    step.PersonAliasId = person.PrimaryAliasId.Value;
+                                    step.CampusId = campus.Id;
 
-                                stepTakenService.Add( step );
-                                updateContext.SaveChanges();
+                                    stepTakenService.Add( step );
+                                    updateContext.SaveChanges();
 
-                                stepCounter++;
+                                    stepCounter++;
+                                }
                             }
                         }
                     }
