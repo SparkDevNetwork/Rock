@@ -1,4 +1,4 @@
-﻿/*
+/*
   Used to manage styles related to reusable components / widgets.
 
   1. Pickers - used to pick complex data types
@@ -47,8 +47,10 @@
 // -------------------------
 
 .picker {
+  @media @sm {
     position: relative;
     width: 250px; // needed when floated right to keep the picker from shifting when the (x) appears to allow delete
+  }
     .clearfix();
 
     .picker-mode-options {
@@ -115,6 +117,10 @@
     .picker-menu {
         width: 400px;
         padding: 10px;
+        @media (max-width: @screen-xs-max) {
+          max-width: 100%;
+          position: static;
+        }
 
         h4:first-child {
             margin-top: 0;
