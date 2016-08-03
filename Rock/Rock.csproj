@@ -1174,7 +1174,7 @@
     <Compile Include="Transactions\SendCommunicationApprovalEmail.cs" />
     <Compile Include="Transactions\SendCommunicationTransaction.cs" />
     <Compile Include="Transactions\SendDigitalSignatureRequestTransaction.cs" />
-    <Compile Include="Transactions\SendPaymentReciepts.cs" />
+    <Compile Include="Transactions\SendPaymentReceipts.cs" />
     <Compile Include="Transactions\SendRegistrationConfirmationTransaction.cs" />
     <Compile Include="Transactions\SendRegistrationNotificationTransaction.cs" />
     <Compile Include="Transactions\UpdateFacebookFriends.cs" />
