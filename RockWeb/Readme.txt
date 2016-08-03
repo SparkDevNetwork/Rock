@@ -2,7 +2,7 @@ Rock McKinley 5.1
 
 + Fixed issue with Family check-in incorrectly navigating to individual check-in page when clicking 'Back' (Fixes #1620).
 + Fixed issue with workflow triggers not getting started (Fixes #1623).
-+ Fixed display of heirarchal group types in check-in manager.
++ Fixed display of hierarchical group types in check-in manager.
 + Fixed display of group type path on the location schedule screen in check-in manager mode (Fixes #121).
 + Fixed positioning of Save button on check-in admin schedule view (Fixes #1609).
 + Updated the saving of attributes so that it does not clear foreign key values and the created by information (Fixes #1596).
@@ -122,7 +122,7 @@ GROUPS
 + Changed default date range for Group Attendance to 3 months instead of a year (date filter can still be changed per user).
 + Added campus filter to group attendance list. This will filter the attendance count and rate values by the people whose campus is the selected value.
 + Added an optional campus filter to the Group Attendance Detail block.
-+ Fixed issue with Role specific Group Requirments still showing warning icon for members of group with a different role.
++ Fixed issue with Role specific Group Requirements still showing warning icon for members of group with a different role.
 + Updated Group Finder to prevent adding attribute filters for attribute field types that do not support filtering (Fixes #1561).
 + Fixed display of Group Name when using option to display group path and selecting a specific group type (Fixes #1525).
 
@@ -274,7 +274,7 @@ Rock McKinley 4.5
 + Fixed exception that would occur if new person was trying to signup for a connection request and organization only has one campus.
 + Updated the code editor to correctly escape html values.
 + Updated the email preferences block so that it logs any changes a user makes to their preference (including record status/reason changes) to their history.
-+ Fixed an issue with croping person images when using a custom storage provider.
++ Fixed an issue with cropping person images when using a custom storage provider.
 
 
 Rock McKinley 4.4
@@ -292,7 +292,7 @@ Rock McKinley 4.4
 + Fixed error in the People REST endpoint (Fixes #1388).
 + Updated Lava debug display to only display each object type/id once, and limit iterations to first two items (Fixes #1365).
 + Changed z-index of the admin toolbar to keep it from being hidden when editing page zones. (Fixes #1397)
-+ Changed the ConnectionRequestDetail block to allow a request to be Connected even if there is no placement group. 
++ Changed the ConnectionRequestDetail block to allow a request to be Connected even if there is no placement group.
 + Fixed Communication Entry block so that the Subject is cleared if a selected template does not specify a subject (Fixes #1393).
 + Fixed issue where creating a new communication from a dataview caused the block to timeout before the configured database timeout occurred. (Fixes #909).
 + Update communication send job so that it ignores any inactive mediums and/or transports (Fixes #1527).
@@ -338,7 +338,7 @@ Rock McKinley 4.2
 + Updated the Workflow Type Detail block so that it does not time out when trying to remove an activity type or action from an existing workflow type that has a significant number of workflows already created.
 + Updated the Rock Shop configuration to work with usernames and/or passwords that may have special characters.
 + Updated the Send Email and the Send System Email workflow actions to allow Email attribute field types for the from and to addresses (in addition to text or person field types)
-+ Removed unnecesary clearing of authorization cache whenever a group member was added/edited/removed from a security group.
++ Removed unnecessary clearing of authorization cache whenever a group member was added/edited/removed from a security group.
 + Updated the Group Type Detail so that if a group member attribute is removed, it is also removed from any registration template that was configured to use that attribute.
 + Updated the Twilio webhook so that if it gets an IOException when writing to log file that it will wait and try again a few times before causing an error.
 + Fixed issues with numeric attribute field comparisons on data views (Fixes #1377).
@@ -614,7 +614,7 @@ Rock McKinley 3.4
 + Updated performance of First Contribution Date report filter (Fixes #972).
 + Updated Group Finder block to not display inactive groups (Fixes #1019).
 + Fixed Pledge List block so that it correctly applies the Account filter when no accounts are selected (Fixes #1032).
-+ Added support for financial gateway providers to specify whether they support Saved account functionality for a given currencty type ( credit card, ACH ) and updated UI to render options based on setting (Fixes #1031).
++ Added support for financial gateway providers to specify whether they support Saved account functionality for a given currency type ( credit card, ACH ) and updated UI to render options based on setting (Fixes #1031).
 + Fixed Family group members getting added with inactive status (Fixes #1013).
 + Improved performance of Rock Cleanup job (Fixes #1060).
 
@@ -643,10 +643,10 @@ Rock McKinley 3.2
 + Fixed issue with My Workflows block not showing the workflow type.
 + Fixed "Group Type" Report Field not showing any results (Fixes #977).
 + Added validation to prevent duplicate routes being created for different pages.
-+ Updated person object so that PrimaryAlias property is avaialbe to be used by Lava (Fixes #973).
++ Updated person object so that PrimaryAlias property is available to be used by Lava (Fixes #973).
 + Fixed issue with Add Family block adding children as adults (Fixes #964).
 + Fixed issue with prayer approval not updating request correctly, resulting in prayer not being visible to prayer session (Fixes #969).
-+ Updated communicaiton processing so that communication job will not send duplicate emails to same recipients.
++ Updated communication processing so that communication job will not send duplicate emails to same recipients.
 + Fixed issue with occasional deadlocks.
 + Added job for processing scheduled metrics.
 + Fixed attribute block to escape HTML in the values column (Fixes #965).
@@ -886,7 +886,7 @@ Rock McKinley 1.2
 + Fix report data view filters that use an attribute date filter (Fixes #629)
 + Include last name of family members if the last name is different than the current person being viewed (Fixes #618).
 + Fixed issue with StatementGenerator that was causing it to only work on x64 machines (Fixes #613).
-+ Fix person age calculation to not be dependent on current culture being in mm/dd/yy format (Fixes #607).        
++ Fix person age calculation to not be dependent on current culture being in mm/dd/yy format (Fixes #607).
 + Fix the ordering of Content Channel Dynamic items when retrieving items from cache.
 + Update the Content Channel Dynamic block so that it does not default to a specific channel when first added to a page.
 + Update ordering of defined type attributes to clear the attribute cache so that editing values immediately reflects the updated order.
