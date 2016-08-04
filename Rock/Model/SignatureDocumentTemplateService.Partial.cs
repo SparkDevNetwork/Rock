@@ -87,42 +87,31 @@ namespace Rock.Model
                                 d.Status != SignatureDocumentStatus.Signed )
                             .OrderByDescending( d => d.CreatedDateTime )
                             .FirstOrDefault();
-                        if ( document == null )
-                        {
-                            string documentKey = provider.CreateDocument( signatureDocumentTemplate, appliesToPerson, assignedToPerson, documentName, out sendErrors, true );
-                            if ( documentKey != null )
-                            {
-                                document = new SignatureDocument();
-                                document.SignatureDocumentTemplate = signatureDocumentTemplate;
-                                document.SignatureDocumentTemplateId = signatureDocumentTemplate.Id;
-                                document.Name = documentName;
-                                document.DocumentKey = documentKey;
-                                document.AppliesToPersonAliasId = appliesToPerson.PrimaryAliasId;
-                                document.AssignedToPersonAliasId = assignedToPerson.PrimaryAliasId;
-                                documentService.Add( document );
 
-                                // Code to send a guest invite and use system email
-                                //var inviteErrors = new List<string>();
-                                //if ( !SendInvite( rockContext, provider, document, assignedToPerson, out inviteErrors ) )
-                                //{
-                                //    errorMessages.AddRange( inviteErrors );
-                                //}
-                            }
+                        string documentKey = document.DocumentKey;
+                        if ( document == null || string.IsNullOrWhiteSpace( documentKey ) )
+                        {
+                            documentKey = provider.CreateDocument( signatureDocumentTemplate, appliesToPerson, assignedToPerson, documentName, out sendErrors, true );
                         }
                         else
                         {
                             provider.ResendDocument( document, out sendErrors );
+                        }
 
-                            // Code to send a guest invite and use system email
-                            //var inviteErrors = new List<string>();
-                            //if ( !SendInvite( rockContext, provider, document, assignedToPerson, out inviteErrors ) )
-                            //{
-                            //    errorMessages.AddRange( inviteErrors );
-                            //}
+                        if ( document == null )
+                        {
+                            document = new SignatureDocument();
+                            document.SignatureDocumentTemplate = signatureDocumentTemplate;
+                            document.SignatureDocumentTemplateId = signatureDocumentTemplate.Id;
+                            document.Name = documentName;
+                            document.AppliesToPersonAliasId = appliesToPerson.PrimaryAliasId;
+                            document.AssignedToPersonAliasId = assignedToPerson.PrimaryAliasId;
+                            documentService.Add( document );
                         }
 
                         if ( !sendErrors.Any() )
                         {
+                            document.DocumentKey = documentKey;
                             document.LastInviteDate = RockDateTime.Now;
                             document.InviteCount = document.InviteCount + 1;
                             if ( document.Status != SignatureDocumentStatus.Sent )
