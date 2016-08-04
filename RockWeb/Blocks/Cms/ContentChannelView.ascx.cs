@@ -489,7 +489,7 @@ $(document).ready(function() {
 
             // set page title
             if ( GetAttributeValue( "SetPageTitle" ).AsBoolean() && content.Count > 0 )
-            {               
+            {
                 if ( string.IsNullOrWhiteSpace( PageParameter( "Item" ) ) )
                 {
                     // set title to channel name
@@ -504,6 +504,12 @@ $(document).ready(function() {
                     RockPage.PageTitle = itemTitle;
                     RockPage.BrowserTitle = String.Format( "{0} | {1}", itemTitle, RockPage.Site.Name );
                     RockPage.Header.Title = String.Format( "{0} | {1}", itemTitle, RockPage.Site.Name );
+                }
+
+                var pageBreadCrumb = RockPage.PageReference.BreadCrumbs.FirstOrDefault();
+                if ( pageBreadCrumb != null )
+                {
+                    pageBreadCrumb.Name = RockPage.PageTitle;
                 }
             }
 
