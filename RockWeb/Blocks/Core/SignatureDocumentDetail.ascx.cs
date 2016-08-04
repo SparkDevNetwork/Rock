@@ -72,7 +72,7 @@ namespace RockWeb.Blocks.Core
                     } )
                     .ToList();
                 ddlDocumentType.DataBind();
-                ddlDocumentType.Items.Insert( 0, new ListItem( "", "0" ) );
+                ddlDocumentType.Items.Insert( 0, new ListItem( "", "" ) );
             }
         }
 
@@ -84,7 +84,7 @@ namespace RockWeb.Blocks.Core
         {
             base.OnLoad( e );
 
-            nbSend.Visible = false;
+            nbErrorMessage.Visible = false;
 
             if ( !Page.IsPostBack )
             {
@@ -116,6 +116,16 @@ namespace RockWeb.Blocks.Core
             bool inviteCancelled = false;
 
             var rockContext = new RockContext();
+
+            int? documentTemplateId = ddlDocumentType.SelectedValueAsInt();
+            if ( !documentTemplateId.HasValue )
+            {
+                nbErrorMessage.Title = string.Empty;
+                nbErrorMessage.Text = "Document Template is Required!";
+                nbErrorMessage.NotificationBoxType = NotificationBoxType.Danger;
+                nbErrorMessage.Visible = true;
+                return;
+            }
 
             SignatureDocument signatureDocument = null;
             SignatureDocumentService service = new SignatureDocumentService( rockContext );
@@ -149,7 +159,7 @@ namespace RockWeb.Blocks.Core
             signatureDocument.AssignedToPersonAliasId = ppAssignedTo.PersonAliasId;
             signatureDocument.SignedByPersonAliasId = ppSignedBy.PersonAliasId;
 
-            signatureDocument.SignatureDocumentTemplateId = ddlDocumentType.SelectedValueAsInt() ?? 0;
+            signatureDocument.SignatureDocumentTemplateId = documentTemplateId.Value;
 
             origBinaryFileId = signatureDocument.BinaryFileId;
             signatureDocument.BinaryFileId = fuDocument.BinaryFileId;
@@ -236,25 +246,27 @@ namespace RockWeb.Blocks.Core
                             var lastInviteDate = RockDateTime.Now;
                             lRequestDate.Text = string.Format( "<span title='{0}'>{1}</span>", lastInviteDate.ToString(), lastInviteDate.ToElapsedString() );
 
-                            nbSend.Title = string.Empty;
-                            nbSend.Text = "Signature Invite Was Successfully Sent";
-                            nbSend.NotificationBoxType = NotificationBoxType.Success;
-                            nbSend.Visible = true;
+                            rockContext.SaveChanges();
+
+                            nbErrorMessage.Title = string.Empty;
+                            nbErrorMessage.Text = "Signature Invite Was Successfully Sent";
+                            nbErrorMessage.NotificationBoxType = NotificationBoxType.Success;
+                            nbErrorMessage.Visible = true;
                         }
                         else
                         {
-                            nbSend.Title = "Error Sending Signature Invite";
-                            nbSend.Text = string.Format( "<ul><li>{0}</li></ul>", errorMessages.AsDelimited( "</li><li>" ) );
-                            nbSend.NotificationBoxType = NotificationBoxType.Danger;
-                            nbSend.Visible = true;
+                            nbErrorMessage.Title = "Error Sending Signature Invite";
+                            nbErrorMessage.Text = string.Format( "<ul><li>{0}</li></ul>", errorMessages.AsDelimited( "</li><li>" ) );
+                            nbErrorMessage.NotificationBoxType = NotificationBoxType.Danger;
+                            nbErrorMessage.Visible = true;
                         }
                     }
                     else
                     {
-                        nbSend.Title = "Error Sending Signature Invite";
-                        nbSend.Text = "<ul><li>'Applies To' and 'Assigned To' values are required</li></ul>";
-                        nbSend.NotificationBoxType = NotificationBoxType.Warning;
-                        nbSend.Visible = true;
+                        nbErrorMessage.Title = "Error Sending Signature Invite";
+                        nbErrorMessage.Text = "<ul><li>'Applies To' and 'Assigned To' values are required</li></ul>";
+                        nbErrorMessage.NotificationBoxType = NotificationBoxType.Warning;
+                        nbErrorMessage.Visible = true;
                     }
                 }
             }
@@ -421,7 +433,7 @@ namespace RockWeb.Blocks.Core
                         var documentType = new SignatureDocumentTemplateService( rockContext ).Get( documentTypeId.Value );
                         if ( documentType != null )
                         {
-                            signatureDocument.SignatureDocumentTemplate= documentType;
+                            signatureDocument.SignatureDocumentTemplate = documentType;
                             signatureDocument.SignatureDocumentTemplateId = documentType.Id;
                         }
                     }

@@ -19,11 +19,11 @@
                 <div id="pnlEditDetails" runat="server">
 
                     <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
-                    <Rock:NotificationBox ID="nbSend" runat="server" Visible="false" />
+                    <Rock:NotificationBox ID="nbErrorMessage" runat="server" Visible="false" />
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockDropDownList ID="ddlDocumentType" runat="server" Label="Signature Document Type" DataValueField="Id" DataTextField="Name" />
+                            <Rock:RockDropDownList ID="ddlDocumentType" runat="server" Label="Signature Document Type" DataValueField="Id" DataTextField="Name" Required="true" />
                             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.SignatureDocument, Rock" PropertyName="Name" />
                         </div>
                         <div class="col-md-6">
