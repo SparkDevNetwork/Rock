@@ -158,24 +158,22 @@
                                 <Columns>
                                     <Rock:ReorderField />
                                     <Rock:RockBoundField DataField="Title" HeaderText="Title" SortExpression="Title" />
-                                    <Rock:DateField DataField="StartDateTime" HeaderText="Start" SortExpression="StartDateTime" ColumnPriority="Desktop" />
-                                    <Rock:DateField DataField="ExpireDateTime" HeaderText="Expire" SortExpression="ExpireDateTime" ColumnPriority="Desktop" />
-                                    <Rock:RockBoundField DataField="Priority" HeaderText="Priority" SortExpression="Priority" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" ColumnPriority="Desktop" />
+                                    <Rock:DateField DataField="StartDateTime" HeaderText="Start" SortExpression="StartDateTime" ColumnPriority="Desktop" ItemStyle-HorizontalAlign="Left" />
+                                    <Rock:DateField DataField="ExpireDateTime" HeaderText="Expire" SortExpression="ExpireDateTime" ColumnPriority="Desktop" ItemStyle-HorizontalAlign="Left" />
+                                    <Rock:RockBoundField DataField="Priority" HeaderText="Priority" SortExpression="Priority" DataFormatString="{0:N0}" ColumnPriority="Desktop" />
                                     <Rock:RockBoundField DataField="Status" HeaderText="Status" SortExpression="Status" HtmlEncode="false" ColumnPriority="Desktop" />
-                                    <Rock:RockBoundField DataField="CreatedBy" HeaderText="Created By" ColumnPriority="Desktop" />
                                     <Rock:DeleteField OnClick="gChildItems_Delete" />
                                 </Columns>
                             </Rock:Grid>
                         </div>
                         <div id="divParentItems" runat="server" class="tab-pane">
-                            <Rock:Grid ID="gParentItems" runat="server" DisplayType="Light" EmptyDataText="No Child Items" RowItemText="Child Item" OnRowSelected="gParentItems_RowSelected" >
+                            <Rock:Grid ID="gParentItems" runat="server" DisplayType="Light" EmptyDataText="No Child Items" RowItemText="Parent Item" OnRowSelected="gParentItems_RowSelected" >
                                 <Columns>
                                     <Rock:RockBoundField DataField="Title" HeaderText="Title" SortExpression="Title" />
-                                    <Rock:DateField DataField="StartDateTime" HeaderText="Start" SortExpression="StartDateTime" ColumnPriority="Desktop" />
-                                    <Rock:DateField DataField="ExpireDateTime" HeaderText="Expire" SortExpression="ExpireDateTime" ColumnPriority="Desktop" />
-                                    <Rock:RockBoundField DataField="Priority" HeaderText="Priority" SortExpression="Priority" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right"  ColumnPriority="Desktop"/>
-                                    <Rock:RockBoundField DataField="Status" HeaderText="Priority" SortExpression="Status" HtmlEncode="false" ColumnPriority="Desktop" />
-                                    <Rock:RockBoundField DataField="CreatedBy" HeaderText="Created By" />
+                                    <Rock:DateField DataField="StartDateTime" HeaderText="Start" SortExpression="StartDateTime" ColumnPriority="Desktop" ItemStyle-HorizontalAlign="Left" />
+                                    <Rock:DateField DataField="ExpireDateTime" HeaderText="Expire" SortExpression="ExpireDateTime" ColumnPriority="Desktop" ItemStyle-HorizontalAlign="Left" />
+                                    <Rock:RockBoundField DataField="Priority" HeaderText="Priority" SortExpression="Priority" DataFormatString="{0:N0}" ColumnPriority="Desktop"/>
+                                    <Rock:RockBoundField DataField="Status" HeaderText="Status" SortExpression="Status" HtmlEncode="false" ColumnPriority="Desktop" />
                                 </Columns>
                             </Rock:Grid>
                         </div>
