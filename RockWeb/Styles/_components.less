@@ -699,10 +699,9 @@ div.tagsinput {
 
   span.tag.personal {
     background: @tag-bg-alt;
-  }
-
-  span.tag.personal:before {
-    border-color: transparent @tag-bg-alt transparent transparent;
+    &:before {
+      border-color: transparent @tag-bg-alt transparent transparent;
+    }
   }
 
   span.tag a {
@@ -773,9 +772,7 @@ div.tagsinput {
     background-color: @autocomplete-bg;
     border: 1px solid @autocomplete-border;
     border-radius: 0 0 @border-radius-base @border-radius-base;
-    -webkit-box-shadow: 0 5px 10px rgba(0,0,0,.2);
-       -moz-box-shadow: 0 5px 10px rgba(0,0,0,.2);
-            box-shadow: 0 5px 10px rgba(0,0,0,.2);
+    .box-shadow(0 5px 10px rgba(0,0,0,.2));
 
     li {
       margin-bottom: 4px;
@@ -853,7 +850,7 @@ div.tagsinput {
   border: 1px solid @smartsearch-border-color;
   border-radius: @border-radius-base;
 
-  input: -moz-placeholder,
+  input::-moz-placeholder,
   input::-webkit-input-placeholder {
     color: darken(@smartsearch-input-text-color, 25%);
   }
@@ -1043,40 +1040,46 @@ fieldset .actions {
       border-left: 6px solid transparent;
     }
 
-    &.datepicker-orient-left:before {
-      left: 6px;
+    &.datepicker-orient-left {
+      &:before {
+        left: 6px;
+      }
+      &:after {
+        left: 7px;
+      }
     }
 
-    &.datepicker-orient-left:after {
-      left: 7px;
+    &.datepicker-orient-right {
+      &:before {
+        right: 6px;
+      }
+
+      &:after {
+        right: 7px;
+      }
     }
 
-    &.datepicker-orient-right:before {
-      right: 6px;
+    &.datepicker-orient-top {
+      &:before {
+        top: -7px;
+      }
+
+      &:after {
+        top: -6px;
+      }
     }
 
-    &.datepicker-orient-right:after {
-      right: 7px;
-    }
-
-    &.datepicker-orient-top:before {
-      top: -7px;
-    }
-
-    &.datepicker-orient-top:after {
-      top: -6px;
-    }
-
-    &.datepicker-orient-bottom:before {
-      bottom: -7px;
-      border-top: 7px solid #999;
-      border-bottom: 0;
-    }
-
-    &.datepicker-orient-bottom:after {
-      bottom: -6px;
-      border-top: 6px solid #fff;
-      border-bottom: 0;
+    &.datepicker-orient-bottom {
+      &:before {
+        bottom: -7px;
+        border-top: 7px solid #999;
+        border-bottom: 0;
+      }
+      &:after {
+        bottom: -6px;
+        border-top: 6px solid #fff;
+        border-bottom: 0;
+      }
     }
   }
 
@@ -1301,7 +1304,6 @@ fieldset .actions {
         text-align: center;
         border: 1px solid @input-border;
         border-radius: @border-radius-base;
-        box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
 
         .box-shadow(inset 0 1px 1px rgba(0,0,0,.075));
         .transition(~"border-color ease-in-out .15s, box-shadow ease-in-out .15s");
@@ -1812,9 +1814,7 @@ ul.rocklist {
           background-clip: padding-box;
   border: 1px solid @autocomplete-border;
   border-radius: 0 0 @border-radius-base @border-radius-base;
-  -webkit-box-shadow: 0 5px 10px rgba(0,0,0,.2);
-     -moz-box-shadow: 0 5px 10px rgba(0,0,0,.2);
-          box-shadow: 0 5px 10px rgba(0,0,0,.2);
+  .box-shadow(0 5px 10px rgba(0,0,0,.2));
 }
 
 .tt-suggestion {
