@@ -11,70 +11,67 @@
 // -------------------------
 
 .error-wrap {
-    text-align: center;
-    max-width: 450px;
-    margin: 0 auto;
+  max-width: 450px;
+  margin: 0 auto;
+  text-align: center;
 
-    h1 {
-        font-size: 45px;
+  h1 {
+    font-size: 45px;
+  }
+
+  .error-icon {
+    margin: @spacing-md-px;
+    font-size: 256px;
+    line-height: 256px;
+    opacity: .7;
+
+    &.info {
+      color: @brand-info;
     }
 
-    .error-icon {
-        font-size: 256px;
-        line-height: 256px;
-        margin: @spacing-md-px;
-        opacity: 0.7;
-
-        &.info {
-            color: @brand-info;
-        }
-
-        &.warning {
-            color: @brand-warning;
-        }
-
-        &.danger {
-            color: @brand-danger;
-        }
+    &.warning {
+      color: @brand-warning;
     }
+
+    &.danger {
+      color: @brand-danger;
+    }
+  }
 }
 
 .error-details {
-    pre {
-        background-color: transparent;
-        border: 0;
-        color: @alert-danger-text;
-    }
+  pre {
+    color: @alert-danger-text;
+    background-color: transparent;
+    border: 0;
+  }
 }
 
 // 2. Blank Page
 // -------------------------
 
 .rock-blank {
-    background-color: @body-bg;
+  background-color: @body-bg;
 
-    main.container {
-        margin: 0;
-        padding: 12px;
-    }
-
+  main.container {
+    padding: 12px;
+    margin: 0;
+  }
 }
 
 // 3. Exception Page
 // -------------------------
-.exceptionDetail-stackTrace-hide
-{
-    display: none;
+.exceptionDetail-stackTrace-hide {
+  display: none;
 }
 
-.exceptionDetail-stackTrace-show
-{
-    display:table-row;
+.exceptionDetail-stackTrace-show {
+  display: table-row;
 
-    pre {
-        padding: 0;
-        background-color: transparent;
-        border-color: transparent;
-        color: inherit;
-    }
+  pre {
+    padding: 0;
+    color: inherit;
+    background-color: transparent;
+    border-color: transparent;
+  }
 }
