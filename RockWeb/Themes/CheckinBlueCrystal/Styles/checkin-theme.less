@@ -8,7 +8,6 @@
 //
 // Imports
 // --------------------------------------------------
-
 @import "../../../Styles/FontAwesome/font-awesome.less";
 @import "../../../Styles/Bootstrap/bootstrap.less"; 
 @import "../../../Styles/_checkin-core.less";
@@ -70,13 +69,12 @@
 //
 // Mix-ins
 // --------------------------------------------------
- .checkinBackground () {
-    background-color: transparent;
+.checkinBackground () {
+  background-color: transparent;
 }
 
- .checkinBackgroundRetina()
-{
-   background-color: transparent;
+.checkinBackgroundRetina() {
+  background-color: transparent;
 }
 
 
@@ -85,30 +83,31 @@
 // --------------------------------------------------
 
 html {
-    background: @bg-color @background-image top right no-repeat fixed;
-    background-size: cover;
-    height: 100%;
+  height: 100%;
+  background: @bg-color @background-image top right no-repeat fixed;
+  background-size: cover;
 }
 
 body {
-    background:  @logo-image right bottom no-repeat;
-    height: 100%;
-    -ms-touch-action: none !important;
-    -ms-content-zooming: none; /* Disables zooming */
-    touch-action: none;   /* Disable any special actions on tap/touch */
-    display: none;
+  display: none;
+  height: 100%;
+  -ms-touch-action: none !important;
+      touch-action: none;   /* Disable any special actions on tap/touch */
+  background: @logo-image right bottom no-repeat;
+
+  -ms-content-zooming: none; /* Disables zooming */
 }
 
 @media all and (-webkit-min-device-pixel-ratio: 1.5) {
   html {
-        background-image: @background-image-retina;
-        background-size: @background-image-retina-size;
-    }
+    background-image: @background-image-retina;
+    background-size: @background-image-retina-size;
+  }
 
-    body {
-        background-image: @logo-image-retina;
-        background-size: @logo-image-retina-size;
-    }
+  body {
+    background-image: @logo-image-retina;
+    background-size: @logo-image-retina-size;
+  }
 }
 
 @import "_css-overrides.less";
