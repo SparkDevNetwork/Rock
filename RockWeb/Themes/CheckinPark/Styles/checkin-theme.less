@@ -22,7 +22,7 @@
 // Fonts
 // -------------------------
 
-// regular (weight 'normal' aka 400)
+//regular (weight 'normal' aka 400)
 @font-face {
     font-family: 'OpenSans';
     src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot');
@@ -75,16 +75,13 @@
 // Mix-ins
 // --------------------------------------------------
 .checkinBackground () {
-  	background: @bg-color @background-image top right no-repeat fixed;
+  background: @bg-color @background-image top right no-repeat fixed;
 }
 
-.checkinBackgroundRetina()
-{
-    background-image: @bg-color @background-image-retina;
-    background-size: @background-image-retina-size;
+.checkinBackgroundRetina() {
+  background-image: @bg-color @background-image-retina;
+  background-size: @background-image-retina-size;
 }
-
-
 
 
 //
@@ -93,14 +90,15 @@
 
 .checkin-count h3,
 .checkin-count li {
-	color: #4c4c4b;
+  color: #4c4c4b;
 }
 
 body {
-    -ms-touch-action: none !important;
-    -ms-content-zooming: none; /* Disables zooming */
-    touch-action: none;   /* Disable any special actions on tap/touch */
-    display: none;
+  display: none;
+  -ms-touch-action: none !important;
+      touch-action: none;   /* Disable any special actions on tap/touch */
+
+  -ms-content-zooming: none; /* Disables zooming */
 }
 
 @import "_css-overrides.less";
