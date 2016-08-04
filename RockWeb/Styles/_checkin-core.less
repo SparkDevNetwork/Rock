@@ -194,25 +194,27 @@ body {
 .tenkey {
   width: 320px;
 
-  a:focus, a:active {
-    background-color: @btn-default-bg;
-  }
+  a {
+    &:focus, &:active {
+      background-color: @btn-default-bg;
+    }
 
-    a.digit {
+    &.digit {
       font-size: 48px;
       font-weight: @font-weight-semibold;
     }
 
-      a.command {
-        padding-top: 28px;
-        font-size: 20px;
-        font-weight: @font-weight-light;
-      }
+    &.command {
+      padding-top: 28px;
+      font-size: 20px;
+      font-weight: @font-weight-light;
+    }
 
-  a.btn {
-    width: 80px;
-    height: 80px;
-    margin: 2px;
+    &.btn {
+      width: 80px;
+      height: 80px;
+      margin: 2px;
+    }
   }
 }
 
