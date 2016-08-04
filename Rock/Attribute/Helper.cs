@@ -956,10 +956,13 @@ namespace Rock.Attribute
             {
                 foreach ( var attributeCategory in GetAttributeCategories( item, false, false, supressOrdering ) )
                 {
-                    AddEditControls(
-                        attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty,
-                        attributeCategory.Attributes.Select( a => a.Key ).ToList(),
-                        item, parentControl, validationGroup, setValue, exclude, numberOfColumns );
+                    if ( attributeCategory.Attributes.Where( a => !exclude.Contains( a.Name ) && !exclude.Contains( a.Key ) ).Select( a => a.Key ).Count() > 0 )
+                    {
+                        AddEditControls(
+                            attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty,
+                            attributeCategory.Attributes.Select( a => a.Key ).ToList(),
+                            item, parentControl, validationGroup, setValue, exclude, numberOfColumns );
+                    }
                 }
             }
         }
@@ -1075,14 +1078,14 @@ namespace Rock.Attribute
         /// <param name="parentControl">The parent control.</param>
         /// <param name="exclude">The exclude.</param>
         /// <param name="supressOrdering">if set to <c>true</c> supresses reording (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
-        public static void AddDisplayControls( IHasAttributes item, Control parentControl, List<string> exclude = null, bool supressOrdering = false )
+        public static void AddDisplayControls( IHasAttributes item, Control parentControl, List<string> exclude = null, bool supressOrdering = false, bool showHeading = true )
         {
             exclude = exclude ?? new List<string>();
             string result = string.Empty;
 
             if ( item.Attributes != null )
             {
-                AddDisplayControls(item, GetAttributeCategories(item, false, supressOrdering), parentControl, exclude);
+                AddDisplayControls(item, GetAttributeCategories(item, false, supressOrdering), parentControl, exclude, showHeading);
             }
         }
 
