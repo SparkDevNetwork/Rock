@@ -12,6 +12,12 @@
   .recipient {
     float: left;
     width: 100%;
+    @media (min-width: @screen-sm-min) {
+      width: 50%;
+    }
+    @media (min-width: @screen-md-min) {
+      width: 25%;
+    }
 
     &.failed {
       color: @brand-danger;
@@ -28,26 +34,4 @@ iframe.email-body {
   height: 300px;
   background-color: #fff;
   border: 1px solid @panel-border;
-}
-
-@media (min-width: @screen-sm-min) {
-  // tablet portrait and larger
-  .recipients {
-    .recipient {
-      width: 50%;
-    }
-  }
-}
-
-// Medium devices (desktops, 992px and up) 
-@media (min-width: @screen-md-min) {
-  .recipients {
-    .recipient {
-      width: 25%;
-    }
-  }
-}
-
-// Large devices (large desktops, 1200px and up)
-@media (min-width: @screen-lg-min) {
 }

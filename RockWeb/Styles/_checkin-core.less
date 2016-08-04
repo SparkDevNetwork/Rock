@@ -23,7 +23,7 @@
 // -------------------------
 
 h1, h2, h3 {
-  letter-spacing: -0.03em;
+  letter-spacing: -.03em;
 }
 
 h1 {
@@ -31,75 +31,65 @@ h1 {
   color: @header-text-color;
 }
 
-.close
-{
+.close {
   color: @header-text-color;
 }
 
-.form-group label
-{
-  font-size: 18px;
+.form-group label {
   margin-bottom: 6px;
+  font-size: 18px;
 }
 
-.btn-checkin-select
-{
-  font-weight: @font-weight-semibold;
-  font-size: 24px;
-  margin-bottom: 20px;
+.btn-checkin-select {
   padding-top: 14px;
   padding-bottom: 14px;
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: @font-weight-semibold;
 }
 
 // 3. Global Styles
 // -------------------------
 
 // turn off configuration items
-#cms-admin-footer
-{
+#cms-admin-footer {
   display: none;
 }
 
-.config-bar
-{
+.config-bar {
   display: none;
 }
 
-.btn-dimmed
-{
-  opacity: 0.33;  // todo does this look good JME
+.btn-dimmed {
+  opacity: .33;  // todo does this look good JME
 }
 
 // set page background
 body {
-  .checkinBackground;
-
-  -webkit-background-size: cover;
-  -moz-background-size: cover;
-  -o-background-size: cover;
-  background-size: cover;
   overflow-x: hidden;
-}
-@media all and (-webkit-min-device-pixel-ratio: 1.5) {
-  body {
-  .checkinBackgroundRetina()
+  -webkit-background-size: cover;
+     -moz-background-size: cover;
+       -o-background-size: cover;
+          background-size: cover;
+
+  .checkinBackground;
+  @media all and (-webkit-min-device-pixel-ratio: 1.5) {
+    .checkinBackgroundRetina();
   }
 }
-
 
 // 4. Components
 // -------------------------
 
 // main body
-.body-content{
-    height: 100vh;
-    position: relative;
+.body-content {
+  position: relative;
+  height: 100vh;
 }
 
 // checkin header items
 
-.checkin-header
-{
+.checkin-header {
   margin-top: 45px;
   margin-bottom: 24px;
 
@@ -109,26 +99,24 @@ body {
   }
 
   .checkin-sub-title {
-    color: @subheader-text-color;
+    margin-top: 12px;
     font-size: 24px;
     font-weight: @subheader-font-weight;
-    margin-top: 12px;
+    color: @subheader-text-color;
   }
 }
 
-.btn .checkin-sub-title // button sub-text
-{
+// button sub-text
+.btn .checkin-sub-title {
+  margin-left: 20px;
   font-size: 20px;
   font-weight: @checkin-button-alttext-weight;
-  margin-left: 20px;
   white-space: normal;
 }
 
 // checkin body items
 
-.checkin-body
-{
-
+.checkin-body {
   .checkin-actions {
     text-align: right;
 
@@ -138,98 +126,94 @@ body {
   }
 }
 
-.checkin-search-actions a
-{
+.checkin-search-actions a {
   padding: 20px 48px;
   font-size: 48px;
-  line-height: 48px;
   font-weight: @checkin-button-text-weight;
+  line-height: 48px;
 }
 
 .checkin-start {
-  text-align: center;
   margin-top: 25%;
+  text-align: center;
 }
 
 // checkin footer
 
-.checkin-footer
-{
+.checkin-footer {
   position: absolute;
-  bottom: 0;
-  margin-bottom: 12px;
-  margin-top: 6px;
   right: 0;
+  bottom: 0;
   left: 0;
-  padding-left: 15px;
   padding-right: 15px;
+  padding-left: 15px;
+  margin-top: 6px;
+  margin-bottom: 12px;
 }
 
 .checkin-actions {
-
   a {
+    padding: 12px 24px;
     font-size: 22px;
     font-weight: @checkin-button-text-weight;
-    padding: 12px 24px;
 
     &.btn-primary {
-      font-size: 28px;
       padding: 14px 26px;
+      font-size: 28px;
     }
   }
 }
 
 // time select checkbox
-.btn-checkbox
-{
+.btn-checkbox {
   padding: 24px;
-  background-color: @btn-default-bg;
-  color: @btn-default-color;
-  border-color: @btn-default-border;
   font-size: 20px;
+  color: @btn-default-color;
+  background-color: @btn-default-bg;
+  border-color: @btn-default-border;
 
   &.active {
-    background-color: @btn-primary-bg;
     color: @btn-primary-color;
+    background-color: @btn-primary-bg;
     border-color: @btn-primary-border;
   }
 
   i {
-    font-size: 92px;
     display: block;
+    font-size: 92px;
     line-height: 92px;
   }
 
-  &.active i:before { // checked icon
+  &.active i:before {
+    // checked icon
     content: "\f046";
   }
 }
 
 /* Ten Key Keypad */
-.tenkey
-{
+.tenkey {
   width: 320px;
 
-   a.btn {
-    margin: 2px;
+  a:focus, a:active {
+    background-color: @btn-default-bg;
+  }
+
+    a.digit {
+      font-size: 48px;
+      font-weight: @font-weight-semibold;
+    }
+
+      a.command {
+        padding-top: 28px;
+        font-size: 20px;
+        font-weight: @font-weight-light;
+      }
+
+  a.btn {
     width: 80px;
     height: 80px;
+    margin: 2px;
   }
-
-   a:focus, a:active {
-       background-color: @btn-default-bg;
-   }
-
-   a.digit {
-    font-size: 48px;
-    font-weight: @font-weight-semibold;
-  }
-
-   a.command {
-     font-size: 20px;
-     font-weight: @font-weight-light;
-     padding-top: 28px;
-   }
 }
 
 /* bootbox modal styles */
@@ -247,30 +231,30 @@ body {
 
 // checkin override button
 .btn-checkin-override {
-    position: absolute;
-    width: 110px;
-    height: 110px;
-    bottom: 0;
-    right: 0;
-    border: 0;
-    background-color: transparent;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 110px;
+  height: 110px;
+  background-color: transparent;
+  border: 0;
 }
 
 // round photos
 .photo-round {
-    background-size: cover;
-    background-repeat: no-repeat;
+  background-repeat: no-repeat;
+  background-size: cover;
 
-    &.photo-round-md {
-        height: 70px;
-        width: 70px;
-        border-radius: 50%;
-    }
+  &.photo-round-md {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+  }
 }
 
 // dim no photo images
 img[src*="no-photo"] {
-    opacity: .4;
+  opacity: .4;
 }
 
 // 5. Specific Page Styles
@@ -278,42 +262,40 @@ img[src*="no-photo"] {
 
 // search page
 .checkin-search-body {
+  width: 260px;
   margin-right: auto !important;
   margin-left: auto !important;
-  width: 260px;
 }
 
-input.checkin-phone-entry
-{
-  height: 60px;
-  font-weight: @checkin-button-text-weight;
-  font-size: 36px;
-  padding: 6px 20px;
-  width: 260px; // keypad is 320 - padding (24px x 2)
+input.checkin-phone-entry {
   float: left;
+  width: 260px; // keypad is 320 - padding (24px x 2)
+  height: 60px;
+  padding: 6px 20px;
   margin-bottom: 10px;
+  font-size: 36px;
+  font-weight: @checkin-button-text-weight;
 }
 
-input.namesearch{
-    height: 60px;
-    font-weight: 700;
-    font-size: 36px;
-    padding: 6px 20px;
-    width: 360px;
-    float: left;
-    margin-bottom: 10px;
+input.namesearch {
+  float: left;
+  width: 360px;
+  height: 60px;
+  padding: 6px 20px;
+  margin-bottom: 10px;
+  font-size: 36px;
+  font-weight: 700;
 }
 
-.checkin-phone-keypad
-{
+.checkin-phone-keypad {
   float: left;
   margin-bottom: 12px;
 }
 
 // time select
 .checkin-time-select {
-  margin: 0 auto;
   display: table;
+  margin: 0 auto;
 }
 
 .checkin-timelist {
@@ -321,13 +303,12 @@ input.namesearch{
 }
 
 // checkin summary page
-.checkin-summary
-{
+.checkin-summary {
   list-style-type: none;
 
   li {
-    font-size: 22px;
     margin-bottom: 18px;
+    font-size: 22px;
     color: @text-color;
   }
 }
@@ -335,9 +316,9 @@ input.namesearch{
 // closed page
 .checkin-closed-header {
   > h1 {
+    margin-bottom: 0;
     font-size: 5em;
     line-height: 1;
-    margin-bottom: 0;
     @media @sm {
       font-size: 9em;
     }
@@ -349,6 +330,7 @@ input.namesearch{
     }
   }
 }
+
 .checkin-closed-body {
   padding-left: .5em;
   @media @sm {
@@ -361,7 +343,7 @@ input.namesearch{
 
 // family select - select person
 .family-personselect {
-    padding-top: 20px;
+  padding-top: 20px;
 }
 
 
@@ -371,60 +353,61 @@ input.namesearch{
 
 .checkin-scroll-panel {
   position: absolute;
-  z-index: 1;
   top: 45px;
   bottom: 48px;
+  z-index: 1;
   width: 100%;
   overflow: hidden;
 }
 
 .scroller {
-  padding-right: 40px;
   position: absolute;
   z-index: 1;
-  -webkit-tap-highlight-color: rgba(0,0,0,0);
   width: 100%;
-  -webkit-transform: translateZ(0);
-  -moz-transform: translateZ(0);
-  -ms-transform: translateZ(0);
-  -o-transform: translateZ(0);
-  transform: translateZ(0);
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
+  padding-right: 40px;
   -webkit-text-size-adjust: none;
-  -moz-text-size-adjust: none;
-  -ms-text-size-adjust: none;
-  -o-text-size-adjust: none;
-  text-size-adjust: none;
+      -ms-text-size-adjust: none;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  -webkit-transform: translateZ(0);
+     -moz-transform: translateZ(0);
+      -ms-transform: translateZ(0);
+       -o-transform: translateZ(0);
+          transform: translateZ(0);
+
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+  -webkit-touch-callout: none;
+     -moz-text-size-adjust: none;
+       -o-text-size-adjust: none;
+          text-size-adjust: none;
 }
 
 .iScrollIndicator {
-  box-sizing: border-box;
   position: absolute;
+  display: block;
+  width: 100%;
+  min-height: 100px;
+  box-sizing: border-box;
+  background-color: @checkin-scrollbar-bg;
   border-top-left-radius: 3px;
   border-top-right-radius: 3px;
   border-bottom-right-radius: 3px;
   border-bottom-left-radius: 3px;
-  width: 100%;
-  transition: 0ms cubic-bezier(0.1, 0.57, 0.1, 1);
-  -webkit-transition: 0ms cubic-bezier(0.1, 0.57, 0.1, 1);
-  display: block;
-  min-height: 100px;
+  -webkit-transition: 0ms cubic-bezier(.1, .57, .1, 1);
+          transition: 0ms cubic-bezier(.1, .57, .1, 1);
   transform: translate(0px, 0px) translateZ(0px);
-  background-color: @checkin-scrollbar-bg;
 }
 
 .iScrollVerticalScrollbar,
 .iScrollLoneScrollbar {
   position: absolute;
-  z-index: 1;
-  width: 30px;
-  bottom: 2px;
   top: 2px;
   right: 1px;
+  bottom: 2px;
+  z-index: 1;
+  width: 30px;
   overflow: hidden;
 }
 
@@ -433,84 +416,77 @@ input.namesearch{
 // --------------------------------------
 
 .kioskmanager-activate {
-    position: absolute;
-    bottom: 8px;
-    right: 12px;
-    opacity: .5;
-    color: @text-color;
+  position: absolute;
+  right: 12px;
+  bottom: 8px;
+  color: @text-color;
+  opacity: .5;
 
-    &:hover {
-        color: @text-color;
-    }
+  &:hover {
+    color: @text-color;
+  }
 }
 
 .kioskmanager-locations {
-    max-width: 75%;
+  max-width: 75%;
 }
 
 .kioskmanager-location {
-    margin: 0 60px 0 0;
-    padding: 16px;
-    background-color: rgba(0, 0, 0, 0.1);
-    border-radius: @border-radius-base;
-    position: relative;
-    .clearfix();
+  position: relative;
+  padding: 16px;
+  margin: 0 60px 0 0;
+  background-color: rgba(0, 0, 0, .1);
+  border-radius: @border-radius-base;
 
-    .kioskmanager-location-toggle {
-        float: left;
-        margin-top: 4px;
-    }
+  .clearfix();
 
-    .kioskmanager-location-label{
-        font-weight: 600;
-        font-size: 36px;
-        padding-left: 8px;
-        float: left;
-    }
+  .kioskmanager-location-toggle {
+    float: left;
+    margin-top: 4px;
+  }
 
-    .kioskmanager-location-count {
-        font-weight: 600;
-        font-size: 24px;
-        position: absolute;
-        right: 12px;
-        margin-top: 12px;
-    }
+  .kioskmanager-location-label {
+    float: left;
+    padding-left: 8px;
+    font-size: 36px;
+    font-weight: 600;
+  }
+
+  .kioskmanager-location-count {
+    position: absolute;
+    right: 12px;
+    margin-top: 12px;
+    font-size: 24px;
+    font-weight: 600;
+  }
 }
 
 .kioskmanager-actions {
-                position: absolute;
-                bottom: 0px;
-                left: 75%;
-            }
+  position: absolute;
+  bottom: 0;
+  left: 75%;
+}
 
 .kioskmanager-counts {
-    .kioskmanager-count-locations {
+  .kioskmanager-count h3,
+  .kioskmanager-count li {
+    color: @text-color;
+  }
 
-    }
+  .kioskmanager-count-locations,
+  .kioskmanager-count-groups,
+  .kioskmanager-count-schedules {
+    padding: 0;
+    list-style: none;
+  }
 
-    .kioskmanager-count h3,
-    .kioskmanager-count li
-    {
-        color: @text-color;
-    }
+  .kioskmanager-count-locations > li {
+    float: left;
+    margin-right: 12px;
+  }
 
-    .kioskmanager-count-locations,
-    .kioskmanager-count-groups,
-    .kioskmanager-count-schedules
-    {
-        list-style: none;
-        padding: 0;
-    }
-
-    .kioskmanager-count-locations > li
-    {
-        float: left;
-        margin-right: 12px;
-    }
-
-    .kioskmanager-counts ul li
-    {
-        float: left;
-        margin-right: 24px;
-    }
+  .kioskmanager-counts ul li {
+    float: left;
+    margin-right: 24px;
+  }
 }
