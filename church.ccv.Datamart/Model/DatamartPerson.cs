@@ -690,6 +690,25 @@ namespace church.ccv.Datamart.Model
         [DataMember]
         public int? TotalGifts { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Neighborhood Pastor.
+        /// </summary>
+        /// <value>
+        /// The Neighborhood Pastor.
+        /// </value>
+        [DataMember]
+        [MaxLength( 150 )]
+        public string NeighborhoodPastor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Neighborhood Pastor id.
+        /// </summary>
+        /// <value>
+        /// The Neighborhood Pastor id.
+        /// </value>
+        [DataMember]
+        public int? NeighborhoodPastorId { get; set; }
+
         #endregion
     }
 }
