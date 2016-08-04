@@ -67,6 +67,8 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         private List<Guid> MetricSourceGuids = null;
         private List<Guid> ComparisonMetricSourceGuids = null;
 
+        private static int DT_BOOLEAN_TRUE = 826;
+
         /// <summary>
         /// The string used for setting a Date Range Context
         /// Set via RockWeb.Blocks.Core.DateRangeContextSetter
@@ -212,7 +214,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                 }
             }
 
-            // Get Current Group Context
             if (GetAttributeValue(preKey + "RespectGroupContext").AsBoolean())
             {
                 var groupTypeContext = RockPage.GetCurrentContext(EntityTypeCache.Read(typeof(GroupType)));
@@ -230,7 +231,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                 }
             }
 
-            // Get Current Date Range Context
             if (GetAttributeValue(preKey + "RespectDateContext").AsBoolean())
             {
                 var dateRangeString = RockPage.GetUserPreference(ContextPreferenceName);
@@ -242,7 +242,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                 }
             }
 
-            // Get Current Schedule Context
             if (GetAttributeValue(preKey + "RespectScheduleContext").AsBoolean())
             {
                 var scheduleContext = RockPage.GetCurrentContext(EntityTypeCache.Read(typeof(Schedule)));
@@ -251,6 +250,11 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                 {
                     metricValues = metricValues.Where(a => a.MetricValuePartitions.Any(mvp => mvp.MetricPartition.Label == "Schedule" && mvp.EntityId == scheduleContext.Id));
                 }
+            }
+
+            if (GetAttributeValue(preKey + "RequireAttendance").AsBoolean())
+            {
+                metricValues = metricValues.Where(a => a.MetricValuePartitions.Any(mvp => mvp.MetricPartition.Label == "Did Attend" && mvp.EntityId == DT_BOOLEAN_TRUE));
             }
 
             return metricValues.ToList();
