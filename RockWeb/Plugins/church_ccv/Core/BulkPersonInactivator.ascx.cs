@@ -46,6 +46,7 @@ namespace RockWeb.Plugins.church_ccv.Core
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+            dvpConnectionStatus.DefinedTypeId = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).Id;
             dvpRecordStatusReason.DefinedTypeId = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() ).Id;
             dvpRecordStatus.DefinedTypeId = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS.AsGuid() ).Id;
         }
@@ -144,6 +145,7 @@ namespace RockWeb.Plugins.church_ccv.Core
 
             if ( personIds != null )
             {
+                var connectionStatusValue = DefinedValueCache.Read( dvpConnectionStatus.SelectedValue.AsIntegerOrNull() ?? 0 );
                 var recordStatusValue = DefinedValueCache.Read( dvpRecordStatus.SelectedValue.AsInteger() );
                 var inactiveReasonValue = DefinedValueCache.Read( dvpRecordStatusReason.SelectedValue.AsInteger() );
                 btnCancel.Visible = true;
@@ -180,11 +182,16 @@ namespace RockWeb.Plugins.church_ccv.Core
 
                                 var person = personService.Get( personId );
 
+                                if ( connectionStatusValue != null && person.ConnectionStatusValueId != connectionStatusValue.Id )
+                                {
+                                    History.EvaluateChange( changes, "Connection Status", DefinedValueCache.GetName( person.ConnectionStatusValueId ), connectionStatusValue.Value );
+                                    person.ConnectionStatusValueId = connectionStatusValue.Id;
+                                }
+
                                 if ( person.RecordStatusValueId != recordStatusValue.Id )
                                 {
                                     History.EvaluateChange( changes, "Record Status", DefinedValueCache.GetName( person.RecordStatusValueId ), recordStatusValue.Value );
                                     person.RecordStatusValueId = recordStatusValue.Id;
-
 
                                     if ( person.RecordStatusValueId == recordStatusInactive.Id )
                                     {

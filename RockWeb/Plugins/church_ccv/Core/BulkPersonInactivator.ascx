@@ -43,6 +43,7 @@
                 <Rock:DataViewPicker ID="dvpDataview" runat="server" Label="DataView" Help="Choose the Dataview that contains the list of people that will get their record status updated."  Required="true" AutoPostBack="true" OnSelectedIndexChanged="dvpDataview_SelectedIndexChanged" />
                 <Rock:RockLiteral ID="lRecordCount" runat="server" Label="Record Count" />
 
+                <Rock:DefinedValuePicker ID="dvpConnectionStatus" runat="server" Label="Update Connection Status" />
                 <Rock:DefinedValuePicker ID="dvpRecordStatus" runat="server" Label="Update Record Status" Required="true" AutoPostBack="true" OnSelectedIndexChanged="dvpRecordStatus_SelectedIndexChanged" />
                 <Rock:DefinedValuePicker ID="dvpRecordStatusReason" runat="server" Label="Update Record Status Reason" Required="true" />
                 <Rock:RockTextBox ID="tbInactiveReasonNote" runat="server" Label="Inactive Reason Note" Text="Inactive for 8+ months" />
