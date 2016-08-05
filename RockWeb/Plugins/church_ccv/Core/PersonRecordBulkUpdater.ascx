@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="BulkPersonInactivator.ascx.cs" Inherits="RockWeb.Plugins.church_ccv.Core.BulkPersonInactivator" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PersonRecordBulkUpdater.ascx.cs" Inherits="RockWeb.Plugins.church_ccv.Core.PersonRecordBulkUpdater" %>
 
 <script src="/SignalR/hubs"></script>
 <script type="text/javascript">
@@ -37,7 +37,7 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">
-                <h4 class="panel-title pull-left">Bulk Person Record Status Updater</h4>
+                <h4 class="panel-title pull-left">Person Record Bulk Updater</h4>
             </div>
             <div class="panel-body">
                 <Rock:DataViewPicker ID="dvpDataview" runat="server" Label="DataView" Help="Choose the Dataview that contains the list of people that will get their record status updated."  Required="true" AutoPostBack="true" OnSelectedIndexChanged="dvpDataview_SelectedIndexChanged" />

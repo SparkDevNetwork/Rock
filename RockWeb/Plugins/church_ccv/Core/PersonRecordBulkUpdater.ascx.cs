@@ -18,11 +18,11 @@ namespace RockWeb.Plugins.church_ccv.Core
     /// 
     /// </summary>
     /// <seealso cref="Rock.Web.UI.RockBlock" />
-    [DisplayName( "Bulk Person Inactivator" )]
+    [DisplayName( "Person Record Bulk Updater" )]
     [Category( "CCV > Core" )]
-    [Description( "Block for mass updating person records active status" )]
+    [Description( "Block for mass updating person records active and connection status" )]
 
-    public partial class BulkPersonInactivator : RockBlock
+    public partial class PersonRecordBulkUpdater : RockBlock
     {
         /// <summary>
         /// This holds the reference to the RockMessageHub SignalR Hub context.
