@@ -30,12 +30,23 @@ namespace Rock.Model
     /// </summary>
     public partial class SignatureDocumentTemplateService
     {
+        /// <summary>
+        /// Sends the document.
+        /// </summary>
+        /// <param name="document">The document.</param>
+        /// <param name="alternateEmail">The alternate email.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
+        public bool SendDocument( SignatureDocument document, string alternateEmail, out List<string> errorMessages )
+        {
+            return SendDocument( document, null, null, null, string.Empty, alternateEmail, out errorMessages );
+        }
 
         /// <summary>
         /// Sends the document.
         /// </summary>
-        /// <param name="signatureDocumentTemplate">Type of the signature document.</param>
-        /// <param name="appliesToPerson">The person.</param>
+        /// <param name="signatureDocumentTemplate">The signature document template.</param>
+        /// <param name="appliesToPerson">The applies to person.</param>
         /// <param name="assignedToPerson">The assigned to person.</param>
         /// <param name="documentName">Name of the document.</param>
         /// <param name="alternateEmail">The alternate email.</param>
@@ -43,7 +54,41 @@ namespace Rock.Model
         /// <returns></returns>
         public bool SendDocument( SignatureDocumentTemplate signatureDocumentTemplate, Person appliesToPerson, Person assignedToPerson, string documentName, string alternateEmail, out List<string> errorMessages )
         {
+            return SendDocument( null, signatureDocumentTemplate, appliesToPerson, assignedToPerson, documentName, alternateEmail, out errorMessages );
+        }
+
+        /// <summary>
+        /// Sends the document.
+        /// </summary>
+        /// <param name="document">The document.</param>
+        /// <param name="signatureDocumentTemplate">Type of the signature document.</param>
+        /// <param name="appliesToPerson">The person.</param>
+        /// <param name="assignedToPerson">The assigned to person.</param>
+        /// <param name="documentName">Name of the document.</param>
+        /// <param name="alternateEmail">The alternate email.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
+        private bool SendDocument( SignatureDocument document, SignatureDocumentTemplate signatureDocumentTemplate, Person appliesToPerson, Person assignedToPerson, string documentName, string alternateEmail, out List<string> errorMessages )
+        {
             errorMessages = new List<string>();
+
+            // If document was passed and other values were not, set them from the document
+            if ( document != null )
+            {
+                signatureDocumentTemplate = signatureDocumentTemplate ?? document.SignatureDocumentTemplate;
+                if ( document.AppliesToPersonAlias != null && document.AppliesToPersonAlias.Person != null )
+                {
+                    appliesToPerson = appliesToPerson ?? document.AppliesToPersonAlias.Person;
+                }
+                if ( document.AssignedToPersonAlias != null && document.AssignedToPersonAlias.Person != null )
+                {
+                    assignedToPerson = assignedToPerson ?? document.AppliesToPersonAlias.Person;
+                    alternateEmail = !string.IsNullOrWhiteSpace( alternateEmail ) ? alternateEmail : document.AppliesToPersonAlias.Person.Email;
+                }
+
+                documentName = !string.IsNullOrWhiteSpace( documentName ) ? documentName : document.Name;
+            }
+
             if ( signatureDocumentTemplate == null )
             {
                 errorMessages.Add( "Invalid Document Type." );
@@ -79,22 +124,27 @@ namespace Rock.Model
 
                         var rockContext = this.Context as RockContext;
                         var documentService = new SignatureDocumentService( rockContext );
-                        var document = documentService.Queryable()
-                            .Where( d =>
-                                d.SignatureDocumentTemplateId == signatureDocumentTemplate.Id &&
-                                d.AppliesToPersonAlias.PersonId == appliesToPerson.Id &&
-                                d.AssignedToPersonAlias.PersonId == assignedToPerson.Id &&
-                                d.Status != SignatureDocumentStatus.Signed )
-                            .OrderByDescending( d => d.CreatedDateTime )
-                            .FirstOrDefault();
 
-                        string documentKey = document.DocumentKey;
+                        if ( document == null )
+                        {
+                            document = documentService.Queryable()
+                                .Where( d =>
+                                    d.SignatureDocumentTemplateId == signatureDocumentTemplate.Id &&
+                                    d.AppliesToPersonAlias.PersonId == appliesToPerson.Id &&
+                                    d.AssignedToPersonAlias.PersonId == assignedToPerson.Id &&
+                                    d.Status != SignatureDocumentStatus.Signed )
+                                .OrderByDescending( d => d.CreatedDateTime )
+                                .FirstOrDefault();
+                        }
+
+                        string documentKey = string.Empty;
                         if ( document == null || string.IsNullOrWhiteSpace( documentKey ) )
                         {
                             documentKey = provider.CreateDocument( signatureDocumentTemplate, appliesToPerson, assignedToPerson, documentName, out sendErrors, true );
                         }
                         else
                         {
+                            documentKey = document.DocumentKey;
                             provider.ResendDocument( document, out sendErrors );
                         }
 
