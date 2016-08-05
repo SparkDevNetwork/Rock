@@ -103,6 +103,15 @@ namespace Rock.Field
         /// <returns></returns>
         object SortValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues );
 
+        /// <summary>
+        /// Setting to determine whether the value from this control is sensitive.  This is used for determining
+        /// whether or not the value of this attribute is logged when changed.
+        /// </summary>
+        /// <returns>
+        ///   <c>false</c> By default, any field is not sensitive.
+        /// </returns>
+        bool IsSensitive();
+
         #endregion
 
         #region Edit Control
