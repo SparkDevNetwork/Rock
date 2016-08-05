@@ -443,6 +443,17 @@ namespace RockWeb.Blocks.Core
         {
             var checkinKioskDeviceTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
             pnlPrinterSettings.Visible = ( ddlDeviceType.SelectedValue.AsIntegerOrNull() == checkinKioskDeviceTypeId );
+            
+            if (ddlDeviceType.SelectedValue.AsIntegerOrNull() == DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.DEVICE_TYPE_PRINTER).Id)
+            {
+                tbIpAddress.Label = "IP Address/Hostname";
+                tbIpAddress.Help = "What is the IP Address/Hostname of this printer?";
+            }
+            else
+            {
+                tbIpAddress.Label = "IP Address";
+                tbIpAddress.Help = "What is the IP Address of this device?";
+            }
         }
 
         /// <summary>
