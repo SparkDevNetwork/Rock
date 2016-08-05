@@ -158,11 +158,11 @@ namespace RockWeb.Plugins.church_ccv.Core
                     _hubContext.Clients.All.receiveNotification( "started", "" );
                     HttpContext.Current = threadContext;
                     int _personId = 0;
+                    int countUnchanged = 0;
+                    int countChanged = 0;
                     try
                     {
                         int progress = 0;
-                        int countRecordStatusChanged = 0;
-                        int countAlreadySet = 0;
                         int count = personIds.Count();
                         int lastPercent = -1;
                         foreach ( var personId in personIds )
@@ -204,15 +204,17 @@ namespace RockWeb.Plugins.church_ccv.Core
                                             person.InactiveReasonNote = newInactiveReasonNote;
                                         }
                                     }
+                                }
 
+                                if ( changes.Any() )
+                                {
                                     HistoryService.AddChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), person.Id, changes );
-                                    countRecordStatusChanged++;
-
                                     rockContext.SaveChanges();
+                                    countChanged++;
                                 }
                                 else
                                 {
-                                    countAlreadySet++;
+                                    countUnchanged++;
                                 }
 
                                 progress++;
@@ -232,9 +234,9 @@ namespace RockWeb.Plugins.church_ccv.Core
 <pre>
 <h2>{3}</h2>
 {0} records selected: 
-    {1} records updated to {4} successfully
-    {2} already set to {4}
-</pre>", count, countRecordStatusChanged, countAlreadySet, _cancel ? "Cancelled" : "Completed", recordStatusValue.Value ) );
+    {1} records updated with new value(s) successfully
+    {2} no changes needed
+</pre>", count, countChanged, countUnchanged, _cancel ? "Cancelled" : "Completed" ) );
 
                     }
                     catch ( Exception ex )
