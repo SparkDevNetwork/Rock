@@ -152,7 +152,18 @@ namespace Rock.Field
             // by default, get the formatted condensed value that would be displayed to the user
             return FormatValue( parentControl, value, configurationValues, true );
         }
-
+        
+        /// <summary>
+        /// Setting to determine whether the value from this control is sensitive.  This is used for determining
+        /// whether or not the value of this attribute is logged when changed.
+        /// </summary>
+        /// <returns>
+        ///   <c>false</c> By default, any field is not sensitive.
+        /// </returns>
+        public virtual bool IsSensitive()
+        {
+            return false;
+        }
         #endregion
 
         #region Edit Control
