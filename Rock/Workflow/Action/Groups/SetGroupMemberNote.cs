@@ -43,7 +43,7 @@ namespace Rock.Workflow.Action
         new string[] { "Rock.Field.Types.GroupFieldType" } )]
 
     [WorkflowTextOrAttribute( "Note", "Attribute Value", "Text or workflow attribute that contains the text to set the group member note to. <span class='tip tip-lava'></span>", true, "", "", 2, "Note",
-        new string[] { "Rock.Field.Types.TextFieldType" }, 3 )]
+        new string[] { "Rock.Field.Types.TextFieldType" } )]
     public class SetGroupMemberNote : ActionComponent
     {
         /// <summary>

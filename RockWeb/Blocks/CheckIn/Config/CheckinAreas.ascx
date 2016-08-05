@@ -36,7 +36,7 @@
 
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
-
+        <asp:HiddenField runat="server" ID="hfAreaGroupClicked" />
         <asp:Panel ID="pnlDetails" runat="server" CssClass="panel panel-block js-panel-details">
             <div class="panel-heading"><h3 class="panel-title"><i class="fa fa-list"></i> Areas and Groups</h3></div>
             <div class="panel-body">
@@ -83,6 +83,28 @@
         </Rock:ModalDialog>
 
         <script>
+            /* This function is called after post back to animate scroll to the proper element 
+             * if the user just clicked an area/group.
+            */
+            var AfterPostBack = function () {
+                // Detect if the two panels are side by side or in one column by finding the delta between the two.
+                // If the offset is more than 58-80 then scroll to the js-area-group-details instead.
+                if ($('#<%=hfAreaGroupClicked.ClientID %>').val() == "true" && $('.js-area-group-details').length && $('.js-panel-details').length) {
+                    $('#<%=hfAreaGroupClicked.ClientID %>').val("false");
+                    var panelDelta = $('.js-area-group-details').offset().top - $('.js-panel-details').offset().top;
+                    var scrollToPanel = ".js-panel-details";
+                    if (panelDelta > 80) {
+                        scrollToPanel = ".js-area-group-details";
+                    }
+
+                    $('html, body').animate({
+                        scrollTop: $(scrollToPanel).offset().top + 'px'
+                        }, 400
+                    );
+                }
+            }
+
+            Sys.WebForms.PageRequestManager.getInstance().add_endRequest(AfterPostBack);
 
             Sys.Application.add_load(function () {
 
@@ -102,12 +124,6 @@
                             __doPostBack('<%=upDetail.ClientID %>', 'select-group:' + $li.attr('data-key'));
                         }
                     }
-
-                    // Used to scroll to the top of the 'details' section when it's currently off-screen.
-                    // We tried using the "if (!$('.js-panel-details').visible(true))" approach but it wasn't as awesome.
-                    $('html, body').animate({
-                        scrollTop: $('.js-panel-details').offset().top + 'px'
-                    }, 400);
                 });
 
                 // javascript to make the Reorder buttons work on the CheckinGroupTypeEditor controls
@@ -153,8 +169,9 @@
                         }
                     }
                 });
-
             });
+
+
         </script>
 
     </ContentTemplate>
