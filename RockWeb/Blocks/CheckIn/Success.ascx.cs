@@ -125,7 +125,7 @@ namespace RockWeb.Blocks.CheckIn
                         if ( printFromServer.Any() )
                         {
                             Socket socket = null;
-                            string currentIp = string.Empty;
+                            string currentIporHostname = string.Empty;
 
                             foreach ( var label in printFromServer.OrderBy( l => l.Order ) )
                             {
@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.CheckIn
                                 {
                                     if ( !string.IsNullOrWhiteSpace( label.PrinterAddress ) )
                                     {
-                                        if ( label.PrinterAddress != currentIp )
+                                        if ( label.PrinterAddress != currentIporHostname )
                                         {
                                             if ( socket != null && socket.Connected )
                                             {
@@ -142,8 +142,26 @@ namespace RockWeb.Blocks.CheckIn
                                                 socket.Close();
                                             }
 
-                                            currentIp = label.PrinterAddress;
-                                            var printerIp = new IPEndPoint( IPAddress.Parse( currentIp ), 9100 );
+                                            currentIporHostname = label.PrinterAddress;
+                                            IPAddress ipAddress;
+                                            IPEndPoint printerIp;
+                                            if (IPAddress.TryParse(currentIporHostname, out ipAddress))
+                                            {
+                                                printerIp = new IPEndPoint(ipAddress, 9100);
+                                            }
+                                            else
+                                            {
+                                                IPAddress[] ips;
+                                                try
+                                                {
+                                                    ips = Dns.GetHostAddresses(currentIporHostname);
+                                                    printerIp = new IPEndPoint(IPAddress.Parse(ips[0].ToString()), 9100);
+                                                }
+                                                catch(Exception ex)
+                                                {
+                                                    throw new Exception("Could not connect to the following printer: " + currentIporHostname, ex);               
+                                                }
+                                            }
 
                                             socket = new Socket( AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
                                             IAsyncResult result = socket.BeginConnect( printerIp, null, null );
