@@ -19,26 +19,37 @@ ___ 4. Delete all the files out of ~/App_Data/packages
 ___ 5. Copy the Rock.x.y.z.nupkg file from
        https://github.com/SparkDevNetwork/Rock-UpdatePackageBuilder/tree/master/InstallerArtifacts
        to the App_Data/Packages folder.  Remove any earlier versions of the Rock.*.nupkg file.
+       (NOTE: All these Nuget packages can be 'empty' stub packages.)
        
 ___ 6. Copy the RockUpdate-X-Y-Z.x.y.z.nupkg file from
        https://github.com/SparkDevNetwork/Rock-UpdatePackageBuilder/tree/master/InstallerArtifacts
        to the App_Data/Packages folder.
+       (NOTE: All these Nuget packages can be 'empty' stub packages.)
        
-___ 7. Delete the following files from the RockWeb directory
+___ 7. Also copy any other RockUpdate-X-Y-*.x.y.*.nupkg packages that a later version of Rock may
+       depend on.  For example, Rock version 1.5.2 had a dependency on Rock 1.5.0.  Therefore the
+       1.5.1 Installer had to include:
+       (NOTE: All these Nuget packages can be 'empty' stub packages.)
+       
+       * Rock.1.5.1.nupkg 
+       * RockUpdate-1-5-1.1.5.1.nupkg
+       * RockUpdate-1-5-0.1.5.0.nupkg
+       
+___ 8. Delete the following files from the RockWeb directory
 
        * .gitignore (do a search as there are files in several directory)
         *.pdb (do a search as there are several files )
         * Settings.StyleCop
         * .editorconfig
 
-___ 8. Zip up the RockWeb directory
+___ 9. Zip up the RockWeb directory
 
-___ 9. Rename zip file 'rock-install-latest.zip'
+___ 10. Rename zip file 'rock-install-latest.zip'
 
-___ 10. Move copy of zip to ./Installers/RockInstaller/Install Versions/vX.Y.Z/ so that it  
+___ 11. Move copy of zip to ./Installers/RockInstaller/Install Versions/vX.Y.Z/ so that it  
        will be in source control
 
-___ 11. Overwrite with snapshot zip file to Azure Blog storage (rockrms/install/<version>/Data)
+___ 12. Overwrite with snapshot zip file to Azure Blog storage (rockrms/install/<version>/Data)
         Note the <version> label is the installer version not the Rock version. This should not
         be incremented except when the installer scripts get updated.
 
@@ -50,7 +61,7 @@ ___ 1. Add a web.ConnectionStrings.config to the downloaded project above and gi
 
 ___ 2. Run 'update-database' in Visual Studio package manager so that a new database is made.
 
-___ 3. Open SQL Server Manager
+___ 3. Open SQL Server Manager (you must use SQL Server Manager version 2014).
 
 ___ 4. Run the SQL below to purge old migrations out (this greatly reduces the size of the SQL script)
        UPDATE [__MigrationHistory] 
@@ -111,3 +122,5 @@ ___ 12. Move copy of zip to ./Installers/RockInstaller/Install Versions/vX.Y.Z/ 
 
 ___ 13. Overwrite with snapshot zip file to Azure Blog storage
         (rockrms/install/<version>/Data)
+
+___ 14. Test a brand new install on various web hosting providers.
