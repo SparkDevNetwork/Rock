@@ -924,6 +924,7 @@ namespace RockWeb.Blocks.Event
                 case "Last Name":
                 case "Email":
                 case "Phone":
+                case "Signed Document":
                     {
                         break;
                     }
