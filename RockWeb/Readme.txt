@@ -1,3 +1,8 @@
+Rock McKinley 5.2
+
++ Fixed bug in individual check-in that would cause Rock to restart if user clicks the Back button (due to stack overflow error).
+
+
 Rock McKinley 5.1
 
 + Fixed issue with Family check-in incorrectly navigating to individual check-in page when clicking 'Back' (Fixes #1620).
