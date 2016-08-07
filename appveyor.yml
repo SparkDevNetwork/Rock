@@ -51,11 +51,11 @@ cache:
 # scripts that run after cloning repository
 install:
 - ps: >-
-    $fileContent = "-----BEGIN RSA PRIVATE KEY-----'n"
+    $fileContent = "-----BEGIN RSA PRIVATE KEY-----`n"
 
-    $fileContent += $env:priv_key.Replace(' ', "'n")
+    $fileContent += $env:priv_key.Replace(' ', "`n")
 
-    $fileContent += "'n-----END RSA PRIVATE KEY-----'n"
+    $fileContent += "'n-----END RSA PRIVATE KEY-----`n"
 
     Set-Content c:\users\appveyor\.ssh\id_rsa $fileContent
 
