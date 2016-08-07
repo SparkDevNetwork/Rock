@@ -62,6 +62,8 @@ cache:
 # scripts to run before build
 before_build:
 - ps: >-
+    appveyor DownloadFile https://dist.nuget.org/win-x86-commandline/v2.8.6/nuget.exe
+	
     npm install --production
 
     node ./node_modules/normajs/bin/norma.js build
