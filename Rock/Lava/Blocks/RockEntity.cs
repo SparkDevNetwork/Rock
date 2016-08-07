@@ -463,7 +463,7 @@ namespace Rock.Lava.Blocks
 
             foreach ( var item in markupItems )
             {
-                var itemParts = item.ToString().Split( ':' );
+                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
                 if ( itemParts.Length > 1 )
                 {
                     parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );

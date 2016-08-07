@@ -2048,7 +2048,7 @@ namespace Rock.Lava
             if ( person != null && numericalGroupTypeId.HasValue )
             {
                 var groupQuery = new GroupMemberService( GetRockContext( context ) )
-                    .Queryable( "Group, GroupRole" ).AsNoTracking()
+                    .Queryable( "Group, GroupRole" )
                     .Where( m =>
                         m.PersonId == person.Id &&
                         m.Group.GroupTypeId == numericalGroupTypeId.Value &&
@@ -2089,7 +2089,7 @@ namespace Rock.Lava
             if ( person != null && numericalGroupId.HasValue )
             {
                 var groupQuery = new GroupMemberService( GetRockContext( context ) )
-                    .Queryable( "Group, GroupRole" ).AsNoTracking()
+                    .Queryable( "Group, GroupRole" )
                     .Where( m =>
                         m.PersonId == person.Id &&
                         m.Group.Id == numericalGroupId.Value &&
@@ -2123,7 +2123,7 @@ namespace Rock.Lava
 
             if ( person != null && numericalGroupTypeId.HasValue )
             {
-                return new AttendanceService( GetRockContext( context ) ).Queryable().AsNoTracking()
+                return new AttendanceService( GetRockContext( context ) ).Queryable()
                     .Where( a => a.Group.GroupTypeId == numericalGroupTypeId && a.PersonAlias.PersonId == person.Id && a.DidAttend == true )
                     .Select( a => a.Group ).Distinct().ToList();
             }
@@ -2145,7 +2145,7 @@ namespace Rock.Lava
 
             if ( person != null && numericalGroupTypeId.HasValue )
             {
-                var attendance = new AttendanceService( GetRockContext( context ) ).Queryable( "Group" ).AsNoTracking()
+                var attendance = new AttendanceService( GetRockContext( context ) ).Queryable( "Group" )
                     .Where( a => a.Group.GroupTypeId == numericalGroupTypeId && a.PersonAlias.PersonId == person.Id && a.DidAttend == true )
                     .OrderByDescending( a => a.StartDateTime ).FirstOrDefault();
 

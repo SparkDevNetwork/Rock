@@ -980,7 +980,7 @@ namespace Rock.Web.UI.Controls
             }
             else if ( this.DataSourceAsDataTable != null )
             {
-                itemCount = this.DataSourceAsDataTable.Rows.Count;
+                itemCount = this.DataSourceAsDataTable.DefaultView.Count;
             }
             else if ( this.DataSourceAsList != null )
             {

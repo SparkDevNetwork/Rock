@@ -81,23 +81,24 @@ namespace Rock.MergeTemplates
                 return null;
             }
 
-            var sourceTemplateStream = templateBinaryFile.ContentStream;
-
             // Start by creating a new document with the contents of the Template (so that Styles, etc get included)
+            XDocument sourceTemplateDocX;
+
             using ( MemoryStream outputDocStream = new MemoryStream() )
             {
-                sourceTemplateStream.CopyTo( outputDocStream );
+                templateBinaryFile.ContentStream.CopyTo( outputDocStream );
                 outputDocStream.Seek( 0, SeekOrigin.Begin );
 
                 // now that we have the outputdoc started, simplify the sourceTemplate
+                var sourceTemplateStream = templateBinaryFile.ContentStream;
                 var simplifiedDoc = WordprocessingDocument.Open( sourceTemplateStream, true );
                 MarkupSimplifier.SimplifyMarkup( simplifiedDoc, this.simplifyMarkupSettingsAll );
 
                 //// simplify any nodes that have Lava in it that might not have been caught by the MarkupSimplifier
                 //// MarkupSimplifier only merges superfluous runs that are children of a paragraph
-                var simplifiedDocX = simplifiedDoc.MainDocumentPart.GetXDocument();
+                sourceTemplateDocX = simplifiedDoc.MainDocumentPart.GetXDocument();
                 OpenXmlRegex.Match(
-                                simplifiedDocX.Elements(),
+                                sourceTemplateDocX.Elements(),
                                 this.lavaRegEx,
                                 ( x, m ) =>
                                 {
@@ -114,7 +115,7 @@ namespace Rock.MergeTemplates
                                     }
                                 } );
 
-                XElement lastLavaNode = simplifiedDocX.DescendantNodes().OfType<XElement>().LastOrDefault( a => lavaRegEx.IsMatch( a.Value ) );
+                XElement lastLavaNode = sourceTemplateDocX.DescendantNodes().OfType<XElement>().LastOrDefault( a => lavaRegEx.IsMatch( a.Value ) );
 
                 // ensure there is a { Next } indicator after the last lava node in the template
                 if (lastLavaNode != null)
@@ -135,10 +136,6 @@ namespace Rock.MergeTemplates
                     }
                 }
 
-                simplifiedDoc.MainDocumentPart.PutXDocument();
-
-                sourceTemplateStream.Seek( 0, SeekOrigin.Begin );
-
                 bool? allSameParent = null;
 
                 using ( WordprocessingDocument outputDoc = WordprocessingDocument.Open( outputDocStream, true ) )
@@ -154,7 +151,7 @@ namespace Rock.MergeTemplates
                     {
                         if ( lastRecordIndex.HasValue && lastRecordIndex == recordIndex )
                         {
-                            // something went wrong, so throw to avoid spinning infinately
+                            // something went wrong, so throw to avoid spinning infinitely
                             throw new Exception( "Unexpected unchanged recordIndex" );
                         }
 
@@ -164,8 +161,7 @@ namespace Rock.MergeTemplates
                             sourceTemplateStream.Position = 0;
                             sourceTemplateStream.CopyTo( tempMergeTemplateStream );
                             tempMergeTemplateStream.Position = 0;
-                            var tempMergeWordDoc = WordprocessingDocument.Open( tempMergeTemplateStream, true );
-                            var tempMergeTemplateX = tempMergeWordDoc.MainDocumentPart.GetXDocument();
+                            var tempMergeTemplateX = new XDocument( sourceTemplateDocX );
                             var tempMergeTemplateBodyNode = tempMergeTemplateX.DescendantNodes().OfType<XElement>().FirstOrDefault( a => a.Name.LocalName.Equals( "body" ) );
 
                             // find all the Nodes that have a {% next %}.  

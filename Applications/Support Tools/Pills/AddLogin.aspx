@@ -56,7 +56,7 @@
                 } else
                 {
                     nbMessages.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Warning;
-                    nbMessages.Text = "Could Not Find Authenication Component";
+                    nbMessages.Text = "Could Not Find Authentication Component";
                 }
             }
             else

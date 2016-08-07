@@ -477,8 +477,13 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( "class", "controls" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            bool renderLabel = ( !string.IsNullOrEmpty( Label ) );
+
+            if ( renderLabel )
+            {
+                writer.AddAttribute( "class", "controls" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            }
 
             string selectedText = ( ( this.SelectionStyle == ButtonSelectionStyle.Title ) && SelectedItem != null ) ? SelectedItem.Text : Title;
             _btnSelect.Controls.Clear();
@@ -499,7 +504,10 @@ namespace Rock.Web.UI.Controls
 
             _hfSelectedItemId.RenderControl( writer );
 
-            writer.RenderEndTag();
+            if ( renderLabel )
+            {
+                writer.RenderEndTag();
+            }
         }
 
         /// <summary>

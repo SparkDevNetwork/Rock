@@ -115,7 +115,7 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
 
                     LinkButton lbLogin = new LinkButton();
                     phExternalLogins.Controls.Add( lbLogin );
-                    lbLogin.AddCssClass( "btn btn-authenication " + loginTypeName.ToLower() );
+                    lbLogin.AddCssClass( "btn btn-authentication " + loginTypeName.ToLower() );
                     lbLogin.ID = "lb" + loginTypeName + "Login";
                     lbLogin.Click += lbLogin_Click;
                     lbLogin.CausesValidation = false;

@@ -88,6 +88,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this BenevolenceRequest target, BenevolenceRequest source )
         {
             target.Id = source.Id;
+            target.CampusId = source.CampusId;
             target.CaseWorkerPersonAliasId = source.CaseWorkerPersonAliasId;
             target.CellPhoneNumber = source.CellPhoneNumber;
             target.ConnectionStatusValueId = source.ConnectionStatusValueId;
@@ -99,6 +100,7 @@ namespace Rock.Model
             target.HomePhoneNumber = source.HomePhoneNumber;
             target.LastName = source.LastName;
             target.LocationId = source.LocationId;
+            target.ProvidedNextSteps = source.ProvidedNextSteps;
             target.RequestDateTime = source.RequestDateTime;
             target.RequestedByPersonAliasId = source.RequestedByPersonAliasId;
             target.RequestStatusValueId = source.RequestStatusValueId;
