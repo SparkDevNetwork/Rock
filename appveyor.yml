@@ -48,7 +48,7 @@ install:
 
     git clone -q --depth=1 git@github.com:NewSpring/rock-spiritual-gifts.git c:\projects\rock-spiritual-gifts
 
-	
+
 cache:
 - node_modules
 - packages
