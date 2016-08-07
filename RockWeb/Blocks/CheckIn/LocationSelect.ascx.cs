@@ -37,6 +37,77 @@ namespace RockWeb.Blocks.CheckIn
     public partial class LocationSelect : CheckInBlock
     {
         /// <summary>
+        /// Determines if the block requires that a selection be made. This is used to determine if user should
+        /// be redirected to this block or not.
+        /// </summary>
+        /// <param name="backingUp">if set to <c>true</c> [backing up].</param>
+        /// <returns></returns>
+        public override bool RequiresSelection( bool backingUp )
+        {
+            if ( CurrentWorkflow == null || CurrentCheckInState == null )
+            {
+                NavigateToHomePage();
+                return false;
+            }
+            else
+            {
+                ClearSelection();
+
+                var person = CurrentCheckInState.CheckIn.CurrentPerson;
+                if ( person == null )
+                {
+                    GoBack( true );
+                    return false;
+                }
+
+                var schedule = person.CurrentSchedule;
+
+                var groupTypes = person.SelectedGroupTypes( schedule );
+                if ( groupTypes == null || !groupTypes.Any() )
+                {
+                    GoBack( true );
+                    return false;
+                }
+
+                var group = groupTypes.SelectMany( t => t.SelectedGroups( schedule ) ).FirstOrDefault();
+                if ( group == null )
+                {
+                    GoBack( true );
+                    return false;
+                }
+
+                var availLocations = group.GetAvailableLocations( schedule );
+                if ( availLocations.Count == 1 )
+                {
+                    if ( backingUp )
+                    {
+                        GoBack( true );
+                        return false;
+                    }
+                    else
+                    {
+                        var location = availLocations.First();
+                        if ( schedule == null )
+                        {
+                            location.Selected = true;
+                        }
+                        else
+                        {
+                            location.SelectedForSchedule.Add( schedule.Schedule.Id );
+                        }
+
+                        return !ProcessSelection( person, schedule );
+                    }
+                }
+                else
+                {
+                    return true;
+                }
+            }
+
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -196,7 +267,7 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbBack_Click( object sender, EventArgs e )
         {
-            GoBack();
+            GoBack( true );
         }
 
         /// <summary>
@@ -224,7 +295,13 @@ namespace RockWeb.Blocks.CheckIn
             return string.Empty;
         }
 
-        protected void ProcessSelection( CheckInPerson person, CheckInSchedule schedule )
+        /// <summary>
+        /// Processes the selection.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="schedule">The schedule.</param>
+        /// <returns></returns>
+        protected bool ProcessSelection( CheckInPerson person, CheckInSchedule schedule )
         {
             if ( person != null )
             {
@@ -235,14 +312,25 @@ namespace RockWeb.Blocks.CheckIn
                             .SelectMany( g => g.SelectedLocations( schedule )
                                 .SelectMany( l => l.ValidSchedules( schedule ) ) ) )
                         .Count() <= 0,
-                    "<p>Sorry, based on your selection, there are currently not any available times that can be checked into.</p>" ) )
+                    "<p>Sorry, based on your selection, there are currently not any available times that can be checked into.</p>",
+                    CurrentCheckInState.CheckInType.TypeOfCheckin == TypeOfCheckin.Family ) )
                 {
                     ClearSelection();
                 }
+                else
+                {
+                    return true;
+                }
             }
+
+            return false;
         }
 
-        protected override void NavigateToNextPage()
+        /// <summary>
+        /// Navigates to next page.
+        /// </summary>
+        /// <param name="validateSelectionRequired">if set to <c>true</c> will check that block on next page has a selection required before redirecting.</param>
+        protected override void NavigateToNextPage( bool validateSelectionRequired )
         {
             CheckInPerson nextPerson = null;
 
@@ -299,7 +387,18 @@ namespace RockWeb.Blocks.CheckIn
 
                 if ( nextPerson != null && !string.IsNullOrWhiteSpace( GetAttributeValue( "FamilyRepeatPage" ) ) )
                 {
-                    NavigateToLinkedPage( "FamilyRepeatPage", queryParams );
+                    if ( validateSelectionRequired )
+                    {
+                        var nextBlock = GetCheckInBlock( "FamilyRepeatPage" );
+                        if ( nextBlock != null && nextBlock.RequiresSelection( false ) )
+                        {
+                            NavigateToLinkedPage( "FamilyRepeatPage", queryParams );
+                        }
+                    }
+                    else
+                    {
+                        NavigateToLinkedPage( "FamilyRepeatPage", queryParams );
+                    }
                 }
                 else
                 {
@@ -308,7 +407,7 @@ namespace RockWeb.Blocks.CheckIn
             }
             else
             {
-                base.NavigateToNextPage();
+                base.NavigateToNextPage( validateSelectionRequired );
             }
         }
     }

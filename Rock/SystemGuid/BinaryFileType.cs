@@ -62,5 +62,10 @@ namespace Rock.SystemGuid
         /// The Merge Template file type guid
         /// </summary>
         public const string MERGE_TEMPLATE = "BD63EC0C-2DF8-4C55-97E3-616870C67C59";
+
+        /// <summary>
+        /// The Benevolence Request Document guid
+        /// </summary>
+        public const string BENEVOLENCE_REQUEST_DOCUMENTS = "2599DDBE-40E1-158E-4436-AACA6C00556E";
     }
 }

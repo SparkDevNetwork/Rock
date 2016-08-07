@@ -298,6 +298,15 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum MetricNumericDataType
+    {
+        Integer = 0x0,
+        Decimal = 0x1,
+        Currency = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum MetricValueType
     {
         Measure = 0x0,

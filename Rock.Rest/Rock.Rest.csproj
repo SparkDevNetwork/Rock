@@ -120,6 +120,7 @@
     <Compile Include="Controllers\CodeGenerated\AuditsController.cs" />
     <Compile Include="Controllers\CodeGenerated\AuthsController.cs" />
     <Compile Include="Controllers\CodeGenerated\BackgroundChecksController.cs" />
+    <Compile Include="Controllers\CodeGenerated\BenevolenceRequestDocumentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\BenevolenceRequestsController.cs" />
     <Compile Include="Controllers\CodeGenerated\BenevolenceResultsController.cs" />
     <Compile Include="Controllers\CodeGenerated\BinaryFileDatasController.cs" />

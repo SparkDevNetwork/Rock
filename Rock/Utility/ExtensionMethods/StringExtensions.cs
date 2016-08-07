@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -601,6 +602,32 @@ namespace Rock
             s = Regex.Replace( s, "[\u02DC\u00A0]", " " );
 
             return s;
+        }
+
+        /// <summary>
+        /// Returns a list of KeyValuePairs from a serialized list of Rock KeyValuePairs (e.g. 'Item1^Value1|Item2^Value2')
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static List<KeyValuePair<string, object>> ToKeyValuePairList( this string input )
+        {
+            List<KeyValuePair<string, object>> keyPairs = new List<KeyValuePair<string, object>>();
+
+            if ( !string.IsNullOrWhiteSpace( input ) )
+            {
+                var items = input.Split( '|' );
+
+                foreach ( var item in items )
+                {
+                    var parts = item.Split( '^' );
+                    if ( parts.Length == 2 )
+                    {
+                        keyPairs.Add( new KeyValuePair<string, object>( parts[0], parts[1] ) );
+                    }
+                }
+            }
+
+            return keyPairs;
         }
 
         #endregion String Extensions

@@ -26,6 +26,9 @@ using System.Threading.Tasks;
 //    constrains.  
 //
 // All samples rely on the compiler agnostic CSScript.Evaluator API. 
+
+#pragma warning disable
+
 namespace CSScriptEvaluatorExtensions
 {
     public class HostApp

@@ -21,6 +21,7 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -54,9 +55,11 @@ namespace RockWeb.Blocks.Finance
         /// </value>
         protected Person TargetPerson { get; private set; }
 
+        public List<AttributeCache> AvailableAttributes { get; set; }
+
         #endregion
 
-        #region
+        #region Private Members
 
         /// <summary>
         /// Holds whether or not the person can add, edit, and delete.
@@ -66,6 +69,32 @@ namespace RockWeb.Blocks.Finance
         #endregion
 
         #region Base Control Methods
+
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            AvailableAttributes = ViewState["AvailableAttributes"] as List<AttributeCache>;
+
+            AddDynamicControls();
+        }
+
+        /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            ViewState["AvailableAttributes"] = AvailableAttributes;
+
+            return base.SaveViewState();
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -113,7 +142,27 @@ namespace RockWeb.Blocks.Finance
 
         #region Events
 
-        // handlers called by the controls on your block
+        /// <summary>
+        /// Binds the attributes.
+        /// </summary>
+        private void BindAttributes()
+        {
+            // Parse the attribute filters 
+            AvailableAttributes = new List<AttributeCache>();
+            
+            int entityTypeId = new BenevolenceRequest().TypeId;
+            foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
+                .Where( a =>
+                    a.EntityTypeId == entityTypeId &&
+                    a.IsGridColumn )
+                .OrderByDescending( a => a.EntityTypeQualifierColumn )
+                .ThenBy( a => a.Order )
+                .ThenBy( a => a.Name ) )
+            {
+                AvailableAttributes.Add( AttributeCache.Read( attributeModel ) );
+            }
+            
+        }
 
         /// <summary>
         /// Handles the BlockUpdated event of the control.
@@ -141,6 +190,27 @@ namespace RockWeb.Blocks.Finance
             rFilter.SaveUserPreference( "Case Worker", "Case Worker", ddlCaseWorker.SelectedItem.Value );
             rFilter.SaveUserPreference( "Result", "Result", ddlResult.SelectedItem.Value );
             rFilter.SaveUserPreference( "Status", "Status", ddlStatus.SelectedItem.Value );
+            rFilter.SaveUserPreference( "Campus", "Campus", cpCampus.SelectedCampusId.ToString() );
+
+            if ( AvailableAttributes != null )
+            {
+                foreach ( var attribute in AvailableAttributes )
+                {
+                    var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
+                    if ( filterControl != null )
+                    {
+                        try
+                        {
+                            var values = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
+                            rFilter.SaveUserPreference( attribute.Key, attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
+                        }
+                        catch
+                        {
+                            // intentionally ignore
+                        }
+                    }
+                }
+            }
 
             BindGrid();
         }
@@ -173,6 +243,16 @@ namespace RockWeb.Blocks.Finance
 
                 case "Last Name":
                     return;
+
+                case "Campus":
+                    {
+                        int? campusId = e.Value.AsIntegerOrNull();
+                        if( campusId.HasValue )
+                        {
+                            e.Value = CampusCache.Read( campusId.Value ).Name;
+                        }
+                        return;
+                    }
 
                 case "Government ID":
                     return;
@@ -362,6 +442,9 @@ namespace RockWeb.Blocks.Finance
             drpDate.LowerValue = rFilter.GetUserPreference( "Start Date" ).AsDateTime();
             drpDate.UpperValue = rFilter.GetUserPreference( "End Date" ).AsDateTime();
 
+            cpCampus.Campuses = CampusCache.All();
+            cpCampus.SelectedCampusId = rFilter.GetUserPreference( "Campus" ).AsInteger();
+
             // hide the First/Last name filter if this is being used as a Person block
             tbFirstName.Visible = TargetPerson == null;
             tbLastName.Visible = TargetPerson == null;
@@ -387,6 +470,75 @@ namespace RockWeb.Blocks.Finance
 
             ddlStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_REQUEST_STATUS ) ), true );
             ddlStatus.SetValue( rFilter.GetUserPreference( "Status" ) );
+
+            // set attribute filters
+            BindAttributes();
+            AddDynamicControls();
+        }
+
+        private void AddDynamicControls()
+        {
+            if ( AvailableAttributes != null )
+            {
+                foreach ( var attribute in AvailableAttributes )
+                {
+                    var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filter_" + attribute.Id.ToString(), false, Rock.Reporting.FilterMode.SimpleFilter );
+                    if ( control != null )
+                    {
+                        if ( control is IRockControl )
+                        {
+                            var rockControl = (IRockControl)control;
+                            rockControl.Label = attribute.Name;
+                            rockControl.Help = attribute.Description;
+                            phAttributeFilters.Controls.Add( control );
+                        }
+                        else
+                        {
+                            var wrapper = new RockControlWrapper();
+                            wrapper.ID = control.ID + "_wrapper";
+                            wrapper.Label = attribute.Name;
+                            wrapper.Controls.Add( control );
+                            phAttributeFilters.Controls.Add( wrapper );
+                        }
+
+                        string savedValue = rFilter.GetUserPreference( attribute.Key);
+                        if ( !string.IsNullOrWhiteSpace( savedValue ) )
+                        {
+                            try
+                            {
+                                var values = JsonConvert.DeserializeObject<List<string>>( savedValue );
+                                attribute.FieldType.Field.SetFilterValues( control, attribute.QualifierValues, values );
+                            }
+                            catch
+                            {
+                                // intentionally ignore
+                            }
+                        }
+                    }
+
+                    bool columnExists = gList.Columns.OfType<AttributeField>().FirstOrDefault( a => a.AttributeId == attribute.Id ) != null;
+                    if ( !columnExists )
+                    {
+                        AttributeField boundField = new AttributeField();
+                        boundField.DataField = attribute.Key;
+                        boundField.AttributeId = attribute.Id;
+                        boundField.HeaderText = attribute.Name;
+
+                        var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
+                        if ( attributeCache != null )
+                        {
+                            boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
+                        }
+
+                        gList.Columns.Add( boundField );
+                    }
+                }
+            }
+
+            // Add delete column
+            var deleteField = new DeleteField();
+            gList.Columns.Add( deleteField );
+            deleteField.Click += gList_Delete;
         }
 
         /// <summary>
@@ -413,6 +565,12 @@ namespace RockWeb.Blocks.Finance
             if ( endDate != null )
             {
                 qry = qry.Where( b => b.RequestDateTime <= endDate );
+            }
+
+            // Filter by Campus
+            if ( cpCampus.SelectedCampusId.HasValue )
+            {
+                qry = qry.Where( b => b.CampusId == cpCampus.SelectedCampusId );
             }
 
             if ( TargetPerson != null )
@@ -488,6 +646,33 @@ namespace RockWeb.Blocks.Finance
             else
             {
                 qry = qry.OrderByDescending( a => a.RequestDateTime ).ThenByDescending( a => a.Id );
+            }
+
+            // Filter query by any configured attribute filters
+            if ( AvailableAttributes != null && AvailableAttributes.Any() )
+            {
+                var attributeValueService = new AttributeValueService( rockContext );
+                var parameterExpression = attributeValueService.ParameterExpression;
+
+                foreach ( var attribute in AvailableAttributes )
+                {
+                    var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
+                    if ( filterControl != null )
+                    {
+                        var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
+                        var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
+                        if ( expression != null )
+                        {
+                            var attributeValues = attributeValueService
+                                .Queryable()
+                                .Where( v => v.Attribute.Id == attribute.Id );
+
+                            attributeValues = attributeValues.Where( parameterExpression, expression, null );
+
+                            qry = qry.Where( w => attributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
+                        }
+                    }
+                }
             }
 
             gList.DataSource = qry.ToList();
