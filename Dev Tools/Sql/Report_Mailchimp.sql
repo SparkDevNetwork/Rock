@@ -347,7 +347,7 @@ WITH cteN2K AS (
 )
 UPDATE mce
 SET
-	[Keep me updated] = 'N2K'
+	[Keep me updated] = 'Need to Know Newsletter'
 FROM
 	#MailChimpExport mce
 	JOIN cteN2K s ON s.PersonId = mce.PersonId;
