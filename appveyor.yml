@@ -73,7 +73,8 @@ build:
   parallel: true
   verbosity: minimal
 
- matrix:
+
+matrix:
   fast_finish: true
 
 
