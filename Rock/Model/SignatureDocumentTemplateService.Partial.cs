@@ -270,6 +270,7 @@ namespace Rock.Model
         /// Updates the document status.
         /// </summary>
         /// <param name="signatureDocument">The signature document.</param>
+        /// <param name="tempFolderPath">The temporary folder path.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         public bool UpdateDocumentStatus( SignatureDocument signatureDocument, string tempFolderPath, out List<string> errorMessages )
