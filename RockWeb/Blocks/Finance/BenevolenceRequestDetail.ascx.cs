@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Block for users to create, edit, and view benevolence requests." )]
     [SecurityRoleField( "Case Worker Role", "The security role to draw case workers from", true, Rock.SystemGuid.Group.GROUP_BENEVOLENCE )]
+    [LinkedPage("Benevolence Request Statement Page", "The page which summarises a benevolence request for printing", true)]
     public partial class BenevolenceRequestDetail : Rock.Web.UI.RockBlock
     {
         #region Properties
@@ -470,6 +471,20 @@ namespace RockWeb.Blocks.Finance
             }
 
             NavigateToParentPage( qryParams );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbPrint control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbPrint_Click(object sender, EventArgs e)
+        {
+            var benevolenceId = this.PageParameter("BenevolenceRequestId").AsIntegerOrNull();       
+            if (benevolenceId.HasValue && !string.IsNullOrEmpty(GetAttributeValue("BenevolenceRequestStatementPage")))
+            {
+                NavigateToLinkedPage("BenevolenceRequestStatementPage", new Dictionary<string, string> { { "BenevolenceRequestId", benevolenceId.ToString() } });
+            }               
         }
 
         /// <summary>

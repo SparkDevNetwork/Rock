@@ -116,7 +116,7 @@
 
                 <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
                 <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
-
+                <asp:LinkButton ID="lbPrint" runat="server" Text="<i class='fa fa-print'></i>" CssClass="btn btn-sm btn-primary pull-right" OnClick="lbPrint_Click" />
             </div>
 
         </asp:Panel>

@@ -215,10 +215,10 @@ namespace RockWeb.Blocks.Finance
         {
             RockContext rockContext = new RockContext();
 
-            if (Request["id"] != null)
+            if (Request["BenevolenceRequestId"] != null)
             {
                 int id;
-                int.TryParse(Request["id"].ToString(), out id);
+                int.TryParse(Request["BenevolenceRequestId"].ToString(), out id);
 
 
                 var benevolenceRequest = new BenevolenceRequestService(rockContext).Get(id);
