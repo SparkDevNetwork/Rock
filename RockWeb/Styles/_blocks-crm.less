@@ -207,10 +207,10 @@
         color: #fff;
         background-color: #39688f;
       }
-    }
 
-    .icon:first-child {
-      margin-left: 0;
+      &:first-child {
+        margin-left: 0;
+      }
     }
   }
 
@@ -239,16 +239,18 @@
     }
 
     .email {
-      .email-status i {
-        color: @persondetails-bio-color;
-      }
+      .email-status {
+        i {
+          color: @persondetails-bio-color;
+        }
 
-      .email-status.do-not-email i {
-        color: @brand-danger;
-      }
+        &.do-not-email i {
+          color: @brand-danger;
+        }
 
-      .email-status.not-active i {
-        color: @brand-warning;
+        &.not-active i {
+          color: @brand-warning;
+        }
       }
     }
   }
@@ -1046,13 +1048,6 @@ tr.inactive {
   }
 }
 
-.disc-chart .discbar-value {
-  position: absolute;
-  width: 100%;
-  font-size: 30px;
-  letter-spacing: -3px;
-  opacity: .4;
-}
 
 // 18. Edit Person
 // -------------------------
