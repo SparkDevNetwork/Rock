@@ -8,15 +8,14 @@
 
 // 1. Group / Location
 // -------------------------
-.panel.panel-widget.checkin-group {
-  border-top-color: @checkin-group-border-color;
+.panel.panel-widget {
+  &.checkin-group {
+    border-top-color: @checkin-group-border-color;
+  }
+  &.checkin-grouptype {
+    border-top-color: @checkin-area-border-color;
+  }
 }
-
-.panel.panel-widget.checkin-grouptype {
-  border-top-color: @checkin-area-border-color;
-}
-
-
 
 // 2. Attendance Analysis
 // -------------------------
