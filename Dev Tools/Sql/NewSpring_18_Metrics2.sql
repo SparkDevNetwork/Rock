@@ -77,7 +77,8 @@ SELECT
 	g.Name AS GroupName,
 	mc.CategoryId,
 	NEWID() AS AttendanceMetricGuid,
-	NEWID() AS UniqueMetricGuid
+	NEWID() AS UniqueMetricGuid,
+	g.GroupTypeId
 INTO #metricTypes
 FROM 
 	Metric m
@@ -229,8 +230,8 @@ SELECT
 	16 AS EntityTypeId,
 	@False AS IsRequired,
 	1 AS [Order],
-	'' AS EntityTypeQualifierColumn,
-	'' AS EntityTypeQualifierValue,
+	'GroupTypeId' AS EntityTypeQualifierColumn,
+	mt.GroupTypeId AS EntityTypeQualifierValue,
 	NEWID() AS [Guid],
 	@foreignKey AS ForeignKey
 FROM 
@@ -332,8 +333,8 @@ SELECT
 	16 AS EntityTypeId,
 	@False AS IsRequired,
 	1 AS [Order],
-	'' AS EntityTypeQualifierColumn,
-	'' AS EntityTypeQualifierValue,
+	'GroupTypeId' AS EntityTypeQualifierColumn,
+	mt.GroupTypeId AS EntityTypeQualifierValue,
 	NEWID() AS [Guid],
 	@foreignKey AS ForeignKey
 FROM 
