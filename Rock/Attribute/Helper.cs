@@ -1078,6 +1078,7 @@ namespace Rock.Attribute
         /// <param name="parentControl">The parent control.</param>
         /// <param name="exclude">The exclude.</param>
         /// <param name="supressOrdering">if set to <c>true</c> supresses reording (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
+        /// <param name="showHeading">if set to <c>true</c> [show heading].</param>
         public static void AddDisplayControls( IHasAttributes item, Control parentControl, List<string> exclude = null, bool supressOrdering = false, bool showHeading = true )
         {
             exclude = exclude ?? new List<string>();
