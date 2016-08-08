@@ -480,10 +480,10 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbPrint_Click(object sender, EventArgs e)
         {
-            var benevolenceId = this.PageParameter("BenevolenceRequestId").AsIntegerOrNull();       
-            if (benevolenceId.HasValue && !string.IsNullOrEmpty(GetAttributeValue("BenevolenceRequestStatementPage")))
+            var benevolenceRequestId = this.PageParameter("BenevolenceRequestId").AsIntegerOrNull();       
+            if (benevolenceRequestId.HasValue && !benevolenceRequestId.Equals(0) && !string.IsNullOrEmpty(GetAttributeValue("BenevolenceRequestStatementPage")))
             {
-                NavigateToLinkedPage("BenevolenceRequestStatementPage", new Dictionary<string, string> { { "BenevolenceRequestId", benevolenceId.ToString() } });
+                NavigateToLinkedPage("BenevolenceRequestStatementPage", new Dictionary<string, string> { { "BenevolenceRequestId", benevolenceRequestId.ToString() } });
             }               
         }
 
