@@ -188,6 +188,7 @@ namespace Rock.Model
                 }
                 
                 NumberFormatted = PhoneNumber.FormattedNumber( CountryCode, Number );
+                Number = PhoneNumber.CleanNumber( NumberFormatted );
             }
 
             base.PreSaveChanges( dbContext, state );

@@ -108,14 +108,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gSignatureDocuments_Add( object sender, EventArgs e )
         {
-            var qryParams = new Dictionary<string, string>();
-            qryParams.Add( "SignatureDocumentTemplateId", PageParameter( "SignatureDocumentTemplateId" ) );
-            qryParams.Add( "signatureDocumentId", "0" );
-            if ( TargetPerson != null )
-            {
-                qryParams.Add( "personId", TargetPerson.Id.ToString() );
-            }
-            NavigateToLinkedPage( "DetailPage", qryParams );
+            NavigateToDetailPage( 0 );
         }
 
         /// <summary>
@@ -125,10 +118,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gSignatureDocuments_Edit( object sender, RowEventArgs e )
         {
-            var qryParams = new Dictionary<string, string>();
-            qryParams.Add( "SignatureDocumentTemplateId", PageParameter( "SignatureDocumentTemplateId" ) );
-            qryParams.Add( "signatureDocumentId", e.RowKeyId.ToString() );
-            NavigateToLinkedPage( "DetailPage", qryParams );
+            NavigateToDetailPage( e.RowKeyId );
         }
 
         /// <summary>
@@ -232,6 +222,26 @@ namespace RockWeb.Blocks.Core
                 FileId = d.BinaryFileId ?? 0
             } ).ToList();
             gSignatureDocuments.DataBind();
+        }
+
+        private void NavigateToDetailPage( int documentId )
+        {
+            var qryParams = new Dictionary<string, string>();
+
+            int? templateId = PageParameter( "SignatureDocumentTemplateId" ).AsIntegerOrNull();
+            if ( templateId.HasValue )
+            {
+                qryParams.Add( "SignatureDocumentTemplateId", templateId.Value.ToString() );
+            }
+
+            qryParams.Add( "SignatureDocumentId", documentId.ToString() );
+
+            if ( TargetPerson != null )
+            {
+                qryParams.Add( "PersonId", TargetPerson.Id.ToString() );
+            }
+
+            NavigateToLinkedPage( "DetailPage", qryParams );
         }
 
         #endregion

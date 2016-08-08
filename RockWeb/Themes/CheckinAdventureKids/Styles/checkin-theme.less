@@ -74,13 +74,12 @@
 // Mix-ins
 // --------------------------------------------------
 .checkinBackground () {
-  	background: @bg-color @background-image top right no-repeat fixed;
+  background: @bg-color @background-image top right no-repeat fixed;
 }
 
-.checkinBackgroundRetina()
-{
-    background-image: @background-image-retina;
-    background-size: @background-image-retina-size; // should be 1/2 of the actual size
+.checkinBackgroundRetina() {
+  background-image: @background-image-retina;
+  background-size: @background-image-retina-size; // should be 1/2 of the actual size
 }
 
 
@@ -88,16 +87,16 @@
 // Custom Overrides
 // --------------------------------------------------
 
-.checkin-body-container // keep items from going into the bamboo
-{
-    width: 80%;
+.checkin-body-container {
+  width: 80%; // keep items from going into the bamboo
 }
 
 body {
-    -ms-touch-action: none !important;
-    -ms-content-zooming: none; /* Disables zooming */
-    touch-action: none;   /* Disable any special actions on tap/touch */
-    display: none;
+  display: none;
+  -ms-touch-action: none !important;
+      touch-action: none;   /* Disable any special actions on tap/touch */
+
+  -ms-content-zooming: none; /* Disables zooming */
 }
 
 @import "_css-overrides.less";
