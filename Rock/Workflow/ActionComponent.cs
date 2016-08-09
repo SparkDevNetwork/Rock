@@ -121,7 +121,35 @@ namespace Rock.Workflow
         /// <returns></returns>
         protected string GetAttributeValue( WorkflowAction action, string key )
         {
-            return GetActionAttributeValue( action, key );
+            return GetAttributeValue( action, key, false );
+        }
+
+        /// <summary>
+        /// Gets the attribute value.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="checkWorflowAttributeValue">if set to <c>true</c> and the returned value is a guid, check to see if the workflow 
+        /// or activity contains an attribute with that guid. This is useful when using the WorkflowTextOrAttribute field types to get the 
+        /// actual value or workflow value.</param>
+        /// <returns></returns>
+        protected string GetAttributeValue( WorkflowAction action, string key, bool checkWorflowAttributeValue )
+        {
+            string value = GetActionAttributeValue( action, key );
+            if ( checkWorflowAttributeValue )
+            {
+                Guid? attributeGuid = value.AsGuidOrNull();
+                if ( attributeGuid.HasValue )
+                {
+                    var attribute = AttributeCache.Read( attributeGuid.Value );
+                    if ( attribute != null )
+                    {
+                        return action.GetWorklowAttributeValue( attributeGuid.Value );
+                    }
+                }
+            }
+
+            return value;
         }
 
         /// <summary>
@@ -140,6 +168,7 @@ namespace Rock.Workflow
                 {
                     actionType.LoadAttributes();
                 }
+
                 var values = actionType.AttributeValues;
                 if ( values.ContainsKey( key ) )
                 {

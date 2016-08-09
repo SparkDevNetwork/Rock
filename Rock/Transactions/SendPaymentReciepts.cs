@@ -101,6 +101,7 @@ namespace Rock.Transactions
                         mergeFields.Add( "LastName", person.LastName );
                         mergeFields.Add( "FirstNames", person.NickName );
                         mergeFields.Add( "TransactionCode", transaction.TransactionCode );
+                        mergeFields.Add( "Transaction", transaction );
                         mergeFields.Add( "Amounts", accountAmounts );
 
                         var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );

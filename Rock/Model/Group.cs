@@ -236,6 +236,15 @@ namespace Rock.Model
         [DataMember]
         public int? GroupCapacity { get; set; }
 
+        /// <summary>
+        /// Gets or sets the required signature document type identifier.
+        /// </summary>
+        /// <value>
+        /// The required signature document type identifier.
+        /// </value>
+        [DataMember]
+        public int? RequiredSignatureDocumentTypeId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -301,6 +310,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Rock.Model.DataView SyncDataView { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the required signature document.
+        /// </summary>
+        /// <value>
+        /// The type of the required signature document.
+        /// </value>
+        [DataMember]
+        public virtual SignatureDocumentType RequiredSignatureDocumentType { get; set; }
 
         /// <summary>
         /// Gets or sets a collection the Groups that are children of this group.
@@ -598,6 +616,7 @@ namespace Rock.Model
             this.HasOptional( p => p.WelcomeSystemEmail ).WithMany().HasForeignKey( p => p.WelcomeSystemEmailId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ExitSystemEmail ).WithMany().HasForeignKey( p => p.ExitSystemEmailId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.SyncDataView ).WithMany().HasForeignKey( p => p.SyncDataViewId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.RequiredSignatureDocumentType ).WithMany().HasForeignKey( p => p.RequiredSignatureDocumentTypeId ).WillCascadeOnDelete( false );
         }
     }
 

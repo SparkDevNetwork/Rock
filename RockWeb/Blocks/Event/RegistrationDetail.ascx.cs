@@ -970,6 +970,74 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        private void lbResendDocumentRequest_Click( object sender, EventArgs e )
+        {
+            var lb = sender as LinkButton;
+            if ( lb != null )
+            {
+                int? registrantId = lb.ID.Substring( 24 ).AsIntegerOrNull();
+                if ( registrantId.HasValue )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var registrant = new RegistrationRegistrantService( rockContext ).Get( registrantId.Value );
+                        if ( registrant != null && 
+                            registrant.PersonAlias != null &&
+                            registrant.PersonAlias.Person != null &&
+                            Registration != null && 
+                            Registration.RegistrationInstance != null &&
+                            Registration.RegistrationInstance.RegistrationTemplate != null )
+                        {
+                            var assignedTo = registrant.PersonAlias.Person;
+                            string email = Registration.ConfirmationEmail;
+                            if ( string.IsNullOrWhiteSpace( email ) && Registration.PersonAlias != null && Registration.PersonAlias.Person != null )
+                            {
+                                email = Registration.PersonAlias.Person.Email;
+                            }
+
+                            Guid? adultRole = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
+                            var registrantIsAdult = adultRole.HasValue && new GroupMemberService( rockContext )
+                                .Queryable().AsNoTracking()
+                                .Any( m =>
+                                    m.PersonId == registrant.PersonId &&
+                                    m.GroupRole.Guid.Equals( adultRole.Value ) );
+                            if ( !registrantIsAdult && Registration.PersonAlias != null && Registration.PersonAlias.Person != null )
+                            {
+                                assignedTo = Registration.PersonAlias.Person;
+                            }
+                            else
+                            {
+                                if ( !string.IsNullOrWhiteSpace( registrant.PersonAlias.Person.Email ) )
+                                {
+                                    email = registrant.PersonAlias.Person.Email;
+                                }
+                            }
+
+                            var sendErrorMessages = new List<string>();
+                            if ( new SignatureDocumentTypeService( rockContext ).SendDocument(
+                                Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentType,
+                                registrant.PersonAlias.Person, 
+                                assignedTo,
+                                Registration.RegistrationInstance.Name,
+                                email,
+                                out sendErrorMessages ) )
+                            {
+                                rockContext.SaveChanges();
+                                maSignatureRequestSent.Show( "A Signature Request Has Been Sent!", Rock.Web.UI.Controls.ModalAlertType.Information );
+                            }
+                            else
+                            {
+                                string errorMessage = string.Format( "Unable to send a signature request: <ul><li>{0}</li></ul>", sendErrorMessages.AsDelimited( "</li><li>" ) );
+                                maSignatureRequestSent.Show( errorMessage, Rock.Web.UI.Controls.ModalAlertType.Alert );
+                            }
+                        }
+                    }
+                }
+            }
+
+            ShowReadonlyDetails( GetRegistration( RegistrationId ) );
+        }
+
         void lbEditRegistrant_Click( object sender, EventArgs e )
         {
             var lb = sender as LinkButton;
@@ -1132,7 +1200,7 @@ namespace RockWeb.Blocks.Event
                 rockContext = rockContext ?? new RockContext();
 
                 var registration = new RegistrationService( rockContext )
-                    .Queryable( "RegistrationInstance.RegistrationTemplate.Forms.Fields,PersonAlias.Person,Group,Registrants.Fees" ).AsNoTracking()
+                    .Queryable( "RegistrationInstance.RegistrationTemplate.Forms.Fields,PersonAlias.Person,Group,Registrants.Fees" )
                     .Where( r => r.Id == registrationId.Value )
                     .FirstOrDefault();
 
@@ -1330,6 +1398,27 @@ namespace RockWeb.Blocks.Event
 
             RegistrantsState = new List<RegistrantInfo>();
             registration.Registrants.ToList().ForEach( r => RegistrantsState.Add( new RegistrantInfo( r, rockContext ) ) );
+
+            if ( registration.RegistrationInstance != null && 
+                registration.RegistrationInstance.RegistrationTemplate != null &&
+                registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTypeId.HasValue )
+            {
+                var personIds = RegistrantsState.Select( r => r.PersonId ).ToList();
+                var documents = new SignatureDocumentService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( d =>
+                        d.SignatureDocumentTypeId == registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTypeId.Value &&
+                        d.AppliesToPersonAlias != null &&
+                        personIds.Contains( d.AppliesToPersonAlias.PersonId ) )
+                    .ToList();
+
+                foreach( var registrantInfo in RegistrantsState )
+                {
+                    var myDocuments = documents.Where( d => d.AppliesToPersonAlias.PersonId == registrantInfo.PersonId ).ToList();
+                    registrantInfo.SignatureDocumentSigned = documents.Any( d => d.Status == SignatureDocumentStatus.Signed );
+                    registrantInfo.SignatureDocumentLastSent = myDocuments.Max( d => (DateTime?)d.RequestDate );
+                }
+            }
 
             PercentageDiscountExists = registration.DiscountPercentage > 0.0m;
             BuildFeeTable( registration );
@@ -1942,6 +2031,46 @@ namespace RockWeb.Blocks.Event
             var divBody = new HtmlGenericControl( "div" );
             divBody.AddCssClass( "panel-body" );
             divPanel.Controls.Add( divBody );
+
+            if ( Registration != null && 
+                Registration.RegistrationInstance != null && 
+                Registration.RegistrationInstance.RegistrationTemplate != null &&
+                Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentType != null &&
+                !registrant.SignatureDocumentSigned )
+            {
+                var template = Registration.RegistrationInstance.RegistrationTemplate;
+                var divSigAlert = new HtmlGenericControl( "div" );
+                divSigAlert.AddCssClass( "alert alert-warning" );
+                divBody.Controls.Add( divSigAlert );
+
+                StringBuilder sb = new StringBuilder();
+                sb.AppendFormat(
+                    "There is not a signed {0} for {1}",
+                    template.RequiredSignatureDocumentType.Name,
+                    registrant.GetFirstName( template ) );
+
+                if ( registrant.SignatureDocumentLastSent.HasValue )
+                {
+                    sb.AppendFormat(
+                        " (a request was sent {0})",
+                        registrant.SignatureDocumentLastSent.Value.ToElapsedString() );
+                }
+                sb.Append( "." );
+
+                divSigAlert.Controls.Add( new LiteralControl( sb.ToString() ) );
+
+                var divSigAction = new HtmlGenericControl( "div" );
+                divSigAction.AddCssClass( "actions margin-t-md" );
+                divSigAlert.Controls.Add( divSigAction );
+
+                var lbResendDocumentRequest = new LinkButton();
+                lbResendDocumentRequest.CausesValidation = false;
+                lbResendDocumentRequest.ID = string.Format( "lbResendDocumentRequest_{0}", registrant.Id );
+                lbResendDocumentRequest.Text = "Send Signature Request";
+                lbResendDocumentRequest.CssClass = "btn btn-default";
+                lbResendDocumentRequest.Click += lbResendDocumentRequest_Click;
+                divSigAlert.Controls.Add( lbResendDocumentRequest );
+            }
 
             var divRow = new HtmlGenericControl( "div" );
             divRow.AddCssClass( "row" );

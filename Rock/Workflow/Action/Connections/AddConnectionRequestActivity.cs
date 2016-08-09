@@ -58,6 +58,7 @@ namespace Rock.Workflow.Action
         public override bool Execute( RockContext rockContext, WorkflowAction action, Object entity, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
+            var mergeFields = GetMergeFields( action );
 
             // Get the connection request
             ConnectionRequest request = null;
@@ -80,7 +81,7 @@ namespace Rock.Workflow.Action
             }
 
             // Get the note
-            string noteValue = GetAttributeValue( action, "Note" );
+            string noteValue = GetAttributeValue( action, "Note", true );
             string note = string.Empty;
             Guid? noteGuid = noteValue.AsGuidOrNull();
             if ( noteGuid.HasValue )
@@ -118,7 +119,7 @@ namespace Rock.Workflow.Action
             activity.ConnectionActivityTypeId = activityType.Id;
             activity.ConnectionOpportunityId = request.ConnectionOpportunityId;
             activity.ConnectorPersonAliasId = personAliasId;
-            activity.Note = note;
+            activity.Note = note.ResolveMergeFields( mergeFields );
             new ConnectionRequestActivityService( rockContext ).Add( activity );
             rockContext.SaveChanges();
 

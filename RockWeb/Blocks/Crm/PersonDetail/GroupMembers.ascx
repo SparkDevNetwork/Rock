@@ -3,7 +3,8 @@
 <asp:UpdatePanel ID="upGroupMembers" runat="server">
     <ContentTemplate>
 
-        <asp:Repeater ID="rptrGroups" runat="server">
+        <div class="persondetails-grouplist">
+            <asp:Repeater ID="rptrGroups" runat="server" >
             <ItemTemplate>
 
                 <div class="persondetails-group js-persondetails-group">
@@ -16,7 +17,7 @@
                         </div>              
                     </header>
 
-                    <div class="row">
+                    <div class="row group-details">
                         <div class="col-md-8 clearfix">
                             <ul class="groupmembers">
                                 <asp:Repeater ID="rptrMembers" runat="server">
@@ -76,6 +77,7 @@
 
             </ItemTemplate>
         </asp:Repeater>
+        </div>
 
     </ContentTemplate>
 </asp:UpdatePanel>

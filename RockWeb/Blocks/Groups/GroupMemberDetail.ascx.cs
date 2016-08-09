@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -31,6 +32,8 @@ using Rock.Security;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+
+using Newtonsoft.Json.Linq;
 
 namespace RockWeb.Blocks.Groups
 {
@@ -328,6 +331,36 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
+        protected void lbResendDocumentRequest_Click( object sender, EventArgs e )
+        {
+            int groupMemberId = PageParameter( "GroupMemberId" ).AsInteger();
+            if ( groupMemberId > 0 )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var groupMember = new GroupMemberService( rockContext ).Get( groupMemberId );
+                    if ( groupMember != null && groupMember.Group != null )
+                    {
+                        var sendErrorMessages = new List<string>();
+
+                        string documentName = string.Format( "{0}_{1}", groupMember.Group.Name.RemoveSpecialCharacters(), groupMember.Person.FullName.RemoveSpecialCharacters() );
+                        if ( new SignatureDocumentTypeService( rockContext ).SendDocument(
+                            groupMember.Group.RequiredSignatureDocumentType, groupMember.Person, groupMember.Person, documentName, groupMember.Person.Email, out sendErrorMessages ) )
+                        {
+                            rockContext.SaveChanges();
+                            maSignatureRequestSent.Show( "A Signature Request Has Been Sent!", Rock.Web.UI.Controls.ModalAlertType.Information );
+                            ShowRequiredDocumentStatus( rockContext, groupMember, groupMember.Group );
+                        }
+                        else
+                        {
+                            string errorMessage = string.Format( "Unable to send a signature request: <ul><li>{0}</li></ul>", sendErrorMessages.AsDelimited( "</li><li>" ) );
+                            maSignatureRequestSent.Show( errorMessage, Rock.Web.UI.Controls.ModalAlertType.Alert );
+                        }
+                    }
+                }
+            }
+        }
+
         #endregion
 
         #region Internal Methods
@@ -477,6 +510,8 @@ namespace RockWeb.Blocks.Groups
             
             LoadDropDowns();
 
+            ShowRequiredDocumentStatus( rockContext, groupMember, group );
+
             ppGroupMemberPerson.SetValue( groupMember.Person );
             ppGroupMemberPerson.Enabled = !readOnly;
 
@@ -541,6 +576,51 @@ namespace RockWeb.Blocks.Groups
             btnReCheckRequirements.Visible = groupHasRequirements;
 
             ShowGroupRequirementsStatuses();
+        }
+
+        private void ShowRequiredDocumentStatus( RockContext rockContext, GroupMember groupMember, Group group )
+        {
+            if ( groupMember.Person != null && group.RequiredSignatureDocumentType != null )
+            {
+                var documents = new SignatureDocumentService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( d =>
+                        d.SignatureDocumentTypeId == group.RequiredSignatureDocumentType.Id &&
+                        d.AppliesToPersonAlias.PersonId == groupMember.Person.Id )
+                    .ToList();
+                if ( !documents.Any( d => d.Status == SignatureDocumentStatus.Signed ) )
+                {
+                    var lastSent = documents.Any( d => d.Status == SignatureDocumentStatus.Sent ) ?
+                        documents.Where( d => d.Status == SignatureDocumentStatus.Sent ).Max( d => d.RequestDate ) : (DateTime?)null;
+                    pnlRequiredSignatureDocument.Visible = true;
+
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendFormat(
+                            "This group requires that each member sign a {0} document and {1} has not yet signed this type of document",
+                            group.RequiredSignatureDocumentType.Name, groupMember.Person.NickName );
+
+                    if ( lastSent.HasValue )
+                    {
+                        lbResendDocumentRequest.Text = "Resend Signature Request";
+                        sb.AppendFormat( " (a request was sent {0})", lastSent.Value.ToElapsedString() );
+                    }
+                    else
+                    {
+                        lbResendDocumentRequest.Text = "Send Signature Request";
+                    }
+                    sb.Append( "." );
+
+                    lRequiredSignatureDocumentMessage.Text = sb.ToString();
+                }
+                else
+                {
+                    pnlRequiredSignatureDocument.Visible = false;
+                }
+            }
+            else
+            {
+                pnlRequiredSignatureDocument.Visible = false;
+            }
         }
 
         /// <summary>
@@ -912,5 +992,6 @@ namespace RockWeb.Blocks.Groups
                 grpMoveGroupMember.Visible = false;
             }
         }
+
     }
 }
