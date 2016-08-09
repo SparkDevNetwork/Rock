@@ -18,7 +18,8 @@ WHERE
 		'Avg Fuse Group Size',
 		'Coaching Attendees',
 		'Fuse HS Attendance',
-		'Fuse MS Attendance'
+		'Fuse MS Attendance',
+		'Fuse 4 Week Percent of Return'
 	);
 
 
@@ -267,5 +268,105 @@ INNER JOIN (
 ) Attendance
 	ON PA.Id = Attendance.PersonAliasId	
 GROUP BY CampusId	
+'
+WHERE Id = @metricId;
+
+/* ====================================================== */
+-- Attendance -> Fuse Attendance -> Fuse 4 Week Percent of Return
+/* ====================================================== */
+SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = '35E37B04-B996-434C-BB6F-CD177107F00D');
+
+IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Schedule',
+		54,
+		@False,
+		1,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+UPDATE Metric SET SourceSql = '
+DECLARE @today AS DATE = GETDATE();
+DECLARE @wednesdayDW AS INT = 4;
+DECLARE @recentWednesdayDate AS DATE = CONVERT(DATE, DATEADD(DAY, @wednesdayDW - DATEPART(DW, @today), @today));
+
+IF @recentWednesdayDate > @today
+BEGIN
+	SET @recentWednesdayDate = DATEADD(DAY, -7, @recentWednesdayDate);
+END
+
+DECLARE @firstTimeWednesdayDate AS DATE = DATEADD(WEEK, -3, @recentWednesdayDate);
+DECLARE @firstReturnWednesdayDate AS DATE = DATEADD(WEEK, -2, @recentWednesdayDate);
+
+WITH Attendances AS (
+	SELECT
+		a.Id,
+		a.PersonAliasId,
+		a.GroupId,
+		CONVERT(DATE, a.StartDateTime) AS WednesdayDate,
+		a.CampusId
+	FROM
+		[Attendance] a
+		JOIN [Group] g ON a.GroupId = g.Id
+		JOIN [Group] p ON p.Id = g.ParentGroupId
+	WHERE
+		a.DidAttend = 1
+		AND p.Name = ''NEW Fuse Attendee''
+), FirstTimePersonIds AS (
+	SELECT
+		pa.PersonId
+	FROM
+		[Attendances] a
+		JOIN [PersonAlias] pa ON pa.Id = a.PersonAliasId
+	GROUP BY
+		pa.PersonId
+	HAVING
+		MIN(a.WednesdayDate) = @firstTimeWednesdayDate
+), FirstTimePersonIdsWithCampus AS (
+	SELECT
+		ftp.PersonId,
+		MAX(a.CampusId) AS CampusId
+	FROM
+		FirstTimePersonIds ftp
+		JOIN PersonAlias pa ON pa.PersonId = ftp.PersonId
+		JOIN Attendances a ON a.PersonAliasId = pa.Id
+	WHERE
+		a.WednesdayDate = @firstTimeWednesdayDate
+	GROUP BY
+		ftp.PersonId
+), Returnees AS (
+	SELECT
+		DISTINCT ftp.PersonId
+	FROM
+		FirstTimePersonIdsWithCampus ftp
+		JOIN PersonAlias pa ON pa.PersonId = ftp.PersonId
+		JOIN Attendances a ON a.PersonAliasId = pa.Id
+	WHERE
+		a.WednesdayDate BETWEEN @firstReturnWednesdayDate AND @recentWednesdayDate
+)
+SELECT
+	CONVERT(INT, ROUND(CONVERT(DECIMAL, COUNT(r.PersonId)) / CONVERT(DECIMAL, COUNT(ftp.PersonId)) * 100, 0)) AS Value,
+	ftp.CampusId AS EntityId, ' + @fuseScheduleId + ',CONVERT(NVARCHAR(20), @recentWednesdayDate) + '' 19:00'' AS ScheduleDate
+FROM
+	FirstTimePersonIdsWithCampus ftp
+	LEFT JOIN Returnees r ON r.PersonId = ftp.PersonId
+GROUP BY
+	ftp.CampusId;
 '
 WHERE Id = @metricId;
