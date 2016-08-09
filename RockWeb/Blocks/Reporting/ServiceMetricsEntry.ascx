@@ -27,7 +27,7 @@
 
             <asp:Panel ID="pnlMetrics" runat="server" Visible="false">
 
-                <div class="btn-group btn-group-justified margin-b-lg" >
+                <div class="btn-group btn-group-justified margin-b-lg panel-settings-group" >
                     <Rock:ButtonDropDownList ID="bddlCampus" runat="server" OnSelectionChanged="bddl_SelectionChanged" />
                     <Rock:ButtonDropDownList ID="bddlWeekend" runat="server" OnSelectionChanged="bddl_SelectionChanged" />
                     <Rock:ButtonDropDownList ID="bddlService" runat="server" OnSelectionChanged="bddl_SelectionChanged" />

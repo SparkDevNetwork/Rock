@@ -140,6 +140,30 @@ namespace Rock.Extension
         }
 
         /// <summary>
+        /// Method that is called before attribute values are updated. Components can
+        /// override this to perform any needed initialization of attribute
+        /// values.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <param name="rootUrl">The root URL.</param>
+        public virtual void InitializeAttributeValues( System.Web.HttpRequest request, string rootUrl )
+        {
+        }
+
+        /// <summary>
+        /// Method that is called when attribute values are updated. Components can
+        /// override this to perform any needed setup/validation based on current attribute
+        /// values.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public virtual bool ValidateAttributeValues( out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            return true;
+        }
+
+        /// <summary>
         /// Gets the order.
         /// </summary>
         /// <value>

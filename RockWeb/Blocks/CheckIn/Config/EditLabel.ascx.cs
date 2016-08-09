@@ -107,6 +107,8 @@ namespace RockWeb.Blocks.CheckIn.Config
                     }
                 }
 
+                SetLabelImage();
+
             }
         }
 
@@ -211,12 +213,17 @@ namespace RockWeb.Blocks.CheckIn.Config
 
         protected void btnRedraw_Click( object sender, EventArgs e )
         {
+            SetLabelImage();
+        }
+
+        private void SetLabelImage()
+        {
             string dpmm = ddlPrintDensity.SelectedValue;
             string width = nbLabelWidth.Text;
             string height = nbLabelHeight.Text;
             string labelIndex = nbShowLabel.Text;
 
-            imgLabelary.ImageUrl = string.Format( 
+            imgLabelary.ImageUrl = string.Format(
                 "http://api.labelary.com/v1/printers/{0}dpmm/labels/{1}x{2}/{3}/{4}",
                 dpmm, width, height, labelIndex, ceLabel.Text.UrlEncode() );
         }

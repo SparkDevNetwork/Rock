@@ -35,7 +35,8 @@ namespace RockWeb.Blocks.Core
 
     [BooleanField( "Show Binary File Type" )]
     [LinkedPage( "Edit Label Page", "Page used to edit and test the contents of a label file.", false, "", "", 0 )]
-    [WorkflowTypeField( "Workflow", "An optional workflow to activate for any new file uploaded", false, false, "", "Advanced" )]
+    [WorkflowTypeField( "Workflow", "An optional workflow to activate for any new file uploaded", false, false, "", "Advanced", order: 0 )]
+    [TextField("Workflow Button Text", "The button text to show for the rerun workflow button.", false, "Rerun Workflow", category:"Advanced", order: 1)]
     public partial class BinaryFileDetail : RockBlock, IDetailBlock
     {
         #region Properties
@@ -85,6 +86,8 @@ namespace RockWeb.Blocks.Core
                 ShowDetail( PageParameter( "BinaryFileId" ).AsInteger(), PageParameter( "BinaryFileTypeId" ).AsIntegerOrNull() );
 
                 ddlBinaryFileType.Visible = GetAttributeValue( "ShowBinaryFileType" ).AsBoolean();
+
+                btnRerunWorkflow.Text = GetAttributeValue( "WorkflowButtonText" );
             }
             else
             {

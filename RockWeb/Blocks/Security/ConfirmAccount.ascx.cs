@@ -274,23 +274,33 @@ namespace RockWeb.Blocks.Security
 
             if ( user != null )
             {
-                string caption = GetAttributeValue( "PasswordResetCaption" );
-                if ( caption.Contains( "{1}" ) )
+                if ( UserLoginService.IsPasswordValid( tbPassword.Text ) )
                 {
-                    caption = string.Format( caption, user.Person.FirstName, user.UserName );
+                    string caption = GetAttributeValue( "PasswordResetCaption" );
+                    if ( caption.Contains( "{1}" ) )
+                    {
+                        caption = string.Format( caption, user.Person.FirstName, user.UserName );
+                    }
+                    else if ( caption.Contains( "{0}" ) )
+                    {
+                        caption = string.Format( caption, user.Person.FirstName );
+                    }
+
+                    lResetSuccess.Text = caption;
+
+                    userLoginService.SetPassword( user, tbPassword.Text );
+                    user.IsConfirmed = true;
+                    rockContext.SaveChanges();
+
+                    pnlResetSuccess.Visible = true;
                 }
-                else if ( caption.Contains( "{0}" ) )
+                else
                 {
-                    caption = string.Format( caption, user.Person.FirstName );
+                    nbMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
+                    nbMessage.Text = UserLoginService.FriendlyPasswordRules();
+                    nbMessage.Visible = true;
+                    ShowResetPassword();
                 }
-
-                lResetSuccess.Text = caption;
-
-                userLoginService.SetPassword( user, tbPassword.Text );
-                user.IsConfirmed = true;
-                rockContext.SaveChanges();
-
-                pnlResetSuccess.Visible = true;
             }
             else
             {

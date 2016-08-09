@@ -62,7 +62,9 @@ cache:
 # scripts to run before build
 before_build:
 - ps: >-
-    appveyor DownloadFile https://dist.nuget.org/win-x86-commandline/v2.8.6/nuget.exe
+    if (Test-Path 'C:\Tools\NuGet3') { $nugetDir = 'C:\Tools\NuGet3' } else { $nugetDir = 'C:\Tools\NuGet' }
+
+    (New-Object Net.WebClient).DownloadFile('https://dist.nuget.org/win-x86-commandline/v3.3.0/nuget.exe', "$nugetDir\NuGet.exe")
 
     npm install --production
 

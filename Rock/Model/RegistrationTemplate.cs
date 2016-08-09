@@ -429,6 +429,24 @@ namespace Rock.Model
         [DataMember]
         public int? RegistrationWorkflowTypeId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the required signature document type identifier.
+        /// </summary>
+        /// <value>
+        /// The required signature document type identifier.
+        /// </value>
+        [DataMember]
+        public int? RequiredSignatureDocumentTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the signature documentaction.
+        /// </summary>
+        /// <value>
+        /// The signature documentaction.
+        /// </value>
+        [DataMember]
+        public SignatureDocumentAction SignatureDocumentAction { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -466,6 +484,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual WorkflowType RegistrationWorkflowType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the required signature document.
+        /// </summary>
+        /// <value>
+        /// The type of the required signature document.
+        /// </value>
+        [DataMember]
+        public virtual SignatureDocumentType RequiredSignatureDocumentType { get; set; }
 
         /// <summary>
         /// Gets or sets the discounts.
@@ -557,6 +584,7 @@ namespace Rock.Model
             this.HasOptional( t => t.GroupType ).WithMany().HasForeignKey( t => t.GroupTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.FinancialGateway ).WithMany().HasForeignKey( t => t.FinancialGatewayId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.RegistrationWorkflowType ).WithMany().HasForeignKey( t => t.RegistrationWorkflowTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.RequiredSignatureDocumentType ).WithMany().HasForeignKey( t => t.RequiredSignatureDocumentTypeId ).WillCascadeOnDelete( false );
         }
     }
 
@@ -615,6 +643,24 @@ namespace Rock.Model
         /// All
         /// </summary>
         All = RegistrationContact | GroupFollowers | GroupLeaders
+    }
+
+
+    /// <summary>
+    /// How signature document should be presented to registrant
+    /// </summary>
+    public enum SignatureDocumentAction
+    {
+        /// <summary>
+        /// Email document
+        /// </summary>
+        Email = 0,
+
+        /// <summary>
+        /// Embed document in registration
+        /// </summary>
+        Embed = 1,
+
     }
 
     #endregion
