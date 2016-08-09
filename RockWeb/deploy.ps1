@@ -11,9 +11,6 @@ Write-Output "Root folder: $rootfolder"
 Write-Output "Web root folder: $webroot"
 Write-Output "Running script as: $env:userdomain\$env:username"
 
-# ensure that the compilation debug is false
-(Get-Content "$webroot\web.config").Replace('<compilation debug="true"', '<compilation debug="false"') | Set-Content "$webroot\web.config"
-
 # delete the content directory if it exists as it was added by the deploy
 If (Test-Path "$webroot\Content"){
 	Remove-Item "$webroot\Content" -Force -Confirm:$False -Recurse
