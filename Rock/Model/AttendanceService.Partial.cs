@@ -158,7 +158,7 @@ namespace Rock.Model
             var includeNullCampus = ( campusIds ?? "" ).Split( ',' ).ToList().Any( a => a.Equals( "null", StringComparison.OrdinalIgnoreCase ) );
             var campusIdList = ( campusIds ?? "" ).Split( ',' ).AsIntegerList();
 
-            // remove 0 from the list, just in case it is there 
+            // remove 0 from the list, just in case it is there
             campusIdList.Remove( 0 );
 
             if ( campusIdList.Any() )
@@ -426,7 +426,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class AttendanceWithSummaryDateTime
         {
@@ -449,7 +449,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public static class AttendanceQryExtensions
     {
@@ -500,6 +500,4 @@ namespace Rock.Model
             return qryAttendanceGroupedBy;
         }
     }
-
-
 }
