@@ -68,7 +68,7 @@ namespace RockWeb.Plugins.church_ccv.Podcast
         /// 
         protected void ShowDetail( int seriesId )
         {
-            PodcastUtil.PodcastSeries podcastSeries = PodcastUtil.GetSeries( seriesId, true );
+            PodcastUtil.PodcastSeries podcastSeries = PodcastUtil.GetSeries( seriesId );
             
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "PodcastSeries", podcastSeries );
