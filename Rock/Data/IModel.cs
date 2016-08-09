@@ -113,7 +113,7 @@ namespace Rock.Data
         /// Gets the Last Modified By audit HTML details.
         /// </summary>
         /// <param name="rootUrl">The root URL.</param>
-        /// <returns>An HTML fragment with details about who modified the model and when it was created.</returns>
+        /// <returns>An HTML fragment with details about who modified the model and when it was modified.</returns>
         string GetModifiedAuditHtml( string rootUrl );
     }
 }

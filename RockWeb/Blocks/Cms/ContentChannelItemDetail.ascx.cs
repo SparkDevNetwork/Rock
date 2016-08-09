@@ -677,8 +677,7 @@ namespace RockWeb.Blocks.Cms
             ContentChannelItem contentItem = GetContentItem();
 
             string rootUrl = ResolveRockUrl( "~" );
-            lCreatedBy.Text = contentItem.GetCreatedAuditHtml( rootUrl );
-            lLastModifiedBy.Text = contentItem.GetModifiedAuditHtml( rootUrl );
+            pdAuditDetails.SetEntity( contentItem, ResolveRockUrl( "~" ) );
 
             if ( contentItem != null &&
                 contentItem.ContentChannelType != null &&
