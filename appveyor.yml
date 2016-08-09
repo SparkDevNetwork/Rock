@@ -52,13 +52,21 @@ cache:
 install:
 - ps: >-
     $fileContent = "-----BEGIN RSA PRIVATE KEY-----'n"
+
     $fileContent += $env:priv_key.Replace(' ', "'n")
+
     $fileContent += "'n-----END RSA PRIVATE KEY-----'n"
+
     Set-Content c:\users\appveyor\.ssh\id_rsa $fileContent
+
     git clone -q --depth=1 git@github.com:NewSpring/rock-bookshelf.git c:\projects\Rock\.remote\rock-bookshelf
+
     git clone -q --depth=1 git@github.com:NewSpring/rock-power-bi.git c:\projects\Rock\.remote\rock-power-bi
+
     git clone -q --depth=1 git@github.com:NewSpring/rock-paid-plugins.git c:\projects\Rock\.remote\rock-paid-plugins
+
     git clone -q --depth=1 git@github.com:NewSpring/rock-spiritual-gifts.git c:\projects\rock-spiritual-gifts
+
 
 
 #---------------------------------#
@@ -73,13 +81,21 @@ configuration: Release
 before_build:
 - ps: >-
     npm install --production
+
     node ./node_modules/normajs/bin/norma.js build
+
     if (Test-Path 'C:\Tools\NuGet3') { $nugetDir = 'C:\Tools\NuGet3' } else { $nugetDir = 'C:\Tools\NuGet' }
+
     (New-Object Net.WebClient).DownloadFile('https://dist.nuget.org/win-x86-commandline/v2.8.6/nuget.exe', "$nugetDir\NuGet.exe")
+
     nuget restore Rock.sln
+
     $src = "C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.2\Facades"
+
     $dst = "C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.2"
+
     Get-ChildItem $src | Copy-Item -Destination $dst -Force
+
 
 
 build:
