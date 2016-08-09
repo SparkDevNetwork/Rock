@@ -1,27 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ContentChannelItemDetail.ascx.cs" Inherits="RockWeb.Blocks.Cms.ContentChannelItemDetail" %>
 
-<script type="text/javascript">
-    Sys.Application.add_load( function () {
-        $(".js-drawerpull").on("click", function () {
-            $(this).closest('.panel-drawer').toggleClass('open');
-            $(this).siblings('.drawer-content').slideToggle();
-
-            var icon = $(this).find('i');
-            var iconOpenClass = icon.attr('data-icon-open') || 'fa fa-chevron-up';
-            var iconCloseClass = icon.attr('data-icon-closed') || 'fa fa-chevron-down';
-
-            console.log('icon: ' + icon);
-
-            if ($(this).closest('.panel-drawer').hasClass('open')) {
-                icon.attr('class', iconOpenClass);
-            }
-            else {
-                icon.attr('class', iconCloseClass);
-            }
-        });
-    });
-</script>
-
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
@@ -44,25 +22,9 @@
                     <asp:PlaceHolder ID="phOccurrences" runat="server" />
                 </div>
             </div>
-            <div id="divPanelDrawer" class="panel-drawer" runat="server">
-                    <div class="drawer-content" style="display: none;">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <dl>
-                                    <dt>Created By</dt>
-                                    <dd><asp:Literal ID="lCreatedBy" runat="server" /></dd>
-                                </dl>
-                            </div>
-                            <div class="col-md-6">
-                                <dl>
-                                    <dt>Last Modified By</dt>
-                                    <dd><asp:Literal ID="lLastModifiedBy" runat="server" /></dd>
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="drawer-pull js-drawerpull"><i class="fa fa-chevron-down" data-icon-closed="fa fa-chevron-down" data-icon-open="fa fa-chevron-up"></i></div>
-                </div>
+
+            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
+
             <div class="panel-body">
 
                 <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
@@ -210,10 +172,6 @@
                 <asp:LinkButton ID="lbDeleteChildItem" runat="server" CssClass="btn btn-primary btn-block" Text="Delete Child Item" onclick="lbDeleteChildItem_Click"/>
             </Content>
         </Rock:ModalDialog>
-
-        <script>
-            $('.js-date-rollover').tooltip();
-        </script>
 
     </ContentTemplate>
 </asp:UpdatePanel>
