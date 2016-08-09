@@ -287,14 +287,13 @@ namespace Rock
         /// Attempts to convert string to an dictionary using the |/comma and ^ delimiter Key/Value syntax.  Returns an empty dictionary if unsuccessful.
         /// </summary>
         /// <param name="str">The string.</param>
-        /// <returns></returns>
-        [System.Diagnostics.DebuggerStepThrough()]
+        /// <returns></returns>                     
         public static System.Collections.Generic.Dictionary<string, string> AsDictionary( this string str )
         {
             var dictionary = new System.Collections.Generic.Dictionary<string, string>();
             string[] nameValues = str.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
             // If we haven't found any pipes, check for commas
-            if ( nameValues.Count() == 1 )
+            if ( nameValues.Count() == 1 && nameValues[0] == str)
             {
                 nameValues = str.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
             }
