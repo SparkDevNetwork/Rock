@@ -21,7 +21,11 @@ WHERE
 		'Fuse MS Attendance',
 		'Fuse 4 Week Percent of Return',
 		'Fuse First Timers',
-		'4 Week Percent of Return'
+		'4 Week Percent of Return',
+		'First Time Guests',
+		'Nursery Attendance',
+		'Preschool Attendance',
+		'Elementary Attendance'
 	);
 
 
@@ -617,5 +621,257 @@ GROUP BY
 	CampusId,
 	GroupId,
 	ScheduleId;
+'
+WHERE Id = @metricId;
+
+/* ====================================================== */
+-- Attendance -> KidSpring Attendance -> Nursery Attendance
+/* ====================================================== */
+SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = '0B183D52-4852-440F-8066-EFF82001CDF3');
+
+IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Schedule',
+		54,
+		@False,
+		1,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group') 
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Group',
+		16,
+		@False,
+		1,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+UPDATE Metric SET SourceSql = '
+SELECT COUNT(1) AS Value, 
+	CampusId AS EntityId,
+	ScheduleId,
+	GroupId
+	, DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + ''00:00'' AS ScheduleDate
+FROM PersonAlias PA 
+INNER JOIN (
+	SELECT PersonAliasId, A.CampusId, A.ScheduleId, A.GroupId
+	FROM [Attendance] A
+	INNER JOIN [Group] G
+		ON A.GroupId = G.Id
+		AND G.GroupTypeId = (SELECT [Id] FROM [GroupType] WHERE [Name] = ''NEW Nursery Attendee'')
+	WHERE DidAttend = 1
+		AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0)
+		AND StartDateTime < CONVERT(DATE, GETDATE())
+) Attendance
+	ON PA.Id = Attendance.PersonAliasId	
+INNER JOIN (
+	-- iCal DTStart: constant 22 characters, only interested in Service Time
+	SELECT Id, STUFF(SUBSTRING(iCalendarContent, PATINDEX(''%DTSTART%'', iCalendarContent) +17, 4), 3, 0, '':'') AS Value
+	FROM Schedule
+	WHERE EffectiveStartDate < GETDATE()
+) Schedule
+ON Schedule.Id = Attendance.ScheduleId
+GROUP BY Attendance.CampusId, ScheduleId, GroupId
+'
+WHERE Id = @metricId;
+
+/* ====================================================== */
+-- Attendance -> KidSpring Attendance -> Preschool Attendance
+/* ====================================================== */
+SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = '7522DA61-C971-437D-92C6-BA62800EF174');
+
+IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Schedule',
+		54,
+		@False,
+		1,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group') 
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Group',
+		16,
+		@False,
+		1,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+UPDATE Metric SET SourceSql = '
+SELECT COUNT(1) AS Value, 
+	CampusId AS EntityId,
+	ScheduleId,
+	GroupId
+	, DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + ''00:00'' AS ScheduleDate
+FROM PersonAlias PA 
+INNER JOIN (
+	SELECT PersonAliasId, A.CampusId, A.ScheduleId, A.GroupId
+	FROM [Attendance] A
+	INNER JOIN [Group] G
+		ON A.GroupId = G.Id
+		AND G.GroupTypeId = (SELECT [Id] FROM [GroupType] WHERE [Name] = ''NEW Preschool Attendee'')
+	WHERE DidAttend = 1
+		AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0)
+		AND StartDateTime < CONVERT(DATE, GETDATE())
+) Attendance
+	ON PA.Id = Attendance.PersonAliasId	
+INNER JOIN (
+	-- iCal DTStart: constant 22 characters, only interested in Service Time
+	SELECT Id, STUFF(SUBSTRING(iCalendarContent, PATINDEX(''%DTSTART%'', iCalendarContent) +17, 4), 3, 0, '':'') AS Value
+	FROM Schedule
+	WHERE EffectiveStartDate < GETDATE()
+) Schedule
+ON Schedule.Id = Attendance.ScheduleId
+GROUP BY Attendance.CampusId, ScheduleId, GroupId
+'
+WHERE Id = @metricId;
+
+/* ====================================================== */
+-- Attendance -> KidSpring Attendance -> Elementary Attendance
+/* ====================================================== */
+SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = '6B93C5ED-C58C-4092-A3EA-E390CE8FED8C');
+
+IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Schedule',
+		54,
+		@False,
+		1,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group') 
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Group',
+		16,
+		@False,
+		1,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+UPDATE Metric SET SourceSql = '
+SELECT COUNT(1) AS Value, 
+	CampusId AS EntityId,
+	ScheduleId,
+	GroupId
+	, DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + ''00:00'' AS ScheduleDate
+FROM PersonAlias PA 
+INNER JOIN (
+	SELECT PersonAliasId, A.CampusId, A.ScheduleId, A.GroupId
+	FROM [Attendance] A
+	INNER JOIN [Group] G
+		ON A.GroupId = G.Id
+		AND G.GroupTypeId = (SELECT [Id] FROM [GroupType] WHERE [Name] = ''NEW Elementary Attendee'')
+	WHERE DidAttend = 1
+		AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0)
+		AND StartDateTime < CONVERT(DATE, GETDATE())
+) Attendance
+	ON PA.Id = Attendance.PersonAliasId	
+INNER JOIN (
+	-- iCal DTStart: constant 22 characters, only interested in Service Time
+	SELECT Id, STUFF(SUBSTRING(iCalendarContent, PATINDEX(''%DTSTART%'', iCalendarContent) +17, 4), 3, 0, '':'') AS Value
+	FROM Schedule
+	WHERE EffectiveStartDate < GETDATE()
+) Schedule
+ON Schedule.Id = Attendance.ScheduleId
+GROUP BY Attendance.CampusId, ScheduleId, GroupId
 '
 WHERE Id = @metricId;
