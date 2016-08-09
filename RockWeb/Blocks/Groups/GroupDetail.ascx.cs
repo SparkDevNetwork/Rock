@@ -1139,7 +1139,7 @@ namespace RockWeb.Blocks.Groups
                 lReadOnlyTitle.Text = ActionTitle.Add( Group.FriendlyTypeName ).FormatAsHtmlTitle();
 
                 // hide the panel drawer that show created and last modified dates
-                divPanelDrawer.Visible = false;
+                pdAuditDetails.Visible = false;
             }
             else
             {
@@ -1437,9 +1437,7 @@ namespace RockWeb.Blocks.Groups
             lGroupIconHtml.Text = groupIconHtml;
             lReadOnlyTitle.Text = group.Name.FormatAsHtmlTitle();
 
-            string rootUrl = ResolveRockUrl( "~" );
-            lCreatedBy.Text = group.GetCreatedAuditHtml( rootUrl );
-            lLastModifiedBy.Text = group.GetModifiedAuditHtml( rootUrl );
+            pdAuditDetails.SetEntity( group, ResolveRockUrl( "~" ) );
 
             if ( !string.IsNullOrWhiteSpace( group.Description ) )
             {
@@ -1472,7 +1470,6 @@ namespace RockWeb.Blocks.Groups
             {
                 hlCampus.Visible = false;
             }
-
 
             // configure group capacity
             nbGroupCapacityMessage.Visible = false;
