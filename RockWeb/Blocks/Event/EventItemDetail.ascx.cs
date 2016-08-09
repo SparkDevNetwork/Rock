@@ -100,6 +100,8 @@ namespace RockWeb.Blocks.Event
             // Get the calendar id of the calendar that user navigated from 
             _calendarId = PageParameter( "EventCalendarId" ).AsIntegerOrNull();
 
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'This will also delete all the event occurrences below! Are you sure you wish to continue with the delete?');", EventItemOccurrence.FriendlyTypeName );
+
             _canEdit = UserCanEdit;
             _canApprove = UserCanAdministrate;
 
@@ -286,7 +288,12 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
-            NavigateToParentPage();
+            var qryParams = new Dictionary<string, string>();
+            if ( _calendarId.HasValue )
+            {
+                qryParams.Add( "EventCalendarId", _calendarId.Value.ToString() );
+            }
+            NavigateToParentPage( qryParams );
         }
 
         /// <summary>
