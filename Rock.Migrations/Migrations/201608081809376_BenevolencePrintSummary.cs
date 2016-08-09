@@ -43,7 +43,131 @@ namespace Rock.Migrations
             // Attrib Value for Block:Benevolence Request Detail, Attribute:Benevolence Request Statement Page Page: Benevolence Detail, Site: Rock RMS              
             RockMigrationHelper.AddBlockAttributeValue("596CE410-99BF-420F-A86E-CFFDF0BB45F3", "4D11BFF0-D253-49F9-8AD4-6662452F4E5E", @"d676a464-29a0-49f1-ba8c-752d9fe21026");
             // Attrib Value for Block:Benevolence Request Statement Lava, Attribute:Lava Template Page: Benevolence Request Summary, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("1A70DC47-3675-4892-8520-A23FB530E0D0", "7D78DD9F-F5D0-4660-A099-DEFDC70A6664", @"{% capture pageTitle %}     Benevolence Request for {{ Request.FirstName }} {{ Request.LastName }} {% endcapture %} {{ pageTitle | SetPageTitle }}  <div class=""row"">     <div class=""col-md-6"">         <div class=""pull-left"">             <img src=""{{ 'Global' | Attribute:'PublicApplicationRoot' }}{{ 'Global' | Attribute:'EmailHeaderLogo' }}"" width=""100px"" />         </div>                  <div class=""pull-left margin-l-md margin-t-sm"">             <strong>{{ 'Global' | Attribute:'OrganizationName' }}</strong><br />             {{ 'Global' | Attribute:'OrganizationAddress' }}<br />             {{ 'Global' | Attribute:'OrganizationWebsite' }}         </div>     </div>     <div class=""col-md-6 text-right hidden-print"">         <h4>Benevolence Request for {{ Request.FirstName }} {{ Request.LastName }}</h4>         <p>Requested: {{ Request.RequestDateTime | Date:'M/d/yyyy' }}<p>         <p>Status: <strong>{{ Request.RequestStatusValue.Value }}</strong></p>     </div> </div> <hr style=""opacity: .5;"" /> <div class=""row"">     <div class=""col-xs-12"">         <h4 class=""visible-print-block"">Benevolence Request for {{ Request.FirstName }} {{ Request.LastName }}         <br />         <small>Requested: {{ Request.RequestDateTime | Date:'M/d/yyyy' }} Status: <strong>{{ Request.RequestStatusValue.Value }}</strong></small></h4>     </div> </div>  <div class=""row"">     <div class=""col-xs-4"">         <h4>Requested by</h3>         <p>             <strong>{{ Request.FirstName }} {{ Request.LastName }}</strong> <br />             {{ Request.Location.FormattedHtmlAddress }} <br />             {% if Request.HomePhoneNumber %}                Home Phone: {{ Request.HomePhoneNumber }} <br />             {% endif %}             {% if Request.CellPhoneNumber %}                Cell Phone: {{ Request.CellPhoneNumber }}             {% endif %}             {% if Request.WorkPhoneNumber %}                 {{ Request.WorkPhoneNumber }}             {% endif %}         </p>     </div>     <div class=""col-xs-4"">         {% if Request.RequestText != empty %}         <h4>Request</h4>         <p>{{ Request.RequestText }} </p>         {% endif %}     </div>     <div class=""col-xs-4"">         <div class=""clearfix"">             <div class=""pull-right"">                 <a href=""#"" class=""btn btn-primary hidden-print"" onClick=""window.print();""><i class=""fa fa-print""></i> Print Request</a>              </div>         </div>     </div> </div> <div class=""row"">     <div class=""col-xs-4"">         {% if Request.CaseWorkerPersonAlias != null %}             {% assign caseworker = Request.CaseWorkerPersonAlias.Person %}             <h4>Case Worker</h4>             <p>                 <strong>{{ caseworker.FullName }}</strong> <br />                 {{ Request.Location.FormattedHtmlAddress }} <br />                 {% if Request.HomePhoneNumber %}                    Home Phone: {{ Request.HomePhoneNumber }} <br />                 {% endif %}                 {% if Request.CellPhoneNumber %}                    Cell Phone: {{ Request.CellPhoneNumber }}                 {% endif %}                 {% if Request.WorkPhoneNumber %}                     {{ Request.WorkPhoneNumber }}                 {% endif %}             </p>         {% endif %}     </div>     <div class=""col-xs-4"">         <h4>Summary</h4>         <p> {{ Request.ResultSummary }} </p>     </div>     <div class=""col-xs-4"">         <h4>Next Steps</h4>         <p> {{ Request.ProvidedNextSteps  }} </p>     </div> </div>           {%if Request.BenevolenceResults != empty %}     <div class=""row"">         <div class=""col-xs-12"">             <hr style=""opacity: .5;"" />                          <h4 class=""margin-t-md margin-b-md"">Results List</h4>                          <table class=""table table-bordered table-striped table-condensed"">                 <tr>                     <th>Type</th>                     <th>Amount</th>                     <th>Details</th>                 </tr>                              {% for result in Request.BenevolenceResults  %}                     <tr>                         <td>{{ result.ResultTypeValue.Value }}</td>                         <td>{{ result.Amount }}</td>                         <td>{{ result.ResultSummary }}</td>                     </tr>                 {% endfor %}                          </table>         </div>     </div> {% endif %}");
+            RockMigrationHelper.AddBlockAttributeValue("1A70DC47-3675-4892-8520-A23FB530E0D0", "7D78DD9F-F5D0-4660-A099-DEFDC70A6664", @"{% capture pageTitle %}
+    Benevolence Request for {{ Request.FirstName }} {{ Request.LastName }}
+{% endcapture %}
+{{ pageTitle | SetPageTitle }}
+
+<div class=""row"">
+    <div class=""col-md-12"">
+        <div class=""pull-left"">
+            <img src=""{{ 'Global' | Attribute:'PublicApplicationRoot' }}{{ 'Global' | Attribute:'EmailHeaderLogo' }}"" width=""100px"" />
+        </div>
+        
+        <div class=""pull-left margin-l-md margin-t-sm"">
+            <strong>{{ 'Global' | Attribute:'OrganizationName' }}</strong><br />
+            {{ 'Global' | Attribute:'OrganizationAddress' }}<br />
+            {{ 'Global' | Attribute:'OrganizationWebsite' }}
+        </div>
+    </div>
+</div>
+<div class=""row"">
+    <div class=""col-md-6"">
+        <h4>Benevolence Request for {{ Request.FirstName }} {{ Request.LastName }}</h4>
+        
+    </div>
+    <div class=""col-md-6 text-right"">
+        <p><strong>Requested:</strong> {{ Request.RequestDateTime | Date:'M/d/yyyy' }} </p>
+        <p><strong>Status:</strong> {{ Request.RequestStatusValue.Value }}</p>
+    </div>
+</div>
+<hr style=""opacity: .5;"" />
+<div class=""row"">
+    <div class=""col-xs-12"">
+        <h4 class=""visible-print-block"">Benevolence Request for {{ Request.FirstName }} {{ Request.LastName }}
+        <br />
+        <small>Requested: {{ Request.RequestDateTime | Date:'M/d/yyyy' }} Status: <strong>{{ Request.RequestStatusValue.Value }}</strong></small></h4>
+    </div>
+</div>
+
+<div class=""row"">
+    <div class=""col-xs-4"">
+        <h4>Requested by</h3>
+        <p>
+            <strong>{{ Request.FirstName }} {{ Request.LastName }}</strong> <br />
+            {{ Request.Location.FormattedHtmlAddress }} <br />
+            {% if Request.HomePhoneNumber %}
+               Home Phone: {{ Request.HomePhoneNumber }} <br />
+            {% endif %}
+            {% if Request.CellPhoneNumber %}
+               Cell Phone: {{ Request.CellPhoneNumber }}
+            {% endif %}
+            {% if Request.WorkPhoneNumber %}
+                {{ Request.WorkPhoneNumber }}
+            {% endif %}
+        </p>
+    </div>
+    <div class=""col-xs-4"">
+        {% if Request.RequestText != empty %}
+        <h4>Request</h4>
+        <p>{{ Request.RequestText }} </p>
+        {% endif %}
+    </div>
+    <div class=""col-xs-4"">
+        <div class=""clearfix"">
+            <div class=""pull-right"">
+                <a href=""#"" class=""btn btn-primary hidden-print"" onClick=""window.print();""><i class=""fa fa-print""></i> Print Request</a> 
+            </div>
+        </div>
+    </div>
+</div>
+<div class=""row"">
+    <div class=""col-xs-4"">
+        {% if Request.CaseWorkerPersonAlias != null %}
+            {% assign caseworker = Request.CaseWorkerPersonAlias.Person %}
+            <h4>Case Worker</h4>
+            <p>
+                <strong>{{ caseworker.FullName }}</strong> <br />
+                {{ Request.Location.FormattedHtmlAddress }} <br />
+                {% if Request.HomePhoneNumber %}
+                   Home Phone: {{ Request.HomePhoneNumber }} <br />
+                {% endif %}
+                {% if Request.CellPhoneNumber %}
+                   Cell Phone: {{ Request.CellPhoneNumber }}
+                {% endif %}
+                {% if Request.WorkPhoneNumber %}
+                    {{ Request.WorkPhoneNumber }}
+                {% endif %}
+            </p>
+        {% endif %}
+    </div>
+    <div class=""col-xs-4"">
+        <h4>Summary</h4>
+        <p> {{ Request.ResultSummary }} </p>
+    </div>
+    <div class=""col-xs-4"">
+        <h4>Next Steps</h4>
+        <p> {{ Request.ProvidedNextSteps  }} </p>
+    </div>
+</div>
+
+        
+{%if Request.BenevolenceResults != empty %}
+    <div class=""row"">
+        <div class=""col-xs-12"">
+            <hr style=""opacity: .5;"" />
+            
+            <h4 class=""margin-t-md margin-b-md"">Results List</h4>
+            
+            <table class=""table table-bordered table-striped table-condensed"">
+                <tr>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Details</th>
+                </tr>
+            
+                {% for result in Request.BenevolenceResults  %}
+                    <tr>
+                        <td>{{ result.ResultTypeValue.Value }}</td>
+                        <td>{{ result.Amount }}</td>
+                        <td>{{ result.ResultSummary }}</td>
+                    </tr>
+                {% endfor %}
+            
+            </table>
+        </div>
+    </div>
+{% endif %}");
         }
 
         /// <summary>
