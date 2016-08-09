@@ -78,6 +78,8 @@ before_build:
 
     Get-ChildItem $src | Copy-Item -Destination $dst -Force
 
+    (Get-Content "$webroot\web.config").Replace('<compilation debug="true"', '<compilation debug="false"') | Set-Content "$webroot\web.config"
+
 # build configuration
 build:
   project: Rock.sln
