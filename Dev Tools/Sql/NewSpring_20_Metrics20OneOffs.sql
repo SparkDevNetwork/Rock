@@ -162,3 +162,30 @@ GROUP BY
 	sub.CampusId;
 '
 WHERE Id = @metricId;
+
+/* ====================================================== */
+-- Fuse HS attendance
+/* ====================================================== */
+SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = '6B49E110-D4ED-4CFF-A903-2C71E4A74E4E');
+
+UPDATE Metric SET SourceSql = '
+SELECT COUNT(1) AS Value, CampusId AS EntityId, DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + ''19:00'' AS ScheduleDate
+FROM PersonAlias PA 
+INNER JOIN (
+	SELECT PersonAliasId, A.CampusId
+	FROM [Attendance] A	
+	INNER JOIN [Group] G
+		ON A.GroupId = G.Id
+		AND G.GroupTypeId = (SELECT [Id] FROM [GroupType] WHERE [Name] = ''NEW Fuse Attendee'')
+	WHERE DidAttend = 1	
+	AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0)
+	AND StartDateTime < CONVERT(DATE, GETDATE())
+	AND (
+		CASE WHEN ISNUMERIC(LEFT(G.Name, 1)) = 1
+		THEN LEFT(G.Name, 1) ELSE NULL END
+	) IN ( 9, 1 ) -- 9th, 10th, 11th, 12th grade
+) Attendance
+	ON PA.Id = Attendance.PersonAliasId	
+GROUP BY CampusId;
+'
+WHERE Id = @metricId;
