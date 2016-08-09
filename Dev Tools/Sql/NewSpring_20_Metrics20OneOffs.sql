@@ -19,7 +19,9 @@ WHERE
 		'Coaching Attendees',
 		'Fuse HS Attendance',
 		'Fuse MS Attendance',
-		'Fuse 4 Week Percent of Return'
+		'Fuse 4 Week Percent of Return',
+		'Fuse First Timers',
+		'4 Week Percent of Return'
 	);
 
 
@@ -363,6 +365,149 @@ WITH Attendances AS (
 SELECT
 	CONVERT(INT, ROUND(CONVERT(DECIMAL, COUNT(r.PersonId)) / CONVERT(DECIMAL, COUNT(ftp.PersonId)) * 100, 0)) AS Value,
 	ftp.CampusId AS EntityId, ' + @fuseScheduleId + ',CONVERT(NVARCHAR(20), @recentWednesdayDate) + '' 19:00'' AS ScheduleDate
+FROM
+	FirstTimePersonIdsWithCampus ftp
+	LEFT JOIN Returnees r ON r.PersonId = ftp.PersonId
+GROUP BY
+	ftp.CampusId;
+'
+WHERE Id = @metricId;
+
+/* ====================================================== */
+-- Attendance -> Fuse Attendance -> Fuse First Timers
+/* ====================================================== */
+SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = 'C5FEEDC1-E869-4100-82A7-3494398B1659');
+
+IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Schedule',
+		54,
+		@False,
+		1,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+UPDATE Metric SET SourceSql = '
+DECLARE @today AS DATE = GETDATE();
+DECLARE @recentWednesday AS DATE = CONVERT(DATE, DATEADD(DAY, 4 - DATEPART(DW, @today), @today));
+
+;WITH cte_GroupIds AS (
+	SELECT
+		g.Id
+	FROM
+		[Group] g
+		JOIN [Group] p ON g.ParentGroupId = p.Id
+	WHERE
+		p.Name = ''NEW Fuse Attendee''
+),
+cte_FirstTimePersonIds AS (
+	SELECT
+		pa.PersonId AS Id
+		, MAX(a.CampusId) AS CampusId
+	FROM
+		[Attendance] a
+		JOIN [PersonAlias] pa ON pa.Id = a.PersonAliasId
+		JOIN [cte_GroupIds] g ON g.Id = a.GroupId
+	WHERE
+		a.DidAttend = 1
+	GROUP BY
+		pa.PersonId
+	HAVING
+		CONVERT(DATE, MIN([StartDateTime])) = @recentWednesday
+)
+SELECT
+	COUNT(Id) AS Value
+	, CampusId AS EntityId, ' + @fuseScheduleId + '
+	, DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + ''19:00'' AS ScheduleDate
+FROM
+	[cte_FirstTimePersonIds]
+GROUP BY
+	CampusId;
+'
+WHERE Id = @metricId;
+
+/* ====================================================== */
+-- Attendance -> KidSpring Attendance -> 4 Week Percent of Return
+/* ====================================================== */
+SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = 'AA8F3F6D-C813-4D07-BC5C-9ABE4512427B');
+
+UPDATE Metric SET SourceSql = '
+DECLARE @today AS DATE = GETDATE();
+DECLARE @recentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @today), @today));
+DECLARE @firstTimeSundayDate AS DATE = DATEADD(WEEK, -3, @recentSundayDate);
+DECLARE @firstReturnSundayDate AS DATE = DATEADD(WEEK, -2, @recentSundayDate);
+
+WITH Attendances AS (
+	SELECT
+		a.Id,
+		a.PersonAliasId,
+		a.GroupId,
+		a.SundayDate,
+		a.CampusId
+	FROM
+		[Attendance] a
+		JOIN [Group] g ON a.GroupId = g.Id
+		JOIN [Group] p ON p.Id = g.ParentGroupId
+	WHERE
+		a.DidAttend = 1
+		AND p.Name IN (
+			''NEW Nursery Attendee'', 
+			''NEW Preschool Attendee'', 
+			''NEW Elementary Attendee'',
+			''NEW Special Needs Attendee''
+		)
+), FirstTimePersonIds AS (
+	SELECT
+		pa.PersonId
+	FROM
+		[Attendances] a
+		JOIN [PersonAlias] pa ON pa.Id = a.PersonAliasId
+	GROUP BY
+		pa.PersonId
+	HAVING
+		MIN(a.SundayDate) = @firstTimeSundayDate
+), FirstTimePersonIdsWithCampus AS (
+	SELECT
+		ftp.PersonId,
+		MAX(a.CampusId) AS CampusId
+	FROM
+		FirstTimePersonIds ftp
+		JOIN PersonAlias pa ON pa.PersonId = ftp.PersonId
+		JOIN Attendances a ON a.PersonAliasId = pa.Id
+	WHERE
+		a.SundayDate = @firstTimeSundayDate
+	GROUP BY
+		ftp.PersonId
+), Returnees AS (
+	SELECT
+		DISTINCT ftp.PersonId
+	FROM
+		FirstTimePersonIdsWithCampus ftp
+		JOIN PersonAlias pa ON pa.PersonId = ftp.PersonId
+		JOIN Attendances a ON a.PersonAliasId = pa.Id
+	WHERE
+		a.SundayDate BETWEEN @firstReturnSundayDate AND @recentSundayDate
+)
+SELECT
+	CONVERT(INT, ROUND(CONVERT(DECIMAL, COUNT(r.PersonId)) / CONVERT(DECIMAL, COUNT(ftp.PersonId)) * 100, 0)) AS Value,
+	ftp.CampusId AS EntityId,
+	CONVERT(DATETIME, @recentSundayDate) AS ScheduleDate
 FROM
 	FirstTimePersonIdsWithCampus ftp
 	LEFT JOIN Returnees r ON r.PersonId = ftp.PersonId
