@@ -515,3 +515,107 @@ GROUP BY
 	ftp.CampusId;
 '
 WHERE Id = @metricId;
+
+/* ====================================================== */
+-- Attendance -> KidSpring Attendance -> First Time Guests
+/* ====================================================== */
+SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = '2BBA4F56-3556-4681-A25A-1EC961CE2EED');
+
+IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Schedule',
+		54,
+		@False,
+		1,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group') 
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Group',
+		16,
+		@False,
+		1,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+UPDATE Metric SET SourceSql = '
+DECLARE @today AS DATE = GETDATE();
+DECLARE @recentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @today), @today));
+
+WITH cte_GroupIds AS (
+	SELECT
+		g.Id
+	FROM
+		[Group] g
+		JOIN [Group] p ON g.ParentGroupId = p.Id
+	WHERE
+		p.Name IN (
+			''NEW Nursery Attendee'', 
+			''NEW Preschool Attendee'', 
+			''NEW Elementary Attendee'',
+			''NEW Special Needs Attendee'')
+),
+cte_FirstTimePersonIds AS (
+	SELECT
+		pa.PersonId AS Id
+		, MAX(a.CampusId) AS CampusId
+		, MAX(a.GroupId) AS GroupId
+		, MAX(a.ScheduleId) AS ScheduleId
+	FROM
+		[Attendance] a
+		JOIN [PersonAlias] pa ON pa.Id = a.PersonAliasId
+		JOIN [cte_GroupIds] g ON g.Id = a.GroupId
+	WHERE
+		a.DidAttend = 1
+	GROUP BY
+		pa.PersonId
+	HAVING
+		CONVERT(DATE, MIN([StartDateTime])) = @recentSundayDate
+)
+SELECT
+	COUNT(Id) AS Value
+	, CampusId AS EntityId
+	, ScheduleId
+	, GroupId
+	, DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + ''00:00'' AS ScheduleDate
+FROM
+	[cte_FirstTimePersonIds]
+GROUP BY
+	CampusId,
+	GroupId,
+	ScheduleId;
+'
+WHERE Id = @metricId;
