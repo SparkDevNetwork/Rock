@@ -75,7 +75,7 @@ before_build:
     npm install --production
     node ./node_modules/normajs/bin/norma.js build
     if (Test-Path 'C:\Tools\NuGet3') { $nugetDir = 'C:\Tools\NuGet3' } else { $nugetDir = 'C:\Tools\NuGet' }
-    (New-Object Net.WebClient).DownloadFile('https://dist.nuget.org/win-x86-commandline/v3.3.0/nuget.exe', "$nugetDir\NuGet.exe")
+    (New-Object Net.WebClient).DownloadFile('https://dist.nuget.org/win-x86-commandline/v2.8.6/nuget.exe', "$nugetDir\NuGet.exe")
     nuget restore Rock.sln
     $src = "C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.2\Facades"
     $dst = "C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.2"
