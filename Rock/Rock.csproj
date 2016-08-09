@@ -1372,6 +1372,7 @@
     <Compile Include="Web\UI\Controls\PageDescription.cs" />
     <Compile Include="Web\UI\Controls\PageIcon.cs" />
     <Compile Include="Web\UI\Controls\PageTitle.cs" />
+    <Compile Include="Web\UI\Controls\PanelDrawer.cs" />
     <Compile Include="Web\UI\Controls\PanelWidget.cs" />
     <Compile Include="Web\UI\Controls\PersonLink.cs" />
     <Compile Include="Web\UI\Controls\PersonProfile\Badge.cs" />
