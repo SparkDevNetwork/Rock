@@ -40,19 +40,40 @@ namespace Rock.Web.UI.Controls
         private HiddenField _hfExpanded;
 
         /// <summary>
+        /// Gets or sets the entity identifier
+        /// </summary>
+        /// <value>
         /// The entity identifier
-        /// </summary>
-        private int? _entityId = null;
+        /// </value>
+        private int? _entityId
+        {
+            get { return ViewState["EntityId"] as int? ?? null; }
+            set { ViewState["EntityId"] = value; }
+        }
 
         /// <summary>
-        /// The Created By audit HTML
+        /// Gets or sets the CreatedAuditHtml.
         /// </summary>
-        private string _createdAuditHtml = string.Empty;
+        /// <value>
+        /// The Created Audit HTML.
+        /// </value>
+        private string _createdAuditHtml
+        {
+            get { return ViewState["CreatedAuditHtml"] as string ?? string.Empty; }
+            set { ViewState["CreatedAuditHtml"] = value; }
+        }
 
         /// <summary>
-        /// The Modified By audit HTML
+        /// Gets or sets the ModifiedAuditHtml.
         /// </summary>
-        private string _modifiedAuditHtml = string.Empty;
+        /// <value>
+        /// The Modified Audit HTML.
+        /// </value>
+        private string _modifiedAuditHtml
+        {
+            get { return ViewState["ModifiedAuditHtml"] as string ?? string.Empty; }
+            set { ViewState["ModifiedAuditHtml"] = value; }
+        }
 
         /// <summary>
         /// Gets or sets the CSS class.
@@ -149,9 +170,12 @@ $('.js-date-rollover').tooltip();
         /// <param name="rootUrl">The Rock root URL.</param>
         public void SetEntity( IModel entity, string rootUrl )
         {
-            _entityId = entity.Id;
-            _createdAuditHtml = entity.GetCreatedAuditHtml( rootUrl );
-            _modifiedAuditHtml = entity.GetModifiedAuditHtml( rootUrl );
+            if ( entity != null )
+            {
+                _entityId = entity.Id;
+                _createdAuditHtml = entity.GetCreatedAuditHtml( rootUrl );
+                _modifiedAuditHtml = entity.GetModifiedAuditHtml( rootUrl );
+            }
         }
 
         /// <summary>
