@@ -16,7 +16,9 @@ WHERE
 	AND (gpc.Name IS NULL OR gpc.Name <> 'Volunteers')
 	AND m.Title NOT IN (
 		'Avg Fuse Group Size',
-		'Coaching Attendees'
+		'Coaching Attendees',
+		'Fuse HS Attendance',
+		'Fuse MS Attendance'
 	);
 
 
@@ -40,6 +42,7 @@ DECLARE @True bit = 1
 DECLARE @False bit = 0
 DECLARE @CreatedDateTime AS DATETIME = GETDATE();
 DECLARE @foreignKey AS NVARCHAR(15) = 'Metrics 2.0';
+DECLARE @fuseScheduleId AS NVARCHAR(10) = (SELECT Id FROM Schedule WHERE Name = 'Fuse');
 
 /* ====================================================== */
 -- create the group conversion table
@@ -168,8 +171,33 @@ WHERE Id = @metricId;
 /* ====================================================== */
 SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = '6B49E110-D4ED-4CFF-A903-2C71E4A74E4E');
 
+IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Schedule',
+		54,
+		@False,
+		1,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
 UPDATE Metric SET SourceSql = '
-SELECT COUNT(1) AS Value, CampusId AS EntityId, DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + ''19:00'' AS ScheduleDate
+SELECT COUNT(1) AS Value, CampusId AS EntityId, ' + @fuseScheduleId + ', DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + ''19:00'' AS ScheduleDate
 FROM PersonAlias PA 
 INNER JOIN (
 	SELECT PersonAliasId, A.CampusId
@@ -187,5 +215,57 @@ INNER JOIN (
 ) Attendance
 	ON PA.Id = Attendance.PersonAliasId	
 GROUP BY CampusId;
+'
+WHERE Id = @metricId;
+
+/* ====================================================== */
+-- Fuse MS attendance
+/* ====================================================== */
+SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = '2222FA59-69DA-49B1-AB37-B628CF3E5B38');
+
+IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Schedule',
+		54,
+		@False,
+		1,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+UPDATE Metric SET SourceSql = '
+SELECT COUNT(1) AS Value, CampusId AS EntityId, ' +  @fuseScheduleId + ', DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + ''19:00'' AS ScheduleDate
+FROM PersonAlias PA 
+INNER JOIN (
+	SELECT PersonAliasId, A.CampusId
+	FROM [Attendance] A	
+	INNER JOIN [Group] G
+		ON A.GroupId = G.Id
+		AND G.GroupTypeId = (SELECT [Id] FROM [GroupType] WHERE [Name] = ''NEW Fuse Attendee'')
+	WHERE DidAttend = 1	
+	AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0)
+	AND StartDateTime < CONVERT(DATE, GETDATE())
+	AND (
+		CASE WHEN ISNUMERIC(LEFT(G.Name, 1)) = 1
+		THEN LEFT(G.Name, 1) ELSE NULL END
+	) IN ( 6,7,8 ) -- 6th, 7th, 8th grade
+) Attendance
+	ON PA.Id = Attendance.PersonAliasId	
+GROUP BY CampusId	
 '
 WHERE Id = @metricId;
