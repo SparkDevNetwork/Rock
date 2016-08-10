@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <views>
-  <mapping-views hash="56323b8edc0b1135ed06d3a56f17186c1a8aadd2c6925e9e309b54e43d45c2b2" conceptual-container="RockContext" store-container="CodeFirstDatabase">
+  <mapping-views hash="13057a183b842dda392c39abb23b8dd1bd50cf733062bc7e14a5e1011ebf3a4c" conceptual-container="RockContext" store-container="CodeFirstDatabase">
     <view extent="CodeFirstDatabase.AttendanceCode"><![CDATA[
     SELECT VALUE -- Constructing AttendanceCode
         [CodeFirstDatabaseSchema.AttendanceCode](T1.AttendanceCode_Id, T1.AttendanceCode_IssueDateTime, T1.AttendanceCode_Code, T1.AttendanceCode_Guid, T1.AttendanceCode_ForeignId, T1.AttendanceCode_ForeignGuid, T1.AttendanceCode_ForeignKey)
@@ -2797,11 +2797,12 @@
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.FinancialPledge"><![CDATA[
     SELECT VALUE -- Constructing FinancialPledge
-        [CodeFirstDatabaseSchema.FinancialPledge](T1.FinancialPledge_Id, T1.FinancialPledge_PersonAliasId, T1.FinancialPledge_AccountId, T1.FinancialPledge_TotalAmount, T1.FinancialPledge_PledgeFrequencyValueId, T1.FinancialPledge_StartDate, T1.FinancialPledge_EndDate, T1.FinancialPledge_CreatedDateTime, T1.FinancialPledge_ModifiedDateTime, T1.FinancialPledge_CreatedByPersonAliasId, T1.FinancialPledge_ModifiedByPersonAliasId, T1.FinancialPledge_Guid, T1.FinancialPledge_ForeignId, T1.FinancialPledge_ForeignGuid, T1.FinancialPledge_ForeignKey)
+        [CodeFirstDatabaseSchema.FinancialPledge](T1.FinancialPledge_Id, T1.FinancialPledge_PersonAliasId, T1.FinancialPledge_GroupId, T1.FinancialPledge_AccountId, T1.FinancialPledge_TotalAmount, T1.FinancialPledge_PledgeFrequencyValueId, T1.FinancialPledge_StartDate, T1.FinancialPledge_EndDate, T1.FinancialPledge_CreatedDateTime, T1.FinancialPledge_ModifiedDateTime, T1.FinancialPledge_CreatedByPersonAliasId, T1.FinancialPledge_ModifiedByPersonAliasId, T1.FinancialPledge_Guid, T1.FinancialPledge_ForeignId, T1.FinancialPledge_ForeignGuid, T1.FinancialPledge_ForeignKey)
     FROM (
         SELECT 
             T.Id AS FinancialPledge_Id, 
             T.PersonAliasId AS FinancialPledge_PersonAliasId, 
+            T.GroupId AS FinancialPledge_GroupId, 
             T.AccountId AS FinancialPledge_AccountId, 
             T.TotalAmount AS FinancialPledge_TotalAmount, 
             T.PledgeFrequencyValueId AS FinancialPledge_PledgeFrequencyValueId, 
@@ -6491,11 +6492,12 @@
     ) AS T1]]></view>
     <view extent="RockContext.FinancialPledges"><![CDATA[
     SELECT VALUE -- Constructing FinancialPledges
-        [Rock.Data.FinancialPledge](T1.FinancialPledge_Id, T1.FinancialPledge_PersonAliasId, T1.FinancialPledge_AccountId, T1.FinancialPledge_TotalAmount, T1.FinancialPledge_PledgeFrequencyValueId, T1.FinancialPledge_StartDate, T1.FinancialPledge_EndDate, T1.FinancialPledge_CreatedDateTime, T1.FinancialPledge_ModifiedDateTime, T1.FinancialPledge_CreatedByPersonAliasId, T1.FinancialPledge_ModifiedByPersonAliasId, T1.FinancialPledge_Guid, T1.FinancialPledge_ForeignId, T1.FinancialPledge_ForeignGuid, T1.FinancialPledge_ForeignKey)
+        [Rock.Data.FinancialPledge](T1.FinancialPledge_Id, T1.FinancialPledge_PersonAliasId, T1.FinancialPledge_GroupId, T1.FinancialPledge_AccountId, T1.FinancialPledge_TotalAmount, T1.FinancialPledge_PledgeFrequencyValueId, T1.FinancialPledge_StartDate, T1.FinancialPledge_EndDate, T1.FinancialPledge_CreatedDateTime, T1.FinancialPledge_ModifiedDateTime, T1.FinancialPledge_CreatedByPersonAliasId, T1.FinancialPledge_ModifiedByPersonAliasId, T1.FinancialPledge_Guid, T1.FinancialPledge_ForeignId, T1.FinancialPledge_ForeignGuid, T1.FinancialPledge_ForeignKey)
     FROM (
         SELECT 
             T.Id AS FinancialPledge_Id, 
             T.PersonAliasId AS FinancialPledge_PersonAliasId, 
+            T.GroupId AS FinancialPledge_GroupId, 
             T.AccountId AS FinancialPledge_AccountId, 
             T.TotalAmount AS FinancialPledge_TotalAmount, 
             T.PledgeFrequencyValueId AS FinancialPledge_PledgeFrequencyValueId, 
