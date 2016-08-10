@@ -39,18 +39,15 @@
                 </div>
 
                 <asp:LinkButton ID="btnUpdate" runat="server" CssClass="btn btn-primary" Text="Update" OnClick="btnUpdate_Click" />
-                <asp:LinkButton ID="btnExport" runat="server" CssClass="btn btn-primary" Text="Export" OnClick="btnExport_Click" />
 
                 <div class="grid ">
-                    <Rock:Grid ID="gList" runat="server" AllowSorting="false" OnRowDataBound="gList_RowDataBound" AllowPaging="false" ExportSource="ColumnOutput" >
+                    <Rock:Grid ID="gList" runat="server" AllowSorting="false" AllowPaging="false">
                         <Columns>
                         </Columns>
                     </Rock:Grid>
                 </div>
 
             </div>
-
-
 
         </asp:Panel>
 

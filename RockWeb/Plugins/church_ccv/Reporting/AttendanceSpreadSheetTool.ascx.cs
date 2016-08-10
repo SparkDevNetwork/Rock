@@ -1,19 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Data.Entity;
-using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.church_ccv.Reporting
 {
@@ -371,7 +370,7 @@ namespace RockWeb.Plugins.church_ccv.Reporting
 
             // clear out any existing schedule columns and add the ones that match the current filter setting
             gList.Columns.Clear();
-            gList.Columns.Add( new RockLiteralField { ID = "lGroupName", HeaderText = "Worship" } );
+            gList.Columns.Add( new RockBoundField { DataField = "GroupName", HeaderText = "Worship" } );
 
             var groupIds = this.GetSelectedGroupIds();
             _selectedScheduleIds = spSchedules.SelectedValuesAsInt().ToList();
@@ -398,10 +397,10 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                     var schedule = scheduleList.FirstOrDefault( a => a.FriendlyScheduleText.StartsWith( serviceTimeFriendlyText, StringComparison.OrdinalIgnoreCase ) );
                     if ( schedule != null && _selectedScheduleIds.Contains( schedule.Id ) )
                     {
-                        string campusScheduleFieldControlId = string.Format( "campusScheduleField_Campus{0}_Schedule{1}", campus.Id, schedule.Id );
+                        string campusScheduleFieldName = string.Format( "campusScheduleField_Campus{0}_Schedule{1}", campus.Id, schedule.Id );
 
                         var headerText = string.Format( "{0} - {1}", campus.Name, schedule.FriendlyScheduleText );
-                        RockLiteralField campusScheduleField = new RockLiteralField { HeaderText = headerText, ID = campusScheduleFieldControlId };
+                        RockBoundField campusScheduleField = new RockBoundField { HeaderText = headerText, DataField = campusScheduleFieldName };
                         gList.Columns.Add( campusScheduleField );
                     }
                 }
@@ -417,21 +416,21 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                 var metricCampusSchedules = scheduleList.Where( a => metricCampusScheduleIds.Contains( a.Id ) && _selectedScheduleIds.Contains( a.Id ) );
                 foreach ( var schedule in metricCampusSchedules )
                 {
-                    string campusScheduleFieldControlId = string.Format( "campusScheduleField_Campus{0}_Schedule{1}", campus.Id, schedule.Id );
-                    if ( !gList.Columns.OfType<RockLiteralField>().Any( a => a.ID == campusScheduleFieldControlId ) )
+                    string campusScheduleFieldName = string.Format( "campusScheduleField_Campus{0}_Schedule{1}", campus.Id, schedule.Id );
+                    if ( !gList.Columns.OfType<RockBoundField>().Any( a => a.DataField == campusScheduleFieldName ) )
                     {
                         var headerText = string.Format( "{0} - {1}", campus.Name, schedule.FriendlyScheduleText );
-                        RockLiteralField campusScheduleField = new RockLiteralField { HeaderText = headerText, ID = campusScheduleFieldControlId };
+                        RockBoundField campusScheduleField = new RockBoundField { HeaderText = headerText, DataField = campusScheduleFieldName };
                         gList.Columns.Add( campusScheduleField );
                     }
                 }
 
-                string campusSummaryFieldControlId = string.Format( "campusSummaryField_Campus{0}", campus.Id );
-                RockLiteralField campusSummaryField = new RockLiteralField { HeaderText = campus.Name, ID = campusSummaryFieldControlId };
+                string campusSummaryFieldName = string.Format( "campusSummaryField_Campus{0}", campus.Id );
+                RockBoundField campusSummaryField = new RockBoundField { HeaderText = campus.Name, DataField = campusSummaryFieldName };
                 gList.Columns.Add( campusSummaryField );
             }
 
-            gList.Columns.Add( new RockLiteralField { ID = "lGrandTotal", HeaderText = "Grand Total" } );
+            gList.Columns.Add( new RockBoundField { DataField = "GrandTotal", HeaderText = "Grand Total" } );
         }
 
         /// <summary>
@@ -482,76 +481,79 @@ namespace RockWeb.Plugins.church_ccv.Reporting
 
             var list = metricValuesQuery.ToList();
             var groupService = new GroupService( rockContext );
-            var dataList = new List<GroupAttendanceMetrics>();
+            var groupAttendanceMetricsList = new List<GroupAttendanceMetrics>();
 
             // display grid in the same order that the Groups are displayed
             foreach ( var groupId in selectedGroupIds )
             {
                 var group = groupService.Get( groupId );
                 var groupMetricValues = list.Where( a => a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdGroup ).EntityId == groupId ).ToList();
-                dataList.Add( new GroupAttendanceMetrics { Group = group, MetricValues = groupMetricValues } );
+                groupAttendanceMetricsList.Add( new GroupAttendanceMetrics { Group = group, MetricValues = groupMetricValues } );
             }
 
-            gList.DataSource = dataList;
-            gList.DataBind();
-        }
-
-        #endregion
-
-        /// <summary>
-        /// Handles the RowDataBound event of the gList control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
-        protected void gList_RowDataBound( object sender, GridViewRowEventArgs e )
-        {
-            if ( e.Row.DataItem != null )
+            DataTable dataTable = new DataTable( "AttendanceExportData" );
+            foreach ( var boundField in gList.Columns.OfType<RockBoundField>() )
             {
-                var rowMetrics = e.Row.DataItem as GroupAttendanceMetrics;
-                var lGroupName = e.Row.FindControl( "lGroupName" ) as Literal;
-                lGroupName.Text = rowMetrics.Group.Name;
-
-                var entityTypeIdCampus = EntityTypeCache.Read<Campus>().Id;
-                var entityTypeIdSchedule = EntityTypeCache.Read<Schedule>().Id;
-
-                foreach ( var literalField in e.Row.ControlsOfTypeRecursive<Literal>() )
+                DataColumn dataColumn = new DataColumn( boundField.DataField );
+                if ( boundField.DataField == "GroupName" )
                 {
+                    dataColumn.DataType = typeof( string );
+                }
+                else
+                {
+                    dataColumn.DataType = typeof( int );
+                }
 
-                    if ( literalField.ID.StartsWith( "campusScheduleField_" ) )
+                dataTable.Columns.Add( dataColumn );
+            }
+
+            foreach ( var groupAttendanceMetrics in groupAttendanceMetricsList )
+            {
+                DataRow dataRow = dataTable.NewRow();
+                foreach ( var dataColumn in dataTable.Columns.OfType<DataColumn>() )
+                {
+                    if ( dataColumn.ColumnName == "GroupName" )
+                    {
+                        dataRow[dataColumn] = groupAttendanceMetrics.Group.Name;
+                    }
+                    else if ( dataColumn.ColumnName.StartsWith( "campusScheduleField_" ) )
                     {
                         // "campusScheduleField_Campus{0}_Schedule{1}"
-                        var idParts = literalField.ID.Replace( "campusScheduleField_Campus", string.Empty ).Replace( "_Schedule", "," ).Split( ',' ).ToArray();
+                        var idParts = dataColumn.ColumnName.Replace( "campusScheduleField_Campus", string.Empty ).Replace( "_Schedule", "," ).Split( ',' ).ToArray();
                         var campusId = idParts[0].AsInteger();
                         var scheduleId = idParts[1].AsInteger();
-                        var campusScheduleValues = rowMetrics.MetricValues.Where( a =>
+                        var campusScheduleValues = groupAttendanceMetrics.MetricValues.Where( a =>
                             a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdCampus ).EntityId == campusId
                             &&
                             a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdSchedule ).EntityId == scheduleId ).ToList();
 
-                        literalField.Text = campusScheduleValues.Sum( a => a.YValue ?? 0.00M ).ToString( "F0" );
-
+                        dataRow[dataColumn] = (int)campusScheduleValues.Sum( a => a.YValue ?? 0.00M );
                     }
-                    else if ( literalField.ID.StartsWith( "campusSummaryField_" ) )
+                    else if ( dataColumn.ColumnName.StartsWith( "campusSummaryField_" ) )
                     {
                         // "campusSummaryField_Campus{0}"
-                        var campusId = literalField.ID.Replace( "campusSummaryField_Campus", string.Empty ).AsInteger();
-                        var campusScheduleValues = rowMetrics.MetricValues.Where( a =>
+                        var campusId = dataColumn.ColumnName.Replace( "campusSummaryField_Campus", string.Empty ).AsInteger();
+                        var campusSummaryValues = groupAttendanceMetrics.MetricValues.Where( a =>
                             a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdCampus ).EntityId == campusId
                             &&
-                            _selectedScheduleIds.Contains( a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdSchedule ).EntityId ?? 0) ).ToList();
+                            _selectedScheduleIds.Contains( a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdSchedule ).EntityId ?? 0 ) ).ToList();
 
-                        literalField.Text = campusScheduleValues.Sum( a => a.YValue ?? 0.00M ).ToString( "F0" );
+                        dataRow[dataColumn] = (int)campusSummaryValues.Sum( a => a.YValue ?? 0.00M );
                     }
-                    else if ( literalField.ID == "lGrandTotal" )
+                    else if ( dataColumn.ColumnName == "GrandTotal" )
                     {
-                        literalField.Text = rowMetrics.MetricValues.Where( a => _selectedScheduleIds.Contains( a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdSchedule ).EntityId ?? 0 )).Sum( a => a.YValue ?? 0.00M ).ToString( "F0" );
+                        dataRow[dataColumn] = (int)groupAttendanceMetrics.MetricValues.Where( a => _selectedScheduleIds.Contains( a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdSchedule ).EntityId ?? 0 ) ).Sum( a => a.YValue ?? 0.00M );
                     }
-
                 }
 
-                
+                dataTable.Rows.Add( dataRow );
             }
+
+            gList.DataSource = dataTable;
+            gList.DataBind();
         }
+
+        #endregion
 
         /// <summary>
         /// Handles the Click event of the btnUpdate control.
@@ -560,7 +562,6 @@ namespace RockWeb.Plugins.church_ccv.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnUpdate_Click( object sender, EventArgs e )
         {
-            // TODO
             var selectedGroupIds = GetSelectedGroupIds();
             this.SetBlockUserPreference( "GroupIds", selectedGroupIds.AsDelimited( "," ), true );
             this.SetBlockUserPreference( "ScheduleIds", spSchedules.SelectedValues.ToList().AsDelimited( "," ), true );
@@ -590,11 +591,6 @@ namespace RockWeb.Plugins.church_ccv.Reporting
         {
             public Group Group { get; set; }
             public List<MetricValue> MetricValues { get; set; }
-        }
-
-        protected void btnExport_Click( object sender, EventArgs e )
-        {
-
         }
     }
 }
