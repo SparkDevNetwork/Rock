@@ -45,6 +45,16 @@ namespace Rock.Model
         public int? PersonAliasId { get; set; }
 
         /// <summary>
+        /// If a person belongs to one or more groups a particular type (i.e. Family), this field 
+        /// is used to distinguish which group the pledge should be associated with.
+        /// </summary>
+        /// <value>
+        /// The group identifier.
+        /// </value>
+        [DataMember]
+        public int? GroupId { get; set;}
+
+        /// <summary>
         /// Gets or sets the AccountId of the <see cref="Rock.Model.FinancialAccount"/> that the pledge is directed toward.
         /// </summary>
         /// <value>
@@ -107,7 +117,17 @@ namespace Rock.Model
         /// <value>
         /// The person alias.
         /// </value>
+        [LavaInclude]
         public virtual PersonAlias PersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group.
+        /// </summary>
+        /// <value>
+        /// The group.
+        /// </value>
+        [LavaInclude]
+        public virtual Group Group { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.FinancialAccount"/> or account that the pledge is being directed toward.
@@ -115,6 +135,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.FinancialAccount"/> or account that the pledge is being directed toward.
         /// </value>
+        [LavaInclude]
         public virtual FinancialAccount Account { get; set; }
 
         /// <summary>
@@ -159,6 +180,7 @@ namespace Rock.Model
         public FinancialPledgeConfiguration()
         {
             this.HasOptional( p => p.PersonAlias ).WithMany().HasForeignKey( p => p.PersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.Group ).WithMany().HasForeignKey( p => p.GroupId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Account ).WithMany().HasForeignKey( p => p.AccountId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.PledgeFrequencyValue ).WithMany().HasForeignKey( p => p.PledgeFrequencyValueId ).WillCascadeOnDelete( false );
         }

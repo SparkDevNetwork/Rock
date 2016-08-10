@@ -36,6 +36,7 @@ namespace RockWeb.Blocks.Finance
     [LinkedPage( "Detail Page" )]
     [BooleanField("Show Account Column", "Allows the account column to be hidden.", true, "", 1)]
     [BooleanField("Show Last Modified Date Column", "Allows the Last Modified Date column to be hidden.", true, "", 2)]
+    [BooleanField( "Show Group Column", "Allows the grup column to be hidden.", false, "", 3 )]
 
     [BooleanField( "Show Person Filter", "Allows person filter to be hidden.", true, "Display Filters", 0)]
     [BooleanField( "Show Account Filter", "Allows account filter to be hidden.", true, "Display Filters", 1 )]
@@ -84,11 +85,14 @@ namespace RockWeb.Blocks.Finance
                 gfPledges.Visible = false;
             }
 
-            // show/hide the account column
+            // show/hide the group column
             gPledges.Columns[1].Visible = GetAttributeValue( "ShowAccountColumn" ).AsBoolean();
 
+            // show/hide the account column
+            gPledges.Columns[2].Visible = GetAttributeValue( "ShowAccountColumn" ).AsBoolean();
+
             // show/hide the last modified date column
-            gPledges.Columns[6].Visible = GetAttributeValue( "ShowLastModifiedDateColumn" ).AsBoolean();
+            gPledges.Columns[7].Visible = GetAttributeValue( "ShowLastModifiedDateColumn" ).AsBoolean();
         }
 
         private void GPledges_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )

@@ -470,6 +470,7 @@ namespace Rock.Client.Enums
         Sent = 0x1,
         Signed = 0x2,
         Cancelled = 0x3,
+        Expired = 0x4,
     }
 
     /// <summary>
