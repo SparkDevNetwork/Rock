@@ -50,6 +50,8 @@ DECLARE @False bit = 0
 DECLARE @CreatedDateTime AS DATETIME = GETDATE();
 DECLARE @foreignKey AS NVARCHAR(15) = 'Metrics 2.0';
 DECLARE @fuseScheduleId AS NVARCHAR(10) = (SELECT Id FROM Schedule WHERE Name = 'Fuse');
+DECLARE @sundayCalculation AS NVARCHAR(100) = 'CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, GETDATE()), GETDATE())) AS MetricValueDateTime';
+DECLARE @wednesdayCalculation AS NVARCHAR(100) = 'CONVERT(DATE, DATEADD(DAY, (DATEDIFF (DAY, ''20110105'', GETDATE()) / 7) * 7, ''20110105'')) AS MetricValueDateTime';
 
 /* ====================================================== */
 -- create the group conversion table
@@ -114,9 +116,9 @@ DECLARE @GroupIds AS VARCHAR(MAX);
 SELECT @GroupIds = COALESCE(@GroupIds + ', ', '') + CONVERT(NVARCHAR(15), GroupId) FROM #groupConversion WHERE GroupId IS NOT NULL;
 
 UPDATE Metric SET SourceSql = '
-SELECT COUNT(1) AS Value, Attendance.CampusId AS EntityId,
+SELECT COUNT(1) AS Value, ' + @sundayCalculation + ',
+	Attendance.CampusId AS EntityId, 
 	Schedule.Id AS Schedule
-	, DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + ''00:00'' AS ScheduleDate
 FROM PersonAlias PA 
 INNER JOIN (
 	SELECT PersonAliasId, CampusId, ScheduleId
@@ -148,8 +150,8 @@ DECLARE @GroupMemberStatusActive int = 1;
 
 SELECT
 	AVG(sub.NumMembers) as Value
+	, ' + @wednesdayCalculation + '
 	, sub.CampusId AS EntityId
-	, DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + ''00:00'' AS ScheduleDate
 FROM 
 	(
 		SELECT 
@@ -204,7 +206,7 @@ BEGIN
 END
 
 UPDATE Metric SET SourceSql = '
-SELECT COUNT(1) AS Value, CampusId AS EntityId, ' + @fuseScheduleId + ', DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + ''19:00'' AS ScheduleDate
+SELECT COUNT(1) AS Value, ' + @wednesdayCalculation + ', CampusId AS EntityId, ' + @fuseScheduleId + '
 FROM PersonAlias PA 
 INNER JOIN (
 	SELECT PersonAliasId, A.CampusId
@@ -256,7 +258,7 @@ BEGIN
 END
 
 UPDATE Metric SET SourceSql = '
-SELECT COUNT(1) AS Value, CampusId AS EntityId, ' +  @fuseScheduleId + ', DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + ''19:00'' AS ScheduleDate
+SELECT COUNT(1) AS Value, ' + @wednesdayCalculation + ', CampusId AS EntityId, ' +  @fuseScheduleId + '
 FROM PersonAlias PA 
 INNER JOIN (
 	SELECT PersonAliasId, A.CampusId
@@ -367,8 +369,8 @@ WITH Attendances AS (
 		a.WednesdayDate BETWEEN @firstReturnWednesdayDate AND @recentWednesdayDate
 )
 SELECT
-	CONVERT(INT, ROUND(CONVERT(DECIMAL, COUNT(r.PersonId)) / CONVERT(DECIMAL, COUNT(ftp.PersonId)) * 100, 0)) AS Value,
-	ftp.CampusId AS EntityId, ' + @fuseScheduleId + ',CONVERT(NVARCHAR(20), @recentWednesdayDate) + '' 19:00'' AS ScheduleDate
+	CONVERT(INT, ROUND(CONVERT(DECIMAL, COUNT(r.PersonId)) / CONVERT(DECIMAL, COUNT(ftp.PersonId)) * 100, 0)) AS Value, ' + @wednesdayCalculation + ',
+	ftp.CampusId AS EntityId, ' + @fuseScheduleId + '
 FROM
 	FirstTimePersonIdsWithCampus ftp
 	LEFT JOIN Returnees r ON r.PersonId = ftp.PersonId
@@ -436,9 +438,8 @@ cte_FirstTimePersonIds AS (
 		CONVERT(DATE, MIN([StartDateTime])) = @recentWednesday
 )
 SELECT
-	COUNT(Id) AS Value
+	COUNT(Id) AS Value, ' + @wednesdayCalculation + '
 	, CampusId AS EntityId, ' + @fuseScheduleId + '
-	, DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + ''19:00'' AS ScheduleDate
 FROM
 	[cte_FirstTimePersonIds]
 GROUP BY
@@ -509,9 +510,8 @@ WITH Attendances AS (
 		a.SundayDate BETWEEN @firstReturnSundayDate AND @recentSundayDate
 )
 SELECT
-	CONVERT(INT, ROUND(CONVERT(DECIMAL, COUNT(r.PersonId)) / CONVERT(DECIMAL, COUNT(ftp.PersonId)) * 100, 0)) AS Value,
-	ftp.CampusId AS EntityId,
-	CONVERT(DATETIME, @recentSundayDate) AS ScheduleDate
+	CONVERT(INT, ROUND(CONVERT(DECIMAL, COUNT(r.PersonId)) / CONVERT(DECIMAL, COUNT(ftp.PersonId)) * 100, 0)) AS Value, ' + @sundayCalculation + ',
+	ftp.CampusId AS EntityId
 FROM
 	FirstTimePersonIdsWithCampus ftp
 	LEFT JOIN Returnees r ON r.PersonId = ftp.PersonId
@@ -611,10 +611,10 @@ cte_FirstTimePersonIds AS (
 )
 SELECT
 	COUNT(Id) AS Value
+	, ' + @sundayCalculation + '
 	, CampusId AS EntityId
 	, ScheduleId
 	, GroupId
-	, DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + ''00:00'' AS ScheduleDate
 FROM
 	[cte_FirstTimePersonIds]
 GROUP BY
@@ -681,10 +681,10 @@ END
 
 UPDATE Metric SET SourceSql = '
 SELECT COUNT(1) AS Value, 
+    ' + @sundayCalculation + ',
 	CampusId AS EntityId,
 	ScheduleId,
 	GroupId
-	, DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + ''00:00'' AS ScheduleDate
 FROM PersonAlias PA 
 INNER JOIN (
 	SELECT PersonAliasId, A.CampusId, A.ScheduleId, A.GroupId
@@ -765,10 +765,10 @@ END
 
 UPDATE Metric SET SourceSql = '
 SELECT COUNT(1) AS Value, 
+    ' + @sundayCalculation + ',
 	CampusId AS EntityId,
 	ScheduleId,
 	GroupId
-	, DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + ''00:00'' AS ScheduleDate
 FROM PersonAlias PA 
 INNER JOIN (
 	SELECT PersonAliasId, A.CampusId, A.ScheduleId, A.GroupId
@@ -849,10 +849,10 @@ END
 
 UPDATE Metric SET SourceSql = '
 SELECT COUNT(1) AS Value, 
+	' + @sundayCalculation + ',
 	CampusId AS EntityId,
 	ScheduleId,
 	GroupId
-	, DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + ''00:00'' AS ScheduleDate
 FROM PersonAlias PA 
 INNER JOIN (
 	SELECT PersonAliasId, A.CampusId, A.ScheduleId, A.GroupId
