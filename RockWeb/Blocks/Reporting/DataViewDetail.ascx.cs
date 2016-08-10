@@ -519,6 +519,7 @@ $(document).ready(function() {
 
             pnlDetails.Visible = true;
             hfDataViewId.Value = dataView.Id.ToString();
+            hlblEditDataViewId.Text = "Id: " + dataView.Id.ToString();
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
@@ -616,6 +617,7 @@ $(document).ready(function() {
             SetEditMode( false );
             hfDataViewId.SetValue( dataView.Id );
             lReadOnlyTitle.Text = dataView.Name.FormatAsHtmlTitle();
+            hlblDataViewId.Text = "Id: " + dataView.Id.ToString();
 
             lDescription.Text = dataView.Description;
 

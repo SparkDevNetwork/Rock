@@ -309,10 +309,14 @@ namespace Rock.Lava.Blocks
                             queryResult = queryResult.Skip( parms["offset"].AsInteger() );
                         }
 
-                        // limit
+                        // limit, default to 1000
                         if ( parms.Any( p => p.Key == "limit" ) )
                         {
                             queryResult = queryResult.Take( parms["limit"].AsInteger() );
+                        }
+                        else
+                        {
+                            queryResult = queryResult.Take( 1000 );
                         }
 
                         // check to ensure we had some form of filter (otherwise we'll return all results in the table)
