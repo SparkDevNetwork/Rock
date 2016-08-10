@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Web.UI;
@@ -22,7 +23,14 @@ namespace RockWeb.Plugins.church_ccv.Reporting
     [DisplayName( "Attendance Spreadsheet Tool" )]
     [Category( "CCV > Reporting" )]
     [Description( "Helps create the weekly CCV Attendance Spreadsheet" )]
-    [TextField( "AttendanceTypes", Category = "CustomSetting")]
+
+    // stored as comma-delimited GroupTypeIds
+    [TextField( "AttendanceTypes", Category = "CustomSetting" )]
+
+    // stored as comma-delimited CampusIds
+    [TextField( "Campuses", Category = "CustomSetting" )]
+
+    [IntegerField( "MetricCategoryId", Category = "CustomSetting" )]
     public partial class AttendanceSpreadSheetTool : RockBlockCustomSettings
     {
         #region Base Control Methods
@@ -55,31 +63,82 @@ namespace RockWeb.Plugins.church_ccv.Reporting
 
             if ( !Page.IsPostBack )
             {
-                LoadDropDowns();
-                
-                BindGrid();
+                ShowDetails();
             }
+        }
+
+        /// <summary>
+        /// Shows the details.
+        /// </summary>
+        private void ShowDetails()
+        {
+            var lastSundayDate = RockDateTime.Today.SundayDate();
+            if ( lastSundayDate > RockDateTime.Today )
+            {
+                lastSundayDate = lastSundayDate.AddDays( -7 );
+            }
+
+            var scheduleIdList = this.GetBlockUserPreference( "ScheduleIds" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsIntegerList();
+            spSchedules.SetValues( scheduleIdList );
+
+            var formatString = "dddd MMM d, yyyy";
+            ddlSundayDate.Items.Clear();
+            while ( lastSundayDate > RockDateTime.Today.AddMonths( -6 ) )
+            {
+                ddlSundayDate.Items.Add( new ListItem( lastSundayDate.ToString( formatString ), lastSundayDate.ToString() ) );
+                lastSundayDate = lastSundayDate.AddDays( -7 );
+            }
+
+            var groupIdList = this.GetBlockUserPreference( "GroupIds" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+
+            // if no groups are selected, default to showing all of them
+            var selectAll = groupIdList.Count == 0;
+
+            var checkboxListControls = rptGroupTypes.ControlsOfTypeRecursive<RockCheckBoxList>();
+            foreach ( var cblGroup in checkboxListControls )
+            {
+                foreach ( ListItem item in cblGroup.Items )
+                {
+                    item.Selected = selectAll || groupIdList.Contains( item.Value );
+                }
+            }
+
+            BindGrid();
         }
 
         /// <summary>
         /// Loads the drop downs.
         /// </summary>
-        public void LoadDropDowns()
+        public void LoadDropDownsForSettings()
         {
             var rockContext = new RockContext();
 
-            clbCampuses.Items.Clear();
-            var noCampusListItem = new ListItem();
-            noCampusListItem.Text = "<span title='Include records that are not associated with a campus'>No Campus</span>";
-            noCampusListItem.Value = "null";
-            clbCampuses.Items.Add( noCampusListItem );
+            cblCampuses.Items.Clear();
             foreach ( var campus in CampusCache.All().OrderBy( a => a.Name ) )
             {
                 var listItem = new ListItem();
                 listItem.Text = campus.Name;
                 listItem.Value = campus.Id.ToString();
-                clbCampuses.Items.Add( listItem );
+                cblCampuses.Items.Add( listItem );
             }
+
+            cblCampuses.SetValues( this.GetAttributeValue( "Campuses" ).SplitDelimitedValues().AsIntegerList() );
+
+            cblAttendanceTypes.Items.Clear();
+            var groupTypeService = new GroupTypeService( rockContext );
+            Guid groupTypePurposeGuid = Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid();
+            var attendanceTypes = groupTypeService.Queryable()
+                    .Where( a => a.GroupTypePurposeValue.Guid == groupTypePurposeGuid )
+                    .OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+
+            foreach ( var attendanceType in attendanceTypes )
+            {
+                cblAttendanceTypes.Items.Add( new ListItem( attendanceType.Name, attendanceType.Id.ToString() ) );
+            }
+
+            cblAttendanceTypes.SetValues( this.GetAttributeValue( "AttendanceTypes" ).SplitDelimitedValues().AsIntegerList() );
+
+            mpMetric.SetValue( this.GetAttributeValue( "MetricCategoryId" ).AsIntegerOrNull() );
         }
 
         /// <summary>
@@ -87,7 +146,10 @@ namespace RockWeb.Plugins.church_ccv.Reporting
         /// </summary>
         protected override void ShowSettings()
         {
-            // TODO
+            LoadDropDownsForSettings();
+            pnlConfigure.Visible = true;
+
+            mdConfigure.Show();
         }
 
         /// <summary>
@@ -108,7 +170,6 @@ namespace RockWeb.Plugins.church_ccv.Reporting
             }
             else
             {
-                nbGroupTypeWarning.Text = "Please select a check-in type.";
                 nbGroupTypeWarning.Visible = true;
             }
         }
@@ -137,6 +198,22 @@ namespace RockWeb.Plugins.church_ccv.Reporting
             return result;
         }
 
+        /// <summary>
+        /// Gets the selected group ids.
+        /// </summary>
+        /// <returns></returns>
+        private List<int> GetSelectedGroupIds()
+        {
+            var selectedGroupIds = new List<int>();
+            var checkboxListControls = rptGroupTypes.ControlsOfTypeRecursive<RockCheckBoxList>();
+            foreach ( var cblGroup in checkboxListControls )
+            {
+                selectedGroupIds.AddRange( cblGroup.SelectedValuesAsInt );
+            }
+
+            return selectedGroupIds;
+        }
+
         // list of grouptype ids that have already been rendered (in case a group type has multiple parents )
         private List<int> _addedGroupTypeIds;
 
@@ -147,49 +224,51 @@ namespace RockWeb.Plugins.church_ccv.Reporting
         /// </summary>
         /// <param name="groupType">Type of the group.</param>
         /// <param name="pnlGroupTypes">The PNL group types.</param>
-        private void AddGroupTypeControls( GroupType groupType, HtmlGenericContainer liGroupTypeItem, RockContext rockContext )
+        private void AddGroupTypeControls( GroupTypeCache groupType, HtmlGenericContainer liGroupTypeItem, RockContext rockContext )
         {
             if ( !_addedGroupTypeIds.Contains( groupType.Id ) )
             {
                 _addedGroupTypeIds.Add( groupType.Id );
 
-                if ( groupType.Groups.Any() )
+                var groupService = new GroupService( rockContext );
+                var childGroupTypes = groupType.ChildGroupTypes;
+
+                // limit to Groups that don't have a Parent, or the ParentGroup is a different grouptype so we don't end up with infinite recursion
+                var childGroups = groupService.Queryable().Where( a => a.GroupTypeId == groupType.Id )
+                    .Where( g => !g.ParentGroupId.HasValue || ( g.ParentGroup.GroupTypeId != groupType.Id ) )
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Name )
+                    .Include( a => a.GroupLocations )
+                    .ToList();
+
+                if ( childGroups.Any() )
                 {
-                    bool showGroupAncestry = GetAttributeValue( "ShowGroupAncestry" ).AsBoolean( true );
-
-                    var groupService = new GroupService( rockContext );
-
                     var cblGroupTypeGroups = new RockCheckBoxList { ID = "cblGroupTypeGroups" + groupType.Id };
 
                     cblGroupTypeGroups.Label = groupType.Name;
                     cblGroupTypeGroups.Items.Clear();
 
-                    // limit to Groups that don't have a Parent, or the ParentGroup is a different grouptype so we don't end up with infinite recursion
-                    foreach ( var group in groupType.Groups
-                        .Where( g => !g.ParentGroupId.HasValue || ( g.ParentGroup.GroupTypeId != groupType.Id ) )
-                        .OrderBy( a => a.Order )
-                        .ThenBy( a => a.Name )
-                        .ToList() )
+                    foreach ( var group in childGroups )
                     {
-                        AddGroupControls( group, cblGroupTypeGroups, groupService, showGroupAncestry );
+                        AddGroupControls( group, cblGroupTypeGroups, groupService );
                     }
 
                     liGroupTypeItem.Controls.Add( cblGroupTypeGroups );
                 }
                 else
                 {
-                    if ( groupType.ChildGroupTypes.Any() )
+                    if ( childGroupTypes.Any() )
                     {
                         liGroupTypeItem.Controls.Add( new Label { Text = groupType.Name, ID = "lbl" + groupType.Name } );
                     }
                 }
 
-                if ( groupType.ChildGroupTypes.Any() )
+                if ( childGroupTypes.Any() )
                 {
                     var ulGroupTypeList = new HtmlGenericContainer( "ul", "list-unstyled" );
 
                     liGroupTypeItem.Controls.Add( ulGroupTypeList );
-                    foreach ( var childGroupType in groupType.ChildGroupTypes.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+                    foreach ( var childGroupType in childGroupTypes.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
                     {
                         var liChildGroupTypeItem = new HtmlGenericContainer( "li" );
                         liChildGroupTypeItem.ID = "liGroupTypeItem" + childGroupType.Id;
@@ -200,6 +279,11 @@ namespace RockWeb.Plugins.church_ccv.Reporting
             }
         }
 
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptGroupTypes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptGroupTypes_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
@@ -211,7 +295,7 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                 e.Item.Controls.Add( liGroupTypeItem );
 
                 var rockContext = new RockContext();
-                AddGroupTypeControls( groupType, liGroupTypeItem, rockContext );
+                AddGroupTypeControls( GroupTypeCache.Read( groupType.Id ), liGroupTypeItem, rockContext );
             }
         }
 
@@ -222,7 +306,7 @@ namespace RockWeb.Plugins.church_ccv.Reporting
         /// <param name="checkBoxList">The check box list.</param>
         /// <param name="service">The service.</param>
         /// <param name="showGroupAncestry">if set to <c>true</c> [show group ancestry].</param>
-        private void AddGroupControls( Group group, RockCheckBoxList checkBoxList, GroupService service, bool showGroupAncestry )
+        private void AddGroupControls( Group group, RockCheckBoxList checkBoxList, GroupService service )
         {
             // Only show groups that actually have a schedule
             if ( group != null )
@@ -232,8 +316,7 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                     _addedGroupIds.Add( group.Id );
                     if ( group.ScheduleId.HasValue || group.GroupLocations.Any( l => l.Schedules.Any() ) )
                     {
-                        string displayName = showGroupAncestry ? service.GroupAncestorPathName( group.Id ) : group.Name;
-                        checkBoxList.Items.Add( new ListItem( displayName, group.Id.ToString() ) );
+                        checkBoxList.Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
                     }
 
                     if ( group.Groups != null )
@@ -243,7 +326,7 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                             .ThenBy( a => a.Name )
                             .ToList() )
                         {
-                            AddGroupControls( childGroup, checkBoxList, service, showGroupAncestry );
+                            AddGroupControls( childGroup, checkBoxList, service );
                         }
                     }
                 }
@@ -263,7 +346,7 @@ namespace RockWeb.Plugins.church_ccv.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            //
+            ShowDetails();
         }
 
         /// <summary>
@@ -280,30 +363,238 @@ namespace RockWeb.Plugins.church_ccv.Reporting
 
         #region Methods
 
+        private List<int> _selectedScheduleIds = null;
+
+        private void AddScheduleColumns( Metric metric, DateTime sundayDate )
+        {
+            var rockContext = new RockContext();
+
+            // clear out any existing schedule columns and add the ones that match the current filter setting
+            gList.Columns.Clear();
+            gList.Columns.Add( new RockLiteralField { ID = "lGroupName", HeaderText = "Worship" } );
+
+            var groupIds = this.GetSelectedGroupIds();
+            _selectedScheduleIds = spSchedules.SelectedValuesAsInt().ToList();
+            var scheduleList = new ScheduleService( rockContext ).Queryable().Where( a => a.Name != null ).ToList().Select( a => new
+            {
+                a.Id,
+                a.FriendlyScheduleText
+            } );
+
+
+            var entityTypeIdSchedule = EntityTypeCache.Read<Schedule>().Id;
+            var entityTypeIdGroup = EntityTypeCache.Read<Group>().Id;
+            var selectedGroupIds = this.GetSelectedGroupIds();
+
+            var campuses = CampusCache.All( false );
+            foreach ( var campus in campuses.OrderBy( a => a.Id ) )
+            {
+                var campusServiceTimes = campus.ServiceTimes;
+
+                // add all the advertised schedules first
+                foreach ( var serviceTime in campusServiceTimes )
+                {
+                    var serviceTimeFriendlyText = string.Format( "{0} at {1}", serviceTime.Day, serviceTime.Time ).Replace( "*", "" ).Trim();
+                    var schedule = scheduleList.FirstOrDefault( a => a.FriendlyScheduleText.StartsWith( serviceTimeFriendlyText, StringComparison.OrdinalIgnoreCase ) );
+                    if ( schedule != null && _selectedScheduleIds.Contains( schedule.Id ) )
+                    {
+                        string campusScheduleFieldControlId = string.Format( "campusScheduleField_Campus{0}_Schedule{1}", campus.Id, schedule.Id );
+
+                        var headerText = string.Format( "{0} - {1}", campus.Name, schedule.FriendlyScheduleText );
+                        RockLiteralField campusScheduleField = new RockLiteralField { HeaderText = headerText, ID = campusScheduleFieldControlId };
+                        gList.Columns.Add( campusScheduleField );
+                    }
+                }
+
+                // look up all the schedules that were used and also add those if they aren't there already
+                var metricCampusScheduleIds = new MetricValueService( rockContext ).Queryable()
+                    .Where( a => a.MetricId == metric.Id && a.MetricValueDateTime == sundayDate )
+                    .Where( a => selectedGroupIds.Contains( a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdGroup ).EntityId ?? 0 ) )
+                    .SelectMany( a => a.MetricValuePartitions )
+                    .Where( a => a.MetricPartition.EntityTypeId == entityTypeIdSchedule )
+                    .Select( a => a.EntityId ).Distinct().ToList();
+
+                var metricCampusSchedules = scheduleList.Where( a => metricCampusScheduleIds.Contains( a.Id ) && _selectedScheduleIds.Contains( a.Id ) );
+                foreach ( var schedule in metricCampusSchedules )
+                {
+                    string campusScheduleFieldControlId = string.Format( "campusScheduleField_Campus{0}_Schedule{1}", campus.Id, schedule.Id );
+                    if ( !gList.Columns.OfType<RockLiteralField>().Any( a => a.ID == campusScheduleFieldControlId ) )
+                    {
+                        var headerText = string.Format( "{0} - {1}", campus.Name, schedule.FriendlyScheduleText );
+                        RockLiteralField campusScheduleField = new RockLiteralField { HeaderText = headerText, ID = campusScheduleFieldControlId };
+                        gList.Columns.Add( campusScheduleField );
+                    }
+                }
+
+                string campusSummaryFieldControlId = string.Format( "campusSummaryField_Campus{0}", campus.Id );
+                RockLiteralField campusSummaryField = new RockLiteralField { HeaderText = campus.Name, ID = campusSummaryFieldControlId };
+                gList.Columns.Add( campusSummaryField );
+            }
+
+            gList.Columns.Add( new RockLiteralField { ID = "lGrandTotal", HeaderText = "Grand Total" } );
+        }
+
         /// <summary>
         /// Binds the grid.
         /// </summary>
         private void BindGrid()
         {
             RockContext rockContext = new RockContext();
-            //
+            var metricCategoryService = new MetricCategoryService( rockContext );
+
+            Metric metric = null;
+            var metricCategoryId = this.GetAttributeValue( "MetricCategoryId" ).AsIntegerOrNull();
+            if ( metricCategoryId.HasValue )
+            {
+                var metricCategory = metricCategoryService.Get( metricCategoryId.Value );
+                if ( metricCategory != null )
+                {
+                    metric = metricCategory.Metric;
+                }
+            }
+
+            if ( metric == null )
+            {
+                nbMetricWarning.Visible = true;
+                return;
+            }
+            else
+            {
+                nbMetricWarning.Visible = false;
+            }
+
+            var sundayDate = ddlSundayDate.SelectedValue.AsDateTime();
+            AddScheduleColumns( metric, sundayDate.Value );
+
+            var selectedGroupIds = this.GetSelectedGroupIds();
+
+            var entityTypeIdGroup = EntityTypeCache.Read<Group>().Id;
+            var entityTypeIdCampus = EntityTypeCache.Read<Campus>().Id;
+            var entityTypeIdSchedule = EntityTypeCache.Read<Schedule>().Id;
+            var metricValueService = new MetricValueService( rockContext );
+            var metricValuesQuery = metricValueService.Queryable()
+                .Where( a => a.MetricId == metric.Id && a.MetricValueDateTime == sundayDate )
+                .Where( a => selectedGroupIds.Contains( a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdGroup ).EntityId ?? 0 ) )
+                .Where( a => _selectedScheduleIds.Contains( a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdSchedule ).EntityId ?? 0 ) )
+                .Include( a => a.MetricValuePartitions );
+
+            var scheduleLookup = new ScheduleService( rockContext ).Queryable().Where( a => a.Name != null ).ToList();
+
+            var list = metricValuesQuery.ToList();
+            var groupService = new GroupService( rockContext );
+            var dataList = new List<GroupAttendanceMetrics>();
+
+            // display grid in the same order that the Groups are displayed
+            foreach ( var groupId in selectedGroupIds )
+            {
+                var group = groupService.Get( groupId );
+                var groupMetricValues = list.Where( a => a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdGroup ).EntityId == groupId ).ToList();
+                dataList.Add( new GroupAttendanceMetrics { Group = group, MetricValues = groupMetricValues } );
+            }
+
+            gList.DataSource = dataList;
+            gList.DataBind();
         }
 
         #endregion
 
+        /// <summary>
+        /// Handles the RowDataBound event of the gList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
         protected void gList_RowDataBound( object sender, GridViewRowEventArgs e )
         {
+            if ( e.Row.DataItem != null )
+            {
+                var rowMetrics = e.Row.DataItem as GroupAttendanceMetrics;
+                var lGroupName = e.Row.FindControl( "lGroupName" ) as Literal;
+                lGroupName.Text = rowMetrics.Group.Name;
 
+                var entityTypeIdCampus = EntityTypeCache.Read<Campus>().Id;
+                var entityTypeIdSchedule = EntityTypeCache.Read<Schedule>().Id;
+
+                foreach ( var literalField in e.Row.ControlsOfTypeRecursive<Literal>() )
+                {
+
+                    if ( literalField.ID.StartsWith( "campusScheduleField_" ) )
+                    {
+                        // "campusScheduleField_Campus{0}_Schedule{1}"
+                        var idParts = literalField.ID.Replace( "campusScheduleField_Campus", string.Empty ).Replace( "_Schedule", "," ).Split( ',' ).ToArray();
+                        var campusId = idParts[0].AsInteger();
+                        var scheduleId = idParts[1].AsInteger();
+                        var campusScheduleValues = rowMetrics.MetricValues.Where( a =>
+                            a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdCampus ).EntityId == campusId
+                            &&
+                            a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdSchedule ).EntityId == scheduleId ).ToList();
+
+                        literalField.Text = campusScheduleValues.Sum( a => a.YValue ?? 0.00M ).ToString( "F0" );
+
+                    }
+                    else if ( literalField.ID.StartsWith( "campusSummaryField_" ) )
+                    {
+                        // "campusSummaryField_Campus{0}"
+                        var campusId = literalField.ID.Replace( "campusSummaryField_Campus", string.Empty ).AsInteger();
+                        var campusScheduleValues = rowMetrics.MetricValues.Where( a =>
+                            a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdCampus ).EntityId == campusId
+                            &&
+                            _selectedScheduleIds.Contains( a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdSchedule ).EntityId ?? 0) ).ToList();
+
+                        literalField.Text = campusScheduleValues.Sum( a => a.YValue ?? 0.00M ).ToString( "F0" );
+                    }
+                    else if ( literalField.ID == "lGrandTotal" )
+                    {
+                        literalField.Text = rowMetrics.MetricValues.Where( a => _selectedScheduleIds.Contains( a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdSchedule ).EntityId ?? 0 )).Sum( a => a.YValue ?? 0.00M ).ToString( "F0" );
+                    }
+
+                }
+
+                
+            }
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnUpdate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnUpdate_Click( object sender, EventArgs e )
         {
+            // TODO
+            var selectedGroupIds = GetSelectedGroupIds();
+            this.SetBlockUserPreference( "GroupIds", selectedGroupIds.AsDelimited( "," ), true );
+            this.SetBlockUserPreference( "ScheduleIds", spSchedules.SelectedValues.ToList().AsDelimited( "," ), true );
 
+            BindGrid();
         }
 
-        protected void cblAttendanceTypes_SelectedIndexChanged( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the SaveClick event of the mdConfigure control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdConfigure_SaveClick( object sender, EventArgs e )
         {
-            BuildGroupTypesUI();
+            mdConfigure.Hide();
+            pnlConfigure.Visible = false;
+
+            this.SetAttributeValue( "AttendanceTypes", cblAttendanceTypes.SelectedValues.AsDelimited( "," ) );
+            this.SetAttributeValue( "Campuses", cblCampuses.SelectedValues.AsDelimited( "," ) );
+            this.SetAttributeValue( "MetricCategoryId", mpMetric.SelectedValue );
+            SaveAttributeValues();
+
+            this.Block_BlockUpdated( sender, e );
+        }
+
+        private class GroupAttendanceMetrics
+        {
+            public Group Group { get; set; }
+            public List<MetricValue> MetricValues { get; set; }
+        }
+
+        protected void btnExport_Click( object sender, EventArgs e )
+        {
+
         }
     }
 }
