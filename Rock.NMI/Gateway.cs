@@ -834,7 +834,7 @@ namespace Rock.NMI
             switch ( selectedFrequencyGuid )
             {
                 case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME:
-                    planElement.Add( new XElement( "months-frequency", "12" ) );
+                    planElement.Add( new XElement( "month-frequency", "12" ) );
                     planElement.Add( new XElement( "day-of-month", schedule.StartDate.Day.ToString() ) );
                     break;
                 case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY:
@@ -844,7 +844,7 @@ namespace Rock.NMI
                     planElement.Add( new XElement( "day-frequency", "14" ) );
                     break;
                 case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY:
-                    planElement.Add( new XElement( "months-frequency", "1" ) );
+                    planElement.Add( new XElement( "month-frequency", "1" ) );
                     planElement.Add( new XElement( "day-of-month", schedule.StartDate.Day.ToString() ) );
                     break;
             }
