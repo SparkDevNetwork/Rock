@@ -1155,3 +1155,56 @@ GROUP BY
 	g.CampusId;
 '
 WHERE Id = @metricId;
+
+/* ====================================================== */
+-- Next Steps -> Baptism -> Baptism Attendees
+/* ====================================================== */
+SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = 'E67AE9C7-19DF-40D4-91C5-4237A43177D4');
+
+IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Schedule',
+		54,
+		@False,
+		1,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+UPDATE Metric SET SourceSql = '
+DECLARE @today AS DATE = GETDATE();
+DECLARE @recentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @today), @today));
+
+SELECT
+	COUNT(a.PersonAliasId),
+	@recentSundayDate AS MetricValueDateTime,
+	g.CampusId,
+	a.ScheduleId
+FROM
+	[Group] g
+	JOIN GroupType gt ON g.GroupTypeId = gt.Id
+	JOIN Attendance a ON a.GroupId = g.Id
+WHERE
+	gt.Name = ''NEW Next Steps Attendee''
+	AND g.Name = ''Baptism Attendee''
+	AND a.SundayDate = @recentSundayDate
+GROUP BY
+	g.CampusId,
+	a.ScheduleId;
+'
+WHERE Id = @metricId;
