@@ -57,6 +57,10 @@ namespace RockWeb.Plugins.church_ccv.Hr
 
             gList.IsDeleteEnabled = true;
             gList.GridRebind += gList_GridRebind;
+            gList.Actions.ShowMergePerson = false;
+            gList.Actions.ShowMergeTemplate = false;
+            gList.Actions.ShowBulkUpdate = false;
+            gList.PersonIdField = "PersonAlias.PersonId";
 
             // disable the normal Export export and add a special CSV Export button instead
             gList.Actions.ShowExcelExport = false;
