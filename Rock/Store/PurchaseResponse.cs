@@ -103,9 +103,9 @@ namespace Rock.Store
         Success,
 
         /// <summary>
-        /// The authenication failed
+        /// The authentication failed
         /// </summary>
-        AuthenicationFailed,
+        AuthenticationFailed,
 
         /// <summary>
         /// The not authorized

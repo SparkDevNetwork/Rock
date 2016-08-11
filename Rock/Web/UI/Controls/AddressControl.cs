@@ -629,83 +629,16 @@ namespace Rock.Web.UI.Controls
                     cityLabel = countryValue.GetAttributeValue( "CityLabel" );
                     stateLabel = countryValue.GetAttributeValue( "StateLabel" );
                     postalCodeLabel = countryValue.GetAttributeValue( "PostalCodeLabel" );
+                    
+                    // only show Address Line 2 if this Control's ShowAddressLine2 and the Country's ShowAddressLine2 are both true
+                    if ( showAddressLine2 )
+                    {
+                        showAddressLine2 = countryValue.GetAttributeValue( "ShowAddressLine2" ).AsBoolean();
+                    }
                 }
 
-                writer.AddAttribute( "id", this.ClientID );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                writer.AddAttribute( "class", "form-group " + ( this.Required ? "required" : string.Empty ) );
-
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
-                writer.AddAttribute( HtmlTextWriterAttribute.For, _tbStreet1.ClientID );
-                writer.RenderBeginTag( HtmlTextWriterTag.Label );
-                writer.Write( showAddressLine2 ? "Address Line 1" : "Address" );
-                writer.RenderEndTag();  // label
-                _tbStreet1.RenderControl( writer );
-                writer.RenderEndTag();  // div.form-group
-
-                if ( showAddressLine2 )
-                {
-                    writer.AddAttribute( "class", "form-group" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
-                    writer.AddAttribute( HtmlTextWriterAttribute.For, _tbStreet2.ClientID );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Label );
-                    writer.Write( "Address Line 2" );
-                    writer.RenderEndTag();  // label
-                    _tbStreet2.RenderControl( writer );
-                    writer.RenderEndTag();  // div.form-group
-                }
-
-                writer.AddAttribute( "class", "row" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                writer.AddAttribute( "class", ( ShowCounty ? "form-group col-sm-3" : "form-group col-sm-6" ) );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
-                writer.AddAttribute( HtmlTextWriterAttribute.For, _tbCity.ClientID );
-                writer.RenderBeginTag( HtmlTextWriterTag.Label );
-                writer.Write( cityLabel );
-                writer.RenderEndTag();  // label
-                _tbCity.RenderControl( writer );
-                writer.RenderEndTag();  // div.form-group
-
-                if ( ShowCounty )
-                {
-                    writer.AddAttribute( "class", "form-group col-sm-3" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
-                    writer.AddAttribute( HtmlTextWriterAttribute.For, _tbCounty.ClientID );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Label );
-                    writer.Write( "County" );
-                    writer.RenderEndTag();  // label
-                    _tbCounty.RenderControl( writer );
-                    writer.RenderEndTag();  // div.form-group
-                }
-
-                writer.AddAttribute( "class", "form-group col-sm-3" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
-                writer.AddAttribute( HtmlTextWriterAttribute.For, _tbState.ClientID );
-                writer.RenderBeginTag( HtmlTextWriterTag.Label );
-                writer.Write( stateLabel );
-                writer.RenderEndTag();  // label
-                _tbState.RenderControl( writer );
-                _ddlState.RenderControl( writer );
-                writer.RenderEndTag();  // div.form-group
-
-                writer.AddAttribute( "class", "form-group col-sm-3" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
-                writer.AddAttribute( HtmlTextWriterAttribute.For, _tbPostalCode.ClientID );
-                writer.RenderBeginTag( HtmlTextWriterTag.Label );
-                writer.Write( postalCodeLabel );
-                writer.RenderEndTag();  // label
-                _tbPostalCode.RenderControl( writer );
-                writer.RenderEndTag();  // div.form-group
-
-                writer.RenderEndTag();  // row
+                // if this address has a value for Street2, show it regardless of the ShowAddressLine2
+                showAddressLine2 = showAddressLine2 || !string.IsNullOrWhiteSpace(_tbStreet2.Text);
 
                 if ( _ddlCountry.Visible )
                 {
@@ -714,11 +647,6 @@ namespace Rock.Web.UI.Controls
 
                     writer.AddAttribute( "class", "form-group col-sm-6" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
-                    writer.AddAttribute( HtmlTextWriterAttribute.For, _tbStreet1.ClientID );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Label );
-                    writer.Write( "Country" );
-                    writer.RenderEndTag();  // label
                     _ddlCountry.RenderControl( writer );
                     writer.RenderEndTag();  // div.form-group
 
@@ -728,6 +656,56 @@ namespace Rock.Web.UI.Controls
 
                     writer.RenderEndTag();  // div.row
                 }
+
+                writer.AddAttribute( "id", this.ClientID );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.AddAttribute( "class", "form-group " + ( this.Required ? "required" : string.Empty ) );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _tbStreet1.Attributes["placeholder"] = showAddressLine2 ? "Address Line 1" : "Address";
+                _tbStreet1.RenderControl( writer );
+                writer.RenderEndTag();  // div.form-group
+
+                if ( showAddressLine2 )
+                {
+                    writer.AddAttribute( "class", "form-group" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    _tbStreet2.Attributes["placeholder"] = "Address Line 2";
+                    _tbStreet2.RenderControl( writer );
+                    writer.RenderEndTag();  // div.form-group
+                }
+
+                writer.AddAttribute( "class", "row" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.AddAttribute( "class", ( ShowCounty ? "form-group col-sm-3" : "form-group col-sm-6" ) );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _tbCity.Attributes["placeholder"] = cityLabel;
+                _tbCity.RenderControl( writer );
+                writer.RenderEndTag();  // div.form-group
+
+                if ( ShowCounty )
+                {
+                    writer.AddAttribute( "class", "form-group col-sm-3" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    _tbCounty.Attributes["placeholder"] = "County";
+                    _tbCounty.RenderControl( writer );
+                    writer.RenderEndTag();  // div.form-group
+                }
+
+                writer.AddAttribute( "class", "form-group col-sm-3" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _tbState.Attributes["placeholder"] = stateLabel;
+                _tbState.RenderControl( writer );
+                _ddlState.RenderControl( writer );
+                writer.RenderEndTag();  // div.form-group
+
+                writer.AddAttribute( "class", "form-group col-sm-3" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _tbPostalCode.Attributes["placeholder"] = postalCodeLabel;
+                _tbPostalCode.RenderControl( writer );
+                writer.RenderEndTag();  // div.form-group
+
+                writer.RenderEndTag();  // row
 
                 writer.RenderEndTag();      // div
             }

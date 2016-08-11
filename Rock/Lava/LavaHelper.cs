@@ -63,13 +63,16 @@ namespace Rock.Lava
                 }
             }
 
-            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
-            if ( globalAttributes.LavaSupportLevel != Lava.LavaSupportLevel.NoLegacy )
+            if ( options.GetLegacyGlobalMergeFields )
             {
-                var legacyGlobalAttributeMergeFields = Rock.Web.Cache.GlobalAttributesCache.GetLegacyMergeFields( currentPerson );
-                foreach ( var legacyGlobalAttributeMergeField in legacyGlobalAttributeMergeFields )
+                var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                if ( globalAttributes.LavaSupportLevel != Lava.LavaSupportLevel.NoLegacy )
                 {
-                    mergeFields.Add( legacyGlobalAttributeMergeField.Key, legacyGlobalAttributeMergeField.Value );
+                    var legacyGlobalAttributeMergeFields = Rock.Web.Cache.GlobalAttributesCache.GetLegacyMergeFields( currentPerson );
+                    foreach ( var legacyGlobalAttributeMergeField in legacyGlobalAttributeMergeFields )
+                    {
+                        mergeFields.Add( legacyGlobalAttributeMergeField.Key, legacyGlobalAttributeMergeField.Value );
+                    }
                 }
             }
 
@@ -170,6 +173,33 @@ namespace Rock.Lava
             pageProperties.Add( "PageIcon", rockPage.PageIcon );
             pageProperties.Add( "Description", rockPage.MetaDescription );
             return pageProperties;
+        }
+
+        /// <summary>
+        /// Gets a list of custom lava commands.
+        /// </summary>
+        /// <returns></returns>
+        public static List<string> GetLavaCommands()
+        {
+            var lavaCommands = new List<string>();
+
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+            foreach ( var assembly in assemblies )
+            {
+                try
+                {
+                    var customCommands = assembly.GetTypes().Where( x => x.BaseType == typeof( Rock.Lava.Blocks.RockLavaBlockBase ) );
+
+                    foreach ( var command in customCommands )
+                    {
+                        lavaCommands.Add( command.Name );
+                    }
+                }
+                catch { }
+            }
+
+            return lavaCommands;
         }
     }
 }

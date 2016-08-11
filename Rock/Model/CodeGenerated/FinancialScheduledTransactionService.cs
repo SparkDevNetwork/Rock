@@ -111,6 +111,7 @@ namespace Rock.Model
             target.StartDate = source.StartDate;
             target.TransactionCode = source.TransactionCode;
             target.TransactionFrequencyValueId = source.TransactionFrequencyValueId;
+            target.TransactionTypeValueId = source.TransactionTypeValueId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

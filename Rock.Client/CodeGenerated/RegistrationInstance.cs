@@ -88,6 +88,9 @@ namespace Rock.Client
         public int RegistrationTemplateId { get; set; }
 
         /// <summary />
+        public int? RegistrationWorkflowTypeId { get; set; }
+
+        /// <summary />
         public bool ReminderSent { get; set; }
 
         /// <summary />
@@ -146,6 +149,7 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.RegistrationTemplateId = source.RegistrationTemplateId;
+            this.RegistrationWorkflowTypeId = source.RegistrationWorkflowTypeId;
             this.ReminderSent = source.ReminderSent;
             this.SendReminderDateTime = source.SendReminderDateTime;
             this.StartDateTime = source.StartDateTime;
@@ -172,6 +176,9 @@ namespace Rock.Client
 
         /// <summary />
         public RegistrationTemplate RegistrationTemplate { get; set; }
+
+        /// <summary />
+        public WorkflowType RegistrationWorkflowType { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

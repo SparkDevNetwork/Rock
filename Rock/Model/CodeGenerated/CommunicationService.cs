@@ -89,6 +89,7 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.AdditionalMergeFieldsJson = source.AdditionalMergeFieldsJson;
+            target.EnabledLavaCommands = source.EnabledLavaCommands;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.FutureSendDateTime = source.FutureSendDateTime;

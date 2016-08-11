@@ -1,4 +1,4 @@
-﻿//CdnPath=http://ajax.aspnetcdn.com/ajax/4.5/6/MenuStandards.js
+﻿//CdnPath=http://ajax.aspnetcdn.com/ajax/4.5.1/1/MenuStandards.js
 if (!window.Sys) { window.Sys = {}; }
 if (!Sys.WebForms) { Sys.WebForms = {}; }
 Sys.WebForms.Menu = function(options) {

@@ -104,6 +104,7 @@ namespace Rock.Model
             target.LastProcessedDateTime = source.LastProcessedDateTime;
             target.Name = source.Name;
             target.Status = source.Status;
+            target.WorkflowIdNumber = source.WorkflowIdNumber;
             target.WorkflowTypeId = source.WorkflowTypeId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

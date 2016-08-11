@@ -496,5 +496,19 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets the untrimmed text.
+        /// </summary>
+        /// <value>
+        /// The untrimmed text.
+        /// </value>
+        public string UntrimmedText
+        {
+            get
+            {
+                return base.Text;
+            }
+        }
+
     }
 }

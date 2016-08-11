@@ -52,6 +52,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
+            if ( new Service<Attendance>( Context ).Queryable().Any( a => a.SearchResultGroupId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Attendance.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<ConnectionRequest>( Context ).Queryable().Any( a => a.AssignedGroupId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, ConnectionRequest.FriendlyTypeName );
@@ -143,6 +149,7 @@ namespace Rock.Model
             target.Name = source.Name;
             target.Order = source.Order;
             target.ParentGroupId = source.ParentGroupId;
+            target.RequiredSignatureDocumentTypeId = source.RequiredSignatureDocumentTypeId;
             target.ScheduleId = source.ScheduleId;
             target.SyncDataViewId = source.SyncDataViewId;
             target.WelcomeSystemEmailId = source.WelcomeSystemEmailId;

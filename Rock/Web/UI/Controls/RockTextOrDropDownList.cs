@@ -416,7 +416,10 @@ namespace Rock.Web.UI.Controls
     function updateTextOrDdlValue( e ) {
         var $row = e.closest('div.js-text-or-ddl-row');
         var newValue = $row.find('input.js-text-or-ddl-input:first').val();
-        if (newValue == '') {
+        if (!newValue || newValue == '' ) {
+            newValue = $row.find('textarea.js-text-or-ddl-input:first').val();
+        }
+        if (!newValue || newValue == '' ) {
             newValue = $row.find('select.js-text-or-ddl-input:first').val();
         } 
         $row.find('input:first').val(newValue);

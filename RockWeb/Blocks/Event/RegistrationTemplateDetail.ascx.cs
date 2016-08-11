@@ -665,6 +665,8 @@ namespace RockWeb.Blocks.Event
             RegistrationTemplate.GroupTypeId = gtpGroupType.SelectedGroupTypeId;
             RegistrationTemplate.GroupMemberRoleId = rpGroupTypeRole.GroupRoleId;
             RegistrationTemplate.GroupMemberStatus = ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>();
+            RegistrationTemplate.RequiredSignatureDocumentTypeId = ddlSignatureDocumentType.SelectedValueAsInt();
+            RegistrationTemplate.RegistrationWorkflowTypeId = wtpRegistrationWorkflow.SelectedValueAsInt();
             RegistrationTemplate.Notify = notify;
             RegistrationTemplate.AddPersonNote = cbAddPersonNote.Checked;
             RegistrationTemplate.LoginRequired = cbLoginRequired.Checked;
@@ -1949,6 +1951,8 @@ namespace RockWeb.Blocks.Event
             rpGroupTypeRole.GroupTypeId = RegistrationTemplate.GroupTypeId ?? 0;
             rpGroupTypeRole.GroupRoleId = RegistrationTemplate.GroupMemberRoleId;
             ddlGroupMemberStatus.SetValue( RegistrationTemplate.GroupMemberStatus.ConvertToInt() );
+            ddlSignatureDocumentType.SetValue( RegistrationTemplate.RequiredSignatureDocumentTypeId );
+            wtpRegistrationWorkflow.SetValue( RegistrationTemplate.RegistrationWorkflowTypeId );
 
             foreach( ListItem li in cblNotify.Items )
             {
@@ -2029,6 +2033,12 @@ namespace RockWeb.Blocks.Event
                 RegistrationTemplate.Category.Name : string.Empty;
             lGroupType.Text = RegistrationTemplate.GroupType != null ?
                 RegistrationTemplate.GroupType.Name : string.Empty;
+            lRequiredSignedDocument.Text = RegistrationTemplate.RequiredSignatureDocumentType != null ?
+                RegistrationTemplate.RequiredSignatureDocumentType.Name : string.Empty;
+            lRequiredSignedDocument.Visible = !string.IsNullOrWhiteSpace( lRequiredSignedDocument.Text );
+            lWorkflowType.Text = RegistrationTemplate.RegistrationWorkflowType != null ?
+                RegistrationTemplate.RegistrationWorkflowType.Name : string.Empty;
+            lWorkflowType.Visible = !string.IsNullOrWhiteSpace( lWorkflowType.Text );
 
             rcwForms.Label = string.Format( "<strong>Forms</strong> ({0}) <i class='fa fa-caret-down'></i>", RegistrationTemplate.Forms.Count() );
             if ( RegistrationTemplate.Forms.Any() )
@@ -2115,6 +2125,15 @@ namespace RockWeb.Blocks.Event
             ddlPersonField.Items.RemoveAt( 0 );
 
             rblFeeType.BindToEnum<RegistrationFeeType>();
+
+            ddlSignatureDocumentType.Items.Clear();
+            ddlSignatureDocumentType.Items.Add( new ListItem() );
+            foreach( var documentType in new SignatureDocumentTypeService( rockContext )
+                .Queryable().AsNoTracking()
+                .OrderBy( t => t.Name ) )
+            {
+                ddlSignatureDocumentType.Items.Add( new ListItem( documentType.Name, documentType.Id.ToString() ) );
+            }
         }
 
         #endregion

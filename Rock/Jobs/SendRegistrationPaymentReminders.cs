@@ -96,7 +96,7 @@ namespace Rock.Jobs
 
                 foreach(var registration in registrations )
                 {
-                    if ( registration.TotalCost > registration.TotalPaid )
+                    if ( registration.DiscountedCost > registration.TotalPaid )
                     {
                         var reminderDate = RockDateTime.Now.AddDays( registration.RegistrationInstance.RegistrationTemplate.PaymentReminderTimeSpan.Value * -1 );
 

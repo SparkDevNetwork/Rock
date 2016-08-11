@@ -76,6 +76,9 @@ namespace Rock.Client
         public int? ProcessingIntervalSeconds { get; set; }
 
         /// <summary />
+        public string WorkflowIdPrefix { get; set; }
+
+        /// <summary />
         public string WorkTerm { get; set; }
 
         /// <summary>
@@ -124,6 +127,7 @@ namespace Rock.Client
             this.Name = source.Name;
             this.Order = source.Order;
             this.ProcessingIntervalSeconds = source.ProcessingIntervalSeconds;
+            this.WorkflowIdPrefix = source.WorkflowIdPrefix;
             this.WorkTerm = source.WorkTerm;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;

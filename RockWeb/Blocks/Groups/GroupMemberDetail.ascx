@@ -26,6 +26,17 @@
                 <asp:CustomValidator ID="cvGroupMember" runat="server" Display="None" />
                 <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" />
 
+                <asp:Panel ID="pnlRequiredSignatureDocument" runat="server" CssClass="alert alert-warning" Visible="false" >
+                    <asp:Literal ID="lRequiredSignatureDocumentMessage" runat="server" />
+                    <div class="actions margin-t-md">
+                        <asp:LinkButton ID="lbResendDocumentRequest" runat="server" Text="Send Signature Request" CssClass="btn btn-default" OnClick="lbResendDocumentRequest_Click" />
+                    </div>
+                    <Rock:ModalAlert ID="maSignatureRequestSent" runat="server" Text="A Signature Request Has Been Sent!" Visible="false" />
+                </asp:Panel>
+
+                <Rock:NotificationBox ID="NotificationBox1" runat="server" NotificationBoxType="Danger">
+                </Rock:NotificationBox>
+
                 <div id="pnlEditDetails" runat="server">
 
                     <div class="row">
@@ -86,7 +97,7 @@
                         <asp:LinkButton ID="btnReCheckRequirements" runat="server" AccessKey="s" Text="Re-Check Requirements" CssClass="btn btn-default" OnClick="btnReCheckRequirements_Click" CausesValidation="false" />
                         <asp:LinkButton ID="btnSaveThenAdd" runat="server" AccessKey="d" Text="Save Then Add" CssClass="btn btn-link" OnClick="btnSaveThenAdd_Click" />
                         <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false" />
-                        <asp:LinkButton ID="btnShowMoveDialog" runat="server" CssClass="btn btn-default pull-right" OnClick="btnShowMoveDialog_Click" ToolTip="Move to another group" CausesValidation="false"><i class="fa fa-external-link"></i></asp:LinkButton>
+                        <asp:LinkButton ID="btnShowMoveDialog" runat="server" CssClass="btn btn-default btn-sm pull-right" OnClick="btnShowMoveDialog_Click" ToolTip="Move to another group" CausesValidation="false"><i class="fa fa-external-link"></i></asp:LinkButton>
                     </div>
 
                 </div>

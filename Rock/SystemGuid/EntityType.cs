@@ -32,6 +32,11 @@ namespace Rock.SystemGuid
         public const string AUTHENTICATION_DATABASE = "4E9B798F-BB68-4C0E-9707-0928D15AB020";
 
         /// <summary>
+        /// The benevolenc e_ request
+        /// </summary>
+        public const string BENEVOLENCE_REQUEST = "CF0CE5C1-9286-4310-9B50-10D040F8EBD2";
+
+        /// <summary>
         /// The Block entity type
         /// </summary>
         public const string BLOCK = "D89555CA-9AE4-4D62-8AF1-E5E463C1EF65";
@@ -121,6 +126,11 @@ namespace Rock.SystemGuid
         /// The guid for the Rock.Model.Note entity
         /// </summary>
         public const string NOTE = "53DC1E78-14A5-44DE-903F-6A2CB02164E7";
+
+        /// <summary>
+        /// The guid for the Rock.Model.Page entity
+        /// </summary>
+        public const string PAGE = "E104DCDF-247C-4CED-A119-8CC51632761F";
 
         /// <summary>
         /// The guid for the Rock.Model.Person entity

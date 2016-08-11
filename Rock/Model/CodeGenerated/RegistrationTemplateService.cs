@@ -121,12 +121,15 @@ namespace Rock.Model
             target.RegistrantsSameFamily = source.RegistrantsSameFamily;
             target.RegistrantTerm = source.RegistrantTerm;
             target.RegistrationTerm = source.RegistrationTerm;
+            target.RegistrationWorkflowTypeId = source.RegistrationWorkflowTypeId;
             target.ReminderEmailTemplate = source.ReminderEmailTemplate;
             target.ReminderFromEmail = source.ReminderFromEmail;
             target.ReminderFromName = source.ReminderFromName;
             target.ReminderSubject = source.ReminderSubject;
             target.RequestEntryName = source.RequestEntryName;
+            target.RequiredSignatureDocumentTypeId = source.RequiredSignatureDocumentTypeId;
             target.SetCostOnInstance = source.SetCostOnInstance;
+            target.SignatureDocumentAction = source.SignatureDocumentAction;
             target.SuccessText = source.SuccessText;
             target.SuccessTitle = source.SuccessTitle;
             target.CreatedDateTime = source.CreatedDateTime;

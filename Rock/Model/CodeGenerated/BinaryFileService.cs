@@ -58,6 +58,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<BenevolenceRequestDocument>( Context ).Queryable().Any( a => a.BinaryFileId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, BenevolenceRequestDocument.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<ConnectionOpportunity>( Context ).Queryable().Any( a => a.PhotoId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, ConnectionOpportunity.FriendlyTypeName );
@@ -97,6 +103,12 @@ namespace Rock.Model
             if ( new Service<Person>( Context ).Queryable().Any( a => a.PhotoId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Person.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<SignatureDocument>( Context ).Queryable().Any( a => a.BinaryFileId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, SignatureDocument.FriendlyTypeName );
                 return false;
             }  
             return true;

@@ -1399,7 +1399,7 @@ namespace RockWeb.Blocks.Event
                         // If there is a valid registration, and nothing went wrong processing the payment, add registrants to group and send the notifications
                         if ( registration != null && !registration.IsTemporary )
                         {
-                            ProcessPostSave( registrationService, registration, previousRegistrantIds, rockContext );
+                            ProcessPostSave( isNewRegistration, registrationService, registration, previousRegistrantIds, rockContext );
                         }
                     }
 
@@ -1446,7 +1446,7 @@ namespace RockWeb.Blocks.Event
             return registration != null ? registration.Id : (int?)null;
         }
 
-        private void ProcessPostSave( RegistrationService registrationService, Registration registration, List<int> previousRegistrantIds, RockContext rockContext )
+        private void ProcessPostSave( bool isNewRegistration, RegistrationService registrationService, Registration registration, List<int> previousRegistrantIds, RockContext rockContext )
         {
             try
             {
@@ -1456,17 +1456,20 @@ namespace RockWeb.Blocks.Event
                 string appRoot = ResolveRockUrl( "~/" );
                 string themeRoot = ResolveRockUrl( "~~/" );
 
-                var confirmation = new Rock.Transactions.SendRegistrationConfirmationTransaction();
-                confirmation.RegistrationId = registration.Id;
-                confirmation.AppRoot = appRoot;
-                confirmation.ThemeRoot = themeRoot;
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( confirmation );
+                if ( isNewRegistration )
+                {
+                    var confirmation = new Rock.Transactions.SendRegistrationConfirmationTransaction();
+                    confirmation.RegistrationId = registration.Id;
+                    confirmation.AppRoot = appRoot;
+                    confirmation.ThemeRoot = themeRoot;
+                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( confirmation );
 
-                var notification = new Rock.Transactions.SendRegistrationNotificationTransaction();
-                notification.RegistrationId = registration.Id;
-                notification.AppRoot = appRoot;
-                notification.ThemeRoot = themeRoot;
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( notification );
+                    var notification = new Rock.Transactions.SendRegistrationNotificationTransaction();
+                    notification.RegistrationId = registration.Id;
+                    notification.AppRoot = appRoot;
+                    notification.ThemeRoot = themeRoot;
+                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( notification );
+                }
 
                 var newRegistration = registrationService
                     .Queryable( "Registrants.PersonAlias.Person,Registrants.GroupMember,RegistrationInstance.Account,RegistrationInstance.RegistrationTemplate.Fees,RegistrationInstance.RegistrationTemplate.Discounts,RegistrationInstance.RegistrationTemplate.Forms.Fields.Attribute,RegistrationInstance.RegistrationTemplate.FinancialGateway" )
@@ -1474,6 +1477,54 @@ namespace RockWeb.Blocks.Event
                     .FirstOrDefault();
                 if ( newRegistration != null )
                 {
+                    if ( isNewRegistration )
+                    {
+                        if ( RegistrationTemplate.RequiredSignatureDocumentTypeId.HasValue )
+                        {
+                            string email = newRegistration.ConfirmationEmail;
+                            if ( string.IsNullOrWhiteSpace( email ) && newRegistration.PersonAlias != null && newRegistration.PersonAlias.Person != null )
+                            {
+                                email = newRegistration.PersonAlias.Person.Email;
+                            }
+
+                            Guid? adultRole = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
+                            var groupMemberService = new GroupMemberService( rockContext );
+
+                            foreach ( var registrant in newRegistration.Registrants.Where( r => r.PersonAlias != null && r.PersonAlias.Person != null ) )
+                            {
+                                var assignedTo = registrant.PersonAlias.Person;
+
+                                var registrantIsAdult = adultRole.HasValue && groupMemberService
+                                    .Queryable().AsNoTracking()
+                                    .Any( m =>
+                                        m.PersonId == registrant.PersonAlias.PersonId &&
+                                        m.GroupRole.Guid.Equals( adultRole.Value ) );
+                                if ( !registrantIsAdult && newRegistration.PersonAlias != null && newRegistration.PersonAlias.Person != null )
+                                {
+                                    assignedTo = newRegistration.PersonAlias.Person;
+                                }
+                                else
+                                {
+                                    if ( !string.IsNullOrWhiteSpace( registrant.PersonAlias.Person.Email ) )
+                                    {
+                                        email = registrant.PersonAlias.Person.Email;
+                                    }
+                                }
+
+                                var sendDocumentTxn = new Rock.Transactions.SendDigitalSignatureRequestTransaction();
+                                sendDocumentTxn.SignatureDocumentTypeId = RegistrationTemplate.RequiredSignatureDocumentTypeId.Value;
+                                sendDocumentTxn.AppliesToPersonAliasId = registrant.PersonAlias.Id;
+                                sendDocumentTxn.AssignedToPersonAliasId = assignedTo.PrimaryAliasId ?? 0;
+                                sendDocumentTxn.DocumentName = RegistrationInstanceState.Name;
+                                sendDocumentTxn.Email = email;
+                                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( sendDocumentTxn );
+                            }
+                        }
+
+                        newRegistration.LaunchWorkflow( RegistrationTemplate.RegistrationWorkflowTypeId, newRegistration.ToString() );
+                        newRegistration.LaunchWorkflow( RegistrationInstanceState.RegistrationWorkflowTypeId, newRegistration.ToString() );
+                    }
+
                     RegistrationInstanceState = newRegistration.RegistrationInstance;
                     RegistrationState = new RegistrationInfo( newRegistration, rockContext );
                     RegistrationState.PreviousPaymentTotal = registrationService.GetTotalPayments( registration.Id );
@@ -1597,7 +1648,8 @@ namespace RockWeb.Blocks.Event
 
                     // If email that logged in user used is different than their stored email address, update their stored value
                     if ( !string.IsNullOrWhiteSpace( registration.ConfirmationEmail ) &&
-                        !registration.ConfirmationEmail.Trim().Equals( CurrentPerson.Email.Trim(), StringComparison.OrdinalIgnoreCase ) )
+                        !registration.ConfirmationEmail.Trim().Equals( CurrentPerson.Email.Trim(), StringComparison.OrdinalIgnoreCase ) &&
+                        ( !cbUpdateEmail.Visible || cbUpdateEmail.Checked ) )
                     {
                         var person = personService.Get( CurrentPerson.Id );
                         if ( person != null )
@@ -1848,6 +1900,15 @@ namespace RockWeb.Blocks.Event
                                         History.EvaluateChange( personChanges, "Birth Month", birthMonth, person.BirthMonth );
                                         History.EvaluateChange( personChanges, "Birth Day", birthDay, person.BirthDay );
                                         History.EvaluateChange( personChanges, "Birth Year", birthYear, person.BirthYear );
+
+                                        break;
+                                    }
+
+                                case RegistrationPersonFieldType.Grade:
+                                    {
+                                        var newGraduationYear = fieldValue.ToString().AsIntegerOrNull();
+                                        History.EvaluateChange( personChanges, "Graduation Year", person.GraduationYear, newGraduationYear );
+                                        person.GraduationYear = newGraduationYear;
 
                                         break;
                                     }
@@ -3116,6 +3177,16 @@ namespace RockWeb.Blocks.Event
         var $lbl = $('div.js-registration-same-family').find('label.control-label')
         $lbl.text( name + ' is in the same family as');
     }} );
+    $('input.js-your-first-name').change( function() {{
+        var name = $(this).val();
+        if ( name == null || name == '') {{
+            name = 'You are';
+        }} else {{
+            name += ' is';
+        }}
+        var $lbl = $('div.js-registration-same-family').find('label.control-label')
+        $lbl.text( name + ' in the same family as');
+    }} );
 
     $('#{0}').on('change', function() {{
 
@@ -3177,22 +3248,28 @@ namespace RockWeb.Blocks.Event
                 var src = $('#{7}').val();
                 var $form = $('#iframeStep2').contents().find('#Step2Form');
 
-                $form.find('.cc-first-name').val( $('#{16}').val() );
-                $form.find('.cc-last-name').val( $('#{17}').val() );
-                $form.find('.cc-full-name').val( $('#{18}').val() );
+                $form.find('.js-cc-first-name').val( $('#{16}').val() );
+                $form.find('.js-cc-last-name').val( $('#{17}').val() );
+                $form.find('.js-cc-full-name').val( $('#{18}').val() );
 
-                $form.find('.cc-number').val( $('#{11}').val() );
+                $form.find('.js-cc-number').val( $('#{11}').val() );
                 var mm = $('#{12}_monthDropDownList').val();
                 var yy = $('#{12}_yearDropDownList_').val();
                 mm = mm.length == 1 ? '0' + mm : mm;
                 yy = yy.length == 4 ? yy.substring(2,4) : yy;
-                $form.find('.cc-expiration').val( mm + yy );
-                $form.find('.cc-cvv').val( $('#{13}').val() );
+                $form.find('.js-cc-expiration').val( mm + yy );
+                $form.find('.js-cc-cvv').val( $('#{13}').val() );
 
-                $form.find('.billing-address1').val( $('#{15}_tbStreet1').val() );
-                $form.find('.billing-city').val( $('#{15}_tbCity').val() );
-                $form.find('.billing-state').val( $('#{15}_ddlState').val() );
-                $form.find('.billing-postal').val( $('#{15}_tbPostalCode').val() );
+                $form.find('.js-billing-address1').val( $('#{15}_tbStreet1').val() );
+                $form.find('.js-billing-city').val( $('#{15}_tbCity').val() );
+
+                if ( $('#{15}_ddlState').length ) {{
+                    $form.find('.js-billing-state').val( $('#{15}_ddlState').val() );
+                }} else {{
+                    $form.find('.js-billing-state').val( $('#{15}_tbState').val() );
+                }}            
+                $form.find('.js-billing-postal').val( $('#{15}_tbPostalCode').val() );
+                $form.find('.js-billing-country').val( $('#{15}_ddlCountry').val() );
 
                 $form.attr('action', src );
                 $form.submit();
@@ -3524,6 +3601,27 @@ namespace RockWeb.Blocks.Event
                         {
                             var value = fieldValue as DateTime?;
                             bpBirthday.SelectedDate = value;
+                        }
+
+                        break;
+                    }
+
+                case RegistrationPersonFieldType.Grade:
+                    {
+                        var gpGrade = new GradePicker();
+                        gpGrade.ID = "gpGrade";
+                        gpGrade.Label = "Grade";
+                        gpGrade.Required = field.IsRequired;
+                        gpGrade.ValidationGroup = BlockValidationGroup;
+                        gpGrade.UseAbbreviation = true;
+                        gpGrade.UseGradeOffsetAsValue = true;
+                        gpGrade.CssClass = "input-width-md";
+                        phRegistrantControls.Controls.Add( gpGrade );
+
+                        if ( setValue && fieldValue != null )
+                        {
+                            var value = fieldValue.ToString().AsIntegerOrNull();
+                            gpGrade.SetValue( Person.GradeOffsetFromGraduationYear( value ) );
                         }
 
                         break;
@@ -3914,6 +4012,12 @@ namespace RockWeb.Blocks.Event
                         return bpBirthday != null ? bpBirthday.SelectedDate : null;
                     }
 
+                case RegistrationPersonFieldType.Grade:
+                    {
+                        var gpGrade = phRegistrantControls.FindControl( "gpGrade" ) as GradePicker;
+                        return gpGrade != null ? Person.GraduationYearFromGradeOffset( gpGrade.SelectedValueAsInt() ) : null;
+                    }
+
                 case RegistrationPersonFieldType.Gender:
                     {
                         var ddlGender = phRegistrantControls.FindControl( "ddlGender" ) as RockDropDownList;
@@ -4084,6 +4188,7 @@ namespace RockWeb.Blocks.Event
 
         private void CreateSummaryControls( bool setValues )
         {
+            lRegistrationTerm.Text = RegistrationTerm;
             lDiscountCodeLabel.Text = DiscountCodeTerm;
 
             if ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask )
@@ -4141,7 +4246,13 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
-                rblRegistrarFamilyOptions.SetValue( RegistrationState.FamilyGuid.ToString() );
+                rblRegistrarFamilyOptions.Label = string.IsNullOrWhiteSpace( tbYourFirstName.Text ) ?
+                    "You are in the same family as" :
+                    tbYourFirstName.Text + " is in the same family as";
+
+                cbUpdateEmail.Visible = CurrentPerson != null && !string.IsNullOrWhiteSpace( CurrentPerson.Email );
+
+                //rblRegistrarFamilyOptions.SetValue( RegistrationState.FamilyGuid.ToString() );
 
                 // Build Discount info
                 nbDiscountCode.Visible = false;

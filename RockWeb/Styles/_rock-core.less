@@ -17,6 +17,9 @@
 @import "./FontAwesome/variables.less";
 @import "./JCrop/jcrop.less";
 
+// import as less files so they are concatenated properly
+@import (less) "./summernote/summernote.css";
+
 @import "_page-admin.less";
 @import "_modal.less";
 @import "_forms.less";
@@ -42,8 +45,6 @@
 @import "_scroll.less";
 @import "_global-variables.less";
 @import "_helpers.less";
-
-@import "_ck-editor.less";
 
 @import "./Bootstrap/mixins.less";
 
@@ -316,11 +317,33 @@ th[align=center] {
   }
 
   .panel-settings {
-      margin: -(@panel-body-padding) -(@panel-body-padding) (@panel-body-padding *2) -(@panel-body-padding);
-      background-color: lighten(@panel-heading-bg, 3%);
+      margin: -(@panel-body-padding);
       padding: (@panel-body-padding);
       border-bottom: 1px solid lighten(@panel-heading-border, 3%);
   }
+
+  .panel-settings-group {
+       margin: -(@panel-body-padding);
+
+       .btn {
+           border-radius: 0 !important;
+           border-top-width: 0;
+           border-color: @panel-heading-border;
+           border-right-width: 0;
+       }
+
+       .btn-group:first-child .btn {
+           border-left-width: 0;
+       }
+
+       &.btn-group-justified {
+           width: auto;
+       }
+
+       &.btn-group-justified>.btn-group .dropdown-menu {
+           width: 100%;
+       }
+    }
 }
 
 .panel-widget {
@@ -465,6 +488,56 @@ th[align=center] {
   }
 }
 
+// styles for panel drawers
+@drawer-bg: @panel-heading-bg;
+
+.panel-drawer {
+    background-color: @drawer-bg;
+    width: 100%;
+}
+
+.drawer-content {
+    padding: @panel-body-padding;
+}
+
+.panel-drawer.open > .drawer-content {
+    display: block;
+}
+
+.drawer-pull {
+    color: @panel-heading-text-color;
+    padding: 6px 8px;
+    cursor: pointer;
+    .clearfix();
+    border-bottom: 1px solid @panel-border;
+
+    i {
+        float: right;
+    }
+}
+
+.drawer-pull:hover{
+    background-color: darken(@drawer-bg, 3%);
+}
+
+
+// paneleditor is used to provide a small edit surface in a panel header. 
+// example: threshold editor on checkin manager for locations
+.paneleditor {
+
+}
+
+.paneleditor-label {
+    float: left;
+}
+
+.paneleditor-input {
+    float: left;
+    margin-top: -6px;
+    margin-right: 4px;
+    margin-left: 4px;
+}
+
 // extensions for buttons    ->   .button-variant(@color; @background; @border) {}
 
 .btn.aspNetDisabled {
@@ -482,7 +555,7 @@ th[align=center] {
   .button-variant(@btn-security-color; @btn-security-bg; @btn-security-border);
 }
 
-.btn-authenication {
+.btn-authentication {
   .button-variant(@btn-default-color; @btn-default-bg; @btn-default-border);
   width: 100%;
 

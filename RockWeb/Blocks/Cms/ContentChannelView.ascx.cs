@@ -400,7 +400,7 @@ $(document).ready(function() {
             pageRef.Parameters.AddOrReplace( "Page", "PageNum" );
 
             Dictionary<string, object> linkedPages = new Dictionary<string, object>();
-            linkedPages.Add( "DetailPage", LinkedPageUrl( "DetailPage", null ) );
+            linkedPages.Add( "DetailPage", LinkedPageRoute( "DetailPage" ) );
 
             var errorMessages = new List<string>();
             List<ContentChannelItem> content;
@@ -873,6 +873,8 @@ $(document).ready(function() {
                     kvlOrder.CustomKeys.Add( "Status", "Status" );
                     kvlOrder.CustomKeys.Add( "StartDateTime", "Start" );
                     kvlOrder.CustomKeys.Add( "ExpireDateTime", "Expire" );
+                    kvlOrder.CustomKeys.Add( "Order", "Order" );
+
 
                     // add attributes to the meta description and meta image attribute list
                     ddlMetaDescriptionAttribute.Items.Clear();

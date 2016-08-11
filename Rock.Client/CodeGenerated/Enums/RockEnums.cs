@@ -224,16 +224,6 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
-    public enum GiversViewBy
-    {
-        Giver = 0x0,
-        Adults = 0x1,
-        Children = 0x2,
-        Family = 0x3,
-    }
-
-    /// <summary>
-    /// </summary>
     public enum GroupCapacityRule
     {
         None = 0x0,
@@ -304,6 +294,15 @@ namespace Rock.Client.Enums
         Global = 0x0,
         Personal = 0x1,
         PersonalAndGlobal = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum MetricNumericDataType
+    {
+        Integer = 0x0,
+        Decimal = 0x1,
+        Currency = 0x2,
     }
 
     /// <summary>
@@ -403,6 +402,7 @@ namespace Rock.Client.Enums
         MobilePhone = 0x8,
         HomePhone = 0x9,
         WorkPhone = 0xa,
+        Grade = 0xb,
     }
 
     /// <summary>
@@ -452,6 +452,24 @@ namespace Rock.Client.Enums
         Weekly = 0x1,
         Custom = 0x2,
         Named = 0x4,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum SignatureDocumentAction
+    {
+        Email = 0x0,
+        Embed = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum SignatureDocumentStatus
+    {
+        None = 0x0,
+        Sent = 0x1,
+        Signed = 0x2,
+        Cancelled = 0x3,
     }
 
     /// <summary>
