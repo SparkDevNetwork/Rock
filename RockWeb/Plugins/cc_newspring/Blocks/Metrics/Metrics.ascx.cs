@@ -41,22 +41,24 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
     [CustomDropdownListField( "Number of Columns", "", "1,2,3,4,5,6,7,8,9,10,11,12", false, DefaultValue = "4", Order = 1 )]
 
     [MetricCategoriesField( "Metric Source", "Select the primary metric(s) to include in this chart.", false, Order = 2 )]
-    [BooleanField("Respect Campus Context", "Respect the group context even if the Campus context selector isn't included on the page.", true, Order = 3)]
-    [BooleanField("Respect Group Context", "Respect the group context even if the GroupType context selector isn't included on the page.", true, Order = 4)]
-    [BooleanField("Respect Date Context", "Respect the date context even if the DateRange context selector isn't included on the page.", true, Order = 5)]
-    [BooleanField("Respect Schedule Context", "Respect the schedule context even if the Schedule context selector isn't included on the page.", true, Order = 6)]
-    [BooleanField("Require Attendance", "Only count the actual attendances rather than everyone on the roster.", true, Order = 7)]
-    [CustomRadioListField("Metric Type", "Use values for each service or unique people for the whole day", "All Values,Unique", true, "All Values", order: 8)]
+    [CustomRadioListField("Aggregation", "Which calculation method should be used", "Sum,Avg,Min,Max,Median", true, "Sum", order: 3)]
+    [BooleanField("Respect Campus Context", "Respect the group context even if the Campus context selector isn't included on the page.", true, Order = 4)]
+    [BooleanField("Respect Group Context", "Respect the group context even if the GroupType context selector isn't included on the page.", true, Order = 5)]
+    [BooleanField("Respect Date Context", "Respect the date context even if the DateRange context selector isn't included on the page.", true, Order = 6)]
+    [BooleanField("Respect Schedule Context", "Respect the schedule context even if the Schedule context selector isn't included on the page.", true, Order = 7)]
+    [BooleanField("Require Attendance", "Only count the actual attendances rather than everyone on the roster.", true, Order = 8)]
+    [CustomRadioListField("Metric Type", "Use values for each service or unique people for the whole day", "All Values,Unique", true, "All Values", order: 9)]
 
-    [BooleanField("Do Comparison", "Divide the primary by the comparison metric.", true, Order = 9)]
+    [BooleanField("Do Comparison", "Divide the primary by the comparison metric.", false, Order = 10)]
     [MetricCategoriesField( "Comparison Metric Source", "Select the metric(s) to calculate against the Primary Source/Key.", false, Order = 10 )]
-    [CustomRadioListField( "Display Comparison As", "Choose to display the comparison result as an integer or percentage", "Integer,Percentage", true, "Integer", order: 11 )]
-    [BooleanField("Comparison Respect Campus Context", "Respect the group context even if the Campus context selector isn't included on the page.", true, Order = 12 )]
-    [BooleanField("Comparison Respect Group Context", "Respect the group context even if the GroupType context selector isn't included on the page.", true, Order = 13 )]
-    [BooleanField("Comparison Respect Date Context", "Respect the date context even if the DateRange context selector isn't included on the page.", true, Order = 14 )]
-    [BooleanField("Comparison Respect Schedule Context", "Respect the schedule context even if the Schedule context selector isn't included on the page.", true, Order = 15 )]
-    [BooleanField("Comparison Require Attendance", "Only count the actual attendances rather than everyone on the roster.", true, Order = 16)]
-    [CustomRadioListField("Comparison Metric Type", "Use values for each service or unique people for the whole day", "All Values,Unique", true, "All Values", order: 17)]
+    [CustomRadioListField("Comparison Aggregation", "Which calculation method should be used", "Sum,Avg,Min,Max,Median", true, "Sum", order: 11)]
+    [CustomRadioListField( "Display Comparison As", "Choose to display the comparison result as an integer or percentage", "Integer,Percentage", true, "Integer", order: 12 )]
+    [BooleanField("Comparison Respect Campus Context", "Respect the group context even if the Campus context selector isn't included on the page.", true, Order = 13 )]
+    [BooleanField("Comparison Respect Group Context", "Respect the group context even if the GroupType context selector isn't included on the page.", true, Order = 14 )]
+    [BooleanField("Comparison Respect Date Context", "Respect the date context even if the DateRange context selector isn't included on the page.", true, Order = 15 )]
+    [BooleanField("Comparison Respect Schedule Context", "Respect the schedule context even if the Schedule context selector isn't included on the page.", true, Order = 16 )]
+    [BooleanField("Comparison Require Attendance", "Only count the actual attendances rather than everyone on the roster.", true, Order = 17)]
+    [CustomRadioListField("Comparison Metric Type", "Use values for each service or unique people for the whole day", "All Values,Unique", true, "All Values", order: 18)]
 
     //[SlidingDateRangeField( "Date Range", Key = "SlidingDateRange", Order = 9 )]
     //[CustomRadioListField( "Custom Dates", "If not using date range, please select a custom date from here", "This Week Last Year", Order = 9 )]
@@ -151,17 +153,17 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         protected decimal FormatValues()
         {
             var primaryMetricValues = GetMetricValues( true );
-            var primaryValueSum = primaryMetricValues.Select( a => a.YValue ).Sum() ?? 0.0M;
+            var primaryValue = GetValueAggregate(primaryMetricValues.Select(v => v.YValue), true);
 
             // if comparing values, make sure we have a valid percentage source
-            if ( primaryValueSum > 0 && GetAttributeValue("DoComparison").AsBoolean())
+            if (primaryValue > 0 && GetAttributeValue("DoComparison").AsBoolean())
             {
                 var comparisonMetricValues = GetMetricValues( false );
-                var comparisonValueSum = comparisonMetricValues.Select( a => a.YValue ).Sum() ?? 0.0M;
+                var comparisonValue = GetValueAggregate(comparisonMetricValues.Select(v => v.YValue), false);
 
-                if ( comparisonValueSum > 0 )
+                if (comparisonValue > 0 )
                 {
-                    decimal comparison = primaryValueSum / comparisonValueSum;
+                    decimal comparison = primaryValue / comparisonValue;
 
                     if ( GetAttributeValue( "DisplayComparisonAs" ).Equals( "Integer" ) )
                     {
@@ -178,7 +180,39 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                 }
             }
 
-            return primaryValueSum;
+            return primaryValue;
+        }
+
+        protected decimal GetValueAggregate(IEnumerable<decimal?> values, bool isPrimary)
+        {
+            var preKey = isPrimary ? string.Empty : "Comparison";
+            decimal? aggregateValue = null;
+
+            switch (GetAttributeValue(preKey + "Aggregation"))
+            {
+                case "Avg":
+                    aggregateValue = values.Average();
+                    break;
+                case "Min":
+                    aggregateValue = values.Min();
+                    break;
+                case "Max":
+                    aggregateValue = values.Max();
+                    break;
+                case "Median":
+                    aggregateValue = values.OrderBy(v => v).ElementAt(values.Count() / 2);
+                    break;
+                default:
+                    aggregateValue = values.Sum();
+                    break;
+            }
+
+            if (!aggregateValue.HasValue)
+            {
+                aggregateValue = 0.0m;
+            }
+
+            return aggregateValue.Value;
         }
 
         protected List<MetricValue> GetMetricValues( bool isPrimary )
