@@ -29,7 +29,8 @@ namespace RockWeb.Plugins.church_ccv.Reporting
     // stored as comma-delimited CampusIds
     [TextField( "Campuses", Category = "CustomSetting" )]
 
-    [IntegerField( "MetricCategoryId", Category = "CustomSetting" )]
+    [IntegerField( "AttendanceMetricCategoryId", Category = "CustomSetting" )]
+    [IntegerField( "HeadcountsMetricCategoryId", Category = "CustomSetting" )]
     public partial class AttendanceSpreadSheetTool : RockBlockCustomSettings
     {
         #region Base Control Methods
@@ -43,12 +44,16 @@ namespace RockWeb.Plugins.church_ccv.Reporting
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            gList.GridRebind += gList_GridRebind;
+            gCheckinAttendanceExport.GridRebind += gCheckinAttendanceExport_GridRebind;
+            gHeadcountsExport.GridRebind += gHeadcountsExport_GridRebind;
+
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
         }
+
+
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -102,7 +107,10 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                 }
             }
 
-            BindGrid();
+
+
+            BindCheckinAttendanceGrid();
+            BindHeadcountsGrid();
         }
 
         /// <summary>
@@ -137,7 +145,8 @@ namespace RockWeb.Plugins.church_ccv.Reporting
 
             cblAttendanceTypes.SetValues( this.GetAttributeValue( "AttendanceTypes" ).SplitDelimitedValues().AsIntegerList() );
 
-            mpMetric.SetValue( this.GetAttributeValue( "MetricCategoryId" ).AsIntegerOrNull() );
+            mpAttendanceMetric.SetValue( this.GetAttributeValue( "AttendanceMetricCategoryId" ).AsIntegerOrNull() );
+            mpHeadcountsMetric.SetValue( this.GetAttributeValue( "HeadcountsMetricCategoryId" ).AsIntegerOrNull() );
         }
 
         /// <summary>
@@ -353,37 +362,119 @@ namespace RockWeb.Plugins.church_ccv.Reporting
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void gList_GridRebind( object sender, EventArgs e )
+        private void gCheckinAttendanceExport_GridRebind( object sender, EventArgs e )
         {
-            BindGrid();
+            BindCheckinAttendanceGrid();
+        }
+
+        private void gHeadcountsExport_GridRebind( object sender, GridRebindEventArgs e )
+        {
+            BindHeadcountsGrid();
         }
 
         #endregion
 
         #region Methods
 
-        private List<int> _selectedScheduleIds = null;
+        private List<int> GetSelectedScheduleIds()
+        {
+            return spSchedules.SelectedValuesAsInt().ToList();
+        }
 
-        private void AddScheduleColumns( Metric metric, DateTime sundayDate )
+        /// <summary>
+        /// Adds the headcounts schedule columns.
+        /// </summary>
+        /// <param name="metric">The metric.</param>
+        /// <param name="sundayDate">The sunday date.</param>
+        private void AddHeadcountsScheduleColumns( Metric metric, DateTime sundayDate )
         {
             var rockContext = new RockContext();
 
-            // clear out any existing schedule columns and add the ones that match the current filter setting
-            gList.Columns.Clear();
-            gList.Columns.Add( new RockBoundField { DataField = "GroupName", HeaderText = "Worship" } );
+            gHeadcountsExport.Columns.Clear();
+            var entityTypeIdCampus = EntityTypeCache.Read<Campus>().Id;
+            var entityTypeIdSchedule = EntityTypeCache.Read<Schedule>().Id;
 
-            var groupIds = this.GetSelectedGroupIds();
-            _selectedScheduleIds = spSchedules.SelectedValuesAsInt().ToList();
             var scheduleList = new ScheduleService( rockContext ).Queryable().Where( a => a.Name != null ).ToList().Select( a => new
             {
                 a.Id,
                 a.FriendlyScheduleText
             } );
 
+            var selectedScheduleIds = GetSelectedScheduleIds();
+            var campuses = CampusCache.All( false );
+            foreach ( var campus in campuses.OrderBy( a => a.Id ) )
+            {
+                var campusServiceTimes = campus.ServiceTimes;
+
+                // add all the advertised schedules first
+                foreach ( var serviceTime in campusServiceTimes )
+                {
+                    var serviceTimeFriendlyText = string.Format( "{0} at {1}", serviceTime.Day, serviceTime.Time ).Replace( "*", "" ).Trim();
+                    var schedule = scheduleList.FirstOrDefault( a => a.FriendlyScheduleText.StartsWith( serviceTimeFriendlyText, StringComparison.OrdinalIgnoreCase ) );
+                    if ( schedule != null && selectedScheduleIds.Contains( schedule.Id ) )
+                    {
+                        string campusScheduleFieldName = string.Format( "campusScheduleField_Campus{0}_Schedule{1}", campus.Id, schedule.Id );
+
+                        var headerText = string.Format( "{0} - {1}", campus.Name, schedule.FriendlyScheduleText );
+                        RockBoundField campusScheduleField = new RockBoundField { HeaderText = headerText, DataField = campusScheduleFieldName };
+                        gHeadcountsExport.Columns.Add( campusScheduleField );
+                    }
+                }
+
+                // look up all the schedules that were used in the Headcount Metric for this campus and also add those if they aren't there already
+                var metricCampusScheduleIds = new MetricValueService( rockContext ).Queryable()
+                    .Where( a => a.MetricId == metric.Id && a.MetricValueDateTime == sundayDate )
+                    .Where( a => a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdCampus ).EntityId == campus.Id )
+                    .SelectMany( a => a.MetricValuePartitions )
+                    .Where( a => a.MetricPartition.EntityTypeId == entityTypeIdSchedule )
+                    .Select( a => a.EntityId ?? 0 ).Distinct().ToList();
+
+                var metricCampusSchedules = scheduleList.Where( a => metricCampusScheduleIds.Contains( a.Id ) && selectedScheduleIds.Contains( a.Id ) );
+                foreach ( var schedule in metricCampusSchedules )
+                {
+                    string campusScheduleFieldName = string.Format( "campusScheduleField_Campus{0}_Schedule{1}", campus.Id, schedule.Id );
+                    if ( !gHeadcountsExport.Columns.OfType<RockBoundField>().Any( a => a.DataField == campusScheduleFieldName ) )
+                    {
+                        var headerText = string.Format( "{0} - {1}", campus.Name, schedule.FriendlyScheduleText );
+                        RockBoundField campusScheduleField = new RockBoundField { HeaderText = headerText, DataField = campusScheduleFieldName };
+                        gHeadcountsExport.Columns.Add( campusScheduleField );
+                    }
+                }
+
+                string campusSummaryFieldName = string.Format( "campusSummaryField_Campus{0}", campus.Id );
+                RockBoundField campusSummaryField = new RockBoundField { HeaderText = campus.Name, DataField = campusSummaryFieldName };
+                gHeadcountsExport.Columns.Add( campusSummaryField );
+            }
+
+            gHeadcountsExport.Columns.Add( new RockBoundField { DataField = "GrandTotal", HeaderText = "Grand Total" } );
+        }
+
+        /// <summary>
+        /// Adds the attendance schedule columns.
+        /// </summary>
+        /// <param name="metric">The metric.</param>
+        /// <param name="sundayDate">The sunday date.</param>
+        private void AddAttendanceScheduleColumns( Metric metric, DateTime sundayDate )
+        {
+            var rockContext = new RockContext();
+
+            // clear out any existing schedule columns and add the ones that match the current filter setting
+            gCheckinAttendanceExport.Columns.Clear();
+            gCheckinAttendanceExport.Columns.Add( new RockBoundField { DataField = "GroupName", HeaderText = "Worship" } );
+
+            var groupIds = this.GetSelectedGroupIds();
+
+            var scheduleList = new ScheduleService( rockContext ).Queryable().Where( a => a.Name != null ).ToList().Select( a => new
+            {
+                a.Id,
+                a.FriendlyScheduleText
+            } );
 
             var entityTypeIdSchedule = EntityTypeCache.Read<Schedule>().Id;
             var entityTypeIdGroup = EntityTypeCache.Read<Group>().Id;
+            var entityTypeIdCampus = EntityTypeCache.Read<Campus>().Id;
             var selectedGroupIds = this.GetSelectedGroupIds();
+            var selectedScheduleIds = GetSelectedScheduleIds();
 
             var campuses = CampusCache.All( false );
             foreach ( var campus in campuses.OrderBy( a => a.Id ) )
@@ -395,86 +486,178 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                 {
                     var serviceTimeFriendlyText = string.Format( "{0} at {1}", serviceTime.Day, serviceTime.Time ).Replace( "*", "" ).Trim();
                     var schedule = scheduleList.FirstOrDefault( a => a.FriendlyScheduleText.StartsWith( serviceTimeFriendlyText, StringComparison.OrdinalIgnoreCase ) );
-                    if ( schedule != null && _selectedScheduleIds.Contains( schedule.Id ) )
+                    if ( schedule != null && selectedScheduleIds.Contains( schedule.Id ) )
                     {
                         string campusScheduleFieldName = string.Format( "campusScheduleField_Campus{0}_Schedule{1}", campus.Id, schedule.Id );
 
                         var headerText = string.Format( "{0} - {1}", campus.Name, schedule.FriendlyScheduleText );
                         RockBoundField campusScheduleField = new RockBoundField { HeaderText = headerText, DataField = campusScheduleFieldName };
-                        gList.Columns.Add( campusScheduleField );
+                        gCheckinAttendanceExport.Columns.Add( campusScheduleField );
                     }
                 }
 
                 // look up all the schedules that were used and also add those if they aren't there already
                 var metricCampusScheduleIds = new MetricValueService( rockContext ).Queryable()
                     .Where( a => a.MetricId == metric.Id && a.MetricValueDateTime == sundayDate )
+                    .Where( a => a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdCampus ).EntityId == campus.Id )
                     .Where( a => selectedGroupIds.Contains( a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdGroup ).EntityId ?? 0 ) )
                     .SelectMany( a => a.MetricValuePartitions )
                     .Where( a => a.MetricPartition.EntityTypeId == entityTypeIdSchedule )
                     .Select( a => a.EntityId ).Distinct().ToList();
 
-                var metricCampusSchedules = scheduleList.Where( a => metricCampusScheduleIds.Contains( a.Id ) && _selectedScheduleIds.Contains( a.Id ) );
+                var metricCampusSchedules = scheduleList.Where( a => metricCampusScheduleIds.Contains( a.Id ) && selectedScheduleIds.Contains( a.Id ) );
                 foreach ( var schedule in metricCampusSchedules )
                 {
                     string campusScheduleFieldName = string.Format( "campusScheduleField_Campus{0}_Schedule{1}", campus.Id, schedule.Id );
-                    if ( !gList.Columns.OfType<RockBoundField>().Any( a => a.DataField == campusScheduleFieldName ) )
+                    if ( !gCheckinAttendanceExport.Columns.OfType<RockBoundField>().Any( a => a.DataField == campusScheduleFieldName ) )
                     {
                         var headerText = string.Format( "{0} - {1}", campus.Name, schedule.FriendlyScheduleText );
                         RockBoundField campusScheduleField = new RockBoundField { HeaderText = headerText, DataField = campusScheduleFieldName };
-                        gList.Columns.Add( campusScheduleField );
+                        gCheckinAttendanceExport.Columns.Add( campusScheduleField );
                     }
                 }
 
                 string campusSummaryFieldName = string.Format( "campusSummaryField_Campus{0}", campus.Id );
                 RockBoundField campusSummaryField = new RockBoundField { HeaderText = campus.Name, DataField = campusSummaryFieldName };
-                gList.Columns.Add( campusSummaryField );
+                gCheckinAttendanceExport.Columns.Add( campusSummaryField );
             }
 
-            gList.Columns.Add( new RockBoundField { DataField = "GrandTotal", HeaderText = "Grand Total" } );
+            gCheckinAttendanceExport.Columns.Add( new RockBoundField { DataField = "GrandTotal", HeaderText = "Grand Total" } );
+        }
+
+        private void BindHeadcountsGrid()
+        {
+            RockContext rockContext = new RockContext();
+            var metricCategoryService = new MetricCategoryService( rockContext );
+
+            Metric headcountsMetric = null;
+            var headcountsMetricCategoryId = this.GetAttributeValue( "HeadcountsMetricCategoryId" ).AsIntegerOrNull();
+            if ( headcountsMetricCategoryId.HasValue )
+            {
+                var metricCategory = metricCategoryService.Get( headcountsMetricCategoryId.Value );
+                if ( metricCategory != null )
+                {
+                    headcountsMetric = metricCategory.Metric;
+                }
+            }
+
+            if ( headcountsMetric == null )
+            {
+                nbHeadcountsMetricWarning.Visible = true;
+                return;
+            }
+            else
+            {
+                nbHeadcountsMetricWarning.Visible = false;
+            }
+
+            var sundayDate = ddlSundayDate.SelectedValue.AsDateTime();
+            lSundayDate.Text = ddlSundayDate.SelectedItem.Text;
+            AddHeadcountsScheduleColumns( headcountsMetric, sundayDate.Value );
+
+            var entityTypeIdCampus = EntityTypeCache.Read<Campus>().Id;
+            var entityTypeIdSchedule = EntityTypeCache.Read<Schedule>().Id;
+            var metricValueService = new MetricValueService( rockContext );
+            var headcountsMetricValuesQuery = metricValueService.Queryable()
+                .Where( a => a.MetricId == headcountsMetric.Id && a.MetricValueDateTime == sundayDate )
+                .Include( a => a.MetricValuePartitions );
+
+            var scheduleLookup = new ScheduleService( rockContext ).Queryable().Where( a => a.Name != null ).ToList();
+            var selectedScheduleIds = GetSelectedScheduleIds();
+
+            var headcountMetricValueList = headcountsMetricValuesQuery.ToList();
+
+            DataTable dataTable = new DataTable( "HeadcountsExportData" );
+            foreach ( var boundField in gHeadcountsExport.Columns.OfType<RockBoundField>() )
+            {
+                DataColumn dataColumn = new DataColumn( boundField.DataField, typeof( int ) );
+                dataTable.Columns.Add( dataColumn );
+            }
+
+            DataRow dataRow = dataTable.NewRow();
+
+            foreach ( var dataColumn in dataTable.Columns.OfType<DataColumn>() )
+            {
+                if ( dataColumn.ColumnName.StartsWith( "campusScheduleField_" ) )
+                {
+                    // "campusScheduleField_Campus{0}_Schedule{1}"
+                    var idParts = dataColumn.ColumnName.Replace( "campusScheduleField_Campus", string.Empty ).Replace( "_Schedule", "," ).Split( ',' ).ToArray();
+                    var campusId = idParts[0].AsInteger();
+                    var scheduleId = idParts[1].AsInteger();
+                    var campusScheduleValues = headcountMetricValueList.Where( a =>
+                        a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdCampus ).EntityId == campusId
+                        &&
+                        a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdSchedule ).EntityId == scheduleId ).ToList();
+
+                    dataRow[dataColumn] = (int)campusScheduleValues.Sum( a => a.YValue ?? 0.00M );
+                }
+                else if ( dataColumn.ColumnName.StartsWith( "campusSummaryField_" ) )
+                {
+                    // "campusSummaryField_Campus{0}"
+                    var campusId = dataColumn.ColumnName.Replace( "campusSummaryField_Campus", string.Empty ).AsInteger();
+                    var campusSummaryValues = headcountMetricValueList.Where( a =>
+                        a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdCampus ).EntityId == campusId
+                        &&
+                        selectedScheduleIds.Contains( a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdSchedule ).EntityId ?? 0 ) ).ToList();
+
+                    dataRow[dataColumn] = (int)campusSummaryValues.Sum( a => a.YValue ?? 0.00M );
+                }
+                else if ( dataColumn.ColumnName == "GrandTotal" )
+                {
+                    dataRow[dataColumn] = (int)headcountMetricValueList.Where( a => selectedScheduleIds.Contains( a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdSchedule ).EntityId ?? 0 ) ).Sum( a => a.YValue ?? 0.00M );
+                }
+            }
+
+            dataTable.Rows.Add( dataRow );
+
+            gHeadcountsExport.DataSource = dataTable;
+            gHeadcountsExport.DataBind();
         }
 
         /// <summary>
         /// Binds the grid.
         /// </summary>
-        private void BindGrid()
+        private void BindCheckinAttendanceGrid()
         {
             RockContext rockContext = new RockContext();
             var metricCategoryService = new MetricCategoryService( rockContext );
 
-            Metric metric = null;
-            var metricCategoryId = this.GetAttributeValue( "MetricCategoryId" ).AsIntegerOrNull();
+            Metric attendanceMetric = null;
+            var metricCategoryId = this.GetAttributeValue( "AttendanceMetricCategoryId" ).AsIntegerOrNull();
             if ( metricCategoryId.HasValue )
             {
                 var metricCategory = metricCategoryService.Get( metricCategoryId.Value );
                 if ( metricCategory != null )
                 {
-                    metric = metricCategory.Metric;
+                    attendanceMetric = metricCategory.Metric;
                 }
             }
 
-            if ( metric == null )
+            if ( attendanceMetric == null )
             {
-                nbMetricWarning.Visible = true;
+                nbAttendanceMetricWarning.Visible = true;
                 return;
             }
             else
             {
-                nbMetricWarning.Visible = false;
+                nbAttendanceMetricWarning.Visible = false;
             }
 
             var sundayDate = ddlSundayDate.SelectedValue.AsDateTime();
-            AddScheduleColumns( metric, sundayDate.Value );
+            lSundayDate.Text = ddlSundayDate.SelectedItem.Text;
+            AddAttendanceScheduleColumns( attendanceMetric, sundayDate.Value );
 
             var selectedGroupIds = this.GetSelectedGroupIds();
+            var selectedScheduleIds = GetSelectedScheduleIds();
 
             var entityTypeIdGroup = EntityTypeCache.Read<Group>().Id;
             var entityTypeIdCampus = EntityTypeCache.Read<Campus>().Id;
             var entityTypeIdSchedule = EntityTypeCache.Read<Schedule>().Id;
             var metricValueService = new MetricValueService( rockContext );
             var metricValuesQuery = metricValueService.Queryable()
-                .Where( a => a.MetricId == metric.Id && a.MetricValueDateTime == sundayDate )
+                .Where( a => a.MetricId == attendanceMetric.Id && a.MetricValueDateTime == sundayDate )
                 .Where( a => selectedGroupIds.Contains( a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdGroup ).EntityId ?? 0 ) )
-                .Where( a => _selectedScheduleIds.Contains( a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdSchedule ).EntityId ?? 0 ) )
+                .Where( a => selectedScheduleIds.Contains( a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdSchedule ).EntityId ?? 0 ) )
                 .Include( a => a.MetricValuePartitions );
 
             var scheduleLookup = new ScheduleService( rockContext ).Queryable().Where( a => a.Name != null ).ToList();
@@ -492,7 +675,7 @@ namespace RockWeb.Plugins.church_ccv.Reporting
             }
 
             DataTable dataTable = new DataTable( "AttendanceExportData" );
-            foreach ( var boundField in gList.Columns.OfType<RockBoundField>() )
+            foreach ( var boundField in gCheckinAttendanceExport.Columns.OfType<RockBoundField>() )
             {
                 DataColumn dataColumn = new DataColumn( boundField.DataField );
                 if ( boundField.DataField == "GroupName" )
@@ -536,21 +719,21 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                         var campusSummaryValues = groupAttendanceMetrics.MetricValues.Where( a =>
                             a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdCampus ).EntityId == campusId
                             &&
-                            _selectedScheduleIds.Contains( a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdSchedule ).EntityId ?? 0 ) ).ToList();
+                            selectedScheduleIds.Contains( a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdSchedule ).EntityId ?? 0 ) ).ToList();
 
                         dataRow[dataColumn] = (int)campusSummaryValues.Sum( a => a.YValue ?? 0.00M );
                     }
                     else if ( dataColumn.ColumnName == "GrandTotal" )
                     {
-                        dataRow[dataColumn] = (int)groupAttendanceMetrics.MetricValues.Where( a => _selectedScheduleIds.Contains( a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdSchedule ).EntityId ?? 0 ) ).Sum( a => a.YValue ?? 0.00M );
+                        dataRow[dataColumn] = (int)groupAttendanceMetrics.MetricValues.Where( a => selectedScheduleIds.Contains( a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdSchedule ).EntityId ?? 0 ) ).Sum( a => a.YValue ?? 0.00M );
                     }
                 }
 
                 dataTable.Rows.Add( dataRow );
             }
 
-            gList.DataSource = dataTable;
-            gList.DataBind();
+            gCheckinAttendanceExport.DataSource = dataTable;
+            gCheckinAttendanceExport.DataBind();
         }
 
         #endregion
@@ -566,7 +749,8 @@ namespace RockWeb.Plugins.church_ccv.Reporting
             this.SetBlockUserPreference( "GroupIds", selectedGroupIds.AsDelimited( "," ), true );
             this.SetBlockUserPreference( "ScheduleIds", spSchedules.SelectedValues.ToList().AsDelimited( "," ), true );
 
-            BindGrid();
+            BindHeadcountsGrid();
+            BindCheckinAttendanceGrid();
         }
 
         /// <summary>
@@ -581,12 +765,16 @@ namespace RockWeb.Plugins.church_ccv.Reporting
 
             this.SetAttributeValue( "AttendanceTypes", cblAttendanceTypes.SelectedValues.AsDelimited( "," ) );
             this.SetAttributeValue( "Campuses", cblCampuses.SelectedValues.AsDelimited( "," ) );
-            this.SetAttributeValue( "MetricCategoryId", mpMetric.SelectedValue );
+            this.SetAttributeValue( "AttendanceMetricCategoryId", mpAttendanceMetric.SelectedValue );
+            this.SetAttributeValue( "HeadcountsMetricCategoryId", mpHeadcountsMetric.SelectedValue );
             SaveAttributeValues();
 
             this.Block_BlockUpdated( sender, e );
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private class GroupAttendanceMetrics
         {
             public Group Group { get; set; }
