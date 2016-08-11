@@ -1,41 +1,3 @@
-SELECT 
-	gpc.Name,
-	pc.Name, 
-	c.Name, 
-	m.Title,
-	m.Id,
-	m.[Guid]
-FROM 
-	Metric m 
-	JOIN MetricCategory mc ON mc.MetricId = m.Id
-	JOIN Category c ON c.Id = mc.CategoryId
-	LEFT JOIN Category pc ON pc.Id = c.ParentCategoryId
-	LEFT JOIN Category gpc ON gpc.Id = pc.ParentCategoryId
-WHERE 
-	(m.SourceSql IS NOT NULL AND LEN(RTRIM(LTRIM(m.SourceSql))) > 0)
-	AND (gpc.Name IS NULL OR gpc.Name <> 'Volunteers')
-	AND m.Title NOT IN (
-		'Avg Fuse Group Size',
-		'Coaching Attendees',
-		'Fuse HS Attendance',
-		'Fuse MS Attendance',
-		'Fuse 4 Week Percent of Return',
-		'Fuse First Timers',
-		'4 Week Percent of Return',
-		'First Time Guests',
-		'Nursery Attendance',
-		'Preschool Attendance',
-		'Elementary Attendance',
-		'Special Needs Attendance',
-		'First Time Volunteers',
-		'Coaching Assignments',
-		'GS Unique Volunteers',
-		'Baptism Attendees'
-	);
-
-
-
-
 /* ====================================================== 
 -- NewSpring Script #20: 
 -- Convert one off metrics to work with partitions 
@@ -1257,5 +1219,156 @@ WHERE
 GROUP BY
 	g.CampusId,
 	gm.GroupId;
+'
+WHERE Id = @metricId;
+
+/* ====================================================== */
+-- Next Steps -> Ownership Class -> Ownership Attendees
+/* ====================================================== */
+SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = '68F205C4-9BA8-4889-81D8-A5986EB5ABBA');
+
+IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Schedule',
+		54,
+		@False,
+		1,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+UPDATE Metric SET SourceSql = '
+DECLARE @today AS DATE = GETDATE();
+DECLARE @recentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @today), @today));
+
+SELECT
+	COUNT(a.PersonAliasId),
+	@recentSundayDate AS MetricValueDateTime,
+	g.CampusId,
+	a.ScheduleId
+FROM
+	[Group] g
+	JOIN GroupType gt ON g.GroupTypeId = gt.Id
+	JOIN Attendance a ON a.GroupId = g.Id
+WHERE
+	gt.Name = ''NEW Next Steps Attendee''
+	AND g.Name = ''Ownership Class Attendee''
+	AND a.SundayDate = @recentSundayDate
+GROUP BY
+	g.CampusId,
+	a.ScheduleId;
+'
+WHERE Id = @metricId;
+
+/* ====================================================== */
+-- Next Steps -> Ownership Class -> Ownership Assignments
+/* ====================================================== */
+SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = 'BE23F9C3-D510-432B-9351-9E79F754F526');
+
+IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Schedule',
+		54,
+		@False,
+		1,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+UPDATE Metric SET SourceSql = '
+SELECT 
+	COUNT(gm.PersonId) AS Value, 
+	' + @sundayCalculation + ',
+	g.CampusId,
+	gm.GroupId
+FROM
+	[Group] g
+	JOIN [GroupType] gt ON gt.Id = g.GroupTypeId
+	JOIN [GroupMember] gm ON gm.GroupId = g.Id
+WHERE
+	gm.GroupMemberStatus = 1
+	AND g.Name = ''Ownership Class Volunteer''
+	AND gt.Name = ''NEW Next Steps Attendee''
+GROUP BY
+	g.CampusId,
+	gm.GroupId;
+'
+WHERE Id = @metricId;
+
+/* ====================================================== */
+-- Volunteers -> Unique Volunteers
+/* ====================================================== */
+SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = '85FF1B27-D3DC-4C05-9D41-734ACBA71611');
+
+UPDATE Metric SET SourceSql = '
+DECLARE @today AS DATE = GETDATE();
+DECLARE @recentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @today), @today));
+
+WITH IncludedGroups(Id, ParentGroupId, Name) AS (
+	SELECT 
+		g.Id, g.ParentGroupId, g.Name
+	FROM 
+		[Group] g
+		JOIN GroupType gt ON g.GroupTypeId = gt.Id
+	WHERE
+		gt.Name IN (
+			''NEW Creativity & Tech Attendee'',
+			''NEW Creativity & Tech Volunteer'',
+			''NEW Elementary Volunteer'',
+			''NEW Fuse Volunteer'',
+			''NEW Guest Services Attendee'',
+			''NEW Guest Services Volunteer'',
+			''NEW KS Production Volunteer'',
+			''NEW KS Support Volunteer'',
+			''NEW Next Steps Attendee'',
+			''NEW Next Steps volunteer'',
+			''NEW Nursery Volunteer'',
+			''NEW Preschool Volunteer'',
+			''NEW Special needs volunteer''
+		)
+)
+SELECT
+	COUNT(DISTINCT pa.PersonId) AS Value,
+	@recentSundayDate AS ScheduleDate,
+	a.CampusId AS EntityId
+FROM 
+	IncludedGroups g
+	INNER JOIN Attendance a ON a.GroupId = g.Id
+	INNER JOIN PersonAlias pa ON pa.Id = a.PersonAliasId
+WHERE 
+	CONVERT(DATE, a.StartDateTime) = @recentSundayDate
+	AND a.DidAttend = 1
+GROUP BY
+	a.CampusId;
 '
 WHERE Id = @metricId;
