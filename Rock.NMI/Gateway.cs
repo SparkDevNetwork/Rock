@@ -826,11 +826,18 @@ namespace Rock.NMI
         /// <returns></returns>
         private XElement GetPlan( PaymentSchedule schedule, PaymentInfo paymentInfo )
         {
+            var selectedFrequencyGuid = schedule.TransactionFrequencyValue.Guid.ToString().ToUpper();
+
+            if ( selectedFrequencyGuid == Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME )
+            {
+                // Make sure number of payments is set to 1 for one-time future payments
+                schedule.NumberOfPayments = 1;
+            }
+
             XElement planElement = new XElement( "plan",
                 new XElement( "payments", schedule.NumberOfPayments.HasValue ? schedule.NumberOfPayments.Value.ToString() : "0" ),
                 new XElement( "amount", paymentInfo.Amount.ToString() ) );
 
-            var selectedFrequencyGuid = schedule.TransactionFrequencyValue.Guid.ToString().ToUpper();
             switch ( selectedFrequencyGuid )
             {
                 case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME:
