@@ -29,7 +29,8 @@ WHERE
 		'Special Needs Attendance',
 		'First Time Volunteers',
 		'Coaching Assignments',
-		'GS Unique Volunteers'
+		'GS Unique Volunteers',
+		'Baptism Attendees'
 	);
 
 
@@ -1206,5 +1207,55 @@ WHERE
 GROUP BY
 	g.CampusId,
 	a.ScheduleId;
+'
+WHERE Id = @metricId;
+
+/* ====================================================== */
+-- Next Steps -> Baptism -> Baptism Assignments
+/* ====================================================== */
+SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = 'C9145649-3384-4925-A8E0-19468BFF38AC');
+
+IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Schedule',
+		54,
+		@False,
+		1,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+UPDATE Metric SET SourceSql = '
+SELECT 
+	COUNT(gm.PersonId) AS Value, 
+	' + @sundayCalculation + ',
+	g.CampusId,
+	gm.GroupId
+FROM
+	[Group] g
+	JOIN [GroupType] gt ON gt.Id = g.GroupTypeId
+	JOIN [GroupMember] gm ON gm.GroupId = g.Id
+WHERE
+	gm.GroupMemberStatus = 1
+	AND g.Name = ''Baptism Attendee''
+	AND gt.Name = ''NEW Next Steps Attendee''
+GROUP BY
+	g.CampusId,
+	gm.GroupId;
 '
 WHERE Id = @metricId;
