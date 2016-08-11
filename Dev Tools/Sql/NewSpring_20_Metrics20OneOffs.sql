@@ -28,7 +28,8 @@ WHERE
 		'Elementary Attendance',
 		'Special Needs Attendance',
 		'First Time Volunteers',
-		'Coaching Assignments'
+		'Coaching Assignments',
+		'GS Unique Volunteers'
 	);
 
 
@@ -1130,5 +1131,27 @@ INNER JOIN (
 ) Schedule
 ON Schedule.Id = Attendance.ScheduleId
 GROUP BY CampusId, ScheduleId, GroupId;
+'
+WHERE Id = @metricId;
+
+/* ====================================================== */
+-- Guest Services -> GS Unique Volunteers
+/* ====================================================== */
+SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = 'A1F32887-7293-4B1A-BB0E-E4F559E15D2F');
+
+UPDATE Metric SET SourceSql = '
+SELECT 
+	COUNT(gm.PersonId) AS Value, 
+	' + @sundayCalculation + ',
+	g.CampusId AS EntityId
+FROM 
+	GroupMember gm
+	JOIN [Group] G ON gm.GroupId = G.Id
+	JOIN GroupType gt ON gt.Id = g.GroupTypeId
+WHERE  
+	gt.Name = ''NEW Guest Services Volunteer''
+	AND gm.GroupMemberStatus = 1
+GROUP BY 
+	g.CampusId;
 '
 WHERE Id = @metricId;
