@@ -76,7 +76,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new FinancialGatewayPicker { ID = id }; 
+            return new FinancialGatewayPicker { ID = id, ShowAll = false }; 
         }
 
         /// <summary>
