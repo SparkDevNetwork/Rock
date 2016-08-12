@@ -57,13 +57,20 @@ namespace Rock.Security
         public abstract string GetInviteLink( SignatureDocument document, Person recipient, out List<string> errors );
 
         /// <summary>
+        /// Gets the invite link.
+        /// </summary>
+        /// <param name="documentId">The document identifier.</param>
+        /// <param name="errors">The errors.</param>
+        /// <returns></returns>
+        public abstract string GetInviteLink( string documentId, out List<string> errors );
+
+        /// <summary>
         /// Resends the document.
         /// </summary>
         /// <param name="document">The document.</param>
         /// <param name="errors">The errors.</param>
         /// <returns></returns>
         public abstract bool ResendDocument( SignatureDocument document, out List<string> errors );
-
 
         /// <summary>
         /// Cancels the document.

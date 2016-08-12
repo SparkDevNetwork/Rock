@@ -803,6 +803,14 @@ Registration By: {0} Total Cost/Fees:{1}
         public int? SignatureDocumentId { get; set; }
 
         /// <summary>
+        /// Gets or sets the signature document key.
+        /// </summary>
+        /// <value>
+        /// The signature document key.
+        /// </value>
+        public string SignatureDocumentKey { get; set; }
+
+        /// <summary>
         /// Gets or sets the signature document last sent.
         /// </summary>
         /// <value>

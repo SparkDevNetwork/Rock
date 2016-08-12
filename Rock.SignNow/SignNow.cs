@@ -332,6 +332,30 @@ namespace Rock.SignNow
             return inviteLink;
         }
 
+        public override string GetInviteLink( string documentId, out List<string> errors )
+        {
+            errors = new List<string>();
+
+            // Get the access token
+            string errorMessage = string.Empty;
+            string accessToken = GetAccessToken( false, out errorMessage );
+            if ( string.IsNullOrWhiteSpace( accessToken ) )
+            {
+                errors.Add( errorMessage );
+                return null;
+            }
+
+            JObject inviteLinkRes = CudaSign.Link.Create( accessToken, documentId );
+            string inviteLink = inviteLinkRes.Value<string>( "url_no_signup" );
+            if ( string.IsNullOrWhiteSpace( inviteLink ) )
+            {
+                errors = ParseErrors( inviteLinkRes );
+                return null;
+            }
+
+            return inviteLink;
+        }
+
         /// <summary>
         /// Resends the document.
         /// </summary>
