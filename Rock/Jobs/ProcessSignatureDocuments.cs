@@ -35,6 +35,7 @@ namespace Rock.Jobs
     /// </summary>
     [IntegerField( "Resend Invite After Number Days", "Number of days after sending last invite to sign, that a new invite should be resent.", false, 5, "", 0 )]
     [IntegerField( "Max Invites", "Maximum number of times an invite should be sent", false, 3, "", 1 )]
+    [IntegerField( "Check For Signature Days", "Number of days after document was last sent to check for signature", false, 30, "", 2 )]
     [DisallowConcurrentExecution]
     public class ProcessSignatureDocuments : IJob
     {
@@ -67,6 +68,7 @@ namespace Rock.Jobs
             JobDataMap dataMap = context.JobDetail.JobDataMap;
             int resendDays = dataMap.GetString( "ResendInviteAfterNumberDays" ).AsIntegerOrNull() ?? 5;
             int maxInvites = dataMap.GetString( "MaxInvites" ).AsIntegerOrNull() ?? 2;
+            int checkDays = dataMap.GetString( "CheckForSignatureDays" ).AsIntegerOrNull() ?? 30;
             string folderPath = System.Web.Hosting.HostingEnvironment.MapPath( "~/App_Data/Cache/SignNow" );
 
             var errorMessages = new List<string>();
@@ -77,19 +79,27 @@ namespace Rock.Jobs
             using ( var rockContext = new RockContext() )
             {
                 var maxInviteDate = RockDateTime.Today.AddDays( 0 - resendDays );
+                var maxCheckDays = RockDateTime.Today.AddDays( 0 - checkDays );
                 var docTypeService = new SignatureDocumentTemplateService( rockContext );
                 var docService = new SignatureDocumentService( rockContext );
 
                 // Check for status updates
                 foreach ( var document in new SignatureDocumentService( rockContext ).Queryable()
-                    .Where( d => d.Status == SignatureDocumentStatus.Sent )
+                    .Where( d => 
+                        (
+                            d.Status == SignatureDocumentStatus.Sent || 
+                            ( d.Status == SignatureDocumentStatus.Signed && !d.BinaryFileId.HasValue )
+                        ) &&
+                        d.LastInviteDate.HasValue && 
+                        d.LastInviteDate.Value > maxCheckDays )
                     .ToList() )
                 {
                     var updateErrorMessages = new List<string>();
                     var status = document.Status;
+                    int? binaryFileId = document.BinaryFileId;
                     if ( docTypeService.UpdateDocumentStatus( document, folderPath, out updateErrorMessages ) )
                     {
-                        if ( status != document.Status )
+                        if ( status != document.Status || !binaryFileId.Equals( document.BinaryFileId )  )
                         {
                             rockContext.SaveChanges();
                             documentsUpdated++;

@@ -34,6 +34,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -54,7 +55,8 @@ namespace RockWeb.Blocks.Event
     [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Event Registration", "", 3 )]
     [BooleanField( "Display Progress Bar", "Display a progress bar for the registration.", true, "", 4 )]
     [BooleanField( "Enable Debug", "Display the merge fields that are available for lava ( Success Page ).", false, "", 5 )]
-    [SystemEmailField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "", 4 )]
+    [BooleanField( "Display Digital Signature Documents Inline", "If event requires a digiDisplay the merge fields that are available for lava ( Success Page ).", false, "", 6, "SignInline" )]
+    [SystemEmailField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "", 7 )]
     public partial class RegistrationEntry : RockBlock
     {
         #region Fields
@@ -75,6 +77,8 @@ namespace RockWeb.Blocks.Event
         private const string REGISTRATION_STATE_KEY = "RegistrationState";
         private const string GROUP_ID_KEY = "GroupId";
         private const string CAMPUS_ID_KEY = "CampusId";
+        private const string SIGN_INLINE_KEY = "SignInline";
+        private const string DIGITAL_SIGNATURE_COMPONENT_TYPE_NAME_KEY = "DigitalSignatureComponentTypeName";
         private const string CURRENT_PANEL_KEY = "CurrentPanel";
         private const string CURRENT_REGISTRANT_INDEX_KEY = "CurrentRegistrantIndex";
         private const string CURRENT_FORM_INDEX_KEY = "CurrentFormIndex";
@@ -95,6 +99,11 @@ namespace RockWeb.Blocks.Event
 
         // The selected campus from event item occurrence or query string
         private int? CampusId { get; set; }
+
+        // Digital Signature Fields
+        private bool SignInline { get; set; }
+        private string DigitalSignatureComponentTypeName { get; set; }
+        private DigitalSignatureComponent DigitalSignatureComponent { get; set; }
 
         // Info about each current registration
         protected RegistrationInfo RegistrationState { get; set; }
@@ -325,6 +334,13 @@ namespace RockWeb.Blocks.Event
                 RegistrationState = JsonConvert.DeserializeObject<RegistrationInfo>( json );
             }
 
+            SignInline = ViewState[SIGN_INLINE_KEY] as bool? ?? false;
+            DigitalSignatureComponentTypeName = ViewState[DIGITAL_SIGNATURE_COMPONENT_TYPE_NAME_KEY].ToString();
+            if ( !string.IsNullOrWhiteSpace( DigitalSignatureComponentTypeName ))
+            {
+                DigitalSignatureComponent = DigitalSignatureContainer.GetComponent( DigitalSignatureComponentTypeName );
+            }
+
             GroupId = ViewState[GROUP_ID_KEY] as int?;
             CampusId = ViewState[CAMPUS_ID_KEY] as int?;
             CurrentPanel = ViewState[CURRENT_PANEL_KEY] as int? ?? 0;
@@ -468,6 +484,8 @@ namespace RockWeb.Blocks.Event
 
             ViewState[REGISTRATION_INSTANCE_STATE_KEY] = JsonConvert.SerializeObject( RegistrationInstanceState, Formatting.None, jsonSetting );
             ViewState[REGISTRATION_STATE_KEY] = JsonConvert.SerializeObject( RegistrationState, Formatting.None, jsonSetting );
+            ViewState[SIGN_INLINE_KEY] = SignInline;
+            ViewState[DIGITAL_SIGNATURE_COMPONENT_TYPE_NAME_KEY] = DigitalSignatureComponentTypeName;
             ViewState[GROUP_ID_KEY] = GroupId;
             ViewState[CAMPUS_ID_KEY] = CampusId;
             ViewState[CURRENT_PANEL_KEY] = CurrentPanel;
@@ -580,7 +598,12 @@ namespace RockWeb.Blocks.Event
             SetRegistrantState( numHowMany.Value );
 
             // set the max number of steps in the progress bar
-            ProgressBarSteps = ( numHowMany.Value * FormCount ) + ( Using3StepGateway ? 3 : 2 );
+            int registrantPages = FormCount;
+            if ( SignInline )
+            {
+                registrantPages += 1;
+            }
+            ProgressBarSteps = ( numHowMany.Value * registrantPages ) + ( Using3StepGateway ? 3 : 2 );
 
             ShowRegistrant();
 
@@ -597,6 +620,8 @@ namespace RockWeb.Blocks.Event
             if ( CurrentPanel == 1 )
             {
                 _saveNavigationHistory = true;
+
+                hfRequiredDocumentLinkUrl.Value = string.Empty;
 
                 CurrentFormIndex--;
                 if ( CurrentFormIndex < 0 )
@@ -639,7 +664,7 @@ namespace RockWeb.Blocks.Event
                 _saveNavigationHistory = true;
 
                 CurrentFormIndex++;
-                if ( CurrentFormIndex >= FormCount )
+                if ( ( CurrentFormIndex >= FormCount && !SignInline ) || CurrentFormIndex >= FormCount + 1 )
                 {
                     CurrentRegistrantIndex++;
                     CurrentFormIndex = 0;
@@ -659,9 +684,36 @@ namespace RockWeb.Blocks.Event
                 ShowHowMany();
             }
 
-            lbRegistrantPrev.Visible = true;
-
             hfTriggerScroll.Value = "true";
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbRequiredDocumentNext control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbRequiredDocumentNext_Click( object sender, EventArgs e )
+        {
+            hfRequiredDocumentLinkUrl.Value = string.Empty;
+
+            string qryString = hfRequiredDocumentQueryString.Value;
+            if ( qryString.StartsWith( "?document_id=" ) )
+            {
+                if ( RegistrationState != null && RegistrationState.RegistrantCount > CurrentRegistrantIndex )
+                {
+                    var registrant = RegistrationState.Registrants[CurrentRegistrantIndex];
+                    registrant.SignatureDocumentKey = qryString.Substring( 13 );
+                    registrant.SignatureDocumentLastSent = RockDateTime.Now;
+                }
+
+                lbRegistrantNext_Click( sender, e );
+            }
+            else
+            {
+                ShowError( "Invalid or Missing Document Signature",
+                    string.Format( "This {0} requires that you sign a {1} for each registrant, but it appears that you may have cancelled or skipped signing this document.",
+                        RegistrationTemplate.RegistrationTerm, RegistrationTemplate.RequiredSignatureDocumentTemplate.Name ) ); 
+            }
         }
 
         /// <summary>
@@ -1066,9 +1118,7 @@ namespace RockWeb.Blocks.Event
                     return false;
                 }
 
-                // set the max number of steps in the progress bar
                 numHowMany.Value = registration.Registrants.Count();
-                this.ProgressBarSteps = numHowMany.Value * FormCount + 2;
 
                 // set group id
                 if ( groupId.HasValue )
@@ -1213,6 +1263,29 @@ namespace RockWeb.Blocks.Event
                     Step2IFrameUrl = ResolveRockUrl( threeStepGateway.Step2FormUrl );
                 }
             }
+
+            SignInline = false;
+            if ( RegistrationTemplate != null &&
+                RegistrationTemplate.RequiredSignatureDocumentTemplate != null &&
+                RegistrationTemplate.RequiredSignatureDocumentTemplate.ProviderEntityType != null )
+            {
+
+                var provider = DigitalSignatureContainer.GetComponent( RegistrationTemplate.RequiredSignatureDocumentTemplate.ProviderEntityType.Name );
+                if ( provider != null && provider.IsActive )
+                {
+                    SignInline = GetAttributeValue( "SignInline" ).AsBoolean();
+                    DigitalSignatureComponentTypeName = RegistrationTemplate.RequiredSignatureDocumentTemplate.ProviderEntityType.Name;
+                    DigitalSignatureComponent = provider;
+                }
+            }
+
+            // set the max number of steps in the progress bar
+            int registrantPages = FormCount;
+            if ( SignInline )
+            {
+                registrantPages += 2;
+            }
+            this.ProgressBarSteps = numHowMany.Value * registrantPages + 2;
 
             return true;
         }
@@ -1509,13 +1582,16 @@ namespace RockWeb.Blocks.Event
                                     }
                                 }
 
-                                var sendDocumentTxn = new Rock.Transactions.SendDigitalSignatureRequestTransaction();
-                                sendDocumentTxn.SignatureDocumentTemplateId = RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value;
-                                sendDocumentTxn.AppliesToPersonAliasId = registrant.PersonAlias.Id;
-                                sendDocumentTxn.AssignedToPersonAliasId = assignedTo.PrimaryAliasId ?? 0;
-                                sendDocumentTxn.DocumentName = string.Format( "{0}_{1}", RegistrationInstanceState.Name.RemoveSpecialCharacters(), registrant.PersonAlias.Person.FullName.RemoveSpecialCharacters() );
-                                sendDocumentTxn.Email = email;
-                                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( sendDocumentTxn );
+                                if ( DigitalSignatureComponent != null )
+                                {
+                                    var sendDocumentTxn = new Rock.Transactions.SendDigitalSignatureRequestTransaction();
+                                    sendDocumentTxn.SignatureDocumentTemplateId = RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value;
+                                    sendDocumentTxn.AppliesToPersonAliasId = registrant.PersonAlias.Id;
+                                    sendDocumentTxn.AssignedToPersonAliasId = assignedTo.PrimaryAliasId ?? 0;
+                                    sendDocumentTxn.DocumentName = string.Format( "{0}_{1}", RegistrationInstanceState.Name.RemoveSpecialCharacters(), registrant.PersonAlias.Person.FullName.RemoveSpecialCharacters() );
+                                    sendDocumentTxn.Email = email;
+                                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( sendDocumentTxn );
+                                }
                             }
                         }
 
@@ -1550,6 +1626,7 @@ namespace RockWeb.Blocks.Event
             var registrantFeeService = new RegistrationRegistrantFeeService( rockContext );
             var personService = new PersonService( rockContext );
             var groupService = new GroupService( rockContext );
+            var documentService = new SignatureDocumentService( rockContext );
 
             // variables to keep track of the family that new people should be added to
             int? singleFamilyId = null;
@@ -2162,9 +2239,36 @@ namespace RockWeb.Blocks.Event
                     // Clear this registran't family guid so it's not updated again
                     registrantInfo.FamilyGuid = Guid.Empty;
 
+                    // Save the signed document
+                    try
+                    {
+                        if ( RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue && !string.IsNullOrWhiteSpace( registrantInfo.SignatureDocumentKey ) )
+                        {
+                            var document = new SignatureDocument();
+                            document.SignatureDocumentTemplateId = RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value;
+                            document.DocumentKey = registrantInfo.SignatureDocumentKey;
+                            document.Name = string.Format( "{0}_{1}", RegistrationInstanceState.Name.RemoveSpecialCharacters(), person.FullName.RemoveSpecialCharacters() ); ;
+                            document.AppliesToPersonAliasId = person.PrimaryAliasId;
+                            document.AssignedToPersonAliasId = registrar.PrimaryAliasId;
+                            document.SignedByPersonAliasId = registrar.PrimaryAliasId;
+                            document.Status = SignatureDocumentStatus.Signed;
+                            document.LastInviteDate = registrantInfo.SignatureDocumentLastSent;
+                            document.LastStatusDate = registrantInfo.SignatureDocumentLastSent;
+                            documentService.Add( document );
+                            rockContext.SaveChanges();
+
+                            var updateDocumentTxn = new Rock.Transactions.UpdateDigitalSignatureDocumentTransaction( document.Id );
+                            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( updateDocumentTxn );
+                        }
+                    }
+                    catch( System.Exception ex )
+                    {
+                        ExceptionLogService.LogException( ex, Context, this.RockPage.PageId, this.RockPage.Site.Id, CurrentPersonAlias );
+                    }
                 }
 
                 rockContext.SaveChanges();
+
             }
 
             catch ( Exception ex )
@@ -2956,6 +3060,44 @@ namespace RockWeb.Blocks.Event
                 PercentComplete = ( currentStep / ProgressBarSteps ) * 100.0m;
                 pnlRegistrantProgressBar.Visible = GetAttributeValue( "DisplayProgressBar" ).AsBoolean();
 
+                if ( SignInline && CurrentFormIndex >= FormCount )
+                {
+                    string registrantName = RegistrantTerm;
+                    if ( RegistrationState != null && RegistrationState.RegistrantCount > CurrentRegistrantIndex )
+                    {
+                        registrantName = RegistrationState.Registrants[CurrentRegistrantIndex].GetFirstName( RegistrationTemplate );
+                    }
+
+                    nbDigitalSignature.Heading = "Signature Required";
+                    nbDigitalSignature.Text = string.Format(
+                        "This {0} requires that you sign a {1} for each registrant, please follow the prompts below to digitally sign this document for {2}.",
+                        RegistrationTemplate.RegistrationTerm, RegistrationTemplate.RequiredSignatureDocumentTemplate.Name, registrantName );
+
+                    var errors = new List<string>();
+                    string inviteLink = DigitalSignatureComponent.GetInviteLink( RegistrationTemplate.RequiredSignatureDocumentTemplate.ProviderTemplateKey, out errors );
+                    if ( !string.IsNullOrWhiteSpace( inviteLink ) )
+                    {
+                        string returnUrl = GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash() +
+                            ResolveRockUrl( "~/Blocks/Event/DocumentReturn.html" );
+                        hfRequiredDocumentLinkUrl.Value = string.Format( "{0}?redirect_uri={1}", inviteLink, returnUrl );
+                    }
+                    else
+                    {
+                        ShowError( "Digital Signature Error", string.Format( "An Error Occurred Trying to Get Document Link... <ul><li>{0}</li></ul>", errors.AsDelimited( "</li><li>" ) ) );
+                        return;
+                    }
+
+                    pnlRegistrantFields.Visible = false;
+                    pnlDigitalSignature.Visible = true;
+                    lbRegistrantNext.Visible = false;
+                }
+                else
+                {
+                    pnlRegistrantFields.Visible = true;
+                    pnlDigitalSignature.Visible = false;
+                    lbRegistrantNext.Visible = true;
+                }
+
                 SetPanel( 1 );
             }
         }
@@ -3293,27 +3435,46 @@ namespace RockWeb.Blocks.Event
             }}
         }}
     }});
-",
-            nbAmountPaid.ClientID,          // {0}
-            hfTotalCost.ClientID,           // {1}
-            hfMinimumDue.ClientID,          // {2}
-            hfPreviouslyPaid.ClientID,      // {3}
-            lRemainingDue.ClientID,         // {4}
-            hfTriggerScroll.ClientID,       // {5}
-            GlobalAttributesCache.Value( "CurrencySymbol" ), // {6}
-            hfStep2Url.ClientID,            // {7}
-            hfStep2ReturnQueryString.ClientID,   // {8}
-            this.Page.ClientScript.GetPostBackEventReference( lbStep2Return, "" ), // {9}
-            this.BlockValidationGroup,      // {10}
-            txtCreditCard.ClientID,         // {11}
-            mypExpiration.ClientID,         // {12}
-            txtCVV.ClientID,                // {13}
-            hfStep2AutoSubmit.ClientID,     // {14}
-            acBillingAddress.ClientID,      // {15}
-            txtCardFirstName.ClientID,      // {16}
-            txtCardLastName.ClientID,       // {17}
-            txtCardName.ClientID            // {18}
-            );
+
+    // Evaluates the current url whenever the iframe is loaded and if it includes a qrystring parameter
+    // The qry parameter value is saved to a hidden field and a post back is performed
+    $('#iframeRequiredDocument').on('load', function(e) {{
+        var location = this.contentWindow.location;
+        var qryString = this.contentWindow.location.search;
+        if ( qryString && qryString != '' && qryString.startsWith('?document_id') ) {{ 
+            debugger;
+            $('#{19}').val(qryString);
+            {20};
+        }}
+    }});
+
+    if ($('#{21}').val() != '' ) {{
+        $('#iframeRequiredDocument').attr('src', $('#{21}').val() );
+    }}
+
+", nbAmountPaid.ClientID                 // {0}
+            ,hfTotalCost.ClientID                   // {1}
+            ,hfMinimumDue.ClientID                  // {2}
+            ,hfPreviouslyPaid.ClientID              // {3}
+            ,lRemainingDue.ClientID                 // {4}
+            ,hfTriggerScroll.ClientID               // {5}
+            ,GlobalAttributesCache.Value( "CurrencySymbol" ) // {6}
+            ,hfStep2Url.ClientID                    // {7}
+            ,hfStep2ReturnQueryString.ClientID      // {8}
+            ,this.Page.ClientScript.GetPostBackEventReference( lbStep2Return, "" ) // {9}
+            ,this.BlockValidationGroup              // {10}
+            ,txtCreditCard.ClientID                 // {11}
+            ,mypExpiration.ClientID                 // {12}
+            ,txtCVV.ClientID                        // {13}
+            ,hfStep2AutoSubmit.ClientID             // {14}
+            ,acBillingAddress.ClientID              // {15}
+            ,txtCardFirstName.ClientID              // {16}
+            ,txtCardLastName.ClientID               // {17}
+            , txtCardName.ClientID                  // {18}
+            ,hfRequiredDocumentQueryString.ClientID // {19}
+            ,this.Page.ClientScript.GetPostBackEventReference( lbRequiredDocumentNext, "" ) // {20}
+            ,hfRequiredDocumentLinkUrl.ClientID     // {21}
+);
 
             ScriptManager.RegisterStartupScript( Page, Page.GetType(), "registrationEntry", script, true );
 
@@ -3347,7 +3508,10 @@ namespace RockWeb.Blocks.Event
             switch ( CurrentPanel )
             {
                 case 1:
-                    CreateRegistrantControls( setValues );
+                    if ( CurrentFormIndex <= FormCount )
+                    {
+                        CreateRegistrantControls( setValues );
+                    }
                     break;
                 case 2:
                     CreateSummaryControls( setValues );
@@ -3363,7 +3527,10 @@ namespace RockWeb.Blocks.Event
             switch ( CurrentPanel )
             {
                 case 1:
-                    ParseRegistrantControls();
+                    if ( CurrentFormIndex < FormCount )
+                    {
+                        ParseRegistrantControls();
+                    }
                     break;
                 case 2:
                     ParseSummaryControls();
