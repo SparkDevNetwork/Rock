@@ -835,7 +835,9 @@ namespace Rock.Web.UI
 
                     // Create a javascript object to store information about the current page for client side scripts to use
                     Page.Trace.Warn( "Creating JS objects" );
-                    string script = string.Format( @"
+                    if ( !ClientScript.IsStartupScriptRegistered( "rock-js-object" ) )
+                    {
+                        string script = string.Format( @"
     Rock.settings.initialize({{ 
         siteId: {0},
         layoutId: {1},
@@ -843,8 +845,10 @@ namespace Rock.Web.UI
         layout: '{3}',
         baseUrl: '{4}' 
     }});",
-                        _pageCache.Layout.SiteId, _pageCache.LayoutId, _pageCache.Id, _pageCache.Layout.FileName, ResolveUrl( "~" ) );
-                    ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "rock-js-object", script, true );
+                            _pageCache.Layout.SiteId, _pageCache.LayoutId, _pageCache.Id, _pageCache.Layout.FileName, ResolveUrl( "~" ) );
+
+                        ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-js-object", script, true );
+                    }
 
                     AddTriggerPanel();
 
@@ -1220,8 +1224,11 @@ namespace Rock.Web.UI
             }
 
             // also, do this in cases where the api is added on a postback, and the above didn't end up getting rendered
-            string script = string.Format( @"Rock.controls.util.loadGoogleMapsApi('{0}');", scriptUrl );
-            ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "googleMapsApiScript", script, true );
+            if ( !ClientScript.IsStartupScriptRegistered( "googleMapsApiScript" ) )
+            {
+                string script = string.Format( @"Rock.controls.util.loadGoogleMapsApi('{0}');", scriptUrl );
+                ClientScript.RegisterStartupScript( this.Page.GetType(), "googleMapsApiScript", script, true );
+            }
         }
 
         /// <summary>
@@ -1312,13 +1319,16 @@ namespace Rock.Web.UI
                 phLoadStats.Controls.Add( new LiteralControl( string.Format(
                     "<span>Page Load Time: {0:N2}s </span><span class='margin-l-lg'>Cache Hit Rate: {1:P2} </span> <span class='margin-l-lg js-view-state-stats'></span> <span class='margin-l-lg js-html-size-stats'></span>", tsDuration.TotalSeconds, hitPercent ) ) );
 
-                string script = @"
+                if ( !ClientScript.IsStartupScriptRegistered( "rock-js-view-state-size" ) )
+                {
+                    string script = @"
 Sys.Application.add_load(function () {
     $('.js-view-state-stats').html('ViewState Size: ' + ($('#__VIEWSTATE').val().length / 1024).toFixed(0) + ' KB');
     $('.js-html-size-stats').html('Html Size: ' + ($('html').html().length / 1024).toFixed(0) + ' KB');
 });
 ";
-                ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "rock-js-view-state-size", script, true );
+                    ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-js-view-state-size", script, true );
+                }
             }
         }
 
