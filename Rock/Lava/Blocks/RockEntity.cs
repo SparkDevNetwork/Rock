@@ -157,15 +157,17 @@ namespace Rock.Lava.Blocks
                             {
                                 var dynamicFilterValue = HttpContext.Current.Request[dynamicFilter];
                                 var dynamicFilterExpression = GetDynamicFilterExpression( dynamicFilter, dynamicFilterValue, entityType, serviceInstance, paramExpression );
-
-                                if ( queryExpression == null )
+                                if ( dynamicFilterExpression != null )
                                 {
-                                    queryExpression = dynamicFilterExpression;
-                                    hasFilter = true;
-                                }
-                                else
-                                {
-                                    queryExpression = Expression.AndAlso( queryExpression, dynamicFilterExpression );
+                                    if ( queryExpression == null )
+                                    {
+                                        queryExpression = dynamicFilterExpression;
+                                        hasFilter = true;
+                                    }
+                                    else
+                                    {
+                                        queryExpression = Expression.AndAlso( queryExpression, dynamicFilterExpression );
+                                    }
                                 }
                             }
                         }
@@ -661,10 +663,32 @@ namespace Rock.Lava.Blocks
         /// <returns></returns>
         private Expression GetDynamicFilterExpression( string dynamicFilter, string dynamicFilterValue, Type type, IService service, ParameterExpression parmExpression )
         {
-            var selectionString = string.Format( @"[ ""{0}"", ""1"", ""{1}"" ]", dynamicFilter, dynamicFilterValue );
-            var expression = new PropertyFilter().GetExpression( type, service, parmExpression, selectionString );
+            if ( !string.IsNullOrWhiteSpace( dynamicFilter ) && !string.IsNullOrWhiteSpace( dynamicFilterValue ) )
+            {
+                var entityFields = EntityHelper.GetEntityFields( type );
+                var entityField = entityFields.FirstOrDefault( f => f.Name.Equals( dynamicFilter, StringComparison.OrdinalIgnoreCase ) );
+                if ( entityField != null )
+                {
+                    var values = new List<string>();
+                    string comparison = entityField.FieldType.Field.GetEqualToCompareValue();
+                    if ( !string.IsNullOrWhiteSpace( comparison ) )
+                    {
+                        values.Add( comparison );
+                    }
+                    values.Add( dynamicFilterValue );
 
-            return expression;
+                    if ( entityField.FieldKind == FieldKind.Property )
+                    {
+                        return new PropertyFilter().GetPropertyExpression( service, parmExpression, entityField, values );
+                    }
+                    else
+                    {
+                        return new PropertyFilter().GetAttributeExpression( service, parmExpression, entityField, values );
+                    }
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

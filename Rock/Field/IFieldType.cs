@@ -181,6 +181,20 @@ namespace Rock.Field
         List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, FilterMode filterMode );
 
         /// <summary>
+        /// Gets the filter compare value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        string GetFilterCompareValue( Control control, FilterMode filterMode );
+
+        /// <summary>
+        /// Gets the equal to compare value (types that don't support an equalto comparison (i.e. singleselect) should return null
+        /// </summary>
+        /// <returns></returns>
+        string GetEqualToCompareValue();
+
+        /// <summary>
         /// Sets the filter value.
         /// </summary>
         /// <param name="filterControl">The filter control.</param>
