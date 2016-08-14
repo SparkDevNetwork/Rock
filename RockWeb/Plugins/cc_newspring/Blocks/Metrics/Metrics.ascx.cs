@@ -225,12 +225,13 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
 
             var attributeValue = GetAttributeValue(preKey + "MetricSource");
 
-            if(attributeValue == null)
+            if(string.IsNullOrWhiteSpace(attributeValue))
             {
                 attributeValue = string.Empty;
             }
 
-            sourceGuids = attributeValue.SplitDelimitedValues().AsGuidList();
+            var pairs = MetricCategoriesFieldAttribute.GetValueAsGuidPairs(attributeValue);
+            sourceGuids = pairs.Select(p => p.MetricGuid).ToList();
 
             if (sourceGuids.Any())
             {
