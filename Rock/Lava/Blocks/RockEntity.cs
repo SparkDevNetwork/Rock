@@ -146,9 +146,9 @@ namespace Rock.Lava.Blocks
                         }
 
                         // process dynamic filter expressions (from the query string)
-                        if ( parms.Any( p => p.Key == "dynamicfilters" ) )
+                        if ( parms.Any( p => p.Key == "dynamicparameters" ) )
                         {
-                            var dynamicFilters = parms["dynamicfilters"].Split( ',' )
+                            var dynamicFilters = parms["dynamicparameters"].Split( ',' )
                                             .Select( x => x.Trim() )
                                             .Where( x => !string.IsNullOrWhiteSpace( x ) )
                                             .ToList();
@@ -516,7 +516,7 @@ namespace Rock.Lava.Blocks
                     }
                 }
 
-                parms.Add( "dynamicfilters", string.Join( ",", dynamicFilters ) );
+                parms.AddOrReplace( "dynamicparameters", string.Join( ",", dynamicFilters ) );
             }
 
 
