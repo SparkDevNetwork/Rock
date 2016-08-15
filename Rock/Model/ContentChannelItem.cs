@@ -221,6 +221,23 @@ namespace Rock.Model
         private ICollection<EventItemOccurrenceChannelItem> _eventItemOccurrences;
 
         /// <summary>
+        /// Gets the supported actions.
+        /// </summary>
+        /// <value>
+        /// The supported actions.
+        /// </value>
+        [NotMapped]
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                var supportedActions = base.SupportedActions;
+                supportedActions.AddOrReplace( Rock.Security.Authorization.INTERACT, "The roles and/or users that have access to intertact with the channel item." );
+                return supportedActions;
+            }
+        }
+
+        /// <summary>
         /// Gets the parent authority.
         /// </summary>
         /// <value>
