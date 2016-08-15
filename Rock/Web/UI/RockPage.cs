@@ -1140,6 +1140,34 @@ namespace Rock.Web.UI
                         Response.Cache.SetExpires( RockDateTime.Now.AddSeconds( _pageCache.OutputCacheDuration ) );
                         Response.Cache.SetValidUntilExpires( true );
                     }
+
+                    // create a page view transaction if enabled
+                    if ( !Page.IsPostBack && _pageCache != null )
+                    {
+                        if ( _pageCache.Layout.Site.EnablePageViews )
+                        {
+                            PageViewTransaction transaction = new PageViewTransaction();
+                            transaction.DateViewed = RockDateTime.Now;
+                            transaction.PageId = _pageCache.Id;
+                            transaction.SiteId = _pageCache.Layout.Site.Id;
+                            if ( CurrentPersonAlias != null )
+                            {
+                                transaction.PersonAliasId = CurrentPersonAlias.Id;
+                            }
+
+                            transaction.IPAddress = GetClientIpAddress();
+                            transaction.UserAgent = Request.UserAgent ?? "";
+                            transaction.Url = Request.Url.ToString();
+                            transaction.PageTitle = _pageCache.PageTitle;
+                            var sessionId = Session["RockSessionID"];
+                            if ( sessionId != null )
+                            {
+                                transaction.SessionId = sessionId.ToString();
+                            }
+
+                            RockQueue.TransactionQueue.Enqueue( transaction );
+                        }
+                    }
                 }
 
                 stopwatchInitEvents.Restart();
@@ -1242,34 +1270,6 @@ namespace Rock.Web.UI
             base.OnLoad( e );
 
             Page.Header.DataBind();
-
-            // create a page view transaction if enabled
-            if ( !Page.IsPostBack && _pageCache != null )
-            {
-                if ( _pageCache.Layout.Site.EnablePageViews )
-                {
-                    PageViewTransaction transaction = new PageViewTransaction();
-                    transaction.DateViewed = RockDateTime.Now;
-                    transaction.PageId = _pageCache.Id;
-                    transaction.SiteId = _pageCache.Layout.Site.Id;
-                    if ( CurrentPersonAlias != null )
-                    {
-                        transaction.PersonAliasId = CurrentPersonAlias.Id;
-                    }
-
-                    transaction.IPAddress = GetClientIpAddress();
-                    transaction.UserAgent = Request.UserAgent ?? "";
-                    transaction.Url = Request.Url.ToString();
-                    transaction.PageTitle = _pageCache.PageTitle;
-                    var sessionId = Session["RockSessionID"];
-                    if ( sessionId != null )
-                    {
-                        transaction.SessionId = sessionId.ToString();
-                    }
-
-                    RockQueue.TransactionQueue.Enqueue( transaction );
-                }
-            }
 
             try
             {
