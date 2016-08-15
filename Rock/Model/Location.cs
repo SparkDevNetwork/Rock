@@ -595,9 +595,17 @@ namespace Rock.Model
         /// </summary>
         /// <param name="latitude">A <see cref="System.Double"/> representing the latitude for this location.</param>
         /// <param name="longitude">A <see cref="System.Double"/>representing the longitude for this location.</param>
-        public void SetLocationPointFromLatLong( double latitude, double longitude )
+        public bool SetLocationPointFromLatLong( double latitude, double longitude )
         {
-            this.GeoPoint = DbGeography.FromText( string.Format( "POINT({0} {1})", longitude, latitude ) );
+            try
+            {
+                this.GeoPoint = DbGeography.FromText( string.Format( "POINT({0} {1})", longitude, latitude ) );
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         /// <summary>

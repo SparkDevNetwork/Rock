@@ -98,8 +98,10 @@ namespace Rock.Address
                     location.GeocodeAttemptedResult = candidate.metadata.precision;
                     if ( precisions.Contains( candidate.metadata.precision ) )
                     {
-                        location.SetLocationPointFromLatLong( candidate.metadata.latitude, candidate.metadata.longitude );
-                        result = result | VerificationResult.Geocoded;
+                        if ( location.SetLocationPointFromLatLong( candidate.metadata.latitude, candidate.metadata.longitude ) )
+                        {
+                            result = result | VerificationResult.Geocoded;
+                        }
                     }
 
                 }
