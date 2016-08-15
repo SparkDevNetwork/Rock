@@ -124,45 +124,50 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void RegisterScript()
         {
-            // Note: the OnExpiry property of the countdown jquery plugin seems to add a new callback
-            // everytime the setting is set which is why the clearCountdown method is used to prevent 
-            // a plethora of partial postbacks occurring when the countdown expires.
-            string script = string.Format( @"
+            if ( !Page.ClientScript.IsStartupScriptRegistered( "RefreshScript" ) )
+            {
+                // Note: the OnExpiry property of the countdown jquery plugin seems to add a new callback
+                // everytime the setting is set which is why the clearCountdown method is used to prevent 
+                // a plethora of partial postbacks occurring when the countdown expires.
+                string script = string.Format( @"
 
-var timeoutSeconds = $('.js-refresh-timer-seconds').val();
-if (timeout) {{
-    window.clearTimeout(timeout);
-}}
-var timeout = window.setTimeout(refreshKiosk, timeoutSeconds * 1000);
+    Sys.Application.add_load(function () {{
+        var timeoutSeconds = $('.js-refresh-timer-seconds').val();
+        if (timeout) {{
+            window.clearTimeout(timeout);
+        }}
+        var timeout = window.setTimeout(refreshKiosk, timeoutSeconds * 1000);
 
-var $ActiveWhen = $('.active-when');
-var $CountdownTimer = $('.countdown-timer');
+        var $ActiveWhen = $('.active-when');
+        var $CountdownTimer = $('.countdown-timer');
 
-function refreshKiosk() {{
-    window.clearTimeout(timeout);
-    {0};
-}}
+        function refreshKiosk() {{
+            window.clearTimeout(timeout);
+            {0};
+        }}
 
-function clearCountdown() {{
-    if ($ActiveWhen.text() != '')
-    {{
-        $ActiveWhen.text('');
-        refreshKiosk();
-    }}
-}}
+        function clearCountdown() {{
+            if ($ActiveWhen.text() != '')
+            {{
+                $ActiveWhen.text('');
+                refreshKiosk();
+            }}
+        }}
 
-if ($ActiveWhen.text() != '')
-{{
-    var timeActive = new Date($ActiveWhen.text());
-    $CountdownTimer.countdown({{
-        until: timeActive, 
-        compact:true, 
-        onExpiry: clearCountdown
+        if ($ActiveWhen.text() != '')
+        {{
+            var timeActive = new Date($ActiveWhen.text());
+            $CountdownTimer.countdown({{
+                until: timeActive, 
+                compact:true, 
+                onExpiry: clearCountdown
+            }});
+        }}
     }});
-}}
 
 ", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
-            ScriptManager.RegisterStartupScript( Page, Page.GetType(), "RefreshScript", script, true );
+                Page.ClientScript.RegisterStartupScript( Page.GetType(), "RefreshScript", script, true );
+            }
         }
 
         // TODO: Add support for scanner
