@@ -127,7 +127,7 @@ namespace RockWeb.Blocks.Finance
 
             financialPledge.TotalAmount = tbTotalAmount.Text.AsDecimal();
 
-            var pledgeFrequencySelection = DefinedValueCache.Read( bddlFrequency.SelectedValue.AsInteger() );
+            var pledgeFrequencySelection = DefinedValueCache.Read( ddlFrequency.SelectedValue.AsInteger() );
             if ( pledgeFrequencySelection != null )
             {
                 financialPledge.PledgeFrequencyValueId = pledgeFrequencySelection.Id;
@@ -294,18 +294,18 @@ namespace RockWeb.Blocks.Finance
             // only show the date range picker if the block setting for date range isn't fully specified
             drpDateRange.Visible = drpDateRange.LowerValue == null || drpDateRange.UpperValue == null;
 
-            bddlFrequency.Items.Clear();
+            ddlFrequency.Items.Clear();
             var frequencies = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Value );
             foreach ( var frequency in frequencies )
             {
-                bddlFrequency.Items.Add( new ListItem( frequency.Value, frequency.Id.ToString() ) );
+                ddlFrequency.Items.Add( new ListItem( frequency.Value, frequency.Id.ToString() ) );
             }
 
-            bddlFrequency.Visible = GetAttributeValue( "ShowPledgeFrequency" ).AsBooleanOrNull() ?? false;
-            bddlFrequency.SelectedValue = null;
+            ddlFrequency.Visible = GetAttributeValue( "ShowPledgeFrequency" ).AsBooleanOrNull() ?? false;
+            ddlFrequency.SelectedValue = null;
 
             // if Frequency is Visible, require it if RequirePledgeFrequency
-            bddlFrequency.Required = bddlFrequency.Visible && ( GetAttributeValue( "RequirePledgeFrequency" ).AsBooleanOrNull() ?? false );
+            ddlFrequency.Required = ddlFrequency.Visible && ( GetAttributeValue( "RequirePledgeFrequency" ).AsBooleanOrNull() ?? false );
 
             string saveButtonText = GetAttributeValue( "SaveButtonText" );
             if ( !string.IsNullOrWhiteSpace( saveButtonText ) )
