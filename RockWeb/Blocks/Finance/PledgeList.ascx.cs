@@ -36,7 +36,8 @@ namespace RockWeb.Blocks.Finance
     [LinkedPage( "Detail Page" )]
     [BooleanField("Show Account Column", "Allows the account column to be hidden.", true, "", 1)]
     [BooleanField("Show Last Modified Date Column", "Allows the Last Modified Date column to be hidden.", true, "", 2)]
-    [BooleanField( "Show Group Column", "Allows the grup column to be hidden.", false, "", 3 )]
+    [BooleanField( "Show Group Column", "Allows the group column to be hidden.", false, "", 3 )]
+    [BooleanField( "Limit Pledges To Current Person", "Limit the results to pledges for the current person.", false, "", 4)]
 
     [BooleanField( "Show Person Filter", "Allows person filter to be hidden.", true, "Display Filters", 0)]
     [BooleanField( "Show Account Filter", "Allows account filter to be hidden.", true, "Display Filters", 1 )]
@@ -76,7 +77,14 @@ namespace RockWeb.Blocks.Finance
             gPledges.Actions.ShowAdd = canAddEditDelete;
             gPledges.IsDeleteEnabled = canAddEditDelete;
 
-            TargetPerson = ContextEntity<Person>();
+            if ( GetAttributeValue( "LimitPledgesToCurrentPerson" ).AsBoolean() )
+            {
+                TargetPerson = this.CurrentPerson;
+            }
+            else
+            {
+                TargetPerson = ContextEntity<Person>();
+            }
 
             // hide the person column and filter if a person context exists 
             if ( TargetPerson != null )
@@ -86,7 +94,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             // show/hide the group column
-            gPledges.Columns[1].Visible = GetAttributeValue( "ShowAccountColumn" ).AsBoolean();
+            gPledges.Columns[1].Visible = GetAttributeValue( "ShowGroupColumn" ).AsBoolean();
 
             // show/hide the account column
             gPledges.Columns[2].Visible = GetAttributeValue( "ShowAccountColumn" ).AsBoolean();
