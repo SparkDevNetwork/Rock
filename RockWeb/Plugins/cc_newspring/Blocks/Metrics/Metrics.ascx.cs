@@ -71,6 +71,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         private List<Guid> ComparisonMetricSourceGuids = null;
 
         private static int? dtBooleanTrueId = null;
+        private static int? dtBooleanFalseId = null;
 
         /// <summary>
         /// The string used for setting a Date Range Context
@@ -116,11 +117,17 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
 
             var rockContext = new RockContext();
             var dvService = new DefinedValueService(rockContext);
-            var booleanDt = dvService.Queryable().FirstOrDefault(dv => dv.DefinedType.Name == "Boolean" && dv.Value == "True");
+            var booleanTrueDt = dvService.Queryable().FirstOrDefault(dv => dv.DefinedType.Name == "Boolean" && dv.Value == "True");
+            var booleanFalseDt = dvService.Queryable().FirstOrDefault(dv => dv.DefinedType.Name == "Boolean" && dv.Value == "False");
 
-            if(booleanDt != null)
+            if (booleanTrueDt != null)
             {
-                dtBooleanTrueId = booleanDt.Id;
+                dtBooleanTrueId = booleanTrueDt.Id;
+            }
+
+            if (booleanFalseDt != null)
+            {
+                dtBooleanFalseId = booleanFalseDt.Id;
             }
 
             LoadSourceGuids();
@@ -252,7 +259,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
 
                 if (campusContext != null)
                 {
-                    metricValues = metricValues.Where(a => a.MetricValuePartitions.Any(mvp => mvp.MetricPartition.Label == "Campus" && mvp.EntityId == campusContext.Id));
+                    metricValues = FilterMetricValuesByPartition(metricValues, "Campus", campusContext.Id);
                 }
             }
 
@@ -263,7 +270,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
 
                 if (groupContext != null)
                 {
-                    metricValues = metricValues.Where(a => a.MetricValuePartitions.Any(mvp => mvp.MetricPartition.Label == "Group" && mvp.EntityId == groupContext.Id));
+                    metricValues = FilterMetricValuesByPartition(metricValues, "Group", groupContext.Id);
                 }
                 else if (groupTypeContext != null)
                 {
@@ -290,16 +297,57 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
 
                 if (scheduleContext != null)
                 {
-                    metricValues = metricValues.Where(a => a.MetricValuePartitions.Any(mvp => mvp.MetricPartition.Label == "Schedule" && mvp.EntityId == scheduleContext.Id));
+                    metricValues = FilterMetricValuesByPartition(metricValues, "Schedule", scheduleContext.Id);
                 }
             }
 
+            var didAttendTrue = FilterMetricValuesByPartition(metricValues, "Did Attend", dtBooleanTrueId);
+
             if (GetAttributeValue(preKey + "RequireAttendance").AsBoolean())
             {
-                metricValues = metricValues.Where(a => a.MetricValuePartitions.Any(mvp => mvp.MetricPartition.Label == "Did Attend" && mvp.EntityId == dtBooleanTrueId));
+                return didAttendTrue.ToList();
+            }
+            else
+            {
+                var didAttendFalse = FilterMetricValuesByPartition(metricValues, "Did Attend", dtBooleanFalseId);
+                var valueList = didAttendTrue.ToList();
+
+                foreach (var trueValue in valueList)
+                {
+                    var possibleMatches = didAttendFalse.AsQueryable();
+
+                    var schedulePartition = trueValue.MetricValuePartitions.FirstOrDefault(mvp => mvp.MetricPartition.Label == "Schedule");
+                    var scheduleId = schedulePartition == null ? null : schedulePartition.EntityId;
+                    possibleMatches = FilterMetricValuesByPartition(possibleMatches, "Schedule", scheduleId, true);
+
+                    var campusPartition = trueValue.MetricValuePartitions.FirstOrDefault(mvp => mvp.MetricPartition.Label == "Campus");
+                    var campusId = campusPartition == null ? null : campusPartition.EntityId;
+                    possibleMatches = FilterMetricValuesByPartition(possibleMatches, "Campus", campusId, true);
+
+                    var groupPartition = trueValue.MetricValuePartitions.FirstOrDefault(mvp => mvp.MetricPartition.Label == "Group");
+                    var groupId = groupPartition == null ? null : groupPartition.EntityId;
+                    possibleMatches = FilterMetricValuesByPartition(possibleMatches, "Group", groupId, true);
+
+                    var falseValue = possibleMatches.SingleOrDefault(v => v.MetricValueDateTime == trueValue.MetricValueDateTime);
+
+                    if(falseValue != null)
+                    {
+                        trueValue.YValue += falseValue.YValue;
+                    }
+                }
+
+                return valueList;
+            }
+        }
+
+        protected IQueryable<MetricValue> FilterMetricValuesByPartition(IQueryable<MetricValue> values, string partitionName, int? entityId, bool filterOnNull = false)
+        {
+            if(!entityId.HasValue && !filterOnNull)
+            {
+                return values;
             }
 
-            return metricValues.ToList();
+            return values.Where(m => m.MetricValuePartitions.Any(mvp => mvp.MetricPartition.Label == partitionName && mvp.EntityId == entityId));
         }
 
         #endregion
