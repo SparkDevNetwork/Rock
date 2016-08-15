@@ -53,6 +53,7 @@ namespace RockWeb.Blocks.Groups
 ", "", 8 )]
     [CustomRadioListField( "Auto Fill Form", "If set to FALSE then the form will not load the context of the logged in user (default: 'True'.)", "true^True,false^False", true, "true", "", 9 )]
     [TextField( "Register Button Alt Text", "Alternate text to use for the Register button (default is 'Register').", false, "", "", 10 )]
+    [WorkflowTypeField( "Alert Note Re-Route Workflow", "If the person has an alert note, a workflow to run instead of registering them to the group. A GroupMember with the person and group will be set as the workflow 'Entity' when processing is started.", false, false, "", "", 11 )]
     public partial class GroupRegistration : RockBlock
     {
         #region Fields
@@ -358,28 +359,59 @@ namespace RockWeb.Blocks.Groups
                         Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(), spouse.Id, familyChanges );
                 }
 
-                // Check to see if a workflow should be launched for each person
-                WorkflowType workflowType = null;
-                Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
+                // now, it's time to either add them to the group, or kick off the Alert Re-Route workflow
+                // (Or nothing if there's no problem but they're already in the group)
+                GroupMember primaryGroupMember = PersonToGroupMember( rockContext, person );
+                GroupMember spouseGroupMember = PersonToGroupMember( rockContext, spouse );
+
+                // prep the workflow service
+                var workflowTypeService = new WorkflowTypeService( rockContext );
+
+                bool addToGroup = true;
+
+                // First, check to see if an alert re-route workflow should be launched
+                Guid? workflowTypeGuid = GetAttributeValue( "AlertNoteRe-RouteWorkflow" ).AsGuidOrNull();
                 if ( workflowTypeGuid.HasValue )
                 {
-                    var workflowTypeService = new WorkflowTypeService( rockContext );
-                    workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
+                    // It does, so see if we need to launch it instead
+                    WorkflowType alertRerouteWorkflowType = workflowTypeService.Get( workflowTypeGuid.Value );
+
+                    // do either of the people registering have alert notes?
+                    int alertNoteCount = new NoteService( rockContext ).Queryable( ).Where( n => (n.EntityId == person.Id || n.EntityId == spouse.Id) && n.IsAlert == true ).Count( );
+                    if( alertNoteCount > 0 )
+                    {
+                        // yes they do. so first, flag that we should NOT put them in the group
+                        addToGroup = false;
+
+                        // and kick off the re-route workflow so security can review.
+                        LaunchWorkflow( rockContext, alertRerouteWorkflowType, primaryGroupMember );
+                        LaunchWorkflow( rockContext, alertRerouteWorkflowType, spouseGroupMember );
+                    }
+                }
+                
+                // if above, we didn't flag that they should not join the group, let's add them
+                if ( addToGroup == true )
+                {
+                    // try to add them to the group (would only fail if the're already in it)
+                    TryAddGroupMemberToGroup( rockContext, primaryGroupMember );
+                    TryAddGroupMemberToGroup( rockContext, spouseGroupMember );
+
+                    // is there a workflow to fire off?   
+                    workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
+                    if ( workflowTypeGuid.HasValue )
+                    {
+                        WorkflowType workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
+
+                        LaunchWorkflow( rockContext, workflowType, primaryGroupMember );
+                        LaunchWorkflow( rockContext, workflowType, spouseGroupMember );
+                    }
                 }
 
-                // Save the registrations ( and launch workflows )
-                var newGroupMembers = new List<GroupMember>();
-                AddPersonToGroup( rockContext, person, workflowType, newGroupMembers );
-                AddPersonToGroup( rockContext, spouse, workflowType, newGroupMembers );
 
-                // Show the results
-                pnlView.Visible = false;
-                pnlResult.Visible = true;
-
+                // Now do a PostBack so they see a 'Completion' page result.
                 // Show lava content
                 var mergeFields = new Dictionary<string, object>();
                 mergeFields.Add( "Group", _group );
-                mergeFields.Add( "GroupMembers", newGroupMembers );
 
                 bool showDebug = UserCanEdit && GetAttributeValue( "EnableDebug" ).AsBoolean();
                 lResultDebug.Visible = showDebug;
@@ -393,6 +425,10 @@ namespace RockWeb.Blocks.Groups
 
                 // Will only redirect if a value is specifed
                 NavigateToLinkedPage( "ResultPage" );
+
+                // Show the results
+                pnlView.Visible = false;
+                pnlResult.Visible = true;
             }
         }
 
@@ -497,45 +533,45 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
-        /// <summary>
-        /// Adds the person to group.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="person">The person.</param>
-        /// <param name="workflowType">Type of the workflow.</param>
-        /// <param name="groupMembers">The group members.</param>
-        private void AddPersonToGroup( RockContext rockContext, Person person, WorkflowType workflowType, List<GroupMember> groupMembers )
+        private GroupMember PersonToGroupMember( RockContext rockContext, Person person )
         {
-            if (person != null )
-            {
-                if ( !_group.Members
-                    .Any( m => 
-                        m.PersonId == person.Id &&
-                        m.GroupRoleId == _defaultGroupRole.Id))
-                {
-                    var groupMemberService = new GroupMemberService(rockContext);
-                    var groupMember = new GroupMember();
-                    groupMember.PersonId = person.Id;
-                    groupMember.GroupRoleId = _defaultGroupRole.Id;
-                    groupMember.GroupMemberStatus = (GroupMemberStatus)GetAttributeValue("GroupMemberStatus").AsInteger();
-                    groupMember.GroupId = _group.Id;
-                    groupMemberService.Add( groupMember );
-                    rockContext.SaveChanges();
+            // puts a person into a group member object, so that we can pass it to a workflow
+            GroupMember newGroupMember = new GroupMember();
+            newGroupMember.PersonId = person.Id;
+            newGroupMember.GroupRoleId = _defaultGroupRole.Id;
+            newGroupMember.GroupMemberStatus = (GroupMemberStatus)GetAttributeValue("GroupMemberStatus").AsInteger();
+            newGroupMember.GroupId = _group.Id;
 
-                    if ( workflowType != null )
-                    {
-                        try
-                        {
-                            List<string> workflowErrors;
-                            var workflow = Workflow.Activate( workflowType, person.FullName );
-                            new WorkflowService( rockContext ).Process( workflow, groupMember, out workflowErrors );
-                        }
-                        catch (Exception ex)
-                        {
-                            ExceptionLogService.LogException( ex, this.Context );
-                        }
-                    }
-                }
+            return newGroupMember;
+        }
+
+        /// <summary>
+        /// Adds the group member to the group if they aren't already in it
+        /// </summary>
+        private void TryAddGroupMemberToGroup( RockContext rockContext, GroupMember newGroupMember )
+        {
+            if ( !_group.Members.Any( m => 
+                                      m.PersonId == newGroupMember.PersonId &&
+                                      m.GroupRoleId == _defaultGroupRole.Id) )
+            {
+                var groupMemberService = new GroupMemberService(rockContext);
+                groupMemberService.Add( newGroupMember );
+                    
+                rockContext.SaveChanges();
+            }
+        }
+
+        private void LaunchWorkflow( RockContext rockContext, WorkflowType workflowType, GroupMember groupMember )
+        {
+            try
+            {
+                List<string> workflowErrors;
+                var workflow = Workflow.Activate( workflowType, workflowType.Name );
+                new WorkflowService( rockContext ).Process( workflow, groupMember, out workflowErrors );
+            }
+            catch (Exception ex)
+            {
+                ExceptionLogService.LogException( ex, this.Context );
             }
         }
 
