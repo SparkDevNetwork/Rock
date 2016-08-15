@@ -79,8 +79,16 @@
                                 <Rock:WorkflowTypePicker ID="wtpRegistrationWorkflow" runat="server" Label="Registration Workflow"
                                     Help="An optional workflow type to launch when a new registration is completed." />
 
-                                <Rock:RockDropDownList ID="ddlSignatureDocumentTemplate" runat="server" Label="Required Signature Document" 
-                                    Help="A document that needs to be signed for registrations of this type."/>
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                        <Rock:RockDropDownList ID="ddlSignatureDocumentTemplate" runat="server" Label="Required Signature Document" 
+                                            Help="A document that needs to be signed for registrations of this type."/>
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <Rock:RockCheckBox ID="cbDisplayInLine" runat="server" Label="In-Line" Text="Yes"
+                                            Help="When registering for this type of event, should the Required Signature Document be displayed during the registration steps? If not, a request will be sent after the registration is completed." />
+                                    </div>
+                                </div>
 
                             </div>
                             <div class="col-md-6">
