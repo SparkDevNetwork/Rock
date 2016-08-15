@@ -335,7 +335,7 @@ namespace RockWeb.Blocks.Event
             }
 
             SignInline = ViewState[SIGN_INLINE_KEY] as bool? ?? false;
-            DigitalSignatureComponentTypeName = ViewState[DIGITAL_SIGNATURE_COMPONENT_TYPE_NAME_KEY].ToString();
+            DigitalSignatureComponentTypeName = ViewState[DIGITAL_SIGNATURE_COMPONENT_TYPE_NAME_KEY] as string;
             if ( !string.IsNullOrWhiteSpace( DigitalSignatureComponentTypeName ))
             {
                 DigitalSignatureComponent = DigitalSignatureContainer.GetComponent( DigitalSignatureComponentTypeName );
