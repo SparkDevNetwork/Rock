@@ -176,7 +176,12 @@ public enum ConnectionWorkflowTriggerType
     /// <summary>
     /// Manual
     /// </summary>
-    Manual = 6
+    Manual = 6,
+
+    /// <summary>
+    /// Manual
+    /// </summary>
+    RequestTransferred = 7
 }
 
 #endregion

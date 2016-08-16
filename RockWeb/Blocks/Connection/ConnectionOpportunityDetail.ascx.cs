@@ -1125,6 +1125,13 @@ namespace RockWeb.Blocks.Connection
                     ddlSecondaryQualifier.Visible = false;
                     ddlSecondaryQualifier.Items.Clear();
                     break;
+
+                case ConnectionWorkflowTriggerType.RequestTransferred:
+                    ddlPrimaryQualifier.Visible = false;
+                    ddlPrimaryQualifier.Items.Clear();
+                    ddlSecondaryQualifier.Visible = false;
+                    ddlSecondaryQualifier.Items.Clear();
+                    break;
             }
 
             if ( workflowTypeStateObj != null )

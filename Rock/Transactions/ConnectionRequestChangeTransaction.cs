@@ -191,6 +191,14 @@ namespace Rock.Transactions
                                                 }
                                                 break;
                                             }
+                                        case ConnectionWorkflowTriggerType.RequestTransferred:
+                                            {
+                                                if ( State == EntityState.Modified )
+                                                {
+                                                    LaunchWorkflow( rockContext, connectionWorkflow, "Request Transferred" );
+                                                }
+                                                break;
+                                            }
                                     }
                                 }
                             }
