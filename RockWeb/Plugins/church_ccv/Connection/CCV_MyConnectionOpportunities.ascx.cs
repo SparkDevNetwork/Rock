@@ -45,6 +45,8 @@ namespace RockWeb.Plugins.church_ccv.Connection
     [LinkedPage( "Detail Page", "Page used to view details of an requests.", true, "", "", 1 )]
     [ConnectionTypesField("Connection Types", "Optional list of connection types to limit the display to (All will be displayed by default).", false, order:2 )]
     [BooleanField( "Show Last Activity Note", "If enabled, the block will show the last activity note for each request in the list.", false, order:3 )]
+    [BooleanField( "Show Assigned Group", "If enabled, the block will show the assigned group for each request in the list.", false, order:4 )]
+    [BooleanField( "Show Created Date", "If enabled, the block will show the created date of the request.", false, order:5)]
 
     [CodeEditorField( "StatusTemplate", "Lava Template that can be used to customize what is displayed in the status bar. Includes common merge fields plus ConnectionOpportunities, ConnectionTypes and the default IdleTooltip.", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue:
 @"<div class='pull-left badge-legend padding-r-md'>
@@ -117,7 +119,9 @@ namespace RockWeb.Plugins.church_ccv.Connection
             gRequests.GridRebind += gRequests_GridRebind;
             gRequests.ShowConfirmDeleteDialog = false;
             gRequests.PersonIdField = "PersonId";
-            gRequests.Columns[6].Visible = GetAttributeValue( "ShowLastActivityNote" ).AsBoolean();
+            gRequests.Columns[3].Visible = GetAttributeValue( "ShowAssignedGroup" ).AsBoolean();
+            gRequests.Columns[5].Visible = GetAttributeValue( "ShowCreatedDate" ).AsBoolean();
+            gRequests.Columns[7].Visible = GetAttributeValue( "ShowLastActivityNote" ).AsBoolean();
 
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -865,6 +869,7 @@ namespace RockWeb.Plugins.church_ccv.Connection
                         Campus = r.Campus,
                         Group = r.AssignedGroup != null ? r.AssignedGroup.Name : "",
                         Connector = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.FullName : "",
+                        CreatedDate = r.CreatedDateTime.ToRelativeDateString(),
                         LastActivity = FormatActivity( r.ConnectionRequestActivities.OrderByDescending( a => a.CreatedDateTime ).FirstOrDefault() ),
                         LastActivityNote = gRequests.Columns[6].Visible ? r.ConnectionRequestActivities.OrderByDescending(
                             a => a.CreatedDateTime ).Select( a => a.Note ).FirstOrDefault() : "",
