@@ -68,12 +68,15 @@ namespace Rock
             List<string> strings = new List<string>();
             foreach ( T item in items )
             {
-                string itemString = item.ToString();
-                if ( HtmlEncode )
+                if ( item != null )
                 {
-                    itemString = HttpUtility.HtmlEncode( itemString );
+                    string itemString = item.ToString();
+                    if ( HtmlEncode )
+                    {
+                        itemString = HttpUtility.HtmlEncode( itemString );
+                    }
+                    strings.Add( itemString );
                 }
-                strings.Add( itemString );
             }
 
             if ( finalDelimiter != null && strings.Count > 1 )

@@ -92,6 +92,7 @@
                             <%-- note: using disabled instead of readonly so that we can set the postback value in javascript --%>
                             <Rock:CurrencyBox ID="cbTotalAmount" runat="server" Label="Total Amount" CssClass="js-total-amount" Help="Allocates amounts to the above account(s) until the total amount matches what is shown on the transaction image." disabled="disabled" Text="0.00"></Rock:CurrencyBox>
 
+                            <Rock:RockTextBox ID="tbSummary" runat="server" Label="Summary" TextMode="MultiLine" Rows="2" />
                         </div>
                     </div>
 

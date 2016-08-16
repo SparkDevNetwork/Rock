@@ -196,6 +196,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<SignatureDocumentType>( Context ).Queryable().Any( a => a.ProviderEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, SignatureDocumentType.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Tag>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Tag.FriendlyTypeName );

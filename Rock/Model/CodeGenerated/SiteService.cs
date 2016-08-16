@@ -116,6 +116,7 @@ namespace Rock.Model
             target.RedirectTablets = source.RedirectTablets;
             target.RegistrationPageId = source.RegistrationPageId;
             target.RegistrationPageRouteId = source.RegistrationPageRouteId;
+            target.RequiresEncryption = source.RequiresEncryption;
             target.Theme = source.Theme;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

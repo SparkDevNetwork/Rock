@@ -53,6 +53,36 @@ namespace Rock.Lava
     {
         #region String Filters
 
+
+        /// <summary>
+        /// Withes the fallback.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="successText">The success text.</param>
+        /// <param name="fallbackText">The fallback text.</param>
+        /// <returns></returns>
+        public static string WithFallback( object input, string successText, string fallbackText )
+        {
+            if ( input == null )
+            {
+                return fallbackText;
+            }
+            else
+            {
+                var inputString = input.ToString();
+
+                if (string.IsNullOrWhiteSpace( inputString ) )
+                {
+                    return fallbackText;
+                }
+                else
+                {
+                    return inputString + successText;
+                }
+            }
+        }
+
+
         /// <summary>
         /// obfuscate a given email
         /// </summary>

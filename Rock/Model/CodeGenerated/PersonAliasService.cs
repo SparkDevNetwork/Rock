@@ -514,6 +514,18 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<ContentChannelItemAssociation>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ContentChannelItemAssociation.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<ContentChannelItemAssociation>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ContentChannelItemAssociation.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<ContentChannelType>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ContentChannelType.FriendlyTypeName );
@@ -1639,6 +1651,48 @@ namespace Rock.Model
             if ( new Service<ServiceLog>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ServiceLog.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<SignatureDocument>( Context ).Queryable().Any( a => a.AppliesToPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, SignatureDocument.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<SignatureDocument>( Context ).Queryable().Any( a => a.AssignedToPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, SignatureDocument.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<SignatureDocument>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, SignatureDocument.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<SignatureDocument>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, SignatureDocument.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<SignatureDocument>( Context ).Queryable().Any( a => a.SignedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, SignatureDocument.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<SignatureDocumentType>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, SignatureDocumentType.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<SignatureDocumentType>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, SignatureDocumentType.FriendlyTypeName );
                 return false;
             }  
  
