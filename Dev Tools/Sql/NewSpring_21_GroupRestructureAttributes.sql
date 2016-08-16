@@ -44,7 +44,7 @@ from [group] og
 	on gl.LocationId = ogl.id
 	and ogl.name is not null    
 	inner join [group] ng
-	on ng.name = og.name
+	on ng.name = ogl.name
 	inner join grouptype gt
 	on ng.grouptypeid = gt.id
 	and gt.name like 'NEW %'
