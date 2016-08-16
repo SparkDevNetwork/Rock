@@ -56,6 +56,20 @@ namespace RockWeb.Plugins.church_ccv.Hr
         {
             base.OnLoad( e );
 
+            if ( this.PageParameter( "pdfExport" ).AsBoolean() )
+            {
+                foreach ( var rockBlock in this.RockPage.RockBlocks )
+                {
+                    if ( rockBlock.BlockId != this.BlockId && rockBlock.BlockName != "HR Timecard Notes" )
+                    {
+                        rockBlock.Visible = false;
+                    }
+                }
+
+                this.ViewStateMode = ViewStateMode.Disabled;
+                this.EnableViewState = false;
+            }
+
             if ( !Page.IsPostBack )
             {
                 ShowDetail();
@@ -290,11 +304,14 @@ namespace RockWeb.Plugins.church_ccv.Hr
                 ddlSickHours.Items.Clear();
                 ddlSickHours.Items.Add( string.Empty );
 
-                for ( double hour = 0.25; hour <= 12; hour += 0.25 )
+                if ( !this.PageParameter( "pdfExport" ).AsBoolean() )
                 {
-                    ddlVacationHours.Items.Add( hour.ToString( "0.00" ) );
-                    ddlHolidayHours.Items.Add( hour.ToString( "0.00" ) );
-                    ddlSickHours.Items.Add( hour.ToString( "0.00" ) );
+                    for ( double hour = 0.25; hour <= 12; hour += 0.25 )
+                    {
+                        ddlVacationHours.Items.Add( hour.ToString( "0.00" ) );
+                        ddlHolidayHours.Items.Add( hour.ToString( "0.00" ) );
+                        ddlSickHours.Items.Add( hour.ToString( "0.00" ) );
+                    }
                 }
 
                 ddlVacationHours.SetValue( timeCardDay.PaidVacationHours.ToNearestQtrHour().ToString() );

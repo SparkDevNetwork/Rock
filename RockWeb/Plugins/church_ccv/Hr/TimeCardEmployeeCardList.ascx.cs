@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -76,6 +77,18 @@ namespace RockWeb.Plugins.church_ccv.Hr
 ";
             btnExport.Click += btnExport_Click;
 
+
+            var btnSendToPdf = new LinkButton();
+            btnSendToPdf.ID = "btnSendToPdf";
+            btnSendToPdf.CssClass = "btn btn-default btn-sm";
+            btnSendToPdf.ToolTip = "Export to Pdf";
+            btnSendToPdf.CausesValidation = false;
+
+            btnSendToPdf.Text = @"
+<i class='fa fa-file-pdf-o ' title='Send To PDF'></i>
+";
+            btnSendToPdf.Click += btnSendToPdf_Click;
+
             var btnApprove = new LinkButton();
             btnApprove.ID = "btnApprove";
             btnApprove.CssClass = "btn btn-default btn-sm";
@@ -89,12 +102,16 @@ namespace RockWeb.Plugins.church_ccv.Hr
 
             Panel customControls = new Panel();
             customControls.Controls.Add( btnExport );
+            customControls.Controls.Add( btnSendToPdf );
             customControls.Controls.Add( btnApprove );
 
             gList.Actions.AddCustomActionControl( customControls );
 
             // Register btnExport as a PostBack control so that it triggers a Full Postback instead of a Partial.  This is so we can respond with a CVS File.
             ScriptManager.GetCurrent( this.Page ).RegisterPostBackControl( btnExport );
+
+            // Register btnSendToPDF as a PostBack control so that it triggers a Full Postback instead of a Partial.
+            ScriptManager.GetCurrent( this.Page ).RegisterPostBackControl( btnSendToPdf );
         }
 
         /// <summary>
@@ -108,10 +125,18 @@ namespace RockWeb.Plugins.church_ccv.Hr
             employeeNumberAttribute = AttributeCache.Read( this.GetAttributeValue( "EmployeeNumberAttribute" ).AsGuid() );
             payrollDepartmentAttribute = AttributeCache.Read( this.GetAttributeValue( "PayrollDepartmentAttribute" ).AsGuid() );
 
-            if ( !Page.IsPostBack )
+            if ( this.PageParameter( "ExportToPdf" ).AsBoolean() )
             {
-                BindGrid();
+                RenderSendToPdf();
             }
+            else
+            {
+                if ( !Page.IsPostBack )
+                {
+                    BindGrid();
+                }
+            }
+            
         }
 
         /// <summary>
@@ -341,6 +366,65 @@ namespace RockWeb.Plugins.church_ccv.Hr
             this.Page.Response.Write( sb.ToString() );
             this.Page.Response.Flush();
             this.Page.Response.End();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSendToPdf control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void btnSendToPdf_Click( object sender, EventArgs e )
+        {
+            var qryParams = new Dictionary<string, string>();
+            var timeCardPayPeriodId = PageParameter( "TimeCardPayPeriodId" ).AsInteger();
+            qryParams.Add( "TimeCardPayPeriodId", timeCardPayPeriodId.ToString() );
+            var selectedTimeCardIds = gList.SelectedKeys.OfType<int>().ToList().AsDelimited( "," );
+            qryParams.Add( "SelectedTimeCardIds", selectedTimeCardIds );
+            qryParams.Add( "ExportToPdf", "1" );
+            this.NavigateToCurrentPage( qryParams );
+        }
+
+        private void RenderSendToPdf()
+        {
+            BindGrid();
+            var selectedKeys = this.PageParameter( "SelectedTimeCardIds" ).SplitDelimitedValues().AsIntegerList();
+            var baseUrl = this.ResolveRockUrlIncludeRoot( "~" );
+
+            var htmlDoc = new StringBuilder();
+            htmlDoc.AppendLine( "<html><head><head><body>" );
+            htmlDoc.Append( @"
+<style>
+    .pagebreak { page-break-before: always; }
+</style>
+<script type='text/javascript'>
+  function iframeLoaded(a) {
+        a.height = a.contentWindow.document.body.scrollHeight;
+  }
+</script>
+" );
+            foreach ( var dataItem in gList.DataSourceAsList )
+            {
+                var timeCardId = (int)dataItem.GetPropertyValue( "Id" );
+                
+                // create an iframe of each timecard detail, so that they can all be shown on the same page
+                // then the user can use the browser to print the page to a pdf 
+                if ( !selectedKeys.Any() || selectedKeys.Contains( timeCardId ) )
+                {
+                    var qryParams = new Dictionary<string, string>();
+                    qryParams.Add( "TimeCardId", timeCardId.ToString() );
+                    qryParams.Add( "pdfExport", "1" );
+                    string pageUrl = LinkedPageUrl( "DetailPage", qryParams );
+                    string url = this.ResolveRockUrlIncludeRoot( pageUrl );
+                    htmlDoc.AppendFormat( "<iframe src='{0}' width='100%' onload='iframeLoaded(this)' frameBorder='0'></iframe>", url );
+                    htmlDoc.AppendLine( "<div class='pagebreak'></div>" );
+                }
+            }
+
+            htmlDoc.AppendLine( "</body></html>" );
+
+            this.Response.Clear();
+            this.Response.Write( htmlDoc.ToString() );
+            this.Response.End();
         }
 
         /// <summary>
