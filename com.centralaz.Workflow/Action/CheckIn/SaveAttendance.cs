@@ -37,7 +37,7 @@ namespace com.centralaz.Workflow.Action.CheckIn
     [ActionCategory( "com_centralaz: Check-In" )]
     [Description( "Saves the selected check-in data as attendance after getting a security code for the checkin." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Save Attendance" )]
+    [ExportMetadata( "ComponentName", "Save Attendance (CentralAZ)" )]
 
     [IntegerField( "Number Of Alpha Characters", "Used to decide how many alpha characters should be included in the prefix of the security code.", true, 2 )]
     [IntegerField( "Number Of Numeric Characters", "Used to decide how many numeric characters should be included in the suffix of the security code. It is recommended to set no less than 4 to avoid problems obtaining a unique number.", true, 4 )]
@@ -82,8 +82,8 @@ namespace com.centralaz.Workflow.Action.CheckIn
                         else
                         {
                             // TODO - uncomment below once the new method signature from core is in our branch.
-                            attendanceCode = AttendanceCodeService.GetNew( securityCodeNumericLength );
-                            //attendanceCode = AttendanceCodeService.GetNew( securityCodeAlphaLength, securityCodeNumericLength );
+                            //attendanceCode = AttendanceCodeService.GetNew( securityCodeAlphaLength, securityCodeNumericLength, isRandomized: false );
+                            attendanceCode = AttendanceCodeService.GetNew( securityCodeAlphaLength, securityCodeNumericLength );
                             person.SecurityCode = attendanceCode.Code;
                         }
 

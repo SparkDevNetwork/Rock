@@ -70,7 +70,8 @@ namespace com.centralaz.Workflow.Action.CheckIn
                 {
                     var foundFirstMatch = false;
 
-                    foreach ( var groupType in person.GroupTypes.ToList() )
+                    var groupTypeList = useAscendingOrder ? person.GroupTypes.OrderBy( gt => gt.GroupType.Order ).ToList() : person.GroupTypes.OrderByDescending( gt => gt.GroupType.Order ).ToList();
+                    foreach ( var groupType in groupTypeList )
                     {
                         bool useFirstMatch = groupType.GroupType.GetAttributeValue( "UseFirstMatch" ).AsBoolean();
 
