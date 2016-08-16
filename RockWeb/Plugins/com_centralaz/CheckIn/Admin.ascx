@@ -17,7 +17,7 @@
     <Rock:ModalAlert ID="maWarning" runat="server" />
 
     <div class="checkin-header">
-        <h1>Check-in Options</h1>
+        <h1 id="h1Tag" runat="server">Check-in Options</h1>
     </div>
     
     <asp:Panel runat="server" CssClass="checkin-body" ID="pnlManualConfig" Visible="false">

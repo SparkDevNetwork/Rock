@@ -126,6 +126,7 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                     // Inject script used for geo location determiniation
                     if ( enableLocationSharing )
                     {
+                        h1Tag.InnerText = "Mobile Check-in";
                         lbRetry.Visible = true;
                         AddGeoLocationScript();
                     }
