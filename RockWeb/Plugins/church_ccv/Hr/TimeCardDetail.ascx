@@ -289,6 +289,7 @@
                     </div>
                     <div class="actions">
                         <asp:LinkButton runat="server" ID="btnApprove" CssClass="btn btn-success" ValidationGroup="vgApprove" CausesValidation="true" OnClientClick="maintainScrollPosition($('.js-approve-panel'))" OnClick="btnApprove_Click" Text="<i class='fa fa-check'> Approve</i>" />
+                        <asp:LinkButton runat="server" ID="btnUnapprove" CssClass="btn btn-danger" ValidationGroup="vgApprove" CausesValidation="true" OnClientClick="maintainScrollPosition($('.js-approve-panel'))" OnClick="btnUnapprove_Click" Text="<i class='fa fa-check'> Un-approve</i>" />
                     </div>
                 </asp:Panel>
 

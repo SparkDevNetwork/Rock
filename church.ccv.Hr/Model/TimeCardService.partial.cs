@@ -63,6 +63,56 @@ namespace church.ccv.Hr.Model
 
             return true;
         }
+
+        /// <summary>
+        /// Un-approves time card.
+        /// </summary>
+        /// <param name="timeCardId">The time card identifier.</param>
+        /// <param name="rockPage">The rock page.</param>
+        /// <param name="unapprovedEmailTemplateGuid">The unapproved email template unique identifier.</param>
+        /// <returns></returns>
+        public bool UnApproveTimeCard( int timeCardId, RockPage rockPage, Guid? unapprovedEmailTemplateGuid )
+        {
+            var timeCardService = this;
+            var timeCard = timeCardService.Get( timeCardId );
+            if ( timeCard == null )
+            {
+                return false;
+            }
+
+            timeCard.TimeCardStatus = TimeCardStatus.InProgress;
+            timeCard.ApprovedByPersonAliasId = null;
+            timeCard.ApprovedDateTime = null;
+            var hrContext = this.Context as HrContext;
+
+            var timeCardHistoryService = new TimeCardHistoryService( hrContext );
+            var timeCardHistory = new TimeCardHistory();
+            timeCardHistory.TimeCardId = timeCard.Id;
+            timeCardHistory.TimeCardStatus = timeCard.TimeCardStatus;
+            timeCardHistory.StatusPersonAliasId = rockPage.CurrentPersonAliasId;
+            timeCardHistory.HistoryDateTime = RockDateTime.Now;
+
+            timeCardHistory.Notes = string.Format( "Un-approved by {0}", rockPage.CurrentPersonAlias );
+
+            timeCardHistoryService.Add( timeCardHistory );
+
+            hrContext.SaveChanges();
+
+            if ( unapprovedEmailTemplateGuid.HasValue )
+            {
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+                mergeFields.Add( "TimeCardPayPeriod", timeCard.TimeCardPayPeriod.ToString() );
+                mergeFields.Add( "TimeCard", timeCard );
+                mergeFields.Add( "Person", timeCard.PersonAlias.Person );
+                mergeFields.Add( "UnApprovedByPerson", rockPage.CurrentPerson );
+
+                var recipients = new List<RecipientData>();
+                recipients.Add( new RecipientData( timeCard.PersonAlias.Person.Email, mergeFields ) );
+                Email.Send( unapprovedEmailTemplateGuid.Value, recipients, rockPage.ResolveRockUrl( "~/" ), rockPage.ResolveRockUrl( "~~/" ) );
+            }
+
+            return true;
+        }
     }
 
     /// <summary>

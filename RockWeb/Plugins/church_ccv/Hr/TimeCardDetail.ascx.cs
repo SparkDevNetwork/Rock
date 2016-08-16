@@ -28,6 +28,7 @@ namespace RockWeb.Plugins.church_ccv.Hr
 
     [SystemEmailField( "Submitted Email", "The email to send when a time card is submitted. If not specified, an email will not be sent.", false )]
     [SystemEmailField( "Approved Email", "The email to send when a time card is approved. If not specified, an email will not be sent.", false )]
+    [SystemEmailField( "UnApproved Email", "The email to send when a time card is un-approved. If not specified, an email will not be sent.", false )]
     public partial class TimeCardDetail : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -218,7 +219,7 @@ namespace RockWeb.Plugins.church_ccv.Hr
 
                 decimal totalOtherHours = ( timeCardDay.PaidVacationHours ?? 0 ) + ( timeCardDay.TotalHolidayHours ?? 0 ) + ( timeCardDay.PaidSickHours ?? 0 );
                 Literal lTotalHours = repeaterItem.FindControl( "lTotalHours" ) as Literal;
-                lTotalHours.Text = FormatTimeCardHours( (timeCardDay.TotalWorkedDuration ?? 0) + totalOtherHours );
+                lTotalHours.Text = FormatTimeCardHours( ( timeCardDay.TotalWorkedDuration ?? 0 ) + totalOtherHours );
 
                 Literal lNotes = repeaterItem.FindControl( "lNotes" ) as Literal;
                 lNotes.Text = timeCardDay.Notes;
@@ -389,7 +390,9 @@ namespace RockWeb.Plugins.church_ccv.Hr
                 if ( this.IsUserAuthorized( Authorization.APPROVE ) || approvers.Any( a => a.Id == this.CurrentPersonId ) )
                 {
                     // if the current person a global Approver or an approver of the timecard.person, enable the Approve button if is has been submitted.
-                    pnlApproverActions.Visible = timeCard.TimeCardStatus == TimeCardStatus.Submitted;
+                    pnlApproverActions.Visible = ( timeCard.TimeCardStatus == TimeCardStatus.Submitted || timeCard.TimeCardStatus == TimeCardStatus.Approved );
+                    btnApprove.Visible = timeCard.TimeCardStatus == TimeCardStatus.Submitted;
+                    btnUnapprove.Visible = timeCard.TimeCardStatus == TimeCardStatus.Approved;
                 }
                 else
                 {
@@ -708,6 +711,37 @@ namespace RockWeb.Plugins.church_ccv.Hr
             {
                 // shouldn't happen, but just in case
                 nbApprovedSuccessMessage.Text = string.Format( "Error approving timecard" );
+                nbApprovedSuccessMessage.NotificationBoxType = NotificationBoxType.Danger;
+                nbApprovedSuccessMessage.Visible = true;
+            }
+
+            ShowDetail();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnUnapprove control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnUnapprove_Click( object sender, EventArgs e )
+        {
+            int timeCardId = hfTimeCardId.Value.AsInteger();
+
+            // Send an email (if specified) after timecard is marked unapproved
+            Guid? unapprovedEmailTemplateGuid = GetAttributeValue( "UnApprovedEmail" ).AsGuidOrNull();
+
+            var timeCardService = new TimeCardService( new HrContext() );
+
+            if ( timeCardService.UnApproveTimeCard( timeCardId, this.RockPage, unapprovedEmailTemplateGuid ) )
+            {
+                nbApprovedSuccessMessage.Text = string.Format( "Un-approved by {0}", this.CurrentPersonAlias );
+                nbApprovedSuccessMessage.NotificationBoxType = NotificationBoxType.Success;
+                nbApprovedSuccessMessage.Visible = true;
+            }
+            else
+            {
+                // shouldn't happen, but just in case
+                nbApprovedSuccessMessage.Text = string.Format( "Error un-approving timecard" );
                 nbApprovedSuccessMessage.NotificationBoxType = NotificationBoxType.Danger;
                 nbApprovedSuccessMessage.Visible = true;
             }
