@@ -3,7 +3,7 @@ BEGIN
 	drop table #groupConversion
 END
 
-select ogt.Name OldGroupType, og.id OldGroupId, og.name OldGroup, ogl.Id OldLocationId, ogl.name OldLocation, gt.Name GroupTypeName, ng.Id GroupId, ng.Name GroupName, ng.CampusId, ngl.Id AS NewGroupLocationId, ogl.Id AS OldGroupLocationId
+select ogt.Name OldGroupType, og.id OldGroupId, og.name OldGroup, ogl.Id OldLocationId, ogl.name OldLocation, gt.Name GroupTypeName, ng.Id GroupId, ng.Name GroupName, ng.CampusId
 into #groupConversion
 from [group] og
 	inner join grouptype ogt
@@ -16,7 +16,7 @@ from [group] og
 	on gl.LocationId = ogl.id
 	and ogl.name is not null    
 	inner join [group] ng
-	on ng.name = og.name
+	on ng.name = ogl.name
 	inner join grouptype gt
 	on ng.grouptypeid = gt.id
 	and gt.name like 'NEW %'
