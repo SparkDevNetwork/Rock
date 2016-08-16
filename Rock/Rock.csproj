@@ -1559,6 +1559,8 @@
     <Compile Include="Workflow\Action\WorkflowAttributes\SetAttributeToGroupLeader.cs" />
     <Compile Include="Workflow\Action\WorkflowAttributes\SetAttributeToInitiator.cs" />
     <Compile Include="Workflow\Action\WorkflowAttributes\SetAttributeValue.cs" />
+    <Compile Include="Workflow\Action\WorkflowControl\ActivateActivityinOtherWorkflow.cs" />
+    <Compile Include="Workflow\Action\WorkflowControl\ActivateActivityInOtherWorkflowOnMatch.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\ActivateWorkflow.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\ActivateActions.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\ActivateActivity.cs" />
