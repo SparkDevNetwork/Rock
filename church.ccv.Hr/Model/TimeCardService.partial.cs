@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using church.ccv.Hr.Data;
+using OpenHtmlToPdf;
 using Rock;
 using Rock.Communication;
-using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace church.ccv.Hr.Model
@@ -112,6 +112,16 @@ namespace church.ccv.Hr.Model
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// converts HTML to a PDF returning the pdf as byte[]
+        /// </summary>
+        /// <param name="html">The HTML.</param>
+        /// <returns></returns>
+        public static byte[] HtmlToPdf(string html)
+        {
+            return Pdf.From( html ).Comressed().Content();
         }
     }
 

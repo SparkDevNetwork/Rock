@@ -9,6 +9,7 @@ using church.ccv.Hr.Data;
 using church.ccv.Hr.Model;
 using Rock;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -77,7 +78,6 @@ namespace RockWeb.Plugins.church_ccv.Hr
 ";
             btnExport.Click += btnExport_Click;
 
-
             var btnSendToPdf = new LinkButton();
             btnSendToPdf.ID = "btnSendToPdf";
             btnSendToPdf.CssClass = "btn btn-default btn-sm";
@@ -88,6 +88,17 @@ namespace RockWeb.Plugins.church_ccv.Hr
 <i class='fa fa-file-pdf-o ' title='Send To PDF'></i>
 ";
             btnSendToPdf.Click += btnSendToPdf_Click;
+
+            var btnOpenMultipleTimeCards = new LinkButton();
+            btnOpenMultipleTimeCards.ID = "btnOpenMultipleTimeCards";
+            btnOpenMultipleTimeCards.CssClass = "btn btn-default btn-sm";
+            btnOpenMultipleTimeCards.ToolTip = "Open Multiple";
+            btnOpenMultipleTimeCards.CausesValidation = false;
+
+            btnOpenMultipleTimeCards.Text = @"
+<i class='fa fa-rocket ' title='Open Multiple'></i>
+";
+            btnOpenMultipleTimeCards.Click += btnOpenMultipleTimeCards_Click;
 
             var btnApprove = new LinkButton();
             btnApprove.ID = "btnApprove";
@@ -103,6 +114,7 @@ namespace RockWeb.Plugins.church_ccv.Hr
             Panel customControls = new Panel();
             customControls.Controls.Add( btnExport );
             customControls.Controls.Add( btnSendToPdf );
+            customControls.Controls.Add( btnOpenMultipleTimeCards );
             customControls.Controls.Add( btnApprove );
 
             gList.Actions.AddCustomActionControl( customControls );
@@ -127,7 +139,7 @@ namespace RockWeb.Plugins.church_ccv.Hr
 
             if ( this.PageParameter( "ExportToPdf" ).AsBoolean() )
             {
-                RenderSendToPdf();
+                RenderOpenMultiple();
             }
             else
             {
@@ -136,7 +148,6 @@ namespace RockWeb.Plugins.church_ccv.Hr
                     BindGrid();
                 }
             }
-            
         }
 
         /// <summary>
@@ -375,6 +386,144 @@ namespace RockWeb.Plugins.church_ccv.Hr
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void btnSendToPdf_Click( object sender, EventArgs e )
         {
+            BindGrid();
+            var sbSummaryHtml = new StringBuilder();
+            sbSummaryHtml.AppendLine( @"<html>
+                <head>
+                    <link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css' integrity='sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u' crossorigin='anonymous'>
+                    <style>
+                        .pagebreak { page-break-before: always; }
+                    </style>
+                </head>
+                <body>" );
+
+            var rockContext = new RockContext();
+            var noteService = new NoteService( rockContext );
+
+            var entityTypeIdTimeCard = EntityTypeCache.GetId<TimeCard>();
+
+            foreach ( var timeCard in gList.DataSourceAsList.OfType<TimeCard>().ToList() )
+            {
+                sbSummaryHtml.AppendFormat( "<h1>{0}</h1>", timeCard.PersonAlias.Person.FullName );
+                sbSummaryHtml.AppendFormat( "<h2>Pay Period: {0}</h2>", timeCard.TimeCardPayPeriod.ToString() );
+                if ( timeCard.ApprovedByPersonAlias != null )
+                {
+                    sbSummaryHtml.AppendFormat( "<h3>Approved By: {0}</h3>", timeCard.ApprovedByPersonAlias.Person.FullName );
+                }
+
+                // per day summary
+                var workedRegularHours = timeCard.GetRegularHours();
+                var workedOvertimeHours = timeCard.GetOvertimeHours();
+                sbSummaryHtml.AppendLine( "<table class='table table-striped'>" );
+                sbSummaryHtml.AppendLine( "<tr><th>Date</th><th>Hrs Worked</th><th>Overtime Hrs</th><th>Other Hours</th><th>Total Hrs</th><th>Note</th></tr>" );
+                foreach ( var timeCardDay in timeCard.TimeCardDays.OrderBy( a => a.StartDateTime ) )
+                {
+                    sbSummaryHtml.Append( "<tr>" );
+                    sbSummaryHtml.AppendFormat( "<td>{0}</td>", timeCardDay.StartDateTime.ToString( "ddd MM/dd" ) );
+
+                    var regularHoursForDay = workedRegularHours.Where( a => a.TimeCardDay == timeCardDay ).FirstOrDefault();
+                    sbSummaryHtml.AppendFormat( "<td>{0}</td>", FormatTimeCardHours( regularHoursForDay != null ? regularHoursForDay.Hours : 0 ) );
+
+                    var workedOvertimeHoursForDay = workedOvertimeHours.Where( a => a.TimeCardDay == timeCardDay ).FirstOrDefault();
+                    sbSummaryHtml.AppendFormat( "<td>{0}</td>", FormatTimeCardHours( workedOvertimeHoursForDay != null ? workedOvertimeHoursForDay.Hours : 0 ) );
+
+                    decimal totalOtherHours = ( timeCardDay.PaidVacationHours ?? 0 ) + ( timeCardDay.TotalHolidayHours ?? 0 ) + ( timeCardDay.PaidSickHours ?? 0 );
+                    sbSummaryHtml.AppendFormat( "<td>{0}</td>", FormatTimeCardHours( totalOtherHours ) );
+
+                    sbSummaryHtml.AppendFormat( "<td>{0}</td>", FormatTimeCardHours( ( timeCardDay.TotalWorkedDuration ?? 0 ) + totalOtherHours ) );
+
+                    sbSummaryHtml.AppendFormat( "<td>{0}</td>", timeCardDay.Notes );
+
+                    sbSummaryHtml.Append( "</tr>" );
+                }
+
+                sbSummaryHtml.AppendLine( "</table>" );
+
+                // pay period summary
+                sbSummaryHtml.AppendLine( "<div class='row'>" );
+                sbSummaryHtml.AppendLine( "<div class='col-md-4'>" );
+                sbSummaryHtml.AppendLine( "<table class='table'>" );
+                sbSummaryHtml.AppendFormat( "<tr><td>{0}</td><td>{1:N2}</td></tr>", "Regular Hours", timeCard.GetRegularHours().Sum( a => a.Hours ?? 0 ) );
+                sbSummaryHtml.AppendFormat( "<tr><td>{0}</td><td>{1:N2}</td></tr>", "Overtime Hours", timeCard.GetOvertimeHours().Sum( a => a.Hours ?? 0 ) );
+                sbSummaryHtml.AppendFormat( "<tr><td>{0}</td><td>{1:N2}</td></tr>", "Vacation Hours", timeCard.PaidVacationHours().Sum( a => a.Hours ?? 0 ) );
+                sbSummaryHtml.AppendFormat( "<tr><td>{0}</td><td>{1:N2}</td></tr>", "Holiday Hours", timeCard.PaidHolidayHours().Sum( a => a.Hours ?? 0 ) );
+                sbSummaryHtml.AppendFormat( "<tr><td>{0}</td><td>{1:N2}</td></tr>", "Sick Hours", timeCard.PaidSickHours().Sum( a => a.Hours ?? 0 ) );
+
+                var totalHours = timeCard.GetTotalWorkedHoursPerDay().Sum( a => a.Hours ?? 0 )
+                + timeCard.PaidVacationHours().Sum( a => a.Hours ?? 0 )
+                + timeCard.PaidHolidayHours().Sum( a => a.Hours ?? 0 )
+                + timeCard.PaidSickHours().Sum( a => a.Hours ?? 0 );
+
+                sbSummaryHtml.AppendFormat( "<tr><td>{0}</td><td>{1:N2}</td></tr>", "<strong>All Hours</strong>", totalHours );
+                sbSummaryHtml.AppendLine( "</table>" );
+                sbSummaryHtml.AppendLine( "</div>" );
+                sbSummaryHtml.AppendLine( "</div>" );
+
+                var timeCardNotes = noteService.Queryable().Where( a => a.NoteType.EntityTypeId == ( entityTypeIdTimeCard ?? 0 ) && a.EntityId == timeCard.Id ).OrderBy( a => a.CreatedDateTime ).ToList();
+                if ( timeCardNotes.Any() )
+                {
+                    sbSummaryHtml.AppendLine( "<h3>Notes</h3>" );
+                    foreach ( var timeCardNote in timeCardNotes )
+                    {
+                        sbSummaryHtml.AppendFormat(
+@"<div class='row'>
+<div class='col-md-12'>
+({0} {1} ) - {2}
+</div>
+</div>
+", timeCardNote.CreatedDateTime.ToString(), timeCardNote.ModifiedByPersonAlias, timeCardNote.Text );
+
+                    }
+                }
+                sbSummaryHtml.AppendLine( "<hr />" );
+                sbSummaryHtml.AppendLine( "<div class='pagebreak'></div>" );
+                
+            }
+
+            sbSummaryHtml.AppendLine( "</body></html>" );
+            var pdfData = TimeCardService.HtmlToPdf( sbSummaryHtml.ToString() );
+            int timeCardPayPeriodId = PageParameter( "TimeCardPayPeriodId" ).AsInteger();
+            var timeCardPayPeriod = new TimeCardPayPeriodService( new HrContext() ).Get( timeCardPayPeriodId );
+
+            var fileName = string.Format( "TimeCards_PayPeriod_{0}_{1}.pdf", timeCardPayPeriod.StartDate.ToString( "yyyyMMdd" ), timeCardPayPeriod.EndDate.ToString( "yyyyMMdd" ) );
+
+            // send the spreadsheet to the browser
+            this.Page.EnableViewState = false;
+            this.Page.Response.Clear();
+            this.Page.Response.ContentType = "application/pdf";
+            this.Page.Response.AppendHeader( "Content-Disposition", "attachment; filename=" + fileName );
+
+            this.Page.Response.Charset = string.Empty;
+            this.Page.Response.BinaryWrite( pdfData );
+            this.Page.Response.Flush();
+            this.Page.Response.End();
+        }
+
+        /// <summary>
+        /// Formats the time card hours.
+        /// </summary>
+        /// <param name="hours">The hours.</param>
+        /// <returns></returns>
+        public string FormatTimeCardHours( decimal? hours )
+        {
+            if ( hours.HasValue && hours != 0 )
+            {
+                TimeSpan timeSpan = TimeSpan.FromHours( Convert.ToDouble( hours ) );
+                return timeSpan.TotalHours.ToString( "0.##" );
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnOpenMultipleTimeCards control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void btnOpenMultipleTimeCards_Click( object sender, EventArgs e )
+        {
             var qryParams = new Dictionary<string, string>();
             var timeCardPayPeriodId = PageParameter( "TimeCardPayPeriodId" ).AsInteger();
             qryParams.Add( "TimeCardPayPeriodId", timeCardPayPeriodId.ToString() );
@@ -384,7 +533,10 @@ namespace RockWeb.Plugins.church_ccv.Hr
             this.NavigateToCurrentPage( qryParams );
         }
 
-        private void RenderSendToPdf()
+        /// <summary>
+        /// Renders the open multiple.
+        /// </summary>
+        private void RenderOpenMultiple()
         {
             BindGrid();
             var selectedKeys = this.PageParameter( "SelectedTimeCardIds" ).SplitDelimitedValues().AsIntegerList();
@@ -405,7 +557,7 @@ namespace RockWeb.Plugins.church_ccv.Hr
             foreach ( var dataItem in gList.DataSourceAsList )
             {
                 var timeCardId = (int)dataItem.GetPropertyValue( "Id" );
-                
+
                 // create an iframe of each timecard detail, so that they can all be shown on the same page
                 // then the user can use the browser to print the page to a pdf 
                 if ( !selectedKeys.Any() || selectedKeys.Contains( timeCardId ) )
