@@ -19,8 +19,8 @@ DECLARE @MetricSourceSQLId int = (SELECT [Id] FROM DefinedValue WHERE [Guid] = '
 DECLARE @CreatedDateTime AS DATETIME = GETDATE();
 DECLARE @foreignKey AS NVARCHAR(15) = 'Metrics 2.0';
 DECLARE @metricValueType AS INT = 0;
-DECLARE @dvTrue AS INT = 826;
-DECLARE @dvFalse AS INT = 827;
+DECLARE @dvTrue AS INT = (SELECT dv.Id FROM DefinedValue dv JOIN DefinedType dt ON dt.Id = dv.DefinedTypeId WHERE dv.Value = 'True' AND dt.Name = 'Boolean');
+DECLARE @dvFalse AS INT = (SELECT dv.Id FROM DefinedValue dv JOIN DefinedType dt ON dt.Id = dv.DefinedTypeId WHERE dv.Value = 'False' AND dt.Name = 'Boolean');
 
 -- Schedule ids variables
 DECLARE @service0915 AS INT = 12;
@@ -56,7 +56,7 @@ from [group] og
 	on gl.LocationId = ogl.id
 	and ogl.name is not null    
 	inner join [group] ng
-	on ng.name = og.name
+	on ng.name = ogl.name
 	inner join grouptype gt
 	on ng.grouptypeid = gt.id
 	and gt.name like 'NEW %'
