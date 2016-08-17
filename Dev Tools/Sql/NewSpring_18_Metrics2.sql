@@ -23,10 +23,12 @@ DECLARE @dvTrue AS INT = (SELECT dv.Id FROM DefinedValue dv JOIN DefinedType dt 
 DECLARE @dvFalse AS INT = (SELECT dv.Id FROM DefinedValue dv JOIN DefinedType dt ON dt.Id = dv.DefinedTypeId WHERE dv.Value = 'False' AND dt.Name = 'Boolean');
 
 -- Schedule ids variables
-DECLARE @service0915 AS INT = 12;
-DECLARE @service1115 AS INT = 13;
-DECLARE @service1600 AS INT = 14;
-DECLARE @service1800 AS INT = 15;
+DECLARE @service0915 AS INT = (SELECT Id FROM Schedule WHERE Name = 'Sunday 09:15am');;
+DECLARE @service1115 AS INT = (SELECT Id FROM Schedule WHERE Name = 'Sunday 11:15am');;
+DECLARE @service1600 AS INT = (SELECT Id FROM Schedule WHERE Name = 'Sunday 04:00pm');;
+DECLARE @service1800 AS INT = (SELECT Id FROM Schedule WHERE Name = 'Sunday 06:00pm');
+DECLARE @sundayMetricSchedule AS INT = (SELECT Id FROM Schedule WHERE Name = 'Sunday Metric Schedule');
+DECLARE @fuseMetricSchedule AS INT = (SELECT Id FROM Schedule WHERE Name = 'Fuse Metric Schedule');
 
 -- Structure ids
 DECLARE @etidMetricCategory AS INT = 189;
@@ -78,7 +80,8 @@ SELECT
 	mc.CategoryId,
 	NEWID() AS AttendanceMetricGuid,
 	NEWID() AS UniqueMetricGuid,
-	g.GroupTypeId
+	g.GroupTypeId,
+	ngt.Id AS NewGroupTypeId
 INTO #metricTypes
 FROM 
 	Metric m
@@ -86,6 +89,8 @@ FROM
 	JOIN [Group] g ON g.Id = m.ForeignId
 	JOIN Category c ON c.Id = mc.CategoryId
 	JOIN Category pc ON pc.Id = c.ParentCategoryId
+	JOIN GroupType gt ON g.GroupTypeId = gt.Id
+	JOIN GroupType ngt ON ngt.Name = CONCAT('NEW ', gt.Name)
 WHERE 
 	Title LIKE '% Service Attendance'
 	AND pc.ParentCategoryId = @volunteerMetricCategoryId;
@@ -104,7 +109,8 @@ INSERT INTO Metric (
 	CreatedDateTime,
 	[Guid],
 	ForeignKey,
-	IconCssClass
+	IconCssClass,
+	ScheduleId
 )
 SELECT
 	@IsSystem AS IsSystem,
@@ -116,7 +122,8 @@ SELECT
 	@CreatedDateTime AS CreatedDateTime,
 	mt.AttendanceMetricGuid AS [Guid],
 	@foreignKey AS ForeignKey,
-	'' AS IconCssClass
+	'' AS IconCssClass,
+	@sundayMetricSchedule
 FROM
 	#metricTypes mt;
 
@@ -131,7 +138,8 @@ INSERT INTO Metric (
 	CreatedDateTime,
 	[Guid],
 	ForeignKey,
-	IconCssClass
+	IconCssClass,
+	ScheduleId
 )
 SELECT
 	@IsSystem AS IsSystem,
@@ -143,7 +151,8 @@ SELECT
 	@CreatedDateTime AS CreatedDateTime,
 	mt.UniqueMetricGuid AS [Guid],
 	@foreignKey AS ForeignKey,
-	'' AS IconCssClass
+	'' AS IconCssClass,
+	@sundayMetricSchedule
 FROM
 	#metricTypes mt;
 
@@ -231,7 +240,7 @@ SELECT
 	@False AS IsRequired,
 	1 AS [Order],
 	'GroupTypeId' AS EntityTypeQualifierColumn,
-	mt.GroupTypeId AS EntityTypeQualifierValue,
+	mt.NewGroupTypeId AS EntityTypeQualifierValue,
 	NEWID() AS [Guid],
 	@foreignKey AS ForeignKey
 FROM 
@@ -334,7 +343,7 @@ SELECT
 	@False AS IsRequired,
 	1 AS [Order],
 	'GroupTypeId' AS EntityTypeQualifierColumn,
-	mt.GroupTypeId AS EntityTypeQualifierValue,
+	mt.NewGroupTypeId AS EntityTypeQualifierValue,
 	NEWID() AS [Guid],
 	@foreignKey AS ForeignKey
 FROM 
