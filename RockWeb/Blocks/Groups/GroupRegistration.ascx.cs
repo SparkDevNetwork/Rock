@@ -350,11 +350,12 @@ namespace RockWeb.Blocks.Groups
                     Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), person.Id, changes );
                 HistoryService.SaveChanges( rockContext, typeof( Person ),
                     Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(), person.Id, familyChanges );
+
                 if ( spouse != null )
                 {
-
                     HistoryService.SaveChanges( rockContext, typeof( Person ),
                         Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), spouse.Id, spouseChanges );
+
                     HistoryService.SaveChanges( rockContext, typeof( Person ),
                         Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(), spouse.Id, familyChanges );
                 }
@@ -362,7 +363,12 @@ namespace RockWeb.Blocks.Groups
                 // now, it's time to either add them to the group, or kick off the Alert Re-Route workflow
                 // (Or nothing if there's no problem but they're already in the group)
                 GroupMember primaryGroupMember = PersonToGroupMember( rockContext, person );
-                GroupMember spouseGroupMember = PersonToGroupMember( rockContext, spouse );
+
+                GroupMember spouseGroupMember = null;
+                if( spouse != null )
+                {
+                    spouseGroupMember = PersonToGroupMember( rockContext, spouse );
+                }
 
                 // prep the workflow service
                 var workflowTypeService = new WorkflowTypeService( rockContext );
@@ -377,7 +383,13 @@ namespace RockWeb.Blocks.Groups
                     WorkflowType alertRerouteWorkflowType = workflowTypeService.Get( workflowTypeGuid.Value );
 
                     // do either of the people registering have alert notes?
-                    int alertNoteCount = new NoteService( rockContext ).Queryable( ).Where( n => (n.EntityId == person.Id || n.EntityId == spouse.Id) && n.IsAlert == true ).Count( );
+                    int alertNoteCount = new NoteService( rockContext ).Queryable( ).Where( n => (n.EntityId == person.Id) && n.IsAlert == true ).Count( );
+                    
+                    if( spouse != null )
+                    {
+                        alertNoteCount += new NoteService( rockContext ).Queryable().Where( n => ( n.EntityId == spouse.Id ) && n.IsAlert == true ).Count();
+                    }
+
                     if( alertNoteCount > 0 )
                     {
                         // yes they do. so first, flag that we should NOT put them in the group
@@ -385,7 +397,11 @@ namespace RockWeb.Blocks.Groups
 
                         // and kick off the re-route workflow so security can review.
                         LaunchWorkflow( rockContext, alertRerouteWorkflowType, primaryGroupMember );
-                        LaunchWorkflow( rockContext, alertRerouteWorkflowType, spouseGroupMember );
+
+                        if( spouseGroupMember != null )
+                        {
+                            LaunchWorkflow( rockContext, alertRerouteWorkflowType, spouseGroupMember );
+                        }
                     }
                 }
                 
@@ -394,16 +410,23 @@ namespace RockWeb.Blocks.Groups
                 {
                     // try to add them to the group (would only fail if the're already in it)
                     TryAddGroupMemberToGroup( rockContext, primaryGroupMember );
-                    TryAddGroupMemberToGroup( rockContext, spouseGroupMember );
+
+                    if ( spouseGroupMember != null )
+                    {
+                        TryAddGroupMemberToGroup( rockContext, spouseGroupMember );
+                    }
 
                     // is there a workflow to fire off?   
                     workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
                     if ( workflowTypeGuid.HasValue )
                     {
                         WorkflowType workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
-
                         LaunchWorkflow( rockContext, workflowType, primaryGroupMember );
-                        LaunchWorkflow( rockContext, workflowType, spouseGroupMember );
+
+                        if( spouseGroupMember != null )
+                        {
+                            LaunchWorkflow( rockContext, workflowType, spouseGroupMember );
+                        }
                     }
                 }
 
