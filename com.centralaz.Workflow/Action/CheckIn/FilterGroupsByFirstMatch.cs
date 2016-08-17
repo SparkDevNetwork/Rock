@@ -23,6 +23,7 @@ using System.Linq;
 
 using Rock;
 using Rock.Attribute;
+using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -66,40 +67,56 @@ namespace com.centralaz.Workflow.Action.CheckIn
                 var remove = GetAttributeValue( action, "Remove" ).AsBoolean();
                 var useAscendingOrder = GetAttributeValue( action, "UseAscendingGroupOrder" ).AsBoolean();
 
-                foreach ( var person in family.People )
+                if ( checkInState.CheckInType.TypeOfCheckin == TypeOfCheckin.Family )
                 {
-                    var foundFirstMatch = false;
-
-                    var groupTypeList = useAscendingOrder ? person.GroupTypes.OrderBy( gt => gt.GroupType.Order ).ToList() : person.GroupTypes.OrderByDescending( gt => gt.GroupType.Order ).ToList();
-                    foreach ( var groupType in groupTypeList )
+                    var currentPerson = checkInState.CheckIn.CurrentPerson;
+                    if ( currentPerson != null )
                     {
-                        bool useFirstMatch = groupType.GroupType.GetAttributeValue( "UseFirstMatch" ).AsBoolean();
-
-                        // Only perform filtering for group types that are set to UseFirstMatch true.
-                        if ( useFirstMatch )
-                        {
-                            var groupList = useAscendingOrder ? groupType.Groups.OrderBy( g => g.Group.Order ).ToList() : groupType.Groups.OrderByDescending( g => g.Group.Order ).ToList();
-                            foreach ( var group in groupList )
-                            {
-                                if ( foundFirstMatch )
-                                {
-                                    if ( remove )
-                                    {
-                                        groupType.Groups.Remove( group );
-                                    }
-                                    else
-                                    {
-                                        group.ExcludedByFilter = true;
-                                    }
-                                }
-                                foundFirstMatch = true;
-                            }
-                        }
+                        FindFirstMatch( remove, useAscendingOrder, currentPerson );
+                    }
+                }
+                else
+                {
+                    foreach ( var person in family.People )
+                    {
+                        FindFirstMatch( remove, useAscendingOrder, person );
                     }
                 }
             }
 
             return true;
+        }
+
+        private static void FindFirstMatch( bool remove, bool useAscendingOrder, Rock.CheckIn.CheckInPerson person )
+        {
+            var foundFirstMatch = false;
+
+            var groupTypeList = useAscendingOrder ? person.GroupTypes.OrderBy( gt => gt.GroupType.Order ).ToList() : person.GroupTypes.OrderByDescending( gt => gt.GroupType.Order ).ToList();
+            foreach ( var groupType in groupTypeList )
+            {
+                bool useFirstMatch = groupType.GroupType.GetAttributeValue( "UseFirstMatch" ).AsBoolean();
+
+                // Only perform filtering for group types that are set to UseFirstMatch true.
+                if ( useFirstMatch )
+                {
+                    var groupList = useAscendingOrder ? groupType.Groups.OrderBy( g => g.Group.Order ).ToList() : groupType.Groups.OrderByDescending( g => g.Group.Order ).ToList();
+                    foreach ( var group in groupList )
+                    {
+                        if ( foundFirstMatch )
+                        {
+                            if ( remove )
+                            {
+                                groupType.Groups.Remove( group );
+                            }
+                            else
+                            {
+                                group.ExcludedByFilter = true;
+                            }
+                        }
+                        foundFirstMatch = true;
+                    }
+                }
+            }
         }
     }
 }
