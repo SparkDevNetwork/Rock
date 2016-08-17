@@ -15,7 +15,7 @@
             
             <a href="#mdedit"></a>
             <div class="js-md-edit" style="display: none">
-                <Rock:MarkdownEditor ID="mdEdit" CssClass="js-markdown-editor" Rows="10" runat="server" Font-Names="Courier New" />
+                <Rock:MarkdownEditor ID="mdEdit" CssClass="js-markdown-editor" Rows="10" runat="server" Font-Names="Courier New" ValidateRequestMode="Disabled" />
                 <div class="margin-t-sm">
                     <asp:LinkButton ID="btnSave" runat="server" CssClass="btn btn-primary btn-xs" Text="Save" OnClick="btnSave_Click" />
                     <asp:LinkButton ID="btnCancel" runat="server" CssClass="btn btn-default btn-xs" Text="Cancel" OnClick="btnCancel_Click" />
