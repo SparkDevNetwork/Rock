@@ -732,7 +732,7 @@ namespace Rock.Model
         /// <value>
         /// URL of the photo
         /// </value>
-        [DataMember]
+        [LavaInclude]
         [NotMapped]
         public virtual string PhotoUrl
         {
