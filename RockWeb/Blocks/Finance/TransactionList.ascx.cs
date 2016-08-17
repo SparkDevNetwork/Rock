@@ -385,6 +385,26 @@ namespace RockWeb.Blocks.Finance
                     }
 
                     break;
+
+                case "Person":
+                    if ( !( this.ContextEntity() is Person ) )
+                    {
+                        var person = new PersonService( new RockContext() ).Get( e.Value.AsInteger() );
+                        if ( person != null )
+                        {
+                            e.Value = person.FullName;
+                        }
+                        else
+                        {
+                            e.Value = string.Empty;
+                        }
+                    }
+                    else
+                    {
+                        e.Value = string.Empty;
+                    }
+
+                    break;
             }
         }
 
@@ -404,6 +424,7 @@ namespace RockWeb.Blocks.Finance
             gfTransactions.SaveUserPreference( "Credit Card Type", ddlCreditCardType.SelectedValue != All.Id.ToString() ? ddlCreditCardType.SelectedValue : string.Empty );
             gfTransactions.SaveUserPreference( "Source Type", ddlSourceType.SelectedValue != All.Id.ToString() ? ddlSourceType.SelectedValue : string.Empty );
             gfTransactions.SaveUserPreference( "Campus", campCampus.SelectedValue );
+            gfTransactions.SaveUserPreference( "Person", ppPerson.SelectedValue.ToString() );
 
             BindGrid();
         }
@@ -788,7 +809,6 @@ namespace RockWeb.Blocks.Finance
                 apAccount.SetValue( 0 );
             }
 
-
             BindDefinedTypeDropdown( ddlTransactionType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE ), "Transaction Type" );
             BindDefinedTypeDropdown( ddlCurrencyType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE ), "Currency Type" );
             BindDefinedTypeDropdown( ddlCreditCardType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE ), "Credit Card Type" );
@@ -806,6 +826,25 @@ namespace RockWeb.Blocks.Finance
                 campCampus.Visible = false;
             }
 
+            // don't show the person picker if the the current context is already a specific person
+            if ( this.ContextEntity() is Person )
+            {
+                ppPerson.Visible = false;
+            }
+            else
+            {
+                ppPerson.Visible = true;
+                var personId = gfTransactions.GetUserPreference( "Person" ).AsIntegerOrNull();
+                if ( personId.HasValue )
+                {
+                    var person = new PersonService( new RockContext() ).Get( personId.Value );
+                    ppPerson.SetValue( person );
+                }
+                else
+                {
+                    ppPerson.SetValue( null );
+                }
+            }
         }
 
         /// <summary>
@@ -1013,6 +1052,20 @@ namespace RockWeb.Blocks.Finance
                     if ( campus != null )
                     {
                         qry = qry.Where( b => b.Batch != null && b.Batch.CampusId == campus.Id );
+                    }
+                }
+
+                if ( !( this.ContextEntity() is Person ) )
+                {
+                    var filterPersonId = gfTransactions.GetUserPreference( "Person" ).AsIntegerOrNull();
+                    if ( filterPersonId.HasValue )
+                    {
+                        // get the transactions for the person or all the members in the person's giving group (Family)
+                        var filterPerson = new PersonService( rockContext ).Get( filterPersonId.Value );
+                        if ( filterPerson != null )
+                        {
+                            qry = qry.Where( t => t.AuthorizedPersonAlias.Person.GivingId == filterPerson.GivingId );
+                        }
                     }
                 }
             }
