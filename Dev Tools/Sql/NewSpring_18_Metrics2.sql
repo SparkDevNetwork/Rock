@@ -5,6 +5,14 @@
 --  Assumptions:
 --  Existing metrics structure exists according to script 7:
 
+	TODO:
+		1) Add attendance SQL source
+		2) Rename metrics so that they aren't so long
+				Volunteer Groups Attendance
+				Volunteer Groups Uniques
+				Attendee Groups Attendance
+				Attendee Groups Uniques
+
    ====================================================== */
 -- Make sure you're using the right Rock database:
 
@@ -36,6 +44,42 @@ DECLARE @volunteerMetricCategoryId AS INT = (SELECT Id FROM Category WHERE Entit
 
 -- Debug variables
 DECLARE @metricId AS INT = 912;
+
+-- Source SQL
+DECLARE @sourceAttendance AS NVARCHAR(MAX) = N'
+';
+
+DECLARE @sourceUnique AS NVARCHAR(MAX) = N'
+DECLARE @BooleanDTId INT = (SELECT ID FROM DefinedType WHERE Name = ''Boolean'')
+DECLARE @TrueDVId INT = (SELECT ID FROM DefinedValue WHERE Value = ''True'' AND DefinedTypeId = @BooleanDTId)
+DECLARE @GroupTypeId INT = {{ Metric.MetricPartitions | Where:''Label'', ''Group'' | Select:''EntityTypeQualifierValue'' }}
+DECLARE @Today AS DATE = GETDATE()
+DECLARE @RecentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @Today), @Today));
+
+SELECT 
+	count(1) Value, 
+	CONVERT(DATE, StartDateTime) MetricValueDateTime, 
+	ISNULL(a.campusid, g.campusid) CampusId, 
+	Groupid, 
+	@TrueDVId DidAttend
+FROM 
+	Attendance a
+	INNER JOIN [Group] g 
+		ON a.GroupId = g.Id
+		AND g.GroupTypeId = @GroupTypeId
+		AND a.DidAttend = 1	
+WHERE 
+	StartDateTime >= @RecentSundayDate 
+	AND StartDateTime < DATEADD(day, 1, @Today)
+GROUP BY 
+	ISNULL(a.CampusId, g.CampusId), 
+	a.GroupId, 
+	CONVERT(DATE, StartDateTime)
+ORDER BY
+	GroupId,
+	CONVERT(DATE, StartDateTime),
+	ISNULL(a.campusid, g.campusid)
+';
 
 /* ====================================================== */
 -- create the group conversion table
@@ -75,13 +119,13 @@ BEGIN
 END
 
 SELECT 
-	m.ForeignId AS GroupId,
-	g.Name AS GroupName,
-	mc.CategoryId,
+	pc.Name AS CategoryName,
+	pc.Id AS CategoryId,
 	NEWID() AS AttendanceMetricGuid,
 	NEWID() AS UniqueMetricGuid,
 	g.GroupTypeId,
-	ngt.Id AS NewGroupTypeId
+	ngt.Id AS NewGroupTypeId,
+	CASE WHEN gt.Name LIKE '%Attendee' THEN 'Attendee' ELSE 'Volunteer' END AS GroupTypeName
 INTO #metricTypes
 FROM 
 	Metric m
@@ -93,7 +137,13 @@ FROM
 	JOIN GroupType ngt ON ngt.Name = CONCAT('NEW ', gt.Name)
 WHERE 
 	Title LIKE '% Service Attendance'
-	AND pc.ParentCategoryId = @volunteerMetricCategoryId;
+	AND pc.ParentCategoryId = @volunteerMetricCategoryId
+GROUP BY
+	pc.Name,
+	pc.Id,
+	g.GroupTypeId,
+	ngt.Id,
+	gt.Name;
 
 /* ====================================================== */
 -- insert the new metrics
@@ -114,11 +164,11 @@ INSERT INTO Metric (
 )
 SELECT
 	@IsSystem AS IsSystem,
-	CONCAT(mt.GroupName, ' Attendance') AS [Title],
+	CONCAT(mt.GroupTypeName, ' Attendance') AS [Title],
 	'Metric to track attendance' AS [Description],
 	0 AS IsCumulative,
 	@MetricSourceSQLId AS SourceValueTypeId,
-	'' AS SourceSql,
+	@sourceAttendance AS SourceSql,
 	@CreatedDateTime AS CreatedDateTime,
 	mt.AttendanceMetricGuid AS [Guid],
 	@foreignKey AS ForeignKey,
@@ -143,11 +193,11 @@ INSERT INTO Metric (
 )
 SELECT
 	@IsSystem AS IsSystem,
-	CONCAT(mt.GroupName, ' Unique Volunteer') AS [Title],
+	CONCAT(mt.GroupTypeName, ' Unique Volunteer') AS [Title],
 	'Metric to track unique volunteers' AS [Description],
 	0 AS IsCumulative,
 	@MetricSourceSQLId AS SourceValueTypeId,
-	'' AS SourceSql,
+	@sourceUnique AS SourceSql,
 	@CreatedDateTime AS CreatedDateTime,
 	mt.UniqueMetricGuid AS [Guid],
 	@foreignKey AS ForeignKey,
