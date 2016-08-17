@@ -278,7 +278,8 @@ namespace RockWeb.Blocks.Cms
         protected void gItems_Delete( object sender, RowEventArgs e )
         {
             var rockContext = new RockContext();
-            ContentChannelItemService contentItemService = new ContentChannelItemService( rockContext );
+            var contentItemService = new ContentChannelItemService( rockContext );
+            var contentItemAssociationService = new ContentChannelItemAssociationService( rockContext );
 
             ContentChannelItem contentItem = contentItemService.Get( e.RowKeyId );
 
@@ -291,8 +292,13 @@ namespace RockWeb.Blocks.Cms
                     return;
                 }
 
-                contentItemService.Delete( contentItem );
-                rockContext.SaveChanges();
+                rockContext.WrapTransaction( () =>
+                {
+                    contentItemAssociationService.DeleteRange( contentItem.ChildItems );
+                    contentItemAssociationService.DeleteRange( contentItem.ParentItems );
+                    contentItemService.Delete( contentItem );
+                    rockContext.SaveChanges();
+                } );
             }
 
             BindGrid();

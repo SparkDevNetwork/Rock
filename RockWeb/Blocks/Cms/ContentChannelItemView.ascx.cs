@@ -334,6 +334,8 @@ namespace RockWeb.Blocks.Cms
         {
             var rockContext = new RockContext();
             var contentItemService = new ContentChannelItemService( rockContext );
+            var contentItemAssociationService = new ContentChannelItemAssociationService( rockContext );
+
             var contentItem = contentItemService.Get( e.RowKeyId );
             if ( contentItem != null )
             {
@@ -344,8 +346,14 @@ namespace RockWeb.Blocks.Cms
                     return;
                 }
 
-                contentItemService.Delete( contentItem );
-                rockContext.SaveChanges();
+                rockContext.WrapTransaction( () =>
+                {
+                    contentItemAssociationService.DeleteRange( contentItem.ChildItems );
+                    contentItemAssociationService.DeleteRange( contentItem.ParentItems );
+                    contentItemService.Delete( contentItem );
+                    rockContext.SaveChanges();
+                } );
+
             }
 
             GetData();
