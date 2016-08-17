@@ -79,9 +79,11 @@
 {% assign currentSeriesImageGuid = currentSeries | Attribute:'SeriesImage','RawValue' %}
 
 {% if Pagination.CurrentPage == 1 %}
-<header class="current-series" style="background-image: url('/GetImage.ashx?Guid={{ currentSeriesImageGuid }}')">
-	<h1>Current Series</h1>
-</header>
+<a href="{{ LinkedPages.DetailPage }}?Item={{ currentSeries.Id }}">
+  <header class="current-series" style="background-image: url('/GetImage.ashx?Guid={{ currentSeriesImageGuid }}')">
+	  <h1>Current Series</h1>
+  </header>
+</a>
 {% endif %}
 
 <div class="row margin-t-lg">
@@ -98,11 +100,10 @@
 			<div class="series-body">
 				<h1 class="text-color">{{ item.Title }}</h1>
 				<p class="series-dates text-color">
-					<strong>{{ item.StartDateTime | Date:'M/d/yyyy' }} 
+					{{ item.StartDateTime | Date:'M/d/yyyy' }} 
 						{% if item.StartDateTime != item.ExpireDateTime %}
 							- {{ item.ExpireDateTime | Date:'M/d/yyyy' }}
 						{% endif %}
-					</strong>
 				</p>
 				
 				<p class="series-summary text-color">
