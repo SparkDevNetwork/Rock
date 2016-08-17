@@ -62,7 +62,8 @@ DECLARE @RecentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, 
 	SELECT COUNT(1) Value, 
 		CONVERT(DATE, StartDateTime) MetricValueDateTime, 
 		ISNULL(a.CampusId, g.CampusId) CampusId, 
-		Groupid, a.Scheduleid, 
+		GroupId, 
+		a.ScheduleId, 
 		@TrueDVId DidAttend
 	FROM Attendance a
 	INNER JOIN [Group] g
@@ -99,7 +100,7 @@ DECLARE @RecentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, 
 		LEFT JOIN (
 			SELECT EntityId, r.value(''.'', ''UNIQUEIDENTIFIER'') AS ScheduleGuid
 			FROM (
-			   /* Denormalize the comma-delimited GUID string */)
+			    /* Denormalize the comma-delimited GUID string */
 				SELECT EntityId, CAST(''<n>'' + REPLACE(Value, '','', ''</n><n>'') + ''</n>'' AS XML) AS Schedules
 				FROM [Attribute] SA
 				INNER JOIN AttributeValue AV
@@ -107,7 +108,7 @@ DECLARE @RecentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, 
 					AND SA.[Key] = ''Schedule''
 					AND SA.EntityTypeQualifierColumn = ''GroupTypeId''
 					AND SA.EntityTypeQualifierValue = @GroupTypeId
-					AND AV.Value <> ''
+					AND AV.Value <> ''''
 			) AS nodes 
 			/* Parse the xml as a table for joining */
 			CROSS APPLY Schedules.nodes(''n'') AS parse(r)
