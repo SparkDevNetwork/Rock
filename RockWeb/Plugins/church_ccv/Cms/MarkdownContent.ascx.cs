@@ -1,7 +1,11 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
+using System.Collections.Generic;
+using System.Linq;
 using Rock.Attribute;
 using Rock;
+using HtmlAgilityPack;
+using System.Text;
 
 namespace RockWeb.Plugins.church_ccv.Cms
 {
@@ -28,7 +32,31 @@ namespace RockWeb.Plugins.church_ccv.Cms
         public override string GetContentTemplate()
         {
             var markdown = this.GetAttributeValue( "MarkdownContent" ) ?? string.Empty;
-            return markdown.ConvertMarkdownToHtml( true );
+            var html = markdown.ConvertMarkdownToHtml( true );
+            
+            // check if the new content is valid
+            // NOTE: This is a limited check that will only warn of invalid HTML the first 
+            // time a user clicks the save button. Any errors encountered on the second runthrough
+            // are assumed to be intentional.
+            HtmlDocument doc = new HtmlDocument();
+            doc.LoadHtml( html );
+
+            if ( doc.ParseErrors.Count() > 0 && !nbInvalidHtml.Visible )
+            {
+                var reasons = doc.ParseErrors.Select( r => r.Reason ).ToList();
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine( "Warning: The HTML has the following errors:<ul>" );
+                foreach ( var reason in reasons )
+                {
+                    sb.AppendLine( string.Format( "<li>{0}</li>", reason.EncodeHtml() ) );
+                }
+
+                nbInvalidHtml.Text = sb.ToString();
+                nbInvalidHtml.Visible = true;
+                return string.Empty;
+            }
+
+            return html;
         }
 
         /// <summary>

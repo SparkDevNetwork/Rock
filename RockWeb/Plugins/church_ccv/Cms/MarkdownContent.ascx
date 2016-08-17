@@ -12,6 +12,8 @@
                     <a class="edit btn btn-action btn-xs js-md-editbutton"><i class="fa fa-pencil"></i>&nbsp;Edit Markdown</a>
                 </div>
             </span>
+
+            <Rock:NotificationBox ID="nbInvalidHtml" runat="server" NotificationBoxType="Warning" Visible="false" Dismissable="true" />
             
             <a href="#mdedit"></a>
             <div class="js-md-edit" style="display: none">
