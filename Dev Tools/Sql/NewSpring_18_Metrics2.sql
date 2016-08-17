@@ -49,125 +49,125 @@ DECLARE @metricId AS INT = 912;
 
 -- Source SQL
 DECLARE @sourceAttendance AS NVARCHAR(MAX) = N'
-	DECLARE @BooleanDTId INT = (SELECT ID FROM DefinedType WHERE Name = ''Boolean'')
-	DECLARE @TrueDVId INT = (SELECT ID FROM DefinedValue WHERE Value = ''True'' AND DefinedTypeId = @BooleanDTId)
-	DECLARE @FalseDVId INT = (SELECT ID FROM DefinedValue WHERE Value = ''False'' AND DefinedTypeId = @BooleanDTId)
-	DECLARE @SchedulesDTId INT = (SELECT ID FROM DefinedType WHERE Name = ''Schedules'')
-	DECLARE @GroupMemberETId INT = (SELECT ID FROM EntityType WHERE Name = ''Rock.Model.GroupMember'')	
-	DECLARE @GroupTypeId INT = {{ Metric.MetricPartitions | Where:''Label'', ''Group'' | Select:''EntityTypeQualifierValue'' }}	
-	DECLARE @Today AS DATE = GETDATE()
-	DECLARE @RecentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @Today), @Today));
-	
-	;WITH GroupAttendance as (
-		SELECT COUNT(1) Value, 
-			CONVERT(DATE, StartDateTime) MetricValueDateTime, 
-			ISNULL(a.CampusId, g.CampusId) CampusId, 
-			Groupid, a.Scheduleid, 
-			@TrueDVId DidAttend
-		FROM Attendance a
-		INNER JOIN [Group] g
-			ON a.GroupId = g.Id
-			AND g.GroupTypeId = @GroupTypeId
-			AND a.DidAttend = 1	
-		WHERE StartDateTime >= @RecentSundayDate 
-			AND StartDateTime < DATEADD(day, 1, @Today)
-		GROUP BY 
-			CONVERT(DATE, StartDateTime), 
-			ISNULL(a.CampusId, g.CampusId), 
-			a.GroupId, 
-			a.ScheduleId
-	)
-	, GroupRoster as (
-		SELECT COUNT(1) Value, 
-			@Today MetricValueDateTime, 
-			g.CampusId, 
-			gm.GroupId, 
-			ScheduleAssignment.ScheduleId
-		FROM GroupMember gm
-		INNER JOIN [Group] g
-			ON gm.GroupId = g.Id
-			and g.GroupTypeId = @GroupTypeId
-		INNER JOIN Attribute a
-			ON a.EntityTypeId = @GroupMemberETId
-			AND a.EntityTypeQualifierColumn = ''GroupTypeId''
-			AND a.EntityTypeQualifierValue = @GroupTypeId
-			AND a.Name = ''Schedule''
-		/* Look for all assignments, not just ones with schedules */
+DECLARE @BooleanDTId INT = (SELECT ID FROM DefinedType WHERE Name = ''Boolean'')
+DECLARE @TrueDVId INT = (SELECT ID FROM DefinedValue WHERE Value = ''True'' AND DefinedTypeId = @BooleanDTId)
+DECLARE @FalseDVId INT = (SELECT ID FROM DefinedValue WHERE Value = ''False'' AND DefinedTypeId = @BooleanDTId)
+DECLARE @SchedulesDTId INT = (SELECT ID FROM DefinedType WHERE Name = ''Schedules'')
+DECLARE @GroupMemberETId INT = (SELECT ID FROM EntityType WHERE Name = ''Rock.Model.GroupMember'')	
+DECLARE @GroupTypeId INT = {{ Metric.MetricPartitions | Where:''Label'', ''Group'' | Select:''EntityTypeQualifierValue'' }}	
+DECLARE @Today AS DATE = GETDATE()
+DECLARE @RecentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @Today), @Today));
+
+;WITH GroupAttendance as (
+	SELECT COUNT(1) Value, 
+		CONVERT(DATE, StartDateTime) MetricValueDateTime, 
+		ISNULL(a.CampusId, g.CampusId) CampusId, 
+		Groupid, a.Scheduleid, 
+		@TrueDVId DidAttend
+	FROM Attendance a
+	INNER JOIN [Group] g
+		ON a.GroupId = g.Id
+		AND g.GroupTypeId = @GroupTypeId
+		AND a.DidAttend = 1	
+	WHERE StartDateTime >= @RecentSundayDate 
+		AND StartDateTime < DATEADD(day, 1, @Today)
+	GROUP BY 
+		CONVERT(DATE, StartDateTime), 
+		ISNULL(a.CampusId, g.CampusId), 
+		a.GroupId, 
+		a.ScheduleId
+)
+, GroupRoster as (
+	SELECT COUNT(1) Value, 
+		@Today MetricValueDateTime, 
+		g.CampusId, 
+		gm.GroupId, 
+		ScheduleAssignment.ScheduleId
+	FROM GroupMember gm
+	INNER JOIN [Group] g
+		ON gm.GroupId = g.Id
+		and g.GroupTypeId = @GroupTypeId
+	INNER JOIN Attribute a
+		ON a.EntityTypeId = @GroupMemberETId
+		AND a.EntityTypeQualifierColumn = ''GroupTypeId''
+		AND a.EntityTypeQualifierValue = @GroupTypeId
+		AND a.Name = ''Schedule''
+	/* Look for all assignments, not just ones with schedules */
+	LEFT JOIN (
+		SELECT DISTINCT AV.EntityId, DV.ForeignId ScheduleId
+		FROM DefinedValue DV
 		LEFT JOIN (
-			SELECT DISTINCT AV.EntityId, DV.ForeignId ScheduleId
-			FROM DefinedValue DV
-			LEFT JOIN (
-				SELECT EntityId, r.value(''.'', ''UNIQUEIDENTIFIER'') AS ScheduleGuid
-				FROM (
-				   /* Denormalize the comma-delimited GUID string */)
-					SELECT EntityId, CAST(''<n>'' + REPLACE(Value, '','', ''</n><n>'') + ''</n>'' AS XML) AS Schedules
-					FROM [Attribute] SA
-					INNER JOIN AttributeValue AV
-						ON AV.AttributeId = SA.Id
-						AND SA.[Key] = ''Schedule''
-						AND SA.EntityTypeQualifierColumn = ''GroupTypeId''
-						AND SA.EntityTypeQualifierValue = @GroupTypeId
-						AND AV.Value <> ''
-				) AS nodes 
-				/* Parse the xml as a table for joining */
-				CROSS APPLY Schedules.nodes(''n'') AS parse(r)
-			) AV 
-				ON AV.ScheduleGuid = DV.[Guid]
-			WHERE AV.EntityId IS NOT NULL
-				AND DV.DefinedTypeId = @SchedulesDTId
-		) ScheduleAssignment
-			ON GM.Id = ScheduleAssignment.EntityId
-		GROUP BY g.CampusId, 
-			gm.GroupId, 
-			ScheduleAssignment.ScheduleId
-	)
-	/* Get all the Did Attend values */
-	SELECT * FROM GroupAttendance 
-	UNION ALL
-	/* Get the Did Not Attend values */
-	SELECT CASE WHEN r.Value - a.Value < 0 THEN 0 ELSE ISNULL(r.Value - a.Value, r.Value) END as Value, 
-		ISNULL(a.MetricValueDateTime, @Today) MetricValueDateTime, 
-		r.CampusId, 
-		r.GroupId, 
-		r.ScheduleId, 
-		@FalseDVId
-	FROM GroupRoster r
-	LEFT JOIN GroupAttendance a
-		ON a.CampusId = r.CampusId
-		AND a.GroupId = r.GroupId
-		AND (r.ScheduleId IS NULL OR r.ScheduleId = a.ScheduleId)
+			SELECT EntityId, r.value(''.'', ''UNIQUEIDENTIFIER'') AS ScheduleGuid
+			FROM (
+			   /* Denormalize the comma-delimited GUID string */)
+				SELECT EntityId, CAST(''<n>'' + REPLACE(Value, '','', ''</n><n>'') + ''</n>'' AS XML) AS Schedules
+				FROM [Attribute] SA
+				INNER JOIN AttributeValue AV
+					ON AV.AttributeId = SA.Id
+					AND SA.[Key] = ''Schedule''
+					AND SA.EntityTypeQualifierColumn = ''GroupTypeId''
+					AND SA.EntityTypeQualifierValue = @GroupTypeId
+					AND AV.Value <> ''
+			) AS nodes 
+			/* Parse the xml as a table for joining */
+			CROSS APPLY Schedules.nodes(''n'') AS parse(r)
+		) AV 
+			ON AV.ScheduleGuid = DV.[Guid]
+		WHERE AV.EntityId IS NOT NULL
+			AND DV.DefinedTypeId = @SchedulesDTId
+	) ScheduleAssignment
+		ON GM.Id = ScheduleAssignment.EntityId
+	GROUP BY g.CampusId, 
+		gm.GroupId, 
+		ScheduleAssignment.ScheduleId
+)
+/* Get all the Did Attend values */
+SELECT * FROM GroupAttendance 
+UNION ALL
+/* Get the Did Not Attend values */
+SELECT CASE WHEN r.Value - a.Value < 0 THEN 0 ELSE ISNULL(r.Value - a.Value, r.Value) END as Value, 
+	ISNULL(a.MetricValueDateTime, @Today) MetricValueDateTime, 
+	r.CampusId, 
+	r.GroupId, 
+	r.ScheduleId, 
+	@FalseDVId
+FROM GroupRoster r
+LEFT JOIN GroupAttendance a
+	ON a.CampusId = r.CampusId
+	AND a.GroupId = r.GroupId
+	AND (r.ScheduleId IS NULL OR r.ScheduleId = a.ScheduleId)
 ';
 
 DECLARE @sourceUnique AS NVARCHAR(MAX) = N'
-	DECLARE @BooleanDTId INT = (SELECT ID FROM DefinedType WHERE Name = ''Boolean'')
-	DECLARE @TrueDVId INT = (SELECT ID FROM DefinedValue WHERE Value = ''True'' AND DefinedTypeId = @BooleanDTId)
-	DECLARE @GroupTypeId INT = {{ Metric.MetricPartitions | Where:''Label'', ''Group'' | Select:''EntityTypeQualifierValue'' }}
-	DECLARE @Today AS DATE = GETDATE()
-	DECLARE @RecentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @Today), @Today));
+DECLARE @BooleanDTId INT = (SELECT ID FROM DefinedType WHERE Name = ''Boolean'')
+DECLARE @TrueDVId INT = (SELECT ID FROM DefinedValue WHERE Value = ''True'' AND DefinedTypeId = @BooleanDTId)
+DECLARE @GroupTypeId INT = {{ Metric.MetricPartitions | Where:''Label'', ''Group'' | Select:''EntityTypeQualifierValue'' }}
+DECLARE @Today AS DATE = GETDATE()
+DECLARE @RecentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @Today), @Today));
 
-	SELECT 
-		COUNT(1) Value, 
-		CONVERT(DATE, StartDateTime) MetricValueDateTime, 
-		ISNULL(a.campusid, g.campusid) CampusId, 
-		GroupId, 
-		@TrueDVId DidAttend
-	FROM 
-		Attendance a
-		INNER JOIN [Group] g 
-			ON a.GroupId = g.Id
-			AND g.GroupTypeId = @GroupTypeId
-			AND a.DidAttend = 1	
-	WHERE 
-		StartDateTime >= @RecentSundayDate 
-		AND StartDateTime < DATEADD(day, 1, @Today)
-	GROUP BY 
-		CONVERT(DATE, StartDateTime),
-		ISNULL(a.CampusId, g.CampusId), 
-		a.GroupId		
-	ORDER BY
-		GroupId,
-		CONVERT(DATE, StartDateTime),
-		ISNULL(a.CampusId, g.CampusId)
+SELECT 
+	COUNT(1) Value, 
+	CONVERT(DATE, StartDateTime) MetricValueDateTime, 
+	ISNULL(a.campusid, g.campusid) CampusId, 
+	GroupId, 
+	@TrueDVId DidAttend
+FROM 
+	Attendance a
+	INNER JOIN [Group] g 
+		ON a.GroupId = g.Id
+		AND g.GroupTypeId = @GroupTypeId
+		AND a.DidAttend = 1	
+WHERE 
+	StartDateTime >= @RecentSundayDate 
+	AND StartDateTime < DATEADD(day, 1, @Today)
+GROUP BY 
+	CONVERT(DATE, StartDateTime),
+	ISNULL(a.CampusId, g.CampusId), 
+	a.GroupId		
+ORDER BY
+	GroupId,
+	CONVERT(DATE, StartDateTime),
+	ISNULL(a.CampusId, g.CampusId)
 ';
 
 /* ====================================================== */
