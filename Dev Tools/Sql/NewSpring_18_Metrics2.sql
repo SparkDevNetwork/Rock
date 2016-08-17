@@ -6,12 +6,14 @@
 --  Existing metrics structure exists according to script 7:
 
 	TODO:
-		1) Add attendance SQL source
-		2) Rename metrics so that they aren't so long
+		1) Add attendance SQL source -- DONE
+		2) Rename metrics so that they aren't so long -- DONE
 				Volunteer Groups Attendance
 				Volunteer Groups Uniques
 				Attendee Groups Attendance
 				Attendee Groups Uniques
+		3) Fix issues with Fuse, KidSpring, Next Steps naming
+		3) Add Schedule id to new metrics
 
    ====================================================== */
 -- Make sure you're using the right Rock database:
@@ -95,7 +97,7 @@ DECLARE @sourceAttendance AS NVARCHAR(MAX) = N'
 			SELECT DISTINCT AV.EntityId, DV.ForeignId ScheduleId
 			FROM DefinedValue DV
 			LEFT JOIN (
-				SELECT EntityId, r.value('.', ''UNIQUEIDENTIFIER'') AS ScheduleGuid
+				SELECT EntityId, r.value(''.'', ''UNIQUEIDENTIFIER'') AS ScheduleGuid
 				FROM (
 				   /* Denormalize the comma-delimited GUID string */)
 					SELECT EntityId, CAST(''<n>'' + REPLACE(Value, '','', ''</n><n>'') + ''</n>'' AS XML) AS Schedules
@@ -251,7 +253,7 @@ INSERT INTO Metric (
 )
 SELECT
 	@IsSystem AS IsSystem,
-	CONCAT(mt.GroupTypeName, ' Attendance') AS [Title],
+	CONCAT(mt.GroupTypeName, ' Group Attendance') AS [Title],
 	'Metric to track attendance' AS [Description],
 	0 AS IsCumulative,
 	@MetricSourceSQLId AS SourceValueTypeId,
@@ -280,7 +282,7 @@ INSERT INTO Metric (
 )
 SELECT
 	@IsSystem AS IsSystem,
-	CONCAT(mt.GroupTypeName, ' Unique Volunteer') AS [Title],
+	CONCAT(mt.GroupTypeName, ' Group Uniques') AS [Title],
 	'Metric to track unique volunteers' AS [Description],
 	0 AS IsCumulative,
 	@MetricSourceSQLId AS SourceValueTypeId,
