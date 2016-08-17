@@ -34,10 +34,6 @@ namespace RockWeb.Plugins.church_ccv.Cms
             var markdown = this.GetAttributeValue( "MarkdownContent" ) ?? string.Empty;
             var html = markdown.ConvertMarkdownToHtml( true );
             
-            // check if the new content is valid
-            // NOTE: This is a limited check that will only warn of invalid HTML the first 
-            // time a user clicks the save button. Any errors encountered on the second runthrough
-            // are assumed to be intentional.
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml( html );
 
