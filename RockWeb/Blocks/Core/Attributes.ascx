@@ -75,7 +75,7 @@
         <Rock:ModalDialog ID="mdAttribute" runat="server" Title="Attribute" OnCancelScript="clearActiveDialog();" ValidationGroup="Attribute">
             <Content>
                 <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
-                <div class="well">
+                <asp:panel ID="pnlEntityTypeQualifier" runat="server" Visible="false" class="well">
                     <Rock:EntityTypePicker ID="ddlAttrEntityType" runat="server" Label="Entity Type" IncludeGlobalOption="true" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlAttrEntityType_SelectedIndexChanged" />
                     <div class="row">
                         <div class="col-md-6">
@@ -85,7 +85,7 @@
                             <Rock:RockTextBox ID="tbAttrQualifierValue" runat="server" Label="Qualifier Value" />
                         </div>
                     </div>
-                </div>
+                </asp:panel>
                 <Rock:AttributeEditor ID="edtAttribute" runat="server" ShowActions="false" ValidationGroup="Attribute" ShowInGridVisible="true" />
             </Content>
         </Rock:ModalDialog>
