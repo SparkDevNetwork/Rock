@@ -1,11 +1,15 @@
+﻿IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[spFinance_GivingAnalyticsQuery_AccountTotals]') AND type in (N'P', N'PC'))
+DROP PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_AccountTotals]
+GO
+
 /*
 <doc>
 	<summary>
-		This stored procedure returns account totals for each giving leader based on filter values
+		This stored procedure returns account totals for each giving id based on filter values
 	</summary>
 </doc>
 */
-ALTER PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_TransactionData]
+CREATE PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_AccountTotals]
 	  @StartDate datetime = NULL
 	, @EndDate datetime = NULL
 	, @AccountIds varchar(max) = NULL
@@ -21,25 +25,13 @@ BEGIN
 
  	SELECT
 		[GivingId],
-		[Amount],
-		[TransactionDateTime],
-		[SundayDate],
-		DATEADD( day, -( DATEPART( day, [SundayDate] ) ) + 1, [SundayDate] ) AS [MonthDate],
-		DATEADD( day, -( DATEPART( dayofyear, [SundayDate] ) ) + 1, [SundayDate] ) AS [YearDate],
 		[AccountId],
-		[AccountName],
-		[GLCode],
-		[CampusId]
+		SUM( [Amount] ) AS [Amount]
 	FROM (
 		SELECT
 			[p].[GivingId],
-			[ftd].[Amount],
-			[ft].[TransactionDateTime],
-			DATEADD( day, ( 6 - ( DATEDIFF( day, CONVERT( datetime, '19000101', 112 ), [ft].[TransactionDateTime] ) % 7 ) ), CONVERT( date, [ft].[TransactionDateTime] ) ) AS [SundayDate],
-			[fa].[Id] AS [AccountId],
-			[fa].[Name] AS [AccountName],
-			[fa].[GlCode] AS [GLCode],
-			[fa].[CampusId]
+			[ftd].[AccountId],
+			[ftd].[Amount]
 		FROM [FinancialTransaction] [ft] WITH (NOLOCK)
 		INNER JOIN [FinancialTransactionDetail] [ftd] WITH (NOLOCK) 
 			ON [ftd].[TransactionId] = [ft].[Id]
@@ -56,5 +48,6 @@ BEGIN
 		AND ( @CurrencyTypeIds IS NULL OR [fpd].[CurrencyTypeValueId] IN ( SELECT * FROM ufnUtility_CsvToTable( @CurrencyTypeIds ) ) )
 		AND ( @SourceTypeIds IS NULL OR [ft].[SourceTypeValueId] IN ( SELECT * FROM ufnUtility_CsvToTable( @SourceTypeIds ) ) )
 	) AS [details]
+	GROUP BY [GivingId],[AccountId]
 
 END

@@ -162,6 +162,10 @@
     <Compile Include="Migrations\201608101948321_StoreCategoryHeader.Designer.cs">
       <DependentUpon>201608101948321_StoreCategoryHeader.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201608171937068_GivingAnalyticsAccounts.cs" />
+    <Compile Include="Migrations\201608171937068_GivingAnalyticsAccounts.Designer.cs">
+      <DependentUpon>201608171937068_GivingAnalyticsAccounts.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -2296,6 +2300,9 @@
     <EmbeddedResource Include="Migrations\201608101948321_StoreCategoryHeader.resx">
       <DependentUpon>201608101948321_StoreCategoryHeader.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201608171937068_GivingAnalyticsAccounts.resx">
+      <DependentUpon>201608171937068_GivingAnalyticsAccounts.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\RockMigrationSQL.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>RockMigrationSQL1.Designer.cs</LastGenOutput>
@@ -3835,6 +3842,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Migrations\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
+    <Content Include="Migrations\201608171937068_GivingAnalyticsAccounts_FirstLastEverDates.sql" />
+    <Content Include="Migrations\201608171937068_GivingAnalyticsAccounts_PersonSummary.sql" />
+    <Content Include="Migrations\201608171937068_GivingAnalyticsAccounts_TransactionData.sql" />
     <Content Include="Migrations\201606091237191_GivingAnalyticsRefactor_AccountTotals.sql" />
     <Content Include="Migrations\201606091237191_GivingAnalyticsRefactor_FirstLastEverDates.sql" />
     <Content Include="Migrations\201606091237191_GivingAnalyticsRefactor_PersonSummary.sql" />
