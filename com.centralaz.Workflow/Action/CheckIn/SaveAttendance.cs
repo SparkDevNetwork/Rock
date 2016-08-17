@@ -81,9 +81,7 @@ namespace com.centralaz.Workflow.Action.CheckIn
                         }
                         else
                         {
-                            // TODO - uncomment below once the new method signature from core is in our branch.
-                            //attendanceCode = AttendanceCodeService.GetNew( securityCodeAlphaLength, securityCodeNumericLength, isRandomized: false );
-                            attendanceCode = AttendanceCodeService.GetNew( securityCodeAlphaLength, securityCodeNumericLength );
+                            attendanceCode = AttendanceCodeService.GetNew( securityCodeAlphaLength, securityCodeNumericLength, isRandomized: false );
                             person.SecurityCode = attendanceCode.Code;
                         }
 
