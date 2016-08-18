@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Data;
 
 namespace Rock.Field
 {
@@ -38,6 +40,54 @@ namespace Rock.Field
                 return ( IFieldType )Activator.CreateInstance( type );
             else
                 return ( IFieldType )Activator.CreateInstance( typeof( Rock.Field.Types.TextFieldType ) );
+        }
+
+        /// <summary>
+        /// Gets the values.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public static Dictionary<string, string> GetConfiguredValues( Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var items = new Dictionary<string, string>();
+
+            if ( configurationValues.ContainsKey( "values" ) )
+            {
+                string listSource = configurationValues["values"].Value;
+
+                var options = new Lava.CommonMergeFieldsOptions();
+                options.GetLegacyGlobalMergeFields = false;
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, options );
+
+                listSource = listSource.ResolveMergeFields( mergeFields );
+
+                if ( listSource.ToUpper().Contains( "SELECT" ) && listSource.ToUpper().Contains( "FROM" ) )
+                {
+                    var tableValues = new List<string>();
+                    DataTable dataTable = Rock.Data.DbService.GetDataTable( listSource, CommandType.Text, null );
+                    if ( dataTable != null && dataTable.Columns.Contains( "Value" ) && dataTable.Columns.Contains( "Text" ) )
+                    {
+                        foreach ( DataRow row in dataTable.Rows )
+                        {
+                            items.AddOrIgnore( row["value"].ToString(), row["text"].ToString() );
+                        }
+                    }
+                }
+
+                else
+                {
+                    foreach ( string keyvalue in listSource.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                    {
+                        var keyValueArray = keyvalue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+                        if ( keyValueArray.Length > 0 )
+                        {
+                            items.AddOrIgnore( keyValueArray[0].Trim(), keyValueArray.Length > 1 ? keyValueArray[1].Trim() : keyValueArray[0].Trim() );
+                        }
+                    }
+                }
+            }
+
+            return items;
         }
     }
 }

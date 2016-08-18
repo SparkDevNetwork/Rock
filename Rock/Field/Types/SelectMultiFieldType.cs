@@ -62,7 +62,7 @@ namespace Rock.Field.Types
             tb.AutoPostBack = true;
             tb.TextChanged += OnQualifierUpdated;
             tb.Label = "Values";
-            tb.Help = "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column.";
+            tb.Help = "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column <span class='tip tip-lava'></span>.";
             return controls;
         }
 
@@ -76,7 +76,7 @@ namespace Rock.Field.Types
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             var configurationValue = new ConfigurationValue(
                 "Values",
-                "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column.",
+                "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column <span class='tip tip-lava'></span>.",
                 string.Empty );
 
             configurationValues.Add( "values", configurationValue );
@@ -120,14 +120,15 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            if ( configurationValues.ContainsKey( "values" ) )
+            if ( !string.IsNullOrWhiteSpace( value ) && configurationValues.ContainsKey( "values" ) )
             {
-                var listItems = configurationValues["values"].Value.GetListItems();
-                if ( listItems != null )
-                {
-                    var valueList = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-                    return listItems.Where( a => valueList.Contains( a.Value ) ).ToList().AsDelimited( "," );
-                }
+                var configuredValues = Helper.GetConfiguredValues( configurationValues );
+                var selectedValues = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                return configuredValues
+                    .Where( v => selectedValues.Contains( v.Key ) )
+                    .Select( v => v.Value )
+                    .ToList()
+                    .AsDelimited( "," );
             }
 
             return base.FormatValue( parentControl, value, configurationValues, condensed );
@@ -147,31 +148,14 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            if ( configurationValues != null && configurationValues.ContainsKey( "values" ) )
+            if ( configurationValues != null )
             {
                 var editControl = new RockCheckBoxList { ID = id };
                 editControl.RepeatDirection = RepeatDirection.Horizontal;
 
-                string listSource = configurationValues["values"].Value;
-
-                if ( listSource.ToUpper().Contains( "SELECT" ) && listSource.ToUpper().Contains( "FROM" ) )
+                foreach( var keyVal in Helper.GetConfiguredValues( configurationValues ))
                 {
-                    var tableValues = new List<string>();
-                    DataTable dataTable = Rock.Data.DbService.GetDataTable( listSource, CommandType.Text, null );
-                    if ( dataTable != null && dataTable.Columns.Contains( "Value" ) && dataTable.Columns.Contains( "Text" ) )
-                    {
-                        foreach ( DataRow row in dataTable.Rows )
-                        {
-                            editControl.Items.Add( new ListItem( row["text"].ToString(), row["value"].ToString() ) );
-                        }
-                    }
-                }
-                else
-                {
-                    foreach ( var listItem in listSource.GetListItems() )
-                    {
-                        editControl.Items.Add( listItem );
-                    }
+                    editControl.Items.Add( new ListItem( keyVal.Value, keyVal.Key ) );
                 }
 
                 if ( editControl.Items.Count > 0 )
