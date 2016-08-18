@@ -1351,6 +1351,7 @@ namespace RockWeb.Blocks.Event
                     case RegistrationFieldSource.GroupMemberAttribute:
                         {
                             attributeId = ddlGroupTypeAttributes.SelectedValueAsInt();
+                            attributeForm.ShowCurrentValue = false;
                             attributeForm.IsGridField = cbShowOnGrid.Checked;
                             attributeForm.IsRequired = cbRequireInInitialEntry.Checked;
                             break;
@@ -1361,6 +1362,7 @@ namespace RockWeb.Blocks.Event
                             edtRegistrationAttribute.GetAttributeProperties( attribute );
                             attributeForm.Attribute = attribute;
                             attributeForm.Id = attribute.Id;
+                            attributeForm.ShowCurrentValue = false;
                             attributeForm.IsGridField = attribute.IsGridColumn;
                             attributeForm.IsRequired = attribute.IsRequired;
                             break;
@@ -2347,7 +2349,7 @@ namespace RockWeb.Blocks.Event
 
                 hfFormGuid.Value = formGuid.ToString();
                 hfAttributeGuid.Value = formFieldGuid.ToString();
-
+                
                 lPersonField.Visible = formField.FieldSource == RegistrationFieldSource.PersonField && (
                     formField.PersonFieldType == RegistrationPersonFieldType.FirstName ||
                     formField.PersonFieldType == RegistrationPersonFieldType.LastName );
