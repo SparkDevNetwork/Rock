@@ -15,7 +15,6 @@
                 <asp:HiddenField ID="metricBlockNumber" runat="server" />
                 <asp:HiddenField ID="metricWidth" runat="server" />
                 <asp:HiddenField ID="metricClass" runat="server" />
-                <asp:HiddenField ID="metricDisplay" runat="server" />
                 <asp:HiddenField ID="metricComparisonDisplay" runat="server" />
 
                 <asp:HiddenField ID="metricTitle" runat="server" />
@@ -34,7 +33,7 @@
                         <h1 class="text-right">
                             <%= currentMetricValue.Value %><% if ( metricComparisonDisplay.Value != "" ) { %>%
                             <% } %>
-                            
+
                             <% if ( metricClass.Value != "" ) { %>
                                 <i class="fa fa-fw <%= metricClass.Value %> pull-right"></i>
                             <% } %>
