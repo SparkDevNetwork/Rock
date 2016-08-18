@@ -37,6 +37,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [System.Web.Http.Route( "api/Lava/RenderTemplate" )]
         [HttpPost]
+        [RequireHttps]
         [Authenticate, Secured]
         public string RenderTemplate( [NakedBody] string template )
         {

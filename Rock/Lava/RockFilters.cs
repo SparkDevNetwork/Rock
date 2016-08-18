@@ -1441,28 +1441,7 @@ namespace Rock.Lava
             // If valid attribute and value were found
             if ( attribute != null && !string.IsNullOrWhiteSpace( rawValue ) )
             {
-                Person currentPerson = null;
-
-                // First check for a person override value included in lava context
-                if ( context.Scopes != null )
-                {
-                    foreach ( var scopeHash in context.Scopes )
-                    {
-                        if ( scopeHash.ContainsKey( "CurrentPerson" ) )
-                        {
-                            currentPerson = scopeHash["CurrentPerson"] as Person;
-                        }
-                    }
-                }
-
-                if ( currentPerson == null )
-                {
-                    var httpContext = System.Web.HttpContext.Current;
-                    if ( httpContext != null && httpContext.Items.Contains( "CurrentPerson" ) )
-                    {
-                        currentPerson = httpContext.Items["CurrentPerson"] as Person;
-                    }
-                }
+                Person currentPerson = GetCurrentPerson( context );
 
                 if ( attribute.IsAuthorized( Authorization.VIEW, currentPerson ) )
                 {
@@ -2773,6 +2752,153 @@ namespace Rock.Lava
             {
                 return input;
             }
+        }
+
+        #endregion
+
+        #region Object Filters
+
+        /// <summary>
+        /// Determines whether [has rights to] [the specified context].
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="verb">The verb.</param>
+        /// <param name="typeName">Name of the type.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Exception">Could not determine type for the input provided. Consider passing it in (e.g. 'Rock.Model.Person')</exception>
+        public static bool HasRightsTo( DotLiquid.Context context, object input, string verb, string typeName = "" )
+        {
+          
+            if (string.IsNullOrWhiteSpace( verb ) )
+            {
+                throw new Exception( "Could not determine the verd to check against (e.g. 'View', 'Edit'...)" );
+            }
+
+            if ( input == null )
+            {
+                return false;
+            }
+            else
+            {
+                var type = input.GetType();
+
+                // if the input is a model call IsAuthorized and get out of here
+                if ( type.IsAssignableFrom( typeof( ISecured ) ) )
+                {
+                    var model = (ISecured)input;
+                    return model.IsAuthorized( verb, GetCurrentPerson( context ) );
+                }
+
+                // not so easy then...
+                if ( string.IsNullOrWhiteSpace( typeName ) )
+                {
+                    // attempt to read it from the input object
+                    var propertyInfo = type.GetProperty( "TypeName" );
+
+                    if ( propertyInfo != null )
+                    {
+                        typeName = propertyInfo.GetValue( input, null ).ToString();
+                    }
+
+                    if ( string.IsNullOrWhiteSpace( typeName ) )
+                    {
+                        throw new Exception( "Could not determine type for the input provided. Consider passing it in (e.g. 'Rock.Model.Person')" );
+                    }
+                }
+
+                int? id = null;
+
+                if ( type == typeof( int ) )
+                {
+                    id = (int)input;
+                }
+                else if ( type == typeof( string ) )
+                {
+                    id = input.ToString().AsIntegerOrNull();
+                }
+                else
+                {
+                    // check if it has an id property
+                    var propertyInfo = type.GetProperty( "Id" );
+
+                    if ( propertyInfo != null )
+                    {
+                        id = (int)propertyInfo.GetValue( input, null );
+                    }
+                }
+
+                if ( id.HasValue )
+                {
+                    var entityTypes = EntityTypeCache.All();
+                    var entityTypeCache = entityTypes.Where( e => String.Equals( e.Name, typeName, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
+
+                    if ( entityTypeCache != null )
+                    {
+                        RockContext _rockContext = new RockContext();
+
+                        Type entityType = entityTypeCache.GetEntityType();
+                        if ( entityType != null )
+                        {
+                            Type[] modelType = { entityType };
+                            Type genericServiceType = typeof( Rock.Data.Service<> );
+                            Type modelServiceType = genericServiceType.MakeGenericType( modelType );
+                            Rock.Data.IService serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { _rockContext } ) as IService;
+
+                            MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
+
+                            if ( getMethod != null )
+                            {
+                                var model = getMethod.Invoke( serviceInstance, new object[] { id.Value } ) as ISecured;
+
+                                if ( model != null )
+                                {
+                                    return model.IsAuthorized( verb, GetCurrentPerson( context ) );
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    throw new Exception( "Could not determine the id of the entity." );
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Gets the current person.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        private static Person GetCurrentPerson( DotLiquid.Context context )
+        {
+            Person currentPerson = null;
+
+            // First check for a person override value included in lava context
+            if ( context.Scopes != null )
+            {
+                foreach ( var scopeHash in context.Scopes )
+                {
+                    if ( scopeHash.ContainsKey( "CurrentPerson" ) )
+                    {
+                        currentPerson = scopeHash["CurrentPerson"] as Person;
+                    }
+                }
+            }
+
+            if ( currentPerson == null )
+            {
+                var httpContext = System.Web.HttpContext.Current;
+                if ( httpContext != null && httpContext.Items.Contains( "CurrentPerson" ) )
+                {
+                    currentPerson = httpContext.Items["CurrentPerson"] as Person;
+                }
+            }
+
+            return currentPerson;
         }
 
         #endregion

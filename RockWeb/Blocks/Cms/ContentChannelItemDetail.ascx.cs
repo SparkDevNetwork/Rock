@@ -44,8 +44,9 @@ namespace RockWeb.Blocks.Cms
     [Category("CMS")]
     [Description("Displays the details for a content channel item.")]
 
-    [LinkedPage( "Event Occurrence Page", order: 0 )]
+    [LinkedPage( "Event Occurrence Page", order: 0, required:false )]
     [BooleanField( "Show Delete Button", "Shows a delete button for the current item.", false, order: 1 )]
+    [ContentChannelField("Content Channel", "If set the block will ignore content channel query parameters", false)]
     public partial class ContentChannelItemDetail : RockBlock, IDetailBlock
     {
 
@@ -166,7 +167,16 @@ namespace RockWeb.Blocks.Cms
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "contentItemId" ).AsInteger(), PageParameter("contentChannelId").AsIntegerOrNull() );
+                if (string.IsNullOrWhiteSpace(GetAttributeValue("ContentChannel")))
+                {
+                    ShowDetail(PageParameter("contentItemId").AsInteger(), PageParameter("contentChannelId").AsIntegerOrNull());
+                }
+                else
+                {
+                    var contentChannel = GetAttributeValue("ContentChannel").AsGuid();
+                    ShowDetail(PageParameter("contentItemId").AsInteger(), new ContentChannelService(new RockContext()).Get(GetAttributeValue("ContentChannel").AsGuid()).Id);
+                }
+                
             }
             else
             {

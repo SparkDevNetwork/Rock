@@ -451,6 +451,15 @@ namespace Rock.Field
         }
 
         /// <summary>
+        /// Gets the equal to compare value (types that don't support an equalto comparison (i.e. singleselect) should return null
+        /// </summary>
+        /// <returns></returns>
+        public virtual string GetEqualToCompareValue()
+        {
+            return ComparisonType.EqualTo.ConvertToInt().ToString();
+        }
+
+        /// <summary>
         /// Gets the filter value value.
         /// </summary>
         /// <param name="control">The control.</param>

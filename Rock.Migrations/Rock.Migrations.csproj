@@ -150,18 +150,34 @@
     <Compile Include="Migrations\201608081809376_BenevolencePrintSummary.Designer.cs">
       <DependentUpon>201608081809376_BenevolencePrintSummary.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201608181431266_SparkLink1.cs" />
-    <Compile Include="Migrations\201608181431266_SparkLink1.Designer.cs">
-      <DependentUpon>201608181431266_SparkLink1.cs</DependentUpon>
+    <Compile Include="Migrations\201608101635463_PledgeGroup.cs" />
+    <Compile Include="Migrations\201608101635463_PledgeGroup.Designer.cs">
+      <DependentUpon>201608101635463_PledgeGroup.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201608182253229_SparkLink2.cs" />
-    <Compile Include="Migrations\201608182253229_SparkLink2.Designer.cs">
-      <DependentUpon>201608182253229_SparkLink2.cs</DependentUpon>
+    <Compile Include="Migrations\201608101923324_PublicProfileEdit.cs" />
+    <Compile Include="Migrations\201608101923324_PublicProfileEdit.Designer.cs">
+      <DependentUpon>201608101923324_PublicProfileEdit.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201608101948321_StoreCategoryHeader.cs" />
+    <Compile Include="Migrations\201608101948321_StoreCategoryHeader.Designer.cs">
+      <DependentUpon>201608101948321_StoreCategoryHeader.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201608171937068_GivingAnalyticsAccounts.cs" />
+    <Compile Include="Migrations\201608171937068_GivingAnalyticsAccounts.Designer.cs">
+      <DependentUpon>201608171937068_GivingAnalyticsAccounts.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201608172242214_Podcasting.cs" />
+    <Compile Include="Migrations\201608172242214_Podcasting.Designer.cs">
+      <DependentUpon>201608172242214_Podcasting.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
-    <Compile Include="Migrations\RockMigrationSQL.Designer.cs" />
+    <Compile Include="Migrations\RockMigrationSQL1.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>RockMigrationSQL.resx</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -2279,12 +2295,6 @@
     <EmbeddedResource Include="Migrations\201608081809376_BenevolencePrintSummary.resx">
       <DependentUpon>201608081809376_BenevolencePrintSummary.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201608181431266_SparkLink1.resx">
-      <DependentUpon>201608181431266_SparkLink1.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201608182253229_SparkLink2.resx">
-      <DependentUpon>201608182253229_SparkLink2.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\RockMigrationSQL.resx" />
     <EmbeddedResource Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -3821,12 +3831,19 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Migrations\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
+    <Content Include="Migrations\201608171937068_GivingAnalyticsAccounts_FirstLastEverDates.sql" />
+    <Content Include="Migrations\201608171937068_GivingAnalyticsAccounts_PersonSummary.sql" />
+    <Content Include="Migrations\201608171937068_GivingAnalyticsAccounts_TransactionData.sql" />
     <Content Include="Migrations\201606091237191_GivingAnalyticsRefactor_AccountTotals.sql" />
     <Content Include="Migrations\201606091237191_GivingAnalyticsRefactor_FirstLastEverDates.sql" />
     <Content Include="Migrations\201606091237191_GivingAnalyticsRefactor_PersonSummary.sql" />
     <Content Include="Migrations\201606091237191_GivingAnalyticsRefactor_TransactionData.sql" />
     <Content Include="Migrations\201606231511599_RegistrationWorkflow_Indexes.sql" />
     <Content Include="Migrations\201607102235065_ScheduledTransactionType.sql" />
+    <None Include="Migrations\201608101635463_PledgeGroup_SP1.sql" />
+    <None Include="Migrations\201608101635463_PledgeGroup_SP2.sql" />
+    <Content Include="Migrations\201608172242214_Podcasting.sql" />
     <Content Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase_PopulateData.sql" />
     <Content Include="Migrations\Version 4.0\Version 1.4.0\201506051749054_AddSampleMergeDocs.sql" />
     <Content Include="Migrations\Version 4.0\Version 1.4.0\201506112030400_PersonDaysUntilBirthday.sql" />

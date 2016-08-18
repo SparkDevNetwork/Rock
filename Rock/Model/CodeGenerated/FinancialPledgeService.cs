@@ -92,6 +92,7 @@ namespace Rock.Model
             target.EndDate = source.EndDate;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.GroupId = source.GroupId;
             target.PersonAliasId = source.PersonAliasId;
             target.PledgeFrequencyValueId = source.PledgeFrequencyValueId;
             target.StartDate = source.StartDate;

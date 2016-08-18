@@ -46,7 +46,8 @@ namespace RockWeb.Blocks.Cms
     [Description( "Block to display dynamic content channel items." )]
 
     // Block Properties
-    [LinkedPage( "Detail Page", "The page to navigate to for details.", false, "", "", 0 )]
+    [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be enabled for this content channel block.", false, order: 0 )]
+    [LinkedPage( "Detail Page", "The page to navigate to for details.", false, "", "", 1 )]
 
     // Custom Settings
     [ContentChannelField( "Channel", "The channel to display items from.", false, "", "CustomSetting" )]
@@ -58,7 +59,7 @@ namespace RockWeb.Blocks.Cms
     [IntegerField( "Filter Id", "The data filter that is used to filter items", false, 0, "CustomSetting" )]
     [BooleanField( "Query Parameter Filtering", "Determines if block should evaluate the query string parameters for additional filter criteria.", false, "CustomSetting" )]
     [TextField( "Order", "The specifics of how items should be ordered. This value is set through configuration and should not be modified here.", false, "", "CustomSetting" )]
-    [BooleanField("Merge Content", "Should the content data and attribute values be merged using the liquid template engine.", false, "CustomSetting" )]
+    [BooleanField("Merge Content", "Should the content data and attribute values be merged using the Lava's template engine.", false, "CustomSetting" )]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the channel name or content item.", false, "CustomSetting" )]
     [BooleanField( "Rss Autodiscover", "Determines if a RSS autodiscover link should be added to the page head.", false, "CustomSetting" )]
     [TextField( "Meta Description Attribute", "Attribute to use for storing the description attribute.", false, "", "CustomSetting" )]
@@ -453,10 +454,12 @@ $(document).ready(function() {
                 foreach ( var item in currentPageContent )
                 {
                     itemMergeFields.AddOrReplace( "Item", item );
-                    item.Content = item.Content.ResolveMergeFields( itemMergeFields );
-                    foreach( var attributeValue in item.AttributeValues )
+                    var enabledCommands = GetAttributeValue( "EnabledLavaCommands" );
+                    item.Content = item.Content.ResolveMergeFields( itemMergeFields, enabledCommands );
+
+                    foreach ( var attributeValue in item.AttributeValues )
                     {
-                        attributeValue.Value.Value = attributeValue.Value.Value.ResolveMergeFields( itemMergeFields );
+                        attributeValue.Value.Value = attributeValue.Value.Value.ResolveMergeFields( itemMergeFields, enabledCommands );
                     }
                 }
             }
@@ -571,6 +574,15 @@ $(document).ready(function() {
 
             var template = GetTemplate();
 
+            if ( template.InstanceAssigns.ContainsKey( "EnabledCommands" ) )
+            {
+                template.InstanceAssigns["EnabledCommands"] = GetAttributeValue( "EnabledLavaCommands" );
+            }
+            else // this should never happen
+            {
+                template.InstanceAssigns.Add( "EnabledCommands", GetAttributeValue( "EnabledLavaCommands" ) );
+            }
+            
             phContent.Controls.Add( new LiteralControl( template.Render( Hash.FromDictionary( mergeFields ) ) ) );
         }
 
