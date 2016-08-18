@@ -60,7 +60,7 @@ SELECT
 	gc.GroupId AS EntityId,
 	@IsSystem,
 	@attributeIdAge,
-	age.Value,
+	MAX(age.Value),
 	NEWID(),
 	@CreatedDateTime,
 	@foreignKey
@@ -70,7 +70,9 @@ FROM
 	LEFT JOIN AttributeValue newAge ON gc.GroupId = newAge.EntityId AND newAge.AttributeId = @attributeIdAge
 WHERE
 	age.Id IS NOT NULL
-	AND newAge.Id IS NULL;
+	AND newAge.Id IS NULL
+GROUP BY
+	gc.GroupId;
 
 /* ====================================================== */
 -- Copy grade
@@ -80,7 +82,7 @@ SELECT
 	gc.GroupId AS EntityId,
 	@IsSystem,
 	@attributeIdGrade,
-	grade.Value,
+	MAX(grade.Value),
 	NEWID(),
 	@CreatedDateTime,
 	@foreignKey
@@ -90,4 +92,8 @@ FROM
 	LEFT JOIN AttributeValue newGrade ON gc.GroupId = newGrade.EntityId AND newGrade.AttributeId = @attributeIdGrade
 WHERE
 	grade.Id IS NOT NULL
-	AND newGrade.Id IS NULL;
+	AND newGrade.Id IS NULL
+GROUP BY
+	gc.GroupId;
+
+-- DELETE FROM AttributeValue WHERE ForeignKey = 'Metrics 2.0'

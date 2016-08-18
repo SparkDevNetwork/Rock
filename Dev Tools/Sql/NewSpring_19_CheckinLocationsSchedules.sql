@@ -3,7 +3,7 @@ BEGIN
 	drop table #groupConversion
 END
 
-select ogt.Name OldGroupType, og.id OldGroupId, og.name OldGroup, ogl.Id OldLocationId, ogl.name OldLocation, gt.Name GroupTypeName, ng.Id GroupId, ng.Name GroupName, ng.CampusId
+select ogt.Name OldGroupType, og.id OldGroupId, og.name OldGroup, ogl.Id OldLocationId, ogl.name OldLocation, gt.Name GroupTypeName, ng.Id GroupId, ng.Name GroupName, ng.CampusId, ngl.Id AS NewGroupLocationId
 into #groupConversion
 from [group] og
 	inner join grouptype ogt
@@ -24,10 +24,18 @@ from [group] og
 	on ng.id = ngl.groupid
 	and ogl.id = ngl.LocationId;
 
+DELETE FROM GroupLocationSchedule
+WHERE GroupLocationId IN (
+	SELECT NewGroupLocationId FROM #groupConversion
+);
+
 INSERT INTO GroupLocationSchedule
 SELECT 
 	NewGroupLocationId,
 	ScheduleId
 FROM 
 	#groupConversion gc
-	JOIN GroupLocationSchedule gls ON gls.GroupLocationId = gc.OldLocationId;
+	JOIN GroupLocationSchedule gls ON gls.GroupLocationId = gc.OldLocationId
+GROUP BY
+	NewGroupLocationId,
+	ScheduleId;

@@ -17,11 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
-using System.Globalization;
 using System.Linq;
 using System.Web.UI;
-using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -39,26 +36,23 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
     [Category( "NewSpring" )]
     [Description( "Custom church metrics block using the Chart.js library" )]
     [CustomDropdownListField( "Number of Columns", "", "1,2,3,4,5,6,7,8,9,10,11,12", false, DefaultValue = "4", Order = 1 )]
-
     [MetricCategoriesField( "Metric Source", "Select the primary metric(s) to include in this chart.", false, Order = 2 )]
-    [CustomRadioListField("Aggregation", "Which calculation method should be used", "Sum,Avg,Min,Max,Median", true, "Sum", order: 3)]
-    [BooleanField("Respect Campus Context", "Respect the group context even if the Campus context selector isn't included on the page.", true, Order = 4)]
-    [BooleanField("Respect Group Context", "Respect the group context even if the GroupType context selector isn't included on the page.", true, Order = 5)]
-    [BooleanField("Respect Date Context", "Respect the date context even if the DateRange context selector isn't included on the page.", true, Order = 6)]
-    [BooleanField("Respect Schedule Context", "Respect the schedule context even if the Schedule context selector isn't included on the page.", true, Order = 7)]
-    [BooleanField("Require Attendance", "Only count the actual attendances rather than everyone on the roster.", true, Order = 8)]
-    [CustomRadioListField("Metric Type", "Use values for each service or unique people for the whole day", "All Values,Unique", true, "All Values", order: 9)]
-
-    [BooleanField("Do Comparison", "Divide the primary by the comparison metric.", false, Order = 10)]
+    [CustomRadioListField( "Aggregation", "Which calculation method should be used", "Sum,Avg,Min,Max,Median", true, "Sum", order: 3 )]
+    [BooleanField( "Respect Campus Context", "Respect the group context even if the Campus context selector isn't included on the page.", true, Order = 4 )]
+    [BooleanField( "Respect Group Context", "Respect the group context even if the GroupType context selector isn't included on the page.", true, Order = 5 )]
+    [BooleanField( "Respect Date Context", "Respect the date context even if the DateRange context selector isn't included on the page.", true, Order = 6 )]
+    [BooleanField( "Respect Schedule Context", "Respect the schedule context even if the Schedule context selector isn't included on the page.", true, Order = 7 )]
+    [BooleanField( "Require Attendance", "Only count the actual attendances rather than everyone on the roster.", true, Order = 8 )]
+    [CustomRadioListField( "Attendance Type", "Use values for each service or unique people for the whole day", "All Values,Unique", true, "All Values", order: 9 )]
     [MetricCategoriesField( "Comparison Metric Source", "Select the metric(s) to calculate against the Primary Source/Key.", false, Order = 10 )]
-    [CustomRadioListField("Comparison Aggregation", "Which calculation method should be used", "Sum,Avg,Min,Max,Median", true, "Sum", order: 11)]
+    [CustomRadioListField( "Comparison Aggregation", "Which calculation method should be used", "Sum,Avg,Min,Max,Median", true, "Sum", order: 11 )]
     [CustomRadioListField( "Display Comparison As", "Choose to display the comparison result as an integer or percentage", "Integer,Percentage", true, "Integer", order: 12 )]
-    [BooleanField("Comparison Respect Campus Context", "Respect the group context even if the Campus context selector isn't included on the page.", true, Order = 13 )]
-    [BooleanField("Comparison Respect Group Context", "Respect the group context even if the GroupType context selector isn't included on the page.", true, Order = 14 )]
-    [BooleanField("Comparison Respect Date Context", "Respect the date context even if the DateRange context selector isn't included on the page.", true, Order = 15 )]
-    [BooleanField("Comparison Respect Schedule Context", "Respect the schedule context even if the Schedule context selector isn't included on the page.", true, Order = 16 )]
-    [BooleanField("Comparison Require Attendance", "Only count the actual attendances rather than everyone on the roster.", true, Order = 17)]
-    [CustomRadioListField("Comparison Metric Type", "Use values for each service or unique people for the whole day", "All Values,Unique", true, "All Values", order: 18)]
+    [BooleanField( "Comparison Respect Campus Context", "Respect the group context even if the Campus context selector isn't included on the page.", true, Order = 13 )]
+    [BooleanField( "Comparison Respect Group Context", "Respect the group context even if the GroupType context selector isn't included on the page.", true, Order = 14 )]
+    [BooleanField( "Comparison Respect Date Context", "Respect the date context even if the DateRange context selector isn't included on the page.", true, Order = 15 )]
+    [BooleanField( "Comparison Respect Schedule Context", "Respect the schedule context even if the Schedule context selector isn't included on the page.", true, Order = 16 )]
+    [BooleanField( "Comparison Require Attendance", "Only count the actual attendances rather than everyone on the roster.", true, Order = 17 )]
+    [CustomRadioListField( "Comparison Attendance Type", "Use values for each service or unique people for the whole day", "All Values,Unique", true, "All Values", order: 18 )]
 
     //[SlidingDateRangeField( "Date Range", Key = "SlidingDateRange", Order = 9 )]
     //[CustomRadioListField( "Custom Dates", "If not using date range, please select a custom date from here", "This Week Last Year", Order = 9 )]
@@ -110,22 +104,22 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         {
             base.OnLoad( e );
 
-            if (Page.IsPostBack)
+            if ( Page.IsPostBack )
             {
                 return;
             }
 
             var rockContext = new RockContext();
-            var dvService = new DefinedValueService(rockContext);
-            var booleanTrueDt = dvService.Queryable().FirstOrDefault(dv => dv.DefinedType.Name == "Boolean" && dv.Value == "True");
-            var booleanFalseDt = dvService.Queryable().FirstOrDefault(dv => dv.DefinedType.Name == "Boolean" && dv.Value == "False");
+            var dvService = new DefinedValueService( rockContext );
+            var booleanTrueDt = dvService.Queryable().FirstOrDefault( dv => dv.DefinedType.Name == "Boolean" && dv.Value == "True" );
+            var booleanFalseDt = dvService.Queryable().FirstOrDefault( dv => dv.DefinedType.Name == "Boolean" && dv.Value == "False" );
 
-            if (booleanTrueDt != null)
+            if ( booleanTrueDt != null )
             {
                 dtBooleanTrueId = booleanTrueDt.Id;
             }
 
-            if (booleanFalseDt != null)
+            if ( booleanFalseDt != null )
             {
                 dtBooleanFalseId = booleanFalseDt.Id;
             }
@@ -136,12 +130,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             metricBlockNumber.Value = BlockId.ToString();
             metricBlockId.Value = BlockName.Replace( " ", "" ).ToString();
             metricTitle.Value = BlockName;
-            metricDisplay.Value = GetAttributeValue( "MetricDisplayType" );
             metricWidth.Value = GetAttributeValue( "NumberofColumns" );
-
-            var churchMetricPeriod = GetAttributeValue( "MetricPeriod" );
-            var metricComparison = GetAttributeValue( "MetricComparison" );
-            var metricDisplayType = GetAttributeValue( "MetricDisplayType" );
 
             DisplayTextValue();
         }
@@ -160,15 +149,16 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         protected decimal FormatValues()
         {
             var primaryMetricValues = GetMetricValues( true );
-            var primaryValue = GetValueAggregate(primaryMetricValues.Select(v => v.YValue), true);
+            var primaryValue = GetValueAggregate( primaryMetricValues.Select( v => v.YValue ), true );
 
+            var comparisonMetricGuids = GetAttributeValue( "ComparisonMetricSource" ).SplitDelimitedValues().AsGuidOrNullList();
             // if comparing values, make sure we have a valid percentage source
-            if (primaryValue > 0 && GetAttributeValue("DoComparison").AsBoolean())
+            if ( primaryValue > 0 && comparisonMetricGuids.Any() )
             {
                 var comparisonMetricValues = GetMetricValues( false );
-                var comparisonValue = GetValueAggregate(comparisonMetricValues.Select(v => v.YValue), false);
+                var comparisonValue = GetValueAggregate( comparisonMetricValues.Select( v => v.YValue ), false );
 
-                if (comparisonValue > 0 )
+                if ( comparisonValue > 0 )
                 {
                     decimal comparison = primaryValue / comparisonValue;
 
@@ -190,31 +180,41 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             return primaryValue;
         }
 
-        protected decimal GetValueAggregate(IEnumerable<decimal?> values, bool isPrimary)
+        /// <summary>
+        /// Gets the value aggregate.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <param name="isPrimary">if set to <c>true</c> [is primary].</param>
+        /// <returns></returns>
+        protected decimal GetValueAggregate( IEnumerable<decimal?> values, bool isPrimary )
         {
             var preKey = isPrimary ? string.Empty : "Comparison";
             decimal? aggregateValue = null;
 
-            switch (GetAttributeValue(preKey + "Aggregation"))
+            switch ( GetAttributeValue( preKey + "Aggregation" ) )
             {
                 case "Avg":
                     aggregateValue = values.Average();
                     break;
+
                 case "Min":
                     aggregateValue = values.Min();
                     break;
+
                 case "Max":
                     aggregateValue = values.Max();
                     break;
+
                 case "Median":
-                    aggregateValue = values.OrderBy(v => v).ElementAt(values.Count() / 2);
+                    aggregateValue = values.OrderBy( v => v ).ElementAt( values.Count() / 2 );
                     break;
+
                 default:
                     aggregateValue = values.Sum();
                     break;
             }
 
-            if (!aggregateValue.HasValue)
+            if ( !aggregateValue.HasValue )
             {
                 aggregateValue = 0.0m;
             }
@@ -222,6 +222,11 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             return aggregateValue.Value;
         }
 
+        /// <summary>
+        /// Gets the metric values.
+        /// </summary>
+        /// <param name="isPrimary">if set to <c>true</c> [is primary].</param>
+        /// <returns></returns>
         protected List<MetricValue> GetMetricValues( bool isPrimary )
         {
             var rockContext = new RockContext();
@@ -230,107 +235,107 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             var preKey = isPrimary ? string.Empty : "Comparison";
             IQueryable<MetricValue> metricValues = null;
 
-            var attributeValue = GetAttributeValue(preKey + "MetricSource");
+            var attributeValue = GetAttributeValue( preKey + "MetricSource" );
 
-            if(string.IsNullOrWhiteSpace(attributeValue))
+            if ( string.IsNullOrWhiteSpace( attributeValue ) )
             {
                 attributeValue = string.Empty;
             }
 
-            var pairs = MetricCategoriesFieldAttribute.GetValueAsGuidPairs(attributeValue);
-            sourceGuids = pairs.Select(p => p.MetricGuid).ToList();
+            var pairs = MetricCategoriesFieldAttribute.GetValueAsGuidPairs( attributeValue );
+            sourceGuids = pairs.Select( p => p.MetricGuid ).ToList();
 
-            if (sourceGuids.Any())
+            if ( sourceGuids.Any() )
             {
-                metricValues = metricService.GetByGuids(sourceGuids).SelectMany(m => m.MetricValues);
+                metricValues = metricService.GetByGuids( sourceGuids ).SelectMany( m => m.MetricValues );
             }
-            else if(GetAttributeValue(preKey + "MetricType").Equals("Unique"))
+            else if ( GetAttributeValue( preKey + "AttendanceType" ).Equals( "Unique" ) )
             {
-                metricValues = metricService.Queryable().Where(m => m.Title.EndsWith("Unique Volunteer")).SelectMany(m => m.MetricValues);
+                metricValues = metricService.Queryable().Where( m => m.Title.EndsWith( "Unique Volunteer" ) ).SelectMany( m => m.MetricValues );
             }
             else
             {
-                metricValues = metricService.Queryable().Where(m => m.Title.EndsWith("Attendance")).SelectMany(m => m.MetricValues);
+                metricValues = metricService.Queryable().Where( m => m.Title.EndsWith( "Attendance" ) ).SelectMany( m => m.MetricValues );
             }
 
-            if (GetAttributeValue(preKey + "RespectCampusContext").AsBoolean())
+            if ( GetAttributeValue( preKey + "RespectCampusContext" ).AsBoolean() )
             {
-                var campusContext = RockPage.GetCurrentContext(EntityTypeCache.Read(typeof(Campus)));
+                var campusContext = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( Campus ) ) );
 
-                if (campusContext != null)
+                if ( campusContext != null )
                 {
-                    metricValues = FilterMetricValuesByPartition(metricValues, "Campus", campusContext.Id);
+                    metricValues = FilterMetricValuesByPartition( metricValues, "Campus", campusContext.Id );
                 }
             }
 
-            if (GetAttributeValue(preKey + "RespectGroupContext").AsBoolean())
+            if ( GetAttributeValue( preKey + "RespectGroupContext" ).AsBoolean() )
             {
-                var groupTypeContext = RockPage.GetCurrentContext(EntityTypeCache.Read(typeof(GroupType)));
-                var groupContext = RockPage.GetCurrentContext(EntityTypeCache.Read(typeof(Group)));
+                var groupTypeContext = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( GroupType ) ) );
+                var groupContext = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( Group ) ) );
 
-                if (groupContext != null)
+                if ( groupContext != null )
                 {
-                    metricValues = FilterMetricValuesByPartition(metricValues, "Group", groupContext.Id);
+                    metricValues = FilterMetricValuesByPartition( metricValues, "Group", groupContext.Id );
                 }
-                else if (groupTypeContext != null)
+                else if ( groupTypeContext != null )
                 {
-                    var groupTypeIds = new GroupTypeService(rockContext).GetAllAssociatedDescendents(groupTypeContext.Id).Select(gt => gt.Id);
-                    var groupIds = new GroupService(rockContext).Queryable().Where(g => groupTypeIds.Contains(g.GroupTypeId)).Select(g => g.Id);
-                    metricValues = metricValues.Where(a => a.MetricValuePartitions.Any(mvp => mvp.MetricPartition.Label == "Group" && groupIds.Any(i => i == mvp.EntityId)));
+                    var groupTypeIds = new GroupTypeService( rockContext ).GetAllAssociatedDescendents( groupTypeContext.Id ).Select( gt => gt.Id );
+                    var groupIds = new GroupService( rockContext ).Queryable().Where( g => groupTypeIds.Contains( g.GroupTypeId ) ).Select( g => g.Id );
+                    metricValues = metricValues.Where( a => a.MetricValuePartitions.Any( mvp => mvp.MetricPartition.Label == "Group" && groupIds.Any( i => i == mvp.EntityId ) ) );
                 }
             }
 
-            if (GetAttributeValue(preKey + "RespectDateContext").AsBoolean())
+            if ( GetAttributeValue( preKey + "RespectDateContext" ).AsBoolean() )
             {
-                var dateRangeString = RockPage.GetUserPreference(ContextPreferenceName);
+                var dateRangeString = RockPage.GetUserPreference( ContextPreferenceName );
 
-                if (!string.IsNullOrWhiteSpace(dateRangeString))
+                if ( !string.IsNullOrWhiteSpace( dateRangeString ) )
                 {
-                    var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues(dateRangeString);
-                    metricValues = metricValues.Where(v => v.MetricValueDateTime >= dateRange.Start && v.MetricValueDateTime <= dateRange.End);
+                    var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( dateRangeString );
+                    metricValues = metricValues.Where( v => v.MetricValueDateTime >= dateRange.Start && v.MetricValueDateTime <= dateRange.End );
                 }
             }
 
-            if (GetAttributeValue(preKey + "RespectScheduleContext").AsBoolean())
+            if ( GetAttributeValue( preKey + "RespectScheduleContext" ).AsBoolean() )
             {
-                var scheduleContext = RockPage.GetCurrentContext(EntityTypeCache.Read(typeof(Schedule)));
+                var scheduleContext = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( Schedule ) ) );
 
-                if (scheduleContext != null)
+                if ( scheduleContext != null )
                 {
-                    metricValues = FilterMetricValuesByPartition(metricValues, "Schedule", scheduleContext.Id);
+                    metricValues = FilterMetricValuesByPartition( metricValues, "Schedule", scheduleContext.Id );
                 }
             }
 
-            var didAttendTrue = FilterMetricValuesByPartition(metricValues, "Did Attend", dtBooleanTrueId);
+            var didAttendTrue = FilterMetricValuesByPartition( metricValues, "Did Attend", dtBooleanTrueId );
 
-            if (GetAttributeValue(preKey + "RequireAttendance").AsBoolean())
+            if ( GetAttributeValue( preKey + "RequireAttendance" ).AsBoolean() )
             {
                 return didAttendTrue.ToList();
             }
             else
             {
-                var didAttendFalse = FilterMetricValuesByPartition(metricValues, "Did Attend", dtBooleanFalseId);
+                var didAttendFalse = FilterMetricValuesByPartition( metricValues, "Did Attend", dtBooleanFalseId );
                 var valueList = didAttendTrue.ToList();
 
-                foreach (var trueValue in valueList)
+                foreach ( var trueValue in valueList )
                 {
                     var possibleMatches = didAttendFalse.AsQueryable();
 
-                    var schedulePartition = trueValue.MetricValuePartitions.FirstOrDefault(mvp => mvp.MetricPartition.Label == "Schedule");
+                    var schedulePartition = trueValue.MetricValuePartitions.FirstOrDefault( mvp => mvp.MetricPartition.Label == "Schedule" );
                     var scheduleId = schedulePartition == null ? null : schedulePartition.EntityId;
-                    possibleMatches = FilterMetricValuesByPartition(possibleMatches, "Schedule", scheduleId, true);
+                    possibleMatches = FilterMetricValuesByPartition( possibleMatches, "Schedule", scheduleId, true );
 
-                    var campusPartition = trueValue.MetricValuePartitions.FirstOrDefault(mvp => mvp.MetricPartition.Label == "Campus");
+                    var campusPartition = trueValue.MetricValuePartitions.FirstOrDefault( mvp => mvp.MetricPartition.Label == "Campus" );
                     var campusId = campusPartition == null ? null : campusPartition.EntityId;
-                    possibleMatches = FilterMetricValuesByPartition(possibleMatches, "Campus", campusId, true);
+                    possibleMatches = FilterMetricValuesByPartition( possibleMatches, "Campus", campusId, true );
 
-                    var groupPartition = trueValue.MetricValuePartitions.FirstOrDefault(mvp => mvp.MetricPartition.Label == "Group");
+                    var groupPartition = trueValue.MetricValuePartitions.FirstOrDefault( mvp => mvp.MetricPartition.Label == "Group" );
                     var groupId = groupPartition == null ? null : groupPartition.EntityId;
-                    possibleMatches = FilterMetricValuesByPartition(possibleMatches, "Group", groupId, true);
+                    possibleMatches = FilterMetricValuesByPartition( possibleMatches, "Group", groupId, true );
 
-                    var falseValue = possibleMatches.SingleOrDefault(v => v.MetricValueDateTime == trueValue.MetricValueDateTime);
+                    var falseValue = possibleMatches.SingleOrDefault( v => v.MetricValueDateTime == trueValue.MetricValueDateTime );
 
-                    if(falseValue != null)
+                    if ( falseValue != null )
                     {
                         trueValue.YValue += falseValue.YValue;
                     }
@@ -340,14 +345,22 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             }
         }
 
-        protected IQueryable<MetricValue> FilterMetricValuesByPartition(IQueryable<MetricValue> values, string partitionName, int? entityId, bool filterOnNull = false)
+        /// <summary>
+        /// Filters the metric values by partition.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <param name="partitionName">Name of the partition.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="filterOnNull">if set to <c>true</c> [filter on null].</param>
+        /// <returns></returns>
+        protected IQueryable<MetricValue> FilterMetricValuesByPartition( IQueryable<MetricValue> values, string partitionName, int? entityId, bool filterOnNull = false )
         {
-            if(!entityId.HasValue && !filterOnNull)
+            if ( !entityId.HasValue && !filterOnNull )
             {
                 return values;
             }
 
-            return values.Where(m => m.MetricValuePartitions.Any(mvp => mvp.MetricPartition.Label == partitionName && mvp.EntityId == entityId));
+            return values.Where( m => m.MetricValuePartitions.Any( mvp => mvp.MetricPartition.Label == partitionName && mvp.EntityId == entityId ) );
         }
 
         #endregion
@@ -364,13 +377,12 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         {
             // this may be a little complicated to compare date ranges while accepting two metric keys/sources
             decimal currentMetricValues = FormatValues();
-            decimal comparisonMetricValues = 0;
-
-            if (currentMetricValues > 0)
+            if ( currentMetricValues > 0 )
             {
-                currentMetricValue.Value = string.Format("{0:n0}", currentMetricValues);
+                currentMetricValue.Value = string.Format( "{0:n0}", currentMetricValues );
 
-                if (GetAttributeValue("DoComparison").AsBoolean() && GetAttributeValue("DisplayComparisonAs").Equals("Percentage"))
+                var comparisonMetricGuids = GetAttributeValue( "ComparisonMetricSource" ).SplitDelimitedValues().AsGuidOrNullList();
+                if ( comparisonMetricGuids.Any() && GetAttributeValue( "DisplayComparisonAs" ).Equals( "Percentage" ) )
                 {
                     metricComparisonDisplay.Value = "%";
                 }
@@ -379,17 +391,17 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             {
                 currentMetricValue.Value = "—";
             }
-        }       
+        }
 
         #endregion
 
         private void LoadSourceGuids()
         {
-            var metricSourceString = GetAttributeValue("MetricSource");
-            MetricSourceGuids = string.IsNullOrWhiteSpace(metricSourceString) ? null : metricSourceString.SplitDelimitedValues().AsGuidList();
+            var metricSourceString = GetAttributeValue( "MetricSource" );
+            MetricSourceGuids = string.IsNullOrWhiteSpace( metricSourceString ) ? null : metricSourceString.SplitDelimitedValues().AsGuidList();
 
-            metricSourceString = GetAttributeValue("ComparisonMetricSource");
-            ComparisonMetricSourceGuids = string.IsNullOrWhiteSpace(metricSourceString) ? null : metricSourceString.SplitDelimitedValues().AsGuidList();
+            metricSourceString = GetAttributeValue( "ComparisonMetricSource" );
+            ComparisonMetricSourceGuids = string.IsNullOrWhiteSpace( metricSourceString ) ? null : metricSourceString.SplitDelimitedValues().AsGuidList();
         }
 
         #region Classes
