@@ -201,7 +201,7 @@ $('.js-date-rollover').tooltip();
         ///                  <div class="col-md-6">
         ///                      <dl>
         ///                         <dt>Created By</dt>
-        ///                         <dd>Admin Admin (6 days ago)</ dd >
+        ///                         <dd>Admin Admin (6 days ago)</dd>
         ///                      </dl>
         ///                  </div>
         ///                  <div class="col-md-6">
@@ -213,7 +213,7 @@ $('.js-date-rollover').tooltip();
         ///              </div>
         ///          </div>
         ///          <div class="drawer-pull js-drawerpull"><i class="fa fa-chevron-down" data-icon-closed="fa fa-chevron-down" data-icon-open="fa fa-chevron-up"></i></div>
-        //        </div>
+        ///       </div>
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )

@@ -298,7 +298,7 @@ namespace Rock.Model
                     var originalStatus = signatureDocument.Status;
                     if ( provider.UpdateDocumentStatus( signatureDocument, out errorMessages ) )
                     {
-                        if ( signatureDocument.Status != originalStatus && signatureDocument.Status == SignatureDocumentStatus.Signed )
+                        if ( signatureDocument.Status == SignatureDocumentStatus.Signed && !signatureDocument.BinaryFileId.HasValue )
                         {
                             using ( var rockContext = new RockContext() )
                             {
@@ -317,13 +317,17 @@ namespace Rock.Model
                                     rockContext.SaveChanges();
 
                                     signatureDocument.BinaryFileId = binaryFile.Id;
-                                    signatureDocument.Status = SignatureDocumentStatus.Signed;
-                                    signatureDocument.LastStatusDate = RockDateTime.Now;
 
                                     File.Delete( documentPath );
                                 }
                             }
                         }
+
+                        if ( signatureDocument.Status != originalStatus )
+                        {
+                            signatureDocument.LastStatusDate = RockDateTime.Now;
+                        }
+
                     }
 
                 }
