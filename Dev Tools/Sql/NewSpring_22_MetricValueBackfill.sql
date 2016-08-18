@@ -25,7 +25,8 @@ FROM
 	JOIN Category c ON c.Id = mc.CategoryId
 WHERE
 	m.ForeignKey = 'Metrics 2.0'
-	AND (m.SourceSql IS NOT NULL OR RTRIM(LTRIM(LEN(m.SourceSql))) > 1);
+	AND m.SourceSql IS NOT NULL 
+	AND RTRIM(LTRIM(LEN(m.SourceSql))) > 1;
 
 DECLARE @sundayDate AS DATE = '01-04-2015';
 DECLARE @scopeIndex AS INT = (SELECT MIN(Id) FROM #metricTypes);
@@ -33,6 +34,12 @@ DECLARE @numItems AS INT = (SELECT COUNT(1) + @scopeIndex FROM #metricTypes);
 DECLARE @metricId AS INT;
 DECLARE @groupType AS INT;
 DECLARE @sourceSql AS NVARCHAR(MAX);
+DECLARE @startPattern AS NVARCHAR(10);
+DECLARE @stopPattern AS NVARCHAR(10);
+DECLARE @start AS INT;
+DECLARE @stop AS INT;
+DECLARE @length AS INT;
+DECLARE @msg AS NVARCHAR(MAX);
 
 WHILE @sundayDate < GETDATE()
 BEGIN
@@ -43,8 +50,25 @@ BEGIN
 		SET @metricId = (SELECT MetricId FROM #metricTypes WHERE Id = @scopeIndex);
 		SET @sourceSql = (SELECT SourceSql FROM Metric WHERE Id = @metricId);
 		SET @groupType = (SELECT EntityTypeQualifierValue FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group');
+
+		SET @msg = 'Creating metric values for metric id ' + CONVERT(NVARCHAR(20), @metricId) + ' / ' + CONVERT(NVARCHAR(20), @sundayDate); 
+		RAISERROR ( @msg, 0, 0 ) WITH NOWAIT;
 		
-		/* Replace groupType and dateRange in sourceSql */
+		-- Replace grouptype lava
+		SET @startPattern = '%{{ %';
+		SET @stopPattern = '% }}%';
+		SET @start = PATINDEX(@startPattern, @sourceSql);
+		SET @stop = PATINDEX(@stopPattern, @sourceSql) + LEN(@stopPattern) - 1;
+		SET @length = @stop - @start;
+		SET @sourceSql = STUFF(@sourceSql, @start, @length, @groupType);
+
+		-- Replace recentSundayDate
+		SET @sourceSql = REPLACE(@sourceSql, 'DECLARE @RecentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @Today), @Today));', '');
+		SET @sourceSql = REPLACE(@sourceSql, 'StartDateTime >= @RecentSundayDate', CONCAT('StartDateTime >= ''', @sundayDate, ''''));
+		SET @sourceSql = REPLACE(@sourceSql, 'AND StartDateTime < DATEADD(day, 1, @Today)', CONCAT('AND StartDateTime < DATEADD(WEEK, 1, ''', @sundayDate, ''')'));
+		
+		EXEC(@sourceSql);
+		RETURN;
 
 		/* Exec sourceSql */
 
