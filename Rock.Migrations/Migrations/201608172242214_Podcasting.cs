@@ -35,6 +35,23 @@ namespace Rock.Migrations
             RockMigrationHelper.AddPage( "7F4916E3-1CCA-4721-91C1-D0A54ED93AD3", "5FEAF34C-7FB6-4A11-8A1E-C452EC7849BD", "Series Detail", "", "7669A501-4075-431A-9828-565C47FD21C8", "" ); // Site:External Website
             RockMigrationHelper.AddPage( "7669A501-4075-431A-9828-565C47FD21C8", "5FEAF34C-7FB6-4A11-8A1E-C452EC7849BD", "Message Detail", "", "BB83C51D-65C7-4F6C-BA24-A496167C9B11", "" ); // Site:External Website
 
+            // hide page title and breadcrumbs
+            Sql( @"UPDATE [Page]
+SET [PageDisplayTitle] = 0,
+[PageDisplayBreadCrumb] = 0
+WHERE
+	[Guid] = '7F4916E3-1CCA-4721-91C1-D0A54ED93AD3'
+
+UPDATE [Page]
+SET [PageDisplayTitle] = 0
+WHERE
+	[Guid] = '7669A501-4075-431A-9828-565C47FD21C8'
+
+UPDATE [Page]
+SET [PageDisplayTitle] = 0
+WHERE
+	[Guid] = 'BB83C51D-65C7-4F6C-BA24-A496167C9B11' " );
+
             RockMigrationHelper.AddPageRoute( "7F4916E3-1CCA-4721-91C1-D0A54ED93AD3", "watch", "A564AF1A-7294-4AE6-B9B5-04EDD4F1AF49" );// for Page:Watch
             RockMigrationHelper.AddPageRoute( "7669A501-4075-431A-9828-565C47FD21C8", "series/{Item}", "D4518DDA-4152-454A-9B7F-CAB1067AF0C7" );// for Page:Series Detail
             RockMigrationHelper.AddPageRoute( "BB83C51D-65C7-4F6C-BA24-A496167C9B11", "message/{Item}", "38F927EA-1586-4B32-BF0D-93E4C068C956" );// for Page:Message Detail
