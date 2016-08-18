@@ -38,16 +38,13 @@ namespace RockWeb.Blocks.Cms
     [Description( "Public block for users to manage their accounts" )]
 
     [BooleanField( "Show Family Members", "Whether family members are shown or not.", true, order: 0 )]
-    [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", order: 1 )]
-    [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49", order: 2 )]
     [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Address Type",
         "The type of address to be displayed / edited.", false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", order: 3 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Numbers", "The types of phone numbers to display / edit.", true, true, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME, order: 4 )]
-    [LinkedPage( "Workflow Launch Page", "Page used to launch the workflow to make a profile change request", true, order: 5 )]
-    [AttributeField( Rock.SystemGuid.EntityType.GROUP, "GroupTypeId", Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Family Attributes", "The family attributes that should be displayed / edited.", false, true, order: 6)]
+    [LinkedPage( "Workflow Launch Page", "Page used to launch the workflow to make a profile change request", false, order: 5 )]
+    [AttributeField( Rock.SystemGuid.EntityType.GROUP, "GroupTypeId", Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Family Attributes", "The family attributes that should be displayed / edited.", false, true, order: 6 )]
     [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Person Attributes (adults)", "The person attributes that should be displayed / edited for adults.", false, true, order: 7 )]
     [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Person Attributes (children)", "The person attributes that should be displayed / edited for children.", false, true, order: 8 )]
-
 
     public partial class PublicProfileEdit : RockBlock
     {
@@ -74,45 +71,53 @@ namespace RockWeb.Blocks.Cms
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-            if ( !Page.IsPostBack )
+            if ( CurrentPerson != null )
             {
-                BindFamilies();
-            }
-            else
-            {
-                var rockContext = new RockContext();
-                var group = new GroupService( rockContext ).Get( ddlGroup.SelectedValueAsId().Value );
-                var person = new PersonService( rockContext ).Get( hfPersonId.ValueAsInt() );
-                if ( person != null && group != null )
+                if ( !Page.IsPostBack )
                 {
-                    // Person Attributes
-                    var displayedAttributeGuids = GetPersonAttributeGuids( person.Id );
-                    if ( !displayedAttributeGuids.Any() || person.Id == 0 )
+                    BindFamilies();
+                }
+                else
+                {
+                    var rockContext = new RockContext();
+                    var group = new GroupService( rockContext ).Get( ddlGroup.SelectedValueAsId().Value );
+                    var person = new PersonService( rockContext ).Get( hfPersonId.ValueAsInt() );
+                    if ( person != null && group != null )
                     {
-                        pnlPersonAttributes.Visible = false;
-                    }
-                    else
-                    {
-                        pnlPersonAttributes.Visible = true;
-                        DisplayEditAttributes( person, displayedAttributeGuids, phPersonAttributes, pnlPersonAttributes, false );
-                    }
-
-                    // Family Attributes
-                    if ( person.Id == CurrentPerson.Id )
-                    {
-                        List<Guid> familyAttributeGuidList = GetAttributeValue( "FamilyAttributes" ).SplitDelimitedValues().AsGuidList();
-                        if ( familyAttributeGuidList.Any() )
+                        // Person Attributes
+                        var displayedAttributeGuids = GetPersonAttributeGuids( person.Id );
+                        if ( !displayedAttributeGuids.Any() || person.Id == 0 )
                         {
-                            pnlFamilyAttributes.Visible = true;
-                            DisplayEditAttributes( group, familyAttributeGuidList, phFamilyAttributes, pnlFamilyAttributes, false );
+                            pnlPersonAttributes.Visible = false;
                         }
                         else
                         {
-                            pnlFamilyAttributes.Visible = false;
+                            pnlPersonAttributes.Visible = true;
+                            DisplayEditAttributes( person, displayedAttributeGuids, phPersonAttributes, pnlPersonAttributes, false );
+                        }
+
+                        // Family Attributes
+                        if ( person.Id == CurrentPerson.Id )
+                        {
+                            List<Guid> familyAttributeGuidList = GetAttributeValue( "FamilyAttributes" ).SplitDelimitedValues().AsGuidList();
+                            if ( familyAttributeGuidList.Any() )
+                            {
+                                pnlFamilyAttributes.Visible = true;
+                                DisplayEditAttributes( group, familyAttributeGuidList, phFamilyAttributes, pnlFamilyAttributes, false );
+                            }
+                            else
+                            {
+                                pnlFamilyAttributes.Visible = false;
+                            }
                         }
                     }
                 }
-
+            }
+            else
+            {
+                pnlView.Visible = false;
+                pnlEdit.Visible = false;
+                nbNotAuthorized.Visible = true;
             }
         }
 
@@ -315,8 +320,6 @@ namespace RockWeb.Blocks.Cms
                         if ( personId == 0 )
                         {
                             changes.Add( "Created" );
-                            DefinedValueCache dvcConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
-                            DefinedValueCache dvcRecordStatus = DefinedValueCache.Read( GetAttributeValue( "RecordStatus" ).AsGuid() );
 
                             var groupMemberService = new GroupMemberService( rockContext );
                             var groupMember = new GroupMember() { Person = new Person(), Group = group, GroupId = group.Id };
@@ -346,14 +349,20 @@ namespace RockWeb.Blocks.Cms
                                 groupMember.GroupRoleId = role.Id;
                             }
 
-                            if ( dvcConnectionStatus != null )
+                            var headOfHousehold = GroupServiceExtensions.HeadOfHousehold( group.Members.AsQueryable() );
+                            if ( headOfHousehold != null )
                             {
-                                groupMember.Person.ConnectionStatusValueId = dvcConnectionStatus.Id;
-                            }
+                                DefinedValueCache dvcConnectionStatus = DefinedValueCache.Read( headOfHousehold.ConnectionStatusValueId ?? 0 );
+                                DefinedValueCache dvcRecordStatus = DefinedValueCache.Read( headOfHousehold.ConnectionStatusValueId ?? 0 );
+                                if ( dvcConnectionStatus != null )
+                                {
+                                    groupMember.Person.ConnectionStatusValueId = dvcConnectionStatus.Id;
+                                }
 
-                            if ( dvcRecordStatus != null )
-                            {
-                                groupMember.Person.RecordStatusValueId = dvcRecordStatus.Id;
+                                if ( dvcRecordStatus != null )
+                                {
+                                    groupMember.Person.RecordStatusValueId = dvcRecordStatus.Id;
+                                }
                             }
 
                             if ( groupMember.GroupRole.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() )
@@ -888,6 +897,11 @@ namespace RockWeb.Blocks.Cms
                             rptGroupMembers.DataBind();
                         }
                     }
+                }
+
+                if ( String.IsNullOrWhiteSpace( GetAttributeValue( "WorkflowLaunchPage" ) ) )
+                {
+                    lbRequestChanges.Visible = false;
                 }
             }
 
