@@ -2271,6 +2271,8 @@ namespace RockWeb.Blocks.Event
         {
             if ( FormFieldsState.ContainsKey( formGuid ) )
             {
+                ShowDialog( "Attributes" );
+
                 var fieldList = FormFieldsState[formGuid];
 
                 RegistrationTemplateFormField formField = fieldList.FirstOrDefault( a => a.Guid.Equals( formFieldGuid ) );
@@ -2351,8 +2353,6 @@ namespace RockWeb.Blocks.Event
                     formField.PersonFieldType == RegistrationPersonFieldType.LastName );
 
                 SetFieldDisplay();
-
-                ShowDialog( "Attributes" );
             }
 
             BuildControls( true );
