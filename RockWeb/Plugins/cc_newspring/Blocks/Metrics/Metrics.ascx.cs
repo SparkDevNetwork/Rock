@@ -43,7 +43,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
     [BooleanField( "Respect Date Context", "Respect the date context even if the DateRange context selector isn't included on the page.", true, Order = 6 )]
     [BooleanField( "Respect Schedule Context", "Respect the schedule context even if the Schedule context selector isn't included on the page.", true, Order = 7 )]
     [BooleanField( "Require Attendance", "Only count the actual attendances rather than everyone on the roster.", true, Order = 8 )]
-    [CustomRadioListField( "Metric Type", "Use values for each service or unique people for the whole day", "All Values,Unique", true, "All Values", order: 9 )]
+    [CustomRadioListField( "Attendance Type", "Use values for each service or unique people for the whole day", "All Values,Unique", true, "All Values", order: 9 )]
     [MetricCategoriesField( "Comparison Metric Source", "Select the metric(s) to calculate against the Primary Source/Key.", false, Order = 10 )]
     [CustomRadioListField( "Comparison Aggregation", "Which calculation method should be used", "Sum,Avg,Min,Max,Median", true, "Sum", order: 11 )]
     [CustomRadioListField( "Display Comparison As", "Choose to display the comparison result as an integer or percentage", "Integer,Percentage", true, "Integer", order: 12 )]
@@ -52,7 +52,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
     [BooleanField( "Comparison Respect Date Context", "Respect the date context even if the DateRange context selector isn't included on the page.", true, Order = 15 )]
     [BooleanField( "Comparison Respect Schedule Context", "Respect the schedule context even if the Schedule context selector isn't included on the page.", true, Order = 16 )]
     [BooleanField( "Comparison Require Attendance", "Only count the actual attendances rather than everyone on the roster.", true, Order = 17 )]
-    [CustomRadioListField( "Comparison Metric Type", "Use values for each service or unique people for the whole day", "All Values,Unique", true, "All Values", order: 18 )]
+    [CustomRadioListField( "Comparison Attendance Type", "Use values for each service or unique people for the whole day", "All Values,Unique", true, "All Values", order: 18 )]
 
     //[SlidingDateRangeField( "Date Range", Key = "SlidingDateRange", Order = 9 )]
     //[CustomRadioListField( "Custom Dates", "If not using date range, please select a custom date from here", "This Week Last Year", Order = 9 )]
@@ -249,7 +249,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             {
                 metricValues = metricService.GetByGuids( sourceGuids ).SelectMany( m => m.MetricValues );
             }
-            else if ( GetAttributeValue( preKey + "MetricType" ).Equals( "Unique" ) )
+            else if ( GetAttributeValue( preKey + "AttendanceType" ).Equals( "Unique" ) )
             {
                 metricValues = metricService.Queryable().Where( m => m.Title.EndsWith( "Unique Volunteer" ) ).SelectMany( m => m.MetricValues );
             }
