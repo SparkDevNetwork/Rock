@@ -82,11 +82,11 @@ namespace RockWeb.Blocks.Groups
 {% endif %}
 </div>
 
-{% if LinkedPages.GroupDetailPage != '' %}
-    <a class='btn btn-xs btn-action margin-r-sm' href='{{ LinkedPages.GroupDetailPage }}?GroupId={{ Group.Id }}'>View {{ Group.GroupType.GroupTerm }}</a>
+{% if LinkedPages.GroupDetailPage and LinkedPages.GroupDetailPage != '' %}
+    <a class='btn btn-xs btn-action margin-r-sm' href='|{{ LinkedPages.GroupDetailPage }}|?GroupId={{ Group.Id }}'>View {{ Group.GroupType.GroupTerm }}</a>
 {% endif %}
 
-{% if LinkedPages.RegisterPage != '' %}
+{% if LinkedPages.RegisterPage and LinkedPages.RegisterPage != '' %}
     {% if LinkedPages.RegisterPage contains '?' %}
         <a class='btn btn-xs btn-action' href='{{ LinkedPages.RegisterPage }}&GroupId={{ Group.Id }}'>Register</a>
     {% else %}
