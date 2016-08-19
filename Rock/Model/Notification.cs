@@ -16,7 +16,6 @@ namespace Rock.Model
     /// <summary>
     /// Represents a notification
     /// </summary>
-    /// <seealso cref="Rock.Data.Model{Rock.Model.Notification}" />
     [Table( "Notification" )]
     [DataContract]
     public partial class Notification : Model<Notification>
@@ -127,7 +126,6 @@ namespace Rock.Model
     /// <summary>
     /// Communication Configuration class.
     /// </summary>
-    /// <seealso cref="System.Data.Entity.ModelConfiguration.EntityTypeConfiguration{Rock.Model.Notification}" />
     public partial class NotificationConfiguration : EntityTypeConfiguration<Notification>
     {
         /// <summary>

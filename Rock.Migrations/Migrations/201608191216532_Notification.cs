@@ -127,6 +127,19 @@ namespace Rock.Migrations
 ";
             Sql( string.Format( insertJob, minute ) );
 
+            RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.ServiceJob", "F4399CEF-827B-48B2-A735-F7806FCFE8E8", "Class", "Rock.Jobs.SparkLink", "Notification Group", "The group that should receive incoming notifications.", 0, "628C51A8-4613-43ED-A18D-4A6FB999273E", "62472CB9-6807-4759-9FD9-66A07EF921D2" );
+            Sql( @"
+        DECLARE @JobId int = ( SELECT TOP 1 [Id] FROM [ServiceJob] WHERE [Guid] = '645b1230-0c53-4fe3-91e2-8601ff00cbb5' )
+	    DECLARE @AttributeId int = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = '62472CB9-6807-4759-9FD9-66A07EF921D2' )
+	    IF @JobId IS NOT NULL AND @AttributeId IS NOT NULL
+	    BEGIN
+            IF NOT EXISTS ( SELECT [Id] FROM [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @JobId )
+            BEGIN
+		        INSERT INTO [AttributeValue] ( [IsSystem], [AttributeId], [EntityId], [Value], [Guid] )
+		        VALUES ( 0, @AttributeId, @JobId, '628c51a8-4613-43ed-a18d-4a6fb999273e', NEWID() )
+            END
+	    END
+" );
         }
 
         /// <summary>
