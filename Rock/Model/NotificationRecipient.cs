@@ -14,7 +14,6 @@ namespace Rock.Model
     /// <summary>
     /// Recipient of a notification
     /// </summary>
-    /// <seealso cref="Rock.Data.Model{Rock.Model.NotificationRecipient}" />
     [Table( "NotificationRecipient" )]
     [DataContract]
     public partial class NotificationRecipient : Model<NotificationRecipient>
@@ -83,7 +82,6 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
-    /// <seealso cref="System.Data.Entity.ModelConfiguration.EntityTypeConfiguration{Rock.Model.NotificationRecipient}" />
     public partial class NotificationRecipientConfiguration : EntityTypeConfiguration<NotificationRecipient>
     {
         /// <summary>

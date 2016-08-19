@@ -117,11 +117,41 @@ namespace Rock.Jobs
 
         #region Helper Class
 
+        /// <summary>
+        /// 
+        /// </summary>
         protected class SparkLinkRequest
         {
+            /// <summary>
+            /// Gets or sets the rock instance identifier.
+            /// </summary>
+            /// <value>
+            /// The rock instance identifier.
+            /// </value>
             public Guid RockInstanceId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the organization.
+            /// </summary>
+            /// <value>
+            /// The name of the organization.
+            /// </value>
             public string OrganizationName { get;  set;}
+
+            /// <summary>
+            /// Gets or sets the rock version.
+            /// </summary>
+            /// <value>
+            /// The rock version.
+            /// </value>
             public string RockVersion { get; set; }
+
+            /// <summary>
+            /// Gets or sets the version ids.
+            /// </summary>
+            /// <value>
+            /// The version ids.
+            /// </value>
             public List<int> VersionIds { get; set; }
         }
 

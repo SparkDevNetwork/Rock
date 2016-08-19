@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <views>
-  <mapping-views hash="13057a183b842dda392c39abb23b8dd1bd50cf733062bc7e14a5e1011ebf3a4c" conceptual-container="RockContext" store-container="CodeFirstDatabase">
+  <mapping-views hash="a41cee44cfc34b3d56d6269569e63f249e4204fddc9ba821e60e037b1dc13acd" conceptual-container="RockContext" store-container="CodeFirstDatabase">
     <view extent="CodeFirstDatabase.AttendanceCode"><![CDATA[
     SELECT VALUE -- Constructing AttendanceCode
         [CodeFirstDatabaseSchema.AttendanceCode](T1.AttendanceCode_Id, T1.AttendanceCode_IssueDateTime, T1.AttendanceCode_Code, T1.AttendanceCode_Guid, T1.AttendanceCode_ForeignId, T1.AttendanceCode_ForeignGuid, T1.AttendanceCode_ForeignKey)
