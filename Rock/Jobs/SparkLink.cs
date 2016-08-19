@@ -14,21 +14,19 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Reflection;
+using System.Net;
 
 using Quartz;
 using Rock.Data;
 using Rock.Store;
-using Rock.VersionInfo;
-using Rock;
 using System.Linq;
 using RestSharp;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -47,13 +45,6 @@ namespace Rock.Jobs
         {
         }
 
-        protected class SparkLinkRequest
-        {
-            public string RockVersion { get; set; }
-            public List<int> VersionIds { get; set; }
-
-        }
-
         /// <summary>
         /// Executes the specified context.
         /// </summary>
@@ -61,32 +52,36 @@ namespace Rock.Jobs
         public virtual void Execute( IJobExecutionContext context )
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
-            var groupGuid = dataMap.Get( "NotificationGroup" ).ToString().AsGuidOrNull();
+            var groupGuid = dataMap.Get( "NotificationGroup" ).ToString().AsGuid();
 
-            if ( groupGuid.HasValue )
+            var rockContext = new RockContext();
+            var group = new GroupService( rockContext ).Get( groupGuid );
+
+            if ( group != null )
             {
-                var rockContext = new RockContext();
-                var group = new GroupService( rockContext ).Get( groupGuid.Value );
-
                 var installedPackages = InstalledPackageService.GetInstalledPackages();
-                var sparLinkRequest = new SparkLinkRequest();
-                sparLinkRequest.VersionIds = installedPackages.Select( i => i.VersionId ).ToList();
-                sparLinkRequest.RockVersion = VersionInfo.VersionInfo.GetRockSemanticVersionNumber();
-                var sparkLinkRequestJson = JsonConvert.SerializeObject( sparLinkRequest );
+
+                var sparkLinkRequest = new SparkLinkRequest();
+                sparkLinkRequest.RockInstanceId = Rock.Web.SystemSettings.GetRockInstanceId();
+                sparkLinkRequest.OrganizationName = GlobalAttributesCache.Value( "OrganizationName" );
+                sparkLinkRequest.VersionIds = installedPackages.Select( i => i.VersionId ).ToList();
+                sparkLinkRequest.RockVersion = VersionInfo.VersionInfo.GetRockSemanticVersionNumber();
+
+                var sparkLinkRequestJson = JsonConvert.SerializeObject( sparkLinkRequest );
 
                 var client = new RestClient( "http://rockrms.com/api/SparkLink/update" );
-                var request = new RestRequest( "/", Method.POST );
+                var request = new RestRequest( Method.POST );
                 request.AddParameter( "application/json", sparkLinkRequestJson, ParameterType.RequestBody );
                 IRestResponse response = client.Execute( request );
 
-                if ( response.StatusCode == System.Net.HttpStatusCode.OK || response.StatusCode == System.Net.HttpStatusCode.Accepted )
+                if ( response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.Accepted )
                 {
                     var notifications = JsonConvert.DeserializeObject<List<Notification>>(response.Content);
-                    
                     if (notifications.Count == 0 )
                     {
                         return;
                     }
+
                     var notificationService = new NotificationService( rockContext);
                     foreach ( var notification in notifications )
                     {
@@ -119,5 +114,18 @@ namespace Rock.Jobs
                 }
             }
         }
+
+        #region Helper Class
+
+        protected class SparkLinkRequest
+        {
+            public Guid RockInstanceId { get; set; }
+            public string OrganizationName { get;  set;}
+            public string RockVersion { get; set; }
+            public List<int> VersionIds { get; set; }
+        }
+
+        #endregion
+
     }
 }

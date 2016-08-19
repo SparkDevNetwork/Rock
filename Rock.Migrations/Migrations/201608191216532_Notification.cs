@@ -22,7 +22,7 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class SparkLink1 : Rock.Migrations.RockMigration
+    public partial class Notification : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
@@ -89,14 +89,58 @@ namespace Rock.Migrations
                 .Index(t => t.ForeignId)
                 .Index(t => t.ForeignGuid)
                 .Index(t => t.ForeignKey);
-            
+
+            RockMigrationHelper.UpdateBlockType( "Notification List", "Displays notifications from the Spark Link.", "~/Blocks/Administration/NotificationList.ascx", "Utility", "9C0FD17D-677D-4A37-A61F-54C370954E83" );
+            // Add Block to Page: Internal Homepage, Site: Rock RMS            
+            RockMigrationHelper.AddBlock( "20F97A93-7949-4C2A-8A5E-C756FE8585CA", "", "9C0FD17D-677D-4A37-A61F-54C370954E83", "Notification List", "Main", "", "", 0, "60469A41-5180-446F-9935-0A09D81CD319" );
+            // update block order for pages with new blocks if the page,zone has multiple blocks
+
+            Sql( @"
+    DECLARE @PageId int = ( SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = '20F97A93-7949-4C2A-8A5E-C756FE8585CA' )
+    UPDATE [Block] SET [Order] = [Order] + 1
+    WHERE [PageId] = @PageId
+    AND [Guid] <> '60469A41-5180-446F-9935-0A09D81CD319'
+" );
+
+            Random rnd = new Random();
+            int minute = rnd.Next( 0, 60 );
+
+            string insertJob = @"
+    INSERT INTO [ServiceJob] (
+         [IsSystem]
+        ,[IsActive]
+        ,[Name]
+        ,[Description]
+        ,[Class]
+        ,[CronExpression]
+        ,[NotificationStatus]
+        ,[Guid] )
+    VALUES (
+         0
+        ,1
+        ,'Spark Link'
+        ,'Fetches Rock notifications from the Spark Development Network'
+        ,'Rock.Jobs.SparkLink'
+        ,'0 {0} 0/7 1/1 * ? *'
+        ,1
+        ,'645b1230-0c53-4fe3-91e2-8601ff00cbb5');
+";
+            Sql( string.Format( insertJob, minute ) );
+
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
         {
+            // Remove Block: Notification List, from Page: Internal Homepage, Site: Rock RMS       
+            RockMigrationHelper.DeleteBlock( "60469A41-5180-446F-9935-0A09D81CD319" );
+            RockMigrationHelper.DeleteBlockType( "9C0FD17D-677D-4A37-A61F-54C370954E83" ); // Notification List
+
+            // Delete Job
+            Sql( "DELETE FROM [ServiceJob] WHERE [Guid]='645b1230-0c53-4fe3-91e2-8601ff00cbb5'" );
+
             DropForeignKey("dbo.NotificationRecipient", "PersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.NotificationRecipient", "NotificationId", "dbo.Notification");
             DropForeignKey("dbo.NotificationRecipient", "ModifiedByPersonAliasId", "dbo.PersonAlias");

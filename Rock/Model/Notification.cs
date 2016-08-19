@@ -17,11 +17,12 @@ namespace Rock.Model
     /// Represents a notification
     /// </summary>
     /// <seealso cref="Rock.Data.Model{Rock.Model.Notification}" />
-    [Table("Notification")]
+    [Table( "Notification" )]
     [DataContract]
     public partial class Notification : Model<Notification>
     {
         #region Entity Properties
+
         /// <summary>
         /// Gets or sets the title of the notification. This property is required.
         /// </summary>
@@ -29,8 +30,8 @@ namespace Rock.Model
         /// A <see cref="System.String" /> that represents the notification title.
         /// </value>
         [Required]
-        [MaxLength(100)]
-        [DataMember(IsRequired = true)]
+        [MaxLength( 100 )]
+        [DataMember( IsRequired = true )]
         public string Title { get; set; }
 
         /// <summary>
@@ -40,7 +41,7 @@ namespace Rock.Model
         /// The message.
         /// </value>
         [Required]
-        [DataMember(IsRequired = true)]
+        [DataMember( IsRequired = true )]
         public string Message { get; set; }
 
         /// <summary>
@@ -50,7 +51,7 @@ namespace Rock.Model
         /// The sent date time.
         /// </value>
         [Required]
-        [DataMember(IsRequired = true)]
+        [DataMember( IsRequired = true )]
         public DateTime SentDateTime { get; set; }
 
         /// <summary>
@@ -59,7 +60,7 @@ namespace Rock.Model
         /// <value>
         /// The icon CSS class.
         /// </value>
-        [MaxLength(100)]
+        [MaxLength( 100 )]
         [DataMember]
         public string IconCssClass { get; set; }
 
@@ -70,8 +71,37 @@ namespace Rock.Model
         /// The classification.
         /// </value>
         [Required]
-        [DataMember(IsRequired = true)]
+        [DataMember( IsRequired = true )]
         public NotificationClassification Classification { get; set; }
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Notification"/> class.
+        /// </summary>
+        public Notification() : base()
+        {
+            _recipients = new Collection<NotificationRecipient>();
+        }
+
+        #endregion
+
+        #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the recipients.
+        /// </summary>
+        /// <value>
+        /// The recipients.
+        /// </value>
+        public virtual ICollection<NotificationRecipient> Recipients
+        {
+            get { return _recipients; }
+            set { _recipients = value; }
+        }
+        private ICollection<NotificationRecipient> _recipients;
 
         #endregion
 
@@ -87,29 +117,13 @@ namespace Rock.Model
         {
             return this.Title;
         }
-        #endregion
 
-        #region Virtual Properties
-        /// <summary>
-        /// Gets or sets the recipients.
-        /// </summary>
-        /// <value>
-        /// The recipients.
-        /// </value>
-        [DataMember]
-        public virtual ICollection<NotificationRecipient> Recipients
-        {
-            get { return _recipients ?? (_recipients = new Collection<NotificationRecipient>()); }
-            set { _recipients = value; }
-        }
-        /// <summary>
-        /// The recipients
-        /// </summary>
-        private ICollection<NotificationRecipient> _recipients;
         #endregion
 
     }
-    #region
+
+    #region Entity Configuration
+
     /// <summary>
     /// Communication Configuration class.
     /// </summary>
@@ -121,10 +135,13 @@ namespace Rock.Model
         /// </summary>
         public NotificationConfiguration()
         {
-
         }
     }
+
     #endregion
+
+    #region Enumerations
+
     /// <summary>
     /// The classification of the notification (borrowed from Bootstrap)
     /// </summary>
@@ -134,17 +151,22 @@ namespace Rock.Model
         /// The success
         /// </summary>
         Success,
+
         /// <summary>
         /// The information
         /// </summary>
         Info,
+
         /// <summary>
         /// The warning
         /// </summary>
         Warning,
+
         /// <summary>
         /// The danger
         /// </summary>
         Danger
     }
+
+    #endregion
 }

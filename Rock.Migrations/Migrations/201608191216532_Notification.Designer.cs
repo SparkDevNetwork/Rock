@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class SparkLink2 : IMigrationMetadata
+    public sealed partial class Notification : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(SparkLink2));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(Notification));
         
         string IMigrationMetadata.Id
         {
-            get { return "201608182253229_SparkLink2"; }
+            get { return "201608191216532_Notification"; }
         }
         
         string IMigrationMetadata.Source
