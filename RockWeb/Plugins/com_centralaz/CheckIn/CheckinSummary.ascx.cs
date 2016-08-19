@@ -38,6 +38,7 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
     [Category( "com_centralaz > Check-in" )]
     [Description( "Helps to view active checkin groups and their locations." )]
     [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Group Age Range Attribute", "Select the attribute used to define the age range of the group", true, false, "43511B8F-71D9-423A-85BF-D1CD08C1998E", order: 2 )]
+    [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Group Special Needs Attribute", "Select the attribute used to filter special needs groups.", true, false, "9210EC95-7B85-4D11-A82E-0B677B32704E", order: 2 )]
 
     public partial class CheckinSummary : RockBlock
     {
@@ -53,6 +54,25 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                     ageRangeAttributeKey = AttributeCache.Read( ageRangeAttributeGuid ).Key;
                 }
                 return ageRangeAttributeKey;
+            }
+        }
+
+        String SpecialNeedsKey
+        {
+            get
+            {
+                // get the admin-selected attribute key instead of using a hardcoded key
+                var groupSpecialNeedsKey = string.Empty;
+                var groupSpecialNeedsGuid = GetAttributeValue( "GroupSpecialNeedsAttribute" ).AsGuid();
+                if ( groupSpecialNeedsGuid != Guid.Empty )
+                {
+                    var groupSpecialNeeds = AttributeCache.Read( groupSpecialNeedsGuid );
+                    if ( groupSpecialNeeds != null )
+                    {
+                        groupSpecialNeedsKey = AttributeCache.Read( groupSpecialNeedsGuid ).Key;
+                    }
+                }
+                return groupSpecialNeedsKey;
             }
         }
         #region Control Methods
@@ -203,6 +223,19 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
 
                     break;
 
+                case "Schedules":
+                    var schedule = new ScheduleService( new RockContext() ).Get( itemId );
+                    if ( schedule != null )
+                    {
+                        e.Value = schedule.Name;
+                    }
+                    else
+                    {
+                        e.Value = Rock.Constants.None.Text;
+                    }
+
+                    break;
+
                 case "Parent Location":
 
                     var location = new LocationService( new RockContext() ).Get( itemId );
@@ -276,6 +309,10 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                 groupQry = groupQry.Where( a => descendantGroupTypeIds.Contains( a.GroupTypeId ) );
             }
 
+
+            var selectedServiceTimes = cblSchedules.SelectedValuesAsInt;
+            groupQry = groupQry.Where( g => g.GroupLocations.Any( gl => gl.Schedules.Any( s => selectedServiceTimes.Contains( s.Id ) ) ) );
+
             if ( gGroupLocations.SortProperty != null )
             {
                 groupQry = groupQry.Sort( gGroupLocations.SortProperty );
@@ -313,7 +350,7 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                 cblSchedules.DataSource = new ScheduleService( new RockContext() ).Queryable().Where( s => s.CategoryId == selectedCategory ).ToList();
                 cblSchedules.DataBind();
                 var selectedItems = rFilter.GetUserPreference( "Schedules" ).SplitDelimitedValues();
-                foreach( ListItem li in cblSchedules.Items )
+                foreach ( ListItem li in cblSchedules.Items )
                 {
                     if ( selectedItems.Contains( li.Value ) )
                     {
@@ -350,7 +387,8 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                 Literal lAge = e.Row.FindControl( "lAge" ) as Literal;
                 if ( lAge != null )
                 {
-                    lAge.Text = group.GetAttributeValue( AgeRangeAttributeKey ).SplitDelimitedValues().ToList().AsDelimited( " to " );
+                    lAge.Text = group.GetAttributeValue( AgeRangeAttributeKey ).SplitDelimitedValues().Select( a => a.AsDouble().ToString( "0.##" ) )
+                        .ToList().AsDelimited( " to " );
                 }
 
                 Literal lGrade = e.Row.FindControl( "lGrade" ) as Literal;
@@ -377,6 +415,25 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                     lGrade.Text = gradesFormatted.AsDelimited( " to " );
                 }
 
+                Literal lSpecialNeeds = e.Row.FindControl( "lSpecialNeeds" ) as Literal;
+                if ( lSpecialNeeds != null )
+                {
+                    if ( group.GetAttributeValue( SpecialNeedsKey ).AsBoolean() )
+                    {
+                        lSpecialNeeds.Text = "<i class='fa fa-check'/>";
+                    }
+                }
+
+                Literal lLastName = e.Row.FindControl( "lLastName" ) as Literal;
+                if ( lLastName != null )
+                {
+                    string lastNameBeginLetterRange = group.GetAttributeValue( "LastNameBeginLetterRange" ) != null ? group.GetAttributeValue( "LastNameBeginLetterRange" ).Trim() : "";
+                    string lastNameEndLetterRange = group.GetAttributeValue( "LastNameEndLetterRange" ) != null ? group.GetAttributeValue( "LastNameEndLetterRange" ).Trim() : "";
+                    char rangeStart = ( lastNameBeginLetterRange == "" ) ? 'A' : char.Parse( lastNameBeginLetterRange.ToUpper() );
+                    char rangeEnd = ( lastNameEndLetterRange == "" ) ? 'Z' : char.Parse( lastNameEndLetterRange.ToUpper() );
+                    lLastName.Text = String.Format( "{0} to {1}", rangeStart, rangeEnd );
+                }
+
                 Literal lLocations = e.Row.FindControl( "lLocations" ) as Literal;
                 var selectedServiceTimes = cblSchedules.SelectedValuesAsInt;
                 if ( lLocations != null )
@@ -396,6 +453,12 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                     }
 
                     lLocations.Text = locationsFormatted.AsDelimited( ", ", null );
+                }
+
+                Literal lGroup = e.Row.FindControl( "lGroup" ) as Literal;
+                if ( lGroup != null )
+                {
+                    lGroup.Text = group.GroupType.AttendanceRule.ToString();
                 }
             }
         }

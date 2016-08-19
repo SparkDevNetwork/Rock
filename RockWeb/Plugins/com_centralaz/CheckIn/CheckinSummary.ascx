@@ -8,10 +8,16 @@
                 <h1 class="panel-title"><i class="fa fa-calendar"></i> Check-in Summary</h1>
             </div>
             <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <Rock:CategoryPicker ID="pCategory" runat="server" AllowMultiSelect="false" Label="Schedule Category" OnSelectItem="pCategory_SelectItem" />
+                    </div>
+                    <div class="col-md-8">
+                        <Rock:RockCheckBoxList ID="cblSchedules" runat="server" Label="Schedules" DataValueField="Id" DataTextField="Name" RepeatDirection="Horizontal" />
+                    </div>
+                </div>
 
-                <Rock:CategoryPicker ID="pCategory" runat="server" AllowMultiSelect="false" Label="Schedule Category" OnSelectItem="pCategory_SelectItem" />
-                <Rock:RockCheckBoxList ID="cblSchedules" runat="server" DataValueField="Id" DataTextField="Name" RepeatDirection="Horizontal" OnSelectedIndexChanged="cblSchedules_SelectedIndexChanged" AutoPostBack="true" />
-                <asp:LinkButton ID="lbUpdate" runat="server" Text="Update" OnClick="cblSchedules_SelectedIndexChanged" />
+                <asp:LinkButton ID="lbUpdate" runat="server" Text="Update" OnClick="cblSchedules_SelectedIndexChanged" CssClass="btn btn-primary" />
                 <Rock:NotificationBox ID="nbNotification" runat="server" NotificationBoxType="Warning" />
 
                 <div class="grid">
@@ -24,7 +30,10 @@
                             <Rock:RockLiteralField ID="lAbilityLevel" HeaderText="Ability Level" />
                             <Rock:RockLiteralField ID="lAge" HeaderText="Age" />
                             <Rock:RockLiteralField ID="lGrade" HeaderText="Grade" />
+                            <Rock:RockLiteralField ID="lLastName" HeaderText="Last Name" />
+                            <Rock:RockLiteralField ID="lSpecialNeeds" HeaderText="Special Needs" />
                             <Rock:RockLiteralField ID="lLocations" HeaderText="Locations" />
+                            <Rock:RockLiteralField ID="lGroup" HeaderText="Attendance Rule" />
                         </Columns>
                     </Rock:Grid>
                 </div>
