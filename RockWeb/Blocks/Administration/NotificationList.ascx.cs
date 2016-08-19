@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Utility
     /// </summary>
     [DisplayName( "Notification List" )]
     [Category( "Core" )]
-    [Description( "Displays notifications from the Spark Link." )]
+    [Description( "Displays Notifications." )]
     public partial class NotificationList : Rock.Web.UI.RockBlock
     {
 
@@ -86,7 +86,9 @@ namespace RockWeb.Blocks.Utility
                     var notificationItems = notificationRecipientService
                         .Queryable()
                         .AsNoTracking()
-                        .Where( n => n.PersonAliasId == CurrentPersonAliasId && n.Read == false ).ToList();
+                        .Where( n => n.PersonAliasId == CurrentPersonAliasId && n.Read == false )
+                        .OrderByDescending( n => n.Notification.SentDateTime )
+                        .ToList();
 
                     ViewState["NotificationCount"] = notificationItems.Count;
 
@@ -141,14 +143,16 @@ namespace RockWeb.Blocks.Utility
                     if ( notificationItem != null )
                     {
                         notificationRecipientService.Delete( notificationItem );
-
                     }
+
                     var toHide = e.Item.FindControl( "rptNotificationAlert" );
                     if ( toHide != null )
                     {
                         toHide.Visible = false;
                     }
+
                     rockContext.SaveChanges();
+
                     NotificationCount--;
                     if (NotificationCount == 0 )
                     {

@@ -50,7 +50,6 @@ namespace Rock.Store
         public static List<InstalledPackage> GetInstalledPackages()
         {
             string packageFile = HostingEnvironment.MapPath("~/App_Data/InstalledStorePackages.json");
-            //string packageFile = HttpContext.Current.Server.MapPath( "~/App_Data/InstalledStorePackages.json" );
 
             try
             {

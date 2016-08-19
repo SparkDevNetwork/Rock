@@ -12,10 +12,10 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    /// Recipient of a notification
     /// </summary>
     /// <seealso cref="Rock.Data.Model{Rock.Model.NotificationRecipient}" />
-    [Table("NotificationRecipient")]
+    [Table( "NotificationRecipient" )]
     [DataContract]
     public partial class NotificationRecipient : Model<NotificationRecipient>
     {
@@ -65,6 +65,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual PersonAlias PersonAlias { get; set; }
+
         /// <summary>
         /// Gets or sets the notification.
         /// </summary>
@@ -73,10 +74,12 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Notification Notification { get; set; }
+
         #endregion       
     }
 
     #region Entity Configuration
+
     /// <summary>
     /// 
     /// </summary>
@@ -88,10 +91,11 @@ namespace Rock.Model
         /// </summary>
         public NotificationRecipientConfiguration()
         {
-            this.HasRequired(r => r.PersonAlias).WithMany().HasForeignKey(r => r.PersonAliasId).WillCascadeOnDelete(false);
-            this.HasRequired(r => r.Notification).WithMany(c => c.Recipients).HasForeignKey(r => r.NotificationId).WillCascadeOnDelete(true);
+            this.HasRequired( r => r.PersonAlias ).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
+            this.HasRequired( r => r.Notification ).WithMany( c => c.Recipients ).HasForeignKey( r => r.NotificationId ).WillCascadeOnDelete( true );
         }
 
     }
+
     #endregion
 }
