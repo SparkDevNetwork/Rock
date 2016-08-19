@@ -507,4 +507,3 @@ INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId],
 SELECT @WorkflowActivityTypeId, 'Save Attendance', 0, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.SaveAttendance'
 INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
 SELECT @WorkflowActivityTypeId, 'Create Labels', 0, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.CreateLabels'
-
