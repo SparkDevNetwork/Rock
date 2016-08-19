@@ -45,6 +45,7 @@ namespace RockWeb.Plugins.church_ccv.Core
     [TextField( "History Title", "", false, "History" )]
     [BooleanField( "Enable Debug", "Show lava merge fields.", false, "" )]
     [NoteTypeField( "Note Type", "The Person Note Type", false, "Rock.Model.Person" )]
+    [WorkflowTypeField( "Notification Workflow", "Workflow to launch when a note is added to a person. (Workflow assumes the note is being set to a person, and will fail if not.)", false, false, "", "", 11 )]
     public partial class NoteFromDefinedType : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -178,6 +179,30 @@ namespace RockWeb.Plugins.church_ccv.Core
             rockContext.SaveChanges();
 
             noteList.RebuildNotes( false );
+
+            // First, check to see if an alert re-route workflow should be launched
+            Guid? workflowTypeGuid = GetAttributeValue( "NotificationWorkflow" ).AsGuidOrNull();
+            if ( workflowTypeGuid.HasValue )
+            {
+                // It does, so see if we need to launch it instead
+                WorkflowType notificationWorkflowType = new WorkflowTypeService( rockContext ).Get( workflowTypeGuid.Value );
+                LaunchWorkflow( rockContext, notificationWorkflowType, note );
+            }
+        }
+
+        
+        private void LaunchWorkflow( RockContext rockContext, WorkflowType workflowType, Note note )
+        {
+            try
+            {
+                List<string> workflowErrors;
+                var workflow = Workflow.Activate( workflowType, workflowType.Name );
+                new WorkflowService( rockContext ).Process( workflow, note, out workflowErrors );
+            }
+            catch (Exception ex)
+            {
+                ExceptionLogService.LogException( ex, this.Context );
+            }
         }
 
         /// <summary>
@@ -191,5 +216,12 @@ namespace RockWeb.Plugins.church_ccv.Core
         }
 
         #endregion
+    }
+
+    public class NotePackage
+    {
+        public Note Note { get; set; }
+        public object GroupMember { get; set; }
+
     }
 }
