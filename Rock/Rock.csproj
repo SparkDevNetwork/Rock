@@ -557,6 +557,7 @@
     <Compile Include="Jobs\SendGroupEmail.cs" />
     <Compile Include="Jobs\SendGroupRequirementsNotification.cs" />
     <Compile Include="Jobs\SendRegistrationPaymentReminders.cs" />
+    <Compile Include="Jobs\SparkLink.cs" />
     <Compile Include="Jobs\SendRegistrationReminders.cs" />
     <Compile Include="Lava\Blocks\Execute.cs" />
     <Compile Include="Lava\Blocks\RockEntity.cs" />
@@ -700,6 +701,8 @@
     <Compile Include="Model\CodeGenerated\MetricValueService.cs" />
     <Compile Include="Model\CodeGenerated\NoteService.cs" />
     <Compile Include="Model\CodeGenerated\NoteTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\NotificationRecipientService.cs" />
+    <Compile Include="Model\CodeGenerated\NotificationService.cs" />
     <Compile Include="Model\CodeGenerated\PageContextService.cs" />
     <Compile Include="Model\CodeGenerated\PageRouteService.cs" />
     <Compile Include="Model\CodeGenerated\PageService.cs" />
@@ -864,6 +867,8 @@
     <Compile Include="Model\NoteService.Partial.cs" />
     <Compile Include="Model\NoteType.cs" />
     <Compile Include="Model\NoteTypeService.Partial.cs" />
+    <Compile Include="Model\Notification.cs" />
+    <Compile Include="Model\NotificationRecipient.cs" />
     <Compile Include="Model\Page.cs" />
     <Compile Include="Model\PageContext.cs" />
     <Compile Include="Model\PageContextService.Partial.cs" />
@@ -1649,6 +1654,10 @@
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
       <Project>{00edcb8d-ef33-459c-ad62-02876bd24dff}</Project>
       <Name>DotLiquid</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Version\Rock.Version.csproj">
+      <Project>{6fe0930c-6832-4c2f-8a76-d4e4a2d80ddf}</Project>
+      <Name>Rock.Version</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

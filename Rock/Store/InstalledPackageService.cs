@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.Hosting;
 
 using RestSharp;
 using System.Configuration;
@@ -48,7 +49,7 @@ namespace Rock.Store
         /// <returns></returns>
         public static List<InstalledPackage> GetInstalledPackages()
         {
-            string packageFile = HttpContext.Current.Server.MapPath( "~/App_Data/InstalledStorePackages.json" );
+            string packageFile = HostingEnvironment.MapPath("~/App_Data/InstalledStorePackages.json");
 
             try
             {

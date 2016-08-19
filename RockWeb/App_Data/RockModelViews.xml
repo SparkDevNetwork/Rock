@@ -3646,6 +3646,49 @@
             True AS _from0
         FROM RockContext.MergeTemplates AS T
     ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.Notification"><![CDATA[
+    SELECT VALUE -- Constructing Notification
+        [CodeFirstDatabaseSchema.Notification](T1.Notification_Id, T1.Notification_Title, T1.Notification_Message, T1.Notification_SentDateTime, T1.Notification_IconCssClass, T1.Notification_Classification, T1.Notification_CreatedDateTime, T1.Notification_ModifiedDateTime, T1.Notification_CreatedByPersonAliasId, T1.Notification_ModifiedByPersonAliasId, T1.Notification_Guid, T1.Notification_ForeignId, T1.Notification_ForeignGuid, T1.Notification_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS Notification_Id, 
+            T.Title AS Notification_Title, 
+            T.Message AS Notification_Message, 
+            T.SentDateTime AS Notification_SentDateTime, 
+            T.IconCssClass AS Notification_IconCssClass, 
+            CAST(T.Classification AS [Edm.Int32]) AS Notification_Classification, 
+            T.CreatedDateTime AS Notification_CreatedDateTime, 
+            T.ModifiedDateTime AS Notification_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS Notification_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS Notification_ModifiedByPersonAliasId, 
+            T.Guid AS Notification_Guid, 
+            T.ForeignId AS Notification_ForeignId, 
+            T.ForeignGuid AS Notification_ForeignGuid, 
+            T.ForeignKey AS Notification_ForeignKey, 
+            True AS _from0
+        FROM RockContext.Notifications AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.NotificationRecipient"><![CDATA[
+    SELECT VALUE -- Constructing NotificationRecipient
+        [CodeFirstDatabaseSchema.NotificationRecipient](T1.NotificationRecipient_Id, T1.NotificationRecipient_NotificationId, T1.NotificationRecipient_PersonAliasId, T1.NotificationRecipient_Read, T1.NotificationRecipient_ReadDateTime, T1.NotificationRecipient_CreatedDateTime, T1.NotificationRecipient_ModifiedDateTime, T1.NotificationRecipient_CreatedByPersonAliasId, T1.NotificationRecipient_ModifiedByPersonAliasId, T1.NotificationRecipient_Guid, T1.NotificationRecipient_ForeignId, T1.NotificationRecipient_ForeignGuid, T1.NotificationRecipient_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS NotificationRecipient_Id, 
+            T.NotificationId AS NotificationRecipient_NotificationId, 
+            T.PersonAliasId AS NotificationRecipient_PersonAliasId, 
+            T.Read AS NotificationRecipient_Read, 
+            T.ReadDateTime AS NotificationRecipient_ReadDateTime, 
+            T.CreatedDateTime AS NotificationRecipient_CreatedDateTime, 
+            T.ModifiedDateTime AS NotificationRecipient_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS NotificationRecipient_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS NotificationRecipient_ModifiedByPersonAliasId, 
+            T.Guid AS NotificationRecipient_Guid, 
+            T.ForeignId AS NotificationRecipient_ForeignId, 
+            T.ForeignGuid AS NotificationRecipient_ForeignGuid, 
+            T.ForeignKey AS NotificationRecipient_ForeignKey, 
+            True AS _from0
+        FROM RockContext.NotificationRecipients AS T
+    ) AS T1]]></view>
     <view extent="CodeFirstDatabase.DeviceLocation"><![CDATA[
     SELECT VALUE -- Constructing DeviceLocation
         [CodeFirstDatabaseSchema.DeviceLocation](T1.DeviceLocation_DeviceId, T1.DeviceLocation_LocationId)
@@ -7340,6 +7383,49 @@
             T.ForeignKey AS MergeTemplate_ForeignKey, 
             True AS _from0
         FROM CodeFirstDatabase.MergeTemplate AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.Notifications"><![CDATA[
+    SELECT VALUE -- Constructing Notifications
+        [Rock.Data.Notification](T1.Notification_Id, T1.Notification_Title, T1.Notification_Message, T1.Notification_SentDateTime, T1.Notification_IconCssClass, T1.Notification_Classification, T1.Notification_CreatedDateTime, T1.Notification_ModifiedDateTime, T1.Notification_CreatedByPersonAliasId, T1.Notification_ModifiedByPersonAliasId, T1.Notification_Guid, T1.Notification_ForeignId, T1.Notification_ForeignGuid, T1.Notification_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS Notification_Id, 
+            T.Title AS Notification_Title, 
+            T.Message AS Notification_Message, 
+            T.SentDateTime AS Notification_SentDateTime, 
+            T.IconCssClass AS Notification_IconCssClass, 
+            CAST(T.Classification AS [Rock.Data.NotificationClassification]) AS Notification_Classification, 
+            T.CreatedDateTime AS Notification_CreatedDateTime, 
+            T.ModifiedDateTime AS Notification_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS Notification_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS Notification_ModifiedByPersonAliasId, 
+            T.Guid AS Notification_Guid, 
+            T.ForeignId AS Notification_ForeignId, 
+            T.ForeignGuid AS Notification_ForeignGuid, 
+            T.ForeignKey AS Notification_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.Notification AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.NotificationRecipients"><![CDATA[
+    SELECT VALUE -- Constructing NotificationRecipients
+        [Rock.Data.NotificationRecipient](T1.NotificationRecipient_Id, T1.NotificationRecipient_NotificationId, T1.NotificationRecipient_PersonAliasId, T1.NotificationRecipient_Read, T1.NotificationRecipient_ReadDateTime, T1.NotificationRecipient_CreatedDateTime, T1.NotificationRecipient_ModifiedDateTime, T1.NotificationRecipient_CreatedByPersonAliasId, T1.NotificationRecipient_ModifiedByPersonAliasId, T1.NotificationRecipient_Guid, T1.NotificationRecipient_ForeignId, T1.NotificationRecipient_ForeignGuid, T1.NotificationRecipient_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS NotificationRecipient_Id, 
+            T.NotificationId AS NotificationRecipient_NotificationId, 
+            T.PersonAliasId AS NotificationRecipient_PersonAliasId, 
+            T.Read AS NotificationRecipient_Read, 
+            T.ReadDateTime AS NotificationRecipient_ReadDateTime, 
+            T.CreatedDateTime AS NotificationRecipient_CreatedDateTime, 
+            T.ModifiedDateTime AS NotificationRecipient_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS NotificationRecipient_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS NotificationRecipient_ModifiedByPersonAliasId, 
+            T.Guid AS NotificationRecipient_Guid, 
+            T.ForeignId AS NotificationRecipient_ForeignId, 
+            T.ForeignGuid AS NotificationRecipient_ForeignGuid, 
+            T.ForeignKey AS NotificationRecipient_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.NotificationRecipient AS T
     ) AS T1]]></view>
     <view extent="RockContext.Device_Locations"><![CDATA[
     SELECT VALUE -- Constructing Device_Locations
