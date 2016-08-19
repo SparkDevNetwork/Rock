@@ -2667,6 +2667,12 @@ namespace RockWeb.Blocks.Event
                             }
                         }
                     }
+
+                    if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
+                    {
+                        Rock.Security.Role.Flush( group.Id );
+                    }
+
                 }
             }
         }
