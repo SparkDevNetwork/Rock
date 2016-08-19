@@ -294,12 +294,12 @@ namespace Rock.Lava.Blocks
                             }
                         }
 
-                        foreach (ISecured item in items )
+                        foreach (IEntity item in items )
                         {
-                                    
-                            if ( item.IsAuthorized(Authorization.VIEW,  person))
+                            ISecured itemSecured = item as ISecured;
+                            if ( itemSecured == null || itemSecured.IsAuthorized(Authorization.VIEW,  person))
                             {
-                                itemsSecured.Add( (IEntity)item );
+                                itemsSecured.Add( item );
                             }
                         }
 
