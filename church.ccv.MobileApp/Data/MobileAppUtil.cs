@@ -31,11 +31,10 @@ namespace church.ccv.MobileApp
     public static class MobileAppUtil
     {
         // the workflow type id for the alert note re-route
-        // ProductionId = 166
-        const int AlertNoteReReouteWorkflowId = 1165;
+        const int AlertNoteReReouteWorkflowId = 166;
 
         // the attribute Id for the Mobile App's version
-        const int MobileAppVersionAttributeId = 29543;
+        const int MobileAppVersionAttributeId = 29469;
 
         public static LaunchData GetLaunchData( )
         {
@@ -64,7 +63,10 @@ namespace church.ccv.MobileApp
                         
             // get the latest mobile app version
             var mobileAppAttribute = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.AttributeId == MobileAppVersionAttributeId ).SingleOrDefault( );
-            int.TryParse( mobileAppAttribute.Value, out launchData.MobileAppVersion );
+            if( mobileAppAttribute != null )
+            {
+                int.TryParse( mobileAppAttribute.Value, out launchData.MobileAppVersion );
+            }
             
             return launchData;
         }
