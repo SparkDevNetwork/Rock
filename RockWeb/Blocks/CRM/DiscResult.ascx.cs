@@ -40,6 +40,8 @@ namespace Rockweb.Blocks.Crm
     [DisplayName( "Disc Result" )]
     [Category( "CRM" )]
     [Description( "View the results of a DISC assessment." )]
+
+    [IntegerField ("DISC Max Scale", "The MAX value of each of the assessment values.", true, 35)]
     public partial class DiscResult : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -120,9 +122,11 @@ namespace Rockweb.Blocks.Crm
         /// <param name="savedScores">The saved scores.</param>
         private void ShowResults( DiscService.AssessmentResults savedScores )
         {
+            int maxScale = this.GetAttributeValue( "DISCMaxScale" ).AsIntegerOrNull() ?? 35;
+
             // Plot the Natural graph
             DiscService.PlotOneGraph( discNaturalScore_D, discNaturalScore_I, discNaturalScore_S, discNaturalScore_C,
-                savedScores.NaturalBehaviorD, savedScores.NaturalBehaviorI, savedScores.NaturalBehaviorS, savedScores.NaturalBehaviorC, 35 );
+                savedScores.NaturalBehaviorD, savedScores.NaturalBehaviorI, savedScores.NaturalBehaviorS, savedScores.NaturalBehaviorC, maxScale );
             ShowExplaination( savedScores.PersonalityType );
 
             hlAssessmentDate.Text = String.Format( "Assessment Date: {0}", savedScores.LastSaveDate.ToShortDateString() );

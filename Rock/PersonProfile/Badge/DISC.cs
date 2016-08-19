@@ -39,13 +39,10 @@ namespace Rock.PersonProfile.Badge
     [ExportMetadata( "ComponentName", "DISC" )]
 
     [LinkedPage( "DISC Result Detail", "Page to show the details of the DISC assessment results. If blank no link is created.", false )]
+
+    [IntegerField( "DISC Max Scale", "The MAX value of each of the assessment values.", true, 35 )]
     public class DISC : BadgeComponent
     {
-        /// <summary>
-        /// The max value of a Natural DISC score.
-        /// </summary>
-        private int MAX = 35;
-
         /// <summary>
         /// Renders the specified writer.
         /// </summary>
@@ -53,6 +50,8 @@ namespace Rock.PersonProfile.Badge
         /// <param name="writer">The writer.</param>
         public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
+            int MAX = this.GetAttributeValue( "DISCMaxScale" ).AsIntegerOrNull() ?? 35;
+            
             // Grab the DISC Scores
             bool isValidDiscScore = true;
             int discStrength = 0;
