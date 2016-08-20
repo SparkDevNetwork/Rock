@@ -436,9 +436,9 @@ namespace Rock.Lava.Blocks
             var internalMergeFields = new Dictionary<string, object>();
 
             // get variables defined in the lava source
-            if ( context.Scopes.Count > 0 )
+            foreach ( var scope in context.Scopes )
             {
-                foreach ( var item in context.Scopes[0] )
+                foreach ( var item in scope )
                 {
                     internalMergeFields.AddOrReplace( item.Key, item.Value );
                 }
@@ -646,6 +646,7 @@ namespace Rock.Lava.Blocks
                 else
                 {
                     // error in parsing expression
+                    throw new Exception( "Error in Where expression" );
                 }
             }
 

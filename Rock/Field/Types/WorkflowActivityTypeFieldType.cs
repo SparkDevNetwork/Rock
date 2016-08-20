@@ -37,6 +37,10 @@ namespace Rock.Field.Types
 
         private const string WORKFLOW_TYPE_KEY = "WorkflowType";
 
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
         public override List<string> ConfigurationKeys()
         {
             var configKeys = base.ConfigurationKeys();
