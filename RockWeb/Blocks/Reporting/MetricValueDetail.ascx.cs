@@ -291,6 +291,7 @@ namespace RockWeb.Blocks.Reporting
             {
                 metricValue = new MetricValueService( new RockContext() ).Get( metricValueId );
                 lActionTitle.Text = ActionTitle.Edit( MetricValue.FriendlyTypeName ).FormatAsHtmlTitle();
+                pdAuditDetails.SetEntity( metricValue, ResolveRockUrl( "~" ) );
             }
 
             if ( metricValue == null && metricId.HasValue )
@@ -298,6 +299,8 @@ namespace RockWeb.Blocks.Reporting
                 metricValue = new MetricValue { Id = 0, MetricId = metricId.Value };
                 metricValue.Metric = metricValue.Metric ?? new MetricService( new RockContext() ).Get( metricValue.MetricId );
                 lActionTitle.Text = ActionTitle.Add( MetricValue.FriendlyTypeName ).FormatAsHtmlTitle();
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             hfMetricValueId.Value = metricValue.Id.ToString();

@@ -1226,12 +1226,15 @@ namespace RockWeb.Blocks.Connection
             if ( !connectionOpportunityId.Equals( 0 ) )
             {
                 connectionOpportunity = GetConnectionOpportunity( connectionOpportunityId, rockContext );
+                pdAuditDetails.SetEntity( connectionOpportunity, ResolveRockUrl( "~" ) );
             }
 
             if ( connectionOpportunity == null )
             {
                 connectionOpportunity = new ConnectionOpportunity { Id = 0, IsActive = true, Name = "" };
                 connectionOpportunity.ConnectionType = new ConnectionTypeService( rockContext ).Get( PageParameter( "ConnectionTypeId" ).AsInteger() );
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             // Only users that have Edit rights to block, or edit rights to the calendar (from query string) should be able to edit

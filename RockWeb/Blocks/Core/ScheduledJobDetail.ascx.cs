@@ -186,12 +186,15 @@ namespace RockWeb.Blocks.Administration
             {
                 job = new ServiceJobService( new RockContext() ).Get( serviceJobId );
                 lActionTitle.Text = ActionTitle.Edit( ServiceJob.FriendlyTypeName ).FormatAsHtmlTitle();
+                pdAuditDetails.SetEntity( job, ResolveRockUrl( "~" ) );
             }
 
             if ( job == null )
             {
                 job = new ServiceJob { Id = 0, IsActive = true };
                 lActionTitle.Text = ActionTitle.Add( ServiceJob.FriendlyTypeName ).FormatAsHtmlTitle();
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             hfId.Value = job.Id.ToString();

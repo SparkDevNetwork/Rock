@@ -574,12 +574,15 @@ namespace RockWeb.Blocks.Cms
                 {
                     editAllowed = editAllowed || contentChannel.IsAuthorized( Authorization.EDIT, CurrentPerson );
                 }
+                pdAuditDetails.SetEntity( contentChannel, ResolveRockUrl( "~" ) );
             }
 
             if ( contentChannel == null )
             {
                 contentChannel = new ContentChannel { Id = 0 };
                 contentChannel.ChildContentChannels = new List<ContentChannel>();
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             if ( contentChannel != null && contentChannel.IsAuthorized( Authorization.VIEW, CurrentPerson ) )

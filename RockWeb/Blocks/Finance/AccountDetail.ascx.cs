@@ -71,6 +71,8 @@ namespace RockWeb.Blocks.Finance
             {
                 account = new Rock.Model.FinancialAccount();
                 accountService.Add( account );
+                account.CreatedByPersonAliasId = CurrentPersonAliasId;
+                account.CreatedDateTime = RockDateTime.Now;
             }
             else
             {
@@ -93,6 +95,9 @@ namespace RockWeb.Blocks.Finance
             account.StartDate = dtpStartDate.SelectedDate;
             account.EndDate = dtpEndDate.SelectedDate;
             account.IsTaxDeductible = cbIsTaxDeductible.Checked;
+
+            account.ModifiedDateTime = RockDateTime.Now;
+            account.ModifiedByPersonAliasId = CurrentPersonAliasId;
 
             // if the account IsValid is false, and the UI controls didn't report any errors, it is probably because the custom rules of account didn't pass.
             // So, make sure a message is displayed in the validation summary
@@ -137,11 +142,14 @@ namespace RockWeb.Blocks.Finance
             {
                 account = new FinancialAccountService( new RockContext() ).Get( accountId );
                 editAllowed = editAllowed || account.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                pdAuditDetails.SetEntity( account, ResolveRockUrl( "~" ) );
             }
 
             if ( account == null )
             {
                 account = new FinancialAccount { Id = 0, IsActive = true };
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             hfAccountId.Value = account.Id.ToString();
@@ -174,6 +182,9 @@ namespace RockWeb.Blocks.Finance
             if ( account.Id == 0 )
             {
                 lActionTitle.Text = ActionTitle.Add( FinancialAccount.FriendlyTypeName ).FormatAsHtmlTitle();
+
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
             else
             {

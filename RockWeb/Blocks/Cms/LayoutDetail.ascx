@@ -11,6 +11,7 @@
         <div class="panel-heading">
             <h1 class="panel-title"><i class="fa fa-th"></i> <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
         </div>
+        <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
         <div class="panel-body">
             <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="LayoutDetail" />
 

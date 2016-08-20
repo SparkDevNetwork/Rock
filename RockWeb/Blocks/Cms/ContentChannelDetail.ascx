@@ -23,7 +23,7 @@
                     <Rock:HighlightLabel ID="hlContentChannel" runat="server" LabelType="Type" />
                 </div>
             </div>
-
+            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
 
                 <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
