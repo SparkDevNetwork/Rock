@@ -216,11 +216,14 @@ namespace RockWeb.Blocks.Prayer
                 prayerRequest = new PrayerRequestService( new RockContext() )
                     .Queryable( "RequestedByPersonAlias.Person,ApprovedByPersonAlias.Person" )
                     .FirstOrDefault( p => p.Id == prayerId );
+                pdAuditDetails.SetEntity( prayerRequest, ResolveRockUrl( "~" ) );
             }
 
             if ( prayerRequest == null )
             {
                 prayerRequest = new PrayerRequest { Id = 0, IsActive = true, IsApproved = true, AllowComments = true };
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             hfPrayerRequestId.Value = prayerRequest.Id.ToString();

@@ -590,6 +590,7 @@ namespace RockWeb.Blocks.Groups
             if ( !groupTypeId.Equals( 0 ) )
             {
                 groupType = new GroupTypeService( new RockContext() ).Get( groupTypeId );
+                pdAuditDetails.SetEntity( groupType, ResolveRockUrl( "~" ) );
             }
 
             if ( groupType == null )
@@ -605,6 +606,8 @@ namespace RockWeb.Blocks.Groups
 
                 groupType.AllowedScheduleTypes = ScheduleType.None;
                 groupType.LocationSelectionMode = GroupLocationPickerMode.None;
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             bool editAllowed = groupType.IsAuthorized( Authorization.EDIT, CurrentPerson );

@@ -1295,11 +1295,14 @@ namespace RockWeb.Blocks.Connection
                 if ( !connectionTypeId.Equals( 0 ) )
                 {
                     connectionType = GetConnectionType( connectionTypeId, rockContext );
+                    pdAuditDetails.SetEntity( connectionType, ResolveRockUrl( "~" ) );
                 }
 
                 if ( connectionType == null )
                 {
                     connectionType = new ConnectionType { Id = 0 };
+                    // hide the panel drawer that show created and last modified dates
+                    pdAuditDetails.Visible = false;
                 }
 
                 // Admin rights are needed to edit a connection type ( Edit rights only allow adding/removing items )

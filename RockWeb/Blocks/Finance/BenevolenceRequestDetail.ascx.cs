@@ -655,6 +655,7 @@ namespace RockWeb.Blocks.Finance
             if ( !benevolenceRequestId.Equals( 0 ) )
             {
                 benevolenceRequest = benevolenceRequestService.Get( benevolenceRequestId );
+                pdAuditDetails.SetEntity( benevolenceRequest, ResolveRockUrl( "~" ) );
             }
 
             if ( benevolenceRequest == null )
@@ -671,6 +672,8 @@ namespace RockWeb.Blocks.Finance
                         benevolenceRequest.RequestedByPersonAlias = person.PrimaryAlias;
                     }
                 }
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             dtbFirstName.Text = benevolenceRequest.FirstName;
@@ -682,7 +685,7 @@ namespace RockWeb.Blocks.Finance
             dtbProvidedNextSteps.Text = benevolenceRequest.ProvidedNextSteps;
             dpRequestDate.SelectedDate = benevolenceRequest.RequestDateTime;
 
-            if (benevolenceRequest.Campus != null )
+            if ( benevolenceRequest.Campus != null )
             {
                 cpCampus.SelectedCampusId = benevolenceRequest.CampusId;
             }

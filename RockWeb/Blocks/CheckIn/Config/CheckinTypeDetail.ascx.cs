@@ -317,11 +317,14 @@ namespace RockWeb.Blocks.CheckIn.Config
             if ( !groupTypeId.Equals( 0 ) )
             {
                 groupType = new GroupTypeService( new RockContext() ).Get( groupTypeId );
+                pdAuditDetails.SetEntity( groupType, ResolveRockUrl( "~" ) );
             }
 
             if ( groupType == null )
             {
                 groupType = new GroupType { Id = 0 };
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             if ( groupType != null )

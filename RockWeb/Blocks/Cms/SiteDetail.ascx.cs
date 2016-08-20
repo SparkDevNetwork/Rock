@@ -428,6 +428,7 @@ namespace RockWeb.Blocks.Cms
             if ( !siteId.Equals( 0 ) )
             {
                 site = new SiteService( new RockContext() ).Get( siteId );
+                pdAuditDetails.SetEntity( site, ResolveRockUrl( "~" ) );
             }
 
             if ( site == null )
@@ -435,6 +436,8 @@ namespace RockWeb.Blocks.Cms
                 site = new Site { Id = 0 };
                 site.SiteDomains = new List<SiteDomain>();
                 site.Theme = RockPage.Layout.Site.Theme;
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             // set theme compile button

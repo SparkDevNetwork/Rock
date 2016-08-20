@@ -604,6 +604,7 @@ namespace RockWeb.Blocks.Event
             if ( !eventItemId.Equals( 0 ) )
             {
                 eventItem = GetEventItem( eventItemId, rockContext );
+                pdAuditDetails.SetEntity( eventItem, ResolveRockUrl( "~" ) );
             }
 
             if ( eventItem == null )
@@ -612,6 +613,8 @@ namespace RockWeb.Blocks.Event
                 eventItem.IsApproved = _canApprove;
                 var calendarItem = new EventCalendarItem { EventCalendarId = ( _calendarId ?? 0 ) };
                 eventItem.EventCalendarItems.Add( calendarItem );
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             eventItem.LoadAttributes( rockContext );
