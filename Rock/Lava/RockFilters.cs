@@ -156,14 +156,18 @@ namespace Rock.Lava
                 return input;
             }
 
-            decimal numericQuantity;
+            decimal numericQuantity = 0.0M;
             if ( quantity is string )
             {
                 numericQuantity = ( quantity as string ).AsDecimal();
             }
             else
             {
-                numericQuantity = Convert.ToDecimal( quantity );
+                try
+                {
+                    numericQuantity = Convert.ToDecimal( quantity );
+                }
+                catch { }
             }
 
             if ( numericQuantity > 1 )

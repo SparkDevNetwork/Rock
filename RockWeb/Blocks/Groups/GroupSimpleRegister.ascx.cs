@@ -67,15 +67,13 @@ namespace RockWeb.Blocks.Groups
             base.OnLoad( e );
             nbError.Visible = false;
 
-            if ( GetAttributeValue( "LoadPerson" ).AsBoolean() )
+            if ( !Page.IsPostBack &&
+                GetAttributeValue( "LoadPerson" ).AsBoolean() && 
+                CurrentPerson != null  )
             {
-                var rockPage = this.Page as RockPage;
-                if ( rockPage != null && rockPage.CurrentPerson != null )
-                {
-                    txtFirstName.Text = rockPage.CurrentPerson.FirstName;
-                    txtLastName.Text = rockPage.CurrentPerson.LastName;
-                    txtEmail.Text = rockPage.CurrentPerson.Email;
-                }
+                txtFirstName.Text = CurrentPerson.FirstName;
+                txtLastName.Text = CurrentPerson.LastName;
+                txtEmail.Text = CurrentPerson.Email;
             }
 
         }

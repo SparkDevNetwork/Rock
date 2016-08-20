@@ -158,22 +158,23 @@ namespace Rock.Lava.Blocks
             var internalMergeFields = new Dictionary<string, object>();
 
             // get variables defined in the lava source
-            if ( context.Scopes.Count > 0 )
+            foreach ( var scope in context.Scopes )
             {
-                foreach ( var item in context.Scopes[0] )
+                foreach ( var item in scope )
                 {
                     internalMergeFields.AddOrReplace( item.Key, item.Value );
                 }
             }
 
             // get merge fields loaded by the block or container
-            if ( context.Environments.Count > 0 )
+            foreach( var environment in context.Environments )
             {
-                foreach ( var item in context.Environments[0] )
+                foreach ( var item in environment )
                 {
                     internalMergeFields.AddOrReplace( item.Key, item.Value );
                 }
             }
+
             var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
 
             var parms = new Dictionary<string, string>();
