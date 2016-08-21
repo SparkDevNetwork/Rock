@@ -86,14 +86,12 @@ BEGIN
 		SET @sourceSql = STUFF(@sourceSql, @start, @length, @groupType);
 
 		-- Replace recentSundayDate
-		SET @sourceSql = REPLACE(@sourceSql, 'DECLARE @RecentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @Today), @Today));', '');
-		SET @sourceSql = REPLACE(@sourceSql, 'StartDateTime >= @RecentSundayDate', CONCAT('StartDateTime >= ''', @sundayDate, ''''));
-		SET @sourceSql = REPLACE(@sourceSql, 'AND StartDateTime < DATEADD(day, 1, @Today)', CONCAT('AND StartDateTime < DATEADD(WEEK, 1, ''', @sundayDate, ''')'));
-		SET @sourceSql = REPLACE(@sourceSql, 'StartDateTime >= @RecentSundayDate', CONCAT('StartDateTime >= ''', @sundayDate, ''''));
-		SET @sourceSql = REPLACE(@sourceSql, 'AND StartDateTime < DATEADD(day, 1, @Today)', CONCAT('AND StartDateTime < DATEADD(WEEK, 1, ''', @sundayDate, ''')'));
+		SET @sourceSql = REPLACE(@sourcesql, 'GETDATE()', '''' + CONVERT(NVARCHAR(20), DATEADD(DAY, 6, @sundayDate)) + '''');
+		SET @sourceSql = REPLACE(@sourceSQL, N'GroupId, 
+	@TrueDVId DidAttend', 'GroupId, NULL AS Schedule, @TrueDVId DidAttend');
 		
 		TRUNCATE TABLE #currentResult;
-		--INSERT INTO  #currentResult (Value, MetricValueDateTime, Campus, [Group], Schedule, DidAttend)
+		INSERT INTO  #currentResult (Value, MetricValueDateTime, Campus, [Group], Schedule, DidAttend)
 		EXEC(@sourceSql);
 
 		INSERT INTO MetricValue(
@@ -133,7 +131,9 @@ BEGIN
 			NEWID() AS [Guid],
 			@foreignKey AS ForeignKey
 		FROM 
-			#currentResult cr;
+			#currentResult cr
+		WHERE
+			cr.[Group] IS NOT NULL;
 
 		-- Schedule
 		INSERT INTO MetricValuePartition(
@@ -152,7 +152,9 @@ BEGIN
 			NEWID() AS [Guid],
 			@foreignKey AS ForeignKey
 		FROM 
-			#currentResult cr;
+			#currentResult cr
+		WHERE
+			cr.Schedule IS NOT NULL;
 
 		-- Campus
 		INSERT INTO MetricValuePartition(
@@ -171,7 +173,9 @@ BEGIN
 			NEWID() AS [Guid],
 			@foreignKey AS ForeignKey
 		FROM 
-			#currentResult cr;
+			#currentResult cr
+		WHERE
+		cr.Campus IS NOT NULL;
 		
 		-- Did Attend
 		INSERT INTO MetricValuePartition(
@@ -190,8 +194,9 @@ BEGIN
 			NEWID() AS [Guid],
 			@foreignKey AS ForeignKey
 		FROM 
-			#currentResult cr;
-		return;
+			#currentResult cr
+		WHERE
+			cr.DidAttend IS NOT NULL;
 
 		SET @scopeIndex = @scopeIndex + 1;
 	END
