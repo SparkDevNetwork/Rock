@@ -306,10 +306,17 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                 }
             }
 
-            var didAttendTrue = FilterMetricValuesByPartition( metricValues, "Did Attend", dtBooleanTrueId );
+            int? didAttendFilterId = null;
+            if ( metricValues.Any( m => m.MetricValuePartitions.Any( mvp => mvp.MetricPartition.Label == "Did Attend" ) ) )
+            {
+                didAttendFilterId = dtBooleanTrueId;
+            }
 
+            var didAttendTrue = FilterMetricValuesByPartition( metricValues, "Did Attend", didAttendFilterId );
+
+            // TODO: clean up this pattern, the did/did not attend should be simplified
             if ( GetAttributeValue( preKey + "RequireAttendance" ).AsBoolean() )
-            {                
+            {
                 return didAttendTrue.ToList();
             }
             else
@@ -355,15 +362,12 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         /// <returns></returns>
         protected IQueryable<MetricValue> FilterMetricValuesByPartition( IQueryable<MetricValue> values, string partitionName, int? entityId, bool filterOnNull = false )
         {
-            // TODO: clean up this namespace, there should be a way to pass in NULL for metrics without partitions
-            var someFilter = !entityId.HasValue && !filterOnNull;
-            var metricHasPartition = values.Any( m => m.MetricValuePartitions.Any( mvp => mvp.MetricPartition.Label == partitionName ) );
-            if ( someFilter && !metricHasPartition )
+            if ( !entityId.HasValue && !filterOnNull )
             {
                 return values;
             }
 
-            return values.Where( m => m.MetricValuePartitions.Any( mvp => mvp.MetricPartition.Label == partitionName ) && m.MetricValuePartitions.Any( mvp => mvp.EntityId == entityId ) );
+            return values.Where( m => m.MetricValuePartitions.Any( mvp => mvp.MetricPartition.Label == partitionName && mvp.EntityId == entityId ) );
         }
 
         #endregion
