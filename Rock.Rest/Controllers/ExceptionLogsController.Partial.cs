@@ -86,40 +86,40 @@ namespace Rock.Rest.Controllers
             var sentryClient = new RavenClient( sentryDSN );
             if ( !string.IsNullOrEmpty( sentryDSN ) && sentryClient != null )
             {
-                var exceptionLog = new ExceptionLog
-                {
-                    HasInnerException = ex.InnerException != null,
-                    ExceptionType = ex.GetType().ToString(),
-                    Description = ex.Message,
-                    Source = ex.Source,
-                    StackTrace = ex.StackTrace,
-                    CreatedByPersonAliasId = personAlias.Id,
-                    ModifiedByPersonAliasId = personAlias.Id,
-                    CreatedDateTime = RockDateTime.Now,
-                    ModifiedDateTime = RockDateTime.Now,
-                };
+                //var exceptionLog = new ExceptionLog
+                //{
+                //    HasInnerException = ex.InnerException != null,
+                //    ExceptionType = ex.GetType().ToString(),
+                //    Description = ex.Message,
+                //    Source = ex.Source,
+                //    StackTrace = ex.StackTrace,
+                //    CreatedByPersonAliasId = personAlias.Id,
+                //    ModifiedByPersonAliasId = personAlias.Id,
+                //    CreatedDateTime = RockDateTime.Now,
+                //    ModifiedDateTime = RockDateTime.Now,
+                //};
 
-                var context = HttpContext.Current;
-                if ( context != null && context.Request != null && context.Response != null )
-                {
-                    exceptionLog.StatusCode = context.Response.StatusCode.ToString();
-                    exceptionLog.PageUrl = context.Request.Url.ToString();
-                    exceptionLog.QueryString = context.Request.Url.Query;
+                //var context = HttpContext.Current;
+                //if ( context != null && context.Request != null && context.Response != null )
+                //{
+                //    exceptionLog.StatusCode = context.Response.StatusCode.ToString();
+                //    exceptionLog.PageUrl = context.Request.Url.ToString();
+                //    exceptionLog.QueryString = context.Request.Url.Query;
 
-                    var formItems = context.Request.Form;
-                    if ( formItems.Keys.Count > 0 )
-                    {
-                        exceptionLog.Form = formItems.AllKeys.ToDictionary( k => k, k => formItems[k] ).ToString();
-                    }
+                //    var formItems = context.Request.Form;
+                //    if ( formItems.Keys.Count > 0 )
+                //    {
+                //        exceptionLog.Form = formItems.AllKeys.ToDictionary( k => k, k => formItems[k] ).ToString();
+                //    }
 
-                    var serverVars = context.Request.ServerVariables;
-                    if ( serverVars.Keys.Count > 0 )
-                    {
-                        exceptionLog.ServerVariables = serverVars.AllKeys.ToDictionary( k => k, k => serverVars[k] ).ToString();
-                    }
-                }
+                //    var serverVars = context.Request.ServerVariables;
+                //    if ( serverVars.Keys.Count > 0 )
+                //    {
+                //        exceptionLog.ServerVariables = serverVars.AllKeys.ToDictionary( k => k, k => serverVars[k] ).ToString();
+                //    }
+                //}
 
-                ex.Data.Add( "context", exceptionLog );
+                //ex.Data.Add( "context", exceptionLog );
                 sentryClient.Capture( new SentryEvent( ex ) );
             }
         }
