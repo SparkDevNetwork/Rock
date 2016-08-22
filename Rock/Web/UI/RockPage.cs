@@ -1490,8 +1490,8 @@ Sys.Application.add_load(function () {
             if ( !string.IsNullOrEmpty( sentryDSN ) && sentryClient != null )
             {
                 ex.Data.Add( "context", Context );
-                ex.Data.Add( "page-id", RockPage.PageId );
-                ex.Data.Add( "site-id", RockPage.Layout.SiteId );
+                ex.Data.Add( "page-id", _pageCache.Id );
+                ex.Data.Add( "site-id", _pageCache.Layout.SiteId );
                 ex.Data.Add( "person-alias", CurrentPersonAlias );
                 ex.Data.Add( "environment", Request.Url.AbsoluteUri );
                 sentryClient.Capture( new SentryEvent( ex ) );
