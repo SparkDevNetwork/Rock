@@ -347,7 +347,8 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             if ( pCategory.SelectedValueAsId() != null )
             {
                 var selectedCategory = pCategory.SelectedValueAsId().Value;
-                cblSchedules.DataSource = new ScheduleService( new RockContext() ).Queryable().Where( s => s.CategoryId == selectedCategory ).ToList();
+                //cblSchedules.DataSource = new ScheduleService( new RockContext() ).Queryable().Where( s => s.CategoryId == selectedCategory ).ToList();
+                cblSchedules.DataSource = new ScheduleService( new RockContext() ).Queryable().Where( s => s.CategoryId == selectedCategory ).ToList().OrderBy( x => ( x.WeeklyDayOfWeek.HasValue ? ( int ) x.WeeklyDayOfWeek.Value + 1 : 0 ) % 7 ).ThenBy( a => a.StartTimeOfDay ).ThenBy( a => a.ToString() );
                 cblSchedules.DataBind();
                 var selectedItems = rFilter.GetUserPreference( "Schedules" ).SplitDelimitedValues();
                 foreach ( ListItem li in cblSchedules.Items )
@@ -438,7 +439,7 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                 var selectedServiceTimes = cblSchedules.SelectedValuesAsInt;
                 if ( lLocations != null )
                 {
-                    var locations = group.GroupLocations.Where( gl => gl.Schedules.Any( s => selectedServiceTimes.Contains( s.Id ) ) );
+                    var locations = group.GroupLocations.Where( gl => gl.Schedules.Any( s => selectedServiceTimes.Contains( s.Id ) ) ).OrderBy( gl => gl.Order );
                     List<String> locationsFormatted = new List<string>();
                     foreach ( var location in locations )
                     {
