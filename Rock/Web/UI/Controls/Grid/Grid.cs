@@ -754,20 +754,19 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            if ( this.DataSource != null )
+           
+            if ( this.EnableResponsiveTable )
             {
-                if ( this.EnableResponsiveTable )
-                {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "table-responsive" );
-                }
-
-                if ( DisplayType == GridDisplayType.Light )
-                {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "table-no-border" );
-                }
-
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "table-responsive" );
             }
+
+            if ( DisplayType == GridDisplayType.Light )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "table-no-border" );
+            }
+
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            
 
             this.AddCssClass( "grid-table" );
             this.AddCssClass( "table" );
@@ -791,10 +790,7 @@ namespace Rock.Web.UI.Controls
 
             base.RenderControl( writer );
 
-            if ( this.DataSource != null )
-            {
-                writer.RenderEndTag();
-            }
+            writer.RenderEndTag();
         }
 
         /// <summary>
@@ -1567,7 +1563,7 @@ namespace Rock.Web.UI.Controls
                     }
 
                     // print data
-                    foreach ( DataRow row in data.Rows )
+                    foreach ( DataRowView row in data.DefaultView )
                     {
                         for ( int i = 0; i < data.Columns.Count; i++ )
                         {
@@ -2187,7 +2183,7 @@ namespace Rock.Web.UI.Controls
                 {
                     DataTable data = this.DataSourceAsDataTable;
 
-                    foreach ( DataRow row in data.Rows )
+                    foreach ( DataRowView row in data.DefaultView )
                     {
                         object dataKey = row[dataKeyColumn];
                         if ( !keysSelected.Any() || keysSelected.Contains( dataKey ) )
@@ -2474,7 +2470,7 @@ namespace Rock.Web.UI.Controls
             entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
 
             int itemOrder = 0;
-            foreach ( var row in this.DataSourceAsDataTable.Rows.OfType<DataRow>() )
+            foreach ( DataRowView row in this.DataSourceAsDataTable.DefaultView )
             {
                 try
                 {
@@ -2483,7 +2479,7 @@ namespace Rock.Web.UI.Controls
                     if ( entitySet.EntityTypeId.HasValue && dataKeyColumn != null )
                     {
                         // we know the EntityTypeId, so set the EntityId to the dataKeyColumn value
-                        item.EntityId = ( row[dataKeyColumn] as int? ) ?? 0;
+                        item.EntityId = ( row[dataKeyColumn.ColumnName] as int? ) ?? 0;
                     }
                     else
                     {
@@ -2495,7 +2491,7 @@ namespace Rock.Web.UI.Controls
                     item.AdditionalMergeValues = new Dictionary<string, object>();
                     foreach ( var col in this.DataSourceAsDataTable.Columns.OfType<DataColumn>() )
                     {
-                        item.AdditionalMergeValues.Add( col.ColumnName, row[col] );
+                        item.AdditionalMergeValues.Add( col.ColumnName, row[col.ColumnName] );
                     }
 
                     entitySet.Items.Add( item );
