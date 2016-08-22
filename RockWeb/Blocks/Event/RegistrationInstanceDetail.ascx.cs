@@ -80,6 +80,14 @@ namespace RockWeb.Blocks.Event
         private Dictionary<int, List<int>> PersonCampusIds { get; set; }
 
         /// <summary>
+        /// Gets or sets the signed person ids.
+        /// </summary>
+        /// <value>
+        /// The signed person ids.
+        /// </value>
+        private List<int> Signers { get; set; }
+
+        /// <summary>
         /// Gets or sets the group links.
         /// </summary>
         /// <value>
@@ -133,7 +141,12 @@ namespace RockWeb.Blocks.Event
             ddlInGroup.Items.Add( new ListItem());
             ddlInGroup.Items.Add( new ListItem( "Yes", "Yes" ) );
             ddlInGroup.Items.Add( new ListItem( "No", "No" ) );
-            
+
+            ddlSignedDocument.Items.Clear();
+            ddlSignedDocument.Items.Add( new ListItem() );
+            ddlSignedDocument.Items.Add( new ListItem( "Yes", "Yes" ) );
+            ddlSignedDocument.Items.Add( new ListItem( "No", "No" ) );
+
             fRegistrants.ApplyFilterClick += fRegistrants_ApplyFilterClick;
             gRegistrants.DataKeyNames = new string[] { "Id" };
             gRegistrants.Actions.ShowAdd = true;
@@ -758,6 +771,7 @@ namespace RockWeb.Blocks.Event
             fRegistrants.SaveUserPreference( "First Name", tbRegistrantFirstName.Text );
             fRegistrants.SaveUserPreference( "Last Name", tbRegistrantLastName.Text );
             fRegistrants.SaveUserPreference( "In Group", ddlInGroup.SelectedValue );
+            fRegistrants.SaveUserPreference( "Signed Document", ddlSignedDocument.SelectedValue );
 
             if ( RegistrantFields != null )
             {
@@ -910,6 +924,7 @@ namespace RockWeb.Blocks.Event
                 case "Last Name":
                 case "Email":
                 case "Phone":
+                case "Signed Document":
                     {
                         break;
                     }
@@ -986,7 +1001,10 @@ namespace RockWeb.Blocks.Event
                 {
                     if ( registrant.PersonAlias != null && registrant.PersonAlias.Person != null )
                     {
-                        lRegistrant.Text = registrant.PersonAlias.Person.FullNameReversed;
+                        lRegistrant.Text = registrant.PersonAlias.Person.FullNameReversed +
+                            ( Signers != null && !Signers.Contains( registrant.PersonAlias.PersonId ) ?
+                                " <i class='fa fa-pencil-square-o text-danger'></i>" :
+                                string.Empty  );
                     }
                     else
                     {
@@ -1627,7 +1645,7 @@ namespace RockWeb.Blocks.Event
 
                 LoadRegistrantFormFields( registrationInstance );
                 BindRegistrationsFilter();
-                BindRegistrantsFilter();
+                BindRegistrantsFilter( registrationInstance );
                 BindLinkagesFilter();
                 AddDynamicControls();
             }
@@ -2066,12 +2084,15 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// Binds the registrants filter.
         /// </summary>
-        private void BindRegistrantsFilter()
+        private void BindRegistrantsFilter( RegistrationInstance instance )
         {
             drpRegistrantDateRange.DelimitedValues = fRegistrants.GetUserPreference( "Date Range" );
             tbRegistrantFirstName.Text = fRegistrants.GetUserPreference( "First Name" );
             tbRegistrantLastName.Text = fRegistrants.GetUserPreference( "Last Name" );
             ddlInGroup.SetValue( fRegistrants.GetUserPreference( "In Group" ) );
+
+            ddlSignedDocument.SetValue( fRegistrants.GetUserPreference( "Signed Document" ) );
+            ddlSignedDocument.Visible = instance != null && instance.RegistrationTemplate != null && instance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue;
         }
 
         /// <summary>
@@ -2084,13 +2105,31 @@ namespace RockWeb.Blocks.Event
             {
                 using ( var rockContext = new RockContext() )
                 {
+                    var registrationInstance = new RegistrationInstanceService( rockContext ).Get( instanceId.Value );
+
+                    if ( registrationInstance != null &&
+                        registrationInstance.RegistrationTemplate != null &&
+                        registrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue )
+                    {
+                        Signers = new SignatureDocumentService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( d =>
+                                d.SignatureDocumentTemplateId == registrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value &&
+                                d.Status == SignatureDocumentStatus.Signed &&
+                                d.BinaryFileId.HasValue &&
+                                d.AppliesToPersonAlias != null )
+                            .OrderByDescending( d => d.LastStatusDate )
+                            .Select( d => d.AppliesToPersonAlias.PersonId )
+                            .ToList();
+                    }
+
                     // Start query for registrants
                     var qry = new RegistrationRegistrantService( rockContext )
-                        .Queryable( "PersonAlias.Person.PhoneNumbers.NumberTypeValue,Fees.RegistrationTemplateFee,GroupMember.Group" ).AsNoTracking()
-                        .Where( r =>
-                            r.Registration.RegistrationInstanceId == instanceId.Value &&
-                            r.PersonAlias != null &&
-                            r.PersonAlias.Person != null );
+                    .Queryable( "PersonAlias.Person.PhoneNumbers.NumberTypeValue,Fees.RegistrationTemplateFee,GroupMember.Group" ).AsNoTracking()
+                    .Where( r =>
+                        r.Registration.RegistrationInstanceId == instanceId.Value &&
+                        r.PersonAlias != null &&
+                        r.PersonAlias.Person != null );
 
                     // Filter by daterange
                     if ( drpRegistrantDateRange.LowerValue.HasValue )
@@ -2121,6 +2160,19 @@ namespace RockWeb.Blocks.Event
                         string rlname = tbRegistrantLastName.Text;
                         qry = qry.Where( r =>
                             r.PersonAlias.Person.LastName.StartsWith( rlname ) );
+                    }
+
+                    // Filter by signed documents
+                    if ( Signers != null )
+                    {
+                        if ( ddlSignedDocument.SelectedValue.AsBooleanOrNull() == true )
+                        {
+                            qry = qry.Where( r => Signers.Contains( r.PersonAlias.PersonId ) );
+                        }
+                        else if ( ddlSignedDocument.SelectedValue.AsBooleanOrNull() == false )
+                        {
+                            qry = qry.Where( r => !Signers.Contains( r.PersonAlias.PersonId ) );
+                        }
                     }
 
                     if ( ddlInGroup.SelectedValue.AsBooleanOrNull() == true )

@@ -100,15 +100,6 @@ namespace Rock.Web.Cache
         public int? DefaultGroupRoleId { get; set; }
 
         /// <summary>
-        /// Gets or sets the allowed schedule types.
-        /// </summary>
-        /// <value>
-        /// The allowed schedule types.
-        /// </value>
-        [DataMember]
-        public ScheduleType AllowedScheduleTypes { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [allow multiple locations].
         /// </summary>
         /// <value>
@@ -154,6 +145,15 @@ namespace Rock.Web.Cache
         public bool TakesAttendance { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [attendance counts as weekend service].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [attendance counts as weekend service]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AttendanceCountsAsWeekendService { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [send attendance reminder].
         /// </summary>
         /// <value>
@@ -163,6 +163,15 @@ namespace Rock.Web.Cache
         public bool SendAttendanceReminder { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [show connection status].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [show connection status]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool ShowConnectionStatus { get; set; }
+
+        /// <summary>
         /// Gets or sets the attendance rule.
         /// </summary>
         /// <value>
@@ -170,6 +179,15 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         public AttendanceRule AttendanceRule { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group capacity rule.
+        /// </summary>
+        /// <value>
+        /// The group capacity rule.
+        /// </value>
+        [DataMember]
+        public GroupCapacityRule GroupCapacityRule { get; set; }
 
         /// <summary>
         /// Gets or sets the attendance print to.
@@ -220,6 +238,16 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets or sets the allowed schedule types.
+        /// </summary>
+        /// <value>
+        /// The allowed schedule types.
+        /// </value>
+        [DataMember]
+        public ScheduleType AllowedScheduleTypes { get; set; }
+
+
+        /// <summary>
         /// Gets or sets the location selection mode.
         /// </summary>
         /// <value>
@@ -236,15 +264,6 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         public bool? EnableLocationSchedules { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [enable alternate placements].
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if [enable alternate placements]; otherwise, <c>false</c>.
-        /// </value>
-        [DataMember]
-        public bool EnableAlternatePlacements { get; set; }
 
         /// <summary>
         /// Gets or sets the group type purpose value identifier.
@@ -275,6 +294,18 @@ namespace Rock.Web.Cache
                 }
             }
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to ignore person inactivated.
+        /// By default group members are inactivated in their group whenever the person
+        /// is inactivated. If this value is set to true, members in groups of this type
+        /// will not be marked inactive when the person is inactivated
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [ignore person inactivated]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IgnorePersonInactivated { get; set; }
 
         /// <summary>
         /// Gets or sets the roles.
@@ -420,20 +451,25 @@ namespace Rock.Web.Cache
                 this.GroupTerm = groupType.GroupTerm;
                 this.GroupMemberTerm = groupType.GroupMemberTerm;
                 this.DefaultGroupRoleId = groupType.DefaultGroupRoleId;
-                this.AllowedScheduleTypes = groupType.AllowedScheduleTypes;
                 this.AllowMultipleLocations = groupType.AllowMultipleLocations;
                 this.ShowInGroupList = groupType.ShowInGroupList;
                 this.ShowInNavigation = groupType.ShowInNavigation;
                 this.IconCssClass = groupType.IconCssClass;
                 this.TakesAttendance = groupType.TakesAttendance;
+                this.AttendanceCountsAsWeekendService = groupType.AttendanceCountsAsWeekendService;
                 this.SendAttendanceReminder = groupType.SendAttendanceReminder;
+                this.ShowConnectionStatus = groupType.ShowConnectionStatus;
                 this.AttendanceRule = groupType.AttendanceRule;
+                this.GroupCapacityRule = groupType.GroupCapacityRule;
                 this.AttendancePrintTo = groupType.AttendancePrintTo;
                 this.Order = groupType.Order;
                 this.InheritedGroupTypeId = groupType.InheritedGroupTypeId;
+                this.AllowedScheduleTypes = groupType.AllowedScheduleTypes;
                 this.LocationSelectionMode = groupType.LocationSelectionMode;
                 this.EnableLocationSchedules = groupType.EnableLocationSchedules;
                 this.GroupTypePurposeValueId = groupType.GroupTypePurposeValueId;
+                this.IgnorePersonInactivated = groupType.IgnorePersonInactivated;
+
                 this.locationTypeValueIDs = groupType.LocationTypes.Select( l => l.LocationTypeValueId ).ToList();
 
                 this.Roles = new List<GroupTypeRoleCache>();

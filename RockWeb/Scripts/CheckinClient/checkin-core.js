@@ -1,6 +1,6 @@
 var bodyScroll;
 
-Sys.Application.add_load(function () {
+$(function () {
 
     resizeBody();
     bodyScroll = new IScroll('.checkin-scroll-panel', {

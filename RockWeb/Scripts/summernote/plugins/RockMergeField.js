@@ -26,9 +26,8 @@
                     var url = Rock.settings.get('baseUrl') + 'api/MergeFields/' + encodeURIComponent(mergeFields);
                     $.get(url, function (data) {
                         {
-                            debugger
                             context.invoke('editor.restoreRange');
-                            context.invoke('editor.pasteHtml', data);
+                            context.invoke('editor.pasteHTML', data);
                         }
                     });
                 });

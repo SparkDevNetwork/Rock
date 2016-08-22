@@ -103,7 +103,7 @@ namespace Rock.Communication.Transport
 
                                     // convert any special microsoft word characters to normal chars so they don't look funny (for example "Hey â€œdouble-quotesâ€ from â€˜single quoteâ€™")
                                     message = message.ReplaceWordChars();
-                                    message = message.ResolveMergeFields( mergeObjects );
+                                    message = message.ResolveMergeFields( mergeObjects, communication.EnabledLavaCommands );
  
                                     string twilioNumber = phoneNumber.Number;
                                     if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )

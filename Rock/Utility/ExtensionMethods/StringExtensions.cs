@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -286,14 +287,13 @@ namespace Rock
         /// Attempts to convert string to an dictionary using the |/comma and ^ delimiter Key/Value syntax.  Returns an empty dictionary if unsuccessful.
         /// </summary>
         /// <param name="str">The string.</param>
-        /// <returns></returns>
-        [System.Diagnostics.DebuggerStepThrough()]
+        /// <returns></returns>                     
         public static System.Collections.Generic.Dictionary<string, string> AsDictionary( this string str )
         {
             var dictionary = new System.Collections.Generic.Dictionary<string, string>();
             string[] nameValues = str.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
             // If we haven't found any pipes, check for commas
-            if ( nameValues.Count() == 1 )
+            if ( nameValues.Count() == 1 && nameValues[0] == str)
             {
                 nameValues = str.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
             }
@@ -601,6 +601,32 @@ namespace Rock
             s = Regex.Replace( s, "[\u02DC\u00A0]", " " );
 
             return s;
+        }
+
+        /// <summary>
+        /// Returns a list of KeyValuePairs from a serialized list of Rock KeyValuePairs (e.g. 'Item1^Value1|Item2^Value2')
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static List<KeyValuePair<string, object>> ToKeyValuePairList( this string input )
+        {
+            List<KeyValuePair<string, object>> keyPairs = new List<KeyValuePair<string, object>>();
+
+            if ( !string.IsNullOrWhiteSpace( input ) )
+            {
+                var items = input.Split( '|' );
+
+                foreach ( var item in items )
+                {
+                    var parts = item.Split( '^' );
+                    if ( parts.Length == 2 )
+                    {
+                        keyPairs.Add( new KeyValuePair<string, object>( parts[0], parts[1] ) );
+                    }
+                }
+            }
+
+            return keyPairs;
         }
 
         #endregion String Extensions

@@ -26,7 +26,7 @@ namespace Rock.Lava.Blocks
     /// 
     /// </summary>
     /// <seealso cref="DotLiquid.Block" />
-    public class RockEntity : DotLiquid.Block
+    public class RockEntity : RockLavaBlockBase
     {
         RockContext _rockContext;
         string _entityName = string.Empty;
@@ -43,7 +43,6 @@ namespace Rock.Lava.Blocks
             _rockContext = new RockContext();
             _entityName = tagName;
             _markup = markup;
-
             base.Initialize( tagName, markup, tokens );
         }
 
@@ -55,6 +54,14 @@ namespace Rock.Lava.Blocks
         /// <exception cref="System.Exception">Your Lava command must contain at least one valid filter. If you configured a filter it's possible that the property or attribute you provided does not exist.</exception>
         public override void Render( Context context, TextWriter result )
         {
+            // first ensure that entity commands are allowed in the context
+            if ( ! this.IsAuthorized(context) )
+            {
+                result.Write( string.Format( "The Lava command '{0}' is not configured for this template.", this.Name ) );
+                base.Render( context, result );
+                return;
+            }
+
             bool hasFilter = false;
 
             // get a service for the entity based off it's friendly name
@@ -139,9 +146,9 @@ namespace Rock.Lava.Blocks
                         }
 
                         // process dynamic filter expressions (from the query string)
-                        if ( parms.Any( p => p.Key == "dynamicfilters" ) )
+                        if ( parms.Any( p => p.Key == "dynamicparameters" ) )
                         {
-                            var dynamicFilters = parms["dynamicfilters"].Split( ',' )
+                            var dynamicFilters = parms["dynamicparameters"].Split( ',' )
                                             .Select( x => x.Trim() )
                                             .Where( x => !string.IsNullOrWhiteSpace( x ) )
                                             .ToList();
@@ -150,15 +157,17 @@ namespace Rock.Lava.Blocks
                             {
                                 var dynamicFilterValue = HttpContext.Current.Request[dynamicFilter];
                                 var dynamicFilterExpression = GetDynamicFilterExpression( dynamicFilter, dynamicFilterValue, entityType, serviceInstance, paramExpression );
-
-                                if ( queryExpression == null )
+                                if ( dynamicFilterExpression != null )
                                 {
-                                    queryExpression = dynamicFilterExpression;
-                                    hasFilter = true;
-                                }
-                                else
-                                {
-                                    queryExpression = Expression.AndAlso( queryExpression, dynamicFilterExpression );
+                                    if ( queryExpression == null )
+                                    {
+                                        queryExpression = dynamicFilterExpression;
+                                        hasFilter = true;
+                                    }
+                                    else
+                                    {
+                                        queryExpression = Expression.AndAlso( queryExpression, dynamicFilterExpression );
+                                    }
                                 }
                             }
                         }
@@ -267,54 +276,49 @@ namespace Rock.Lava.Blocks
                         // reassemble the queryable with the sort expressions
                         queryResult = queryResult.Provider.CreateQuery( queryResultExpression ) as IQueryable<IEntity>;
 
-                        // if security must be checked to list the query and filter out unauthorized values
-                        /*if ( parms.Any( p => p.Key == "checksecurity" ) )
+                        // run security check on each result
+                        var items = queryResult.ToList();
+                        var itemsSecured = new List<IEntity>();
+
+                        Person person = null;
+                        var principal = HttpContext.Current.User;
+
+                        if ( principal != null && principal.Identity != null )
                         {
-                            var checkSecurity = parms["checksecurity"].AsBoolean();
+                            var userLoginService = new Rock.Model.UserLoginService( new RockContext() );
+                            var userLogin = userLoginService.GetByUserName( principal.Identity.Name );
 
-                            if ( checkSecurity )
-                            {*/
-                                var items = queryResult.ToList();
-                                var itemsSecured = new List<IEntity>();
+                            if ( userLogin != null )
+                            {
+                                person = userLogin.Person;
+                            }
+                        }
 
-                                Person person = null;
-                                var principal = HttpContext.Current.User;
-
-                                if ( principal != null && principal.Identity != null )
-                                {
-                                    var userLoginService = new Rock.Model.UserLoginService( new RockContext() );
-                                    var userLogin = userLoginService.GetByUserName( principal.Identity.Name );
-
-                                    if ( userLogin != null )
-                                    {
-                                        person = userLogin.Person;
-                                    }
-                                }
-
-                                foreach (ISecured item in items )
-                                {
+                        foreach (ISecured item in items )
+                        {
                                     
-                                    if ( item.IsAuthorized(Authorization.VIEW,  person))
-                                    {
-                                        itemsSecured.Add( (IEntity)item );
-                                    }
-                                }
+                            if ( item.IsAuthorized(Authorization.VIEW,  person))
+                            {
+                                itemsSecured.Add( (IEntity)item );
+                            }
+                        }
 
-                                queryResult = itemsSecured.AsQueryable();
-                        //    }
-                        //}
-
-
+                        queryResult = itemsSecured.AsQueryable();
+                       
                         // offset
                         if ( parms.Any( p => p.Key == "offset" ) )
                         {
                             queryResult = queryResult.Skip( parms["offset"].AsInteger() );
                         }
 
-                        // limit
+                        // limit, default to 1000
                         if ( parms.Any( p => p.Key == "limit" ) )
                         {
                             queryResult = queryResult.Take( parms["limit"].AsInteger() );
+                        }
+                        else
+                        {
+                            queryResult = queryResult.Take( 1000 );
                         }
 
                         // check to ensure we had some form of filter (otherwise we'll return all results in the table)
@@ -465,7 +469,7 @@ namespace Rock.Lava.Blocks
 
             foreach ( var item in markupItems )
             {
-                var itemParts = item.ToString().Split( ':' );
+                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
                 if ( itemParts.Length > 1 )
                 {
                     parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
@@ -512,13 +516,22 @@ namespace Rock.Lava.Blocks
                     }
                 }
 
-                parms.Add( "dynamicfilters", string.Join( ",", dynamicFilters ) );
+                parms.AddOrReplace( "dynamicparameters", string.Join( ",", dynamicFilters ) );
             }
 
 
             return parms;
         }
 
+        /// <summary>
+        /// Gets the data view expression.
+        /// </summary>
+        /// <param name="dataViewId">The data view identifier.</param>
+        /// <param name="service">The service.</param>
+        /// <param name="parmExpression">The parm expression.</param>
+        /// <param name="entityTypeCache">The entity type cache.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Exception"></exception>
         private Expression GetDataViewExpression( int dataViewId, IService service, ParameterExpression parmExpression, EntityTypeCache entityTypeCache )
         {
             var dataViewSource = new DataViewService( _rockContext ).Get( dataViewId );
@@ -536,6 +549,16 @@ namespace Rock.Lava.Blocks
             }
         }
 
+        /// <summary>
+        /// Parses the where.
+        /// </summary>
+        /// <param name="whereClause">The where clause.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="service">The service.</param>
+        /// <param name="parmExpression">The parm expression.</param>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="entityTypeCache">The entity type cache.</param>
+        /// <returns></returns>
         private Expression ParseWhere( string whereClause, Type type, IService service, ParameterExpression parmExpression, Type entityType, EntityTypeCache entityTypeCache )
         {
             Expression returnExpression = null;
@@ -629,12 +652,43 @@ namespace Rock.Lava.Blocks
             return returnExpression;
         }
 
+        /// <summary>
+        /// Gets the dynamic filter expression.
+        /// </summary>
+        /// <param name="dynamicFilter">The dynamic filter.</param>
+        /// <param name="dynamicFilterValue">The dynamic filter value.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="service">The service.</param>
+        /// <param name="parmExpression">The parm expression.</param>
+        /// <returns></returns>
         private Expression GetDynamicFilterExpression( string dynamicFilter, string dynamicFilterValue, Type type, IService service, ParameterExpression parmExpression )
         {
-            var selectionString = string.Format( @"[ ""{0}"", ""1"", ""{1}"" ]", dynamicFilter, dynamicFilterValue );
-            var expression = new PropertyFilter().GetExpression( type, service, parmExpression, selectionString );
+            if ( !string.IsNullOrWhiteSpace( dynamicFilter ) && !string.IsNullOrWhiteSpace( dynamicFilterValue ) )
+            {
+                var entityFields = EntityHelper.GetEntityFields( type );
+                var entityField = entityFields.FirstOrDefault( f => f.Name.Equals( dynamicFilter, StringComparison.OrdinalIgnoreCase ) );
+                if ( entityField != null )
+                {
+                    var values = new List<string>();
+                    string comparison = entityField.FieldType.Field.GetEqualToCompareValue();
+                    if ( !string.IsNullOrWhiteSpace( comparison ) )
+                    {
+                        values.Add( comparison );
+                    }
+                    values.Add( dynamicFilterValue );
 
-            return expression;
+                    if ( entityField.FieldKind == FieldKind.Property )
+                    {
+                        return new PropertyFilter().GetPropertyExpression( service, parmExpression, entityField, values );
+                    }
+                    else
+                    {
+                        return new PropertyFilter().GetAttributeExpression( service, parmExpression, entityField, values );
+                    }
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

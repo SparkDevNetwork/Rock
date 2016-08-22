@@ -205,17 +205,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                     literalControl.Label = attribute.Name;
                                     literalControl.Text = value;
 
-                                    var li = new HtmlGenericControl( "li" );
-                                    li.Controls.Add( literalControl );
+                                    var div = new HtmlGenericControl( "div" );
+                                    div.AddCssClass( "col-md-3 col-sm-6" );
+                                    div.Controls.Add( literalControl );
 
                                     if ( attribute.IsGridColumn )
                                     {
-                                        phGroupAttributes.Controls.Add( li );
+                                        phGroupAttributes.Controls.Add( div );
                                     }
                                     else
                                     {
                                         hlShowMoreAttributes.Visible = true;
-                                        phMoreGroupAttributes.Controls.Add( li );
+                                        phMoreGroupAttributes.Controls.Add( div );
                                     }
                                 }
                             }
@@ -479,18 +480,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private void RegisterScripts()
         {
             string script = @"
-    $('a.js-show-more-family-attributes').click(function (e) {
-        var $pnl = $(this).closest('div.js-family-attributes');
-        var $ul = $pnl.find('ul.js-more-family-attributes').first();
-        if ( $ul.is(':visible') ) {
-            $ul.slideUp();
-            $(this).html('<i class=""fa fa-chevron-down""></i> More');
+    $('.js-show-more-family-attributes').click(function (e) {
+        var $pnl = $(this).closest('.js-persondetails-group');
+        var $moreAttributes = $pnl.find('.js-more-group-attributes').first();
+        if ( $moreAttributes.is(':visible') ) {
+            $moreAttributes.slideUp();
+            $(this).html('<i class=""fa fa-chevron-down""></i>');
         } else {
-            $ul.slideDown();
-            $(this).html('<i class=""fa fa-chevron-up""></i> Less');
+            $moreAttributes.slideDown();
+            $(this).html('<i class=""fa fa-chevron-up""></i>');
         }
-    });
-";
+    });";
             ScriptManager.RegisterStartupScript( upGroupMembers, upGroupMembers.GetType(), "showmore", script, true );
 
         }

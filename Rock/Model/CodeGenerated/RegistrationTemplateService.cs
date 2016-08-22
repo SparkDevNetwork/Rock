@@ -127,7 +127,9 @@ namespace Rock.Model
             target.ReminderFromName = source.ReminderFromName;
             target.ReminderSubject = source.ReminderSubject;
             target.RequestEntryName = source.RequestEntryName;
+            target.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
             target.SetCostOnInstance = source.SetCostOnInstance;
+            target.SignatureDocumentAction = source.SignatureDocumentAction;
             target.SuccessText = source.SuccessText;
             target.SuccessTitle = source.SuccessTitle;
             target.CreatedDateTime = source.CreatedDateTime;

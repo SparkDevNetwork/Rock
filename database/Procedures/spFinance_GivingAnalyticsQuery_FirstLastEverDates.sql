@@ -11,8 +11,6 @@ AS
 
 BEGIN
 
-	DECLARE @ContributionTypeId int = ( SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = '2D607262-52D6-4724-910D-5C6E8FB89ACC' )
-
 	SELECT 
 		[p].[GivingId],
 		MIN([ft].[TransactionDateTime]) AS [FirstEverGift],
@@ -27,8 +25,6 @@ BEGIN
 		ON [pa].[Id] = [ft].[AuthorizedPersonAliasId]
 	INNER JOIN [Person] [p] WITH (NOLOCK) 
 		ON [p].[Id] = [pa].[PersonId]
-	WHERE [ft].[TransactionTypeValueId] IS NOT NULL
-	AND [ft].[TransactionTypeValueId] = @ContributionTypeId
 	GROUP BY [p].[GivingId]
 
 END

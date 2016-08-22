@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
@@ -38,6 +39,12 @@ namespace RockWeb.Blocks.CheckIn
 
             RockPage.AddScriptLink( "~/Scripts/iscroll.js" );
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
+
+            var bodyTag = this.Page.Master.FindControl( "bodyTag" ) as HtmlGenericControl;
+            if ( bodyTag != null )
+            {
+                bodyTag.AddCssClass( "checkin-timeselect-bg" );
+            }
 
             if ( CurrentWorkflow == null || CurrentCheckInState == null )
             {
@@ -109,6 +116,7 @@ namespace RockWeb.Blocks.CheckIn
                         lbSelect.Attributes.Add( "data-loading-text", "Printing..." );
 
                         personSchedules = location.Schedules.Where( s => !s.ExcludedByFilter ).ToList();
+                        distinctSchedules = personSchedules;
                     }
 
                     if ( distinctSchedules.Count == 1 )
@@ -187,6 +195,7 @@ namespace RockWeb.Blocks.CheckIn
             if ( KioskCurrentlyActive )
             {
                 var schedules = new List<CheckInSchedule>();
+                bool validateSelection = false; 
 
                 var selectedIDs = hfTimes.Value.SplitDelimitedValues().AsIntegerList();
                 if ( CurrentCheckInType != null && CurrentCheckInType.TypeOfCheckin == TypeOfCheckin.Family )
@@ -195,7 +204,7 @@ namespace RockWeb.Blocks.CheckIn
                         .SelectMany( f => f.GetPeople( true )
                             .SelectMany( p => p.PossibleSchedules.Where( s => selectedIDs.Contains( s.Schedule.Id ) ) ) )
                         .ToList();
-
+                    validateSelection = true;
                 }
                 else
                 {
@@ -211,7 +220,7 @@ namespace RockWeb.Blocks.CheckIn
                 if ( schedules != null && schedules.Any() )
                 {
                     schedules.ForEach( s => s.Selected = true );
-                    ProcessSelection( maWarning );
+                    ProcessSelection( maWarning, validateSelection );
                 }
             }
         }

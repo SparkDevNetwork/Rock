@@ -101,5 +101,19 @@ namespace Rock.Data
         /// Method that will be called on an entity immediately before the item is saved
         /// </summary>
         void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry );
+
+        /// <summary>
+        /// Gets the Created By audit HTML details.
+        /// </summary>
+        /// <param name="rootUrl">The root URL.</param>
+        /// <returns>An HTML fragment with details about who created the model and when it was created.</returns>
+        string GetCreatedAuditHtml( string rootUrl );
+
+        /// <summary>
+        /// Gets the Last Modified By audit HTML details.
+        /// </summary>
+        /// <param name="rootUrl">The root URL.</param>
+        /// <returns>An HTML fragment with details about who modified the model and when it was modified.</returns>
+        string GetModifiedAuditHtml( string rootUrl );
     }
 }

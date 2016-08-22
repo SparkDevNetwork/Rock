@@ -74,8 +74,10 @@ namespace Rock.Address
             {
                 double latitude = double.Parse( location_match.Latitude );
                 double longitude = double.Parse( location_match.Longitude );
-                location.SetLocationPointFromLatLong(latitude, longitude);
-                result = VerificationResult.Geocoded;
+                if ( location.SetLocationPointFromLatLong( latitude, longitude ) )
+                {
+                    result = VerificationResult.Geocoded;
+                }
             }
 
             return result;

@@ -92,9 +92,10 @@
 }
 
 html {
+  -ms-overflow-style: scrollbar; // need for IE 10 issue with scrollbars being on TOP of the content
+
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  -ms-overflow-style: scrollbar; // need for IE 10 issue with scrollbars being on TOP of the content
 }
 
 main {
@@ -117,33 +118,33 @@ a:hover {
 input[type=text],
 textarea,
 .form-control {
-  -webkit-transition: all 0.30s ease-in-out;
-  -moz-transition: all 0.30s ease-in-out;
-  -ms-transition: all 0.30s ease-in-out;
-  -o-transition: all 0.30s ease-in-out;
+  -webkit-transition: all .3s ease-in-out;
+     -moz-transition: all .3s ease-in-out;
+      -ms-transition: all .3s ease-in-out;
+       -o-transition: all .3s ease-in-out;
 }
 
 input[type=text]:focus,
 textarea:focus,
 .form-control:focus {
-  box-shadow: 0 0 5px rgba(238, 118, 36, .6);
   border: 1px solid rgba(238, 118, 36, .6);
+  box-shadow: 0 0 5px rgba(238, 118, 36, .6);
 }
 
 pre {
+  color: @theme-6-text;
   background-color: @theme-6;
   border-color: darken(@theme-6, 15%);
-  color: @theme-6-text;
 }
 
 // text selection color
 ::selection {
+  color: @text-selection-color;
   background: @text-selection-bg;
-    color: @text-selection-color;
 }
 ::-moz-selection {
+  color: @text-selection-color;
   background: @text-selection-bg;
-    color: @text-selection-color;
 }
 
 /*#endregion */
@@ -185,26 +186,25 @@ h4, .h4 {
 }
 
 .table-hover > tbody > tr:hover {
-    td {
-        background-color: @grid-hover-bg;
-    }
+  td {
+    background-color: @grid-hover-bg;
+  }
 }
 
 .breadcrumb {
-    background-color: transparent;
+  background-color: transparent;
 }
 
 // panel tweaks
 .panel {
-  border-radius: 0;
   border-top-width: 3px;
+  border-radius: 0;
 
   .panel-heading {
-
     .panel-title {
+      font-size: 18px;
       font-weight: @font-weight-semibold;
       letter-spacing: -.5px;
-      font-size: 18px;
     }
   }
 
@@ -213,8 +213,6 @@ h4, .h4 {
       background-color: @brand-primary;
     }
   }
-
-
 }
 .panel-info {
   border-top-color: @panel-top-border-color;
@@ -256,35 +254,30 @@ h4, .h4 {
 .photo img[src*=no-photo],
 .person-image[style*=no-photo],
 .profile-photo[style*=no-photo] {
-    opacity: .5;
+  opacity: .5;
 }
 
 #cms-admin-footer {
-    border: 0;
+  border: 0;
 }
-
-/* JME 7/26/2015 @photo-border should already do this?
-.groupmembers .member .person-image {
-    border-color: @header-bg;
-}*/
 
 .smartsearch {
   float: right;
-  margin: 12px 4%;
-  border: 0;
-  background-color: lighten(@theme-6, 5%);
   width: 92%;
+  margin: 12px 4%;
+  background-color: lighten(@theme-6, 5%);
+  border: 0;
 
   input.searchinput {
     color: @theme-6-text;
   }
 
   @media @md {
-    margin: 0;
-    height: @navbar-height;
-    border-radius: 0;
     width: 290px;
+    height: @navbar-height;
+    margin: 0;
     background-color: darken(@header-bg, 5%);
+    border-radius: 0;
 
     input,
     a.dropdown-toggle {
@@ -294,8 +287,8 @@ h4, .h4 {
 
     i {
       margin-top: 0;
-      line-height: @navbar-height - 4px;
       margin-left: 4px;
+      line-height: @navbar-height - 4px;
     }
 
     input.searchinput {
@@ -308,14 +301,16 @@ h4, .h4 {
   margin-right: 2px;
 
   .profile-photo {
-    height: 35px;
-    width: 35px;
     float: left;
-    background-size: 100%;
-    -webkit-border-radius: 17.5px;
-    -moz-border-radius: 17.5px;
-    border-radius: 17.5px;
+    width: 35px;
+    height: 35px;
     margin: -8px 4px 0 0;
+    background-repeat: no-repeat;
+    background-size: cover;
+            border-radius: 17.5px;
+
+    -webkit-border-radius: 17.5px;
+       -moz-border-radius: 17.5px;
   }
 }
 
@@ -332,46 +327,46 @@ h4, .h4 {
   margin-left: 12px;
   color: @text-color;
 }
-  .navbar-top-links > li {
-    display: inline-block;
-  }
-    .navbar-top-links > li > a {
-      padding: 15px;
-      color: @navbar-default-link-color;
-      &:hover, &:focus {
-        color: @theme-8-text;
-        background-color: @theme-8;
-        @media @sm {
-          color: @navbar-default-link-hover-color;
-          background-color: darken(@header-bg, 5%);
-        }
-      }
+.navbar-top-links > li {
+  display: inline-block;
+}
+.navbar-top-links > li > a {
+  padding: 15px;
+  color: @navbar-default-link-color;
+  &:hover, &:focus {
+    color: @theme-8-text;
+    background-color: @theme-8;
+    @media @sm {
+      color: @navbar-default-link-hover-color;
+      background-color: darken(@header-bg, 5%);
     }
-    .navbar-top-links > li.open > a {
-      &, &:hover, &:focus {
-        background-color: @theme-8;
-        @media @sm {
-          background-color: darken(@header-bg, 10%);
-        }
-      }
-    }
-    .navbar-top-links ul .divider {
-      background-color: @gray-light!important;
-    }
-  .navbar-top-links .dropdown-menu {
-    width: 310px;
-    padding: 10px 0;
   }
-  .navbar-top-links .dropdown-messages .media {
-    padding: 3px 15px;
+}
+.navbar-top-links > li.open > a {
+  &, &:hover, &:focus {
+    background-color: @theme-8;
+    @media @sm {
+      background-color: darken(@header-bg, 10%);
+    }
   }
+}
+.navbar-top-links ul .divider {
+  background-color: @gray-light!important;
+}
+.navbar-top-links .dropdown-menu {
+  width: 310px;
+  padding: 10px 0;
+}
+.navbar-top-links .dropdown-messages .media {
+  padding: 3px 15px;
+}
 
 .count-info .label {
-  line-height: 12px;
-  padding: 2px 4px;
   position: absolute;
-  right: 3px;
   top: 6px;
+  right: 3px;
+  padding: 2px 4px;
+  line-height: 12px;
 }
 
 a.link-block,
@@ -386,24 +381,24 @@ a.link-block,
 }
 
 #content-wrapper {
-  background-color: @body-bg;
-  min-width: 320px;
   position: relative;
+  min-width: 320px;
+  background-color: @body-bg;
 
   @media screen {
-      min-height: 1100px;
+    min-height: 1100px;
   }
 
   header {
     .navbar-default {
+      margin-bottom: 0;
+      color: @nav-color;
       background-color: @nav-bg;
       border-color: darken(@nav-bg, 5%);
-      color: @nav-color;
-      margin-bottom: 0;
 
       .navbar-header {
-        padding: 10px 0 0 12px;
         float: left;
+        padding: 10px 0 0 12px;
       }
 
       .navbar-mobile-logo {
@@ -414,8 +409,8 @@ a.link-block,
         opacity: .8;
 
         svg {
-          height: 100%;
           width: 100%;
+          height: 100%;
 
           .rock-logo {
             fill: darken(@theme-4, 5%);
@@ -442,14 +437,13 @@ a.link-block,
           background-color: darken(@theme-2-text, 20%);
         }
       }
-
     }
   }
 
   #page-title {
-    background-color: @pagetitle-bg;
-    color: @pagetitle-text-color;
     padding: 15px;
+    color: @pagetitle-text-color;
+    background-color: @pagetitle-bg;
 
     h1 {
       margin: 0;
@@ -461,7 +455,6 @@ a.link-block,
         display: inline;
         opacity: .8;
       }
-
     }
 
     .breadcrumb {
@@ -469,11 +462,11 @@ a.link-block,
       margin: 4px 0 0;
 
       a {
-          color: @breadcrumb-color;
+        color: @breadcrumb-color;
 
-          &:hover {
-              color: lighten(@breadcrumb-color, 10%);
-          }
+        &:hover {
+          color: lighten(@breadcrumb-color, 10%);
+        }
       }
 
       > .active {
@@ -486,8 +479,8 @@ a.link-block,
     }
 
     .pageoverview-description {
-      opacity: .7;
       margin-top: 4px;
+      opacity: .7;
     }
   }
 
@@ -499,33 +492,33 @@ a.link-block,
     padding: 0 15px;
 
     a {
-        color: @text-color;
+      color: @text-color;
 
-        &:hover {
-            color: lighten(@text-color, 20%);
-        }
+      &:hover {
+        color: lighten(@text-color, 20%);
+      }
     }
   }
 }
 
 #content-wrapper, .navbar-static-side {
-  -webkit-transition-duration: 0.5s;
-  -moz-transition-duration: 0.5s;
-  -o-transition-duration: 0.5s;
-  transition-duration: 0.5s;
+  -webkit-transition-duration: .5s;
+     -moz-transition-duration: .5s;
+       -o-transition-duration: .5s;
+          transition-duration: .5s;
 }
 
 .not-found h2 {
   font-size: 200px;
   font-weight: @font-weight-bold;
-  letter-spacing: -5px;
   line-height: 210px;
+  letter-spacing: -5px;
 
   i {
-    color: #F03;
-    font-size: 210px;
     position: relative;
     top: -12px;
+    font-size: 210px;
+    color: #f03;
   }
 }
 
@@ -535,13 +528,13 @@ body#splash {
 
   #content {
     max-width: 400px;
-    margin: 24px auto 0;
     padding: 15px;
+    margin: 24px auto 0;
 
     #logo {
+      display: block;
       width: 100px;
       height: 100px;
-      display: block;
       margin: 0 auto;
 
       svg {
@@ -557,8 +550,8 @@ body#splash {
 
 
   &.error #content {
-    margin: 12px auto 0;
     max-width: 800px;
+    margin: 12px auto 0;
 
     #logo {
       width: 100px;
@@ -582,13 +575,13 @@ body#splash {
 // -------------------------
 
 .navbar-minimize {
-  background-color: @header-hambuger-bg;
-  color: @header-hambuger-color;
-  border: 1px solid @header-hamburger-border;
-  padding: 4px 12px;
-  border-radius: @border-radius-base;
-  cursor: pointer;
   display: inline-block;
+  padding: 4px 12px;
+  color: @header-hambuger-color;
+  cursor: pointer;
+  background-color: @header-hambuger-bg;
+  border: 1px solid @header-hamburger-border;
+  border-radius: @border-radius-base;
 }
 
 
@@ -603,33 +596,29 @@ body#splash {
 
 // Small devices (tablets, 768px and up)
 @media (min-width: @screen-sm-min) {
-
   body#splash {
-
     #content {
       margin: 36px auto 0;
 
       #logo {
+        display: block;
         width: 150px;
         height: 150px;
-        display: block;
         margin: 0 auto 12px;
       }
     }
   }
-
 }
 
 // Medium devices (desktops, 992px and up)
 @media (min-width: @screen-md-min) {
-
   #content-wrapper {
     header {
       .navbar-default {
         height: @navbar-height;
+        color: @header-text-color;
         background-color: @header-bg;
         border-color: darken(@header-bg, 5%);
-        color: @header-text-color;
 
         .navbar-mobile-logo {
           display: none;
@@ -657,12 +646,10 @@ body#splash {
       }
     }
   }
-
 }
 
 // Large devices (large desktops, 1200px and up)
 @media (min-width: @screen-lg-min) {
-
 }
 /*#endregion */
 
@@ -674,48 +661,49 @@ body#splash {
 
 // base styles
 .navbar-static-side {
-  background-color: @nav-bg;
-  color: @nav-color;
-  display: none;
   position: absolute;
+  display: none;
   width: 70px;
+  color: @nav-color;
+  background-color: @nav-bg;
 
   .navbar-header {
-    height: @navbar-height;
     width: 100%;
+    height: @navbar-height;
     background-color: @nav-logo-bg;
 
     .logo {
-        background: url(../../../Assets/Images/rock-logo-sm.svg) no-repeat top left;
-        height: 35px;
-        width: 36px;
-        background-size: contain;
-        margin: 8px auto 0;
-        opacity: .8;
+      width: 36px;
+      height: 35px;
+      margin: 8px auto 0;
+      background: url(../../../Assets/Images/rock-logo-sm.svg) no-repeat top left;
+      background-size: contain;
+      opacity: .8;
     }
   }
 
   .navbar-side {
     display: inline-block;
     width: 100%;
+    cursor: default;
 
     & > li {
-      text-align: center;
       margin-top: 0;
+      text-align: center;
       border-top: 1px solid lighten(@nav-bg, 7%);
 
       &:last-child {
-          border-bottom: 1px solid lighten(@nav-bg, 7%);
+        border-bottom: 1px solid lighten(@nav-bg, 7%);
       }
 
       > i {
+        display: block;
         padding: 16px 0;
         font-size: 24px;
-        display: block;
 
         &:hover {
-          background-color: @nav-sub-bg;
           color: @nav-sub-color;
+          background-color: @nav-sub-bg;
         }
       }
 
@@ -724,48 +712,48 @@ body#splash {
       }
 
       .nav-childpages {
+        position: absolute;
         top: 0;
         left: 70px;
-        position: absolute;
         z-index: 9999;
-        background-color: @nav-sub-bg;
         display: none;
-        font-size: 14px;
         width: 220px;
-        text-align: left;
         padding: 9px 12px;
+        font-size: 14px;
+        text-align: left;
+        background-color: @nav-sub-bg;
 
         li a {
-          line-height: 1.1em;
           padding: 6px;
+          line-height: 1.1em;
           color: @nav-sub-color;
 
           &:focus {
-            background-color: @nav-sub-text-rollover-bg;
             color: @nav-sub-text-rollover-color;
+            background-color: @nav-sub-text-rollover-bg;
           }
 
           &:hover {
-            background-color: @nav-sub-text-rollover-bg;
             color: @nav-sub-text-rollover-color;
+            background-color: @nav-sub-text-rollover-bg;
           }
         }
 
         li.title {
+          margin-bottom: -8px;
           font-size: 18px;
           font-weight: @font-weight-light;
           color: @nav-sub-title-color;
-          margin-bottom: -8px;
         }
 
         li.header {
+          padding-bottom: 2px;
           margin-top: 14px;
-          color: @nav-sub-heading-color;
           margin-left: 4px;
           font-weight: @font-weight-semibold;
-          padding-bottom: 2px;
-          border-bottom: 1px solid @nav-sub-heading-border;
           font-weight: 400;
+          color: @nav-sub-heading-color;
+          border-bottom: 1px solid @nav-sub-heading-border;
         }
 
         li.header:first-child {
@@ -784,12 +772,10 @@ body#splash {
       }
     }
   }
-
 }
 
 // expanded view
 @media (min-width: @screen-md-min) {
-
   .navbar-static-side {
     display: block;
   }
@@ -802,8 +788,8 @@ body#splash {
 // minimized view
 body.navbar-side-open {
   .navbar-static-side {
-    width: 70px;
     display: block;
+    width: 70px;
   }
 
   #content-wrapper {

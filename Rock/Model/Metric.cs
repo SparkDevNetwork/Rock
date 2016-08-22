@@ -186,6 +186,7 @@ namespace Rock.Model
         /// <value>
         /// The metric partitions.
         /// </value>
+        [LavaInclude]
         public virtual ICollection<MetricPartition> MetricPartitions { get; set; }
 
         /// <summary>
@@ -246,6 +247,16 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<MetricCategory> MetricCategories { get; set; }
 
+        /// <summary>
+        /// Gets or sets the type of the numeric data that the values represent. Although all values
+        /// are stored as a decimal, specifying the type here allows entry screens to use appropriate
+        /// controls/validation when entering values.
+        /// </summary>
+        /// <value>
+        /// The type of the numeric data.
+        /// </value>
+        public MetricNumericDataType NumericDataType { get; set; }
+
         #endregion
 
         #region Methods
@@ -297,6 +308,31 @@ namespace Rock.Model
             this.HasOptional( p => p.AdminPersonAlias ).WithMany().HasForeignKey( p => p.AdminPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Schedule ).WithMany().HasForeignKey( p => p.ScheduleId ).WillCascadeOnDelete( false );
         }
+    }
+
+    #endregion
+
+    #region Enumerations
+
+    /// <summary>
+    /// The gender of a person
+    /// </summary>
+    public enum MetricNumericDataType
+    {
+        /// <summary>
+        /// Integer
+        /// </summary>
+        Integer = 0,
+
+        /// <summary>
+        /// Decimal
+        /// </summary>
+        Decimal = 1,
+
+        /// <summary>
+        /// Currency
+        /// </summary>
+        Currency = 2
     }
 
     #endregion

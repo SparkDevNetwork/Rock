@@ -91,6 +91,9 @@ namespace Rock.Client
         public int? ParentGroupId { get; set; }
 
         /// <summary />
+        public int? RequiredSignatureDocumentTemplateId { get; set; }
+
+        /// <summary />
         public int? ScheduleId { get; set; }
 
         /// <summary />
@@ -150,6 +153,7 @@ namespace Rock.Client
             this.Name = source.Name;
             this.Order = source.Order;
             this.ParentGroupId = source.ParentGroupId;
+            this.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
             this.ScheduleId = source.ScheduleId;
             this.SyncDataViewId = source.SyncDataViewId;
             this.WelcomeSystemEmailId = source.WelcomeSystemEmailId;
@@ -185,6 +189,9 @@ namespace Rock.Client
 
         /// <summary />
         public ICollection<GroupMember> Members { get; set; }
+
+        /// <summary />
+        public SignatureDocumentTemplate RequiredSignatureDocumentTemplate { get; set; }
 
         /// <summary />
         public Schedule Schedule { get; set; }

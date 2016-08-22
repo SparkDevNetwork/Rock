@@ -242,6 +242,9 @@ namespace RockWeb
                         sched.Start();
                     }
 
+                    // set the encryption protocols that are permissible for external SSL connections
+                    System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls | System.Net.SecurityProtocolType.Tls11 | System.Net.SecurityProtocolType.Tls12;
+
                     // Force the static Liquid class to get instantiated so that the standard filters are loaded prior 
                     // to the custom RockFilter.  This is to allow the custom 'Date' filter to replace the standard 
                     // Date filter.
@@ -259,7 +262,31 @@ namespace RockWeb
                     Template.RegisterFilter( typeof( Rock.Lava.RockFilters ) );
 
                     // register lava entity blocks
-                    Rock.Lava.Blocks.RockEntity.RegisterEntityCommands();
+                    var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+                    foreach ( var assembly in assemblies )
+                    {
+                        try
+                        {
+                            var customCommands = assembly.GetTypes().Where( x => x.BaseType == typeof( Rock.Lava.Blocks.RockLavaBlockBase ) );
+
+                            foreach ( var command in customCommands )
+                            {
+                                if (command.Name == "RockEntity" )
+                                {
+                                    Rock.Lava.Blocks.RockEntity.RegisterEntityCommands();
+                                }
+                                else
+                                {
+                                    MethodInfo method = typeof( Template ).GetMethod( "RegisterTag" );
+                                    MethodInfo genericMethod = method.MakeGenericMethod( command );
+                                    object[] parametersArray = new object[] { command.Name.ToLower() };
+                                    genericMethod.Invoke( this, parametersArray );
+                                }
+                            }
+                        }
+                        catch { }
+                    }
 
                     // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
                     AddCallBack();

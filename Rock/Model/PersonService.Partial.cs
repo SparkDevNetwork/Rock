@@ -489,14 +489,14 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the similiar sounding names.
+        /// Gets the similar sounding names.
         /// </summary>
         /// <param name="fullName">The full name.</param>
         /// <param name="excludeIds">The exclude ids.</param>
         /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
         /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
         /// <returns></returns>
-        public List<string> GetSimiliarNames( string fullName, List<int> excludeIds, bool includeDeceased = false, bool includeBusinesses = false )
+        public List<string> GetSimilarNames( string fullName, List<int> excludeIds, bool includeDeceased = false, bool includeBusinesses = false )
         {
             var names = fullName.SplitDelimitedValues();
 

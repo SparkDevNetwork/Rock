@@ -24,6 +24,8 @@
 
             <asp:Panel ID="pnlReadDetails" runat="server">
 
+                <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
+
                 <div class="panel-body">
 
                     <div class="row">

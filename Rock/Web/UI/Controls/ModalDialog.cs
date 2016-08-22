@@ -44,6 +44,14 @@ namespace Rock.Web.UI.Controls
         private Panel _footerPanel;
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ModalDialog"/> class.
+        /// </summary>
+        public ModalDialog() : base()
+        {
+            this.Visible = false;
+        }
+
+        /// <summary>
         /// Gets the server save link.
         /// </summary>
         /// <value>
@@ -275,6 +283,9 @@ namespace Rock.Web.UI.Controls
             // make sure the close script gets fired, even if the modal isn't rendered
             string hideScript = string.Format("Rock.controls.modal.closeModalDialog($('#{0}'));", _dialogPanel.ClientID);
             ScriptManager.RegisterStartupScript( this, this.GetType(), "modaldialog-hide-" + this.ClientID, hideScript, true );
+
+            this.Visible = false;
+
         }
 
         /// <summary>
@@ -282,6 +293,8 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public void Show()
         {
+            this.Visible = true;
+
             EnsureChildControls();
             _hfModalVisible.Value = "1";
         }

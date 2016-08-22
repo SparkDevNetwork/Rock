@@ -44,8 +44,30 @@ namespace Rock.Migrations
             RockMigrationHelper.AddDefinedTypeAttribute( "D7979EA1-44E9-46E2-BF37-DDAF7F741378", Rock.SystemGuid.FieldType.BOOLEAN, "Show Address Line 2", "ShowAddressLine2", "Show Address Line 2 when editing an address", 4, "True", "360F05E4-E55B-4313-BB9F-9DCE96833571" );
             RockMigrationHelper.AddDefinedValueAttributeValueByValue( "D7979EA1-44E9-46E2-BF37-DDAF7F741378", "US", "ShowAddressLine2", @"False" ); // United States ShowAddressLine2 (False), all other countries will default to true
 
-            // DT: V5 hotfix: 002_CheckinGradeRequired
-            RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.GroupType", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "GroupTypePurposeValueId", "", "Grade Required", "", 0, "False", "A4899874-9EDF-4549-B054-4F593F4C4362", "core_checkin_GradeRequired" );
+            // DT: V5 hotfix: 002_CheckinGradeRequired & 004_FixGradeRequiredAttribute
+            Sql( @"
+    IF NOT EXISTS (
+        SELECT [Id]
+        FROM [Attribute]
+        WHERE [Guid] = 'A4899874-9EDF-4549-B054-4F593F4C4362' )
+    BEGIN
+
+        DECLARE @EntityTypeId int = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.GroupType')
+        DECLARE @FieldTypeId int = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '1EDAFDED-DFE6-4334-B019-6EECBA89E05A')
+        DECLARE @CheckInTemplatePurposeId int = ( SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = '4A406CB0-495B-4795-B788-52BDFDE00B01' )
+
+        INSERT INTO [Attribute] (
+            [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
+            [Key],[Name],[Description],
+            [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
+            [Guid])
+        VALUES(
+            1, @FieldTypeId, @EntityTypeid,'GroupTypePurposeValueId', CAST( @CheckInTemplatePurposeId AS varchar),
+            'core_checkin_GradeRequired','Grade Required','',
+            0,0,'False',0,0,
+            'A4899874-9EDF-4549-B054-4F593F4C4362')
+
+    END" );
             RockMigrationHelper.UpdateAttributeQualifier( "A4899874-9EDF-4549-B054-4F593F4C4362", "falsetext", "No", "B61ED891-C631-4172-A05D-D86265CA2A1D" );
             RockMigrationHelper.UpdateAttributeQualifier( "A4899874-9EDF-4549-B054-4F593F4C4362", "truetext", "Yes", "D4C52849-6ED4-414A-95D7-2F7F805CF9A3" );
 

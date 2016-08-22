@@ -53,6 +53,11 @@ namespace Rock.Security
         /// </summary>
         public const string APPROVE = "Approve";
 
+        /// <summary>
+        /// Authorization to interact with the object (content channgel item)
+        /// </summary>
+        public const string INTERACT = "Interact";
+
         #endregion
 
         #region Private Properties

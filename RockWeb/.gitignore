@@ -1,16 +1,9 @@
-/LINQPad.config
-*.webinfo
-
-/bin/DotLiquid.dll
-/bin/Rock.dll
-/bin/Rock.Mailgun.dll
-/bin/Rock.Migration.dll
-/bin/Rock.Mandrill.dll
-/bin/Rock.Migrations.dll
-/bin/Rock.NMI.dll
-/bin/Rock.PayFlowPro.dll
-/bin/Rock.Rest.dll
-/bin/Rock.Version.dll
+/bin/*/*.dll
+/bin/*.dll
 /bin/*.pdb
 /bin/*.xml
 
+/*.suo
+/*.user
+/Test.aspx
+/Test.aspx.cs

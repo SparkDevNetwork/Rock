@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
@@ -555,6 +556,7 @@ namespace RockWeb.Blocks.Groups
             group.GroupTypeId = CurrentGroupTypeId;
             group.ParentGroupId = gpParentGroup.SelectedValueAsInt();
             group.GroupCapacity = nbGroupCapacity.Text.AsIntegerOrNull();
+            group.RequiredSignatureDocumentTemplateId = ddlSignatureDocumentTemplate.SelectedValueAsInt();
             group.IsSecurityRole = cbIsSecurityRole.Checked;
             group.IsActive = cbIsActive.Checked;
             group.IsPublic = cbIsPublic.Checked;
@@ -672,12 +674,16 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
-            if ( !group.IsValid )
+            // if the groupMember IsValid is false, and the UI controls didn't report any errors, it is probably because the custom rules of GroupMember didn't pass.
+            // So, make sure a message is displayed in the validation summary
+            cvGroup.IsValid = group.IsValid;
+
+            if ( !cvGroup.IsValid )
             {
-                // Controls will render the error messages                    
+                cvGroup.ErrorMessage = group.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
                 return;
             }
-
+            
             // use WrapTransaction since SaveAttributeValues does it's own RockContext.SaveChanges()
             rockContext.WrapTransaction( () =>
             {
@@ -1133,7 +1139,7 @@ namespace RockWeb.Blocks.Groups
                 lReadOnlyTitle.Text = ActionTitle.Add( Group.FriendlyTypeName ).FormatAsHtmlTitle();
 
                 // hide the panel drawer that show created and last modified dates
-                divPanelDrawer.Visible = false;
+                pdAuditDetails.Visible = false;
             }
             else
             {
@@ -1159,8 +1165,9 @@ namespace RockWeb.Blocks.Groups
             var groupService = new GroupService( rockContext );
             var attributeService = new AttributeService( rockContext );
 
-            LoadDropDowns();
+            LoadDropDowns( rockContext );
 
+            ddlSignatureDocumentTemplate.SetValue( group.RequiredSignatureDocumentTemplateId );
             gpParentGroup.SetValue( group.ParentGroup ?? groupService.Get( group.ParentGroupId ?? 0 ) );
 
             // hide sync and requirements panel if no admin access
@@ -1253,6 +1260,7 @@ namespace RockWeb.Blocks.Groups
             GroupLocationsState = group.GroupLocations.ToList();
 
             var groupTypeCache = CurrentGroupTypeCache;
+            nbGroupCapacity.Visible = groupTypeCache != null && groupTypeCache.GroupCapacityRule != GroupCapacityRule.None;
             SetScheduleControls( groupTypeCache, group );
             ShowGroupTypeEditDetails( groupTypeCache, group, true );
 
@@ -1429,8 +1437,7 @@ namespace RockWeb.Blocks.Groups
             lGroupIconHtml.Text = groupIconHtml;
             lReadOnlyTitle.Text = group.Name.FormatAsHtmlTitle();
 
-            lCreatedBy.Text = string.Format( "{0} <small>({1})</small>", group.CreatedByPersonName, group.CreatedDateTime );
-            lLastModifiedBy.Text = string.Format( "{0} <small>({1})</small>", group.ModifiedByPersonName, group.ModifiedDateTime );
+            pdAuditDetails.SetEntity( group, ResolveRockUrl( "~" ) );
 
             if ( !string.IsNullOrWhiteSpace( group.Description ) )
             {
@@ -1442,6 +1449,11 @@ namespace RockWeb.Blocks.Groups
             if ( group.ParentGroup != null )
             {
                 descriptionList.Add( "Parent Group", group.ParentGroup.Name );
+            }
+
+            if ( group.RequiredSignatureDocumentTemplate != null )
+            {
+                descriptionList.Add( "Required Signed Document", group.RequiredSignatureDocumentTemplate.Name );
             }
 
             if ( group.Schedule != null )
@@ -1459,16 +1471,10 @@ namespace RockWeb.Blocks.Groups
                 hlCampus.Visible = false;
             }
 
-            
             // configure group capacity
-            if ( group.GroupType == null || group.GroupType.GroupCapacityRule == GroupCapacityRule.None )
+            nbGroupCapacityMessage.Visible = false;
+            if ( group.GroupType != null && group.GroupType.GroupCapacityRule != GroupCapacityRule.None )
             {
-                nbGroupCapacity.Visible = false;
-            }
-            else
-            {
-                nbGroupCapacity.Visible = true;
-
                 // check if we're over capacity and if so show warning
                 if ( group.GroupCapacity.HasValue )
                 {
@@ -1724,11 +1730,20 @@ namespace RockWeb.Blocks.Groups
         /// <summary>
         /// Loads the drop downs.
         /// </summary>
-        private void LoadDropDowns()
+        private void LoadDropDowns( RockContext rockContext )
         {
             ddlCampus.DataSource = CampusCache.All();
             ddlCampus.DataBind();
             ddlCampus.Items.Insert( 0, new ListItem( None.Text, None.IdValue ) );
+
+            ddlSignatureDocumentTemplate.Items.Clear();
+            ddlSignatureDocumentTemplate.Items.Add( new ListItem() );
+            foreach ( var documentType in new SignatureDocumentTemplateService( rockContext )
+                .Queryable().AsNoTracking()
+                .OrderBy( t => t.Name ) )
+            {
+                ddlSignatureDocumentTemplate.Items.Add( new ListItem( documentType.Name, documentType.Id.ToString() ) );
+            }
         }
 
         /// <summary>
