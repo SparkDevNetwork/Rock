@@ -37,7 +37,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
     [Description( "Custom church metrics block using the Chart.js library" )]
     [CustomDropdownListField( "Number of Columns", "", "1,2,3,4,5,6,7,8,9,10,11,12", false, DefaultValue = "4", Order = 1 )]
     [MetricCategoriesField( "Metric Source", "Select the primary metric(s) to include in this chart.", false, Order = 2 )]
-    [CustomRadioListField( "Aggregation", "Which calculation method should be used", "Sum,Avg,Min,Max,Median", true, "Sum", order: 3 )]
+    [CustomRadioListField( "Aggregation", "Which calculation method should be used", "Sum,Avg,Min,Max,Median,Latest", true, "Sum", order: 3 )]
     [BooleanField( "Respect Campus Context", "Respect the group context even if the Campus context selector isn't included on the page.", true, Order = 4 )]
     [BooleanField( "Respect Group Context", "Respect the group context even if the GroupType context selector isn't included on the page.", true, Order = 5 )]
     [BooleanField( "Respect Date Context", "Respect the date context even if the DateRange context selector isn't included on the page.", true, Order = 6 )]
@@ -45,7 +45,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
     [BooleanField( "Require Attendance", "Only count the actual attendances rather than everyone on the roster.", true, Order = 8 )]
     [CustomRadioListField( "Attendance Type", "Use values for each service or unique people for the whole day", "All Values,Unique", true, "All Values", order: 9 )]
     [MetricCategoriesField( "Comparison Metric Source", "Select the metric(s) to calculate against the Primary Source/Key.", false, Order = 10 )]
-    [CustomRadioListField( "Comparison Aggregation", "Which calculation method should be used", "Sum,Avg,Min,Max,Median", true, "Sum", order: 11 )]
+    [CustomRadioListField( "Comparison Aggregation", "Which calculation method should be used", "Sum,Avg,Min,Max,Median,Latest", true, "Sum", order: 11 )]
     [CustomRadioListField( "Display Comparison As", "Choose to display the comparison result as an integer or percentage", "Integer,Percentage", true, "Integer", order: 12 )]
     [BooleanField( "Comparison Respect Campus Context", "Respect the group context even if the Campus context selector isn't included on the page.", true, Order = 13 )]
     [BooleanField( "Comparison Respect Group Context", "Respect the group context even if the GroupType context selector isn't included on the page.", true, Order = 14 )]
@@ -149,14 +149,14 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         protected decimal FormatValues()
         {
             var primaryMetricValues = GetMetricValues( true );
-            var primaryValue = GetValueAggregate( primaryMetricValues.Select( v => v.YValue ), true );
+            var primaryValue = GetValueAggregate( primaryMetricValues, true );
 
             var comparisonMetricGuids = GetAttributeValue( "ComparisonMetricSource" ).SplitDelimitedValues().AsGuidOrNullList();
             // if comparing values, make sure we have a valid percentage source
             if ( primaryValue > 0 && comparisonMetricGuids.Any() )
             {
                 var comparisonMetricValues = GetMetricValues( false );
-                var comparisonValue = GetValueAggregate( comparisonMetricValues.Select( v => v.YValue ), false );
+                var comparisonValue = GetValueAggregate( comparisonMetricValues, false );
 
                 if ( comparisonValue > 0 )
                 {
@@ -186,31 +186,41 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         /// <param name="values">The values.</param>
         /// <param name="isPrimary">if set to <c>true</c> [is primary].</param>
         /// <returns></returns>
-        protected decimal GetValueAggregate( IEnumerable<decimal?> values, bool isPrimary )
+        protected decimal GetValueAggregate( List<MetricValue> values, bool isPrimary )
         {
+            if(!values.Any())
+            {
+                return 0;
+            }
+
             var preKey = isPrimary ? string.Empty : "Comparison";
             decimal? aggregateValue = null;
 
             switch ( GetAttributeValue( preKey + "Aggregation" ) )
             {
                 case "Avg":
-                    aggregateValue = values.Average();
+                    aggregateValue = values.Select(v => v.YValue).Average();
                     break;
 
                 case "Min":
-                    aggregateValue = values.Min();
+                    aggregateValue = values.Select(v => v.YValue).Min();
                     break;
 
                 case "Max":
-                    aggregateValue = values.Max();
+                    aggregateValue = values.Select(v => v.YValue).Max();
                     break;
 
                 case "Median":
-                    aggregateValue = values.OrderBy( v => v ).ElementAt( values.Count() / 2 );
+                    aggregateValue = values.Select(v => v.YValue).OrderBy( v => v ).ElementAt( values.Count() / 2 );
+                    break;
+
+                case "Latest":
+                    var latestDate = values.Where(v => v.MetricValueDateTime.HasValue).OrderByDescending(v => v.MetricValueDateTime).First().MetricValueDateTime.Value.Date;
+                    aggregateValue = values.Where(v => v.MetricValueDateTime.HasValue && v.MetricValueDateTime.Value.Date == latestDate).Select(v => v.YValue).Sum();
                     break;
 
                 default:
-                    aggregateValue = values.Sum();
+                    aggregateValue = values.Select(v => v.YValue).Sum();
                     break;
             }
 
