@@ -64,9 +64,6 @@ namespace church.ccv.Badges.Person
                 <div class='badge badge-tithe badge-icon step-nottaken' data-toggle='tooltip' data-original-title='{1} is not giving' data-container='body'>
                     <i class='icon ccv-tithe'></i>
                 </div>
-                <div class='badge badge-share badge-icon step-nottaken' data-toggle='tooltip' data-original-title='Coming Soon...' data-container='body'>
-                    <i class='icon ccv-share'></i>
-                </div>
                 <a class='badge badge-coach badge-icon step-nottaken' data-toggle='tooltip' data-original-title='{1} is not coaching' data-container='body'  href='/page/{7}?PersonGuid={2}'>
                     <i class='icon ccv-coach'></i>
                 </a>
