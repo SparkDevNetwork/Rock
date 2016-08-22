@@ -18,9 +18,12 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Web;
 using System.Web.Http;
 using Rock.Chart;
 using Rock.Rest.Filters;
+using SharpRaven;
+using SharpRaven.Data;
 
 namespace Rock.Rest.Controllers
 {
@@ -75,11 +78,23 @@ namespace Rock.Rest.Controllers
         public void LogException( Exception ex )
         {
             var personAlias = this.GetPersonAlias();
-            Rock.Model.ExceptionLogService.LogException( ex, System.Web.HttpContext.Current, null, null, personAlias );
+            Model.ExceptionLogService.LogException( ex, HttpContext.Current, null, null, personAlias );
+
+            // send the event to Sentry if configured
+            var sentryDSN = Web.Cache.GlobalAttributesCache.Read().GetValue( "SentryDSN" ) ?? string.Empty;
+            var sentryClient = new RavenClient( sentryDSN );
+            if ( !string.IsNullOrEmpty( sentryDSN ) && sentryClient != null )
+            {
+                ex.Data.Add( "context", HttpContext.Current );
+                ex.Data.Add( "page-id", null );
+                ex.Data.Add( "site-id", null );
+                ex.Data.Add( "person-alias", personAlias );
+                sentryClient.Capture( new SentryEvent( ex ) );
+            }
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class ExceptionChartData : IChartData
         {
