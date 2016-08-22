@@ -306,8 +306,15 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                 }
             }
 
-            var didAttendTrue = FilterMetricValuesByPartition( metricValues, "Did Attend", dtBooleanTrueId );
+            int? didAttendFilterId = null;
+            if ( metricValues.Any( m => m.MetricValuePartitions.Any( mvp => mvp.MetricPartition.Label == "Did Attend" ) ) )
+            {
+                didAttendFilterId = dtBooleanTrueId;
+            }
 
+            var didAttendTrue = FilterMetricValuesByPartition( metricValues, "Did Attend", didAttendFilterId );
+
+            // TODO: clean up this pattern, the did/did not attend should be simplified
             if ( GetAttributeValue( preKey + "RequireAttendance" ).AsBoolean() )
             {
                 return didAttendTrue.ToList();

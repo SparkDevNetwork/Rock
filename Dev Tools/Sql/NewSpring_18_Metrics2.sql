@@ -6,14 +6,8 @@
 --  Existing metrics structure exists according to script 7:
 
 	TODO:
-		1) Add attendance SQL source -- DONE
-		2) Rename metrics so that they aren't so long -- DONE
-				Volunteer Groups Attendance
-				Volunteer Groups Uniques
-				Attendee Groups Attendance
-				Attendee Groups Uniques
-		3) Fix issues with Fuse, KidSpring, Next Steps naming
-		3) Add Schedule id to new metrics
+		1) Fix issues with Fuse, KidSpring, Next Steps naming
+		2) Add Schedule id to new metrics
 
    ====================================================== */
 -- Make sure you're using the right Rock database:
