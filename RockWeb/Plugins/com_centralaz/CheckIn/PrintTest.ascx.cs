@@ -49,7 +49,10 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
         #region Fields
 
         // used for private variables
-        
+        private const string USER_SETTING_LABELGUID = "PrintTest:Label";
+        private const string USER_SETTING_DEVICEID = "PrintTest:Device";
+        private const string USER_SETTING_PERSONID = "PrintTest:Person";
+
         #endregion
 
         #region Properties
@@ -104,10 +107,11 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                 ddlLabel.DataValueField = "Guid";
                 ddlLabel.DataSource = queryable.ToList();
                 ddlLabel.DataBind();
+
+                UseUserPreferences();
             }
             else
             {
-                nbMessage.CssClass = "alert";
                 nbMessage.Text = "";
             }
         }
@@ -171,6 +175,8 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                 }
             }
 
+            SaveUserSettings( selectedDevice, label, checkinPerson );
+
             checkinPerson.SecurityCode = "AB1234";
 
             CheckInGroupType checkinGroupType = new CheckInGroupType();
@@ -207,9 +213,53 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             labels.Add( checkinLabel );
 
             checkinGroupType.Labels = labels;
-            PrintFromServerLabels( checkinPerson, checkinGroupType, labels );
+            try
+            {
+                PrintFromServerLabels( checkinPerson, checkinGroupType, labels );
+                nbMessage.NotificationBoxType = NotificationBoxType.Success;
+                nbMessage.Text += string.Format( "{0} Label(s) printed to {1} ({2})", RockDateTime.Now.ToShortTimeString(), device.Name, checkinLabel.PrinterAddress );
+            }
+            catch ( Exception ex )
+            {
+                nbMessage.NotificationBoxType = NotificationBoxType.Danger;
+                nbMessage.Text = string.Format( "{0} There was a problem trying to print: {1}", RockDateTime.Now.ToShortTimeString(), ex.Message );
+            }
 
             bbtnPrint.DataLoadingText = "";
+        }
+
+        private void SaveUserSettings( ListItem device, ListItem label, CheckInPerson person )
+        {
+            SetUserPreference( USER_SETTING_DEVICEID,  device.Value );
+            SetUserPreference( USER_SETTING_LABELGUID, label.Value );
+            if ( person.Person != null  )
+            {
+                SetUserPreference( USER_SETTING_PERSONID, person.Person.Id.ToString() );
+            }
+        }
+
+        private void UseUserPreferences()
+        {
+            var deviceId = GetUserPreference( USER_SETTING_DEVICEID );
+            var labelGuid = GetUserPreference( USER_SETTING_LABELGUID );
+            var personId = GetUserPreference( USER_SETTING_PERSONID );
+
+            if ( ! string.IsNullOrWhiteSpace( deviceId ) )
+            {
+                ddlDevice.SelectedValue = deviceId;
+            }
+
+            if ( !string.IsNullOrWhiteSpace( labelGuid ) )
+            {
+                ddlLabel.SelectedValue = labelGuid;
+            }
+
+            if ( !string.IsNullOrWhiteSpace( personId ) )
+            {
+                PersonService personService = new PersonService( new RockContext() );
+                var p = personService.Get( personId.AsInteger() );
+                ppPerson.SetValue( p );
+            }
         }
 
         #endregion
@@ -305,7 +355,7 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                             else
                             {
                                 //phResults.Controls.Add( new LiteralControl( "<br/>NOTE: Could not connect to printer!" ) );
-                                nbMessage.CssClass = "alert alert-danger";
+                                nbMessage.NotificationBoxType = NotificationBoxType.Danger;
                                 nbMessage.Text = "Could not connect to printer!";
                             }
                         }
