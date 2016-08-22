@@ -89,17 +89,6 @@ namespace RockWeb.Plugins.church_ccv.Hr
 ";
             btnSendToPdf.Click += btnSendToPdf_Click;
 
-            var btnOpenMultipleTimeCards = new LinkButton();
-            btnOpenMultipleTimeCards.ID = "btnOpenMultipleTimeCards";
-            btnOpenMultipleTimeCards.CssClass = "btn btn-default btn-sm";
-            btnOpenMultipleTimeCards.ToolTip = "Open Multiple";
-            btnOpenMultipleTimeCards.CausesValidation = false;
-
-            btnOpenMultipleTimeCards.Text = @"
-<i class='fa fa-rocket ' title='Open Multiple'></i>
-";
-            btnOpenMultipleTimeCards.Click += btnOpenMultipleTimeCards_Click;
-
             var btnApprove = new LinkButton();
             btnApprove.ID = "btnApprove";
             btnApprove.CssClass = "btn btn-default btn-sm";
@@ -114,7 +103,6 @@ namespace RockWeb.Plugins.church_ccv.Hr
             Panel customControls = new Panel();
             customControls.Controls.Add( btnExport );
             customControls.Controls.Add( btnSendToPdf );
-            customControls.Controls.Add( btnOpenMultipleTimeCards );
             customControls.Controls.Add( btnApprove );
 
             gList.Actions.AddCustomActionControl( customControls );
@@ -137,16 +125,9 @@ namespace RockWeb.Plugins.church_ccv.Hr
             employeeNumberAttribute = AttributeCache.Read( this.GetAttributeValue( "EmployeeNumberAttribute" ).AsGuid() );
             payrollDepartmentAttribute = AttributeCache.Read( this.GetAttributeValue( "PayrollDepartmentAttribute" ).AsGuid() );
 
-            if ( this.PageParameter( "ExportToPdf" ).AsBoolean() )
+            if ( !Page.IsPostBack )
             {
-                RenderOpenMultiple();
-            }
-            else
-            {
-                if ( !Page.IsPostBack )
-                {
-                    BindGrid();
-                }
+                BindGrid();
             }
         }
 
@@ -515,68 +496,6 @@ namespace RockWeb.Plugins.church_ccv.Hr
             {
                 return string.Empty;
             }
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnOpenMultipleTimeCards control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void btnOpenMultipleTimeCards_Click( object sender, EventArgs e )
-        {
-            var qryParams = new Dictionary<string, string>();
-            var timeCardPayPeriodId = PageParameter( "TimeCardPayPeriodId" ).AsInteger();
-            qryParams.Add( "TimeCardPayPeriodId", timeCardPayPeriodId.ToString() );
-            var selectedTimeCardIds = gList.SelectedKeys.OfType<int>().ToList().AsDelimited( "," );
-            qryParams.Add( "SelectedTimeCardIds", selectedTimeCardIds );
-            qryParams.Add( "ExportToPdf", "1" );
-            this.NavigateToCurrentPage( qryParams );
-        }
-
-        /// <summary>
-        /// Renders the open multiple.
-        /// </summary>
-        private void RenderOpenMultiple()
-        {
-            BindGrid();
-            var selectedKeys = this.PageParameter( "SelectedTimeCardIds" ).SplitDelimitedValues().AsIntegerList();
-            var baseUrl = this.ResolveRockUrlIncludeRoot( "~" );
-
-            var htmlDoc = new StringBuilder();
-            htmlDoc.AppendLine( "<html><head><head><body>" );
-            htmlDoc.Append( @"
-<style>
-    .pagebreak { page-break-before: always; }
-</style>
-<script type='text/javascript'>
-  function iframeLoaded(a) {
-        a.height = a.contentWindow.document.body.scrollHeight;
-  }
-</script>
-" );
-            foreach ( var dataItem in gList.DataSourceAsList )
-            {
-                var timeCardId = (int)dataItem.GetPropertyValue( "Id" );
-
-                // create an iframe of each timecard detail, so that they can all be shown on the same page
-                // then the user can use the browser to print the page to a pdf 
-                if ( !selectedKeys.Any() || selectedKeys.Contains( timeCardId ) )
-                {
-                    var qryParams = new Dictionary<string, string>();
-                    qryParams.Add( "TimeCardId", timeCardId.ToString() );
-                    qryParams.Add( "pdfExport", "1" );
-                    string pageUrl = LinkedPageUrl( "DetailPage", qryParams );
-                    string url = this.ResolveRockUrlIncludeRoot( pageUrl );
-                    htmlDoc.AppendFormat( "<iframe src='{0}' width='100%' onload='iframeLoaded(this)' frameBorder='0'></iframe>", url );
-                    htmlDoc.AppendLine( "<div class='pagebreak'></div>" );
-                }
-            }
-
-            htmlDoc.AppendLine( "</body></html>" );
-
-            this.Response.Clear();
-            this.Response.Write( htmlDoc.ToString() );
-            this.Response.End();
         }
 
         /// <summary>
