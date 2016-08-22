@@ -1493,7 +1493,6 @@ Sys.Application.add_load(function () {
                 ex.Data.Add( "page-id", _pageCache.Id );
                 ex.Data.Add( "site-id", _pageCache.Layout.SiteId );
                 ex.Data.Add( "person-alias", CurrentPersonAlias );
-                ex.Data.Add( "environment", Request.Url.AbsoluteUri );
                 sentryClient.Capture( new SentryEvent( ex ) );
             }
         }

@@ -1206,7 +1206,6 @@ namespace Rock.Web.UI
                 ex.Data.Add( "page-id", RockPage.PageId );
                 ex.Data.Add( "site-id", RockPage.Layout.SiteId );
                 ex.Data.Add( "person-alias", CurrentPersonAlias );
-                ex.Data.Add( "environment", Request.Url.AbsoluteUri );
                 sentryClient.Capture( new SentryEvent( ex ) );
             }
         }
