@@ -65,7 +65,7 @@ DECLARE @msg AS NVARCHAR(MAX);
 
 WHILE @sundayDate < GETDATE()
 BEGIN
-	SET @scopeIndex = (SELECT Id FROM #metricTypes WHERE MetricId = 2936)--(SELECT MIN(Id) FROM #metricTypes);
+	SET @scopeIndex = (SELECT MIN(Id) FROM #metricTypes);
 
 	WHILE @scopeIndex < @numItems
 	BEGIN
