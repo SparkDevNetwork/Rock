@@ -17,8 +17,8 @@ DECLARE @False bit = 0
 DECLARE @CreatedDateTime AS DATETIME = GETDATE();
 DECLARE @foreignKey AS NVARCHAR(15) = 'Metrics 2.0';
 DECLARE @fuseScheduleId AS NVARCHAR(10) = (SELECT Id FROM Schedule WHERE Name = 'Fuse');
-DECLARE @sundayCalculation AS NVARCHAR(100) = 'CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, GETDATE()), GETDATE())) AS MetricValueDateTime';
-DECLARE @wednesdayCalculation AS NVARCHAR(100) = 'CONVERT(DATE, DATEADD(DAY, (DATEDIFF (DAY, ''20110105'', GETDATE()) / 7) * 7, ''20110105'')) AS MetricValueDateTime';
+DECLARE @sundayCalculation AS NVARCHAR(200) = 'CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, GETDATE()), GETDATE())) AS MetricValueDateTime';
+DECLARE @wednesdayCalculation AS NVARCHAR(200) = 'CONVERT(DATE, DATEADD(DAY, (DATEDIFF (DAY, ''20110105'', GETDATE()) / 7) * 7, ''20110105'')) AS MetricValueDateTime';
 
 /* ====================================================== */
 -- create the group conversion table
@@ -52,7 +52,17 @@ from [group] og
 /*************************************
  * Next Steps -> Financial Coaching -> Coaching Assignments
 *************************************/
-DECLARE @metricId AS INT = (SELECT Id FROM Metric WHERE [Guid] = '73464A6D-01B7-4EB4-B965-40A3A2995BE1');
+DECLARE @metricId AS INT = (
+	SELECT 
+		m.Id 
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Coaching Assignments'
+		AND c.Name = 'Financial Coaching'
+);
 
 IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
 BEGIN
@@ -102,7 +112,17 @@ WHERE Id = @metricId;
 /*************************************
  * Next Steps -> Financial Coaching -> Coaching Attendees
 *************************************/
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = 'C71E7218-231D-42A2-9ED9-639D469BA23A');
+SET @metricId = (
+	SELECT 
+		m.Id 
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Coaching Attendees'
+		AND c.Name = 'Financial Coaching'
+);
 
 IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
 BEGIN
@@ -181,7 +201,17 @@ WHERE Id = @metricId;
 /*************************************
  * Next Steps -> Community Groups -> Avg Fuse Group Size
 *************************************/
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = 'CC4F651F-6569-467C-82A9-69C4D7D1114F');
+SET @metricId = (
+	SELECT 
+		m.Id 
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Avg Fuse Group Size'
+		AND c.Name = 'Community Groups'
+);
 
 UPDATE Metric SET SourceSql = '
 DECLARE @GroupMemberStatusActive int = 1;
@@ -216,7 +246,17 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Fuse HS attendance
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = '6B49E110-D4ED-4CFF-A903-2C71E4A74E4E');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Fuse HS Attendance'
+		AND c.Name = 'Fuse Attendance'
+);
 
 IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
 BEGIN
@@ -268,7 +308,17 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Fuse MS attendance
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = '2222FA59-69DA-49B1-AB37-B628CF3E5B38');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Fuse MS Attendance'
+		AND c.Name = 'Fuse Attendance'
+);
 
 IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
 BEGIN
@@ -320,7 +370,17 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Attendance -> Fuse Attendance -> Fuse 4 Week Percent of Return
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = '35E37B04-B996-434C-BB6F-CD177107F00D');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Fuse 4 Week Percent of Return'
+		AND c.Name = 'Fuse Attendance'
+);
 
 IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
 BEGIN
@@ -420,7 +480,17 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Attendance -> Fuse Attendance -> Fuse First Timers
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = 'C5FEEDC1-E869-4100-82A7-3494398B1659');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Fuse First Timers'
+		AND c.Name = 'Fuse Attendance'
+);
 
 IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
 BEGIN
@@ -488,7 +558,17 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Attendance -> KidSpring Attendance -> 4 Week Percent of Return
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = 'AA8F3F6D-C813-4D07-BC5C-9ABE4512427B');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = '4 Week Percent of Return'
+		AND c.Name = 'KidSpring Attendance'
+);
 
 UPDATE Metric SET SourceSql = '
 DECLARE @today AS DATE = GETDATE();
@@ -561,7 +641,18 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Attendance -> KidSpring Attendance -> First Time Guests
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = '2BBA4F56-3556-4681-A25A-1EC961CE2EED');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'First Time Guests'
+		AND c.Name = 'KidSpring Attendance'
+);
+
 
 IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
 BEGIN
@@ -665,7 +756,18 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Attendance -> KidSpring Attendance -> Nursery Attendance
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = '0B183D52-4852-440F-8066-EFF82001CDF3');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Nursery Attendance'
+		AND c.Name = 'KidSpring Attendance'
+);
+
 
 IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
 BEGIN
@@ -749,7 +851,17 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Attendance -> KidSpring Attendance -> Preschool Attendance
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = '7522DA61-C971-437D-92C6-BA62800EF174');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Preschool Attendance'
+		AND c.Name = 'KidSpring Attendance'
+);
 
 IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
 BEGIN
@@ -833,7 +945,17 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Attendance -> KidSpring Attendance -> Elementary Attendance
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = '6B93C5ED-C58C-4092-A3EA-E390CE8FED8C');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Elementary Attendance'
+		AND c.Name = 'KidSpring Attendance'
+);
 
 IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
 BEGIN
@@ -917,7 +1039,17 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Attendance -> KidSpring Attendance -> Special Needs Attendance
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = '0137CA70-9CA4-4DD8-90C8-BC84E6BA2297');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Special Needs Attendance'
+		AND c.Name = 'KidSpring Attendance'
+);
 
 IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
 BEGIN
@@ -1001,7 +1133,17 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Attendance -> KidSpring Attendance -> First Time Volunteers
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = 'BBE3ADB1-E948-407A-AD44-EB6F88FFD599');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'First Time Volunteers'
+		AND c.Name = 'KidSpring Attendance'
+);
 
 IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
 BEGIN
@@ -1100,7 +1242,17 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Guest Services -> GS Unique Volunteers
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = 'A1F32887-7293-4B1A-BB0E-E4F559E15D2F');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'GS Unique Volunteers'
+		AND c.Name = 'Guest Services'
+);
 
 UPDATE Metric SET SourceSql = '
 SELECT 
@@ -1122,7 +1274,17 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Next Steps -> Baptism -> Baptism Attendees
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = 'E67AE9C7-19DF-40D4-91C5-4237A43177D4');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Baptism Attendees'
+		AND c.Name = 'Baptism'
+);
 
 IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
 BEGIN
@@ -1175,7 +1337,17 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Next Steps -> Baptism -> Baptism Assignments
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = 'C9145649-3384-4925-A8E0-19468BFF38AC');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Baptism Assignments'
+		AND c.Name = 'Baptism'
+);
 
 IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
 BEGIN
@@ -1225,7 +1397,17 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Next Steps -> Ownership Class -> Ownership Attendees
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = '68F205C4-9BA8-4889-81D8-A5986EB5ABBA');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Ownership Attendees'
+		AND c.Name = 'Ownership Class'
+);
 
 IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
 BEGIN
@@ -1278,7 +1460,17 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Next Steps -> Ownership Class -> Ownership Assignments
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = 'BE23F9C3-D510-432B-9351-9E79F754F526');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Ownership Assignments'
+		AND c.Name = 'Ownership Class'
+);
 
 IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
 BEGIN
@@ -1328,7 +1520,17 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Volunteers -> Unique Volunteers
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = '85FF1B27-D3DC-4C05-9D41-734ACBA71611');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Unique Volunteers'
+		AND c.Name = 'Volunteers'
+);
 
 UPDATE Metric SET SourceSql = '
 DECLARE @today AS DATE = GETDATE();
