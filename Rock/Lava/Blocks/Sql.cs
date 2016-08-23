@@ -44,7 +44,7 @@ namespace Rock.Lava.Blocks
         /// <param name="result">The result.</param>
         public override void Render( Context context, TextWriter result )
         {
-            // first ensure that entity commands are allowed in the context
+            // first ensure that sql commands are allowed in the context
             if ( !this.IsAuthorized( context ) )
             {
                 result.Write( string.Format( "The Lava command '{0}' is not configured for this template.", this.Name ) );

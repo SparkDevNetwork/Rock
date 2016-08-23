@@ -42,6 +42,7 @@ namespace RockWeb.Blocks.Cms
     [LinkedPage("Detail Page", order:0)]
     [BooleanField("Filter Items For Current User", "Filters the items by those created by the current logged in user.", false, order: 1)]
     [BooleanField("Show Filters", "Allows you to show/hide the grids filters.", true, order: 2)]
+    [ContentChannelField("Content Channel", "If set the block will ignore content channel query parameters", false)]
     public partial class ContentChannelItemList : RockBlock, ISecondaryBlock
     {
         #region Fields
@@ -82,7 +83,14 @@ namespace RockWeb.Blocks.Cms
 
             gfFilter.Visible = GetAttributeValue( "ShowFilters" ).AsBoolean();
             
-            _channelId = PageParameter( "contentChannelId" ).AsIntegerOrNull();
+            if (string.IsNullOrWhiteSpace(GetAttributeValue("ContentChannel")))
+            {
+                _channelId = PageParameter("contentChannelId").AsIntegerOrNull();
+            }
+            else
+            {
+                _channelId = new ContentChannelService(new RockContext()).Get(GetAttributeValue("ContentChannel").AsGuid()).Id;
+            }
             if ( _channelId != null )
             {
                 upnlContent.Visible = true;
@@ -330,6 +338,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
+            OnInit(e);
             BindGrid();
         }
 

@@ -2073,13 +2073,13 @@ namespace RockWeb.Blocks.Finance
 
         private void SendReceipt( int transactionId )
         {
-            Guid? recieptEmail = GetAttributeValue( "ReceiptEmail" ).AsGuidOrNull();
-            if ( recieptEmail.HasValue )
+            Guid? receiptEmail = GetAttributeValue( "ReceiptEmail" ).AsGuidOrNull();
+            if ( receiptEmail.HasValue )
             {
-                // Queue a transaction to send reciepts
+                // Queue a transaction to send receipts
                 var newTransactionIds = new List<int> { transactionId };
-                var sendPaymentRecieptsTxn = new Rock.Transactions.SendPaymentReciepts( recieptEmail.Value, newTransactionIds );
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( sendPaymentRecieptsTxn );
+                var sendPaymentReceiptsTxn = new Rock.Transactions.SendPaymentReceipts( receiptEmail.Value, newTransactionIds );
+                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( sendPaymentReceiptsTxn );
             }
         }
 

@@ -826,15 +826,22 @@ namespace Rock.NMI
         /// <returns></returns>
         private XElement GetPlan( PaymentSchedule schedule, PaymentInfo paymentInfo )
         {
+            var selectedFrequencyGuid = schedule.TransactionFrequencyValue.Guid.ToString().ToUpper();
+
+            if ( selectedFrequencyGuid == Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME )
+            {
+                // Make sure number of payments is set to 1 for one-time future payments
+                schedule.NumberOfPayments = 1;
+            }
+
             XElement planElement = new XElement( "plan",
                 new XElement( "payments", schedule.NumberOfPayments.HasValue ? schedule.NumberOfPayments.Value.ToString() : "0" ),
                 new XElement( "amount", paymentInfo.Amount.ToString() ) );
 
-            var selectedFrequencyGuid = schedule.TransactionFrequencyValue.Guid.ToString().ToUpper();
             switch ( selectedFrequencyGuid )
             {
                 case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME:
-                    planElement.Add( new XElement( "months-frequency", "12" ) );
+                    planElement.Add( new XElement( "month-frequency", "12" ) );
                     planElement.Add( new XElement( "day-of-month", schedule.StartDate.Day.ToString() ) );
                     break;
                 case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY:
@@ -844,7 +851,7 @@ namespace Rock.NMI
                     planElement.Add( new XElement( "day-frequency", "14" ) );
                     break;
                 case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY:
-                    planElement.Add( new XElement( "months-frequency", "1" ) );
+                    planElement.Add( new XElement( "month-frequency", "1" ) );
                     planElement.Add( new XElement( "day-of-month", schedule.StartDate.Day.ToString() ) );
                     break;
             }

@@ -309,7 +309,10 @@ namespace Rock.Web.UI.Controls
         var $span = e.closest('span.key-value-list');
         var newValue = '';
         $span.children('span.key-value-rows:first').children('div.controls-row').each(function( index ) {
-            newValue += $(this).children('.key-value-key:first').val() + '^' + $(this).children('.key-value-value:first').val() + '|'
+            if ( newValue !== ''){
+                newValue += '|';
+            }
+            newValue += $(this).children('.key-value-key:first').val() + '^' + $(this).children('.key-value-value:first').val()
         });
         $span.children('input:first').val(newValue);            
     }

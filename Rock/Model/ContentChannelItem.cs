@@ -199,6 +199,7 @@ namespace Rock.Model
         /// <value>
         /// The parent items.
         /// </value>
+        [LavaInclude]
         public virtual ICollection<ContentChannelItemAssociation> ParentItems
         {
             get { return _parentItems ?? ( _parentItems = new Collection<ContentChannelItemAssociation>() ); }

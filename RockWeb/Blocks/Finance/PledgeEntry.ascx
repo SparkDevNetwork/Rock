@@ -13,6 +13,10 @@
             </div>
             <div class="panel-body">
                 <fieldset>
+
+                    <Rock:RockLiteral ID="lName" runat="server" Label="Name" />
+                    <Rock:RockDropDownList ID="ddlGroup" runat="server" Visible="false" DataTextField="Name" DataValueField="GroupId" />
+
                     <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" />
                     <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" />
                     <Rock:RockTextBox ID="tbEmail" runat="server" Label="Email" TextMode="Email" Required="true" />
@@ -21,13 +25,12 @@
                     <Rock:ButtonDropDownList ID="bddlFrequency" runat="server" CssClass="btn btn-primary" Label="Frequency" />
                     <Rock:CurrencyBox ID="tbTotalAmount" runat="server" Label="Total Amount" Required="true" />
 
-
                     <div class="actions">
                         <asp:LinkButton ID="btnSave" AccessKey="s" runat="server" Text="Save" OnClick="btnSave_Click" CssClass="btn btn-primary" />
-
                     </div>
 
                     <Rock:RockLiteral ID="lNote" runat="server" />
+
                 </fieldset>
             </div>
 

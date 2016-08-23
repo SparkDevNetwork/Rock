@@ -78,6 +78,9 @@
                     <asp:Panel ID="pnlSummary" runat="server" CssClass="panel panel-block">
                         <div class="panel-heading">
                             <h1 class="panel-title">Total Results</h1>
+                            <div class="panel-labels">
+                                <Rock:HighlightLabel ID="lbFiltered" runat="server" LabelType="Default" Visible="false" />
+                            </div>
                         </div>
                         <div class="panel-body">
                             <asp:Repeater ID="rptAccountSummary" runat="server">

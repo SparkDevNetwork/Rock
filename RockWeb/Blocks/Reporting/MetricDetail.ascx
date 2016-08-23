@@ -59,28 +59,30 @@
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-12">
-                            <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source Type" AutoPostBack="true" OnSelectedIndexChanged="ddlSourceType_SelectedIndexChanged" />
-                            
-                            <asp:Panel ID="pnlSQLSourceType" runat="server">
-                                <Rock:CodeEditor ID="ceSourceSql" runat="server" Label="Source SQL" EditorMode="Sql" />
-                                <Rock:NotificationBox ID="nbSQLHelp" runat="server" Visible="false" />
-                            </asp:Panel>
-                            
-                            <asp:Panel ID="pnlDataviewSourceType" runat="server">
-                                <Rock:RockDropDownList ID="ddlDataView" runat="server" Label="Source DataView" />
-                                <Rock:NotificationBox ID="nbDataViewHelp" runat="server" Visible="false" />
-                            </asp:Panel>
-                            
-                            <Rock:RockControlWrapper ID="rcwSchedule" runat="server" Label="Schedule" Help="Select the schedule of when the metric values should be calculated.">
-                                <Rock:RockRadioButtonList ID="rblScheduleSelect" runat="server" CssClass="margin-b-sm" OnSelectedIndexChanged="rblScheduleSelect_SelectedIndexChanged" AutoPostBack="true" RepeatDirection="Horizontal" />
+                    <div class="well">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source Type" AutoPostBack="true" OnSelectedIndexChanged="ddlSourceType_SelectedIndexChanged" />
 
-                                <Rock:RockDropDownList ID="ddlSchedule" runat="server" />
+                                    <asp:Panel ID="pnlSQLSourceType" runat="server">
+                                        <Rock:CodeEditor ID="ceSourceSql" runat="server" Label="Source SQL" EditorMode="Sql" />
+                                        <Rock:NotificationBox ID="nbSQLHelp" runat="server" Visible="false" />
+                                    </asp:Panel>
+                            
+                                    <asp:Panel ID="pnlDataviewSourceType" runat="server">
+                                        <Rock:RockDropDownList ID="ddlDataView" runat="server" Label="Source DataView" />
+                                        <Rock:NotificationBox ID="nbDataViewHelp" runat="server" Visible="false" />
+                                    </asp:Panel>
+                            
+                                    <Rock:RockControlWrapper ID="rcwSchedule" runat="server" Label="Schedule" Help="Select the schedule of when the metric values should be calculated.">
+                                        <Rock:RockRadioButtonList ID="rblScheduleSelect" runat="server" CssClass="margin-b-sm" OnSelectedIndexChanged="rblScheduleSelect_SelectedIndexChanged" AutoPostBack="true" RepeatDirection="Horizontal" />
 
-                                <asp:HiddenField ID="hfUniqueScheduleId" runat="server" />
-                                <Rock:ScheduleBuilder ID="sbSchedule" runat="server" ShowDuration="false" ShowScheduleFriendlyTextAsToolTip="true" />
-                            </Rock:RockControlWrapper>
+                                        <Rock:RockDropDownList ID="ddlSchedule" runat="server" />
+
+                                        <asp:HiddenField ID="hfUniqueScheduleId" runat="server" />
+                                        <Rock:ScheduleBuilder ID="sbSchedule" runat="server" ShowDuration="false" ShowScheduleFriendlyTextAsToolTip="true" />
+                                    </Rock:RockControlWrapper>
+                                </div>
                         </div>
                     </div>
 

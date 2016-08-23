@@ -157,7 +157,7 @@ namespace Rock.Client
         public string RequestEntryName { get; set; }
 
         /// <summary />
-        public int? RequiredSignatureDocumentTypeId { get; set; }
+        public int? RequiredSignatureDocumentTemplateId { get; set; }
 
         /// <summary />
         public bool? SetCostOnInstance { get; set; }
@@ -244,7 +244,7 @@ namespace Rock.Client
             this.ReminderFromName = source.ReminderFromName;
             this.ReminderSubject = source.ReminderSubject;
             this.RequestEntryName = source.RequestEntryName;
-            this.RequiredSignatureDocumentTypeId = source.RequiredSignatureDocumentTypeId;
+            this.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
             this.SetCostOnInstance = source.SetCostOnInstance;
             this.SignatureDocumentAction = source.SignatureDocumentAction;
             this.SuccessText = source.SuccessText;
@@ -280,7 +280,7 @@ namespace Rock.Client
         public WorkflowType RegistrationWorkflowType { get; set; }
 
         /// <summary />
-        public SignatureDocumentType RequiredSignatureDocumentType { get; set; }
+        public SignatureDocumentTemplate RequiredSignatureDocumentTemplate { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

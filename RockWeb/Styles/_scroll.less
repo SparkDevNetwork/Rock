@@ -5,117 +5,111 @@
 
 
 // basic scroll styles
-.scroll-container { 
-    
-    clear: both; 
+.scroll-container {
+  clear: both;
 
-    .viewport {   
-        overflow: hidden; 
-        position: relative; 
-    }
+  .viewport {
+    position: relative;
+    overflow: hidden;
+  }
 
-    .overview { 
-        list-style: none; 
-        position: absolute; 
-        left: 0; 
-        top: 0; 
-    }
+  .overview {
+    position: absolute;
+    top: 0;
+    left: 0;
+    list-style: none;
+  }
 
-    .scrollbar { 
-    }
+  .track {
+    position: relative;
+    padding: 0;
+    background-color: @scroll-track-color;
+    border-radius: 4px;
+  }
 
-    .track { 
-        position: relative;  
-        background-color: @scroll-track-color;
-        border-radius: 4px;  
-        padding: 0; 
-    }
-
-    .thumb { 
-        cursor: pointer; 
-        overflow: hidden; 
-        position: absolute; 
-        border-radius: 120px;
-        background-color: @scroll-thumb-color;
-
-        // keeps the thumb from being selectable like text
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
-        -khtml-user-select: none;
-        -moz-user-select: none;
+  .thumb {
+    position: absolute;
+    overflow: hidden;
+    cursor: pointer;
+    -webkit-user-select: none;
+       -moz-user-select: none;
         -ms-user-select: none;
-        user-select: none;
-    }
+            user-select: none;
+    background-color: @scroll-thumb-color;
+    border-radius: 120px;
+    // keeps the thumb from being selectable like text
 
-    .disable { 
-        display: none; 
-    }
+    -webkit-touch-callout: none;
+     -khtml-user-select: none;
+  }
+
+  .disable {
+    display: none;
+  }
 }
 
 // styles for verticle scrollers
 .scroll-container-vertical {
-    width: 520px;
+  width: 520px;
 
-    .viewport {
-        width: 500px;
-        height: 375px;
-    }
+  .viewport {
+    width: 500px;
+    height: 375px;
+  }
 
-    .overview {
-        width: 100%;
-    }
+  .overview {
+    width: 100%;
+  }
 
-    .scrollbar { 
-        position: relative; 
-        float: right; 
-        width: 15px; 
-    }
+  .scrollbar {
+    position: relative;
+    float: right;
+    width: 15px;
+  }
 
-    .track { 
-        height: 100%; 
-        width: 1px;
-        border-radius: 4px;  
-    }
+  .track {
+    width: 1px;
+    height: 100%;
+    border-radius: 4px;
+  }
 
-    .thumb { 
-        height: 20px; 
-        width: 13px; 
-        top: 0;
-        margin-left: -6px;
-    }
+  .thumb {
+    top: 0;
+    width: 13px;
+    height: 20px;
+    margin-left: -6px;
+  }
 }
 
 // styles for horizonal scrollers
-.scroll-container-horizontal { 
-    width: 100%; 
-    margin: 0; 
+.scroll-container-horizontal {
+  width: 100%;
+  margin: 0;
 
-    .viewport { 
-        width: 100%; 
-        min-height: 200px; 
-    }
+  .viewport {
+    width: 100%;
+    min-height: 200px;
+  }
 
-    .overview {}
+  .scrollbar {
+    position: relative;
+    height: 15px;
+    margin: 0 auto;
+    clear: both;
+  }
 
-    .scrollbar { 
-        position: relative; 
-        height: 15px; 
-        clear: both; 
-        margin: 0 auto;
-    }
+  .track {
+    width: 13px;
+    height: 1px;
+    padding: 0 1px;
+  }
 
-    .track { 
-        height: 1px; 
-        width: 13px; 
-        padding: 0 1px; 
-    }
-
-    .thumb { 
-        margin-top: -8px; 
-        border-radius: 10px;
-        height: 13px; 
-        width: 20px; 
-    }
+  .thumb {
+    width: 20px;
+    height: 13px;
+    margin-top: -8px;
+    border-radius: 10px;
+  }
 }
 
 // styles for scrollers in panels
@@ -131,12 +125,11 @@
     }
 }*/
 
-.noSelect { 
-    user-select: none; 
-    -o-user-select: none; 
-    -moz-user-select: none; 
-    -khtml-user-select: none; 
-    -webkit-user-select: none; 
-}
+.noSelect {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+       -o-user-select: none;
+          user-select: none;
 
-                
+   -khtml-user-select: none;
+}

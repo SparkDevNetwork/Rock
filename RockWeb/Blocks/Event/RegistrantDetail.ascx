@@ -80,6 +80,8 @@
                             <div id="divFees" runat="server" class="well registration-additional-options">
                                 <asp:PlaceHolder ID="phFees" runat="server" />
                             </div>
+                            <asp:HiddenField ID="hfSignedDocumentId" runat="server" />
+                            <Rock:FileUploader ID="fuSignedDocument" runat="server" Label="Signed Document" />
                         </div>
                     </div>
 

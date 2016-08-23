@@ -1254,6 +1254,13 @@ namespace RockWeb.Blocks.Communication
 
             pnlResult.Visible = true;
 
+            ScriptManager.RegisterStartupScript(
+                Page,
+                GetType(),
+                "scrollToResults",
+                "scrollToResults();",
+                true );
+
         }
 
         #endregion

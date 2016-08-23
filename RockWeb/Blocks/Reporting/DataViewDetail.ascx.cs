@@ -79,11 +79,14 @@ namespace RockWeb.Blocks.Reporting
                 {
                     btnToggleResults.Text = "Hide Results <i class='fa fa-chevron-up'></i>";
                     btnToggleResults.ToolTip = "Hide Results";
-
+                    btnToggleResults.RemoveCssClass( "btn-primary" );
+                    btnToggleResults.AddCssClass( "btn-default" );
                 }
                 else
                 {
                     btnToggleResults.Text = "Show Results <i class='fa fa-chevron-down'></i>";
+                    btnToggleResults.RemoveCssClass( "btn-default" );
+                    btnToggleResults.AddCssClass( "btn-primary" );
                     btnToggleResults.ToolTip = "Show Results";
                 }
 
@@ -519,6 +522,7 @@ $(document).ready(function() {
 
             pnlDetails.Visible = true;
             hfDataViewId.Value = dataView.Id.ToString();
+            hlblEditDataViewId.Text = "Id: " + dataView.Id.ToString();
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
@@ -616,6 +620,7 @@ $(document).ready(function() {
             SetEditMode( false );
             hfDataViewId.SetValue( dataView.Id );
             lReadOnlyTitle.Text = dataView.Name.FormatAsHtmlTitle();
+            hlblDataViewId.Text = "Id: " + dataView.Id.ToString();
 
             lDescription.Text = dataView.Description;
 
@@ -783,7 +788,8 @@ $(document).ready(function() {
         {
             grid.DataSource = null;
 
-            if ( !this.ShowResults )
+            // Only respect the ShowResults option if fetchRowCount is null
+            if ( !this.ShowResults && fetchRowCount == null )
             {
                 return false;
             }

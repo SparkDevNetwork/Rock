@@ -135,7 +135,7 @@ namespace Rock.Web.UI.Controls.Communication
         }
         
         /// <summary>
-        /// On new communicaiton, initializes controls from sender values
+        /// On new communication, initializes controls from sender values
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <exception cref="System.NotImplementedException"></exception>
