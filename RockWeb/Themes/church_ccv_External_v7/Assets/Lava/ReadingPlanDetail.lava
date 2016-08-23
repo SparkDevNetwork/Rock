@@ -1,12 +1,20 @@
+
+<script charset="ISO-8859-1" src="//fast.wistia.com/assets/external/E-v1.js" async></script>
+
 {% assign item = Items | First %}
 
 <h1>Weekly Bible Reading</h1>
 
 <h3 class="page-header">{{ item.Title }} - <small>{{ item.ChapterSpan }}</small></h3>
+{% assign itemWistiaId = item.VideoId %}
 
-<div class="embed-responsive embed-responsive-16by9">
-    <iframe class="embed-responsive-item" src="https://player.vimeo.com/video/{{ item.VideoId }}" width="320" height="180" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
-</div>
+{% if itemWistiaId != empty %}
+    <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+            <span class="wistia_embed wistia_async_{{ itemWistiaId }} popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+        </div>
+    </div>
+{% endif %}
 
 <h2 class="page-header">Reading Schedule</h2>
 <ul>

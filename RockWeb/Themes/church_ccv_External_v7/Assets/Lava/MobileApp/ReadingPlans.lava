@@ -9,7 +9,7 @@ find one that interests you. Each one lasts one week, so commit to completing on
 {% for item in Items %}
     {% if item.Audiences == '' or item.Audiences contains 'Adults' %}
         {% assign dateDiff = item.StartDateTime | DateDiff:'Now', 'd' %}
-        {% if dateDiff >= 0 %}
+        {% if dateDiff >= 0 or PageParameter.admin == 'true' %}
             <div class="container-md">
                 <h3 class="page-header">{{ item.Title }}</h3>
                 <p/>
