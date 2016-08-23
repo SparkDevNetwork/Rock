@@ -1,6 +1,5 @@
 ﻿using System;
-using Rock.Attribute;
-using Rock.Data;
+using System.ComponentModel;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -9,13 +8,12 @@ using SharpRaven.Data;
 
 namespace RockWeb.Plugins.cc_newspring.Blocks.Sentry
 {
-	
-	 /// <summary>
+    /// <summary>
     /// All Church Metrics Block
     /// </summary>
     [DisplayName( "Sentry Test" )]
     [Category( "NewSpring" )]
-    [Description( "Test block to send errors to Sentry" )]    
+    [Description( "Test block to send errors to Sentry" )]
     public partial class SentryTest : RockBlock
     {
         /// <summary>
