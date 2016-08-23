@@ -25,8 +25,14 @@
     <li>Friday: {{ item.FridayReading }}</li>
 </ul>
 
-<h2 class="page-header">Coaching Tips</h2>
-{{ item.CoachingTip }}
+{% assign coachLength = item.CoachingTip | Size %}
+{% if coachLength > 0 %}
+    <h2 class="page-header">Coaching Tips</h2>
+    {{ item.CoachingTip }}
+{% endif %}
 
-<h2 class="page-header">Video Discussion</h2>
-{{ item.VideoDetail }}
+{% assign videoLength = item.VideoDiscussion | Size %}
+{% if videoLength > 0 %}
+    <h2 class="page-header">Video Discussion</h2>
+    {{ item.VideoDetail }}
+{% endif %}
