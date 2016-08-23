@@ -1,6 +1,6 @@
 <div class="col-sm-6 margin-b-md">
   {% if LinkedPages.PersonDetailPage != '' %}
-    <a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
+    <a href="{{ LinkedPages.PersonDetailPage }}?GroupMemberId={{ member.Id }}&AdminPersonId={{ CurrentPerson.Id }}">
   {% endif %}
   <div class="media">
     <div class="pull-left">

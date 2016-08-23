@@ -1,0 +1,24 @@
+{% assign item = Items | First %}
+
+<h1>Weekly Bible Reading</h1>
+
+<h3 class="page-header">{{ item.Title }} - <small>{{ item.ChapterSpan }}</small></h3>
+
+<div class="embed-responsive embed-responsive-16by9">
+    <iframe class="embed-responsive-item" src="https://player.vimeo.com/video/{{ item.VideoId }}" width="320" height="180" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+</div>
+
+<h2 class="page-header">Reading Schedule</h2>
+<ul>
+    <li>Monday: {{ item.MondayReading }}</li>
+    <li>Tuesday: {{ item.TuesdayReading }}</li>
+    <li>Wednesday: {{ item.WednesdayReading }}</li>
+    <li>Thursday: {{ item.ThursdayReading }}</li>
+    <li>Friday: {{ item.FridayReading }}</li>
+</ul>
+
+<h2 class="page-header">Coaching Tips</h2>
+{{ item.CoachingTip }}
+
+<h2 class="page-header">Video Discussion</h2>
+{{ item.VideoDetail }}
