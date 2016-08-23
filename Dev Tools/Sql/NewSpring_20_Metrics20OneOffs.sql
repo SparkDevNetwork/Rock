@@ -89,7 +89,7 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
 SELECT 
 	COUNT(gm.PersonId) AS Value, 
 	' + @sundayCalculation + ',
@@ -174,7 +174,7 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
 DECLARE @recentSunday AS DATETIME = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, GETDATE()), GETDATE()));
 
 SELECT 
@@ -213,7 +213,7 @@ SET @metricId = (
 		AND c.Name = 'Community Groups'
 );
 
-UPDATE Metric SET SourceSql = '
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
 DECLARE @GroupMemberStatusActive int = 1;
 
 SELECT
@@ -283,7 +283,7 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
 SELECT COUNT(1) AS Value, ' + @wednesdayCalculation + ', CampusId AS EntityId, ' + @fuseScheduleId + '
 FROM PersonAlias PA 
 INNER JOIN (
@@ -345,7 +345,7 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
 SELECT COUNT(1) AS Value, ' + @wednesdayCalculation + ', CampusId AS EntityId, ' +  @fuseScheduleId + '
 FROM PersonAlias PA 
 INNER JOIN (
@@ -407,7 +407,7 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
 DECLARE @today AS DATE = GETDATE();
 DECLARE @wednesdayDW AS INT = 4;
 DECLARE @recentWednesdayDate AS DATE = CONVERT(DATE, DATEADD(DAY, @wednesdayDW - DATEPART(DW, @today), @today));
@@ -517,7 +517,7 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
 DECLARE @today AS DATE = GETDATE();
 DECLARE @recentWednesday AS DATE = CONVERT(DATE, DATEADD(DAY, 4 - DATEPART(DW, @today), @today));
 
@@ -570,7 +570,7 @@ SET @metricId = (
 		AND c.Name = 'KidSpring Attendance'
 );
 
-UPDATE Metric SET SourceSql = '
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
 DECLARE @today AS DATE = GETDATE();
 DECLARE @recentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @today), @today));
 DECLARE @firstTimeSundayDate AS DATE = DATEADD(WEEK, -3, @recentSundayDate);
@@ -704,7 +704,7 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
 DECLARE @today AS DATE = GETDATE();
 DECLARE @recentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @today), @today));
 
@@ -819,7 +819,7 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
 SELECT COUNT(1) AS Value, 
     ' + @sundayCalculation + ',
 	CampusId AS EntityId,
@@ -913,7 +913,7 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
 SELECT COUNT(1) AS Value, 
     ' + @sundayCalculation + ',
 	CampusId AS EntityId,
@@ -1007,7 +1007,7 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
 SELECT COUNT(1) AS Value, 
 	' + @sundayCalculation + ',
 	CampusId AS EntityId,
@@ -1101,7 +1101,7 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
 SELECT COUNT(1) AS Value, 
 	' + @sundayCalculation + ',
 	CampusId AS EntityId,
@@ -1195,7 +1195,7 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
 WITH KSFirstServe AS (
 	SELECT PersonAliasId, MIN(StartDateTime) AS FirstServe
 	FROM [Attendance] A
@@ -1254,7 +1254,7 @@ SET @metricId = (
 		AND c.Name = 'Guest Services'
 );
 
-UPDATE Metric SET SourceSql = '
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
 SELECT 
 	COUNT(gm.PersonId) AS Value, 
 	' + @sundayCalculation + ',
@@ -1311,7 +1311,7 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
 DECLARE @today AS DATE = GETDATE();
 DECLARE @recentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @today), @today));
 
@@ -1374,7 +1374,7 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
 SELECT 
 	COUNT(gm.PersonId) AS Value, 
 	' + @sundayCalculation + ',
@@ -1434,7 +1434,7 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
 DECLARE @today AS DATE = GETDATE();
 DECLARE @recentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @today), @today));
 
@@ -1497,7 +1497,7 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
 SELECT 
 	COUNT(gm.PersonId) AS Value, 
 	' + @sundayCalculation + ',
@@ -1532,7 +1532,7 @@ SET @metricId = (
 		AND c.Name = 'Volunteers'
 );
 
-UPDATE Metric SET SourceSql = '
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
 DECLARE @today AS DATE = GETDATE();
 DECLARE @recentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @today), @today));
 
