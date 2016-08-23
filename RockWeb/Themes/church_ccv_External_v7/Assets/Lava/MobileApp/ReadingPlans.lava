@@ -8,14 +8,17 @@ find one that interests you. Each one lasts one week, so commit to completing on
 
 {% for item in Items %}
     {% if item.Audiences == '' or item.Audiences contains 'Adults' %}
-        <div class="container-md">
-            <h3 class="page-header">{{ item.Title }}</h3>
-            <p/>
-            {{ item.Content }}
-            <p/>
-            <p/>
-            <a href="/page/1285?Id={{ item.Id }}" class="btn btn-default btn-xs">Read Now</a>
-        </div>
+        {% assign dateDiff = item.StartDateTime | DateDiff:'Now', 'd' %}
+        {% if dateDiff >= 0 %}
+            <div class="container-md">
+                <h3 class="page-header">{{ item.Title }}</h3>
+                <p/>
+                {{ item.Content }}
+                <p/>
+                <p/>
+                <a href="/page/1285?Id={{ item.Id }}" class="btn btn-default btn-xs">Read Now</a>
+            </div>
+        {% endif %}
     {% endif %}
 
 {% endfor %}
