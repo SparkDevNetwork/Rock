@@ -1,6 +1,6 @@
 /* ====================================================== 
--- NewSpring Script #22: 
--- Backfill metric values to the beggining of 2015
+-- NewSpring Script #23: 
+-- Backfill metric values to the beggining of 2015 for one offs
 
    ====================================================== */
 
@@ -17,7 +17,8 @@ CREATE TABLE #metricTypes (
 	Id INT IDENTITY(1,1),
 	CategoryId INT,
 	MetricId INT,
-	MetricTitle NVARCHAR(100)
+	MetricTitle NVARCHAR(100),
+	CategoryName NVARCHAR(100),
 );
 
 IF object_id('tempdb..#currentResult') IS NOT NULL
@@ -31,7 +32,6 @@ CREATE TABLE #currentResult (
 	Campus INT,
 	[Group] INT,
 	Schedule INT,
-	DidAttend INT,
 	MetricValueGuid UNIQUEIDENTIFIER DEFAULT NEWID()
 );
 
@@ -39,7 +39,8 @@ INSERT INTO #metricTypes
 SELECT
 	c.Id AS CategoryId,
 	m.Id AS MetricId,
-	m.Title AS MetricTitle
+	m.Title AS MetricTitle,
+	c.Name AS CategoryName
 FROM
 	Metric m
 	JOIN MetricCategory mc ON mc.MetricId = m.Id
@@ -62,6 +63,7 @@ DECLARE @start AS INT;
 DECLARE @stop AS INT;
 DECLARE @length AS INT;
 DECLARE @msg AS NVARCHAR(MAX);
+DECLARE @categoryName AS NVARCHAR(100);
 
 WHILE @sundayDate < GETDATE()
 BEGIN
@@ -69,24 +71,18 @@ BEGIN
 
 	WHILE @scopeIndex < @numItems
 	BEGIN
-		SET @metricId = (SELECT MetricId FROM #metricTypes WHERE Id = @scopeIndex);
+		SELECT @metricId = MetricId, @categoryName = CategoryName FROM #metricTypes WHERE Id = @scopeIndex;
 		SET @metricName = (SELECT MetricTitle FROM #metricTypes WHERE Id = @scopeIndex);
 		SET @sourceSql = (SELECT SourceSql FROM Metric WHERE Id = @metricId);
 		SET @groupType = (SELECT EntityTypeQualifierValue FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group');
 
-		SET @msg = 'Creating metric values for ' + @metricName + ' (Id: ' + CONVERT(NVARCHAR(20), @metricId) + ') / ' + CONVERT(NVARCHAR(20), @sundayDate); 
+		SET @msg = 'Creating metric values for ' + @categoryName + '/' + @metricName + ' (Id: ' + CONVERT(NVARCHAR(20), @metricId) + ') / ' + CONVERT(NVARCHAR(20), @sundayDate); 
 		RAISERROR ( @msg, 0, 0 ) WITH NOWAIT;
 		
-		-- Replace recentSundayDate
 		SET @sourceSql = REPLACE(@sourcesql, 'GETDATE()', '''' + CONVERT(NVARCHAR(20), DATEADD(DAY, 6, @sundayDate)) + '''');
-		SET @sourceSql = REPLACE(@sourceSQL, N'GroupId, 
-	@TrueDVId DidAttend', 'GroupId, NULL AS Schedule, @TrueDVId DidAttend');
-		
-		PRINT(@sourceSql);
-		RETURN;
 
 		TRUNCATE TABLE #currentResult;
-		INSERT INTO  #currentResult (Value, MetricValueDateTime, Campus, [Group], Schedule, DidAttend)
+		INSERT INTO  #currentResult (Value, MetricValueDateTime, Campus, [Group], Schedule)
 		EXEC(@sourceSql);
 
 		INSERT INTO MetricValue(
@@ -171,27 +167,6 @@ BEGIN
 			#currentResult cr
 		WHERE
 		cr.Campus IS NOT NULL;
-		
-		-- Did Attend
-		INSERT INTO MetricValuePartition(
-			MetricPartitionId,
-			MetricValueId,
-			EntityId,
-			CreatedDateTime,
-			[Guid],
-			ForeignKey
-		)
-		SELECT 
-			(SELECT mp.Id FROM MetricPartition mp WHERE mp.MetricId = @metricId AND mp.Label = 'Did Attend') AS MetricPartitionId,
-			(SELECT Id FROM MetricValue WHERE [Guid] = cr.MetricValueGuid) AS MetricValueId,
-			cr.DidAttend AS EntityId,
-			@CreatedDateTime AS CreatedDateTime,
-			NEWID() AS [Guid],
-			@foreignKey AS ForeignKey
-		FROM 
-			#currentResult cr
-		WHERE
-			cr.DidAttend IS NOT NULL;
 
 		SET @scopeIndex = @scopeIndex + 1;
 	END

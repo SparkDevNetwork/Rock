@@ -17,8 +17,9 @@ DECLARE @False bit = 0
 DECLARE @CreatedDateTime AS DATETIME = GETDATE();
 DECLARE @foreignKey AS NVARCHAR(15) = 'Metrics 2.0';
 DECLARE @fuseScheduleId AS NVARCHAR(10) = (SELECT Id FROM Schedule WHERE Name = 'Fuse');
-DECLARE @sundayCalculation AS NVARCHAR(200) = 'CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, GETDATE()), GETDATE())) AS MetricValueDateTime';
-DECLARE @wednesdayCalculation AS NVARCHAR(200) = 'CONVERT(DATE, DATEADD(DAY, (DATEDIFF (DAY, ''20110105'', GETDATE()) / 7) * 7, ''20110105'')) AS MetricValueDateTime';
+DECLARE @sundayCalculation AS NVARCHAR(200) = 'CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @today), @today)) AS MetricValueDateTime';
+DECLARE @wednesdaySubCalc AS NVARCHAR(200) = 'CONVERT(DATE, DATEADD(DAY, (DATEDIFF (DAY, ''20110105'', @today) / 7) * 7, ''20110105''))';
+DECLARE @wednesdayCalculation AS NVARCHAR(200) = @wednesdaySubCalc + ' AS MetricValueDateTime';
 DECLARE @etidSchedule AS INT = (SELECT Id FROM EntityType WHERE NAME = 'Rock.Model.Schedule');
 DECLARE @etidGroup AS INT = (SELECT Id FROM EntityType WHERE NAME = 'Rock.Model.Group');
 
@@ -117,6 +118,8 @@ BEGIN
 END
 
 UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
+DECLARE @today AS DATE = GETDATE();
+
 SELECT 
 	COUNT(gm.PersonId) AS Value, 
 	' + @sundayCalculation + ',
@@ -203,7 +206,8 @@ BEGIN
 END
 
 UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
-DECLARE @recentSunday AS DATETIME = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, GETDATE()), GETDATE()));
+DECLARE @today AS DATE = GETDATE();
+DECLARE @recentSunday AS DATETIME = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @today), @today));
 
 SELECT 
 	COUNT(1) AS Value, 
@@ -292,6 +296,7 @@ BEGIN
 END
 
 UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
+DECLARE @today AS DATE = GETDATE();
 DECLARE @GroupMemberStatusActive int = 1;
 
 SELECT
@@ -389,6 +394,8 @@ BEGIN
 END
 
 UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
+DECLARE @today AS DATE = GETDATE();
+
 SELECT 
 	COUNT(1) AS Value, ' 
 	+ @wednesdayCalculation + ', 
@@ -403,8 +410,8 @@ INNER JOIN (
 		ON A.GroupId = G.Id
 		AND G.GroupTypeId = (SELECT [Id] FROM [GroupType] WHERE [Name] = ''NEW Fuse Attendee'')
 	WHERE DidAttend = 1	
-	AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0)
-	AND StartDateTime < CONVERT(DATE, GETDATE())
+	AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, @today), 0)
+	AND StartDateTime < CONVERT(DATE, @today)
 	AND (
 		CASE WHEN ISNUMERIC(LEFT(G.Name, 1)) = 1
 		THEN LEFT(G.Name, 1) ELSE NULL END
@@ -481,6 +488,8 @@ BEGIN
 END
 
 UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
+DECLARE @today AS DATE = GETDATE();
+
 SELECT 
 	COUNT(1) AS Value, ' 
 	+ @wednesdayCalculation + ', 
@@ -495,8 +504,8 @@ INNER JOIN (
 		ON A.GroupId = G.Id
 		AND G.GroupTypeId = (SELECT [Id] FROM [GroupType] WHERE [Name] = ''NEW Fuse Attendee'')
 	WHERE DidAttend = 1	
-	AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0)
-	AND StartDateTime < CONVERT(DATE, GETDATE())
+	AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, @today), 0)
+	AND StartDateTime < CONVERT(DATE, @today)
 	AND (
 		CASE WHEN ISNUMERIC(LEFT(G.Name, 1)) = 1
 		THEN LEFT(G.Name, 1) ELSE NULL END
@@ -575,7 +584,7 @@ END
 UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
 DECLARE @today AS DATE = GETDATE();
 DECLARE @wednesdayDW AS INT = 4;
-DECLARE @recentWednesdayDate AS DATE = CONVERT(DATE, DATEADD(DAY, @wednesdayDW - DATEPART(DW, @today), @today));
+DECLARE @recentWednesdayDate AS DATE = ' + @wednesdaySubCalc + ';
 
 IF @recentWednesdayDate > @today
 BEGIN
@@ -712,7 +721,7 @@ END
 
 UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
 DECLARE @today AS DATE = GETDATE();
-DECLARE @recentWednesday AS DATE = CONVERT(DATE, DATEADD(DAY, 4 - DATEPART(DW, @today), @today));
+DECLARE @recentWednesday AS DATE = ' + @wednesdaySubCalc + ';
 
 ;WITH cte_GroupIds AS (
 	SELECT
@@ -749,6 +758,9 @@ GROUP BY
 	CampusId;
 '
 WHERE Id = @metricId;
+
+DECLARE @x AS NVARCHAR(MAX) = (SELECT SourceSql FROM Metric WHERE Id = @metricId)
+print(@x);
 
 /* ====================================================== */
 -- Attendance -> KidSpring Attendance -> 4 Week Percent of Return
@@ -1066,6 +1078,8 @@ BEGIN
 END
 
 UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
+DECLARE @today AS DATE = GETDATE();
+
 SELECT COUNT(1) AS Value, 
     ' + @sundayCalculation + ',
 	CampusId,
@@ -1079,15 +1093,15 @@ INNER JOIN (
 		ON A.GroupId = G.Id
 		AND G.GroupTypeId = (SELECT [Id] FROM [GroupType] WHERE [Name] = ''NEW Nursery Attendee'')
 	WHERE DidAttend = 1
-		AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0)
-		AND StartDateTime < CONVERT(DATE, GETDATE())
+		AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, @today), 0)
+		AND StartDateTime < CONVERT(DATE, @today)
 ) Attendance
 	ON PA.Id = Attendance.PersonAliasId	
 INNER JOIN (
 	-- iCal DTStart: constant 22 characters, only interested in Service Time
 	SELECT Id, STUFF(SUBSTRING(iCalendarContent, PATINDEX(''%DTSTART%'', iCalendarContent) +17, 4), 3, 0, '':'') AS Value
 	FROM Schedule
-	WHERE EffectiveStartDate < GETDATE()
+	WHERE EffectiveStartDate < @today
 ) Schedule
 ON Schedule.Id = Attendance.ScheduleId
 GROUP BY Attendance.CampusId, ScheduleId, GroupId
@@ -1160,6 +1174,8 @@ BEGIN
 END
 
 UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
+DECLARE @today AS DATE = GETDATE();
+
 SELECT COUNT(1) AS Value, 
     ' + @sundayCalculation + ',
 	CampusId AS EntityId,
@@ -1173,15 +1189,15 @@ INNER JOIN (
 		ON A.GroupId = G.Id
 		AND G.GroupTypeId = (SELECT [Id] FROM [GroupType] WHERE [Name] = ''NEW Preschool Attendee'')
 	WHERE DidAttend = 1
-		AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0)
-		AND StartDateTime < CONVERT(DATE, GETDATE())
+		AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, @today), 0)
+		AND StartDateTime < CONVERT(DATE, @today)
 ) Attendance
 	ON PA.Id = Attendance.PersonAliasId	
 INNER JOIN (
 	-- iCal DTStart: constant 22 characters, only interested in Service Time
 	SELECT Id, STUFF(SUBSTRING(iCalendarContent, PATINDEX(''%DTSTART%'', iCalendarContent) +17, 4), 3, 0, '':'') AS Value
 	FROM Schedule
-	WHERE EffectiveStartDate < GETDATE()
+	WHERE EffectiveStartDate < @today
 ) Schedule
 ON Schedule.Id = Attendance.ScheduleId
 GROUP BY Attendance.CampusId, ScheduleId, GroupId
@@ -1254,6 +1270,8 @@ BEGIN
 END
 
 UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
+DECLARE @today AS DATE = GETDATE();
+
 SELECT COUNT(1) AS Value, 
 	' + @sundayCalculation + ',
 	CampusId,
@@ -1267,15 +1285,15 @@ INNER JOIN (
 		ON A.GroupId = G.Id
 		AND G.GroupTypeId = (SELECT [Id] FROM [GroupType] WHERE [Name] = ''NEW Elementary Attendee'')
 	WHERE DidAttend = 1
-		AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0)
-		AND StartDateTime < CONVERT(DATE, GETDATE())
+		AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, @today), 0)
+		AND StartDateTime < CONVERT(DATE, @today)
 ) Attendance
 	ON PA.Id = Attendance.PersonAliasId	
 INNER JOIN (
 	-- iCal DTStart: constant 22 characters, only interested in Service Time
 	SELECT Id, STUFF(SUBSTRING(iCalendarContent, PATINDEX(''%DTSTART%'', iCalendarContent) +17, 4), 3, 0, '':'') AS Value
 	FROM Schedule
-	WHERE EffectiveStartDate < GETDATE()
+	WHERE EffectiveStartDate < @today
 ) Schedule
 ON Schedule.Id = Attendance.ScheduleId
 GROUP BY Attendance.CampusId, ScheduleId, GroupId
@@ -1348,6 +1366,8 @@ BEGIN
 END
 
 UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
+DECLARE @today AS DATE = GETDATE();
+
 SELECT COUNT(1) AS Value, 
 	' + @sundayCalculation + ',
 	CampusId AS EntityId,
@@ -1361,15 +1381,15 @@ INNER JOIN (
 		ON A.GroupId = G.Id
 		AND G.GroupTypeId = (SELECT [Id] FROM [GroupType] WHERE [Name] = ''NEW Special Needs Attendee'')
 	WHERE DidAttend = 1
-		AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0)
-		AND StartDateTime < CONVERT(DATE, GETDATE())
+		AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, @today), 0)
+		AND StartDateTime < CONVERT(DATE, @today)
 ) Attendance
 	ON PA.Id = Attendance.PersonAliasId	
 INNER JOIN (
 	-- iCal DTStart: constant 22 characters, only interested in Service Time
 	SELECT Id, STUFF(SUBSTRING(iCalendarContent, PATINDEX(''%DTSTART%'', iCalendarContent) +17, 4), 3, 0, '':'') AS Value
 	FROM Schedule
-	WHERE EffectiveStartDate < GETDATE()
+	WHERE EffectiveStartDate < @today
 ) Schedule
 ON Schedule.Id = Attendance.ScheduleId
 GROUP BY Attendance.CampusId, ScheduleId, GroupId
@@ -1442,6 +1462,8 @@ BEGIN
 END
 
 UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
+DECLARE @today AS DATE = GETDATE();
+
 WITH KSFirstServe AS (
 	SELECT PersonAliasId, MIN(StartDateTime) AS FirstServe
 	FROM [Attendance] A
@@ -1469,8 +1491,8 @@ INNER JOIN (
 	    ON A.PersonAliasId = K.PersonAliasId
 	    AND A.StartDateTime = K.FirstServe
     	-- limit to first time visits here
-    	AND K.FirstServe >= DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0)
-    	AND K.FirstServe < CONVERT(DATE, GETDATE())
+    	AND K.FirstServe >= DATEADD(dd, DATEDIFF(dd, 1, @today), 0)
+    	AND K.FirstServe < CONVERT(DATE, @today)
     WHERE A.DidAttend = 1
 ) Attendance
 ON PA.Id = Attendance.PersonAliasId
@@ -1478,7 +1500,7 @@ INNER JOIN (
 	-- iCal DTStart: constant 22 characters, only interested in Service Time
 	SELECT Id, STUFF(SUBSTRING(iCalendarContent, PATINDEX(''%DTSTART%'', iCalendarContent) +17, 4), 3, 0, '':'') AS Value
 	FROM Schedule
-	WHERE EffectiveStartDate < GETDATE()
+	WHERE EffectiveStartDate < @today
 ) Schedule
 ON Schedule.Id = Attendance.ScheduleId
 GROUP BY CampusId, ScheduleId, GroupId;
@@ -1551,6 +1573,8 @@ BEGIN
 END
 
 UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
+DECLARE @today AS DATE = GETDATE();
+
 SELECT 
 	COUNT(gm.PersonId) AS Value, 
 	' + @sundayCalculation + ',
@@ -1724,6 +1748,8 @@ BEGIN
 END
 
 UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
+DECLARE @today AS DATE = GETDATE();
+
 SELECT 
 	COUNT(gm.PersonId) AS Value, 
 	' + @sundayCalculation + ',
@@ -1899,6 +1925,8 @@ BEGIN
 END
 
 UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
+DECLARE @today AS DATE = GETDATE();
+
 SELECT 
 	COUNT(gm.PersonId) AS Value, 
 	' + @sundayCalculation + ',
