@@ -31,7 +31,7 @@
     {{ item.CoachingTip }}
 {% endif %}
 
-{% assign videoLength = item.VideoDiscussion | Size %}
+{% assign videoLength = item.VideoDetail | Size %}
 {% if videoLength > 0 %}
     <h2 class="page-header">Video Discussion</h2>
     {{ item.VideoDetail }}
