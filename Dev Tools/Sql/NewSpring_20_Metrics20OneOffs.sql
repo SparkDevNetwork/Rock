@@ -759,8 +759,6 @@ GROUP BY
 '
 WHERE Id = @metricId;
 
-DECLARE @x AS NVARCHAR(MAX) = (SELECT SourceSql FROM Metric WHERE Id = @metricId)
-print(@x);
 
 /* ====================================================== */
 -- Attendance -> KidSpring Attendance -> 4 Week Percent of Return
