@@ -9,11 +9,7 @@
 {% assign itemWistiaId = item.VideoId %}
 
 {% if itemWistiaId != empty %}
-    <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-        <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-            <span class="wistia_embed wistia_async_{{ itemWistiaId }} popover=true popoverAnimateThumbnail=true videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
-        </div>
-    </div>
+  <script src="//fast.wistia.com/embed/medias/{{ itemWistiaId }}.jsonp" async></script><script src="//fast.wistia.com/assets/external/E-v1.js" async></script><div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;"><div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;"><div class="wistia_embed wistia_async_{{ itemWistiaId }} videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="height:100%;width:100%">&nbsp;</div></div></div>
 {% endif %}
 
 <h2 class="page-header">Reading Schedule</h2>
