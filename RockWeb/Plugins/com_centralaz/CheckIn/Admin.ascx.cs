@@ -407,7 +407,16 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
 
             if ( kiosk != null )
             {
+                Dictionary<string, string> queryParams = new Dictionary<string, string>();
                 SetDeviceIdCookie( kiosk );
+
+                kiosk.LoadAttributes();
+                var theme = kiosk.GetAttributeValue( "Theme" );
+                if ( !string.IsNullOrWhiteSpace( theme ) )
+                {
+                    CurrentTheme = theme;
+                    queryParams.Add( "theme", theme );
+                }
 
                 CurrentKioskId = kiosk.Id;
                 using ( var rockContext = new RockContext() )
@@ -431,8 +440,7 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                 CurrentCheckInState = null;
                 CurrentWorkflow = null;
                 SaveState();
-
-                NavigateToNextPage();
+                NavigateToNextPage( queryParams );
             }
             else
             {
@@ -500,13 +508,9 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             }
             else
             {
+                h1Tag.InnerText = "Too Far";
                 maWarning.Show( "You are too far. Try again later.", ModalAlertType.Alert );
             }
-        }
-
-        protected void lbRetry_Click( object sender, EventArgs e )
-        {
-            // TODO
         }
 
         #endregion
@@ -697,7 +701,6 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
 
             return null;
         }
-
 
         private List<GroupTypeCache> GetDescendentGroupTypes( GroupTypeCache groupType, List<int> recursionControl = null )
         {
