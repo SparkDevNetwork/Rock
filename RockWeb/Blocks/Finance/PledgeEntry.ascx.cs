@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Web.UI.WebControls;
@@ -59,6 +60,7 @@ namespace RockWeb.Blocks.Finance
 
     [SystemEmailField( "Confirmation Email Template", "Email template to use after submitting a new pledge. Leave blank to not send an email.", false, Rock.SystemGuid.SystemEmail.FINANCE_PLEDGE_CONFIRMATION, Order = 10 )]
     [BooleanField( "Enable Debug", "Outputs the object graph to help create your liquid syntax.", false, Order = 11 )]
+    [GroupTypeField( "Select Group Type", "Optional Group Type that if selected will display a selection of groups that current user belongs to that can then be associated with the pledge", false, "", "", 12 )]
     public partial class PledgeEntry : RockBlock
     {
         /// <summary>
@@ -115,6 +117,8 @@ namespace RockWeb.Blocks.Finance
             FinancialPledge financialPledge = new FinancialPledge();
 
             financialPledge.PersonAliasId = person.PrimaryAliasId;
+            financialPledge.GroupId = ddlGroup.SelectedValueAsInt();
+
             var financialAccount = financialAccountService.Get( GetAttributeValue( "Account" ).AsGuid() );
             if ( financialAccount != null )
             {
@@ -212,9 +216,65 @@ namespace RockWeb.Blocks.Finance
 
             if ( CurrentPerson != null )
             {
-                tbFirstName.Text = CurrentPerson.FirstName;
-                tbLastName.Text = CurrentPerson.LastName;
-                tbEmail.Text = CurrentPerson.Email;
+                lName.Text = CurrentPerson.FullName;
+                lName.Visible = true;
+
+                tbFirstName.Visible = false;
+                tbLastName.Visible = false;
+                tbEmail.Visible = false;
+
+                using ( var rockContext = new RockContext() )
+                {
+                    Guid? groupTypeGuid = GetAttributeValue( "SelectGroupType" ).AsGuidOrNull();
+                    if ( groupTypeGuid.HasValue )
+                    {
+                        var groups = new GroupMemberService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( m =>
+                                m.Group.GroupType.Guid == groupTypeGuid.Value &&
+                                m.PersonId == CurrentPerson.Id &&
+                                m.GroupMemberStatus == GroupMemberStatus.Active &&
+                                m.Group.IsActive )
+                            .Select( m => new
+                            {
+                                m.GroupId,
+                                Name = m.Group.Name,
+                                GroupTypeName = m.Group.GroupType.Name
+                            } )
+                            .ToList()
+                            .Distinct()
+                            .OrderBy( g => g.Name )
+                            .ToList();
+                        if ( groups.Any() )
+                        {
+                            ddlGroup.Label = "For " + groups.First().GroupTypeName;
+                            ddlGroup.DataSource = groups;
+                            ddlGroup.DataBind();
+                            ddlGroup.Visible = true;
+                        }
+                        else
+                        {
+                            ddlGroup.Visible = false;
+                        }
+                    }
+                    else
+                    {
+                        ddlGroup.Visible = false;
+                    }
+                }
+            }
+            else
+            {
+                lName.Visible = false;
+                ddlGroup.Visible = false;
+
+                tbFirstName.Visible = true;
+                tbLastName.Visible = true;
+                tbEmail.Visible = true;
+
+                tbFirstName.Text = string.Empty;
+                tbLastName.Text = string.Empty;
+                tbEmail.Text = string.Empty;
             }
 
             // Warn if Financial Account is not specified (must be set up by administrator)

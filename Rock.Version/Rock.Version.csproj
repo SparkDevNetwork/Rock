@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{381A2FC8-6F4F-4B66-A9B4-14932D43B76A}</ProjectGuid>
+    <ProjectGuid>{6FE0930C-6832-4C2F-8A76-D4E4A2D80DDF}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Rock.Version</RootNamespace>

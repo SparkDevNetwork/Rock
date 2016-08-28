@@ -111,6 +111,38 @@ namespace Rock.Field.Types
         #region Filter Control
 
         /// <summary>
+        /// Gets the filter value control with the specified FilterMode
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
+        {
+            var control = new RockTextBox { ID = id };
+            control.ID = string.Format( "{0}_ctlCompareValue", id );
+            control.AddCssClass( "js-filter-control" );
+            return control;
+        }
+
+        /// <summary>
+        /// Formats the filter value value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                return string.Format( "'{0}'", value );
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
         /// Gets the type of the filter comparison.
         /// </summary>
         /// <value>

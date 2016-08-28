@@ -145,10 +145,10 @@ namespace Rock.Workflow.Action.CheckIn
                                         }
                                         else if ( label.PrintTo == PrintTo.Location )
                                         {
-                                            var device = location.Location.PrinterDevice;
-                                            if ( device != null )
+                                            var deviceId = location.Location.PrinterDeviceId;
+                                            if ( deviceId != null )
                                             {
-                                                label.PrinterDeviceId = device.PrinterDeviceId;
+                                                label.PrinterDeviceId = deviceId;
                                             }
                                         }
 

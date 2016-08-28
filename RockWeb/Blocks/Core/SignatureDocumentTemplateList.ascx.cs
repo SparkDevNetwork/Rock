@@ -32,14 +32,14 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Core
 {
     /// <summary>
-    /// User controls for managing signature document types and their values
+    /// User controls for managing signature document templates and their values
     /// </summary>
-    [DisplayName( "Signature Document Type List" )]
+    [DisplayName( "Signature Document Template List" )]
     [Category( "Core" )]
-    [Description( "Lists all the signature document types and allows for managing them." )]
+    [Description( "Lists all the signature document templates and allows for managing them." )]
 
     [LinkedPage("Detail Page")]
-    public partial class SignatureDocumentTypeList : RockBlock
+    public partial class SignatureDocumentTemplateList : RockBlock
     {
         #region Control Methods
 
@@ -51,17 +51,17 @@ namespace RockWeb.Blocks.Core
         {
             base.OnInit( e );
 
-            gSignatureDocumentType.DataKeyNames = new string[] { "Id" };
-            gSignatureDocumentType.Actions.ShowAdd = true;
-            gSignatureDocumentType.Actions.AddClick += gSignatureDocumentType_Add;
-            gSignatureDocumentType.GridRebind += gSignatureDocumentType_GridRebind;
+            gSignatureDocumentTemplate.DataKeyNames = new string[] { "Id" };
+            gSignatureDocumentTemplate.Actions.ShowAdd = true;
+            gSignatureDocumentTemplate.Actions.AddClick += gSignatureDocumentTemplate_Add;
+            gSignatureDocumentTemplate.GridRebind += gSignatureDocumentTemplate_GridRebind;
 
-            SecurityField securityField = gSignatureDocumentType.ColumnsOfType<SecurityField>().First();
-            securityField.EntityTypeId = EntityTypeCache.GetId<Rock.Model.SignatureDocumentType>().Value;
+            SecurityField securityField = gSignatureDocumentTemplate.ColumnsOfType<SecurityField>().First();
+            securityField.EntityTypeId = EntityTypeCache.GetId<Rock.Model.SignatureDocumentTemplate>().Value;
 
             bool editAllowed = this.UserCanEdit;
-            gSignatureDocumentType.Actions.ShowAdd = editAllowed;
-            gSignatureDocumentType.IsDeleteEnabled = editAllowed;
+            gSignatureDocumentTemplate.Actions.ShowAdd = editAllowed;
+            gSignatureDocumentTemplate.IsDeleteEnabled = editAllowed;
         }
 
         /// <summary>
@@ -83,50 +83,50 @@ namespace RockWeb.Blocks.Core
         #region Grid Events (main grid)
 
         /// <summary>
-        /// Handles the Add event of the gSignatureDocumentType control.
+        /// Handles the Add event of the gSignatureDocumentTemplate control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void gSignatureDocumentType_Add( object sender, EventArgs e )
+        protected void gSignatureDocumentTemplate_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "signatureDocumentTypeId", 0 );
+            NavigateToLinkedPage( "DetailPage", "SignatureDocumentTemplateId", 0 );
         }
 
-        protected void gSignatureDocumentType_Edit( object sender, RowEventArgs e )
+        protected void gSignatureDocumentTemplate_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "signatureDocumentTypeId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "SignatureDocumentTemplateId", e.RowKeyId );
         }
 
 
         /// <summary>
-        /// Handles the Delete event of the gSignatureDocumentType control.
+        /// Handles the Delete event of the gSignatureDocumentTemplate control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gSignatureDocumentType_Delete( object sender, RowEventArgs e )
+        protected void gSignatureDocumentTemplate_Delete( object sender, RowEventArgs e )
         {
             var rockContext = new RockContext();
             var signatureDocumentService = new SignatureDocumentService( rockContext );
-            var signatureDocumentTypeService = new SignatureDocumentTypeService( rockContext );
+            var signatureDocumentTemplateService = new SignatureDocumentTemplateService( rockContext );
 
-            SignatureDocumentType type = signatureDocumentTypeService.Get( e.RowKeyId );
+            SignatureDocumentTemplate type = signatureDocumentTemplateService.Get( e.RowKeyId );
 
             if ( type != null )
             {
                 if ( !UserCanEdit && !type.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                 {
-                    mdGridWarning.Show( "Sorry, you're not authorized to delete this signature document type.", ModalAlertType.Alert );
+                    mdGridWarning.Show( "Sorry, you're not authorized to delete this signature document template.", ModalAlertType.Alert );
                     return;
                 }
 
                 string errorMessage;
-                if ( !signatureDocumentTypeService.CanDelete( type, out errorMessage ) )
+                if ( !signatureDocumentTemplateService.CanDelete( type, out errorMessage ) )
                 {
                     mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                     return;
                 }
 
-                signatureDocumentTypeService.Delete( type );
+                signatureDocumentTemplateService.Delete( type );
 
                 rockContext.SaveChanges();
             }
@@ -135,11 +135,11 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
-        /// Handles the GridRebind event of the gSignatureDocumentType control.
+        /// Handles the GridRebind event of the gSignatureDocumentTemplate control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void gSignatureDocumentType_GridRebind( object sender, EventArgs e )
+        protected void gSignatureDocumentTemplate_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
         }
@@ -149,13 +149,13 @@ namespace RockWeb.Blocks.Core
         #region Internal Methods
 
         /// <summary>
-        /// Binds the grid for signature document types.
+        /// Binds the grid for signature document templates.
         /// </summary>
         private void BindGrid()
         {
-            var queryable = new SignatureDocumentTypeService( new RockContext() ).Queryable();
+            var queryable = new SignatureDocumentTemplateService( new RockContext() ).Queryable();
 
-            SortProperty sortProperty = gSignatureDocumentType.SortProperty;
+            SortProperty sortProperty = gSignatureDocumentTemplate.SortProperty;
             if ( sortProperty != null )
             {
                 if ( sortProperty.Property == "Documents" )
@@ -176,7 +176,7 @@ namespace RockWeb.Blocks.Core
                 queryable = queryable.OrderBy( a => a.Name );
             }
 
-            var types = new List<SignatureDocumentType>();
+            var types = new List<SignatureDocumentTemplate>();
             foreach( var type in queryable )
             {
                 if ( type.IsAuthorized( Authorization.VIEW, CurrentPerson))
@@ -185,7 +185,7 @@ namespace RockWeb.Blocks.Core
                 }
             }
 
-            gSignatureDocumentType.DataSource = types
+            gSignatureDocumentTemplate.DataSource = types
                 .Select( a =>
                 new
                 {
@@ -197,7 +197,7 @@ namespace RockWeb.Blocks.Core
                     Documents = a.Documents.Count()
                 } )
                 .ToList();
-            gSignatureDocumentType.DataBind();
+            gSignatureDocumentTemplate.DataBind();
         }
 
         #endregion

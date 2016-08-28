@@ -266,7 +266,7 @@ namespace Rock.Web.UI.Controls
             _ddlPrintTo = new RockDropDownList();
             _ddlPrintTo.ID = this.ID + "_ddlPrintTo";
             _ddlPrintTo.Label = "Print To";
-            _ddlPrintTo.Help = "When printing check-in labels, should the device's printer or the location's printer be used?  Note: the device has a similiar setting which takes precedence over this setting.";
+            _ddlPrintTo.Help = "When printing check-in labels, should the device's printer or the location's printer be used?  Note: the device has a similar setting which takes precedence over this setting.";
             _ddlPrintTo.Items.Add( new ListItem( "Device Printer", "1" ) );
             _ddlPrintTo.Items.Add( new ListItem( "Location Printer", "2" ) );
 
