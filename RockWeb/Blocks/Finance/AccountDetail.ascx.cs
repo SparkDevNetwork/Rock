@@ -18,6 +18,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -99,6 +100,9 @@ namespace RockWeb.Blocks.Finance
             account.ModifiedDateTime = RockDateTime.Now;
             account.ModifiedByPersonAliasId = CurrentPersonAliasId;
 
+            account.LoadAttributes( rockContext );
+            Rock.Attribute.Helper.GetEditValues( phAttributes, account );
+
             // if the account IsValid is false, and the UI controls didn't report any errors, it is probably because the custom rules of account didn't pass.
             // So, make sure a message is displayed in the validation summary
             cvAccount.IsValid = account.IsValid;
@@ -110,6 +114,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             rockContext.SaveChanges();
+            account.SaveAttributeValues( rockContext );
 
             NavigateToParentPage();
         }
@@ -190,6 +195,10 @@ namespace RockWeb.Blocks.Finance
             {
                 lActionTitle.Text = account.Name.FormatAsHtmlTitle();
             }
+
+            account.LoadAttributes();
+            phAttributes.Controls.Clear();
+            Rock.Attribute.Helper.AddEditControls( account, phAttributes, true, BlockValidationGroup );
 
             hlInactive.Visible = !account.IsActive;
 
