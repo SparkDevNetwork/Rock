@@ -153,6 +153,17 @@ namespace Rock.Financial
         }
 
         /// <summary>
+        /// Gets a value indicating whether this gateway can be used by Rock to create new transactions (vs. just used to download externally created transactions)
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [supports charge]; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool SupportsRockInitiatedTransactions
+        {
+            get { return true; }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether the gateway requires the name on card for CC processing
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>

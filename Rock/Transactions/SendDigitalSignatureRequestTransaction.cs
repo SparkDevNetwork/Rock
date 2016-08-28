@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Linq;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -32,7 +34,7 @@ namespace Rock.Transactions
         /// <value>
         /// The signature document type identifier.
         /// </value>
-        public int SignatureDocumentTypeId { get; set; }
+        public int SignatureDocumentTemplateId { get; set; }
 
         /// <summary>
         /// Gets or sets the applies to person alias identifier.
@@ -73,17 +75,24 @@ namespace Rock.Transactions
         {
             using ( var rockContext = new RockContext() )
             {
+                var documentService = new SignatureDocumentService( rockContext );
                 var personAliasService = new PersonAliasService( rockContext );
                 var appliesPerson = personAliasService.GetPerson( AppliesToPersonAliasId );
                 var assignedPerson = personAliasService.GetPerson( AssignedToPersonAliasId );
 
-                var documentTypeService = new SignatureDocumentTypeService( rockContext );
-                var signatureDocumentType = documentTypeService.Get( SignatureDocumentTypeId );
-
-                var errorMessages = new List<string>();
-                if ( documentTypeService.SendDocument( signatureDocumentType, appliesPerson, assignedPerson, DocumentName, Email, out errorMessages ) )
+                if ( !documentService.Queryable().Any( d =>
+                        d.AppliesToPersonAliasId.HasValue && 
+                        d.AppliesToPersonAliasId.Value == AppliesToPersonAliasId &&
+                        d.Status == SignatureDocumentStatus.Signed ) )
                 {
-                    rockContext.SaveChanges();
+                    var documentTypeService = new SignatureDocumentTemplateService( rockContext );
+                    var SignatureDocumentTemplate = documentTypeService.Get( SignatureDocumentTemplateId );
+
+                    var errorMessages = new List<string>();
+                    if ( documentTypeService.SendDocument( SignatureDocumentTemplate, appliesPerson, assignedPerson, DocumentName, Email, out errorMessages ) )
+                    {
+                        rockContext.SaveChanges();
+                    }
                 }
             }
         }

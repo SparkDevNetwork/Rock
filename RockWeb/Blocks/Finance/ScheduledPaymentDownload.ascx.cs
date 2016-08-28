@@ -200,5 +200,5 @@ namespace RockWeb.Blocks.Finance
 
         #endregion
 
-}
+    }
 }

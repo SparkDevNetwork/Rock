@@ -104,6 +104,26 @@ namespace Rock.Jobs
                 throw new Exception( "One or more exceptions occurred sending communications..." + Environment.NewLine + exceptionMsgs.AsDelimited( Environment.NewLine ) );
             }
 
+            // check for communications that have not been sent but are past the expire date. Mark them as failed and set a warning.
+            var qryExpired = new CommunicationService( rockContext ).Queryable()
+                .Where( c =>
+                    c.Status == CommunicationStatus.Approved &&
+                    qryPendingRecipients.Where( r => r.CommunicationId == c.Id ).Any() &&
+                    (
+                        (!c.FutureSendDateTime.HasValue && c.CreatedDateTime.HasValue && c.CreatedDateTime.Value.CompareTo( beginWindow ) < 0 ) ||
+                        (c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value.CompareTo( beginWindow ) < 0 )
+                    ) );
+
+            foreach ( var comm in qryExpired.ToList() )
+            {
+                foreach ( var recipient in comm.Recipients.Where( r => r.Status == CommunicationRecipientStatus.Pending ) )
+                {
+                    recipient.Status = CommunicationRecipientStatus.Failed;
+                    recipient.StatusNote = "Communication was not sent before the expire window (possibly due to delayed approval).";
+                    rockContext.SaveChanges();
+                }
+            }
+
         }
     }
 }

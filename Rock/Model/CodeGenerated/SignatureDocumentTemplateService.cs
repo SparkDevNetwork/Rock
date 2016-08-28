@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// SignatureDocumentType Service class
+    /// SignatureDocumentTemplate Service class
     /// </summary>
-    public partial class SignatureDocumentTypeService : Service<SignatureDocumentType>
+    public partial class SignatureDocumentTemplateService : Service<SignatureDocumentTemplate>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="SignatureDocumentTypeService"/> class
+        /// Initializes a new instance of the <see cref="SignatureDocumentTemplateService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public SignatureDocumentTypeService(RockContext context) : base(context)
+        public SignatureDocumentTemplateService(RockContext context) : base(context)
         {
         }
 
@@ -48,19 +48,19 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( SignatureDocumentType item, out string errorMessage )
+        public bool CanDelete( SignatureDocumentTemplate item, out string errorMessage )
         {
             errorMessage = string.Empty;
  
-            if ( new Service<Group>( Context ).Queryable().Any( a => a.RequiredSignatureDocumentTypeId == item.Id ) )
+            if ( new Service<Group>( Context ).Queryable().Any( a => a.RequiredSignatureDocumentTemplateId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", SignatureDocumentType.FriendlyTypeName, Group.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", SignatureDocumentTemplate.FriendlyTypeName, Group.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<RegistrationTemplate>( Context ).Queryable().Any( a => a.RequiredSignatureDocumentTypeId == item.Id ) )
+            if ( new Service<RegistrationTemplate>( Context ).Queryable().Any( a => a.RequiredSignatureDocumentTemplateId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", SignatureDocumentType.FriendlyTypeName, RegistrationTemplate.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", SignatureDocumentTemplate.FriendlyTypeName, RegistrationTemplate.FriendlyTypeName );
                 return false;
             }  
             return true;
@@ -70,47 +70,44 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class SignatureDocumentTypeExtensionMethods
+    public static partial class SignatureDocumentTemplateExtensionMethods
     {
         /// <summary>
-        /// Clones this SignatureDocumentType object to a new SignatureDocumentType object
+        /// Clones this SignatureDocumentTemplate object to a new SignatureDocumentTemplate object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static SignatureDocumentType Clone( this SignatureDocumentType source, bool deepCopy )
+        public static SignatureDocumentTemplate Clone( this SignatureDocumentTemplate source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as SignatureDocumentType;
+                return source.Clone() as SignatureDocumentTemplate;
             }
             else
             {
-                var target = new SignatureDocumentType();
+                var target = new SignatureDocumentTemplate();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another SignatureDocumentType object to this SignatureDocumentType object
+        /// Copies the properties from another SignatureDocumentTemplate object to this SignatureDocumentTemplate object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this SignatureDocumentType target, SignatureDocumentType source )
+        public static void CopyPropertiesFrom( this SignatureDocumentTemplate target, SignatureDocumentTemplate source )
         {
             target.Id = source.Id;
             target.BinaryFileTypeId = source.BinaryFileTypeId;
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.InviteSystemEmailId = source.InviteSystemEmailId;
             target.Name = source.Name;
             target.ProviderEntityTypeId = source.ProviderEntityTypeId;
             target.ProviderTemplateKey = source.ProviderTemplateKey;
-            target.RequestEmailTemplateBody = source.RequestEmailTemplateBody;
-            target.RequestEmailTemplateFromAddress = source.RequestEmailTemplateFromAddress;
-            target.RequestEmailTemplateFromName = source.RequestEmailTemplateFromName;
-            target.RequestEmailTemplateSubject = source.RequestEmailTemplateSubject;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

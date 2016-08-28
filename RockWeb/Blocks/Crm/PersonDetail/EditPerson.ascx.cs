@@ -30,7 +30,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 /*******************************************************************************************************************************
- * NOTE: The Security/AccountEdit.ascx block has very similiar functionality.  If updating this block, make sure to check
+ * NOTE: The Security/AccountEdit.ascx block has very similar functionality.  If updating this block, make sure to check
  * that block also.  It may need the same updates.
  *******************************************************************************************************************************/
 

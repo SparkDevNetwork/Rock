@@ -17,8 +17,11 @@ DECLARE @False bit = 0
 DECLARE @CreatedDateTime AS DATETIME = GETDATE();
 DECLARE @foreignKey AS NVARCHAR(15) = 'Metrics 2.0';
 DECLARE @fuseScheduleId AS NVARCHAR(10) = (SELECT Id FROM Schedule WHERE Name = 'Fuse');
-DECLARE @sundayCalculation AS NVARCHAR(100) = 'CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, GETDATE()), GETDATE())) AS MetricValueDateTime';
-DECLARE @wednesdayCalculation AS NVARCHAR(100) = 'CONVERT(DATE, DATEADD(DAY, (DATEDIFF (DAY, ''20110105'', GETDATE()) / 7) * 7, ''20110105'')) AS MetricValueDateTime';
+DECLARE @sundayCalculation AS NVARCHAR(200) = 'CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @today), @today)) AS MetricValueDateTime';
+DECLARE @wednesdaySubCalc AS NVARCHAR(200) = 'CONVERT(DATE, DATEADD(DAY, (DATEDIFF (DAY, ''20110105'', @today) / 7) * 7, ''20110105''))';
+DECLARE @wednesdayCalculation AS NVARCHAR(200) = @wednesdaySubCalc + ' AS MetricValueDateTime';
+DECLARE @etidSchedule AS INT = (SELECT Id FROM EntityType WHERE NAME = 'Rock.Model.Schedule');
+DECLARE @etidGroup AS INT = (SELECT Id FROM EntityType WHERE NAME = 'Rock.Model.Group');
 
 /* ====================================================== */
 -- create the group conversion table
@@ -52,9 +55,44 @@ from [group] og
 /*************************************
  * Next Steps -> Financial Coaching -> Coaching Assignments
 *************************************/
-DECLARE @metricId AS INT = (SELECT Id FROM Metric WHERE [Guid] = '73464A6D-01B7-4EB4-B965-40A3A2995BE1');
+DECLARE @metricId AS INT = (
+	SELECT 
+		m.Id 
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Coaching Assignments'
+		AND c.Name = 'Financial Coaching'
+);
 
-IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group';
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Group',
+		@etidGroup,
+		@False,
+		1,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule';
 BEGIN
 	INSERT INTO MetricPartition(
 		MetricId,
@@ -69,9 +107,9 @@ BEGIN
 	) VALUES (
 		@metricId,
 		'Schedule',
-		54,
+		@etidSchedule,
 		@False,
-		1,
+		2,
 		'',
 		'',
 		NEWID(),
@@ -79,12 +117,15 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
+DECLARE @today AS DATE = GETDATE();
+
 SELECT 
 	COUNT(gm.PersonId) AS Value, 
 	' + @sundayCalculation + ',
 	g.CampusId,
-	gm.GroupId
+	gm.GroupId,
+	NULL AS ScheduleId
 FROM
 	[Group] g
 	JOIN [GroupType] gt ON gt.Id = g.GroupTypeId
@@ -102,34 +143,19 @@ WHERE Id = @metricId;
 /*************************************
  * Next Steps -> Financial Coaching -> Coaching Attendees
 *************************************/
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = 'C71E7218-231D-42A2-9ED9-639D469BA23A');
+SET @metricId = (
+	SELECT 
+		m.Id 
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Coaching Attendees'
+		AND c.Name = 'Financial Coaching'
+);
 
-IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
-BEGIN
-	INSERT INTO MetricPartition(
-		MetricId,
-		Label,
-		EntityTypeId,
-		IsRequired,
-		[Order],
-		EntityTypeQualifierColumn,
-		EntityTypeQualifierValue,
-		[Guid],
-		ForeignKey
-	) VALUES (
-		@metricId,
-		'Schedule',
-		54,
-		@False,
-		1,
-		'',
-		'',
-		NEWID(),
-		@foreignKey
-	);
-END
-
-IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group') 
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group';
 BEGIN
 	INSERT INTO MetricPartition(
 		MetricId,
@@ -144,7 +170,7 @@ BEGIN
 	) VALUES (
 		@metricId,
 		'Group',
-		16,
+		@etidGroup,
 		@False,
 		1,
 		'',
@@ -154,15 +180,41 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
-DECLARE @recentSunday AS DATETIME = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, GETDATE()), GETDATE()));
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule';
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Schedule',
+		@etidSchedule,
+		@False,
+		2,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
+DECLARE @today AS DATE = GETDATE();
+DECLARE @recentSunday AS DATETIME = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @today), @today));
 
 SELECT 
 	COUNT(1) AS Value, 
 	@recentSunday AS MetricValueDateTime,
 	g.CampusId,
-	a.ScheduleId,
-	a.GroupId
+	a.GroupId,
+	a.ScheduleId
 FROM
 	Attendance a
 	JOIN [Group] g ON a.GroupId = g.Id
@@ -181,15 +233,78 @@ WHERE Id = @metricId;
 /*************************************
  * Next Steps -> Community Groups -> Avg Fuse Group Size
 *************************************/
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = 'CC4F651F-6569-467C-82A9-69C4D7D1114F');
+SET @metricId = (
+	SELECT 
+		m.Id 
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Avg Fuse Group Size'
+		AND c.Name = 'Community Groups'
+);
 
-UPDATE Metric SET SourceSql = '
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group';
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Group',
+		@etidGroup,
+		@False,
+		1,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule';
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Schedule',
+		@etidSchedule,
+		@False,
+		2,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
+DECLARE @today AS DATE = GETDATE();
 DECLARE @GroupMemberStatusActive int = 1;
 
 SELECT
 	AVG(sub.NumMembers) as Value
 	, ' + @wednesdayCalculation + '
-	, sub.CampusId AS EntityId
+	, sub.CampusId,
+	NULL AS GroupId,
+	NULL AS ScheduleId
 FROM 
 	(
 		SELECT 
@@ -216,9 +331,44 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Fuse HS attendance
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = '6B49E110-D4ED-4CFF-A903-2C71E4A74E4E');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Fuse HS Attendance'
+		AND c.Name = 'Fuse Attendance'
+);
 
-IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group';
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Group',
+		@etidGroup,
+		@False,
+		1,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule';
 BEGIN
 	INSERT INTO MetricPartition(
 		MetricId,
@@ -233,9 +383,9 @@ BEGIN
 	) VALUES (
 		@metricId,
 		'Schedule',
-		54,
+		@etidSchedule,
 		@False,
-		1,
+		2,
 		'',
 		'',
 		NEWID(),
@@ -243,8 +393,15 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
-SELECT COUNT(1) AS Value, ' + @wednesdayCalculation + ', CampusId AS EntityId, ' + @fuseScheduleId + '
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
+DECLARE @today AS DATE = GETDATE();
+
+SELECT 
+	COUNT(1) AS Value, ' 
+	+ @wednesdayCalculation + ', 
+	CampusId AS EntityId, 
+	NULL AS GroupId,
+	' + @fuseScheduleId + '
 FROM PersonAlias PA 
 INNER JOIN (
 	SELECT PersonAliasId, A.CampusId
@@ -253,8 +410,8 @@ INNER JOIN (
 		ON A.GroupId = G.Id
 		AND G.GroupTypeId = (SELECT [Id] FROM [GroupType] WHERE [Name] = ''NEW Fuse Attendee'')
 	WHERE DidAttend = 1	
-	AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0)
-	AND StartDateTime < CONVERT(DATE, GETDATE())
+	AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, @today), 0)
+	AND StartDateTime < CONVERT(DATE, @today)
 	AND (
 		CASE WHEN ISNUMERIC(LEFT(G.Name, 1)) = 1
 		THEN LEFT(G.Name, 1) ELSE NULL END
@@ -268,9 +425,44 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Fuse MS attendance
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = '2222FA59-69DA-49B1-AB37-B628CF3E5B38');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Fuse MS Attendance'
+		AND c.Name = 'Fuse Attendance'
+);
 
-IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group';
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Group',
+		@etidGroup,
+		@False,
+		1,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule';
 BEGIN
 	INSERT INTO MetricPartition(
 		MetricId,
@@ -285,9 +477,9 @@ BEGIN
 	) VALUES (
 		@metricId,
 		'Schedule',
-		54,
+		@etidSchedule,
 		@False,
-		1,
+		2,
 		'',
 		'',
 		NEWID(),
@@ -295,8 +487,15 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
-SELECT COUNT(1) AS Value, ' + @wednesdayCalculation + ', CampusId AS EntityId, ' +  @fuseScheduleId + '
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
+DECLARE @today AS DATE = GETDATE();
+
+SELECT 
+	COUNT(1) AS Value, ' 
+	+ @wednesdayCalculation + ', 
+	CampusId AS EntityId, 
+	NULL AS GroupId,' 
+	+  @fuseScheduleId + '
 FROM PersonAlias PA 
 INNER JOIN (
 	SELECT PersonAliasId, A.CampusId
@@ -305,8 +504,8 @@ INNER JOIN (
 		ON A.GroupId = G.Id
 		AND G.GroupTypeId = (SELECT [Id] FROM [GroupType] WHERE [Name] = ''NEW Fuse Attendee'')
 	WHERE DidAttend = 1	
-	AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0)
-	AND StartDateTime < CONVERT(DATE, GETDATE())
+	AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, @today), 0)
+	AND StartDateTime < CONVERT(DATE, @today)
 	AND (
 		CASE WHEN ISNUMERIC(LEFT(G.Name, 1)) = 1
 		THEN LEFT(G.Name, 1) ELSE NULL END
@@ -320,9 +519,44 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Attendance -> Fuse Attendance -> Fuse 4 Week Percent of Return
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = '35E37B04-B996-434C-BB6F-CD177107F00D');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Fuse 4 Week Percent of Return'
+		AND c.Name = 'Fuse Attendance'
+);
 
-IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group';
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Group',
+		@etidGroup,
+		@False,
+		1,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule';
 BEGIN
 	INSERT INTO MetricPartition(
 		MetricId,
@@ -337,9 +571,9 @@ BEGIN
 	) VALUES (
 		@metricId,
 		'Schedule',
-		54,
+		@etidSchedule,
 		@False,
-		1,
+		2,
 		'',
 		'',
 		NEWID(),
@@ -347,10 +581,10 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
 DECLARE @today AS DATE = GETDATE();
 DECLARE @wednesdayDW AS INT = 4;
-DECLARE @recentWednesdayDate AS DATE = CONVERT(DATE, DATEADD(DAY, @wednesdayDW - DATEPART(DW, @today), @today));
+DECLARE @recentWednesdayDate AS DATE = ' + @wednesdaySubCalc + ';
 
 IF @recentWednesdayDate > @today
 BEGIN
@@ -407,8 +641,11 @@ WITH Attendances AS (
 		a.WednesdayDate BETWEEN @firstReturnWednesdayDate AND @recentWednesdayDate
 )
 SELECT
-	CONVERT(INT, ROUND(CONVERT(DECIMAL, COUNT(r.PersonId)) / CONVERT(DECIMAL, COUNT(ftp.PersonId)) * 100, 0)) AS Value, ' + @wednesdayCalculation + ',
-	ftp.CampusId AS EntityId, ' + @fuseScheduleId + '
+	CONVERT(INT, ROUND(CONVERT(DECIMAL, COUNT(r.PersonId)) / CONVERT(DECIMAL, COUNT(ftp.PersonId)) * 100, 0)) AS Value, ' 
+	+ @wednesdayCalculation + ',
+	ftp.CampusId, 
+	NULL AS GroupId,' 
+	+ @fuseScheduleId + '
 FROM
 	FirstTimePersonIdsWithCampus ftp
 	LEFT JOIN Returnees r ON r.PersonId = ftp.PersonId
@@ -420,9 +657,44 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Attendance -> Fuse Attendance -> Fuse First Timers
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = 'C5FEEDC1-E869-4100-82A7-3494398B1659');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Fuse First Timers'
+		AND c.Name = 'Fuse Attendance'
+);
 
-IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group';
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Group',
+		@etidGroup,
+		@False,
+		1,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule';
 BEGIN
 	INSERT INTO MetricPartition(
 		MetricId,
@@ -437,9 +709,9 @@ BEGIN
 	) VALUES (
 		@metricId,
 		'Schedule',
-		54,
+		@etidSchedule,
 		@False,
-		1,
+		2,
 		'',
 		'',
 		NEWID(),
@@ -447,9 +719,9 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
 DECLARE @today AS DATE = GETDATE();
-DECLARE @recentWednesday AS DATE = CONVERT(DATE, DATEADD(DAY, 4 - DATEPART(DW, @today), @today));
+DECLARE @recentWednesday AS DATE = ' + @wednesdaySubCalc + ';
 
 ;WITH cte_GroupIds AS (
 	SELECT
@@ -477,7 +749,9 @@ cte_FirstTimePersonIds AS (
 )
 SELECT
 	COUNT(Id) AS Value, ' + @wednesdayCalculation + '
-	, CampusId AS EntityId, ' + @fuseScheduleId + '
+	, CampusId,
+	NULL AS GroupId,
+	' + @fuseScheduleId + '
 FROM
 	[cte_FirstTimePersonIds]
 GROUP BY
@@ -485,12 +759,73 @@ GROUP BY
 '
 WHERE Id = @metricId;
 
+
 /* ====================================================== */
 -- Attendance -> KidSpring Attendance -> 4 Week Percent of Return
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = 'AA8F3F6D-C813-4D07-BC5C-9ABE4512427B');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = '4 Week Percent of Return'
+		AND c.Name = 'KidSpring Attendance'
+);
 
-UPDATE Metric SET SourceSql = '
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group';
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Group',
+		@etidGroup,
+		@False,
+		1,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule';
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Schedule',
+		@etidSchedule,
+		@False,
+		2,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
 DECLARE @today AS DATE = GETDATE();
 DECLARE @recentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @today), @today));
 DECLARE @firstTimeSundayDate AS DATE = DATEADD(WEEK, -3, @recentSundayDate);
@@ -548,8 +883,11 @@ WITH Attendances AS (
 		a.SundayDate BETWEEN @firstReturnSundayDate AND @recentSundayDate
 )
 SELECT
-	CONVERT(INT, ROUND(CONVERT(DECIMAL, COUNT(r.PersonId)) / CONVERT(DECIMAL, COUNT(ftp.PersonId)) * 100, 0)) AS Value, ' + @sundayCalculation + ',
-	ftp.CampusId AS EntityId
+	CONVERT(INT, ROUND(CONVERT(DECIMAL, COUNT(r.PersonId)) / CONVERT(DECIMAL, COUNT(ftp.PersonId)) * 100, 0)) AS Value, ' 
+	+ @sundayCalculation + ',
+	ftp.CampusId AS CampusId,
+	NULL AS GroupId,
+	NULL AS ScheduleId
 FROM
 	FirstTimePersonIdsWithCampus ftp
 	LEFT JOIN Returnees r ON r.PersonId = ftp.PersonId
@@ -561,34 +899,19 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Attendance -> KidSpring Attendance -> First Time Guests
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = '2BBA4F56-3556-4681-A25A-1EC961CE2EED');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'First Time Guests'
+		AND c.Name = 'KidSpring Attendance'
+);
 
-IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
-BEGIN
-	INSERT INTO MetricPartition(
-		MetricId,
-		Label,
-		EntityTypeId,
-		IsRequired,
-		[Order],
-		EntityTypeQualifierColumn,
-		EntityTypeQualifierValue,
-		[Guid],
-		ForeignKey
-	) VALUES (
-		@metricId,
-		'Schedule',
-		54,
-		@False,
-		1,
-		'',
-		'',
-		NEWID(),
-		@foreignKey
-	);
-END
-
-IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group') 
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group';
 BEGIN
 	INSERT INTO MetricPartition(
 		MetricId,
@@ -603,7 +926,7 @@ BEGIN
 	) VALUES (
 		@metricId,
 		'Group',
-		16,
+		@etidGroup,
 		@False,
 		1,
 		'',
@@ -613,7 +936,32 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule';
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Schedule',
+		@etidSchedule,
+		@False,
+		2,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
 DECLARE @today AS DATE = GETDATE();
 DECLARE @recentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @today), @today));
 
@@ -650,9 +998,9 @@ cte_FirstTimePersonIds AS (
 SELECT
 	COUNT(Id) AS Value
 	, ' + @sundayCalculation + '
-	, CampusId AS EntityId
-	, ScheduleId
+	, CampusId
 	, GroupId
+	, ScheduleId
 FROM
 	[cte_FirstTimePersonIds]
 GROUP BY
@@ -665,34 +1013,19 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Attendance -> KidSpring Attendance -> Nursery Attendance
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = '0B183D52-4852-440F-8066-EFF82001CDF3');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Nursery Attendance'
+		AND c.Name = 'KidSpring Attendance'
+);
 
-IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
-BEGIN
-	INSERT INTO MetricPartition(
-		MetricId,
-		Label,
-		EntityTypeId,
-		IsRequired,
-		[Order],
-		EntityTypeQualifierColumn,
-		EntityTypeQualifierValue,
-		[Guid],
-		ForeignKey
-	) VALUES (
-		@metricId,
-		'Schedule',
-		54,
-		@False,
-		1,
-		'',
-		'',
-		NEWID(),
-		@foreignKey
-	);
-END
-
-IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group') 
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group';
 BEGIN
 	INSERT INTO MetricPartition(
 		MetricId,
@@ -707,7 +1040,7 @@ BEGIN
 	) VALUES (
 		@metricId,
 		'Group',
-		16,
+		@etidGroup,
 		@False,
 		1,
 		'',
@@ -717,12 +1050,39 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule';
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Schedule',
+		@etidSchedule,
+		@False,
+		2,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
+DECLARE @today AS DATE = GETDATE();
+
 SELECT COUNT(1) AS Value, 
     ' + @sundayCalculation + ',
-	CampusId AS EntityId,
-	ScheduleId,
-	GroupId
+	CampusId,
+	GroupId,
+	ScheduleId
 FROM PersonAlias PA 
 INNER JOIN (
 	SELECT PersonAliasId, A.CampusId, A.ScheduleId, A.GroupId
@@ -731,15 +1091,15 @@ INNER JOIN (
 		ON A.GroupId = G.Id
 		AND G.GroupTypeId = (SELECT [Id] FROM [GroupType] WHERE [Name] = ''NEW Nursery Attendee'')
 	WHERE DidAttend = 1
-		AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0)
-		AND StartDateTime < CONVERT(DATE, GETDATE())
+		AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, @today), 0)
+		AND StartDateTime < CONVERT(DATE, @today)
 ) Attendance
 	ON PA.Id = Attendance.PersonAliasId	
 INNER JOIN (
 	-- iCal DTStart: constant 22 characters, only interested in Service Time
 	SELECT Id, STUFF(SUBSTRING(iCalendarContent, PATINDEX(''%DTSTART%'', iCalendarContent) +17, 4), 3, 0, '':'') AS Value
 	FROM Schedule
-	WHERE EffectiveStartDate < GETDATE()
+	WHERE EffectiveStartDate < @today
 ) Schedule
 ON Schedule.Id = Attendance.ScheduleId
 GROUP BY Attendance.CampusId, ScheduleId, GroupId
@@ -749,34 +1109,19 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Attendance -> KidSpring Attendance -> Preschool Attendance
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = '7522DA61-C971-437D-92C6-BA62800EF174');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Preschool Attendance'
+		AND c.Name = 'KidSpring Attendance'
+);
 
-IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
-BEGIN
-	INSERT INTO MetricPartition(
-		MetricId,
-		Label,
-		EntityTypeId,
-		IsRequired,
-		[Order],
-		EntityTypeQualifierColumn,
-		EntityTypeQualifierValue,
-		[Guid],
-		ForeignKey
-	) VALUES (
-		@metricId,
-		'Schedule',
-		54,
-		@False,
-		1,
-		'',
-		'',
-		NEWID(),
-		@foreignKey
-	);
-END
-
-IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group') 
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group';
 BEGIN
 	INSERT INTO MetricPartition(
 		MetricId,
@@ -791,7 +1136,7 @@ BEGIN
 	) VALUES (
 		@metricId,
 		'Group',
-		16,
+		@etidGroup,
 		@False,
 		1,
 		'',
@@ -801,12 +1146,39 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule';
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Schedule',
+		@etidSchedule,
+		@False,
+		2,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
+DECLARE @today AS DATE = GETDATE();
+
 SELECT COUNT(1) AS Value, 
     ' + @sundayCalculation + ',
 	CampusId AS EntityId,
-	ScheduleId,
-	GroupId
+	GroupId,
+	ScheduleId
 FROM PersonAlias PA 
 INNER JOIN (
 	SELECT PersonAliasId, A.CampusId, A.ScheduleId, A.GroupId
@@ -815,15 +1187,15 @@ INNER JOIN (
 		ON A.GroupId = G.Id
 		AND G.GroupTypeId = (SELECT [Id] FROM [GroupType] WHERE [Name] = ''NEW Preschool Attendee'')
 	WHERE DidAttend = 1
-		AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0)
-		AND StartDateTime < CONVERT(DATE, GETDATE())
+		AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, @today), 0)
+		AND StartDateTime < CONVERT(DATE, @today)
 ) Attendance
 	ON PA.Id = Attendance.PersonAliasId	
 INNER JOIN (
 	-- iCal DTStart: constant 22 characters, only interested in Service Time
 	SELECT Id, STUFF(SUBSTRING(iCalendarContent, PATINDEX(''%DTSTART%'', iCalendarContent) +17, 4), 3, 0, '':'') AS Value
 	FROM Schedule
-	WHERE EffectiveStartDate < GETDATE()
+	WHERE EffectiveStartDate < @today
 ) Schedule
 ON Schedule.Id = Attendance.ScheduleId
 GROUP BY Attendance.CampusId, ScheduleId, GroupId
@@ -833,34 +1205,19 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Attendance -> KidSpring Attendance -> Elementary Attendance
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = '6B93C5ED-C58C-4092-A3EA-E390CE8FED8C');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Elementary Attendance'
+		AND c.Name = 'KidSpring Attendance'
+);
 
-IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
-BEGIN
-	INSERT INTO MetricPartition(
-		MetricId,
-		Label,
-		EntityTypeId,
-		IsRequired,
-		[Order],
-		EntityTypeQualifierColumn,
-		EntityTypeQualifierValue,
-		[Guid],
-		ForeignKey
-	) VALUES (
-		@metricId,
-		'Schedule',
-		54,
-		@False,
-		1,
-		'',
-		'',
-		NEWID(),
-		@foreignKey
-	);
-END
-
-IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group') 
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group';
 BEGIN
 	INSERT INTO MetricPartition(
 		MetricId,
@@ -875,7 +1232,7 @@ BEGIN
 	) VALUES (
 		@metricId,
 		'Group',
-		16,
+		@etidGroup,
 		@False,
 		1,
 		'',
@@ -885,12 +1242,39 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule';
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Schedule',
+		@etidSchedule,
+		@False,
+		2,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
+DECLARE @today AS DATE = GETDATE();
+
 SELECT COUNT(1) AS Value, 
 	' + @sundayCalculation + ',
-	CampusId AS EntityId,
-	ScheduleId,
-	GroupId
+	CampusId,
+	GroupId,
+	ScheduleId
 FROM PersonAlias PA 
 INNER JOIN (
 	SELECT PersonAliasId, A.CampusId, A.ScheduleId, A.GroupId
@@ -899,15 +1283,15 @@ INNER JOIN (
 		ON A.GroupId = G.Id
 		AND G.GroupTypeId = (SELECT [Id] FROM [GroupType] WHERE [Name] = ''NEW Elementary Attendee'')
 	WHERE DidAttend = 1
-		AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0)
-		AND StartDateTime < CONVERT(DATE, GETDATE())
+		AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, @today), 0)
+		AND StartDateTime < CONVERT(DATE, @today)
 ) Attendance
 	ON PA.Id = Attendance.PersonAliasId	
 INNER JOIN (
 	-- iCal DTStart: constant 22 characters, only interested in Service Time
 	SELECT Id, STUFF(SUBSTRING(iCalendarContent, PATINDEX(''%DTSTART%'', iCalendarContent) +17, 4), 3, 0, '':'') AS Value
 	FROM Schedule
-	WHERE EffectiveStartDate < GETDATE()
+	WHERE EffectiveStartDate < @today
 ) Schedule
 ON Schedule.Id = Attendance.ScheduleId
 GROUP BY Attendance.CampusId, ScheduleId, GroupId
@@ -917,34 +1301,19 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Attendance -> KidSpring Attendance -> Special Needs Attendance
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = '0137CA70-9CA4-4DD8-90C8-BC84E6BA2297');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Special Needs Attendance'
+		AND c.Name = 'KidSpring Attendance'
+);
 
-IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
-BEGIN
-	INSERT INTO MetricPartition(
-		MetricId,
-		Label,
-		EntityTypeId,
-		IsRequired,
-		[Order],
-		EntityTypeQualifierColumn,
-		EntityTypeQualifierValue,
-		[Guid],
-		ForeignKey
-	) VALUES (
-		@metricId,
-		'Schedule',
-		54,
-		@False,
-		1,
-		'',
-		'',
-		NEWID(),
-		@foreignKey
-	);
-END
-
-IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group') 
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group';
 BEGIN
 	INSERT INTO MetricPartition(
 		MetricId,
@@ -959,7 +1328,7 @@ BEGIN
 	) VALUES (
 		@metricId,
 		'Group',
-		16,
+		@etidGroup,
 		@False,
 		1,
 		'',
@@ -969,12 +1338,39 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule';
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Schedule',
+		@etidSchedule,
+		@False,
+		2,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
+DECLARE @today AS DATE = GETDATE();
+
 SELECT COUNT(1) AS Value, 
 	' + @sundayCalculation + ',
 	CampusId AS EntityId,
-	ScheduleId,
-	GroupId
+	GroupId,
+	ScheduleId
 FROM PersonAlias PA 
 INNER JOIN (
 	SELECT PersonAliasId, A.CampusId, A.ScheduleId, A.GroupId
@@ -983,15 +1379,15 @@ INNER JOIN (
 		ON A.GroupId = G.Id
 		AND G.GroupTypeId = (SELECT [Id] FROM [GroupType] WHERE [Name] = ''NEW Special Needs Attendee'')
 	WHERE DidAttend = 1
-		AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0)
-		AND StartDateTime < CONVERT(DATE, GETDATE())
+		AND StartDateTime >= DATEADD(dd, DATEDIFF(dd, 1, @today), 0)
+		AND StartDateTime < CONVERT(DATE, @today)
 ) Attendance
 	ON PA.Id = Attendance.PersonAliasId	
 INNER JOIN (
 	-- iCal DTStart: constant 22 characters, only interested in Service Time
 	SELECT Id, STUFF(SUBSTRING(iCalendarContent, PATINDEX(''%DTSTART%'', iCalendarContent) +17, 4), 3, 0, '':'') AS Value
 	FROM Schedule
-	WHERE EffectiveStartDate < GETDATE()
+	WHERE EffectiveStartDate < @today
 ) Schedule
 ON Schedule.Id = Attendance.ScheduleId
 GROUP BY Attendance.CampusId, ScheduleId, GroupId
@@ -1001,34 +1397,19 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Attendance -> KidSpring Attendance -> First Time Volunteers
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = 'BBE3ADB1-E948-407A-AD44-EB6F88FFD599');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'First Time Volunteers'
+		AND c.Name = 'KidSpring Attendance'
+);
 
-IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
-BEGIN
-	INSERT INTO MetricPartition(
-		MetricId,
-		Label,
-		EntityTypeId,
-		IsRequired,
-		[Order],
-		EntityTypeQualifierColumn,
-		EntityTypeQualifierValue,
-		[Guid],
-		ForeignKey
-	) VALUES (
-		@metricId,
-		'Schedule',
-		54,
-		@False,
-		1,
-		'',
-		'',
-		NEWID(),
-		@foreignKey
-	);
-END
-
-IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group') 
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group';
 BEGIN
 	INSERT INTO MetricPartition(
 		MetricId,
@@ -1043,7 +1424,7 @@ BEGIN
 	) VALUES (
 		@metricId,
 		'Group',
-		16,
+		@etidGroup,
 		@False,
 		1,
 		'',
@@ -1053,7 +1434,34 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule';
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Schedule',
+		@etidSchedule,
+		@False,
+		2,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
+DECLARE @today AS DATE = GETDATE();
+
 WITH KSFirstServe AS (
 	SELECT PersonAliasId, MIN(StartDateTime) AS FirstServe
 	FROM [Attendance] A
@@ -1066,9 +1474,9 @@ WITH KSFirstServe AS (
 )
 SELECT COUNT(1) AS Value
 	, ' + @sundayCalculation + '
-	, Attendance.CampusId AS EntityId
-	, Attendance.ScheduleId
+	, Attendance.CampusId
 	, Attendance.GroupId
+	, Attendance.ScheduleId
 FROM PersonAlias PA 
 INNER JOIN (
 	SELECT A.PersonAliasId, A.CampusId, A.ScheduleId, StartDateTime AS ScheduleDate, g.Id AS GroupId
@@ -1081,8 +1489,8 @@ INNER JOIN (
 	    ON A.PersonAliasId = K.PersonAliasId
 	    AND A.StartDateTime = K.FirstServe
     	-- limit to first time visits here
-    	AND K.FirstServe >= DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0)
-    	AND K.FirstServe < CONVERT(DATE, GETDATE())
+    	AND K.FirstServe >= DATEADD(dd, DATEDIFF(dd, 1, @today), 0)
+    	AND K.FirstServe < CONVERT(DATE, @today)
     WHERE A.DidAttend = 1
 ) Attendance
 ON PA.Id = Attendance.PersonAliasId
@@ -1090,7 +1498,7 @@ INNER JOIN (
 	-- iCal DTStart: constant 22 characters, only interested in Service Time
 	SELECT Id, STUFF(SUBSTRING(iCalendarContent, PATINDEX(''%DTSTART%'', iCalendarContent) +17, 4), 3, 0, '':'') AS Value
 	FROM Schedule
-	WHERE EffectiveStartDate < GETDATE()
+	WHERE EffectiveStartDate < @today
 ) Schedule
 ON Schedule.Id = Attendance.ScheduleId
 GROUP BY CampusId, ScheduleId, GroupId;
@@ -1100,13 +1508,77 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Guest Services -> GS Unique Volunteers
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = 'A1F32887-7293-4B1A-BB0E-E4F559E15D2F');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'GS Unique Volunteers'
+		AND c.Name = 'Guest Services'
+);
 
-UPDATE Metric SET SourceSql = '
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group';
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Group',
+		@etidGroup,
+		@False,
+		1,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule';
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Schedule',
+		@etidSchedule,
+		@False,
+		2,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
+DECLARE @today AS DATE = GETDATE();
+
 SELECT 
 	COUNT(gm.PersonId) AS Value, 
 	' + @sundayCalculation + ',
-	g.CampusId AS EntityId
+	g.CampusId AS EntityId,
+	NULL AS GroupId,
+	NULL AS ScheduleId
 FROM 
 	GroupMember gm
 	JOIN [Group] G ON gm.GroupId = G.Id
@@ -1122,9 +1594,44 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Next Steps -> Baptism -> Baptism Attendees
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = 'E67AE9C7-19DF-40D4-91C5-4237A43177D4');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Baptism Attendees'
+		AND c.Name = 'Baptism'
+);
 
-IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group';
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Group',
+		@etidGroup,
+		@False,
+		1,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule';
 BEGIN
 	INSERT INTO MetricPartition(
 		MetricId,
@@ -1139,9 +1646,9 @@ BEGIN
 	) VALUES (
 		@metricId,
 		'Schedule',
-		54,
+		@etidSchedule,
 		@False,
-		1,
+		2,
 		'',
 		'',
 		NEWID(),
@@ -1149,7 +1656,7 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
 DECLARE @today AS DATE = GETDATE();
 DECLARE @recentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @today), @today));
 
@@ -1157,6 +1664,7 @@ SELECT
 	COUNT(a.PersonAliasId),
 	@recentSundayDate AS MetricValueDateTime,
 	g.CampusId,
+	NULL AS GroupId,
 	a.ScheduleId
 FROM
 	[Group] g
@@ -1175,9 +1683,44 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Next Steps -> Baptism -> Baptism Assignments
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = 'C9145649-3384-4925-A8E0-19468BFF38AC');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Baptism Assignments'
+		AND c.Name = 'Baptism'
+);
 
-IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group';
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Group',
+		@etidGroup,
+		@False,
+		1,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule';
 BEGIN
 	INSERT INTO MetricPartition(
 		MetricId,
@@ -1192,9 +1735,9 @@ BEGIN
 	) VALUES (
 		@metricId,
 		'Schedule',
-		54,
+		@etidSchedule,
 		@False,
-		1,
+		2,
 		'',
 		'',
 		NEWID(),
@@ -1202,12 +1745,15 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
+DECLARE @today AS DATE = GETDATE();
+
 SELECT 
 	COUNT(gm.PersonId) AS Value, 
 	' + @sundayCalculation + ',
 	g.CampusId,
-	gm.GroupId
+	gm.GroupId,
+	NULL AS ScheduleId
 FROM
 	[Group] g
 	JOIN [GroupType] gt ON gt.Id = g.GroupTypeId
@@ -1225,9 +1771,44 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Next Steps -> Ownership Class -> Ownership Attendees
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = '68F205C4-9BA8-4889-81D8-A5986EB5ABBA');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Ownership Attendees'
+		AND c.Name = 'Ownership Class'
+);
 
-IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group';
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Group',
+		@etidGroup,
+		@False,
+		1,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule';
 BEGIN
 	INSERT INTO MetricPartition(
 		MetricId,
@@ -1242,9 +1823,9 @@ BEGIN
 	) VALUES (
 		@metricId,
 		'Schedule',
-		54,
+		@etidSchedule,
 		@False,
-		1,
+		2,
 		'',
 		'',
 		NEWID(),
@@ -1252,7 +1833,7 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
 DECLARE @today AS DATE = GETDATE();
 DECLARE @recentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @today), @today));
 
@@ -1260,6 +1841,7 @@ SELECT
 	COUNT(a.PersonAliasId),
 	@recentSundayDate AS MetricValueDateTime,
 	g.CampusId,
+	NULL AS GroupId,
 	a.ScheduleId
 FROM
 	[Group] g
@@ -1278,9 +1860,44 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Next Steps -> Ownership Class -> Ownership Assignments
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = 'BE23F9C3-D510-432B-9351-9E79F754F526');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Ownership Assignments'
+		AND c.Name = 'Ownership Class'
+);
 
-IF NOT EXISTS(SELECT 1 FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule') 
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group';
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Group',
+		@etidGroup,
+		@False,
+		1,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule';
 BEGIN
 	INSERT INTO MetricPartition(
 		MetricId,
@@ -1295,9 +1912,9 @@ BEGIN
 	) VALUES (
 		@metricId,
 		'Schedule',
-		54,
+		@etidSchedule,
 		@False,
-		1,
+		2,
 		'',
 		'',
 		NEWID(),
@@ -1305,12 +1922,15 @@ BEGIN
 	);
 END
 
-UPDATE Metric SET SourceSql = '
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
+DECLARE @today AS DATE = GETDATE();
+
 SELECT 
 	COUNT(gm.PersonId) AS Value, 
 	' + @sundayCalculation + ',
 	g.CampusId,
-	gm.GroupId
+	gm.GroupId,
+	NULL AS ScheduleId
 FROM
 	[Group] g
 	JOIN [GroupType] gt ON gt.Id = g.GroupTypeId
@@ -1328,9 +1948,69 @@ WHERE Id = @metricId;
 /* ====================================================== */
 -- Volunteers -> Unique Volunteers
 /* ====================================================== */
-SET @metricId = (SELECT Id FROM Metric WHERE [Guid] = '85FF1B27-D3DC-4C05-9D41-734ACBA71611');
+SET @metricId = (
+	SELECT 
+		m.Id
+	FROM 
+		Metric m
+		JOIN MetricCategory mc ON mc.MetricId = m.Id
+		JOIN Category c ON c.Id = mc.CategoryId
+	WHERE
+		m.Title = 'Unique Volunteers'
+		AND c.Name = 'Volunteers'
+);
 
-UPDATE Metric SET SourceSql = '
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Group';
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Group',
+		@etidGroup,
+		@False,
+		1,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+DELETE FROM MetricPartition WHERE MetricId = @metricId AND Label = 'Schedule';
+BEGIN
+	INSERT INTO MetricPartition(
+		MetricId,
+		Label,
+		EntityTypeId,
+		IsRequired,
+		[Order],
+		EntityTypeQualifierColumn,
+		EntityTypeQualifierValue,
+		[Guid],
+		ForeignKey
+	) VALUES (
+		@metricId,
+		'Schedule',
+		@etidSchedule,
+		@False,
+		2,
+		'',
+		'',
+		NEWID(),
+		@foreignKey
+	);
+END
+
+UPDATE Metric SET ForeignKey='Metrics 2.0 - 1Off', SourceSql = '
 DECLARE @today AS DATE = GETDATE();
 DECLARE @recentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @today), @today));
 
@@ -1360,7 +2040,9 @@ WITH IncludedGroups(Id, ParentGroupId, Name) AS (
 SELECT
 	COUNT(DISTINCT pa.PersonId) AS Value,
 	@recentSundayDate AS ScheduleDate,
-	a.CampusId AS EntityId
+	a.CampusId AS EntityId,
+	NULL AS GroupId,
+	NULL AS ScheduleId
 FROM 
 	IncludedGroups g
 	INNER JOIN Attendance a ON a.GroupId = g.Id

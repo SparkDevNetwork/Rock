@@ -95,10 +95,16 @@ namespace Rock.Lava.Blocks
                         }
                     }
 
+                    // add body, this will be ignored if other parameters exist
+                    if ( !string.IsNullOrWhiteSpace( parms["body"] ) )
+                    {
+                        request.AddParameter( parms["requestcontenttype"], parms["body"], ParameterType.RequestBody );
+                    }
+
                     IRestResponse response = client.Execute( request );
                     var content = response.Content;
 
-                    var contentType = parms["contenttype"].ToLower();
+                    var contentType = parms["responsecontenttype"].ToLower();
 
                     if ( contentType == "xml" )
                     {
@@ -176,7 +182,9 @@ namespace Rock.Lava.Blocks
             parms.Add( "basicauth", "" );
             parms.Add( "parameters", "" );
             parms.Add( "headers", "" );
-            parms.Add( "contenttype", "json" );
+            parms.Add( "responsecontenttype", "json" );
+            parms.Add( "body", "" );
+            parms.Add( "requesttype", "text/plain" );
 
             var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']+')" )
                 .Cast<Match>()

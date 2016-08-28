@@ -71,5 +71,10 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string WORKFLOW_FORM_NOTIFICATION = "88C7D1CC-3478-4562-A301-AE7D4D7FFF6D";
 
+        /// <summary>
+        /// Gets the template guid for workflow form notifications
+        /// </summary>
+        public const string DIGITAL_SIGNATURE_INVITE  = "791F2DE4-5A59-60AE-4F2F-FDC3EBC4FFA9";
+
     }
 }

@@ -1154,6 +1154,8 @@ namespace RockWeb.Blocks.Connection
         /// <param name="connectionRequest">The connection request.</param>
         private void ShowReadonlyDetails( ConnectionRequest connectionRequest )
         {
+            pdAuditDetails.SetEntity( connectionRequest, ResolveRockUrl( "~" ) );
+
             if ( connectionRequest.AssignedGroupId != null )
             {
                 pnlRequirements.Visible = true;
