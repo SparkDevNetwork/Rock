@@ -5,6 +5,10 @@
 --  Assumptions:
 --  Existing metrics structure exists according to script 7:
 
+	TODO:
+		1) Fix issues with Fuse, KidSpring, Next Steps naming
+		2) Add Schedule id to new metrics
+
    ====================================================== */
 -- Make sure you're using the right Rock database:
 
@@ -19,14 +23,16 @@ DECLARE @MetricSourceSQLId int = (SELECT [Id] FROM DefinedValue WHERE [Guid] = '
 DECLARE @CreatedDateTime AS DATETIME = GETDATE();
 DECLARE @foreignKey AS NVARCHAR(15) = 'Metrics 2.0';
 DECLARE @metricValueType AS INT = 0;
-DECLARE @dvTrue AS INT = 826;
-DECLARE @dvFalse AS INT = 827;
+DECLARE @dvTrue AS INT = (SELECT dv.Id FROM DefinedValue dv JOIN DefinedType dt ON dt.Id = dv.DefinedTypeId WHERE dv.Value = 'True' AND dt.Name = 'Boolean');
+DECLARE @dvFalse AS INT = (SELECT dv.Id FROM DefinedValue dv JOIN DefinedType dt ON dt.Id = dv.DefinedTypeId WHERE dv.Value = 'False' AND dt.Name = 'Boolean');
 
 -- Schedule ids variables
-DECLARE @service0915 AS INT = 12;
-DECLARE @service1115 AS INT = 13;
-DECLARE @service1600 AS INT = 14;
-DECLARE @service1800 AS INT = 15;
+DECLARE @service0915 AS INT = (SELECT Id FROM Schedule WHERE Name = 'Sunday 09:15am');;
+DECLARE @service1115 AS INT = (SELECT Id FROM Schedule WHERE Name = 'Sunday 11:15am');;
+DECLARE @service1600 AS INT = (SELECT Id FROM Schedule WHERE Name = 'Sunday 04:00pm');;
+DECLARE @service1800 AS INT = (SELECT Id FROM Schedule WHERE Name = 'Sunday 06:00pm');
+DECLARE @sundayMetricSchedule AS INT = (SELECT Id FROM Schedule WHERE Name = 'Sunday Metric Schedule');
+DECLARE @fuseMetricSchedule AS INT = (SELECT Id FROM Schedule WHERE Name = 'Fuse Metric Schedule');
 
 -- Structure ids
 DECLARE @etidMetricCategory AS INT = 189;
@@ -34,6 +40,130 @@ DECLARE @volunteerMetricCategoryId AS INT = (SELECT Id FROM Category WHERE Entit
 
 -- Debug variables
 DECLARE @metricId AS INT = 912;
+
+-- Source SQL
+DECLARE @sourceAttendance AS NVARCHAR(MAX) = N'
+DECLARE @BooleanDTId INT = (SELECT ID FROM DefinedType WHERE Name = ''Boolean'')
+DECLARE @TrueDVId INT = (SELECT ID FROM DefinedValue WHERE Value = ''True'' AND DefinedTypeId = @BooleanDTId)
+DECLARE @FalseDVId INT = (SELECT ID FROM DefinedValue WHERE Value = ''False'' AND DefinedTypeId = @BooleanDTId)
+DECLARE @SchedulesDTId INT = (SELECT ID FROM DefinedType WHERE Name = ''Schedules'')
+DECLARE @GroupMemberETId INT = (SELECT ID FROM EntityType WHERE Name = ''Rock.Model.GroupMember'')	
+DECLARE @GroupTypeId INT = {{ Metric.MetricPartitions | Where:''Label'', ''Group'' | Select:''EntityTypeQualifierValue'' }}	
+DECLARE @Today AS DATE = GETDATE()
+DECLARE @RecentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @Today), @Today));
+
+;WITH GroupAttendance as (
+	SELECT COUNT(1) Value, 
+		CONVERT(DATE, StartDateTime) MetricValueDateTime, 
+		ISNULL(a.CampusId, g.CampusId) CampusId, 
+		GroupId, 
+		a.ScheduleId, 
+		@TrueDVId DidAttend
+	FROM Attendance a
+	INNER JOIN [Group] g
+		ON a.GroupId = g.Id
+		AND g.GroupTypeId = @GroupTypeId
+		AND a.DidAttend = 1	
+	WHERE StartDateTime >= @RecentSundayDate 
+		AND StartDateTime < DATEADD(day, 1, @Today)
+	GROUP BY 
+		CONVERT(DATE, StartDateTime), 
+		ISNULL(a.CampusId, g.CampusId), 
+		a.GroupId, 
+		a.ScheduleId
+)
+, GroupRoster as (
+	SELECT COUNT(1) Value, 
+		@Today MetricValueDateTime, 
+		g.CampusId, 
+		gm.GroupId, 
+		ScheduleAssignment.ScheduleId
+	FROM GroupMember gm
+	INNER JOIN [Group] g
+		ON gm.GroupId = g.Id
+		and g.GroupTypeId = @GroupTypeId
+	INNER JOIN Attribute a
+		ON a.EntityTypeId = @GroupMemberETId
+		AND a.EntityTypeQualifierColumn = ''GroupTypeId''
+		AND a.EntityTypeQualifierValue = @GroupTypeId
+		AND a.Name = ''Schedule''
+	/* Look for all assignments, not just ones with schedules */
+	LEFT JOIN (
+		SELECT DISTINCT AV.EntityId, DV.ForeignId ScheduleId
+		FROM DefinedValue DV
+		LEFT JOIN (
+			SELECT EntityId, r.value(''.'', ''UNIQUEIDENTIFIER'') AS ScheduleGuid
+			FROM (
+			    /* Denormalize the comma-delimited GUID string */
+				SELECT EntityId, CAST(''<n>'' + REPLACE(Value, '','', ''</n><n>'') + ''</n>'' AS XML) AS Schedules
+				FROM [Attribute] SA
+				INNER JOIN AttributeValue AV
+					ON AV.AttributeId = SA.Id
+					AND SA.[Key] = ''Schedule''
+					AND SA.EntityTypeQualifierColumn = ''GroupTypeId''
+					AND SA.EntityTypeQualifierValue = @GroupTypeId
+					AND AV.Value <> ''''
+			) AS nodes 
+			/* Parse the xml as a table for joining */
+			CROSS APPLY Schedules.nodes(''n'') AS parse(r)
+		) AV 
+			ON AV.ScheduleGuid = DV.[Guid]
+		WHERE AV.EntityId IS NOT NULL
+			AND DV.DefinedTypeId = @SchedulesDTId
+	) ScheduleAssignment
+		ON GM.Id = ScheduleAssignment.EntityId
+	GROUP BY g.CampusId, 
+		gm.GroupId, 
+		ScheduleAssignment.ScheduleId
+)
+/* Get all the Did Attend values */
+SELECT * FROM GroupAttendance 
+UNION ALL
+/* Get the Did Not Attend values */
+SELECT CASE WHEN r.Value - a.Value < 0 THEN 0 ELSE ISNULL(r.Value - a.Value, r.Value) END as Value, 
+	ISNULL(a.MetricValueDateTime, @Today) MetricValueDateTime, 
+	r.CampusId, 
+	r.GroupId, 
+	r.ScheduleId, 
+	@FalseDVId
+FROM GroupRoster r
+LEFT JOIN GroupAttendance a
+	ON a.CampusId = r.CampusId
+	AND a.GroupId = r.GroupId
+	AND (r.ScheduleId IS NULL OR r.ScheduleId = a.ScheduleId)
+';
+
+DECLARE @sourceUnique AS NVARCHAR(MAX) = N'
+DECLARE @BooleanDTId INT = (SELECT ID FROM DefinedType WHERE Name = ''Boolean'')
+DECLARE @TrueDVId INT = (SELECT ID FROM DefinedValue WHERE Value = ''True'' AND DefinedTypeId = @BooleanDTId)
+DECLARE @GroupTypeId INT = {{ Metric.MetricPartitions | Where:''Label'', ''Group'' | Select:''EntityTypeQualifierValue'' }}
+DECLARE @Today AS DATE = GETDATE()
+DECLARE @RecentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @Today), @Today));
+
+SELECT 
+	COUNT(1) Value, 
+	CONVERT(DATE, StartDateTime) MetricValueDateTime, 
+	ISNULL(a.campusid, g.campusid) CampusId, 
+	GroupId, 
+	@TrueDVId DidAttend
+FROM 
+	Attendance a
+	INNER JOIN [Group] g 
+		ON a.GroupId = g.Id
+		AND g.GroupTypeId = @GroupTypeId
+		AND a.DidAttend = 1	
+WHERE 
+	StartDateTime >= @RecentSundayDate 
+	AND StartDateTime < DATEADD(day, 1, @Today)
+GROUP BY 
+	CONVERT(DATE, StartDateTime),
+	ISNULL(a.CampusId, g.CampusId), 
+	a.GroupId		
+ORDER BY
+	GroupId,
+	CONVERT(DATE, StartDateTime),
+	ISNULL(a.CampusId, g.CampusId)
+';
 
 /* ====================================================== */
 -- create the group conversion table
@@ -56,7 +186,7 @@ from [group] og
 	on gl.LocationId = ogl.id
 	and ogl.name is not null    
 	inner join [group] ng
-	on ng.name = og.name
+	on ng.name = ogl.name
 	inner join grouptype gt
 	on ng.grouptypeid = gt.id
 	and gt.name like 'NEW %'
@@ -73,12 +203,13 @@ BEGIN
 END
 
 SELECT 
-	m.ForeignId AS GroupId,
-	g.Name AS GroupName,
-	mc.CategoryId,
+	pc.Name AS CategoryName,
+	pc.Id AS CategoryId,
 	NEWID() AS AttendanceMetricGuid,
 	NEWID() AS UniqueMetricGuid,
-	g.GroupTypeId
+	g.GroupTypeId,
+	ngt.Id AS NewGroupTypeId,
+	CASE WHEN gt.Name LIKE '%Attendee' THEN 'Attendee' ELSE 'Volunteer' END AS GroupTypeName
 INTO #metricTypes
 FROM 
 	Metric m
@@ -86,9 +217,17 @@ FROM
 	JOIN [Group] g ON g.Id = m.ForeignId
 	JOIN Category c ON c.Id = mc.CategoryId
 	JOIN Category pc ON pc.Id = c.ParentCategoryId
+	JOIN GroupType gt ON g.GroupTypeId = gt.Id
+	JOIN GroupType ngt ON ngt.Name = CONCAT('NEW ', gt.Name)
 WHERE 
 	Title LIKE '% Service Attendance'
-	AND pc.ParentCategoryId = @volunteerMetricCategoryId;
+	AND pc.ParentCategoryId = @volunteerMetricCategoryId
+GROUP BY
+	pc.Name,
+	pc.Id,
+	g.GroupTypeId,
+	ngt.Id,
+	gt.Name;
 
 /* ====================================================== */
 -- insert the new metrics
@@ -104,19 +243,21 @@ INSERT INTO Metric (
 	CreatedDateTime,
 	[Guid],
 	ForeignKey,
-	IconCssClass
+	IconCssClass,
+	ScheduleId
 )
 SELECT
 	@IsSystem AS IsSystem,
-	CONCAT(mt.GroupName, ' Attendance') AS [Title],
+	CONCAT(mt.GroupTypeName, ' Group Attendance') AS [Title],
 	'Metric to track attendance' AS [Description],
 	0 AS IsCumulative,
 	@MetricSourceSQLId AS SourceValueTypeId,
-	'' AS SourceSql,
+	@sourceAttendance AS SourceSql,
 	@CreatedDateTime AS CreatedDateTime,
 	mt.AttendanceMetricGuid AS [Guid],
 	@foreignKey AS ForeignKey,
-	'' AS IconCssClass
+	'' AS IconCssClass,
+	@sundayMetricSchedule
 FROM
 	#metricTypes mt;
 
@@ -131,19 +272,21 @@ INSERT INTO Metric (
 	CreatedDateTime,
 	[Guid],
 	ForeignKey,
-	IconCssClass
+	IconCssClass,
+	ScheduleId
 )
 SELECT
 	@IsSystem AS IsSystem,
-	CONCAT(mt.GroupName, ' Unique Volunteer') AS [Title],
+	CONCAT(mt.GroupTypeName, ' Group Uniques') AS [Title],
 	'Metric to track unique volunteers' AS [Description],
 	0 AS IsCumulative,
 	@MetricSourceSQLId AS SourceValueTypeId,
-	'' AS SourceSql,
+	@sourceUnique AS SourceSql,
 	@CreatedDateTime AS CreatedDateTime,
 	mt.UniqueMetricGuid AS [Guid],
 	@foreignKey AS ForeignKey,
-	'' AS IconCssClass
+	'' AS IconCssClass,
+	@sundayMetricSchedule
 FROM
 	#metricTypes mt;
 
@@ -231,7 +374,7 @@ SELECT
 	@False AS IsRequired,
 	1 AS [Order],
 	'GroupTypeId' AS EntityTypeQualifierColumn,
-	mt.GroupTypeId AS EntityTypeQualifierValue,
+	mt.NewGroupTypeId AS EntityTypeQualifierValue,
 	NEWID() AS [Guid],
 	@foreignKey AS ForeignKey
 FROM 
@@ -334,7 +477,7 @@ SELECT
 	@False AS IsRequired,
 	1 AS [Order],
 	'GroupTypeId' AS EntityTypeQualifierColumn,
-	mt.GroupTypeId AS EntityTypeQualifierValue,
+	mt.NewGroupTypeId AS EntityTypeQualifierValue,
 	NEWID() AS [Guid],
 	@foreignKey AS ForeignKey
 FROM 

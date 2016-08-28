@@ -195,7 +195,7 @@ namespace RockWeb.Blocks.Reporting
                             else
                             {
                                 var errorControl = new LiteralControl();
-                                errorControl.Text = string.Format("<span class='label label-danger'>Unable to create Partition control for {0}. Verify that the metric partition settings are set correctly</span>", metricPartition.Label);
+                                errorControl.Text = string.Format( "<span class='label label-danger'>Unable to create Partition control for {0}. Verify that the metric partition settings are set correctly</span>", metricPartition.Label );
                                 phMetricValuePartitions.Controls.Add( errorControl );
                             }
                         }
@@ -490,7 +490,7 @@ namespace RockWeb.Blocks.Reporting
         /// Creates the entity value lookups.
         /// </summary>
         /// <param name="metricID">The metric identifier.</param>
-        private void CreateEntityValueLookups(int? metricID )
+        private void CreateEntityValueLookups( int? metricID )
         {
             Metric metric = new MetricService( new RockContext() ).Get( metricID ?? 0 );
             if ( metric != null )
