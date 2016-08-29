@@ -35,7 +35,7 @@ DECLARE @sundayMetricSchedule AS INT = (SELECT Id FROM Schedule WHERE Name = 'Su
 DECLARE @fuseMetricSchedule AS INT = (SELECT Id FROM Schedule WHERE Name = 'Fuse Metric Schedule');
 
 -- Structure ids
-DECLARE @etidMetricCategory AS INT = 189;
+DECLARE @etidMetricCategory AS INT = (SELECT Id FROM EntityType WHERE Name LIKE 'Rock.Model.MetricCategory');
 DECLARE @volunteerMetricCategoryId AS INT = (SELECT Id FROM Category WHERE EntityTypeId = @etidMetricCategory AND Name = 'Volunteers');
 
 -- Debug variables
@@ -241,22 +241,54 @@ INSERT INTO #metricTypes (
 	NewGroupTypeId,
 	GroupTypeName
 ) VALUES (
-	(SELECT Name FROM Category WHERE EntityTypeId = @etidMetricCategory AND Name = 'Fuse Attendance'),
-	(SELECT Id FROM Category WHERE EntityTypeId = @etidMetricCategory AND Name = 'Fuse Attendance'),
+	(SELECT Name FROM Category WHERE EntityTypeId = @etidMetricCategory AND Name = 'Fuse'),
+	(SELECT Id FROM Category WHERE EntityTypeId = @etidMetricCategory AND Name = 'Fuse'),
 	NEWID(),
 	NEWID(),
 	(SELECT Id FROM GroupType WHERE Name = 'Fuse Attendee'),
 	(SELECT Id FROM GroupType WHERE Name = 'NEW Fuse Attendee'),
 	'Attendee'
-)/*, (
-	(SELECT Name FROM Category WHERE EntityTypeId = @etidMetricCategory AND Name = 'Next Steps'),
-	(SELECT Id FROM Category WHERE EntityTypeId = @etidMetricCategory AND Name = 'Next Steps'),
+), (
+	(SELECT Name FROM Category WHERE EntityTypeId = 189 AND Name = 'Next Steps' AND ParentCategoryId = @volunteerMetricCategoryId),
+	(SELECT Id FROM Category WHERE EntityTypeId = 189 AND Name = 'Next Steps' AND ParentCategoryId = @volunteerMetricCategoryId),
 	NEWID(),
 	NEWID(),
 	(SELECT Id FROM GroupType WHERE Name = 'Next Steps Attendee'),
 	(SELECT Id FROM GroupType WHERE Name = 'NEW Next Steps Attendee'),
 	'Attendee'
-)*/;
+), (
+	(SELECT Name FROM Category WHERE EntityTypeId = 189 AND Name = 'KidSpring'),
+	(SELECT Id FROM Category WHERE EntityTypeId = 189 AND Name = 'KidSpring'),
+	NEWID(),
+	NEWID(),
+	(SELECT Id FROM GroupType WHERE Name = 'Nursery Attendee'),
+	(SELECT Id FROM GroupType WHERE Name = 'NEW Nursery Attendee'),
+	'Nursery Attendee'
+), (
+	(SELECT Name FROM Category WHERE EntityTypeId = 189 AND Name = 'KidSpring'),
+	(SELECT Id FROM Category WHERE EntityTypeId = 189 AND Name = 'KidSpring'),
+	NEWID(),
+	NEWID(),
+	(SELECT Id FROM GroupType WHERE Name = 'Preschool Attendee'),
+	(SELECT Id FROM GroupType WHERE Name = 'NEW Preschool Attendee'),
+	'Preschool Attendee'
+), (
+	(SELECT Name FROM Category WHERE EntityTypeId = 189 AND Name = 'KidSpring'),
+	(SELECT Id FROM Category WHERE EntityTypeId = 189 AND Name = 'KidSpring'),
+	NEWID(),
+	NEWID(),
+	(SELECT Id FROM GroupType WHERE Name = 'Elementary Attendee'),
+	(SELECT Id FROM GroupType WHERE Name = 'NEW Elementary Attendee'),
+	'Elementary Attendee'
+), (
+	(SELECT Name FROM Category WHERE EntityTypeId = 189 AND Name = 'KidSpring'),
+	(SELECT Id FROM Category WHERE EntityTypeId = 189 AND Name = 'KidSpring'),
+	NEWID(),
+	NEWID(),
+	(SELECT Id FROM GroupType WHERE Name = 'Special Needs Attendee'),
+	(SELECT Id FROM GroupType WHERE Name = 'NEW Special Needs Attendee'),
+	'Special Needs Attendee'
+);
 
 /* ====================================================== */
 -- insert the new metrics
@@ -536,415 +568,6 @@ SELECT
 	@foreignKey AS ForeignKey
 FROM 
 	#metricTypes mt;
-
-/* ====================================================== */
--- convert the metric values for service attendance to attendance
-/* ====================================================== */
-IF object_id('tempdb..#attendanceMetricValues') IS NOT NULL
-BEGIN
-	drop table #attendanceMetricValues
-END
-
-SELECT 
-	m.Id AS MetricId,
-	mv.YValue,
-	CONVERT(DATE, mv.MetricValueDateTime) AS MetricDate,
-	CASE 
-		WHEN SUBSTRING(CONVERT(NVARCHAR(30), CONVERT(TIME, mv.MetricValueDateTime)), 0, 3) = '09' THEN @service0915
-		WHEN SUBSTRING(CONVERT(NVARCHAR(30), CONVERT(TIME, mv.MetricValueDateTime)), 0, 3) = '11' THEN @service1115 
-		WHEN SUBSTRING(CONVERT(NVARCHAR(30), CONVERT(TIME, mv.MetricValueDateTime)), 0, 3) = '16' THEN @service1600 
-		WHEN SUBSTRING(CONVERT(NVARCHAR(30), CONVERT(TIME, mv.MetricValueDateTime)), 0, 3) = '18' THEN @service1800
-	END AS ScheduleId,
-	1 AS DidAttend,
-	c.Id AS CampusId,
-	ng.GroupId AS NewGroupId,
-	NEWID() AS MetricValueGuid,
-	mt.AttendanceMetricGuid
-INTO #attendanceMetricValues
-FROM 
-	Metric m
-	JOIN MetricCategory mc ON mc.MetricId = m.Id
-	JOIN Category cat ON cat.Id = mc.CategoryId
-	JOIN #metricTypes mt ON mt.CategoryId = cat.ParentCategoryId
-	JOIN [Group] g ON g.Id = m.ForeignId
-	JOIN MetricPartition mp ON mp.MetricId = m.Id
-	JOIN EntityType et ON et.Id = mp.EntityTypeId
-	JOIN #groupConversion ng ON ng.OldGroupId = g.Id
-	JOIN MetricValue mv ON mv.MetricId = m.Id
-	JOIN MetricValuePartition mvp ON mvp.MetricPartitionId = mp.Id AND mvp.MetricValueId = mv.Id AND ng.CampusId = mvp.EntityId
-	JOIN Campus c ON c.Id = ng.CampusId
-WHERE 
-	m.Title LIKE '% Service Attendance';
-
--- Add metric values
-INSERT INTO MetricValue(
-	MetricValueType,
-	YValue,
-	MetricId,
-	MetricValueDateTime,
-	CreatedDateTime,
-	[Guid],
-	ForeignKey
-)
-SELECT 
-	@metricValueType,
-	amv.YValue,
-	(SELECT Id FROM Metric WHERE [Guid] = amv.AttendanceMetricGuid) AS MetricId,
-	amv.MetricDate,
-	@CreatedDateTime,
-	amv.MetricValueGuid,
-	@foreignKey
-FROM 
-	#attendanceMetricValues amv;
-
-/* ====================================================== */
--- add partition values
-/* ====================================================== */
--- Add partition values for campus
-INSERT INTO MetricValuePartition(
-	MetricPartitionId,
-	MetricValueId,
-	EntityId,
-	CreatedDateTime,
-	[Guid],
-	ForeignKey
-)
-SELECT 
-	(SELECT mp.Id FROM MetricPartition mp JOIN Metric m ON m.Id = mp.MetricId WHERE m.[Guid] = amv.AttendanceMetricGuid AND mp.Label = 'Campus') AS MetricPartitionId,
-	(SELECT Id FROM MetricValue WHERE [Guid] = amv.MetricValueGuid) AS MetricValueId,
-	amv.CampusId AS EntityId,
-	@CreatedDateTime AS CreatedDateTime,
-	NEWID() AS [Guid],
-	@foreignKey AS ForeignKey
-FROM 
-	#attendanceMetricValues amv;
-
--- Add partition values for group
-INSERT INTO MetricValuePartition(
-	MetricPartitionId,
-	MetricValueId,
-	EntityId,
-	CreatedDateTime,
-	[Guid],
-	ForeignKey
-)
-SELECT 
-	(SELECT mp.Id FROM MetricPartition mp JOIN Metric m ON m.Id = mp.MetricId WHERE m.[Guid] = amv.AttendanceMetricGuid AND mp.Label = 'Group') AS MetricPartitionId,
-	(SELECT Id FROM MetricValue WHERE [Guid] = amv.MetricValueGuid) AS MetricValueId,
-	amv.NewGroupId AS EntityId,
-	@CreatedDateTime AS CreatedDateTime,
-	NEWID() AS [Guid],
-	@foreignKey AS ForeignKey
-FROM 
-	#attendanceMetricValues amv;
-
--- Add partition values for service
-INSERT INTO MetricValuePartition(
-	MetricPartitionId,
-	MetricValueId,
-	EntityId,
-	CreatedDateTime,
-	[Guid],
-	ForeignKey
-)
-SELECT 
-	(SELECT mp.Id FROM MetricPartition mp JOIN Metric m ON m.Id = mp.MetricId WHERE m.[Guid] = amv.AttendanceMetricGuid AND mp.Label = 'Schedule') AS MetricPartitionId,
-	(SELECT Id FROM MetricValue WHERE [Guid] = amv.MetricValueGuid) AS MetricValueId,
-	amv.ScheduleId AS EntityId,
-	@CreatedDateTime AS CreatedDateTime,
-	NEWID() AS [Guid],
-	@foreignKey AS ForeignKey
-FROM 
-	#attendanceMetricValues amv;
-
--- Add partition values for did attend
-INSERT INTO MetricValuePartition(
-	MetricPartitionId,
-	MetricValueId,
-	EntityId,
-	CreatedDateTime,
-	[Guid],
-	ForeignKey
-)
-SELECT 
-	(SELECT mp.Id FROM MetricPartition mp JOIN Metric m ON m.Id = mp.MetricId WHERE m.[Guid] = amv.AttendanceMetricGuid AND mp.Label = 'Did Attend') AS MetricPartitionId,
-	(SELECT Id FROM MetricValue WHERE [Guid] = amv.MetricValueGuid) AS MetricValueId,
-	@dvTrue AS EntityId,
-	@CreatedDateTime AS CreatedDateTime,
-	NEWID() AS [Guid],
-	@foreignKey AS ForeignKey
-FROM 
-	#attendanceMetricValues amv;
-
-/* ====================================================== */
--- calculate did not attend values
-/* ====================================================== */
-IF object_id('tempdb..#rosterMetricValues') IS NOT NULL
-BEGIN
-	drop table #rosterMetricValues
-END
-
-SELECT 
-	m.Id AS MetricId,
-	mv.YValue,
-	CONVERT(DATE, mv.MetricValueDateTime) AS MetricDate,
-	CASE 
-		WHEN SUBSTRING(CONVERT(NVARCHAR(30), CONVERT(TIME, mv.MetricValueDateTime)), 0, 3) = '09' THEN @service0915
-		WHEN SUBSTRING(CONVERT(NVARCHAR(30), CONVERT(TIME, mv.MetricValueDateTime)), 0, 3) = '11' THEN @service1115 
-		WHEN SUBSTRING(CONVERT(NVARCHAR(30), CONVERT(TIME, mv.MetricValueDateTime)), 0, 3) = '16' THEN @service1600 
-		WHEN SUBSTRING(CONVERT(NVARCHAR(30), CONVERT(TIME, mv.MetricValueDateTime)), 0, 3) = '18' THEN @service1800
-	END AS ScheduleId,
-	1 AS DidAttend,
-	c.Id AS CampusId,
-	ng.GroupId AS NewGroupId,
-	mt.AttendanceMetricGuid,
-	NEWID() AS MetricValueGuid
-INTO #rosterMetricValues
-FROM 
-	Metric m
-	JOIN MetricCategory mc ON mc.MetricId = m.Id
-	JOIN Category cat ON cat.Id = mc.CategoryId 
-	JOIN #metricTypes mt ON mt.CategoryId = cat.ParentCategoryId
-	JOIN [Group] g ON g.Id = m.ForeignId
-	JOIN MetricPartition mp ON mp.MetricId = m.Id
-	JOIN EntityType et ON et.Id = mp.EntityTypeId
-	JOIN #groupConversion ng ON ng.OldGroupId = g.Id
-	JOIN MetricValue mv ON mv.MetricId = m.Id
-	JOIN MetricValuePartition mvp ON mvp.MetricPartitionId = mp.Id AND mvp.MetricValueId = mv.Id AND ng.CampusId = mvp.EntityId
-	JOIN Campus c ON c.Id = ng.CampusId
-WHERE 
-	m.Title LIKE '% Service Roster';
-
--- Subtract attendance to get did not attend count
-UPDATE rmv
-SET rmv.YValue = rmv.YValue - amv.YValue
-FROM
-	#attendanceMetricValues amv
-	JOIN #rosterMetricValues rmv ON 
-		rmv.CampusId = amv.CampusId
-		AND rmv.MetricDate = amv.MetricDate
-		AND rmv.NewGroupId = amv.NewGroupId
-		AND rmv.ScheduleId = amv.ScheduleId
-
--- XXX Fix negative values
-UPDATE rmv
-SET rmv.YValue = 0
-FROM #rosterMetricValues rmv
-WHERE rmv.YValue < 0
-
--- Add metric values
-INSERT INTO MetricValue(
-	MetricValueType,
-	YValue,
-	MetricId,
-	MetricValueDateTime,
-	CreatedDateTime,
-	[Guid],
-	ForeignKey
-)
-SELECT 
-	@metricValueType,
-	amv.YValue,
-	(SELECT Id FROM Metric WHERE [Guid] = amv.AttendanceMetricGuid) AS MetricId,
-	amv.MetricDate,
-	@CreatedDateTime,
-	amv.MetricValueGuid,
-	@foreignKey
-FROM 
-	#rosterMetricValues amv;
-
-/* ====================================================== */
--- add partition values
-/* ====================================================== */
--- Add partition values for campus
-INSERT INTO MetricValuePartition(
-	MetricPartitionId,
-	MetricValueId,
-	EntityId,
-	CreatedDateTime,
-	[Guid],
-	ForeignKey
-)
-SELECT 
-	(SELECT mp.Id FROM MetricPartition mp JOIN Metric m ON m.Id = mp.MetricId WHERE m.[Guid] = amv.AttendanceMetricGuid AND mp.Label = 'Campus') AS MetricPartitionId,
-	(SELECT Id FROM MetricValue WHERE [Guid] = amv.MetricValueGuid) AS MetricValueId,
-	amv.CampusId AS EntityId,
-	@CreatedDateTime AS CreatedDateTime,
-	NEWID() AS [Guid],
-	@foreignKey AS ForeignKey
-FROM 
-	#rosterMetricValues amv;
-
--- Add partition values for group
-INSERT INTO MetricValuePartition(
-	MetricPartitionId,
-	MetricValueId,
-	EntityId,
-	CreatedDateTime,
-	[Guid],
-	ForeignKey
-)
-SELECT 
-	(SELECT mp.Id FROM MetricPartition mp JOIN Metric m ON m.Id = mp.MetricId WHERE m.[Guid] = amv.AttendanceMetricGuid AND mp.Label = 'Group') AS MetricPartitionId,
-	(SELECT Id FROM MetricValue WHERE [Guid] = amv.MetricValueGuid) AS MetricValueId,
-	amv.NewGroupId AS EntityId,
-	@CreatedDateTime AS CreatedDateTime,
-	NEWID() AS [Guid],
-	@foreignKey AS ForeignKey
-FROM 
-	#rosterMetricValues amv;
-
--- Add partition values for service
-INSERT INTO MetricValuePartition(
-	MetricPartitionId,
-	MetricValueId,
-	EntityId,
-	CreatedDateTime,
-	[Guid],
-	ForeignKey
-)
-SELECT 
-	(SELECT mp.Id FROM MetricPartition mp JOIN Metric m ON m.Id = mp.MetricId WHERE m.[Guid] = amv.AttendanceMetricGuid AND mp.Label = 'Schedule') AS MetricPartitionId,
-	(SELECT Id FROM MetricValue WHERE [Guid] = amv.MetricValueGuid) AS MetricValueId,
-	amv.ScheduleId AS EntityId,
-	@CreatedDateTime AS CreatedDateTime,
-	NEWID() AS [Guid],
-	@foreignKey AS ForeignKey
-FROM 
-	#rosterMetricValues amv;
-
--- Add partition values for did attend
-INSERT INTO MetricValuePartition(
-	MetricPartitionId,
-	MetricValueId,
-	EntityId,
-	CreatedDateTime,
-	[Guid],
-	ForeignKey
-)
-SELECT 
-	(SELECT mp.Id FROM MetricPartition mp JOIN Metric m ON m.Id = mp.MetricId WHERE m.[Guid] = amv.AttendanceMetricGuid AND mp.Label = 'Did Attend') AS MetricPartitionId,
-	(SELECT Id FROM MetricValue WHERE [Guid] = amv.MetricValueGuid) AS MetricValueId,
-	@dvFalse AS EntityId,
-	@CreatedDateTime AS CreatedDateTime,
-	NEWID() AS [Guid],
-	@foreignKey AS ForeignKey
-FROM 
-	#rosterMetricValues amv;
-
-/* ====================================================== */
--- convert the metric values for service attendance to attendance
-/* ====================================================== */
-IF object_id('tempdb..#uniqueMetricValues') IS NOT NULL
-BEGIN
-	drop table #uniqueMetricValues
-END
-
-SELECT 
-	m.Id AS MetricId,
-	mv.YValue,
-	CONVERT(DATE, mv.MetricValueDateTime) AS MetricDate,
-	1 AS DidAttend,
-	c.Id AS CampusId,
-	ng.GroupId AS NewGroupId,
-	NEWID() AS MetricValueGuid,
-	mt.UniqueMetricGuid
-INTO #uniqueMetricValues
-FROM 
-	Metric m
-	JOIN MetricCategory mc ON mc.MetricId = m.Id
-	JOIN Category cat ON cat.Id = mc.CategoryId
-	JOIN #metricTypes mt ON mt.CategoryId = cat.ParentCategoryId
-	JOIN [Group] g ON g.Id = m.ForeignId
-	JOIN MetricPartition mp ON mp.MetricId = m.Id
-	JOIN EntityType et ON et.Id = mp.EntityTypeId
-	JOIN #groupConversion ng ON ng.OldGroupId = g.Id
-	JOIN MetricValue mv ON mv.MetricId = m.Id
-	JOIN MetricValuePartition mvp ON mvp.MetricPartitionId = mp.Id AND mvp.MetricValueId = mv.Id AND ng.CampusId = mvp.EntityId
-	JOIN Campus c ON c.Id = ng.CampusId
-WHERE 
-	m.Title LIKE '% Unique Serving';
-
--- Add metric values
-INSERT INTO MetricValue(
-	MetricValueType,
-	YValue,
-	MetricId,
-	MetricValueDateTime,
-	CreatedDateTime,
-	[Guid],
-	ForeignKey
-)
-SELECT 
-	@metricValueType,
-	amv.YValue,
-	(SELECT Id FROM Metric WHERE [Guid] = amv.UniqueMetricGuid) AS MetricId,
-	amv.MetricDate,
-	@CreatedDateTime,
-	amv.MetricValueGuid,
-	@foreignKey
-FROM 
-	#uniqueMetricValues amv;
-
-/* ====================================================== */
--- add partition values for unique
-/* ====================================================== */
--- Add partition values for campus
-INSERT INTO MetricValuePartition(
-	MetricPartitionId,
-	MetricValueId,
-	EntityId,
-	CreatedDateTime,
-	[Guid],
-	ForeignKey
-)
-SELECT 
-	(SELECT mp.Id FROM MetricPartition mp JOIN Metric m ON m.Id = mp.MetricId WHERE m.[Guid] = amv.UniqueMetricGuid AND mp.Label = 'Campus') AS MetricPartitionId,
-	(SELECT Id FROM MetricValue WHERE [Guid] = amv.MetricValueGuid) AS MetricValueId,
-	amv.CampusId AS EntityId,
-	@CreatedDateTime AS CreatedDateTime,
-	NEWID() AS [Guid],
-	@foreignKey AS ForeignKey
-FROM 
-	#uniqueMetricValues amv;
-
--- Add partition values for group
-INSERT INTO MetricValuePartition(
-	MetricPartitionId,
-	MetricValueId,
-	EntityId,
-	CreatedDateTime,
-	[Guid],
-	ForeignKey
-)
-SELECT 
-	(SELECT mp.Id FROM MetricPartition mp JOIN Metric m ON m.Id = mp.MetricId WHERE m.[Guid] = amv.UniqueMetricGuid AND mp.Label = 'Group') AS MetricPartitionId,
-	(SELECT Id FROM MetricValue WHERE [Guid] = amv.MetricValueGuid) AS MetricValueId,
-	amv.NewGroupId AS EntityId,
-	@CreatedDateTime AS CreatedDateTime,
-	NEWID() AS [Guid],
-	@foreignKey AS ForeignKey
-FROM 
-	#uniqueMetricValues amv;
-
--- Add partition values for did attend
-INSERT INTO MetricValuePartition(
-	MetricPartitionId,
-	MetricValueId,
-	EntityId,
-	CreatedDateTime,
-	[Guid],
-	ForeignKey
-)
-SELECT 
-	(SELECT mp.Id FROM MetricPartition mp JOIN Metric m ON m.Id = mp.MetricId WHERE m.[Guid] = amv.UniqueMetricGuid AND mp.Label = 'Did Attend') AS MetricPartitionId,
-	(SELECT Id FROM MetricValue WHERE [Guid] = amv.MetricValueGuid) AS MetricValueId,
-	@dvTrue AS EntityId,
-	@CreatedDateTime AS CreatedDateTime,
-	NEWID() AS [Guid],
-	@foreignKey AS ForeignKey
-FROM
-	#uniqueMetricValues amv;
 
 /*
 	DELETE FROM MetricValuePartition WHERE ForeignKey = 'Metrics 2.0'
