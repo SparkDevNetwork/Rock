@@ -629,6 +629,16 @@ namespace Rock
             return keyPairs;
         }
 
+        /// <summary>
+        /// Removes the spaces.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string RemoveSpaces( this string input )
+        {
+            return input.Replace( " ", "" );
+        }
+
         #endregion String Extensions
     }
 }
