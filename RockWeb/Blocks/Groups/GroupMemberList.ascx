@@ -16,7 +16,7 @@
                         </h1>
 
                         <div class="panel-labels">
-                            <Rock:HighlightLabel ID="hlSyncStatus" runat="server" LabelType="Info" Visible="false" Text="<i class='fa fa-exchange'></i>" /> &nbsp;
+                            <asp:HyperLink ID="hlSyncSource" runat="server"><Rock:HighlightLabel ID="hlSyncStatus" runat="server" LabelType="Info" Visible="false" Text="<i class='fa fa-exchange'></i>" /></asp:HyperLink> &nbsp;
                         </div>
                     </div>
 
@@ -36,6 +36,11 @@
                                     <asp:ListItem Text="Female" Value="Female" />
                                     <asp:ListItem Text="Unknown" Value="Unknown" />
                                 </Rock:RockCheckBoxList>
+                                <Rock:RockDropDownList ID="ddlSignedDocument" runat="server" Label="Signed Document" >
+                                    <asp:ListItem Text="" Value="" />
+                                    <asp:ListItem Text="Yes" Value="Yes" />
+                                    <asp:ListItem Text="No" Value="No" />
+                                </Rock:RockDropDownList>
                                 <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                             </Rock:GridFilter>
                             <Rock:Grid ID="gGroupMembers" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gGroupMembers_Edit" CssClass="js-grid-group-members" >

@@ -15,11 +15,13 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
-
 using Rock.Chart;
 using Rock.Data;
 
@@ -30,7 +32,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "MetricValue" )]
     [DataContract]
-    public partial class MetricValue : Model<MetricValue>, IOrdered, IChartData
+    public partial class MetricValue : Model<MetricValue>, IChartData
     {
         #region Entity Properties
 
@@ -67,16 +69,6 @@ namespace Rock.Model
         public decimal? YValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
-        /// </summary>
-        /// <value>
-        /// Order.
-        /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
-        public int Order { get; set; }
-
-        /// <summary>
         /// Gets or sets the MetricId.
         /// </summary>
         /// <value>
@@ -106,16 +98,6 @@ namespace Rock.Model
         [Previewable]
         public DateTime? MetricValueDateTime { get; set; }
 
-        /// <summary>
-        /// Gets or sets the entity identifier.
-        /// </summary>
-        /// <value>
-        /// The entity identifier.
-        /// </value>
-        [Index]
-        [DataMember]
-        public int? EntityId { get; set; }
-
         #endregion
 
         #region Virtual Properties
@@ -127,6 +109,20 @@ namespace Rock.Model
         /// The metric.
         /// </value>
         public virtual Metric Metric { get; set; }
+
+        /// <summary>
+        /// Gets or sets the metric value partitions.
+        /// </summary>
+        /// <value>
+        /// The metric value partitions.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<MetricValuePartition> MetricValuePartitions
+        {
+            get { return _metricValuePartitions; }
+            set { _metricValuePartitions = value; }
+        }
+        private ICollection<MetricValuePartition> _metricValuePartitions;
 
         #endregion
 
@@ -155,26 +151,66 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the series identifier.
+        /// Gets the series identifier (obsolete)
+        /// NOTE: Use MetricValuePartitionEntityIds if you are populating this with a EntityTypeId|EntityId list, or use SeriesName for a static series name
         /// </summary>
         /// <value>
         /// The series identifier.
         /// </value>
         [DataMember]
+        [Obsolete( "Use MetricValuePartitionEntityIds if you are populating this with a EntityTypeId|EntityId list, or use SeriesName for a static series name" )]
         public string SeriesId
         {
             get
             {
-                return string.Format( "{0}", this.EntityId ?? 0 );
+                return this.MetricValuePartitionEntityIds;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the name of the series. This will be the default name of the series if MetricValuePartitionEntityIds can't be resolved
+        /// </summary>
+        /// <value>
+        /// The name of the series.
+        /// </value>
+        [DataMember]
+        public string SeriesName
+        {
+            get
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the metric value partitions as a comma-delimited list of EntityTypeId|EntityId
+        /// </summary>
+        /// <value>
+        /// The metric value entityTypeId,EntityId partitions
+        /// </value>
+        [DataMember]
+        public virtual string MetricValuePartitionEntityIds
+        {
+            get
+            {
+                if ( _metricValuePartitionEntityIds == null )
+                {
+                    var list = this.MetricValuePartitions.Select( a => new { a.MetricPartition.EntityTypeId, a.EntityId } ).ToList();
+                    _metricValuePartitionEntityIds = list.Select( a => string.Format( "{0}|{1}", a.EntityTypeId, a.EntityId ) ).ToList().AsDelimited( "," );
+                }
+
+                return _metricValuePartitionEntityIds;
+            }
+        }
+
+        private string _metricValuePartitionEntityIds;
 
         /// <summary>
         /// Gets the parent authority.
         /// </summary>
         public override Security.ISecured ParentAuthority
         {
-            get 
+            get
             {
                 return this.Metric != null ? this.Metric : base.ParentAuthority;
             }
@@ -188,7 +224,20 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.XValue;
+            return this.YValue.ToString();
+        }
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MetricValue"/> class.
+        /// </summary>
+        public MetricValue()
+            : base()
+        {
+            _metricValuePartitions = new Collection<MetricValuePartition>();
         }
 
         #endregion

@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
@@ -56,7 +57,7 @@ namespace RockWeb.Blocks.CheckIn
 
         $('a.btn-checkin-select').click( function() {{
             //$(this).toggleClass('btn-dimmed');
-            $(this).find('i').toggleClass('fa-check-square').toggleClass('fa-square');
+            $(this).find('i').toggleClass('fa-check-square').toggleClass('fa-square-o');
         }});
 
 ", lbSelect.ClientID, hfPeople.ClientID );
@@ -69,6 +70,12 @@ namespace RockWeb.Blocks.CheckIn
 
             RockPage.AddScriptLink( "~/Scripts/iscroll.js" );
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
+
+            var bodyTag = this.Page.Master.FindControl( "bodyTag" ) as HtmlGenericControl;
+            if ( bodyTag != null )
+            {
+                bodyTag.AddCssClass( "checkin-multipersonselect-bg" );
+            }
 
             if ( CurrentWorkflow == null || CurrentCheckInState == null )
             {

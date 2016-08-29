@@ -29,8 +29,9 @@ namespace Rock.Migrations.HotFixMigrations
         /// </summary>
         public override void Up()
         {
-            Sql( @"
+// NOTE: These migrations were added to core in v5.0
 /*
+            Sql( @"
 <doc>
 	<summary>
  		This function returns either the FullName of the specified Person or a list of names of family members
@@ -55,7 +56,7 @@ namespace Rock.Migrations.HotFixMigrations
         SELECT * FROM [dbo].[ufnCrm_GetFamilyTitle](null, 44, '2,3', default, default) -- Family, limited to the specified PersonIds
 	</code>
 </doc>
-*/
+
 ALTER FUNCTION [dbo].[ufnCrm_GetFamilyTitle] (
     @PersonId INT
     ,@GroupId INT
@@ -217,7 +218,7 @@ END
 " );
 
             Sql( @"
-/*
+
 <doc>
 	<summary>
 		This stored procedure returns the Mailing Addresses and any CustomMessages for the Contribution Statement, but not the actual transactions
@@ -255,7 +256,7 @@ END
         EXEC [dbo].[spFinance_ContributionStatementQuery] '01-01-2014', '01-01-2015', null, 2, 1, 1  -- year 2014 statements for Ted Decker
 	</code>
 </doc>
-*/
+
 ALTER PROCEDURE [dbo].[spFinance_ContributionStatementQuery]
 	@StartDate datetime
 	, @EndDate datetime
@@ -398,7 +399,7 @@ BEGIN
 END
 
 " );
-
+*/
 
         }
 

@@ -86,7 +86,7 @@ namespace Rock.Workflow.Action
                                     .FirstOrDefault();
                                 if ( person != null && !string.IsNullOrWhiteSpace( person.Email ) )
                                 {
-                                    from = person.Email;
+                                    from = string.Format("{0} <{1}>", person.FullName, person.Email);
                                 }
                             }
                         }

@@ -63,6 +63,9 @@ namespace Rock.Client
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
+        /// <summary />
+        public int Order { get; set; }
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -105,6 +108,7 @@ namespace Rock.Client
             this.IsMappedLocation = source.IsMappedLocation;
             this.LocationId = source.LocationId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.Order = source.Order;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

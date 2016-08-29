@@ -120,8 +120,6 @@ namespace RockWeb.Blocks.Cms
                 pageRouteService.Delete( pageRoute );
 
                 rockContext.SaveChanges();
-
-                RemovePageRoute( pageRoute );
             }
 
             BindGrid();
@@ -139,19 +137,6 @@ namespace RockWeb.Blocks.Cms
 
         #endregion
 
-        /// <summary>
-        /// Removes the page route.
-        /// </summary>
-        /// <param name="pageRoute">The page route.</param>
-        private static void RemovePageRoute( PageRoute pageRoute )
-        {
-            var existingRoute = RouteTable.Routes.OfType<Route>().FirstOrDefault( a => a.RouteId() == pageRoute.Id );
-            if ( existingRoute != null )
-            {
-                RouteTable.Routes.Remove( existingRoute );
-            }
-        }
-
         #region Internal Methods
 
         /// <summary>
@@ -168,6 +153,7 @@ namespace RockWeb.Blocks.Cms
                 {
                     a.Id,
                     a.Route,
+                    Site = a.Page.Layout.Site.Name,
                     PageName = a.Page.InternalName,
                     PageId = a.Page.Id,
                     a.IsSystem

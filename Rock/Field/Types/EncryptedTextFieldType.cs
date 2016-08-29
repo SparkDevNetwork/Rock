@@ -44,6 +44,18 @@ namespace Rock.Field.Types
             return base.FormatValue( parentControl, Encryption.DecryptString( value ), configurationValues, condensed );
         }
 
+        /// <summary>
+        /// Setting to determine whether the value from this control is sensitive.  This is used for determining
+        /// whether or not the value of this attribute is logged when changed.
+        /// </summary>
+        /// <returns>
+        ///   <c>false</c> By default, any field is not sensitive.
+        /// </returns>
+        public override bool IsSensitive()
+        {
+            return true;
+        }
+
         #endregion
 
         #region Edit Control

@@ -49,7 +49,7 @@
                                     <Rock:RockCheckBox ID="cbEnableManager" runat="server" Label="Enable Manager Option" Text="Yes" 
                                         Help="Should an option be displayed on the check-in welcome screen that allows user to view the management screen (after entering a passcode)?" />
                                     <Rock:RockCheckBox ID="cbEnableOverride" runat="server" Label="Enable Override" Text="Yes" 
-                                        Help="Should an override button be displayed on the check-in Manager screen that allows a manager to check-in a person and ignore any age and/or grade requirments?" />
+                                        Help="Should an override button be displayed on the check-in Manager screen that allows a manager to check-in a person and ignore any age and/or grade requirements?" />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:NumberBox ID="nbAutoSelectDaysBack" runat="server" Label="Auto Select Days Back" MinimumValue="0" NumberType="Integer" 
@@ -96,6 +96,8 @@
                                 <div class="col-md-6">
                                     <Rock:RockCheckBox ID="cbAgeRequired" runat="server" Label="Age is Required" Text="Yes" 
                                         Help="If an area and/or group has an age requirement, should people without an age be allowed to check-in to that area/group?" />
+                                    <Rock:RockCheckBox ID="cbGradeRequired" runat="server" Label="Grade is Required" Text="Yes" 
+                                        Help="If an area and/or group has a grade requirement, should people without an grade be allowed to check-in to that area/group?" />
                                     <Rock:RockCheckBox ID="cbDisplayLocCount" runat="server" Label="Display Location Count" Text="Yes" 
                                         Help="Should the room locations options include a count of how many people are currently checked into that location?" />
                                 </div>

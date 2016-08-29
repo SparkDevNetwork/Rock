@@ -90,7 +90,7 @@ namespace RockWeb
                     response.Write( "<head>" );
                     response.Write( string.Format( "<link rel='stylesheet' type='text/css' href='{0}Themes/Rock/Styles/bootstrap.css'>", appPath ) );
                     response.Write( string.Format( "<link rel='stylesheet' type='text/css' href='{0}Themes/Rock/Styles/theme.css'>", appPath ) );
-                    response.Write( string.Format( "<script src='{0}Scripts/jquery-1.10.2.min.js'></script>", appPath ) );
+                    response.Write( string.Format( "<script src='{0}Scripts/jquery-1.12.4.min.js'></script>", appPath ) );
                     response.Write( string.Format( "<script src='{0}Scripts/bootstrap.min.js'></script>", appPath ) );
                     response.Write( "</head>" );
                     response.Write( "<body style='padding: 24px;'>" );
@@ -143,9 +143,10 @@ namespace RockWeb
                         ContentChannelItemService contentService = new ContentChannelItemService( rockContext );
 
                         var content = contentService.Queryable( "ContentChannelType" )
-                                        .Where( c => c.ContentChannelId == channel.Id && (c.Status == ContentChannelItemStatus.Approved || c.ContentChannel.RequiresApproval == false) && c.StartDateTime <= RockDateTime.Now )
-                                        .OrderByDescending( c => c.StartDateTime )
-                                        .Take( rssItemLimit );
+                                        .Where( c => 
+                                            c.ContentChannelId == channel.Id && 
+                                            ( c.Status == ContentChannelItemStatus.Approved || c.ContentChannel.RequiresApproval == false ) && 
+                                            c.StartDateTime <= RockDateTime.Now );
 
                         if ( channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange )
                         {
@@ -159,6 +160,17 @@ namespace RockWeb
                             }
                         }
 
+                        if ( channel.ItemsManuallyOrdered )
+                        {
+                            content = content.OrderBy( c => c.Order );
+                        }
+                        else
+                        {
+                            content = content.OrderByDescending( c => c.StartDateTime );
+                        }
+
+                        content = content.Take( rssItemLimit );
+                        
                         foreach ( var item in content )
                         {
                             item.Content = item.Content.ResolveMergeFields( mergeFields );

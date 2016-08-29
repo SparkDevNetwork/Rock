@@ -180,7 +180,6 @@ namespace Rock.Reporting
 
                                 boundField.Visible = reportField.ShowInGrid;
 
-                                // NOTE:  Additional formatting for attributes is done in the gReport_RowDataBound event
                                 gReport.Columns.Add( boundField );
                             }
                         }

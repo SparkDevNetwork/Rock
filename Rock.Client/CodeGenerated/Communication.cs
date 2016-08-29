@@ -38,6 +38,9 @@ namespace Rock.Client
         public string AdditionalMergeFieldsJson { get; set; }
 
         /// <summary />
+        public string EnabledLavaCommands { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -112,6 +115,7 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.AdditionalMergeFieldsJson = source.AdditionalMergeFieldsJson;
+            this.EnabledLavaCommands = source.EnabledLavaCommands;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.FutureSendDateTime = source.FutureSendDateTime;

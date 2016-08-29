@@ -16,14 +16,12 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Web.Http;
 using Newtonsoft.Json;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.UI.Controls;
 
 namespace Rock.Rest.Controllers
 {
@@ -57,7 +55,7 @@ namespace Rock.Rest.Controllers
                 bool roundYValues = block.GetAttributeValue( "RoundValues" ).AsBooleanOrNull() ?? true;
 
                 MetricService metricService = new MetricService( rockContext );
-                var metrics = metricService.GetByGuids( metricGuids );
+                var metrics = metricService.GetByGuids( metricGuids ).Include( a => a.MetricPartitions );
                 List<object> metricsData = new List<object>();
 
                 if ( metrics.Count() == 0 )
@@ -81,13 +79,13 @@ namespace Rock.Rest.Controllers
                         .Where( a => a.MetricValueDateTime >= firstDayOfYear && a.MetricValueDateTime < currentDateTime )
                         .Where( a => a.MetricValueType == MetricValueType.Measure );
 
-                    //// if an entityTypeId/EntityId filter was specified, and the entityTypeId is the same as the metrics.EntityTypeId, filter the values to the specified entityId
+                    //// if an entityTypeId/EntityId filter was specified, and the entityTypeId is the same as the metric's partitions' EntityTypeId, filter the values to the specified entityId
                     //// Note: if a Metric or it's Metric Value doesn't have a context, include it regardless of Context setting
-                    if ( entityTypeId.HasValue && ( metric.EntityTypeId == entityTypeId || metric.EntityTypeId == null ) )
+                    if ( entityTypeId.HasValue && entityId.HasValue )
                     {
-                        if ( entityId.HasValue )
+                        if ( metric.MetricPartitions.Any( a => a.EntityTypeId == entityTypeId.Value ) )
                         {
-                            qryMeasureValues = qryMeasureValues.Where( a => a.EntityId == entityId || a.EntityId == null );
+                            qryMeasureValues = qryMeasureValues.Where( a => a.MetricValuePartitions.Any( p => p.EntityId == entityId.Value && p.MetricPartition.EntityTypeId == entityTypeId ) );
                         }
                     }
 
@@ -95,8 +93,8 @@ namespace Rock.Rest.Controllers
                     if ( lastMetricValue != null )
                     {
                         metricYTDData.LastValueDate = lastMetricValue.MetricValueDateTime.HasValue ? lastMetricValue.MetricValueDateTime.Value.Date : DateTime.MinValue;
-                        var lastMetricCumulativeValues = qryMeasureValues.Where(a => a.MetricValueDateTime == metricYTDData.LastValueDate);
-                        metricYTDData.LastValue = lastMetricCumulativeValues.Sum(a => a.YValue).HasValue ? Math.Round(lastMetricCumulativeValues.Sum(a => a.YValue).Value, roundYValues ? 0 : 2) : (decimal?)null;
+                        var lastMetricCumulativeValues = qryMeasureValues.Where( a => a.MetricValueDateTime == metricYTDData.LastValueDate );
+                        metricYTDData.LastValue = lastMetricCumulativeValues.Sum( a => a.YValue ).HasValue ? Math.Round( lastMetricCumulativeValues.Sum( a => a.YValue ).Value, roundYValues ? 0 : 2 ) : (decimal?)null;
                     }
 
                     decimal? sum = qryMeasureValues.Sum( a => a.YValue );
@@ -108,12 +106,12 @@ namespace Rock.Rest.Controllers
                         .Where( a => a.MetricValueDateTime >= firstDayOfYear && a.MetricValueDateTime < firstDayOfNextYear )
                         .Where( a => a.MetricValueType == MetricValueType.Goal );
 
-                    // if an entityTypeId/EntityId filter was specified, and the entityTypeId is the same as the metrics.EntityTypeId, filter the values to the specified entityId
-                    if ( entityTypeId.HasValue && metric.EntityTypeId == entityTypeId )
+                    // if an entityTypeId/EntityId filter was specified, and the entityTypeId is the same as the metric's partitions' EntityTypeId, filter the values to the specified entityId
+                    if ( entityTypeId.HasValue && entityId.HasValue )
                     {
-                        if ( entityId.HasValue )
+                        if ( metric.MetricPartitions.Any( a => a.EntityTypeId == entityTypeId.Value ) )
                         {
-                            qryGoalValuesCurrentYear = qryGoalValuesCurrentYear.Where( a => a.EntityId == entityId );
+                            qryGoalValuesCurrentYear = qryGoalValuesCurrentYear.Where( a => a.MetricValuePartitions.Any( p => p.EntityId == entityId.Value && p.MetricPartition.EntityTypeId == entityTypeId ) );
                         }
                     }
 

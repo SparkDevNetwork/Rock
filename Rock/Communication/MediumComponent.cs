@@ -105,7 +105,7 @@ namespace Rock.Communication
         public virtual void Send( Rock.Model.Communication communication )
         {
             var transport = Transport;
-            if ( transport != null )
+            if ( transport != null && transport.IsActive )
             {
                 transport.Send( communication );
             }

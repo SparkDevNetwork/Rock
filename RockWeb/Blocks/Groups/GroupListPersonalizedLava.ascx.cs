@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 7 )]
     public partial class GroupListPersonalizedLava : RockBlock
     {
-        
+       
         #region Control Methods
 
         /// <summary>
@@ -108,13 +108,27 @@ namespace RockWeb.Blocks.Groups
                 qry = qry.Where( t => !excludeGroupTypeGuids.Contains( t.Group.GroupType.Guid ) );
             }
 
-            var groups = qry.Select( m => new GroupInvolvementSummary  { Group = m.Group, Role = m.GroupRole.Name, IsLeader = m.GroupRole.IsLeader, GroupType = m.Group.GroupType.Name } ).ToList();
+            var groups = new List<GroupInvolvementSummary>();
+
+            foreach ( var groupMember in qry.ToList() )
+            {
+                if ( groupMember.Group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                {
+                    groups.Add( new GroupInvolvementSummary
+                    {
+                        Group = groupMember.Group,
+                        Role = groupMember.GroupRole.Name,
+                        IsLeader = groupMember.GroupRole.IsLeader,
+                        GroupType = groupMember.Group.GroupType.Name
+                    } );
+                }
+            }
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "Groups", groups );
 
             Dictionary<string, object> linkedPages = new Dictionary<string, object>();
-            linkedPages.Add( "DetailPage", LinkedPageUrl( "DetailPage", null ) );
+            linkedPages.Add( "DetailPage", LinkedPageRoute( "DetailPage" ) );
             mergeFields.Add( "LinkedPages", linkedPages );
 
             string template = GetAttributeValue( "LavaTemplate" );

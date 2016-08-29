@@ -43,6 +43,7 @@ namespace Rock.Web.UI.Controls
         DateTimePicker _dtpStart;
         DateTimePicker _dtpEnd;
         NumberBox _nbMaxAttendees;
+        WorkflowTypePicker _wtpRegistrationWorkflow;
         CurrencyBox _cbCost;
         CurrencyBox _cbMinimumInitialPayment;
         AccountPicker _apAccount;
@@ -231,6 +232,26 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _nbMaxAttendees.Text = value.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the registration workflow type id.
+        /// </summary>
+        /// <value>
+        /// The workflow type id.
+        /// </value>        
+        public int? RegistrationWorkflowTypeId
+        {
+            get
+            {
+                EnsureChildControls();
+                return _wtpRegistrationWorkflow.SelectedValueAsInt();
+            }
+            set
+            {
+                EnsureChildControls();
+                _wtpRegistrationWorkflow.SetValue( value );
             }
         }
 
@@ -508,6 +529,7 @@ namespace Rock.Web.UI.Controls
                 _dtpStart.ValidationGroup = value;
                 _dtpEnd.ValidationGroup = value;
                 _nbMaxAttendees.ValidationGroup = value;
+                _wtpRegistrationWorkflow.ValidationGroup = value;
                 _ppContact.ValidationGroup = value;
                 _pnContactPhone.ValidationGroup = value;
                 _ebContactEmail.ValidationGroup = value;
@@ -540,6 +562,7 @@ namespace Rock.Web.UI.Controls
                 _dtpStart.SelectedDateTime = instance.StartDateTime;
                 _dtpEnd.SelectedDateTime = instance.EndDateTime;
                 _nbMaxAttendees.Text = instance.MaxAttendees.ToString();
+                _wtpRegistrationWorkflow.SetValue( instance.RegistrationWorkflowTypeId );
 
                 Person contactPerson = null;
                 if ( instance.ContactPersonAlias != null && instance.ContactPersonAlias.Person != null )
@@ -580,6 +603,7 @@ namespace Rock.Web.UI.Controls
                 _dtpStart.SelectedDateTime = null;
                 _dtpEnd.SelectedDateTime = null;
                 _nbMaxAttendees.Text = string.Empty;
+                _wtpRegistrationWorkflow.SetValue( null );
                 _ppContact.SetValue( null );
                 _pnContactPhone.Text = string.Empty;
                 _ebContactEmail.Text = string.Empty;
@@ -612,6 +636,7 @@ namespace Rock.Web.UI.Controls
                 instance.StartDateTime = _dtpStart.SelectedDateTime;
                 instance.EndDateTime = _dtpEnd.SelectedDateTime;
                 instance.MaxAttendees = _nbMaxAttendees.Text.AsInteger();
+                instance.RegistrationWorkflowTypeId = _wtpRegistrationWorkflow.SelectedValueAsInt();
                 instance.ContactPersonAliasId = _ppContact.PersonAliasId;
                 instance.ContactPhone = _pnContactPhone.Text;
                 instance.ContactEmail = _ebContactEmail.Text;
@@ -680,6 +705,12 @@ namespace Rock.Web.UI.Controls
                 _nbMaxAttendees.Label = "Maximum Attendees";
                 _nbMaxAttendees.NumberType = ValidationDataType.Integer;
                 Controls.Add( _nbMaxAttendees );
+
+                _wtpRegistrationWorkflow = new WorkflowTypePicker();
+                _wtpRegistrationWorkflow.ID = this.ID + "_wtpRegistrationWorkflow";
+                _wtpRegistrationWorkflow.Label = "Registration Workflow";
+                _wtpRegistrationWorkflow.Help = "An optional workflow type to launch when a new registration is completed.";
+                Controls.Add( _wtpRegistrationWorkflow );
 
                 _cbCost = new CurrencyBox();
                 _cbCost.ID = this.ID + "_cbCost";
@@ -817,27 +848,7 @@ namespace Rock.Web.UI.Controls
                     _dtpStart.RenderControl( writer );
                     _dtpEnd.RenderControl( writer );
                     _nbMaxAttendees.RenderControl( writer );
-
-                writer.RenderEndTag();  // col-md-6
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                _ppContact.RenderControl( writer );
-                _pnContactPhone.RenderControl( writer );
-                _ebContactEmail.RenderControl( writer );
-
-                    _cbCost.RenderControl( writer );
-                    _cbMinimumInitialPayment.RenderControl( writer );
-                    _apAccount.RenderControl( writer );
-
-                writer.RenderEndTag();  // col-md-6
-            writer.RenderEndTag();  // row
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    _wtpRegistrationWorkflow.RenderControl( writer );
 
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -856,11 +867,18 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();  // row
 
                 writer.RenderEndTag();  // col-md-6
-
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                writer.RenderEndTag();  // col-md-6
 
+                    _ppContact.RenderControl( writer );
+                    _pnContactPhone.RenderControl( writer );
+                    _ebContactEmail.RenderControl( writer );
+
+                    _cbCost.RenderControl( writer );
+                    _cbMinimumInitialPayment.RenderControl( writer );
+                    _apAccount.RenderControl( writer );
+
+                writer.RenderEndTag();  // col-md-6
             writer.RenderEndTag();  // row
 
             _htmlAdditionalReminderDetails.RenderControl( writer );

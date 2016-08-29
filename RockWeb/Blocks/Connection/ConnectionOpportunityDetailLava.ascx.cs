@@ -145,7 +145,7 @@ namespace RockWeb.Blocks.Connection
 
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                 Dictionary<string, object> linkedPages = new Dictionary<string, object>();
-                linkedPages.Add( "SignupPage", LinkedPageUrl( "SignupPage", null ) );
+                linkedPages.Add( "SignupPage", LinkedPageRoute( "SignupPage" ) );
                 mergeFields.Add( "LinkedPages", linkedPages );
 
                 mergeFields.Add( "CampusContext", RockPage.GetCurrentContext( EntityTypeCache.Read( "Rock.Model.Campus" ) ) as Campus );

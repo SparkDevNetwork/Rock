@@ -118,7 +118,7 @@ IF @AttributeId IS NOT NULL AND @EntityId IS NOT NULL
 BEGIN
 	UPDATE [AttributeValue]
 		SET [Value] = '{% if Person.BaptismDate != empty -%}
-    <div class=""badge badge - baptism"" data-toggle=""tooltip"" data-original-title=""{ { Person.NickName } }
+    <div class=""badge badge-baptism"" data-toggle=""tooltip"" data-original-title=""{ { Person.NickName } }
             was baptized on { { Person.BaptismDate } }."">
 < i class=""badge-icon fa fa-tint""></i>
     </div>

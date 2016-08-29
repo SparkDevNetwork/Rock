@@ -10,10 +10,10 @@
 // 1. Notes
 // -------------------------
 .panel-note {
-  // panel extensions    ->      .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
-  .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
-
   border-top-color: @panel-top-border-color;
+  // panel extensions    ->      .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
+
+  .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
 
   .panel-body {
     background-color: #fff;
@@ -32,25 +32,25 @@
   }
 
   article {
-    border-radius: @border-radius-base;
-    border: 1px solid @state-info-border;
+    position: relative;
     padding: @spacing-md-px;
     margin-bottom: @spacing-md-px;
-    background-color: @state-info-bg;
-    position: relative;
     color: @state-info-text;
+    background-color: @state-info-bg;
+    border: 1px solid @state-info-border;
+    border-radius: @border-radius-base;
 
     .date {
+      margin-left: 8px;
       font-size: 13px;
       font-weight: @font-weight-light;
-      margin-left: 8px;
     }
 
     & > i {
       position: absolute;
       width: 28px;
-      font-size: 28px;
       margin: 0 12px 0 4px;
+      font-size: 28px;
       opacity: .2;
     }
 
@@ -58,9 +58,9 @@
       margin-left: 70px;
 
       h5 {
+        max-width: 70%;
         margin-top: 0;
         margin-bottom: 6px;
-        max-width: 70%;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -69,8 +69,8 @@
 
     .actions {
       position: absolute;
-      right: 15px;
       top: 10px;
+      right: 15px;
 
       a {
         float: right;
@@ -80,9 +80,9 @@
     }
 
     &.highlight {
+      color: @note-highlight-text;
       background-color: @note-highlight-bg;
       border: 1px solid @note-highlight-border;
-      color: @note-highlight-text;
 
       a {
         color: @note-highlight-text;
@@ -90,9 +90,9 @@
     }
 
     &.personal {
+      color: @note-personal-text;
       background-color: @note-personal-bg;
       border: 1px solid @note-personal-border;
-      color: @note-personal-text;
     }
 
     & > img {
@@ -102,9 +102,9 @@
   }
 
   .load-more {
-    margin: 0 40%;
-    min-width: 150px;
     width: 20%;
+    min-width: 150px;
+    margin: 0 40%;
 
     span {
       margin: 0 12px;
@@ -115,11 +115,10 @@
 .note-deny,
 .note-danger,
 .note-security {
-
   article {
-    border-color: @alert-danger-border;
-    background-color: @alert-danger-bg;
     color: @alert-danger-text;
+    background-color: @alert-danger-bg;
+    border-color: @alert-danger-border;
   }
 
   .actions a {
@@ -129,11 +128,10 @@
 
 .note-approve,
 .note-success {
-
   article {
-    border-color: @alert-success-border;
-    background-color: @alert-success-bg;
     color: @alert-success-text;
+    background-color: @alert-success-bg;
+    border-color: @alert-success-border;
   }
 
   .actions a {
@@ -142,11 +140,10 @@
 }
 
 .note-info {
-
   article {
-    border-color: @alert-info-border;
-    background-color: @alert-info-bg;
     color: @alert-info-text;
+    background-color: @alert-info-bg;
+    border-color: @alert-info-border;
   }
 
   .actions a {
@@ -155,11 +152,10 @@
 }
 
 .note-warning {
-
   article {
-    border-color: @alert-warning-border;
-    background-color: @alert-warning-bg;
     color: @alert-warning-text;
+    background-color: @alert-warning-bg;
+    border-color: @alert-warning-border;
   }
 
   .actions a {
@@ -169,18 +165,18 @@
 
 
 .panel-note-light {
-  border: 0;
   background: none;
+  border: 0;
 
   .panel-body {
     background: none;
   }
 
   article {
-    background: none;
-    border-radius: 0;
-    border-width: 0 0 1px 0;
     padding-left: 0;
+    background: none;
+    border-width: 0 0 1px 0;
+    border-radius: 0;
 
     .details {
       margin-left: 0;
@@ -189,18 +185,17 @@
     .note-author,
     .note-created {
       font-size: @font-size-base - 1px;
-      opacity: 0.7;
+      opacity: .7;
     }
   }
 }
 
-.panel-noteentry
-{
+.panel-noteentry {
   .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
 
   .createDate {
-      margin-top:10px;
-      width:50%;
+    width: 50%;
+    margin-top: 10px;
   }
 
   .settings {
@@ -213,7 +208,6 @@
   }
 
   .panel-body {
-
     .noteentry-control {
       overflow: hidden;
     }
@@ -226,7 +220,6 @@
       float: left;
       margin: 0 12px 0 4px;
     }
-
   }
 
   .options .checkbox {
@@ -243,8 +236,8 @@
 // -------------------------
 
 .recurrence-pattern-type {
-  margin-top: 12px;
   padding-left: @spacing-lg-px;
+  margin-top: 12px;
 }
 
 .recurrence-pattern-specific-date {
@@ -256,22 +249,21 @@
 
   .actions {
     float: left;
-    margin-left: 12px;
     margin-top: 4px;
+    margin-left: 12px;
   }
 }
 
 .recurrence-pattern-daily {
-
   .form-control-group {
     min-height: @spacing-lg-px;
   }
 }
 
 .recurrence-pattern-weekly {
-
   .week-days {
     margin-top: @spacing-md-px;
+
     .clearfix();
 
     .checkbox {
@@ -282,22 +274,19 @@
 }
 
 .recurrence-pattern-monthly {
-
   .form-control-group {
-    min-height: 40px;
     display: block;
+    min-height: 40px;
   }
 }
 
 .continue-until {
-
   .form-control-group {
     min-height: 40px;
   }
 }
 
 .exclusions {
-
   .add-exclusion {
     .form-control-group {
       float: left;
@@ -317,30 +306,27 @@
   margin-top: 64px;
 }
 
-.workflow-activities-readonly-header
-{
-  color: #515151;
-  left: auto;
+.workflow-activities-readonly-header {
   top: auto;
+  left: auto;
   padding-top: 8px;
   padding-right: 8px;
   padding-bottom: 8px;
+  color: #515151;
 
   &:hover {
     color: inherit;
     text-decoration: none;
   }
-
 }
 
 .panel.workflow-activity {
-
   &.activated-with-workflow {
-     border-color:  @state-success-text;
+    border-color: @state-success-text;
 
-     & > .panel-heading {
-      background-color: @state-success-bg;
+    & > .panel-heading {
       color: @state-success-text;
+      background-color: @state-success-bg;
 
       a.btn-link {
         color: @state-success-text;
@@ -349,32 +335,32 @@
   }
 
   .panel-title:before {
-    content: @fa-var-cubes;
+    margin-right: 4px;
     font-family: FontAwesome;
     font-weight: normal;
-    margin-right: 4px;
+    content: @fa-var-cubes;
   }
 }
 
 .workflow-action {
   .workflow-action-name:before {
-    content: @fa-var-cube;
     font-family: FontAwesome;
     font-weight: normal;
+    content: @fa-var-cube;
   }
 
   .criteria-exists {
-    background-color: @btn-warning-bg;
     color: @btn-warning-color;
+    background-color: @btn-warning-bg;
     border: 1px solid @btn-warning-border;
   }
 
   .conditional-run-criteria {
+    padding-top: 15px;
     margin-top: -15px;
     margin-bottom: 15px;
-    padding-top: 15px;
-    border-width: 1px;
     border-style: solid;
+    border-width: 1px;
   }
 
   .form-action-rows .row {
@@ -385,10 +371,9 @@
 // panel for workflow entry/navigation
 .panel-group {
   .panel-workflowitem {
-    // .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
-    .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
-
     margin-bottom: 30px;
+
+    .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
 
     &:hover {
       background-color: #fff;
@@ -403,12 +388,12 @@
         .panel-title {
           width: 100%;
 
-           h3 {
+          h3 {
             margin: 0;
 
             i {
-              font-size: 35px;
               margin-right: 12px;
+              font-size: 35px;
             }
           }
         }
@@ -420,8 +405,8 @@
           &:before {
             margin-top: 6px;
             font-family: FontAwesome;
-            content: @fa-var-chevron-up;
             font-size: 20px;
+            content: @fa-var-chevron-up;
           }
         }
 

@@ -89,7 +89,7 @@ BEGIN
                     p.[Id] IN (
                         SELECT *
                         FROM ufnUtility_CsvToTable(@GroupPersonIds)
-                        )
+                       )
                     )
                 )
 

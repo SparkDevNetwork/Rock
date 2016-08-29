@@ -11,12 +11,10 @@
 // 1. SQL Command
 // -------------------------
 
-.sql-comand
-{
-    .panel
-    {
-        margin-bottom: 24px;
-    }
+.sql-comand {
+  .panel {
+    margin-bottom: 24px;
+  }
 }
 
 // 2. Data Views
@@ -24,65 +22,52 @@
 
 /* data views */
 .filter-toggle {
-    margin-top: 5px;
+  margin-top: 5px;
 
-    & > span {
-        float: left;
-    }
+  & > span {
+    float: left;
+  }
 
-    .btn-toggle {
-        margin: 0 6px;
-    }
-} 
+  .btn-toggle {
+    margin: 0 6px;
+  }
+}
 
 .filter-item-select {
+  span {
+    float: left;
+    padding: 8px 6px 0 0;
+  }
 
-    span {
-        float: left;
-        padding: 8px 6px 0 0;
-    }
-
-    select {
-        float: left;
-        width: 250px;
-    }
+  select {
+    float: left;
+    width: 250px;
+  }
 }
 
 // add top margin to checkbox lists in filters
 .field-criteria {
-        
-    .checkbox-inline {
-        margin-top: 8px;
-    }
+  .checkbox-inline {
+    margin-top: 8px;
+  }
 }
 
-.filter-item div[class*='col']{
-    margin-bottom: 6px;
-}
-
-
-
-
-// Medium devices (desktops, 992px and up) 
-@media (min-width: @screen-md-min) {
-    .filter-item div[class*='col']{
-        margin-bottom: 0;
-    }
+.filter-item div[class*='col'] {
+  margin-bottom: 6px;
+  @media (min-width: @screen-md-min) {
+    margin-bottom: 0;
+  }
 }
 
 // 3. Dynamic Report
 // -------------------------
 
 .filterfield {
-    margin-bottom: 12px;
+  margin-bottom: 12px;
 }
 
 .filterfield-label {
-    font-weight: @font-weight-semibold;
-    margin-top: 8px;
-    display: block;
-}
-
-.filterfield-checkbox label {
-
+  display: block;
+  margin-top: 8px;
+  font-weight: @font-weight-semibold;
 }

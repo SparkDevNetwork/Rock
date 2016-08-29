@@ -36,7 +36,8 @@ CREATE TABLE #MailChimpExport (
 	[Most Recent VIP Date] DATE,
 	[Baptism Date] DATE,
 	[Salvation Date] DATE,
-	[Is Staff] BIT
+	[Is Staff] BIT,
+	[Keep me updated] NVARCHAR(100)
 );
 
 -- All active, living adults with emails are included in the export
@@ -332,6 +333,25 @@ FROM
 	#MailChimpExport mce
 	JOIN cteStaff s ON s.FamilyId = mce.FamilyId;
 
+-- Is N2K
+WITH cteN2K AS (
+	SELECT
+		mce.PersonId
+	FROM
+		#MailChimpExport mce
+		JOIN GroupMember gm ON gm.PersonId = mce.PersonId
+		JOIN [Group] g ON g.Id = gm.GroupId 
+	WHERE
+		g.Name = 'N2K'
+		AND gm.GroupMemberStatus = @gmsActive
+)
+UPDATE mce
+SET
+	[Keep me updated] = 'Need to Know Newsletter'
+FROM
+	#MailChimpExport mce
+	JOIN cteN2K s ON s.PersonId = mce.PersonId;
+
 -- Aggregate all dates into the most recent activity date
 UPDATE #MailChimpExport
 SET
@@ -354,7 +374,8 @@ SET
 				([Most Recent VIP Date]),
 				([Baptism Date]),
 				([Salvation Date]),
-				(CASE WHEN [Is Staff] = 1 THEN GETDATE() END)
+				(CASE WHEN [Is Staff] = 1 THEN GETDATE() END),
+				(CASE WHEN [Keep me updated] IS NOT NULL THEN GETDATE() END)
 			) AS value(v)
 	);
 
@@ -382,7 +403,8 @@ SELECT
 	ISNULL(CONVERT(NVARCHAR(10), mce.[Most Recent VIP Date]), '') AS [Most Recent VIP Date],
 	ISNULL(CONVERT(NVARCHAR(10), mce.[Baptism Date]), '') AS [Baptism Date],
 	ISNULL(CONVERT(NVARCHAR(10), mce.[Salvation Date]), '') AS [Salvation Date],
-	CASE WHEN mce.[Is Staff] = 1 THEN '1' ELSE '' END AS [Is Staff]
+	CASE WHEN mce.[Is Staff] = 1 THEN '1' ELSE '' END AS [Is Staff],
+	ISNULL(mce.[Keep me updated], '') AS [Lists]
 FROM 
 	#MailChimpExport mce
 WHERE

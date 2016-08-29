@@ -754,20 +754,19 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            if ( this.DataSource != null )
+           
+            if ( this.EnableResponsiveTable )
             {
-                if ( this.EnableResponsiveTable )
-                {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "table-responsive" );
-                }
-
-                if ( DisplayType == GridDisplayType.Light )
-                {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "table-no-border" );
-                }
-
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "table-responsive" );
             }
+
+            if ( DisplayType == GridDisplayType.Light )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "table-no-border" );
+            }
+
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            
 
             this.AddCssClass( "grid-table" );
             this.AddCssClass( "table" );
@@ -791,10 +790,7 @@ namespace Rock.Web.UI.Controls
 
             base.RenderControl( writer );
 
-            if ( this.DataSource != null )
-            {
-                writer.RenderEndTag();
-            }
+            writer.RenderEndTag();
         }
 
         /// <summary>
@@ -980,7 +976,7 @@ namespace Rock.Web.UI.Controls
             }
             else if ( this.DataSourceAsDataTable != null )
             {
-                itemCount = this.DataSourceAsDataTable.Rows.Count;
+                itemCount = this.DataSourceAsDataTable.DefaultView.Count;
             }
             else if ( this.DataSourceAsList != null )
             {

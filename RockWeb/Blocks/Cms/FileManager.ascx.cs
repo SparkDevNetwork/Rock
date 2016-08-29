@@ -68,7 +68,7 @@ namespace RockWeb.Blocks.Cms
             string imageFileTypeWhiteList = globalAttributesCache.GetValue( "ContentImageFiletypeWhitelist" );
             string fileTypeBlackList = globalAttributesCache.GetValue( "ContentFiletypeBlacklist" );
 
-            var iframeUrl = ResolveRockUrl( "~/ckeditorplugins/rockfilebrowser" );
+            var iframeUrl = ResolveRockUrl( "~/htmleditorplugins/rockfilebrowser" );
             string rootFolder = GetAttributeValue( "RootFolder" );
             string browseMode = GetAttributeValue( "BrowseMode" );
             if ( string.IsNullOrWhiteSpace( browseMode ) )

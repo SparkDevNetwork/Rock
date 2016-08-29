@@ -4,6 +4,9 @@
     <ContentTemplate>
 
         <asp:HiddenField ID="hfCurrentPage" runat="server" Value="1" />
+        
+        <%-- hidden field to store the Transaction.Guid to use for the transaction. This is to help prevent duplicate transactions.   --%>
+        <asp:HiddenField ID="hfTransactionGuid" runat="server" Value="" />
 
         <Rock:NotificationBox ID="nbMessage" runat="server" Visible="false"></Rock:NotificationBox>
 
@@ -140,7 +143,7 @@
                                             <asp:ListItem Text="Checking" Value="checking" Selected="true" />
                                             <asp:ListItem Text="Savings" Value="savings" />
                                         </Rock:RockRadioButtonList>
-                                        <asp:Image ID="imgCheck" runat="server" ImageUrl="<%$ Fingerprint:~/Assets/Images/check-image.png %>" />                                    
+                                        <asp:Image ID="imgCheck" CssClass="img-responsive" runat="server" ImageUrl="<%$ Fingerprint:~/Assets/Images/check-image.png %>" />                                    
                                     </div>
 
                                 </div>
@@ -227,7 +230,7 @@
 
             <div class="actions clearfix margin-b-lg">
                 <asp:LinkButton ID="btnConfirmationPrev" runat="server" Text="Previous" CssClass="btn btn-link" OnClick="btnConfirmationPrev_Click" Visible="false" />
-                <asp:LinkButton ID="btnConfirmationNext" runat="server" Text="Finish" CssClass="btn btn-primary pull-right" OnClick="btnConfirmationNext_Click" />
+                <Rock:BootstrapButton ID="btnConfirmationNext" runat="server" Text="Finish" CssClass="btn btn-primary pull-right" OnClick="btnConfirmationNext_Click" />
             </div>
 
         </asp:Panel>

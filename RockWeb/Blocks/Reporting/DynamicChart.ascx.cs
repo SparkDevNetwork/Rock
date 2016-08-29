@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Reporting
 <ul>
     <li>Bar or Line Chart
         <ul>
-           <li>[SeriesID] : string or numeric </li>
+           <li>[SeriesName] : string or numeric </li>
            <li>[DateTime] : DateTime </li>
            <li>[YValue] : numeric </li>
         </ul>
@@ -56,7 +56,7 @@ Example:
 select top 25  * from (
     select 
         distinct
-        pv.PageTitle [SeriesID], 
+        pv.PageTitle [SeriesName], 
         convert(date, pv.DateTimeViewed) [DateTime], 
         count(*) [YValue] 
     from 
@@ -207,12 +207,30 @@ function labelFormatter(label, series) {
             public decimal? YValueTotal { get; set; }
 
             /// <summary>
-            /// Gets the series identifier.
+            /// Gets the series identifier (obsolete)
+            /// NOTE: Use MetricValuePartitionEntityIds if you are populating this with a EntityTypeId|EntityId list, or use SeriesName for a static series name
             /// </summary>
             /// <value>
             /// The series identifier.
             /// </value>
+            [Obsolete( "Use MetricValuePartitionEntityIds if you are populating this with a EntityTypeId|EntityId list, or use SeriesName for a static series name" )]
             public string SeriesId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the series. This will be the default name of the series if MetricValuePartitionEntityIds can't be resolved
+            /// </summary>
+            /// <value>
+            /// The name of the series.
+            /// </value>
+            public string SeriesName { get; set; }
+
+            /// <summary>
+            /// Gets the metric value partitions as a comma-delimited list of EntityTypeId|EntityId
+            /// </summary>
+            /// <value>
+            /// The metric value entityTypeId,EntityId partitions
+            /// </value>
+            public string MetricValuePartitionEntityIds { get; set; }
         }
 
         /// <summary>
@@ -232,16 +250,21 @@ function labelFormatter(label, series) {
                 {
                     var mergeFields = GetDynamicDataMergeFields();
                     sql = sql.ResolveMergeFields( mergeFields );
-                    
+
                     DataSet dataSet = DbService.GetDataSet( sql, System.Data.CommandType.Text, null );
                     List<DynamicChartData> chartDataList = new List<DynamicChartData>();
                     foreach ( var row in dataSet.Tables[0].Rows.OfType<DataRow>() )
                     {
                         var chartData = new DynamicChartData();
 
-                        if ( row.Table.Columns.Contains( "SeriesID" ) )
+                        if ( row.Table.Columns.Contains( "SeriesName" ) )
                         {
-                            chartData.SeriesId = Convert.ToString( row["SeriesID"] );
+                            chartData.SeriesName = Convert.ToString( row["SeriesName"] );
+                        }
+                        else if ( row.Table.Columns.Contains( "SeriesID" ) )
+                        {
+                            // backwards compatibility
+                            chartData.SeriesName = Convert.ToString( row["SeriesID"] );
                         }
 
                         if ( row.Table.Columns.Contains( "YValue" ) )
@@ -255,7 +278,7 @@ function labelFormatter(label, series) {
                         }
                         else
                         {
-                            chartData.MetricTitle = chartData.SeriesId;
+                            chartData.MetricTitle = chartData.SeriesName;
                         }
 
                         if ( row.Table.Columns.Contains( "YValueTotal" ) )
@@ -275,7 +298,7 @@ function labelFormatter(label, series) {
                         chartDataList.Add( chartData );
                     }
 
-                    chartDataList = chartDataList.OrderBy( a => a.SeriesId ).ThenBy( a => a.DateTimeStamp ).ToList();
+                    chartDataList = chartDataList.OrderBy( a => a.SeriesName ).ThenBy( a => a.DateTimeStamp ).ToList();
 
                     Response.Clear();
                     Response.Write( chartDataList.ToJson() );

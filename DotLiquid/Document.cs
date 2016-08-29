@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.IO;
+using DotLiquid.Exceptions;
 
 namespace DotLiquid
 {
@@ -28,6 +30,25 @@ namespace DotLiquid
 		/// </summary>
 		protected override void AssertMissingDelimitation()
 		{
+		}
+
+		/// <summary>
+		/// This is used to handle the new known/valid control exceptions in Liquid.
+		/// </summary>
+		/// <param name="context"></param>
+		/// <param name="result"></param>
+		public override void Render(Context context, TextWriter result)
+		{
+			try
+			{
+				base.Render(context, result);
+			}
+			catch (BreakInterrupt)
+			{
+			}
+			catch (ContinueInterrupt)
+			{
+			}
 		}
 	}
 }

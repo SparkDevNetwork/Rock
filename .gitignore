@@ -33,3 +33,5 @@ RockWeb/App_Data/PackageStaging
 node_modules
 /PrecompiledWeb
 .remote
+
+Packages/*

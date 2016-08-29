@@ -32,7 +32,10 @@
                     </div>
 
                     <asp:Panel runat="server" ID="pnlFollowing" CssClass="panel-follow-status js-follow-status" data-toggle="tooltip" data-placement="top" title="Click to Follow"></asp:Panel>
+                    
                 </div>
+
+                <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
                 
                 <div class="panel-body">
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
@@ -42,7 +45,8 @@
                     <Rock:NotificationBox ID="nbInvalidParentGroup" runat="server" NotificationBoxType="Danger" Visible="false"
                         Text="The selected parent group does not allow child groups of the selected group type." />
                     <Rock:NotificationBox ID="nbGroupCapacityMessage" runat="server" NotificationBoxType="Warning" Visible="false" />
-                    <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                    <asp:ValidationSummary ID="vsGroup" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                    <asp:CustomValidator ID="cvGroup" runat="server" Display="None" />
 
                     <div id="pnlEditDetails" runat="server">
 
@@ -66,14 +70,22 @@
                         <Rock:PanelWidget ID="wpGeneral" runat="server" Title="General">
                             <div class="row">
                                 <div class="col-md-6">
-                                    <Rock:DataDropDownList ID="ddlGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" Label="Group Type" AutoPostBack="true" OnSelectedIndexChanged="ddlGroupType_SelectedIndexChanged" Required="true" />
-                                    <Rock:RockLiteral ID="lGroupType" runat="server" Label="Group Type" />
+                                    <div class="row">
+                                        <div class="col-sm-6">
+                                            <Rock:DataDropDownList ID="ddlGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" Label="Group Type" AutoPostBack="true" OnSelectedIndexChanged="ddlGroupType_SelectedIndexChanged" Required="true" />
+                                            <Rock:RockLiteral ID="lGroupType" runat="server" Label="Group Type" />
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <Rock:RockCheckBox ID="cbIsSecurityRole" runat="server" Label="Security Role" Text="Yes" />
+                                        </div>
+                                    </div>
                                     <Rock:GroupPicker ID="gpParentGroup" runat="server" Required="false" Label="Parent Group" OnSelectItem="ddlParentGroup_SelectedIndexChanged" />
                                     <Rock:NumberBox ID="nbGroupCapacity" runat="server" Label="Group Capacity" NumberType="Integer" />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:DataDropDownList ID="ddlCampus" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" Label="Campus" />
-                                    <Rock:RockCheckBox ID="cbIsSecurityRole" runat="server" Label="Security Role" Text="Yes" />
+                                    <Rock:RockDropDownList ID="ddlSignatureDocumentTemplate" runat="server" Label="Require Signed Document" 
+                                        Help="If members of this group need to have signed a document, select that document type here." />
                                 </div>
                             </div>
                         </Rock:PanelWidget>

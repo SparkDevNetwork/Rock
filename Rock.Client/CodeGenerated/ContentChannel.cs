@@ -38,6 +38,9 @@ namespace Rock.Client
         public string ChannelUrl { get; set; }
 
         /// <summary />
+        public bool ChildItemsManuallyOrdered { get; set; }
+
+        /// <summary />
         public int ContentChannelTypeId { get; set; }
 
         /// <summary />
@@ -57,6 +60,9 @@ namespace Rock.Client
 
         /// <summary />
         public string IconCssClass { get; set; }
+
+        /// <summary />
+        public bool ItemsManuallyOrdered { get; set; }
 
         /// <summary />
         public string ItemUrl { get; set; }
@@ -112,6 +118,7 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.ChannelUrl = source.ChannelUrl;
+            this.ChildItemsManuallyOrdered = source.ChildItemsManuallyOrdered;
             this.ContentChannelTypeId = source.ContentChannelTypeId;
             this.ContentControlType = source.ContentControlType;
             this.Description = source.Description;
@@ -119,6 +126,7 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IconCssClass = source.IconCssClass;
+            this.ItemsManuallyOrdered = source.ItemsManuallyOrdered;
             this.ItemUrl = source.ItemUrl;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
@@ -140,6 +148,9 @@ namespace Rock.Client
     /// </summary>
     public partial class ContentChannel : ContentChannelEntity
     {
+        /// <summary />
+        public ICollection<ContentChannel> ChildContentChannels { get; set; }
+
         /// <summary />
         public ContentChannelType ContentChannelType { get; set; }
 

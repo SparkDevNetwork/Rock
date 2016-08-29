@@ -372,6 +372,19 @@ namespace RockWeb.Blocks.Finance
                     }
 
                     break;
+
+                case "Campus":
+                    var campus = CampusCache.Read( e.Value.AsInteger() );
+                    if ( campus != null )
+                    {
+                        e.Value = campus.Name;
+                    }
+                    else
+                    {
+                        e.Value = string.Empty;
+                    }
+
+                    break;
             }
         }
 
@@ -390,6 +403,7 @@ namespace RockWeb.Blocks.Finance
             gfTransactions.SaveUserPreference( "Currency Type", ddlCurrencyType.SelectedValue != All.Id.ToString() ? ddlCurrencyType.SelectedValue : string.Empty );
             gfTransactions.SaveUserPreference( "Credit Card Type", ddlCreditCardType.SelectedValue != All.Id.ToString() ? ddlCreditCardType.SelectedValue : string.Empty );
             gfTransactions.SaveUserPreference( "Source Type", ddlSourceType.SelectedValue != All.Id.ToString() ? ddlSourceType.SelectedValue : string.Empty );
+            gfTransactions.SaveUserPreference( "Campus", campCampus.SelectedValue );
 
             BindGrid();
         }
@@ -779,6 +793,19 @@ namespace RockWeb.Blocks.Finance
             BindDefinedTypeDropdown( ddlCurrencyType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE ), "Currency Type" );
             BindDefinedTypeDropdown( ddlCreditCardType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE ), "Credit Card Type" );
             BindDefinedTypeDropdown( ddlSourceType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE ), "Source Type" );
+
+            if ( this.ContextEntity() == null )
+            {
+                var campusi = CampusCache.All();
+                campCampus.Campuses = campusi;
+                campCampus.Visible = campusi.Any();
+                campCampus.SetValue( gfTransactions.GetUserPreference( "Campus" ) );
+            }
+            else
+            {
+                campCampus.Visible = false;
+            }
+
         }
 
         /// <summary>
@@ -978,6 +1005,16 @@ namespace RockWeb.Blocks.Finance
                 {
                     qry = qry.Where( t => t.SourceTypeValueId == sourceTypeId );
                 }
+
+                // Campus
+                if ( this.ContextEntity() == null )
+                {
+                    var campus = CampusCache.Read( gfTransactions.GetUserPreference( "Campus" ).AsInteger() );
+                    if ( campus != null )
+                    {
+                        qry = qry.Where( b => b.Batch != null && b.Batch.CampusId == campus.Id );
+                    }
+                }
             }
 
             SortProperty sortProperty = gTransactions.SortProperty;
@@ -1052,9 +1089,21 @@ namespace RockWeb.Blocks.Finance
                 {
                     AccountId = a.Key,
                     TotalAmount = (decimal?)a.Sum( d => d.Amount )
-                } ).Join( qryFinancialAccount, k1 => k1.AccountId, k2 => k2.Id, ( td, fa ) => new { td.TotalAmount, fa.Name, fa.Order } )
-                .OrderBy( a => a.Order );
-                
+                } ).Join( qryFinancialAccount, k1 => k1.AccountId, k2 => k2.Id, ( td, fa ) => new { td.TotalAmount, fa.Name, fa.Order, fa.Id } );
+
+                // check for filtered accounts
+                var accountIds = (gfTransactions.GetUserPreference( "Account" ) ?? "").SplitDelimitedValues().AsIntegerList().Where( a => a > 0 ).ToList();
+                if ( accountIds.Any() )
+                {
+                    accountSummaryQry = accountSummaryQry.Where( a => accountIds.Contains( a.Id ) ).OrderBy( a => a.Order );
+                    lbFiltered.Text = "Filtered Account List";
+                    lbFiltered.Visible = true;
+                }
+                else
+                {
+                    lbFiltered.Visible = false;
+                }
+
                 var summaryList = accountSummaryQry.ToList();
                 var grandTotalAmount = ( summaryList.Count > 0 ) ? summaryList.Sum( a => a.TotalAmount ?? 0 ) : 0;
                 lGrandTotal.Text = grandTotalAmount.FormatAsCurrency();

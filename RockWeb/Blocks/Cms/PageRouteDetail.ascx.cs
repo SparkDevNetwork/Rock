@@ -16,16 +16,19 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.Routing;
 using System.Web.UI;
+
 using Rock;
 using Rock.Constants;
-using Rock.Model;
-using Rock.Web.UI;
-using System.ComponentModel;
-using Rock.Security;
 using Rock.Data;
+using Rock.Model;
+using Rock.Security;
+using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -66,70 +69,7 @@ namespace RockWeb.Blocks.Cms
 
         #endregion
 
-        #region Internal Methods
-
-        /// <summary>
-        /// Shows the detail.
-        /// </summary>
-        /// <param name="routeId">The route identifier.</param>
-        public void ShowDetail( int routeId )
-        {
-            pnlDetails.Visible = true;
-
-            PageRoute pageRoute = null;
-
-            if ( !routeId.Equals( 0 ) )
-            {
-                pageRoute = new PageRouteService( new RockContext() ).Get( routeId );
-                lActionTitle.Text = ActionTitle.Edit( PageRoute.FriendlyTypeName ).FormatAsHtmlTitle();
-            }
-
-            if (pageRoute == null)
-            {
-                pageRoute = new PageRoute { Id = 0 };
-                lActionTitle.Text = ActionTitle.Add(PageRoute.FriendlyTypeName).FormatAsHtmlTitle();
-            }
-
-            hfPageRouteId.Value = pageRoute.Id.ToString();
-            ppPage.SetValue( pageRoute.Page );
-            tbRoute.Text = pageRoute.Route;
-
-            // render UI based on Authorized and IsSystem
-            bool readOnly = false;
-
-            nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( Authorization.EDIT ) )
-            {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( PageRoute.FriendlyTypeName );
-            }
-
-            if ( pageRoute.IsSystem )
-            {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( PageRoute.FriendlyTypeName );
-            }
-
-            if ( readOnly )
-            {
-                lActionTitle.Text = ActionTitle.View( PageRoute.FriendlyTypeName ).FormatAsHtmlTitle();
-                btnCancel.Text = "Close";
-            }
-
-            ppPage.Enabled = !readOnly;
-            tbRoute.ReadOnly = readOnly;
-            btnSave.Visible = !readOnly;
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnCancel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnCancel_Click( object sender, EventArgs e )
-        {
-            NavigateToParentPage();
-        }
+        #region Events
 
         /// <summary>
         /// Handles the Click event of the btnSave control.
@@ -164,27 +104,166 @@ namespace RockWeb.Blocks.Cms
                 return;
             }
 
-            if ( pageRouteService.Queryable().Any( r => r.Route == pageRoute.Route && r.Id != pageRoute.Id ) )
+            int? siteId = null;
+            var pageCache = PageCache.Read( selectedPageId );
+            if ( pageCache != null && pageCache.Layout != null )
+            {
+                siteId = pageCache.Layout.SiteId;
+            }
+
+            var duplicateRoutes = pageRouteService
+                .Queryable().AsNoTracking()
+                .Where( r =>
+                    r.Route == pageRoute.Route &&
+                    r.Id != pageRoute.Id );
+            if ( siteId.HasValue )
+            {
+                duplicateRoutes = duplicateRoutes
+                    .Where( r =>
+                        r.Page != null &&
+                        r.Page.Layout != null &&
+                        r.Page.Layout.SiteId == siteId.Value );
+            }
+
+            if ( duplicateRoutes.Any() )
             {
                 // Duplicate
                 nbErrorMessage.Title = "Duplicate Route";
-                nbErrorMessage.Text = "<p>There is already an existing route with this name and route names must be unique. Please choose a different route name.</p>";
+                nbErrorMessage.Text = "<p>There is already an existing route with this name for the selected page's site. Route names must be unique per site. Please choose a different route name.</p>";
                 nbErrorMessage.Visible = true;
             }
             else
             {
                 rockContext.SaveChanges();
 
-                // new or updated route
-                var existingRoute = RouteTable.Routes.OfType<Route>().FirstOrDefault( a => a.RouteId() == pageRoute.Id );
-                if ( existingRoute != null )
+                // Remove previous route
+                var oldRoute = RouteTable.Routes.OfType<Route>().FirstOrDefault( a => a.RouteIds().Contains( pageRoute.Id ) );
+                if ( oldRoute != null )
                 {
-                    RouteTable.Routes.Remove( existingRoute );
+                    var pageAndRouteIds = oldRoute.DataTokens["PageRoutes"] as List<Rock.Web.PageAndRouteId>;
+                    pageAndRouteIds = pageAndRouteIds.Where( p => p.RouteId != pageRoute.Id ).ToList();
+                    if ( pageAndRouteIds.Any() )
+                    {
+                        oldRoute.DataTokens["PageRoutes"] = pageAndRouteIds;
+                    }
+                    else
+                    {
+                        RouteTable.Routes.Remove( oldRoute );
+                    }
                 }
 
-                RouteTable.Routes.AddPageRoute( pageRoute );
+                // Add new route
+                var pageAndRouteId = new Rock.Web.PageAndRouteId { PageId = pageRoute.PageId, RouteId = pageRoute.Id };
+                var existingRoute = RouteTable.Routes.OfType<Route>().FirstOrDefault( r => r.Url == pageRoute.Route );
+                if ( existingRoute != null )
+                {
+                    var pageAndRouteIds = existingRoute.DataTokens["PageRoutes"] as List<Rock.Web.PageAndRouteId>;
+                    pageAndRouteIds.Add( pageAndRouteId );
+                    existingRoute.DataTokens["PageRoutes"] = pageAndRouteIds;
+                }
+                else
+                {
+                    var pageAndRouteIds = new List<Rock.Web.PageAndRouteId>();
+                    pageAndRouteIds.Add( pageAndRouteId );
+                    RouteTable.Routes.AddPageRoute( pageRoute.Route, pageAndRouteIds );
+                }
 
                 NavigateToParentPage();
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnCancel_Click( object sender, EventArgs e )
+        {
+            NavigateToParentPage();
+        }
+
+        /// <summary>
+        /// Handles the SelectItem event of the ppPage control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ppPage_SelectItem( object sender, EventArgs e )
+        {
+            ShowSite();
+        }
+
+        #endregion
+
+        #region Internal Methods
+
+        /// <summary>
+        /// Shows the detail.
+        /// </summary>
+        /// <param name="routeId">The route identifier.</param>
+        public void ShowDetail( int routeId )
+        {
+            pnlDetails.Visible = true;
+
+            PageRoute pageRoute = null;
+
+            if ( !routeId.Equals( 0 ) )
+            {
+                pageRoute = new PageRouteService( new RockContext() ).Get( routeId );
+                lActionTitle.Text = ActionTitle.Edit( PageRoute.FriendlyTypeName ).FormatAsHtmlTitle();
+            }
+
+            if (pageRoute == null)
+            {
+                pageRoute = new PageRoute { Id = 0 };
+                lActionTitle.Text = ActionTitle.Add(PageRoute.FriendlyTypeName).FormatAsHtmlTitle();
+            }
+
+            hfPageRouteId.Value = pageRoute.Id.ToString();
+            ppPage.SetValue( pageRoute.Page );
+
+            ShowSite();
+
+            tbRoute.Text = pageRoute.Route;
+
+            // render UI based on Authorized and IsSystem
+            bool readOnly = false;
+
+            nbEditModeMessage.Text = string.Empty;
+            if ( !IsUserAuthorized( Authorization.EDIT ) )
+            {
+                readOnly = true;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( PageRoute.FriendlyTypeName );
+            }
+
+            if ( pageRoute.IsSystem )
+            {
+                readOnly = true;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( PageRoute.FriendlyTypeName );
+            }
+
+            if ( readOnly )
+            {
+                lActionTitle.Text = ActionTitle.View( PageRoute.FriendlyTypeName ).FormatAsHtmlTitle();
+                btnCancel.Text = "Close";
+            }
+
+            ppPage.Enabled = !readOnly;
+            tbRoute.ReadOnly = readOnly;
+            btnSave.Visible = !readOnly;
+        }
+
+        private void ShowSite()
+        {
+            lSite.Text = string.Empty;
+
+            int? pageId = ppPage.SelectedValueAsInt();
+            if ( pageId.HasValue )
+            {
+                var page = PageCache.Read( pageId.Value );
+                if ( page != null && page.Layout != null && page.Layout.Site != null )
+                {
+                    lSite.Text = page.Layout.Site.Name;
+                }
             }
         }
 

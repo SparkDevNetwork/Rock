@@ -1,9 +1,0 @@
-/Rock.dll
-/Rock.pdb
-/Rock.dll.config
-/Rock.XML
-
-
-*.pdb
-*.dll
-*.xml
