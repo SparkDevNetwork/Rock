@@ -80,16 +80,37 @@ namespace Rock.Lava.Blocks
 
             var entityTypeCache = entityTypes.Where( e => String.Equals( e.Name, model, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
 
+            // Check for non-core model
+            if ( entityTypeCache == null )
+            {
+                model = _entityName.Replace( '_', '.' );
+                entityTypeCache = entityTypes.Where( e => String.Equals( e.Name, model, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
+            }
+
             if ( entityTypeCache != null )
             {
                 Type entityType = entityTypeCache.GetEntityType();
                 if ( entityType != null )
                 {
+                    // Get the database context
+                    Type contextType = null;
+                    Rock.Data.DbContext dbContext = null;
+                    var contexts = Rock.Reflection.SearchAssembly( entityType.Assembly, typeof( Rock.Data.DbContext ) );
+                    if ( contexts.Any() )
+                    {
+                        contextType = contexts.First().Value;
+                        dbContext = Activator.CreateInstance( contextType ) as Rock.Data.DbContext;
+                    }
+                    if ( dbContext == null )
+                    {
+                        dbContext = _rockContext;
+                    }
+
                     // create an instance of the entity's service
                     Type[] modelType = { entityType };
                     Type genericServiceType = typeof( Rock.Data.Service<> );
                     Type modelServiceType = genericServiceType.MakeGenericType( modelType );
-                    Rock.Data.IService serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { _rockContext } ) as IService;
+                    Rock.Data.IService serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { dbContext } ) as IService;
 
                     ParameterExpression paramExpression = Expression.Parameter( entityType, "x" );
                     Expression queryExpression = null; // the base expression we'll use to build our query from
@@ -403,23 +424,22 @@ namespace Rock.Lava.Blocks
         {
             var entityTypes = EntityTypeCache.All();
 
-            foreach ( var entityType in entityTypes )
+            foreach ( var entityType in entityTypes.Where( e => e.IsEntity ) )
             {
-                if ( entityType.Name.StartsWith( "Rock.Model" ) )
+                string entityName = entityType.Name.ToLower();
+
+                // if it is a core model use just the class name
+                if ( entityName.StartsWith( "rock.model" ) )
                 {
-                    string entityName = entityType.Name.ToLower();
-
-                    // if it is a core model use just the friendly name
-                    if ( entityName.StartsWith( "rock.model" ) )
-                    {
-                        entityName = entityName.Replace( "rock.model.", "" );
-                    }
-
-                    Template.RegisterTag<Rock.Lava.Blocks.RockEntity>( entityName );
+                    entityName = entityName.Replace( "rock.model.", "" );
                 }
+
+                entityName = entityName.Replace( '.', '_' );
+
+                Template.RegisterTag<Rock.Lava.Blocks.RockEntity>( entityName );
             }
 
-            // register a couple of extra entities
+            // register a business entity
             Template.RegisterTag<Rock.Lava.Blocks.RockEntity>( "business" );
         }
 
