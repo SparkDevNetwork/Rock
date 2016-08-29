@@ -38,9 +38,6 @@ DECLARE @fuseMetricSchedule AS INT = (SELECT Id FROM Schedule WHERE Name = 'Fuse
 DECLARE @etidMetricCategory AS INT = (SELECT Id FROM EntityType WHERE Name LIKE 'Rock.Model.MetricCategory');
 DECLARE @volunteerMetricCategoryId AS INT = (SELECT Id FROM Category WHERE EntityTypeId = @etidMetricCategory AND Name = 'Volunteers');
 
--- Debug variables
-DECLARE @metricId AS INT = 912;
-
 -- Source SQL
 DECLARE @sourceAttendance AS NVARCHAR(MAX) = N'
 DECLARE @BooleanDTId INT = (SELECT ID FROM DefinedType WHERE Name = ''Boolean'')
