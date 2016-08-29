@@ -51,12 +51,8 @@ namespace Rock.Model
         public bool CanDelete( MetricValue item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<MetricValuePartition>( Context ).Queryable().Any( a => a.MetricValueId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", MetricValue.FriendlyTypeName, MetricValuePartition.FriendlyTypeName );
-                return false;
-            }  
+            
+            // ignoring MetricValuePartition,MetricValueId 
             return true;
         }
     }
