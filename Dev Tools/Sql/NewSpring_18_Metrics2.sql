@@ -1,5 +1,5 @@
 /* ====================================================== 
--- NewSpring Script #777: 
+-- NewSpring Script #18: 
 -- Creates the metric 2.0 structure 
   
 --  Assumptions:
