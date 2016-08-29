@@ -101,7 +101,45 @@ namespace RockWeb.Blocks.Finance
     [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49", "", 26 )]
 
     [SystemEmailField( "Receipt Email", "The system email to use to send the receipt.", false, "", "Email Templates", 27 )]
-    [TextField( "Payment Comment", "The comment to include with the payment transaction when sending to Gateway", false, "Online Contribution", "", 28 )]
+    [CodeEditorField( "Payment Comment", @"The comment to include with the payment transaction when sending to Gateway. <span class='tip tip-lava'></span>. Merge fields include: <pre>CurrentPerson: {},
+PageParameters {},
+TransactionDateTime: '8/29/2016',
+CurrencyType: {
+  'AttributeIds': [],
+  'IsSystem': true,
+  'DefinedTypeId': 10,
+  'Order': 2,
+  'Value': 'Credit Card',
+  'Description': 'Credit Card',
+  'TypeId': 31,
+  'TypeName': 'Rock.Model.DefinedValue',
+  'AttributeValues': {},
+  'Id': 156,
+  'Guid': '928a2e04-c77b-4282-888f-ec549cee026a',
+  'ForeignId': null,
+  'ForeignGuid': null,
+  'ForeignKey': null
+}
+TransactionAcountDetails: [
+  {
+    'Id': 1,
+    'Order': 0,
+    'Name': 'General Fund',
+    'CampusId': null,
+    'Amount': 50.00,
+    'PublicName': 'General Fund',
+    'AmountFormatted': '$50.00'
+  },
+  {
+    'Id': 2,
+    'Order': 1,
+    'Name': 'Building Fund',
+    'CampusId': null,
+    'Amount': 10.00,
+    'PublicName': 'Building Fund',
+    'AmountFormatted': '$10.00'
+  }
+]</pre>", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false, "Online Contribution", "", 28 )]
     [BooleanField( "Enable Comment Entry", "Allows the guest to enter the the value that's put into the comment field (will be appended to the 'Payment Comment' setting)", false, "", 29 )]
     [TextField( "Comment Entry Label", "The label to use on the comment edit field (e.g. Trip Name to give to a specific trip).", false, "Comment", "", 30 )]
     #endregion
@@ -1835,13 +1873,28 @@ namespace RockWeb.Blocks.Finance
                 CreditCardTypeValueId = paymentInfo.CreditCardTypeValue.Id;
             }
 
+            // get the payment comment 
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+            mergeFields.Add( "TransactionDateTime", RockDateTime.Now );
+
+            if ( paymentInfo != null )
+            {
+                mergeFields.Add( "CurrencyType", paymentInfo.CurrencyTypeValue );
+            }
+            if ( SelectedAccounts != null )
+            {
+                mergeFields.Add( "TransactionAccountDetails", SelectedAccounts.Where( a => a.Amount != 0 ).ToList() );
+            }
+
+            string paymentComment = GetAttributeValue( "PaymentComment" ).ResolveMergeFields( mergeFields );
+
             if ( GetAttributeValue( "EnableCommentEntry" ).AsBoolean() )
             {
-                paymentInfo.Comment1 = !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentComment" ) ) ? string.Format( "{0}: {1}", GetAttributeValue( "PaymentComment" ), txtCommentEntry.Text ) : txtCommentEntry.Text;
+                paymentInfo.Comment1 = !string.IsNullOrWhiteSpace( paymentComment ) ? string.Format( "{0}: {1}", paymentComment, txtCommentEntry.Text ) : txtCommentEntry.Text;
             }
             else
             {
-                paymentInfo.Comment1 = GetAttributeValue( "PaymentComment" );
+                paymentInfo.Comment1 = paymentComment;
             }
 
             errorMessage = string.Empty;
@@ -2351,7 +2404,8 @@ namespace RockWeb.Blocks.Finance
         /// Lightweight object for each contribution item
         /// </summary>
         [Serializable]
-        protected class AccountItem
+        [DotLiquid.LiquidType("Id", "Order", "Name", "CampusId", "Amount", "PublicName", "AmountFormatted")]
+        protected class AccountItem 
         {
             public int Id { get; set; }
 
