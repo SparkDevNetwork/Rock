@@ -76,7 +76,7 @@ namespace Rock.Workflow.Action.CheckIn
 
                 var groupSpecialNeedsKey = string.Empty;
                 var groupSpecialNeedsGuid = GetAttributeValue( action, "GroupSpecialNeedsAttribute" ).AsGuid();
-                if ( personSpecialNeedsGuid != Guid.Empty )
+                if ( groupSpecialNeedsGuid != Guid.Empty )
                 {
                     groupSpecialNeedsKey = AttributeCache.Read( groupSpecialNeedsGuid, rockContext ).Key;
                 }
