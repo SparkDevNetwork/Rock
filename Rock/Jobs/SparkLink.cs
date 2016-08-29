@@ -120,7 +120,7 @@ namespace Rock.Jobs
         /// <summary>
         /// 
         /// </summary>
-        protected class SparkLinkRequest
+        public class SparkLinkRequest
         {
             /// <summary>
             /// Gets or sets the rock instance identifier.
