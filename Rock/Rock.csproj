@@ -57,10 +57,6 @@
       <HintPath>..\packages\DDay.iCal.1.0.2.575\lib\DDay.iCal.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="DevOne.Security.Cryptography.BCrypt, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\BCrypt.1.0.0.0\lib\DevOne.Security.Cryptography.BCrypt.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="DocumentFormat.OpenXml, Version=2.6.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\OpenXMLSDK-MOT.2.6.0.0\lib\DocumentFormat.OpenXml.dll</HintPath>
       <Private>True</Private>
