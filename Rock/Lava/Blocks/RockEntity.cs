@@ -81,7 +81,7 @@ namespace Rock.Lava.Blocks
             // Check first to see if this is a core model
             var entityTypeCache = entityTypes.Where( e => String.Equals( e.Name, model, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
 
-            // If not, look for first plugin model
+            // If not, look for first plugin model that has same friendly name
             if ( entityTypeCache == null )
             {
                 entityTypeCache = entityTypes
@@ -92,6 +92,13 @@ namespace Rock.Lava.Blocks
                         e.FriendlyName.RemoveSpaces().ToLower() == _entityName )
                     .OrderBy( e => e.Id )
                     .FirstOrDefault();
+            }
+
+            // If still null check to see if this was a duplicate class and full class name was used as entity name
+            if ( entityTypeCache == null )
+            {
+                model = _entityName.Replace( '_', '.' );
+                entityTypeCache = entityTypes.Where( e => String.Equals( e.Name, model, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
             }
 
             if ( entityTypeCache != null )
@@ -461,12 +468,17 @@ namespace Rock.Lava.Blocks
 
         private static void RegisterEntityCommand( EntityTypeCache entityType )
         {
-            string entityName = entityType.FriendlyName.RemoveSpaces().ToLower();
-
-            // if entity name is not already registered, register the entity command
-            Type tagType = Template.GetTagType( entityName );
-            if ( tagType == null )
+            if ( entityType != null )
             {
+                string entityName = entityType.FriendlyName.RemoveSpaces().ToLower();
+
+                // if entity name is already registered, use the full class name with namespace
+                Type tagType = Template.GetTagType( entityName );
+                if ( tagType != null )
+                {
+                    entityName = entityType.Name.Replace( '.', '_' );
+                }
+
                 Template.RegisterTag<Rock.Lava.Blocks.RockEntity>( entityName );
             }
         }
