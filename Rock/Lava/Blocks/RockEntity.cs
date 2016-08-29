@@ -78,13 +78,20 @@ namespace Rock.Lava.Blocks
                 model = "Rock.Model." + _entityName;
             }
 
+            // Check first to see if this is a core model
             var entityTypeCache = entityTypes.Where( e => String.Equals( e.Name, model, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
 
-            // Check for non-core model
+            // If not, look for first plugin model
             if ( entityTypeCache == null )
             {
-                model = _entityName.Replace( '_', '.' );
-                entityTypeCache = entityTypes.Where( e => String.Equals( e.Name, model, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
+                entityTypeCache = entityTypes
+                    .Where( e =>
+                        e.IsEntity &&
+                        !e.Name.StartsWith( "Rock.Model" ) &&
+                        e.FriendlyName != null &&
+                        e.FriendlyName.RemoveSpaces().ToLower() == _entityName )
+                    .OrderBy( e => e.Id )
+                    .FirstOrDefault();
             }
 
             if ( entityTypeCache != null )
@@ -424,23 +431,44 @@ namespace Rock.Lava.Blocks
         {
             var entityTypes = EntityTypeCache.All();
 
-            foreach ( var entityType in entityTypes.Where( e => e.IsEntity ) )
-            {
-                string entityName = entityType.Name.ToLower();
-
-                // if it is a core model use just the class name
-                if ( entityName.StartsWith( "rock.model" ) )
-                {
-                    entityName = entityName.Replace( "rock.model.", "" );
-                }
-
-                entityName = entityName.Replace( '.', '_' );
-
-                Template.RegisterTag<Rock.Lava.Blocks.RockEntity>( entityName );
-            }
-
             // register a business entity
             Template.RegisterTag<Rock.Lava.Blocks.RockEntity>( "business" );
+
+            // Register the core models first
+            foreach ( var entityType in entityTypes
+                .Where( e =>
+                    e.IsEntity &&
+                    e.Name.StartsWith( "Rock.Model" ) &&
+                    e.FriendlyName != null &&
+                    e.FriendlyName != "" ) )
+            {
+                RegisterEntityCommand( entityType );
+            }
+
+            // Now register plugin models
+            foreach ( var entityType in entityTypes
+                .Where( e =>
+                    e.IsEntity &&
+                    !e.Name.StartsWith( "Rock.Model" ) &&
+                    e.FriendlyName != null &&
+                    e.FriendlyName != "" )
+                .OrderBy( e => e.Id ) )
+            {
+                RegisterEntityCommand( entityType );
+            }
+
+        }
+
+        private static void RegisterEntityCommand( EntityTypeCache entityType )
+        {
+            string entityName = entityType.FriendlyName.RemoveSpaces().ToLower();
+
+            // if entity name is not already registered, register the entity command
+            Type tagType = Template.GetTagType( entityName );
+            if ( tagType == null )
+            {
+                Template.RegisterTag<Rock.Lava.Blocks.RockEntity>( entityName );
+            }
         }
 
         /// <summary>
