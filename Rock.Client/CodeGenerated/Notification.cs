@@ -116,9 +116,6 @@ namespace Rock.Client
     /// </summary>
     public partial class Notification : NotificationEntity
     {
-        /// <summary />
-        public ICollection<NotificationRecipient> Recipients { get; set; }
-
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>

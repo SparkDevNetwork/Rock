@@ -55,7 +55,7 @@ namespace Rock.Client
         public bool Read { get; set; }
 
         /// <summary />
-        public DateTime ReadDateTime { get; set; }
+        public DateTime? ReadDateTime { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
