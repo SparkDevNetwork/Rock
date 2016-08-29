@@ -199,7 +199,7 @@ from [group] og
 /* ====================================================== */
 IF object_id('tempdb..#metricTypes') IS NOT NULL
 BEGIN
-	drop table #metricTypes
+	DROP TABLE #metricTypes
 END
 
 SELECT 
@@ -209,7 +209,9 @@ SELECT
 	NEWID() AS UniqueMetricGuid,
 	g.GroupTypeId,
 	ngt.Id AS NewGroupTypeId,
-	CASE WHEN gt.Name LIKE '%Attendee' THEN 'Attendee' ELSE 'Volunteer' END AS GroupTypeName
+	CASE 
+		WHEN gt.Name NOT LIKE CONCAT(pc.Name, '%') THEN gt.Name
+		ELSE REPLACE(gt.Name, pc.Name, '') END AS GroupTypeName
 INTO #metricTypes
 FROM 
 	Metric m
@@ -228,6 +230,33 @@ GROUP BY
 	g.GroupTypeId,
 	ngt.Id,
 	gt.Name;
+
+-- Add none volunteer metric types
+INSERT INTO #metricTypes (
+	CategoryName,
+	CategoryId,
+	AttendanceMetricGuid,
+	UniqueMetricGuid,
+	GroupTypeId,
+	NewGroupTypeId,
+	GroupTypeName
+) VALUES (
+	(SELECT Name FROM Category WHERE EntityTypeId = @etidMetricCategory AND Name = 'Fuse Attendance'),
+	(SELECT Id FROM Category WHERE EntityTypeId = @etidMetricCategory AND Name = 'Fuse Attendance'),
+	NEWID(),
+	NEWID(),
+	(SELECT Id FROM GroupType WHERE Name = 'Fuse Attendee'),
+	(SELECT Id FROM GroupType WHERE Name = 'NEW Fuse Attendee'),
+	'Attendee'
+)/*, (
+	(SELECT Name FROM Category WHERE EntityTypeId = @etidMetricCategory AND Name = 'Next Steps'),
+	(SELECT Id FROM Category WHERE EntityTypeId = @etidMetricCategory AND Name = 'Next Steps'),
+	NEWID(),
+	NEWID(),
+	(SELECT Id FROM GroupType WHERE Name = 'Next Steps Attendee'),
+	(SELECT Id FROM GroupType WHERE Name = 'NEW Next Steps Attendee'),
+	'Attendee'
+)*/;
 
 /* ====================================================== */
 -- insert the new metrics
@@ -248,7 +277,7 @@ INSERT INTO Metric (
 )
 SELECT
 	@IsSystem AS IsSystem,
-	CONCAT(mt.GroupTypeName, ' Group Attendance') AS [Title],
+	CONCAT(mt.GroupTypeName, ' Attendance') AS [Title],
 	'Metric to track attendance' AS [Description],
 	0 AS IsCumulative,
 	@MetricSourceSQLId AS SourceValueTypeId,
@@ -277,7 +306,7 @@ INSERT INTO Metric (
 )
 SELECT
 	@IsSystem AS IsSystem,
-	CONCAT(mt.GroupTypeName, ' Group Uniques') AS [Title],
+	CONCAT(mt.GroupTypeName, ' Uniques') AS [Title],
 	'Metric to track unique volunteers' AS [Description],
 	0 AS IsCumulative,
 	@MetricSourceSQLId AS SourceValueTypeId,
@@ -535,7 +564,8 @@ INTO #attendanceMetricValues
 FROM 
 	Metric m
 	JOIN MetricCategory mc ON mc.MetricId = m.Id
-	JOIN #metricTypes mt ON mt.CategoryId = mc.CategoryId
+	JOIN Category cat ON cat.Id = mc.CategoryId
+	JOIN #metricTypes mt ON mt.CategoryId = cat.ParentCategoryId
 	JOIN [Group] g ON g.Id = m.ForeignId
 	JOIN MetricPartition mp ON mp.MetricId = m.Id
 	JOIN EntityType et ON et.Id = mp.EntityTypeId
@@ -673,7 +703,8 @@ INTO #rosterMetricValues
 FROM 
 	Metric m
 	JOIN MetricCategory mc ON mc.MetricId = m.Id
-	JOIN #metricTypes mt ON mt.CategoryId = mc.CategoryId
+	JOIN Category cat ON cat.Id = mc.CategoryId 
+	JOIN #metricTypes mt ON mt.CategoryId = cat.ParentCategoryId
 	JOIN [Group] g ON g.Id = m.ForeignId
 	JOIN MetricPartition mp ON mp.MetricId = m.Id
 	JOIN EntityType et ON et.Id = mp.EntityTypeId
@@ -822,7 +853,8 @@ INTO #uniqueMetricValues
 FROM 
 	Metric m
 	JOIN MetricCategory mc ON mc.MetricId = m.Id
-	JOIN #metricTypes mt ON mt.CategoryId = mc.CategoryId
+	JOIN Category cat ON cat.Id = mc.CategoryId
+	JOIN #metricTypes mt ON mt.CategoryId = cat.ParentCategoryId
 	JOIN [Group] g ON g.Id = m.ForeignId
 	JOIN MetricPartition mp ON mp.MetricId = m.Id
 	JOIN EntityType et ON et.Id = mp.EntityTypeId
@@ -911,8 +943,12 @@ SELECT
 	@CreatedDateTime AS CreatedDateTime,
 	NEWID() AS [Guid],
 	@foreignKey AS ForeignKey
-FROM 
+FROM
 	#uniqueMetricValues amv;
 
-
---DELETE FROM Metric WHERE ForeignKey = 'Metrics 2.0'
+/*
+	DELETE FROM MetricValuePartition WHERE ForeignKey = 'Metrics 2.0'
+	DELETE FROM MetricPartition WHERE ForeignKey = 'Metrics 2.0'
+	DELETE FROM MetricValue WHERE ForeignKey = 'Metrics 2.0'
+	DELETE FROM Metric WHERE ForeignKey = 'Metrics 2.0'
+*/
