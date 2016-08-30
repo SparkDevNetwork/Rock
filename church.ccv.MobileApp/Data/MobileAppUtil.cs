@@ -28,62 +28,88 @@ using church.ccv.MobileApp.Models;
 
 namespace church.ccv.MobileApp
 {
-    public static class MobileAppUtil
+    // Class containing functions related to finding and joining a group
+    public static class GroupFinder
     {
         // the workflow type id for the alert note re-route
         const int AlertNoteReReouteWorkflowId = 166;
 
-        // the attribute Id for the Mobile App's version
-        const int MobileAppVersionAttributeId = 29469;
+        // The Coach Role Type ID for the various groups you can join thru the Mobile App
+        static int[] Coach_GroupRole_Id =
+            {
+                50,  //Neighborhood
+                133, //Next Gen
+                139  //Young Adults
+            };
 
-        public static LaunchData GetLaunchData( )
+        const string GroupLeaderInfo_Key = "LeaderInformation";
+        const string GroupInfo_Key = "GroupDescription";
+        const string ChildrenInfo_Key = "Children";
+        const string GroupPicture_Key = "GroupPicture";
+
+        // Returns the info for a joinable Group in the Mobile App
+        public static bool GetGroupInfo(int groupId, out GroupInfo groupInfo)
         {
-            RockContext rockContext = new RockContext( );
+            bool success = false;
+            RockContext rockContext = new RockContext();
 
-            LaunchData launchData = new LaunchData( );
+            groupInfo = new GroupInfo();
 
-            // setup the campuses
-            launchData.Campuses = new List<Campus>( );
-            foreach ( CampusCache campus in CampusCache.All( false ) )
+            // first, find the group they want
+            Group group = new GroupService(rockContext).Queryable().Where(g => g.Id == groupId).SingleOrDefault();
+            if (group != null)
             {
-                Campus campusModel = new Campus( );
-                campusModel.Guid = campus.Guid;
-                campusModel.Id = campus.Id;
-                campusModel.Name = campus.Name;
-                launchData.Campuses.Add( campusModel );
+                // now get the group leader. If there isn't one, we'll fail.
+                GroupMember leader = group.Members.Where(gm => Coach_GroupRole_Id.Contains(gm.GroupRole.Id)).SingleOrDefault();
+                if (leader != null)
+                {
+                    // load the group attributes so we can populate 
+                    group.LoadAttributes();
+
+                    // test for the known attributes, and set them if they exist.
+                    if (group.AttributeValues.ContainsKey(GroupLeaderInfo_Key))
+                    {
+                        groupInfo.LeaderInformation = group.AttributeValues[GroupLeaderInfo_Key].Value;
+                    }
+
+                    if (group.AttributeValues.ContainsKey(GroupInfo_Key))
+                    {
+                        groupInfo.Description = group.AttributeValues[GroupInfo_Key].Value;
+                    }
+
+                    if (group.AttributeValues.ContainsKey( ChildrenInfo_Key ))
+                    {
+                        groupInfo.Children = group.AttributeValues[ ChildrenInfo_Key ].Value;
+                    }
+
+                    if( group.AttributeValues.ContainsKey( GroupPicture_Key ) )
+                    {
+                        groupInfo.GroupPhotoGuid = group.AttributeValues[ GroupPicture_Key ].Value.AsGuid( );
+                    }
+
+                    // finally, set the photo ID for the leader and group
+                    groupInfo.CoachPhotoId = leader.Person.PhotoId.HasValue ? leader.Person.PhotoId.Value : 0;
+
+                    success = true;
+                }
             }
-            
-            // setup the prayer categories
-            launchData.PrayerCategories = new List<KeyValuePair<string, int>>( );
-            CategoryCache prayerCategories = CategoryCache.Read( 1 );
-            foreach( CategoryCache category in prayerCategories.Categories )
-            {
-                launchData.PrayerCategories.Add( new KeyValuePair<string, int>( category.Name, category.Id ) );
-            }
-                        
-            // get the latest mobile app version
-            var mobileAppAttribute = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.AttributeId == MobileAppVersionAttributeId ).SingleOrDefault( );
-            if( mobileAppAttribute != null )
-            {
-                int.TryParse( mobileAppAttribute.Value, out launchData.MobileAppVersion );
-            }
-            
-            return launchData;
+
+            return success;
         }
 
-        public static bool AddPersonToGroup( GroupRegModel regModel )
+        public static bool RegisterPersonInGroup(GroupRegModel regModel)
         {
             bool success = false;
 
             // setup all variables we'll need
             var rockContext = new RockContext();
-            var personService = new PersonService( rockContext );
-            var groupService = new GroupService( rockContext );
+            var personService = new PersonService(rockContext);
+            var groupService = new GroupService(rockContext);
 
-            DefinedValueCache connectionStatusPending = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_WEB_PROSPECT );
-            DefinedValueCache recordStatusPending = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING );
-            DefinedValueCache homeAddressType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
-            
+            DefinedValueCache connectionStatusPending = DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_WEB_PROSPECT);
+            DefinedValueCache recordStatusPending = DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING);
+            DefinedValueCache homeAddressType = DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME);
+
             Person person = null;
             Person spouse = null;
             Group family = null;
@@ -94,18 +120,18 @@ namespace church.ccv.MobileApp
             var familyChanges = new List<string>();
 
             // first, get the group the person wants to join
-            Group requestedGroup = groupService.Get( regModel.RequestedGroupId );
-            if ( requestedGroup != null )
+            Group requestedGroup = groupService.Get(regModel.RequestedGroupId);
+            if (requestedGroup != null)
             {
-               // Try to find person by name/email 
-                var matches = personService.GetByMatch( regModel.FirstName.Trim(), regModel.LastName.Trim(), regModel.Email.Trim() );
-                if ( matches.Count() == 1 )
+                // Try to find person by name/email 
+                var matches = personService.GetByMatch(regModel.FirstName.Trim(), regModel.LastName.Trim(), regModel.Email.Trim());
+                if (matches.Count() == 1)
                 {
                     person = matches.First();
                 }
 
                 // Check to see if this is a new person
-                if ( person == null )
+                if (person == null)
                 {
                     // If so, create the person and family record for the new person
                     person = new Person();
@@ -114,31 +140,31 @@ namespace church.ccv.MobileApp
                     person.Email = regModel.Email.Trim();
                     person.IsEmailActive = true;
                     person.EmailPreference = EmailPreference.EmailAllowed;
-                    person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                    person.RecordTypeValueId = DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid()).Id;
                     person.ConnectionStatusValueId = connectionStatusPending.Id;
                     person.RecordStatusValueId = recordStatusPending.Id;
                     person.Gender = Gender.Unknown;
 
-                    family = PersonService.SaveNewPerson( person, rockContext, requestedGroup.CampusId, false );
+                    family = PersonService.SaveNewPerson(person, rockContext, requestedGroup.CampusId, false);
                 }
                 else
                 {
                     // updating existing person
-                    History.EvaluateChange( changes, "Email", person.Email, regModel.Email );
+                    History.EvaluateChange(changes, "Email", person.Email, regModel.Email);
                     person.Email = regModel.Email;
 
                     // Get the current person's families
-                    var families = person.GetFamilies( rockContext );
+                    var families = person.GetFamilies(rockContext);
 
                     // look for first family with a home location
-                    foreach ( var aFamily in families )
+                    foreach (var aFamily in families)
                     {
                         homeLocation = aFamily.GroupLocations
-                            .Where( l =>
-                                l.GroupLocationTypeValueId == homeAddressType.Id &&
-                                l.IsMappedLocation )
+                            .Where(l =>
+                               l.GroupLocationTypeValueId == homeAddressType.Id &&
+                               l.IsMappedLocation)
                             .FirstOrDefault();
-                        if ( homeLocation != null )
+                        if (homeLocation != null)
                         {
                             family = aFamily;
                             break;
@@ -146,40 +172,40 @@ namespace church.ccv.MobileApp
                     }
 
                     // If a family wasn't found with a home location, use the person's first family
-                    if ( family == null )
+                    if (family == null)
                     {
                         family = families.FirstOrDefault();
                     }
                 }
 
                 // if provided, store their phone number
-                if ( string.IsNullOrWhiteSpace( regModel.Phone ) == false )
+                if (string.IsNullOrWhiteSpace(regModel.Phone) == false)
                 {
-                    DefinedValueCache mobilePhoneType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
-                    person.UpdatePhoneNumber( mobilePhoneType.Id, PhoneNumber.DefaultCountryCode(), regModel.Phone, null, null, rockContext );
+                    DefinedValueCache mobilePhoneType = DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE);
+                    person.UpdatePhoneNumber(mobilePhoneType.Id, PhoneNumber.DefaultCountryCode(), regModel.Phone, null, null, rockContext);
                 }
 
 
                 // Check for a spouse. 
-                if ( string.IsNullOrWhiteSpace( regModel.SpouseName ) == false )
+                if (string.IsNullOrWhiteSpace(regModel.SpouseName) == false)
                 {
                     // this is super simple. get the person's spouse
                     Person tempSpouse = person.GetSpouse();
 
                     // if they have one...
-                    if ( tempSpouse != null )
+                    if (tempSpouse != null)
                     {
                         // split out the first and last name provided
-                        string[] spouseName = regModel.SpouseName.Split( ' ' );
+                        string[] spouseName = regModel.SpouseName.Split(' ');
                         string spouseFirstName = spouseName[0];
                         string spouseLastName = spouseName.Count() > 1 ? spouseName[1] : "";
 
                         // we'll take them as a spouse if they match the provided name
-                        if ( tempSpouse.FirstName.Equals( spouseFirstName, StringComparison.OrdinalIgnoreCase ) )
+                        if (tempSpouse.FirstName.Equals(spouseFirstName, StringComparison.OrdinalIgnoreCase))
                         {
                             // if there was no last name, or it matches, we're good.
-                            if ( string.IsNullOrWhiteSpace( spouseLastName ) == true ||
-                                tempSpouse.LastName.Equals( spouseLastName, StringComparison.OrdinalIgnoreCase ) )
+                            if (string.IsNullOrWhiteSpace(spouseLastName) == true ||
+                                tempSpouse.LastName.Equals(spouseLastName, StringComparison.OrdinalIgnoreCase))
                             {
                                 spouse = tempSpouse;
                             }
@@ -190,62 +216,62 @@ namespace church.ccv.MobileApp
                 // Save all changes
                 rockContext.SaveChanges();
 
-                HistoryService.SaveChanges( rockContext, typeof( Person ),
-                    Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), person.Id, changes );
+                HistoryService.SaveChanges(rockContext, typeof(Person),
+                    Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), person.Id, changes);
 
-                HistoryService.SaveChanges( rockContext, typeof( Person ),
-                    Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(), person.Id, familyChanges );
+                HistoryService.SaveChanges(rockContext, typeof(Person),
+                    Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(), person.Id, familyChanges);
 
 
                 // now, it's time to either add them to the group, or kick off the Alert Re-Route workflow
                 // (Or nothing if there's no problem but they're already in the group)
-                GroupMember primaryGroupMember = PersonToGroupMember( rockContext, person, requestedGroup );
+                GroupMember primaryGroupMember = PersonToGroupMember(rockContext, person, requestedGroup);
 
                 GroupMember spouseGroupMember = null;
-                if ( spouse != null )
+                if (spouse != null)
                 {
-                    spouseGroupMember = PersonToGroupMember( rockContext, spouse, requestedGroup );
+                    spouseGroupMember = PersonToGroupMember(rockContext, spouse, requestedGroup);
                 }
 
                 // prep the workflow service
-                var workflowTypeService = new WorkflowTypeService( rockContext );
+                var workflowTypeService = new WorkflowTypeService(rockContext);
 
                 bool addToGroup = true;
 
                 // First, check to see if an alert re-route workflow should be launched
-                WorkflowType alertRerouteWorkflowType = workflowTypeService.Get( AlertNoteReReouteWorkflowId );
+                WorkflowType alertRerouteWorkflowType = workflowTypeService.Get(AlertNoteReReouteWorkflowId);
 
                 // do either of the people registering have alert notes?
-                int alertNoteCount = new NoteService( rockContext ).Queryable().Where( n => n.EntityId == person.Id && n.IsAlert == true ).Count();
+                int alertNoteCount = new NoteService(rockContext).Queryable().Where(n => n.EntityId == person.Id && n.IsAlert == true).Count();
 
-                if ( spouse != null )
+                if (spouse != null)
                 {
-                    alertNoteCount += new NoteService( rockContext ).Queryable().Where( n => n.EntityId == spouse.Id && n.IsAlert == true ).Count();
+                    alertNoteCount += new NoteService(rockContext).Queryable().Where(n => n.EntityId == spouse.Id && n.IsAlert == true).Count();
                 }
 
-                if ( alertNoteCount > 0 )
+                if (alertNoteCount > 0)
                 {
                     // yes they do. so first, flag that we should NOT put them in the group
                     addToGroup = false;
 
                     // and kick off the re-route workflow so security can review.
-                    LaunchWorkflow( rockContext, alertRerouteWorkflowType, primaryGroupMember );
+                    Util.LaunchWorkflow(rockContext, alertRerouteWorkflowType, primaryGroupMember);
 
-                    if ( spouseGroupMember != null )
+                    if (spouseGroupMember != null)
                     {
-                        LaunchWorkflow( rockContext, alertRerouteWorkflowType, spouseGroupMember );
+                        Util.LaunchWorkflow(rockContext, alertRerouteWorkflowType, spouseGroupMember);
                     }
                 }
 
                 // if above, we didn't flag that they should not join the group, let's add them
-                if ( addToGroup == true )
+                if (addToGroup == true)
                 {
                     // try to add them to the group (would only fail if the're already in it)
-                    TryAddGroupMemberToGroup( rockContext, primaryGroupMember, requestedGroup );
+                    TryAddGroupMemberToGroup(rockContext, primaryGroupMember, requestedGroup);
 
-                    if ( spouseGroupMember != null )
+                    if (spouseGroupMember != null)
                     {
-                        TryAddGroupMemberToGroup( rockContext, spouseGroupMember, requestedGroup );
+                        TryAddGroupMemberToGroup(rockContext, spouseGroupMember, requestedGroup);
                     }
                 }
 
@@ -256,7 +282,7 @@ namespace church.ccv.MobileApp
             return success;
         }
 
-        private static GroupMember PersonToGroupMember( RockContext rockContext, Person person, Group group )
+        private static GroupMember PersonToGroupMember(RockContext rockContext, Person person, Group group)
         {
             // puts a person into a group member object, so that we can pass it to a workflow
             GroupMember newGroupMember = new GroupMember();
@@ -271,20 +297,67 @@ namespace church.ccv.MobileApp
         /// <summary>
         /// Adds the group member to the group if they aren't already in it
         /// </summary>
-        private static void TryAddGroupMemberToGroup( RockContext rockContext, GroupMember newGroupMember, Group group )
+        private static void TryAddGroupMemberToGroup(RockContext rockContext, GroupMember newGroupMember, Group group)
         {
-            if ( !group.Members.Any( m => 
-                                      m.PersonId == newGroupMember.PersonId &&
-                                      m.GroupRoleId == group.GroupType.DefaultGroupRole.Id ) )
+            if (!group.Members.Any(m =>
+                                    m.PersonId == newGroupMember.PersonId &&
+                                    m.GroupRoleId == group.GroupType.DefaultGroupRole.Id))
             {
                 var groupMemberService = new GroupMemberService(rockContext);
-                groupMemberService.Add( newGroupMember );
-                    
+                groupMemberService.Add(newGroupMember);
+
                 rockContext.SaveChanges();
             }
         }
+    }
 
-        private static void LaunchWorkflow( RockContext rockContext, WorkflowType workflowType, GroupMember groupMember )
+    // Class containing functions related to launching the Mobile App
+    public static class Launch
+    {
+        // the attribute Id for the Mobile App's version
+        const int MobileAppVersionAttributeId = 29469;
+
+        // Returns the startup data for the Mobile App
+        public static LaunchData GetLaunchData()
+        {
+            RockContext rockContext = new RockContext();
+
+            LaunchData launchData = new LaunchData();
+
+            // setup the campuses
+            launchData.Campuses = new List<Campus>();
+            foreach (CampusCache campus in CampusCache.All(false))
+            {
+                Campus campusModel = new Campus();
+                campusModel.Guid = campus.Guid;
+                campusModel.Id = campus.Id;
+                campusModel.Name = campus.Name;
+                launchData.Campuses.Add(campusModel);
+            }
+
+            // setup the prayer categories
+            launchData.PrayerCategories = new List<KeyValuePair<string, int>>();
+            CategoryCache prayerCategories = CategoryCache.Read(1);
+            foreach (CategoryCache category in prayerCategories.Categories)
+            {
+                launchData.PrayerCategories.Add(new KeyValuePair<string, int>(category.Name, category.Id));
+            }
+
+            // get the latest mobile app version
+            var mobileAppAttribute = new AttributeValueService(rockContext).Queryable().Where(av => av.AttributeId == MobileAppVersionAttributeId).SingleOrDefault();
+            if (mobileAppAttribute != null)
+            {
+                int.TryParse(mobileAppAttribute.Value, out launchData.MobileAppVersion);
+            }
+
+            return launchData;
+        }
+    }
+
+    // Common reusable functions for supporting the Mobile App
+    public static class Util
+    {
+        public static void LaunchWorkflow( RockContext rockContext, WorkflowType workflowType, GroupMember groupMember )
         {
             try
             {

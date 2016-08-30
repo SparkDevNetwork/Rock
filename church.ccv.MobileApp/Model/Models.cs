@@ -39,6 +39,7 @@ namespace church.ccv.MobileApp.Models
         public string Phone;
     }
 
+    [Serializable]
     public class LaunchData
     {
         public int MobileAppVersion;
@@ -48,5 +49,15 @@ namespace church.ccv.MobileApp.Models
 
         // campuses need the guid, name and ID, so we'll pass down the entire model
         public List<Campus> Campuses;
+    }
+
+    [Serializable]
+    public class GroupInfo
+    {
+        public string Description { get; set; }
+        public string LeaderInformation { get; set; }
+        public string Children { get; set; }
+        public int CoachPhotoId { get; set; }
+        public Guid GroupPhotoGuid { get; set; }
     }
 }

@@ -34,7 +34,7 @@ namespace chuch.ccv.MobileApp.Rest
         [System.Web.Http.Route( "api/MobileApp/LaunchData" )]
         public HttpResponseMessage GetLaunchData(  )
         {
-            LaunchData launchData = MobileAppUtil.GetLaunchData( );
+            LaunchData launchData = Launch.GetLaunchData( );
 
             StringContent restContent = new StringContent( JsonConvert.SerializeObject( launchData ), Encoding.UTF8, "application/json" );
             return new HttpResponseMessage()
@@ -42,12 +42,38 @@ namespace chuch.ccv.MobileApp.Rest
                 Content = restContent
             };
         }
-        
+
+        [System.Web.Http.HttpGet]
+        [System.Web.Http.Route("api/MobileApp/GroupInfo")]
+        public HttpResponseMessage GetGroupInfo( int groupId )
+        {
+            GroupInfo groupInfo = null;
+            bool result = GroupFinder.GetGroupInfo(groupId, out groupInfo);
+
+            HttpResponseMessage response = null;
+
+            if (result)
+            {
+                StringContent restContent = new StringContent(JsonConvert.SerializeObject(groupInfo), Encoding.UTF8, "application/json");
+
+                response = new HttpResponseMessage()
+                {
+                    Content = restContent
+                };
+            }
+            else
+            {
+                response = new HttpResponseMessage( HttpStatusCode.NotFound );
+            }
+
+            return response;
+        }
+
         [System.Web.Http.HttpPost]
         [System.Web.Http.Route( "api/MobileApp/GroupRegistration" )]
         public HttpResponseMessage GroupRegistration( [FromBody] GroupRegModel regModel )
         {
-            bool success = MobileAppUtil.AddPersonToGroup( regModel );
+            bool success = GroupFinder.RegisterPersonInGroup( regModel );
             
             return new HttpResponseMessage( success == true ? HttpStatusCode.OK : HttpStatusCode.NotFound );
         }
