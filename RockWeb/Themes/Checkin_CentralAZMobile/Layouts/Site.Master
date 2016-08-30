@@ -12,7 +12,24 @@
     
     <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>" ></script>
     <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.12.4.min.js" )%>"></script>
-
+    <!-- This script deals with the iOS annoying problem related to hyperlinks. 
+    By default all hyperlinks will open in Safari -->
+		<script type="text/javascript">
+			if(("standalone" in window.navigator) && window.navigator.standalone){
+				var noddy, remotes = false;
+				document.addEventListener('click', function(event) {
+				noddy = event.target;
+				while(noddy.nodeName !== "A" && noddy.nodeName !== "HTML") {
+					noddy = noddy.parentNode;
+				}
+				if('href' in noddy && noddy.href.indexOf('http') !== -1 && (noddy.href.indexOf(document.location.host) !== -1 || remotes))
+				{
+					event.preventDefault();
+					document.location.href = noddy.href;
+				}
+				},false);
+			}
+		</script>
     <!-- Set the viewport width to device width for mobile -->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
