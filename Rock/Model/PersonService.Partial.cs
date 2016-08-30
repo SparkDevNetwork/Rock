@@ -522,6 +522,21 @@ namespace Rock.Model
                 lastName = fullName.Trim();
             }
 
+            return GetSimilarNames( firstName, lastName, reversed, excludeIds, includeDeceased, includeBusinesses );
+        }
+
+        /// <summary>
+        /// Gets the similar names.
+        /// </summary>
+        /// <param name="firstName">The first name.</param>
+        /// <param name="lastName">The last name.</param>
+        /// <param name="reversed">if set to <c>true</c> [reversed].</param>
+        /// <param name="excludeIds">The exclude ids.</param>
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
+        /// <returns></returns>
+        public List<string> GetSimilarNames( string firstName, string lastName, bool reversed, List<int> excludeIds, bool includeDeceased = false, bool includeBusinesses = false )
+        {
             var similarNames = new List<string>();
 
             if ( !string.IsNullOrWhiteSpace( firstName ) && !string.IsNullOrWhiteSpace( lastName ) )
