@@ -412,7 +412,7 @@ namespace RockWeb.Blocks.Event
 
             var mergeFields = new Dictionary<string, object>();
             mergeFields.Add( "TimeFrame", ViewMode );
-            mergeFields.Add( "DetailsPage", LinkedPageUrl( "DetailsPage", null ) );
+            mergeFields.Add( "DetailsPage", LinkedPageRoute( "DetailsPage" ) );
             mergeFields.Add( "EventItems", eventSummaries );
             mergeFields.Add( "EventItemOccurrences", eventOccurrenceSummaries );
             mergeFields.Add( "CurrentPerson", CurrentPerson );

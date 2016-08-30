@@ -1055,7 +1055,7 @@ namespace RockWeb.Blocks.Groups
                             }
                             else
                             {
-                                linkedPages.Add( "RegisterPage", LinkedPageUrl( "RegisterPage", null ) );
+                                linkedPages.Add( "RegisterPage", LinkedPageRoute( "RegisterPage" ) );
                             }
 
                             mergeFields.Add( "LinkedPages", linkedPages );
@@ -1118,7 +1118,7 @@ namespace RockWeb.Blocks.Groups
                 mergeFields.Add( "Groups", groups );
 
                 Dictionary<string, object> linkedPages = new Dictionary<string, object>();
-                linkedPages.Add( "GroupDetailPage", LinkedPageUrl( "GroupDetailPage", null ) );
+                linkedPages.Add( "GroupDetailPage", LinkedPageRoute( "GroupDetailPage" ) );
 
                 if ( _targetPersonGuid != Guid.Empty )
                 {
@@ -1126,7 +1126,7 @@ namespace RockWeb.Blocks.Groups
                 }
                 else
                 {
-                    linkedPages.Add( "RegisterPage", LinkedPageUrl( "RegisterPage", null ) );
+                    linkedPages.Add( "RegisterPage", LinkedPageRoute( "RegisterPage" ) );
                 }
 
                 mergeFields.Add( "LinkedPages", linkedPages );
