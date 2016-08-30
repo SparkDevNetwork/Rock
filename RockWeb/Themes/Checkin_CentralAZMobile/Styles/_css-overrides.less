@@ -28,7 +28,7 @@
    a.btn {
     margin: 2px;
     width: 80px;
-    height: 60px;
+    height: 50px;
   }
 
    a:focus, a:active {
@@ -59,11 +59,11 @@ input.checkin-phone-entry
 }
 
 .btn-lg, .btn-group-lg>.btn {
-    padding: 5px 16px;
+    padding: 2px 14px;
 }
 
 .checkin-actions a.btn-primary {
-    padding: 7px 16px;
+    padding: 2px 14px;
 }
 
 .btn-checkin-select {
@@ -85,4 +85,39 @@ input.checkin-phone-entry
 
 .checkin-actions a {
     padding: 12px 10px;
+}
+
+/* fix iOS bug not displaying 100vh correctly */
+/* ipad */
+@media only screen and (min-device-width : 768px) and (max-device-width : 1024px) and (orientation : landscape) {
+	.body-content {
+		height: 768px;
+	}
+}
+@media only screen and (min-device-width : 768px) and (max-device-width : 1024px) and (orientation : portrait) {
+	.body-content {
+		height: 1024px;
+	}
+}
+/* iphone5 */
+@media only screen and (min-device-width: 320px) and (max-device-height: 568px) and (orientation : landscape) and (-webkit-device-pixel-ratio: 2) {
+	.body-content {
+		height: 320px;
+	}
+}
+@media only screen and (min-device-width: 320px) and (max-device-height: 568px) and (orientation : portrait) and (-webkit-device-pixel-ratio: 2) {
+	.body-content {
+		height: 568px;
+	}
+}
+/* iPhone 4 */
+@media only screen and (min-device-width : 320px) and (max-device-width : 480px) and (orientation : landscape) and (-webkit-min-device-pixel-ratio : 2) {
+	.body-content {
+		height: 320px;
+	}
+}
+@media only screen and (min-device-width : 320px) and (max-device-width : 480px) and (orientation : portrait) and (-webkit-min-device-pixel-ratio : 2) {
+	.body-content {
+		height: 480px;
+	}
 }
