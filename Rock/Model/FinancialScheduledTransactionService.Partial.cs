@@ -292,7 +292,10 @@ namespace Rock.Model
                         if ( txnAmount != 0.0M )
                         {
                             scheduledTransactionIds.Add( scheduledTransaction.Id );
-                            scheduledTransaction.IsActive = payment.ScheduleActive;
+                            if ( payment.ScheduleActive.HasValue )
+                            {
+                                scheduledTransaction.IsActive = payment.ScheduleActive.Value;
+                            }
 
                             var transaction = new FinancialTransaction();
                             transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
