@@ -58,7 +58,7 @@
         {% assign daysTillStartDate = 'Now' | DateDiff:linkage.RegistrationInstance.StartDateTime,'m' %}
         {% assign daysTillEndDate = 'Now' | DateDiff:linkage.RegistrationInstance.EndDateTime,'m' %}
         {% assign showRegistration = true %}
-        {% assign registrationMessgae = '' %}
+        {% assign registrationMessage = '' %}
 
 
 
