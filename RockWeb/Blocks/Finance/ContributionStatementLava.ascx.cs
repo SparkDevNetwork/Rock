@@ -172,6 +172,7 @@ namespace RockWeb.Blocks.Finance
     <em>Unless otherwise noted, the only goods and services provided are intangible religious benefits.</em>
 </p>", order: 2)]
     [BooleanField("Enable Debug", "Shows the merge fields available for the Lava", order:3)]
+    [BooleanField("Allow Person Querystring", "Determines if a person is allowed to be passed through the querystring. For security reasons this is not allowed by default.", false, order: 4)]
     public partial class ContributionStatementLava : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -237,9 +238,27 @@ namespace RockWeb.Blocks.Finance
             }
 
             FinancialTransactionDetailService financialTransactionDetailService = new FinancialTransactionDetailService( rockContext );
-            
+
+            Person targetPerson = CurrentPerson;
+
+            if ( GetAttributeValue( "AllowPersonQuerystring" ).AsBoolean() )
+            {
+                if ( !string.IsNullOrWhiteSpace( Request["PersonGuid"] ) ){
+                    Guid? personGuid = Request["PersonGuid"].AsGuidOrNull();
+
+                    if ( personGuid.HasValue )
+                    {
+                        var person = new PersonService( rockContext ).Get( personGuid.Value );
+                        if (person != null )
+                        {
+                            targetPerson = person;
+                        }
+                    }
+                }
+            }
+
             var qry = financialTransactionDetailService.Queryable().AsNoTracking()
-                        .Where( t=> t.Transaction.AuthorizedPersonAlias.Person.GivingId == CurrentPerson.GivingId);
+                        .Where( t=> t.Transaction.AuthorizedPersonAlias.Person.GivingId == targetPerson.GivingId );
 
             qry = qry.Where( t => t.Transaction.TransactionDateTime.Value.Year == statementYear );
 
@@ -270,7 +289,7 @@ namespace RockWeb.Blocks.Finance
 
             // get giving group members in order by family role (adult -> child) and then gender (male -> female)
             var givingGroup = new PersonService( rockContext ).Queryable().AsNoTracking()
-                                    .Where( p => p.GivingId == CurrentPerson.GivingId )
+                                    .Where( p => p.GivingId == targetPerson.GivingId )
                                     .GroupJoin(
                                         groupMemberQry,
                                         p => p.Id,
@@ -302,7 +321,7 @@ namespace RockWeb.Blocks.Finance
             }
             mergeFields.Add( "Salutation", salutation );
 
-            var homeAddress = CurrentPerson.GetHomeLocation();
+            var homeAddress = targetPerson.GetHomeLocation();
             if ( homeAddress != null )
             {
                 mergeFields.Add( "StreetAddress1", homeAddress.Street1 );
@@ -328,8 +347,8 @@ namespace RockWeb.Blocks.Finance
 
             // pledge information
             var pledges = new FinancialPledgeService( rockContext ).Queryable().AsNoTracking()
-                                .Where(p => 
-                                    p.PersonAlias.Person.GivingId == CurrentPerson.GivingId
+                                .Where( p =>
+                                     p.PersonAlias.Person.GivingId == targetPerson.GivingId
                                     && (p.StartDate.Year == statementYear || p.EndDate.Year == statementYear))
                                 .GroupBy(p => p.Account)
                                 .Select(g => new PledgeSummary {
