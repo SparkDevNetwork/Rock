@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.Finance
                                 .OrderByDescending(y => y.Year);
 
             var mergeFields = new Dictionary<string, object>();
-            mergeFields.Add( "DetailPage", LinkedPageUrl( "DetailPage", null ) );
+            mergeFields.Add( "DetailPage", LinkedPageRoute( "DetailPage" ) );
             mergeFields.Add( "StatementYears", yearQry.Take( numberOfYears ) );
             
             var template = GetAttributeValue( "LavaTemplate" );
