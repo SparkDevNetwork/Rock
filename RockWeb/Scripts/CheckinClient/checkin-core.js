@@ -15,14 +15,16 @@ Sys.Application.add_load(function () {
 
     resizeBody();
 
-    bodyScroll = new IScroll('.checkin-scroll-panel', {
+    if ($('.checkin-scroll-panel').length) {
+      bodyScroll = new IScroll('.checkin-scroll-panel', {
         scrollbars: true,
         mouseWheel: true,
         interactiveScrollbars: true,
         shrinkScrollbars: 'scale',
         fadeScrollbars: false,
         scrollbars: 'custom'
-    });
+      });
+    }
 });
 
 function resizeBody() {
