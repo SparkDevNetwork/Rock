@@ -174,6 +174,10 @@
     <Compile Include="Migrations\201608191216532_Notification.Designer.cs">
       <DependentUpon>201608191216532_Notification.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201608301855576_ContributionStmtPersonProfile.cs" />
+    <Compile Include="Migrations\201608301855576_ContributionStmtPersonProfile.Designer.cs">
+      <DependentUpon>201608301855576_ContributionStmtPersonProfile.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -2316,6 +2320,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201608191216532_Notification.resx">
       <DependentUpon>201608191216532_Notification.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201608301855576_ContributionStmtPersonProfile.resx">
+      <DependentUpon>201608301855576_ContributionStmtPersonProfile.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\RockMigrationSQL.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
