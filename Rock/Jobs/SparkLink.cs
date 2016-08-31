@@ -67,51 +67,74 @@ namespace Rock.Jobs
                 sparkLinkRequest.VersionIds = installedPackages.Select( i => i.VersionId ).ToList();
                 sparkLinkRequest.RockVersion = VersionInfo.VersionInfo.GetRockSemanticVersionNumber();
 
+                var notifications = new List<Notification>();
+
                 var sparkLinkRequestJson = JsonConvert.SerializeObject( sparkLinkRequest );
 
                 var client = new RestClient( "http://rockrms.com/api/SparkLink/update" );
+                //var client = new RestClient( "http://localhost:57822/api/SparkLink/update" );
                 var request = new RestRequest( Method.POST );
                 request.AddParameter( "application/json", sparkLinkRequestJson, ParameterType.RequestBody );
                 IRestResponse response = client.Execute( request );
-
                 if ( response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.Accepted )
                 {
-                    var notifications = JsonConvert.DeserializeObject<List<Notification>>(response.Content);
-                    if (notifications.Count == 0 )
+                    foreach ( var notification in JsonConvert.DeserializeObject<List<Notification>>( response.Content ) )
                     {
-                        return;
+                        notifications.Add( notification );
                     }
-
-                    var notificationService = new NotificationService( rockContext);
-                    foreach ( var notification in notifications )
-                    {
-                        if (notificationService.Get(notification.Guid) == null )
-                        {
-                            notificationService.Add( notification );
-                        }
-                        else
-                        {
-                            notifications.Remove( notification );
-                        }
-                    }
-                    rockContext.SaveChanges();
-
-                    var notificationRecipientService = new NotificationRecipientService( rockContext );
-                    foreach (var notification in notifications )
-                    {
-                        foreach ( var member in group.Members )
-                        {
-                            if ( member.Person.PrimaryAliasId.HasValue )
-                            {
-                                var recipientNotification = new Rock.Model.NotificationRecipient();
-                                recipientNotification.NotificationId = notification.Id;
-                                recipientNotification.PersonAliasId = member.Person.PrimaryAliasId.Value;
-                                notificationRecipientService.Add( recipientNotification );
-                            }
-                        }
-                    }
-                    rockContext.SaveChanges();                    
                 }
+
+                if ( sparkLinkRequest.VersionIds.Any() )
+                {
+                    client = new RestClient( "http://rockrms.com/api/Packages/VersionNotifications" );
+                    //client = new RestClient( "http://localhost:57822/api/Packages/VersionNotifications" );
+                    request = new RestRequest( Method.GET );
+                    request.AddParameter( "application/json", sparkLinkRequestJson, ParameterType.RequestBody );
+                    response = client.Execute( request );
+                    if ( response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.Accepted )
+                    {
+                        foreach ( var notification in JsonConvert.DeserializeObject<List<Notification>>( response.Content ) )
+                        {
+                            notifications.Add( notification );
+                        }
+                    }
+                }
+
+                if ( notifications.Count == 0 )
+                {
+                    return;
+                }
+
+                var notificationService = new NotificationService( rockContext);
+                foreach ( var notification in notifications.ToList() )
+                {
+                    if (notificationService.Get(notification.Guid) == null )
+                    {
+                        notificationService.Add( notification );
+                    }
+                    else
+                    {
+                        notifications.Remove( notification );
+                    }
+                }
+                rockContext.SaveChanges();
+
+                var notificationRecipientService = new NotificationRecipientService( rockContext );
+                foreach (var notification in notifications )
+                {
+                    foreach ( var member in group.Members )
+                    {
+                        if ( member.Person.PrimaryAliasId.HasValue )
+                        {
+                            var recipientNotification = new Rock.Model.NotificationRecipient();
+                            recipientNotification.NotificationId = notification.Id;
+                            recipientNotification.PersonAliasId = member.Person.PrimaryAliasId.Value;
+                            notificationRecipientService.Add( recipientNotification );
+                        }
+                    }
+                }
+                rockContext.SaveChanges();                    
+                
             }
         }
 
