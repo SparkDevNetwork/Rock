@@ -212,7 +212,11 @@ namespace church.ccv.Badges.Rest.Controllers
 
             using ( RockContext rockContext = new RockContext() )
             {
-                var groupMembers = new GroupMemberService( rockContext ).Queryable().Where( m => m.Group.Guid == groupGuid ).Select( m => new { Guid = m.Person.Guid, Id = m.PersonId } );
+                // make sure to only take unique IDs, as it's possible for a person to be in a group multiple times.
+                var groupMembers = new GroupMemberService( rockContext ).Queryable()
+                    .Where( m => m.Group.Guid == groupGuid )
+                    .Select( m => new { Guid = m.Person.Guid, Id = m.PersonId } )
+                    .DistinctBy( m => m.Id );
 
                 foreach ( var groupMember in groupMembers )
                 {
@@ -235,7 +239,8 @@ namespace church.ccv.Badges.Rest.Controllers
                     person.LoadAttributes();
 
                     // membership
-                    int MEMBERSHIP_CONNECTION_VALUE_ID = DefinedValueCache.Read( GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_MEMBERSHIP_VALUE_ID ) ).Id;
+                    // JHM - Removing per leadership's request. This now lives in Rock Person Badge
+                    /*int MEMBERSHIP_CONNECTION_VALUE_ID = DefinedValueCache.Read( GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_MEMBERSHIP_VALUE_ID ) ).Id;
                     stepsBarResult.MembershipResult = new MembershipResult();
                     if ( person.ConnectionStatusValueId == MEMBERSHIP_CONNECTION_VALUE_ID )
                     {
@@ -248,7 +253,7 @@ namespace church.ccv.Badges.Rest.Controllers
                     else
                     {
                         stepsBarResult.MembershipResult.IsMember = false;
-                    }
+                    }*/
 
                     // baptism - baptism is driven by the baptism date person attribute
                     stepsBarResult.BaptismResult = new BaptismResult();
@@ -418,10 +423,14 @@ namespace church.ccv.Badges.Rest.Controllers
 
                     if (servingGroups.Count == 0 )
                     {
-                        stepsBarResult.ServingResult.IsServing = false;
+                        stepsBarResult.ServingResult.ServingStatus = ServingStatus.NotServing;
                     } else
                     {
-                        stepsBarResult.ServingResult.IsServing = true;
+                        // now see if this person should be set to 'pending' or not.
+                        // they should only be pending if they aren't active in ANY of their groups.
+                        int numActiveGroups = servingGroups.Where( sg => sg.Status == GroupMemberStatus.Active ).Count( );
+
+                        stepsBarResult.ServingResult.ServingStatus = numActiveGroups > 0 ? ServingStatus.Serving : ServingStatus.PendingServing;
                         stepsBarResult.ServingResult.ServingSince = DateTime.MaxValue;
 
                         foreach ( var group in servingGroups )
@@ -692,12 +701,11 @@ namespace church.ccv.Badges.Rest.Controllers
         public class ServingResult
         {
             /// <summary>
-            /// Gets or sets a value indicating whether this instance is serving.
+            /// Stores the state of serving (Not, Pending, or Is)
             /// </summary>
             /// <value>
-            /// <c>true</c> if this instance is serving; otherwise, <c>false</c>.
-            /// </value>
-            public bool IsServing { get; set; }
+            public ServingStatus ServingStatus { get; set; }
+
             /// <summary>
             /// Gets or sets the groups.
             /// </summary>
@@ -713,6 +721,16 @@ namespace church.ccv.Badges.Rest.Controllers
             /// The serving since.
             /// </value>
             public DateTime? ServingSince { get; set; }
+        }
+
+        /// <summary>
+        /// Connection Status
+        /// </summary>
+        public enum ServingStatus
+        {
+            NotServing,
+            PendingServing,
+            Serving
         }
 
         /// <summary>

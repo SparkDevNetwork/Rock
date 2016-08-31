@@ -49,9 +49,6 @@ namespace church.ccv.Badges.Person
                     <i class='icon ccv-baptism'></i>
                 </a>
 
-                <div class='badge badge-membership badge-icon step-nottaken' data-toggle='tooltip' data-original-title='{1} is not a member' data-container='body'>
-                    <i class='icon ccv-membership'></i>
-                </div>
                 <div class='badge badge-worship badge-icon step-nottaken' data-toggle='tooltip' data-original-title='{1} is not an eRA' data-container='body'>
                     <i class='icon ccv-worship'></i>
                 </div>
@@ -121,13 +118,14 @@ namespace church.ccv.Badges.Person
                 }}
 
                 // member
-                if (data.MembershipResult.IsMember) {{
-                    var membershipDate = new Date(data.MembershipResult.MembershipDate);
-                    var membershipDateFormatted = (membershipDate.getMonth() + 1) + '/' + membershipDate.getDate() + '/' + membershipDate.getFullYear();
+                // JHM - Removing per leadership's request. This now lives in a Rock Person Lava Badge
+                // if (data.MembershipResult.IsMember) {{
+                    //var membershipDate = new Date(data.MembershipResult.MembershipDate);
+                    //var membershipDateFormatted = (membershipDate.getMonth() + 1) + '/' + membershipDate.getDate() + '/' + membershipDate.getFullYear();
 
-                    $badge.find('.badge-membership').removeClass('step-nottaken');
-                    $badge.find('.badge-membership').attr('data-original-title', firstName + ' became a member on ' + membershipDateFormatted + '');
-                }}
+                    //$badge.find('.badge-membership').removeClass('step-nottaken');
+                    //$badge.find('.badge-membership').attr('data-original-title', firstName + ' became a member on ' + membershipDateFormatted + '');
+                //}}
 
                 // worship
                 if (data.IsWorshipper) {{
@@ -235,10 +233,21 @@ namespace church.ccv.Badges.Person
                 }}
 
                 // serving
-                if (data.ServingResult.IsServing) {{
+                if (data.ServingResult.ServingStatus != 0) {{
 
                     // create content for popover
-                    var popoverContent = firstName + "" is on the following serving teams: <ul styling='padding-left: 20px;'>"";
+                    
+                    // the text will either be affirmative or 'pending' depending on their status.
+                    var servingPopupText = "" is on the following serving teams: ""
+                    var servingTooltipText = "" is serving ""
+
+                    if (data.ServingResult.ServingStatus == 1) {{
+                        servingPopupText = "" is pending on the following serving teams: ""
+                        servingTooltipText = "" is pending serving ""
+                        $badge.find('.badge-serve').addClass('step-partial');
+                    }}
+
+                    var popoverContent = firstName + servingPopupText + ""<ul styling='padding-left: 20px;'>"";
 
                     // disable the anchor tag
                     $badge.find( '.badge-serve' ).on( ""click"", function( e ) {{
@@ -280,7 +289,8 @@ namespace church.ccv.Badges.Person
                     var servingSinceDate = new Date(data.ServingResult.ServingSince);
                     var servingSinceDateFormatted = (servingSinceDate.getMonth() + 1) + '/' + servingSinceDate.getDate() + '/' + servingSinceDate.getFullYear();
 
-                    $badge.find('.badge-serve').attr('data-original-title', firstName + ' is serving (earliest active group ' + servingSinceDateFormatted + ')&nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>');
+                    
+                    $badge.find('.badge-serve').attr('data-original-title', firstName + servingTooltipText + ' (earliest active group ' + servingSinceDateFormatted + ')&nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>');
 
                     var servingPopoverIsOpen = false;
 
@@ -297,7 +307,7 @@ namespace church.ccv.Badges.Person
                         {{
                             $badge.find( '.badge-serve' ).popover( 'hide' );
                             servingPopoverIsOpen = false;
-                            $badge.find('.badge-serve').attr('data-original-title', firstName + ' is serving (earliest active group ' + servingSinceDateFormatted + ')&nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>');
+                            $badge.find('.badge-serve').attr('data-original-title', firstName + servingTooltipText + ' (earliest active group ' + servingSinceDateFormatted + ')&nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>');
                         }}
                         else {{
                             $badge.find( '.badge-serve' ).attr( 'data-original-title', '' );
