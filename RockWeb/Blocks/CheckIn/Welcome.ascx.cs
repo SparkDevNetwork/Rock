@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,11 +34,9 @@ namespace RockWeb.Blocks.CheckIn
     [DisplayName( "Welcome" )]
     [Category( "Check-in" )]
     [Description( "Welcome screen for check-in." )]
-    [LinkedPage( "Family Select Page" )]
-    [LinkedPage( "Scheduled Locations Page" )]
-    [IntegerField( "Refresh Interval", "How often (seconds) should page automatically query server for new Check-in data", false, 10 )]
-    [BooleanField( "Enable Override", "Allows the override link to be used on the configuration page.", true )]
-    [BooleanField( "Enable Manager", "Allows the manager link to be placed on the page.", true )]
+
+    [LinkedPage( "Family Select Page", "", false, "", "", 5 )]
+    [LinkedPage( "Scheduled Locations Page", "", false, "", "", 6 )]
     public partial class Welcome : CheckInBlock
     {
         protected override void OnInit( EventArgs e )
@@ -58,6 +56,12 @@ namespace RockWeb.Blocks.CheckIn
             RockPage.AddScriptLink( "~/scripts/jquery.countdown.min.js" );
 
             RegisterScript();
+
+            var bodyTag = this.Page.Master.FindControl( "bodyTag" ) as HtmlGenericControl;
+            if ( bodyTag != null )
+            {
+                bodyTag.AddCssClass( "checkin-welcome-bg" );
+            }
         }
 
         protected override void OnLoad( EventArgs e )
@@ -72,11 +76,12 @@ namespace RockWeb.Blocks.CheckIn
             if (localStorage) {{
                 localStorage.theme = '{0}'
                 localStorage.checkInKiosk = '{1}';
-                localStorage.checkInGroupTypes = '{2}';
+                localStorage.checkInType = '{2}';
+                localStorage.checkInGroupTypes = '{3}';
             }}
         }});
     </script>
-", CurrentTheme, CurrentKioskId, CurrentGroupTypeIds.AsDelimited( "," ) );
+", CurrentTheme, CurrentKioskId, CurrentCheckinTypeId, CurrentGroupTypeIds.AsDelimited( "," ) );
                 phScript.Controls.Add( new LiteralControl( script ) );
 
                 CurrentWorkflow = null;
@@ -125,45 +130,50 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void RegisterScript()
         {
-            // Note: the OnExpiry property of the countdown jquery plugin seems to add a new callback
-            // everytime the setting is set which is why the clearCountdown method is used to prevent 
-            // a plethora of partial postbacks occurring when the countdown expires.
-            string script = string.Format( @"
+            if ( !Page.ClientScript.IsStartupScriptRegistered( "RefreshScript" ) )
+            {
+                // Note: the OnExpiry property of the countdown jquery plugin seems to add a new callback
+                // everytime the setting is set which is why the clearCountdown method is used to prevent 
+                // a plethora of partial postbacks occurring when the countdown expires.
+                string script = string.Format( @"
 
-var timeoutSeconds = $('.js-refresh-timer-seconds').val();
-if (timeout) {{
-    window.clearTimeout(timeout);
-}}
-var timeout = window.setTimeout(refreshKiosk, timeoutSeconds * 1000);
+    Sys.Application.add_load(function () {{
+        var timeoutSeconds = $('.js-refresh-timer-seconds').val();
+        if (timeout) {{
+            window.clearTimeout(timeout);
+        }}
+        var timeout = window.setTimeout(refreshKiosk, timeoutSeconds * 1000);
 
-var $ActiveWhen = $('.active-when');
-var $CountdownTimer = $('.countdown-timer');
+        var $ActiveWhen = $('.active-when');
+        var $CountdownTimer = $('.countdown-timer');
 
-function refreshKiosk() {{
-    window.clearTimeout(timeout);
-    {0};
-}}
+        function refreshKiosk() {{
+            window.clearTimeout(timeout);
+            {0};
+        }}
 
-function clearCountdown() {{
-    if ($ActiveWhen.text() != '')
-    {{
-        $ActiveWhen.text('');
-        refreshKiosk();
-    }}
-}}
+        function clearCountdown() {{
+            if ($ActiveWhen.text() != '')
+            {{
+                $ActiveWhen.text('');
+                refreshKiosk();
+            }}
+        }}
 
-if ($ActiveWhen.text() != '')
-{{
-    var timeActive = new Date($ActiveWhen.text());
-    $CountdownTimer.countdown({{
-        until: timeActive, 
-        compact:true, 
-        onExpiry: clearCountdown
+        if ($ActiveWhen.text() != '')
+        {{
+            var timeActive = new Date($ActiveWhen.text());
+            $CountdownTimer.countdown({{
+                until: timeActive, 
+                compact:true, 
+                onExpiry: clearCountdown
+            }});
+        }}
     }});
-}}
 
 ", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
-            ScriptManager.RegisterStartupScript( Page, Page.GetType(), "RefreshScript", script, true );
+                Page.ClientScript.RegisterStartupScript( Page.GetType(), "RefreshScript", script, true );
+            }
         }
 
         // TODO: Add support for scanner
@@ -197,7 +207,7 @@ if ($ActiveWhen.text() != '')
         /// </summary>
         private void RefreshView()
         {
-            hfRefreshTimerSeconds.Value = GetAttributeValue( "RefreshInterval" );
+            hfRefreshTimerSeconds.Value = ( CurrentCheckInType != null ? CurrentCheckInType.RefreshInterval.ToString() : "10" );
             pnlNotActive.Visible = false;
             pnlNotActiveYet.Visible = false;
             pnlClosed.Visible = false;
@@ -205,8 +215,8 @@ if ($ActiveWhen.text() != '')
             ManagerLoggedIn = false;
             pnlManagerLogin.Visible = false;
             pnlManager.Visible = false;
-            btnManager.Visible = GetAttributeValue( "EnableManager" ).AsBoolean();
-            btnOverride.Visible = GetAttributeValue( "EnableOverride" ).AsBoolean();
+            btnManager.Visible = ( CurrentCheckInType != null ? CurrentCheckInType.EnableManagerOption : true );
+            btnOverride.Visible = ( CurrentCheckInType != null ? CurrentCheckInType.EnableOverride : true );
 
             lblActiveWhen.Text = string.Empty;
 
@@ -215,6 +225,9 @@ if ($ActiveWhen.text() != '')
                 NavigateToPreviousPage();
                 return;
             }
+
+            // Set to null so that object will be recreated with a potentially updated group type cache.
+            CurrentCheckInState.CheckInType = null;
 
             if ( CurrentCheckInState.Kiosk.FilteredGroupTypes( CurrentCheckInState.ConfiguredGroupTypes ).Count == 0 )
             {
@@ -410,12 +423,14 @@ if ($ActiveWhen.text() != '')
             if ( this.CurrentKioskId.HasValue )
             {
                 var groupTypesLocations = this.GetGroupTypesLocations( rockContext );
-                var selectQry = groupTypesLocations.Select( a => new
-                {
-                    LocationId = a.Id,
-                    Name = a.Name,
-                    a.IsActive
-                } );
+                var selectQry = groupTypesLocations
+                    .Select( a => new
+                        {
+                            LocationId = a.Id,
+                            Name = a.Name,
+                            a.IsActive
+                        } )
+                    .OrderBy( a => a.Name );
 
                 rLocations.DataSource = selectQry.ToList();
                 rLocations.DataBind();

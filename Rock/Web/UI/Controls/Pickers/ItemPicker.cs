@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -113,6 +113,34 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the warning text.
+        /// </summary>
+        /// <value>
+        /// The warning text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The warning block." )
+        ]
+        public string Warning
+        {
+            get
+            {
+                return WarningBlock != null ? WarningBlock.Text : string.Empty;
+            }
+
+            set
+            {
+                if ( WarningBlock != null )
+                {
+                    WarningBlock.Text = value;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
         /// </summary>
         /// <value>
@@ -191,6 +219,14 @@ namespace Rock.Web.UI.Controls
         /// The help block.
         /// </value>
         public HelpBlock HelpBlock { get; set; }
+
+        /// <summary>
+        /// Gets or sets the warning block.
+        /// </summary>
+        /// <value>
+        /// The warning block.
+        /// </value>
+        public WarningBlock WarningBlock { get; set; }
 
         /// <summary>
         /// Gets or sets the required field validator.
@@ -461,6 +497,7 @@ namespace Rock.Web.UI.Controls
         {
             RequiredFieldValidator = new HiddenFieldValidator();
             HelpBlock = new HelpBlock();
+            WarningBlock = new WarningBlock();
         }
 
         #endregion
@@ -720,7 +757,7 @@ namespace Rock.Web.UI.Controls
                 return null;
             }
 
-            int result = int.Parse( ItemId );
+            int result = ItemId.AsInteger();
             if ( noneAsNull )
             {
                 if ( result == Constants.None.Id )
@@ -744,8 +781,7 @@ namespace Rock.Web.UI.Controls
                 return null;
             }
 
-            int result = int.Parse( ItemId );
-
+            int result = ItemId.AsInteger();
             if ( result == Constants.None.Id )
             {
                 return null;

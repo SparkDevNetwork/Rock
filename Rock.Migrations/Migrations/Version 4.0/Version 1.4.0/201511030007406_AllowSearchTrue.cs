@@ -1,11 +1,11 @@
-// <copyright>
-// Copyright 2013 by the Spark Development Network
+﻿// <copyright>
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -76,6 +76,40 @@ CREATE INDEX [IX_ConfidenceScore] on [PersonDuplicate] (ConfidenceScore)" );
             RockMigrationHelper.AddBlockTypeAttribute( "FC137BDA-4F05-4ECE-9899-A249C90D11FC", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Location Detail Page", "LocationDetailPage", "", "Page used to edit the settings for a particular location.", 0, @"", "A1C5EAB7-B507-4DB7-916D-64A58EEF8691" );
             // Attrib Value for Block:Family Members, Attribute:Location Detail Page , Layout: PersonDetail, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "4CC50BE8-72ED-43E0-8D11-7E2A590453CC", "A1C5EAB7-B507-4DB7-916D-64A58EEF8691", @"4ce2a5da-15f3-454c-8172-d146d938e203" );
+
+            // Update content channel query filter param to enable filtering for detail channel blocks
+            Sql( @"
+    DECLARE @TemplateAttributeId int = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = '8026FEA1-35C1-41CF-9D09-E8B1DB6CBDA8' )
+    DECLARE @QueryParamAttributeId int = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = 'AA9CD867-FA21-43C2-822B-CAC06E1F18B8' )
+
+    IF ( @TemplateAttributeId IS NOT NULL AND @QueryParamAttributeId IS NOT NULL )
+    BEGIN
+
+	    UPDATE Q SET [Value] = 'True'
+	    FROM [AttributeValue] T
+	    INNER JOIN [AttributeValue] Q
+		    ON Q.[AttributeId] = @QueryParamAttributeId
+		    AND Q.[entityid] = T.[EntityId]
+	    WHERE T.[AttributeId] = @TemplateAttributeId
+	    AND ( T.[Value] = '{% include ''~~/Assets/Lava/AdDetails.lava'' %}' OR	T.[Value] = '{% include ''~~/Assets/Lava/BlogItemDetail.lava'' %}' )
+
+	    INSERT INTO [AttributeValue] ( [IsSystem],[AttributeId],[EntityId],[VAlue],[Guid] )
+	    SELECT 
+		    1,
+		    @QueryParamAttributeId,
+		    T.[EntityId],
+		    'True',
+		    NEWID()
+	    FROM [AttributeValue] T
+	    LEFT OUTER JOIN [AttributeValue] Q
+		    ON Q.[AttributeId] = @QueryParamAttributeId
+		    AND Q.[entityid] = T.[EntityId]
+	    WHERE T.[AttributeId] = @TemplateAttributeId
+	    AND ( T.[Value] = '{% include ''~~/Assets/Lava/AdDetails.lava'' %}' OR	T.[Value] = '{% include ''~~/Assets/Lava/BlogItemDetail.lava'' %}' )
+	    AND Q.[Id] IS NULL
+
+    END
+" );
 
         }
         

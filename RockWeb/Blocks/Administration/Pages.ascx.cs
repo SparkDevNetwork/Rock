@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
@@ -217,6 +218,19 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
+        /// Handles the Copy event of the rGrid control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rGrid_Copy( object sender, RowEventArgs e )
+        {
+            var pageService = new PageService( new RockContext() );
+            pageService.CopyPage( e.RowKeyId, CurrentPersonAliasId );
+
+            BindGrid();
+        }
+
+        /// <summary>
         /// Handles the GridRebind event of the rGrid control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -264,6 +278,7 @@ namespace RockWeb.Blocks.Administration
                     {
                         page.ParentPageId = _page.Id;
                         page.LayoutId = _page.LayoutId;
+                        page.AllowIndexing = _page.AllowIndexing;
                     }
                     else
                     {

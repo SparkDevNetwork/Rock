@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,6 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting
@@ -32,13 +33,30 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Block to display a chart using SQL as the chart datasource" )]
 
-    [CodeEditorField( "SQL", @"The SQL for the datasource. Output columns must be [SeriesID], [DateTime], [YValue]. Example: 
+    [CodeEditorField( "SQL", @"The SQL for the datasource. Output columns must be as follows:
+<ul>
+    <li>Bar or Line Chart
+        <ul>
+           <li>[SeriesName] : string or numeric </li>
+           <li>[DateTime] : DateTime </li>
+           <li>[YValue] : numeric </li>
+        </ul>
+    </li>
+    <li>Pie Chart
+        <ul>
+           <li>[MetricTitle] : string </li>
+           <li>[YValueTotal] : numeric </li>
+        </ul>
+    </li>
+</ul>
+
+Example: 
 <code><pre>
 -- get top 25 viewed pages from the last 30 days (excluding Home)
 select top 25  * from (
     select 
         distinct
-        pv.PageTitle [SeriesID], 
+        pv.PageTitle [SeriesName], 
         convert(date, pv.DateTimeViewed) [DateTime], 
         count(*) [YValue] 
     from 
@@ -49,14 +67,17 @@ select top 25  * from (
 and DateTime > DateAdd(day, -30, SysDateTime())
 order by YValue desc
 </pre>
-</code>", 
+</code>",
               CodeEditorMode.Sql )]
 
     [IntegerField( "Chart Height", "", false, 200 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", Order = 3 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", order: 3 )]
 
-    [BooleanField( "Show Legend", "", true, Order = 7 )]
-    [CustomDropdownListField( "Legend Position", "Select the position of the Legend (corner)", "ne,nw,se,sw", false, "ne", Order = 8 )]
+    [BooleanField( "Show Legend", "", true, order: 7 )]
+    [CustomDropdownListField( "Legend Position", "Select the position of the Legend (corner)", "ne,nw,se,sw", false, "ne", order: 8 )]
+    [CustomDropdownListField( "Chart Type", "", "Line,Bar,Pie", false, "Line", order: 9 )]
+    [DecimalField( "Pie Inner Radius", "If this is a pie chart, specific the inner radius to have a donut hole. For example, specify: 0.75 to have the inner radius as 75% of the outer radius.", false, 0, order: 10 )]
+    [BooleanField( "Pie Show Labels", "If this is a pie chart, specify if labels show be shown", true, "", order: 11 )]
     public partial class DynamicChart : Rock.Reporting.Dashboard.DashboardWidget
     {
         /// <summary>
@@ -74,6 +95,7 @@ order by YValue desc
             var pageReference = new Rock.Web.PageReference( this.PageCache.Id );
             pageReference.QueryString = new System.Collections.Specialized.NameValueCollection();
             pageReference.QueryString.Add( "GetChartData", "true" );
+            pageReference.QueryString.Add( "GetChartDataBlockId", this.BlockId.ToString() );
             pageReference.QueryString.Add( "TimeStamp", RockDateTime.Now.ToJavascriptMilliseconds().ToString() );
             lcLineChart.DataSourceUrl = pageReference.BuildUrl();
             lcLineChart.ChartHeight = this.GetAttributeValue( "ChartHeight" ).AsIntegerOrNull() ?? 200;
@@ -81,6 +103,48 @@ order by YValue desc
             lcLineChart.Options.legend = lcLineChart.Options.legend ?? new Legend();
             lcLineChart.Options.legend.show = this.GetAttributeValue( "ShowLegend" ).AsBooleanOrNull();
             lcLineChart.Options.legend.position = this.GetAttributeValue( "LegendPosition" );
+
+            bcBarChart.DataSourceUrl = pageReference.BuildUrl();
+            bcBarChart.ChartHeight = this.GetAttributeValue( "ChartHeight" ).AsIntegerOrNull() ?? 200;
+            bcBarChart.Options.SetChartStyle( this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull() );
+            bcBarChart.Options.xaxis = new AxisOptions { mode = AxisMode.categories, tickLength = 0 };
+            bcBarChart.Options.series.bars.barWidth = 0.6;
+            bcBarChart.Options.series.bars.align = "center";
+
+            bcBarChart.Options.legend = lcLineChart.Options.legend ?? new Legend();
+            bcBarChart.Options.legend.show = this.GetAttributeValue( "ShowLegend" ).AsBooleanOrNull();
+            bcBarChart.Options.legend.position = this.GetAttributeValue( "LegendPosition" );
+
+            pcPieChart.DataSourceUrl = pageReference.BuildUrl();
+            pcPieChart.ChartHeight = this.GetAttributeValue( "ChartHeight" ).AsIntegerOrNull() ?? 200;
+            pcPieChart.Options.SetChartStyle( this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull() );
+
+            pcPieChart.PieOptions.label = new PieLabel { show = this.GetAttributeValue( "PieShowLabels" ).AsBooleanOrNull() ?? true };
+            pcPieChart.PieOptions.label.formatter = @"
+function labelFormatter(label, series) {
+	return ""<div style='font-size:8pt; text-align:center; padding:2px; '>"" + label + ""<br/>"" + Math.round(series.percent) + ""%</div>"";
+}
+".Trim();
+            pcPieChart.Legend.show = this.GetAttributeValue( "ShowLegend" ).AsBooleanOrNull();
+
+            pcPieChart.PieOptions.innerRadius = this.GetAttributeValue( "PieInnerRadius" ).AsDoubleOrNull();
+
+            lcLineChart.Visible = false;
+            bcBarChart.Visible = false;
+            pcPieChart.Visible = false;
+            var chartType = this.GetAttributeValue( "ChartType" );
+            if ( chartType == "Pie" )
+            {
+                pcPieChart.Visible = true;
+            }
+            else if ( chartType == "Bar" )
+            {
+                bcBarChart.Visible = true;
+            }
+            else
+            {
+                lcLineChart.Visible = true;
+            }
 
             pnlDashboardTitle.Visible = !string.IsNullOrEmpty( this.Title );
             pnlDashboardSubtitle.Visible = !string.IsNullOrEmpty( this.Subtitle );
@@ -99,7 +163,7 @@ order by YValue desc
                 nbConfigurationWarning.Visible = false;
             }
 
-            if ( PageParameter( "GetChartData" ).AsBoolean() )
+            if ( PageParameter( "GetChartData" ).AsBoolean() && ( PageParameter( "GetChartDataBlockId" ).AsInteger() == this.BlockId ) )
             {
                 GetChartData();
             }
@@ -119,7 +183,7 @@ order by YValue desc
             public long DateTimeStamp { get; set; }
 
             /// <summary>
-            /// Gets the y value.
+            /// Gets the y value (for Line and Bar Charts)
             /// </summary>
             /// <value>
             /// The y value.
@@ -127,12 +191,46 @@ order by YValue desc
             public decimal? YValue { get; set; }
 
             /// <summary>
-            /// Gets the series identifier.
+            /// Gets or sets the metric title (for pie charts)
+            /// </summary>
+            /// <value>
+            /// The metric title.
+            /// </value>
+            public string MetricTitle { get; set; }
+
+            /// <summary>
+            /// Gets the y value (for pie charts)
+            /// </summary>
+            /// <value>
+            /// The y value.
+            /// </value>
+            public decimal? YValueTotal { get; set; }
+
+            /// <summary>
+            /// Gets the series identifier (obsolete)
+            /// NOTE: Use MetricValuePartitionEntityIds if you are populating this with a EntityTypeId|EntityId list, or use SeriesName for a static series name
             /// </summary>
             /// <value>
             /// The series identifier.
             /// </value>
+            [Obsolete( "Use MetricValuePartitionEntityIds if you are populating this with a EntityTypeId|EntityId list, or use SeriesName for a static series name" )]
             public string SeriesId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the series. This will be the default name of the series if MetricValuePartitionEntityIds can't be resolved
+            /// </summary>
+            /// <value>
+            /// The name of the series.
+            /// </value>
+            public string SeriesName { get; set; }
+
+            /// <summary>
+            /// Gets the metric value partitions as a comma-delimited list of EntityTypeId|EntityId
+            /// </summary>
+            /// <value>
+            /// The metric value entityTypeId,EntityId partitions
+            /// </value>
+            public string MetricValuePartitionEntityIds { get; set; }
         }
 
         /// <summary>
@@ -140,33 +238,81 @@ order by YValue desc
         /// </summary>
         private void GetChartData()
         {
-            var sql = this.GetAttributeValue( "SQL" );
+            try
+            {
+                var sql = this.GetAttributeValue( "SQL" );
 
-            if ( string.IsNullOrWhiteSpace( sql ) )
-            {
-                //
-            }
-            else
-            {
-                DataSet dataSet = DbService.GetDataSet( sql, System.Data.CommandType.Text, null );
-                List<DynamicChartData> chartDataList = new List<DynamicChartData>();
-                foreach ( var row in dataSet.Tables[0].Rows.OfType<DataRow>() )
+                if ( string.IsNullOrWhiteSpace( sql ) )
                 {
-                    var chartData = new DynamicChartData
-                    {
-                        SeriesId = Convert.ToString( row["SeriesID"] ),
-                        DateTimeStamp = ( row["DateTime"] as DateTime? ).Value.ToJavascriptMilliseconds(),
-                        YValue = Convert.ToDecimal( row["YValue"] )
-                    };
-
-                    chartDataList.Add( chartData );
+                    //
                 }
+                else
+                {
+                    var mergeFields = GetDynamicDataMergeFields();
+                    sql = sql.ResolveMergeFields( mergeFields );
 
-                chartDataList = chartDataList.OrderBy( a => a.SeriesId ).ThenBy( a => a.DateTimeStamp ).ToList();
+                    DataSet dataSet = DbService.GetDataSet( sql, System.Data.CommandType.Text, null );
+                    List<DynamicChartData> chartDataList = new List<DynamicChartData>();
+                    foreach ( var row in dataSet.Tables[0].Rows.OfType<DataRow>() )
+                    {
+                        var chartData = new DynamicChartData();
 
-                Response.Clear();
-                Response.Write( chartDataList.ToJson() );
-                Response.End();
+                        if ( row.Table.Columns.Contains( "SeriesName" ) )
+                        {
+                            chartData.SeriesName = Convert.ToString( row["SeriesName"] );
+                        }
+                        else if ( row.Table.Columns.Contains( "SeriesID" ) )
+                        {
+                            // backwards compatibility
+                            chartData.SeriesName = Convert.ToString( row["SeriesID"] );
+                        }
+
+                        if ( row.Table.Columns.Contains( "YValue" ) )
+                        {
+                            chartData.YValue = Convert.ToDecimal( row["YValue"] );
+                        }
+
+                        if ( row.Table.Columns.Contains( "MetricTitle" ) )
+                        {
+                            chartData.MetricTitle = Convert.ToString( row["MetricTitle"] );
+                        }
+                        else
+                        {
+                            chartData.MetricTitle = chartData.SeriesName;
+                        }
+
+                        if ( row.Table.Columns.Contains( "YValueTotal" ) )
+                        {
+                            chartData.YValueTotal = Convert.ToDecimal( row["YValueTotal"] );
+                        }
+                        else
+                        {
+                            chartData.YValueTotal = chartData.YValue;
+                        }
+
+                        if ( row.Table.Columns.Contains( "DateTime" ) )
+                        {
+                            chartData.DateTimeStamp = ( row["DateTime"] as DateTime? ).Value.ToJavascriptMilliseconds();
+                        }
+
+                        chartDataList.Add( chartData );
+                    }
+
+                    chartDataList = chartDataList.OrderBy( a => a.SeriesName ).ThenBy( a => a.DateTimeStamp ).ToList();
+
+                    Response.Clear();
+                    Response.Write( chartDataList.ToJson() );
+                    Response.End();
+                }
+            }
+            catch (System.Threading.ThreadAbortException)
+            {
+                // ignore the ThreadAbort exception from Response.End();
+            }
+            catch ( Exception ex )
+            {
+                LogException( ex );
+                throw;
             }
         }
 
@@ -179,6 +325,20 @@ order by YValue desc
         {
             // reload the full page since controls are dynamically created based on block settings
             NavigateToPage( this.CurrentPageReference );
+        }
+
+        /// <summary>
+        /// Gets the dynamic data merge fields.
+        /// </summary>
+        /// <returns></returns>
+        private Dictionary<string, object> GetDynamicDataMergeFields()
+        {
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+
+            mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
+            mergeFields.AddOrReplace( "CurrentPage", this.PageCache );
+
+            return mergeFields;
         }
     }
 }

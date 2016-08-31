@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -125,7 +125,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     SetPersonName();
 
                     // Setup Image
-                    string imgTag = Rock.Model.Person.GetPhotoImageTag( Person.PhotoId, Person.Age, Person.Gender, 200, 200 );
+                    string imgTag = Rock.Model.Person.GetPersonPhotoImageTag( Person, 200, 200 );
                     if ( Person.PhotoId.HasValue )
                     {
                         lImage.Text = string.Format( "<a href='{0}'>{1}</a>", Person.PhotoUrl, imgTag );
@@ -160,16 +160,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                     if ( Person.BirthDate.HasValue )
                     {
-                        string ageText = ( Person.BirthYear.HasValue && Person.BirthYear != DateTime.MinValue.Year ) ?
-                            string.Format( "{0} yrs old ", Person.BirthDate.Value.Age() ) : string.Empty;
-                        if (Person.BirthDate.Value.Year != DateTime.MinValue.Year)
-                        {
-                            lAge.Text = string.Format("{0}<small>({1})</small><br/>", ageText, Person.BirthDate.Value.ToShortDateString());
-                        } else
-                        {
-                            lAge.Text = string.Format("{0}<small>({1})</small><br/>", ageText, Person.BirthDate.Value.ToMonthDayString());
-                        }
-                        
+                        lAge.Text = string.Format("{0}<small>({1})</small><br/>", Person.FormatAge(), (Person.BirthYear.HasValue && Person.BirthYear != DateTime.MinValue.Year) ? Person.BirthDate.Value.ToShortDateString() : Person.BirthDate.Value.ToMonthDayString());
                     }
 
                     lGender.Text = Person.Gender.ToString();

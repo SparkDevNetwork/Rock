@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,14 +16,16 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using System.Web;
 using System.Web.UI.WebControls;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock
 {
@@ -48,10 +50,33 @@ namespace Rock
         /// <returns></returns>
         public static string AsDelimited<T>( this List<T> items, string delimiter, string finalDelimiter = null )
         {
+            return AsDelimited<T>( items, delimiter, finalDelimiter, false );
+        }
+
+        /// <summary>
+        /// Concatonate the items into a Delimited string an optionally htmlencode the strings
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="items">The items.</param>
+        /// <param name="delimiter">The delimiter.</param>
+        /// <param name="finalDelimiter">The final delimiter.</param>
+        /// <param name="HtmlEncode">if set to <c>true</c> [HTML encode].</param>
+        /// <returns></returns>
+        public static string AsDelimited<T>( this List<T> items, string delimiter, string finalDelimiter, bool HtmlEncode )
+        {
+
             List<string> strings = new List<string>();
             foreach ( T item in items )
             {
-                strings.Add( item.ToString() );
+                if ( item != null )
+                {
+                    string itemString = item.ToString();
+                    if ( HtmlEncode )
+                    {
+                        itemString = HttpUtility.HtmlEncode( itemString );
+                    }
+                    strings.Add( itemString );
+                }
             }
 
             if ( finalDelimiter != null && strings.Count > 1 )
@@ -130,6 +155,19 @@ namespace Rock
                     itemStack.Push( child );
                 }
             }
+        }
+
+        /// <summary>
+        /// Takes the last n items from a List.
+        /// http://stackoverflow.com/questions/3453274/using-linq-to-get-the-last-n-elements-of-a-collection
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source">The source.</param>
+        /// <param name="N">The n.</param>
+        /// <returns></returns>
+        public static IEnumerable<T> TakeLast<T>( this IEnumerable<T> source, int N )
+        {
+            return source.Skip( Math.Max( 0, source.Count() - N ) );
         }
 
         #endregion GenericCollection Extensions
@@ -306,6 +344,52 @@ namespace Rock
         /// <returns></returns>
         public static IOrderedQueryable<T> Sort<T>( this IQueryable<T> source, Rock.Web.UI.Controls.SortProperty sortProperty )
         {
+            if ( sortProperty.Property.StartsWith( "attribute:" ) )
+            {
+                var itemType = typeof( T );
+                var attributeCache = AttributeCache.Read( sortProperty.Property.Substring( 10 ).AsInteger() );
+                if ( attributeCache != null && typeof( IModel ).IsAssignableFrom( typeof( T ) ) )
+                {
+                    var entityIds = new List<int>();
+
+                    var models = new List<IModel>();
+                    source.ToList().ForEach( i => models.Add( i as IModel ) );
+                    var ids = models.Select( m => m.Id ).ToList();
+
+                    var field = attributeCache.FieldType.Field;
+
+                    using ( var rockContext = new RockContext() )
+                    {
+                        foreach ( var attributeValue in new AttributeValueService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( v =>
+                                v.AttributeId == attributeCache.Id &&
+                                v.EntityId.HasValue &&
+                                ids.Contains( v.EntityId.Value ) )
+                            .ToList() )
+                        {
+                            var model = models.FirstOrDefault( m => m.Id == attributeValue.EntityId.Value );
+                            if ( model != null )
+                            {
+                                model.CustomSortValue = field.SortValue( null, attributeValue.Value, attributeCache.QualifierValues );
+                            }
+                        }
+                    }
+
+                    var result = new List<T>();
+                    if ( sortProperty.Direction == SortDirection.Ascending )
+                    {
+                        models.OrderBy( m => m.CustomSortValue ).ToList().ForEach( m => result.Add( (T)m ) );
+                    }
+                    else
+                    {
+                        models.OrderByDescending( m => m.CustomSortValue ).ToList().ForEach( m => result.Add( (T)m ) );
+                    }
+
+                    return result.AsQueryable().OrderBy( r => 0 );
+                }
+            }
+
             string[] columns = sortProperty.Property.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
 
             IOrderedQueryable<T> qry = null;
@@ -332,6 +416,7 @@ namespace Rock
             }
 
             return qry;
+            
         }
 
         /// <summary>

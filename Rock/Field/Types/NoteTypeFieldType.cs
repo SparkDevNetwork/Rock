@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -194,6 +194,7 @@ namespace Rock.Field.Types
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             int entityTypeId = 0;
+            string entityTypeName = string.Empty;
             string qualifierColumn = string.Empty;
             string qualifierValue = string.Empty;
 
@@ -201,7 +202,7 @@ namespace Rock.Field.Types
             {
                 if ( configurationValues.ContainsKey( ENTITY_TYPE_NAME_KEY ) )
                 {
-                    string entityTypeName = configurationValues[ENTITY_TYPE_NAME_KEY].Value;
+                    entityTypeName = configurationValues[ENTITY_TYPE_NAME_KEY].Value;
                     if ( !string.IsNullOrWhiteSpace( entityTypeName ) && entityTypeName != None.IdValue )
                     {
                         var entityType = EntityTypeCache.Read( entityTypeName );
@@ -226,10 +227,25 @@ namespace Rock.Field.Types
             editControl.Items.Add( new ListItem() );
 
             using ( var rockContext = new RockContext() )
-            { 
-                foreach ( var noteType in new NoteTypeService( rockContext ).Get( entityTypeId, qualifierColumn, qualifierValue ) )
+            {
+                if ( string.IsNullOrWhiteSpace( entityTypeName ) )
                 {
-                    editControl.Items.Add( new ListItem( noteType.Name, noteType.Guid.ToString().ToUpper() ) );
+                    foreach ( var noteType in new NoteTypeService( rockContext )
+                        .Queryable()
+                        .OrderBy( n => n.EntityType.Name )
+                        .ThenBy( n => n.Name ) )
+                    {
+                        editControl.Items.Add( new ListItem( string.Format( "{0}: {1}", noteType.EntityType.FriendlyName, noteType.Name ), noteType.Guid.ToString().ToUpper() ) );
+                    }
+                }
+                else
+                {
+                    foreach ( var noteType in new NoteTypeService( rockContext )
+                        .Get( entityTypeId, qualifierColumn, qualifierValue )
+                        .OrderBy( n => n.Name ) )
+                    {
+                        editControl.Items.Add( new ListItem( noteType.Name, noteType.Guid.ToString().ToUpper() ) );
+                    }
                 }
             }
 

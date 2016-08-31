@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,7 +28,6 @@ namespace Rock.Jobs
     /// <summary>
     /// Job that executes routine cleanup tasks on Rock
     /// </summary>
-    [IntegerField( "Hours to Keep Unconfirmed Accounts", "The number of hours to keep user accounts that have not been confirmed (default is 48 hours.)", false, 48, "General", 0, "HoursKeepUnconfirmedAccounts" )]
     [IntegerField( "Days to Keep Exceptions in Log", "The number of days to keep exceptions in the exception log (default is 14 days.)", false, 14, "General", 1, "DaysKeepExceptions" )]
     [IntegerField( "Audit Log Expiration Days", "The number of days to keep items in the audit log (default is 14 days.)", false, 14, "General", 2, "AuditLogExpirationDays" )]
     [IntegerField( "Days to Keep Cached Files", "The number of days to keep cached files in the cache folder (default is 14 days.)", false, 14, "General", 3, "DaysKeepCachedFiles" )]
@@ -62,18 +61,11 @@ namespace Rock.Jobs
 
             List<Exception> rockCleanupExceptions = new List<Exception>();
 
-            try
-            {
-                CleanupUnconfirmedUserLogins( dataMap );
-            }
-            catch ( Exception ex )
-            {
-                rockCleanupExceptions.Add( new Exception( "Exception in CleanupUnconfirmedUserLogins", ex ) );
-            }
+            int databaseRowsDeleted = 0;
 
             try
             {
-                PurgeExceptionLog( dataMap );
+                databaseRowsDeleted += PurgeExceptionLog( dataMap );
             }
             catch ( Exception ex )
             {
@@ -82,7 +74,7 @@ namespace Rock.Jobs
 
             try
             {
-                CleanupExpiredEntitySets( dataMap );
+                databaseRowsDeleted += CleanupExpiredEntitySets( dataMap );
             }
             catch ( Exception ex )
             {
@@ -91,7 +83,7 @@ namespace Rock.Jobs
 
             try
             {
-                CleanupPageViews( dataMap );
+                databaseRowsDeleted += CleanupPageViews( dataMap );
             }
             catch ( Exception ex )
             {
@@ -100,7 +92,7 @@ namespace Rock.Jobs
 
             try
             {
-                PurgeAuditLog( dataMap );
+                databaseRowsDeleted += PurgeAuditLog( dataMap );
             }
             catch ( Exception ex )
             {
@@ -127,6 +119,7 @@ namespace Rock.Jobs
 
             try
             {
+                // updates missing person aliases, metaphones, etc (doesn't delete any records)
                 PersonCleanup( dataMap );
             }
             catch ( Exception ex )
@@ -136,12 +129,14 @@ namespace Rock.Jobs
 
             try
             {
-                CleanUpTemporaryRegistrations();
+                databaseRowsDeleted += CleanUpTemporaryRegistrations();
             }
             catch ( Exception ex )
             {
                 rockCleanupExceptions.Add( new Exception( "Exception in CleanUpTemporaryRegistrations", ex ) );
             }
+
+            context.Result = string.Format( "Rock Cleanup cleaned up {0} database rows", databaseRowsDeleted );
 
             if ( rockCleanupExceptions.Count > 0 )
             {
@@ -230,9 +225,10 @@ namespace Rock.Jobs
         /// <summary>
         /// Cleans up temporary registrations.
         /// </summary>
-        private void CleanUpTemporaryRegistrations()
+        private int CleanUpTemporaryRegistrations()
         {
             var registrationRockContext = new Rock.Data.RockContext();
+            int totalRowsDeleted = 0;
             // clean out any temporary registrations
             RegistrationService registrationService = new RegistrationService( registrationRockContext );
             foreach ( var registration in registrationService.Queryable().Where( bf => bf.IsTemporary == true ).ToList() )
@@ -244,9 +240,12 @@ namespace Rock.Jobs
                     {
                         registrationService.Delete( registration );
                         registrationRockContext.SaveChanges();
+                        totalRowsDeleted++;
                     }
                 }
             }
+
+            return totalRowsDeleted;
         }
 
         /// <summary>
@@ -282,9 +281,10 @@ namespace Rock.Jobs
         /// Purges the audit log.
         /// </summary>
         /// <param name="dataMap">The data map.</param>
-        private void PurgeAuditLog( JobDataMap dataMap )
+        private int PurgeAuditLog( JobDataMap dataMap )
         {
             // purge audit log
+            int totalRowsDeleted = 0;
             int? auditExpireDays = dataMap.GetString( "AuditLogExpirationDays" ).AsIntegerOrNull();
             if ( auditExpireDays.HasValue )
             {
@@ -300,6 +300,7 @@ namespace Rock.Jobs
                     {
                         int rowsDeleted = auditLogRockContext.Database.ExecuteSqlCommand( @"DELETE TOP (1000) FROM [Audit] WHERE [DateTime] < @auditExpireDate", new SqlParameter( "auditExpireDate", auditExpireDate ) );
                         keepDeleting = rowsDeleted > 0;
+                        totalRowsDeleted += rowsDeleted;
                     }
                     finally
                     {
@@ -309,14 +310,17 @@ namespace Rock.Jobs
 
                 auditLogRockContext.SaveChanges();
             }
+
+            return totalRowsDeleted;
         }
 
         /// <summary>
         /// Purges the exception log.
         /// </summary>
         /// <param name="dataMap">The data map.</param>
-        private void PurgeExceptionLog( JobDataMap dataMap )
+        private int PurgeExceptionLog( JobDataMap dataMap )
         {
+            int totalRowsDeleted = 0;
             int? exceptionExpireDays = dataMap.GetString( "DaysKeepExceptions" ).AsIntegerOrNull();
             if ( exceptionExpireDays.HasValue )
             {
@@ -332,6 +336,7 @@ namespace Rock.Jobs
                     {
                         int rowsDeleted = exceptionLogRockContext.Database.ExecuteSqlCommand( @"DELETE TOP (1000) FROM [ExceptionLog] WHERE [CreatedDateTime] < @createdDateTime", new SqlParameter( "createdDateTime", exceptionExpireDate ) );
                         keepDeleting = rowsDeleted > 0;
+                        totalRowsDeleted += rowsDeleted;
                     }
                     finally
                     {
@@ -339,48 +344,21 @@ namespace Rock.Jobs
                     }
                 }
             }
-        }
 
-        /// <summary>
-        /// Cleanups the unconfirmed user logins that have not been confirmed in X hours
-        /// </summary>
-        /// <param name="dataMap">The data map.</param>
-        private void CleanupUnconfirmedUserLogins( JobDataMap dataMap )
-        {
-            int? userExpireHours = dataMap.GetString( "HoursKeepUnconfirmedAccounts" ).AsIntegerOrNull();
-            if ( userExpireHours.HasValue )
-            {
-                var userLoginRockContext = new Rock.Data.RockContext();
-                DateTime userAccountExpireDate = RockDateTime.Now.Add( new TimeSpan( userExpireHours.Value * -1, 0, 0 ) );
-
-                // delete in chunks (see http://dba.stackexchange.com/questions/1750/methods-of-speeding-up-a-huge-delete-from-table-with-no-clauses)
-                bool keepDeleting = true;
-                while ( keepDeleting )
-                {
-                    var dbTransaction = userLoginRockContext.Database.BeginTransaction();
-                    try
-                    {
-                        int rowsDeleted = userLoginRockContext.Database.ExecuteSqlCommand( @"DELETE TOP (1000) FROM [UserLogin] WHERE [IsConfirmed] = 0 AND ([CreatedDateTime] is null OR [CreatedDateTime] < @createdDateTime )", new SqlParameter( "createdDateTime", userAccountExpireDate ) );
-                        keepDeleting = rowsDeleted > 0;
-                    }
-                    finally
-                    {
-                        dbTransaction.Commit();
-                    }
-                }
-            }
+            return totalRowsDeleted;
         }
 
         /// <summary>
         /// Cleans up expired entity sets.
         /// </summary>
         /// <param name="dataMap">The data map.</param>
-        private void CleanupExpiredEntitySets( JobDataMap dataMap )
+        private int CleanupExpiredEntitySets( JobDataMap dataMap )
         {
             var entitySetRockContext = new Rock.Data.RockContext();
             var currentDateTime = RockDateTime.Now;
             var entitySetService = new EntitySetService( entitySetRockContext );
             var qry = entitySetService.Queryable().Where( a => a.ExpireDateTime.HasValue && a.ExpireDateTime < currentDateTime );
+            int totalRowsDeleted = 0;
 
             foreach ( var entitySet in qry.ToList() )
             {
@@ -398,6 +376,7 @@ namespace Rock.Jobs
 
                             int rowsDeleted = entitySetRockContext.Database.ExecuteSqlCommand( sqlCommand, new SqlParameter( "entitySetId", entitySet.Id ) );
                             keepDeleting = rowsDeleted > 0;
+                            totalRowsDeleted += rowsDeleted;
                         }
                         finally
                         {
@@ -410,6 +389,7 @@ namespace Rock.Jobs
                 }
             }
 
+            return totalRowsDeleted;
         }
 
 
@@ -417,12 +397,13 @@ namespace Rock.Jobs
         /// Cleans up PagesViews for sites that have a Page View retention period
         /// </summary>
         /// <param name="dataMap">The data map.</param>
-        private void CleanupPageViews( JobDataMap dataMap )
+        private int CleanupPageViews( JobDataMap dataMap )
         {
             var pageViewRockContext = new Rock.Data.RockContext();
             var currentDateTime = RockDateTime.Now;
             var siteService = new SiteService( pageViewRockContext );
             var siteQry = siteService.Queryable().Where( a => a.PageViewRetentionPeriodDays.HasValue );
+            int totalRowsDeleted = 0;
             //
 
             foreach ( var site in siteQry.ToList() )
@@ -432,7 +413,7 @@ namespace Rock.Jobs
                 {
                     retentionCutoffDateTime = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
                 }
-                
+
                 // delete in chunks (see http://dba.stackexchange.com/questions/1750/methods-of-speeding-up-a-huge-delete-from-table-with-no-clauses)
                 bool keepDeleting = true;
                 while ( keepDeleting )
@@ -444,6 +425,7 @@ namespace Rock.Jobs
 
                         int rowsDeleted = pageViewRockContext.Database.ExecuteSqlCommand( sqlCommand, new SqlParameter( "siteId", site.Id ), new SqlParameter( "retentionCutoffDateTime", retentionCutoffDateTime ) );
                         keepDeleting = rowsDeleted > 0;
+                        totalRowsDeleted += rowsDeleted;
                     }
                     finally
                     {
@@ -451,6 +433,8 @@ namespace Rock.Jobs
                     }
                 }
             }
+
+            return totalRowsDeleted;
         }
 
         /// <summary>

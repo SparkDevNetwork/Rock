@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -70,6 +70,11 @@ public class BundleConfig
         // to be included for administrative users
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockAdmin" ).Include( 
             "~/Scripts/Rock/Admin/*.js" ) );
+
+        // Creating a separate "RockHtmlEditorPlugins" bundle specifically for JS functionality that needs
+        // to be included for HtmlEditor
+        bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockHtmlEditorPlugins" ).Include(
+            "~/Scripts/summernote/plugins/*.js" ) );
 
         // make sure the ConcatenationToken is what we want.  This is supposed to be the default, but it occassionally was an empty string.
         foreach ( var bundle in bundles )

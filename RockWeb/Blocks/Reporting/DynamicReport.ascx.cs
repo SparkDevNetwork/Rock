@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -154,6 +154,7 @@ namespace RockWeb.Blocks.Reporting
             txtFilterTitle.Text = this.GetAttributeValue( "FilterTitle" );
             txtFilterIconCssClass.Text = this.GetAttributeValue( "FilterIconCssClass" );
             BindDataFiltersGrid( false );
+            ddlPersonIdField.SetValue( this.GetAttributeValue( "PersonIdField" ) );
             mdConfigure.Show();
         }
 
@@ -311,9 +312,18 @@ namespace RockWeb.Blocks.Reporting
                 if ( filter.ExpressionType == FilterExpressionType.Filter )
                 {
                     var filterControl = new FilterField();
-                    filterControl.FilterMode = FilterMode.SimpleFilter;
-
                     bool filterIsVisible = selectedDataFieldGuids.Contains( filter.Guid );
+
+                    if ( filterIsVisible )
+                    {
+                        // only set FilterMode to simple if the filter is visible since SimpleFilters might have a different filtering behavior
+                        filterControl.FilterMode = FilterMode.SimpleFilter;
+                    }
+                    else
+                    {
+                        filterControl.FilterMode = FilterMode.AdvancedFilter;
+                    }
+
                     bool filterIsConfigurable = configurableDataFieldGuids.Contains( filter.Guid );
                     bool showCheckbox = togglableDataFieldGuids.Contains( filter.Guid ) || !filterIsConfigurable;
                     filterControl.Visible = filterIsVisible;
@@ -346,13 +356,17 @@ namespace RockWeb.Blocks.Reporting
                     {
                         string selectionUserPreference = null;
                         bool? checkedUserPreference = null;
-                        if ( setSelection && filterIsVisible && filterIsConfigurable )
+                        if ( setSelection && filterIsVisible )
                         {
-                            selectionUserPreference = this.GetUserPreference( string.Format( "{0}_{1}_Selection", GetReportDataKeyPrefix(), filterControl.DataViewFilterGuid.ToString( "N" ) ) );
-                        }
-                        else if ( setSelection && filterIsVisible && !filterIsConfigurable )
-                        {
-                            checkedUserPreference = this.GetUserPreference( string.Format( "{0}_{1}_Checked", GetReportDataKeyPrefix(), filterControl.DataViewFilterGuid.ToString( "N" ) ) ).AsBooleanOrNull();
+                            if ( filterIsConfigurable )
+                            {
+                                selectionUserPreference = this.GetUserPreference( string.Format( "{0}_{1}_Selection", GetReportDataKeyPrefix(), filterControl.DataViewFilterGuid.ToString( "N" ) ) );
+                            }
+
+                            if ( filterControl.ShowCheckbox )
+                            {
+                                checkedUserPreference = this.GetUserPreference( string.Format( "{0}_{1}_Checked", GetReportDataKeyPrefix(), filterControl.DataViewFilterGuid.ToString( "N" ) ) ).AsBooleanOrNull();
+                            }
                         }
 
                         if ( checkedUserPreference.HasValue )
@@ -360,64 +374,48 @@ namespace RockWeb.Blocks.Reporting
                             filterControl.SetCheckBoxChecked( checkedUserPreference.Value );
                         }
 
-                        if ( filterIsVisible && !filterIsConfigurable )
+                        if ( setSelection )
+                        {
+                            var selection = filter.Selection;
+                            if ( !string.IsNullOrWhiteSpace( selectionUserPreference ) )
+                            {
+                                if ( component is Rock.Reporting.DataFilter.PropertyFilter )
+                                {
+                                    selection = ( component as Rock.Reporting.DataFilter.PropertyFilter ).UpdateSelectionFromUserPreferenceSelection( selection, selectionUserPreference );
+                                }
+                                else
+                                {
+                                    selection = selectionUserPreference;
+                                }
+                            }
+
+                            if ( component is Rock.Reporting.DataFilter.IUpdateSelectionFromPageParameters )
+                            {
+                                selection = ( component as Rock.Reporting.DataFilter.IUpdateSelectionFromPageParameters ).UpdateSelectionFromPageParameters( selection, this );
+                            }
+
+                            try
+                            {
+                                filterControl.SetSelection( selection );
+                            }
+                            catch ( Exception ex )
+                            {
+                                this.LogException( new Exception( "Exception setting selection for DataViewFilter: " + filter.Guid, ex ) );
+                            }
+                        }
+
+                        if (!filterIsConfigurable )
                         {
                             // not configurable so just label it with the selection summary
                             filterControl.Label = component.FormatSelection( reportEntityTypeModel, filter.Selection );
                         }
                         else if ( component is Rock.Reporting.DataFilter.PropertyFilter )
                         {
-                            // a configurable property filter
-                            var propertyFilter = component as Rock.Reporting.DataFilter.PropertyFilter;
-                            if ( setSelection )
-                            {
-                                var selection = filter.Selection;
-
-                                if ( !string.IsNullOrWhiteSpace( selectionUserPreference ) )
-                                {
-                                    selection = propertyFilter.UpdateSelectionFromUserPreferenceSelection( selection, selectionUserPreference );
-                                }
-
-                                selection = propertyFilter.UpdateSelectionFromPageParameters( selection, this );
-
-                                try
-                                {
-                                    filterControl.SetSelection( selection );
-                                }
-                                catch ( Exception ex )
-                                {
-                                    this.LogException( new Exception( "Exception setting selection for DataViewFilter: " + filter.Guid, ex ) );
-                                }
-                            }
+                            // Property Filters already render a Label based on the selected Property Field, so leave the filter control label blank
+                            filterControl.Label = string.Empty;
                         }
                         else
                         {
-                            if ( setSelection )
-                            {
-                                var selection = filter.Selection;
-                                if ( !string.IsNullOrWhiteSpace( selectionUserPreference ) )
-                                {
-                                    selection = selectionUserPreference;
-                                }
-
-                                if ( component is Rock.Reporting.DataFilter.IUpdateSelectionFromPageParameters )
-                                {
-                                    selection = ( component as Rock.Reporting.DataFilter.IUpdateSelectionFromPageParameters ).UpdateSelectionFromPageParameters( selection, this );
-                                }
-
-                                filterControl.SetSelection( selection );
-
-                                try
-                                {
-                                    filterControl.SetSelection( selection );
-                                }
-                                catch ( Exception ex )
-                                {
-                                    this.LogException( new Exception( "Exception setting selection for DataViewFilter: " + filter.Guid, ex ) );
-                                }
-                            }
-
-                            // a configurable data filter
                             filterControl.Label = component.GetTitle( reportEntityTypeModel );
                         }
                     }

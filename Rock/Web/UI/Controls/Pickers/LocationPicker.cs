@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -82,7 +82,15 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
+                // first try to determine it from ViewState
                 var currentPickerMode = ViewState["CurrentPickerMode"] as LocationPickerMode?;
+
+                // if ViewState didn't know, try to get it from _hfCurrentPickerMode 
+                if ( !currentPickerMode.HasValue )
+                {
+                    currentPickerMode = _hfCurrentPickerMode.Value.ConvertToEnumOrNull<LocationPickerMode>();
+                }
+
                 if ( !currentPickerMode.HasValue )
                 {
                     if ( ( this.AllowedPickerModes & LocationPickerMode.Address ) == LocationPickerMode.Address )
@@ -111,6 +119,10 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["CurrentPickerMode"] = value;
+                if ( _hfCurrentPickerMode != null )
+                {
+                    _hfCurrentPickerMode.Value = value.ConvertToString();
+                }
             }
 
         }
@@ -486,6 +498,8 @@ namespace Rock.Web.UI.Controls
                 return;
             }
 
+            _hfCurrentPickerMode.Value = eventArgument;
+
             CurrentPickerMode = _hfCurrentPickerMode.Value.ConvertToEnum<LocationPickerMode>( LocationPickerMode.Named );
 
             _radNamed.Checked = eventArgument == "Named";
@@ -591,6 +605,29 @@ namespace Rock.Web.UI.Controls
                 _addressPicker.Help = value;
                 _pointPicker.Help = value;
                 _polygonPicker.Help = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the warning text.
+        /// </summary>
+        /// <value>
+        /// The warning text.
+        /// </value>
+        public string Warning
+        {
+            get
+            {
+                EnsureChildControls();
+                return _namedPicker.Warning;
+            }
+            set
+            {
+                EnsureChildControls();
+                _namedPicker.Warning = value;
+                _addressPicker.Warning = value;
+                _pointPicker.Warning = value;
+                _polygonPicker.Warning = value;
             }
         }
 
@@ -708,6 +745,29 @@ namespace Rock.Web.UI.Controls
                 _addressPicker.HelpBlock = value;
                 _pointPicker.HelpBlock = value;
                 _polygonPicker.HelpBlock = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the warning block.
+        /// </summary>
+        /// <value>
+        /// The warning block.
+        /// </value>
+        public WarningBlock WarningBlock
+        {
+            get
+            {
+                EnsureChildControls();
+                return _namedPicker.WarningBlock;
+            }
+            set
+            {
+                EnsureChildControls();
+                _namedPicker.WarningBlock = value;
+                _addressPicker.WarningBlock = value;
+                _pointPicker.WarningBlock = value;
+                _polygonPicker.WarningBlock = value;
             }
         }
 

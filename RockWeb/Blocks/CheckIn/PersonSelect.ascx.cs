@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
@@ -39,6 +40,13 @@ namespace RockWeb.Blocks.CheckIn
             RockPage.AddScriptLink( "~/Scripts/iscroll.js" );
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
 
+
+            var bodyTag = this.Page.Master.FindControl( "bodyTag" ) as HtmlGenericControl;
+            if ( bodyTag != null )
+            {
+                bodyTag.AddCssClass( "checkin-personselect-bg" );
+            }
+
             if ( CurrentWorkflow == null || CurrentCheckInState == null )
             {
                 NavigateToHomePage();
@@ -49,9 +57,7 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     ClearSelection();
 
-                    var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
-                        .FirstOrDefault();
-
+                    var family = CurrentCheckInState.CheckIn.CurrentFamily;
                     if ( family == null )
                     {
                         GoBack();
@@ -142,10 +148,11 @@ namespace RockWeb.Blocks.CheckIn
 
         protected void ProcessSelection()
         {
-            ProcessSelection( maWarning, () => CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
-                .SelectMany( f => f.People.Where( p => p.Selected )
-                    .SelectMany( p => p.GroupTypes.Where( t => !t.ExcludedByFilter ) ) )
-                .Count() <= 0,
+            ProcessSelection( 
+                maWarning, 
+                () => CurrentCheckInState.CheckIn.CurrentFamily.GetPeople( true )
+                    .SelectMany( p => p.GroupTypes.Where( t => !t.ExcludedByFilter ) )
+                    .Count() <= 0,
                 "<p>Sorry, based on your selection, there are currently not any available locations that can be checked into.</p>" );
         }
 

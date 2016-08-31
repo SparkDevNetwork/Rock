@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage( "Confirmation Page", "The page that user should be directed to to confirm their registration" )]
     [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2" )]
     [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49" )]
+    [BooleanField( "Load Current Person from Page", "If set to true the form will autopopulate fields fro mthe person profile", false, key: "LoadPerson" )]
     public partial class GroupSimpleRegister : RockBlock
     {
         #region overridden control methods
@@ -65,6 +66,16 @@ namespace RockWeb.Blocks.Groups
         {
             base.OnLoad( e );
             nbError.Visible = false;
+
+            if ( !Page.IsPostBack &&
+                GetAttributeValue( "LoadPerson" ).AsBoolean() && 
+                CurrentPerson != null  )
+            {
+                txtFirstName.Text = CurrentPerson.FirstName;
+                txtLastName.Text = CurrentPerson.LastName;
+                txtEmail.Text = CurrentPerson.Email;
+            }
+
         }
 
         #endregion
@@ -131,16 +142,16 @@ namespace RockWeb.Blocks.Groups
                                     // Send the confirmation
                                     if ( confirmationEmailTemplateGuid != Guid.Empty )
                                     {
-                                        var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
-                                        mergeObjects.Add( "Member", member );
+                                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                                        mergeFields.Add( "Member", member );
 
                                         var pageParams = new Dictionary<string, string>();
                                         pageParams.Add( "gm", member.UrlEncodedKey );
                                         var pageReference = new Rock.Web.PageReference( linkedPage, pageParams );
-                                        mergeObjects.Add( "ConfirmationPage", pageReference.BuildUrl() );
+                                        mergeFields.Add( "ConfirmationPage", pageReference.BuildUrl() );
 
                                         var recipients = new List<RecipientData>();
-                                        recipients.Add( new RecipientData( person.Email, mergeObjects ) );
+                                        recipients.Add( new RecipientData( person.Email, mergeFields ) );
                                         Email.Send( confirmationEmailTemplateGuid, recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
                                     }
 

@@ -4,6 +4,10 @@
     function clearActiveDialog() {
         $('#<%=hfActiveDialog.ClientID %>').val('');
     }
+
+    Sys.Application.add_load( function () {
+        $('.js-follow-status').tooltip();
+    });
 </script>
 
 <asp:UpdatePanel ID="upnlEventItemList" runat="server">
@@ -16,7 +20,7 @@
 
             <asp:HiddenField ID="hfEventItemId" runat="server" />
 
-            <div class="panel-heading">
+            <div class="panel-heading panel-follow clearfix">
                 <h1 class="panel-title pull-left">
                     <i class="fa fa-calendar-check-o"></i>
                     <asp:Literal ID="lReadOnlyTitle" runat="server" />
@@ -26,8 +30,9 @@
                     <Rock:HighlightLabel ID="hlStatus" runat="server" />
                     <Rock:HighlightLabel ID="hlApproved" runat="server" />
                 </div>
+                <asp:Panel runat="server" ID="pnlFollowing" CssClass="panel-follow-status js-follow-status" data-toggle="tooltip" data-placement="top" title="Click to Follow"></asp:Panel>
             </div>
-
+            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
 
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
@@ -56,7 +61,7 @@
                     <div class="actions">
                         <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
-                        <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
+                        <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link js-delete-event" OnClick="btnDelete_Click" CausesValidation="false" />
                     </div>
                 </div>
 

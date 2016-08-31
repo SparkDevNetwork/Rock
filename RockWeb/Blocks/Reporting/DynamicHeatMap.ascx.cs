@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,9 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity.Spatial;
 using System.Linq;
+using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -44,23 +45,12 @@ namespace RockWeb.Blocks.Reporting
     [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The map theme that should be used for styling the map.", true, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_GOOGLE, "", 3 )]
     [IntegerField( "Map Height", "Height of the map in pixels (default value is 600px)", false, 600, "", 4 )]
     [TextField( "Polygon Colors", "Comma-Delimited list of colors to use when displaying multiple polygons (e.g. #f37833,#446f7a,#afd074,#649dac,#f8eba2,#92d0df,#eaf7fc).", true, "#f37833,#446f7a,#afd074,#649dac,#f8eba2,#92d0df,#eaf7fc", "", 5 )]
-    [DecimalField( "Point Grouping", "The number of miles per to use to group points that are close together. For example, enter 0.25 to group points in 1/4 mile blocks. Increase this if the heatmap has lots of points and is slow", order: 6 )]
-    [BooleanField( "Show Filter", defaultValue: true )]
+    [DecimalField( "Point Grouping", "The number of miles per to use to group points that are close together. For example, enter 0.25 to group points in 1/4 mile blocks. Increase this if the heatmap has lots of points and is slow", required: false, order: 6 )]
+    [IntegerField( "Label Font Size", "Select the Font Size for the map labels", defaultValue: 24, order: 7 )]
+    //[BooleanField( "Show Pie Slicer", "Adds a button which will help slice a circle into triangular pie slices. To use, draw or click on a circle, then click the Pie Slicer button.", defaultValue: false, order: 8 )]
+    [BooleanField( "Show Save Location", "Adds a button which will save the selected shape as a named location's geofence ", defaultValue: false, order: 9 )]
     public partial class DynamicHeatMap : RockBlockCustomSettings
     {
-        /// <summary>
-        /// Gets the settings tool tip.
-        /// </summary>
-        /// <value>
-        /// The settings tool tip.
-        /// </value>
-        public override string SettingsToolTip
-        {
-            get
-            {
-                return "Configure";
-            }
-        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -70,10 +60,13 @@ namespace RockWeb.Blocks.Reporting
         {
             base.OnInit( e );
 
+            RockPage.AddScriptLink( "~/Scripts/maplabel-compiled.js" );
+
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
+            // hide the dataview picker from the filter options if there is a Block Attribute or PageParameter that specified the dataview
             ddlUserDataView.Visible = !( this.GetAttributeValue( "DataView" ).AsGuidOrNull().HasValue || this.PageParameter( "DataViewId" ).AsIntegerOrNull().HasValue );
             if ( ddlUserDataView.Visible )
             {
@@ -81,6 +74,9 @@ namespace RockWeb.Blocks.Reporting
             }
 
             cpCampuses.Campuses = CampusCache.All();
+
+            // hide the group picker from the filter options if there is a PageParameter for the GroupId
+            gpGroupToMap.Visible = !this.PageParameter( "GroupId" ).AsIntegerOrNull().HasValue;
 
             this.LoadGoogleMapsApi();
         }
@@ -106,16 +102,38 @@ namespace RockWeb.Blocks.Reporting
 
             if ( !this.IsPostBack )
             {
-                var campusIds = this.GetUserPreference( GetUserPreferenceKey( "Campuses" ) ).SplitDelimitedValues().AsIntegerList();
-                var dataViewGuid = this.GetUserPreference( GetUserPreferenceKey( "DataView" ) ).AsGuidOrNull();
+                var campusIds = this.GetBlockUserPreference( "Campuses" ).SplitDelimitedValues().AsIntegerList();
+                var dataViewGuid = this.GetBlockUserPreference( "DataView" ).AsGuidOrNull();
+
+                cbShowCampusLocations.Checked = this.GetBlockUserPreference( "ShowCampusLocations" ).AsBoolean();
+                this.DataPointRadius = this.GetBlockUserPreference( "DataPointRadius" ).AsIntegerOrNull() ?? 32;
+                rsDataPointRadius.SelectedValue = this.DataPointRadius;
+
                 cpCampuses.SetValues( campusIds );
+
+                // if there is no dataview specified, force the Filter options panel to be visible so they get a hint that a dataview needs to be picked
                 ddlUserDataView.SetValue( dataViewGuid );
+                if ( !dataViewGuid.HasValue && ddlUserDataView.Visible )
+                {
+                    pnlOptions.Style["display"] = "";
+                }
+
+                var groupId = this.GetBlockUserPreference( "GroupId" ).AsIntegerOrNull();
+                gpGroupToMap.SetValue( groupId );
+
+                this.LabelFontSize = this.GetAttributeValue( "LabelFontSize" ).AsIntegerOrNull() ?? 24;
+
                 lMessages.Text = string.Empty;
                 pnlMap.Visible = true;
-                pnlFilter.Visible = this.GetAttributeValue( "ShowFilter" ).AsBooleanOrNull() ?? true;
+
+                //pnlPieSlicer.Visible = this.GetAttributeValue( "ShowPieSlicer" ).AsBoolean();
+                pnlSaveShape.Visible = this.GetAttributeValue( "ShowSaveLocation" ).AsBoolean();
+
+                ShowMap();
             }
-            
-            ShowMap();
+            else if (this.Request.Params["__EVENTTARGET"] == upSaveLocation.ClientID){
+                mdSaveLocation_SaveClick(null, null);
+            }
         }
 
         /// <summary>
@@ -133,6 +151,30 @@ namespace RockWeb.Blocks.Reporting
         /// The campus markers data.
         /// </value>
         public string CampusMarkersData { get; set; }
+
+        /// <summary>
+        /// Gets or sets the data point radius.
+        /// </summary>
+        /// <value>
+        /// The data point radius.
+        /// </value>
+        public int DataPointRadius { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group identifier to use to show geofences for the group and child groups
+        /// </summary>
+        /// <value>
+        /// The group identifier.
+        /// </value>
+        public int? GroupId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the size of the label font.
+        /// </summary>
+        /// <value>
+        /// The size of the label font.
+        /// </value>
+        public int LabelFontSize { get; set; }
 
         /// <summary>
         /// 
@@ -224,19 +266,30 @@ namespace RockWeb.Blocks.Reporting
             var campuses = CampusCache.All();
             var locationService = new LocationService( rockContext );
             CampusMarkersData = string.Empty;
-            foreach ( var campus in campuses )
+            if ( cbShowCampusLocations.Checked )
             {
-                if ( campus.LocationId.HasValue )
+                foreach ( var campus in campuses )
                 {
-                    var location = locationService.Get( campus.LocationId.Value );
-                    if ( location != null && location.GeoPoint != null )
+                    if ( campus.LocationId.HasValue )
                     {
-                        CampusMarkersData += string.Format( "{{ location: new google.maps.LatLng({0},{1}), campusName:'{2}' }},", location.GeoPoint.Latitude, location.GeoPoint.Longitude, campus.Name );
+                        var location = locationService.Get( campus.LocationId.Value );
+                        if ( location != null && location.GeoPoint != null )
+                        {
+                            CampusMarkersData += string.Format( "{{ location: new google.maps.LatLng({0},{1}), campusName:'{2}' }},", location.GeoPoint.Latitude, location.GeoPoint.Longitude, campus.Name );
+                        }
                     }
                 }
+
+                CampusMarkersData.TrimEnd( new char[] { ',' } );
             }
 
-            CampusMarkersData.TrimEnd( new char[] { ',' } );
+            // show geofences if a group was specified
+            this.GroupId = this.PageParameter( "GroupId" ).AsIntegerOrNull();
+            if ( !this.GroupId.HasValue && gpGroupToMap.Visible )
+            {
+                // if a page parameter wasn't specified, use the selected group from the filter
+                this.GroupId = gpGroupToMap.SelectedValue.AsIntegerOrNull();
+            }
 
             var groupMemberService = new GroupMemberService( rockContext );
             var groupTypeFamily = GroupTypeCache.GetFamilyGroupType();
@@ -249,6 +302,7 @@ namespace RockWeb.Blocks.Reporting
 
             int recordStatusActiveId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
 
+            // if there is a DataViewId page parameter, use that instead of the Block or Filter dataview setting (the filter control won't be visible if there is a DataViewId page parameter)
             int? dataViewId = this.PageParameter( "DataViewId" ).AsIntegerOrNull();
             Guid? dataViewGuid = null;
             if ( !dataViewId.HasValue )
@@ -266,6 +320,8 @@ namespace RockWeb.Blocks.Reporting
             if ( dataViewId.HasValue || dataViewGuid.HasValue )
             {
                 DataView dataView = null;
+
+                // if a DataViewId page parameter was specified, use that, otherwise use the blocksetting or filter selection
                 if ( dataViewId.HasValue )
                 {
                     dataView = new DataViewService( rockContext ).Get( dataViewId.Value );
@@ -289,14 +345,11 @@ namespace RockWeb.Blocks.Reporting
             }
 
             var qryGroupMembers = groupMemberService.Queryable();
-            
-            if ( pnlFilter.Visible )
+
+            var campusIds = cpCampuses.SelectedCampusIds;
+            if ( campusIds.Any() )
             {
-                var campusIds = cpCampuses.SelectedCampusIds;
-                if ( campusIds.Any() )
-                {
-                    qryGroupMembers = qryGroupMembers.Where( a => a.Group.CampusId.HasValue && campusIds.Contains( a.Group.CampusId.Value ) );
-                }
+                qryGroupMembers = qryGroupMembers.Where( a => a.Group.CampusId.HasValue && campusIds.Contains( a.Group.CampusId.Value ) );
             }
 
             var qryLocationGroupMembers = qryGroupMembers
@@ -325,6 +378,12 @@ namespace RockWeb.Blocks.Reporting
 
             // cluster points that are close together
             double? milesPerGrouping = this.GetAttributeValue( "PointGrouping" ).AsDoubleOrNull();
+            if ( !milesPerGrouping.HasValue )
+            {
+                // default to a 1/10th of a mile 
+                milesPerGrouping = 0.10;
+            }
+
             if ( milesPerGrouping.HasValue && milesPerGrouping > 0 )
             {
                 var metersPerLatitudePHX = 110886.79;
@@ -414,26 +473,78 @@ namespace RockWeb.Blocks.Reporting
         }
 
         /// <summary>
-        /// Gets the user preference key.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <returns></returns>
-        private string GetUserPreferenceKey( string key )
-        {
-            return string.Format( "{0}_{1}", this.BlockId, key );
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnFilter control.
+        /// Handles the ApplyOptionsClick event of the btn control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnFilter_Click( object sender, EventArgs e )
+        protected void btn_ApplyOptionsClick( object sender, EventArgs e )
         {
             // reload the full page to ensure the updated HeatMapData is rendered correctly
-            this.SetUserPreference( GetUserPreferenceKey( "Campuses" ), cpCampuses.SelectedCampusIds.AsDelimited( "," ) );
-            this.SetUserPreference( GetUserPreferenceKey( "DataView" ), ddlUserDataView.SelectedValue );
+            this.SetBlockUserPreference( "ShowCampusLocations", cbShowCampusLocations.Checked.ToTrueFalse() );
+            this.SetBlockUserPreference( "DataPointRadius", rsDataPointRadius.SelectedValue.ToString() );
+            this.SetBlockUserPreference( "Campuses", cpCampuses.SelectedCampusIds.AsDelimited( "," ) );
+            this.SetBlockUserPreference( "DataView", ddlUserDataView.SelectedValue );
+            this.SetBlockUserPreference( "GroupId", gpGroupToMap.SelectedValue );
+
             NavigateToPage( this.CurrentPageReference );
         }
-}
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdSaveLocation control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdSaveLocation_SaveClick( object sender, EventArgs e )
+        {
+            try
+            {
+                DbGeography geoFence = null;
+                //if ( hfLocationSavePath.Value.StartsWith( "CIRCLE|" ) )
+                //{
+                //    // the javascript will save the circle in the format "CIRCLE|lng lat|radiusMeters"
+                //    var parts = hfLocationSavePath.Value.Split( '|' );
+                //    if ( parts.Length == 3 )
+                //    {
+                //        var lngLat = parts[1].Split( new char[] { ',', ' ' } ).Select( a => a.AsDouble() ).ToList().ToArray();
+                //        var point = Microsoft.SqlServer.Types.SqlGeography.Point( lngLat[1], lngLat[0], DbGeography.DefaultCoordinateSystemId );
+                        
+                //        var radius = parts[2].AsDoubleOrNull() ?? 1;
+
+                //        // construct a circle using BufferWithCurves (point.Buffer creates a polygon with too many coordinates for large circles)
+                //        var buffer = point.BufferWithCurves( radius );
+                        
+                //        // convert the circle to a polygon (to make it easier to interact with Google MAPs api which has limited support for circles)
+                //        var polyCircle = buffer.STCurveToLine();
+
+                //        geoFence = DbGeography.FromText( polyCircle.ToString() );
+                //    }
+                //}
+                //else
+                //{
+                    var polyWKT = GeoPicker.ConvertPolyToWellKnownText( hfLocationSavePath.Value );
+                    geoFence = DbGeography.FromText( polyWKT );
+                //}
+
+                // get the LocationId from hfLocationId instead of dpLocation since the postback is done in javascript
+                var locationId = hfLocationId.Value.AsIntegerOrNull();
+                Location location = null;
+                if (locationId.HasValue)
+                {
+                    var rockContext = new RockContext();
+                    location = new LocationService( rockContext ).Get( locationId.Value );
+
+                    if (location != null && geoFence != null)
+                    {
+                        location.GeoFence = geoFence;
+                        rockContext.SaveChanges();
+                        mdSaveLocation.Hide();
+                    }
+                }
+            }
+            catch
+            {
+                //
+            }
+        }
+    }
 }

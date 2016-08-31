@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -59,16 +59,22 @@ namespace Rock.PersonProfile.AlertNote
                 noteTypes = Array.ConvertAll( GetAttributeValue( badge, "NoteTypes" ).Split( ',' ), s => new Guid( s ) ).ToList();
             }
 
+            var currentUser = UserLoginService.GetCurrentUser();
+            int? currentPersonId = currentUser != null ? currentUser.PersonId : null;
+
             // check for alert note
-            var alertNotesExist = new NoteService(new RockContext()).Queryable().AsNoTracking()
-                                .Where(n => noteTypes.Contains(n.NoteType.Guid) 
-                                        && n.EntityId.Value == Person.Id 
-                                        && n.IsAlert == true)
+            var alertNotesExist = new NoteService( new RockContext() ).Queryable().AsNoTracking()
+                                .Where( n => noteTypes.Contains( n.NoteType.Guid )
+                                        && n.EntityId.Value == Person.Id
+                                        && n.IsAlert == true
+                                        && ( !n.IsPrivateNote || n.CreatedByPersonAlias.PersonId == currentPersonId )
+                                        )
                                 .Any();
-            
-            if (alertNotesExist){
+
+            if ( alertNotesExist )
+            {
                 writer.Write( GetAttributeValue( badge, "BadgeContent" ) );
-            }              
+            }
         }
     }
 }

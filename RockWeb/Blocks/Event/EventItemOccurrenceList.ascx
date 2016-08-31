@@ -34,6 +34,7 @@
                                     <Rock:RockBoundField DataField="Contact" HeaderText="Contact" />
                                     <Rock:RockBoundField DataField="Phone" HeaderText="Phone" />
                                     <Rock:RockBoundField DataField="Email" HeaderText="Email" />
+                                    <Rock:LinkButtonField HeaderText="Copy" CssClass="btn btn-default btn-sm fa fa-clone" OnClick="gCalendarItemOccurrenceList_Copy" HeaderStyle-HorizontalAlign="Center" />
                                     <Rock:DeleteField OnClick="gCalendarItemOccurrenceList_Delete" />
                                 </Columns>
                             </Rock:Grid>

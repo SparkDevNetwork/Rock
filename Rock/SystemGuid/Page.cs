@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -277,16 +277,16 @@ namespace Rock.SystemGuid
         public const string CHILDPAGES = "D58F205E-E9CC-4BD9-BC79-F3DA86F6E346";
 
         /// <summary>
-        /// Gets the CKEditor RockFileBrowser Plugin Frame page guid
+        /// Gets the HtmlEditor RockFileBrowser Plugin Frame page guid
         /// ParentPage: System Dialogs
         /// </summary>
-        public const string CKEDITOR_ROCKFILEBROWSER_PLUGIN_FRAME = "4A4995CA-24F6-4D33-B861-A24274F53AA6";
+        public const string HTMLEDITOR_ROCKFILEBROWSER_PLUGIN_FRAME = "4A4995CA-24F6-4D33-B861-A24274F53AA6";
 
         /// <summary>
-        /// Gets the CKEditor RockMergeField Plugin Frame page guid
+        /// Gets the HtmlEditor RockMergeField Plugin Frame page guid
         /// ParentPage: System Dialogs
         /// </summary>
-        public const string CKEDITOR_ROCKMERGEFIELD_PLUGIN_FRAME = "1FC09F0D-72F2-44E6-9D16-2884F9AF33DD";
+        public const string HTMLEDITOR_ROCKMERGEFIELD_PLUGIN_FRAME = "1FC09F0D-72F2-44E6-9D16-2884F9AF33DD";
 
         /// <summary>
         /// Gets the CMS Configuration page guid
@@ -1139,18 +1139,6 @@ namespace Rock.SystemGuid
         /// ParentPage: Functions
         /// </summary>
         public const string PLEDGE_LIST = "1570D2AF-4FE2-4FC7-BED9-F20EBCBE9867";
-
-        /// <summary>
-        /// Gets the Plugin Settings guid
-        /// </summary>
-        [Obsolete( "Page was removed" )]
-        public const string PLUGIN_SETTINGS = "1AFDA740-8119-45B8-AF4D-58856D469BE5";
-
-        /// <summary>
-        /// Gets the Plugin Manager guid
-        /// </summary>
-        [Obsolete( "Page was removed" )]
-        public const string PLUGIN_MANAGER = "B13FCF9A-FAE5-4E53-AF7C-32DF9CA5AAE3";
 
         /// <summary>
         /// Gets the Power Tools page guid

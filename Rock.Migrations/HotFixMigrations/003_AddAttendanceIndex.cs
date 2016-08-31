@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-
 using Rock.Plugin;
 
 namespace Rock.Migrations.HotFixMigrations
@@ -30,8 +29,13 @@ namespace Rock.Migrations.HotFixMigrations
         /// </summary>
         public override void Up()
         {
+// NOTE: This was included in normal migration with v4.0
+/*
             RockMigrationHelper.AddGlobalAttribute( "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "", "", "Enable Auditing", "Enable the saving of audit information for every row/field change made in Rock.", 0, "false", "66B13C02-CBA0-4427-9D60-8B331A51CC96" );
+*/
 
+// NOTE: This index was droped in v5.0
+/*
             Sql( @"
     CREATE NONCLUSTERED INDEX [IX_LocationId_ScheduleId_GroupId_StartDateTime] ON [dbo].[Attendance]
     (
@@ -45,6 +49,7 @@ namespace Rock.Migrations.HotFixMigrations
 	    [PersonAliasId],
 	    [DidNotOccur]) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 " );
+*/
         }
 
         /// <summary>

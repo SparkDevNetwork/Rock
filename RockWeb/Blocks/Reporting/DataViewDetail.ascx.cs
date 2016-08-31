@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -79,11 +79,14 @@ namespace RockWeb.Blocks.Reporting
                 {
                     btnToggleResults.Text = "Hide Results <i class='fa fa-chevron-up'></i>";
                     btnToggleResults.ToolTip = "Hide Results";
-
+                    btnToggleResults.RemoveCssClass( "btn-primary" );
+                    btnToggleResults.AddCssClass( "btn-default" );
                 }
                 else
                 {
                     btnToggleResults.Text = "Show Results <i class='fa fa-chevron-down'></i>";
+                    btnToggleResults.RemoveCssClass( "btn-default" );
+                    btnToggleResults.AddCssClass( "btn-primary" );
                     btnToggleResults.ToolTip = "Show Results";
                 }
 
@@ -144,6 +147,7 @@ $(document).ready(function() {
             if ( sm.AsyncPostBackTimeout < databaseTimeout + 5 )
             {
                 sm.AsyncPostBackTimeout = databaseTimeout + 5;
+                Server.ScriptTimeout = databaseTimeout + 5;
             }
         }
 
@@ -503,12 +507,15 @@ $(document).ready(function() {
             if ( !dataViewId.Equals( 0 ) )
             {
                 dataView = dataViewService.Get( dataViewId );
+                pdAuditDetails.SetEntity( dataView, ResolveRockUrl( "~" ) );
             }
 
             if ( dataView == null )
             {
                 dataView = new DataView { Id = 0, IsSystem = false, CategoryId = parentCategoryId };
                 dataView.Name = string.Empty;
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             if ( !dataView.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
@@ -518,6 +525,7 @@ $(document).ready(function() {
 
             pnlDetails.Visible = true;
             hfDataViewId.Value = dataView.Id.ToString();
+            hlblEditDataViewId.Text = "Id: " + dataView.Id.ToString();
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
@@ -615,6 +623,7 @@ $(document).ready(function() {
             SetEditMode( false );
             hfDataViewId.SetValue( dataView.Id );
             lReadOnlyTitle.Text = dataView.Name.FormatAsHtmlTitle();
+            hlblDataViewId.Text = "Id: " + dataView.Id.ToString();
 
             lDescription.Text = dataView.Description;
 
@@ -782,7 +791,8 @@ $(document).ready(function() {
         {
             grid.DataSource = null;
 
-            if ( !this.ShowResults )
+            // Only respect the ShowResults option if fetchRowCount is null
+            if ( !this.ShowResults && fetchRowCount == null )
             {
                 return false;
             }

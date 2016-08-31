@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -39,8 +39,9 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Displays list of people that match a given search type and term." )]
 
-    [LinkedPage("Person Detail Page")]
-    [BooleanField("Show Performance", "Displays how long the search took.", false)]
+    [LinkedPage("Person Detail Page", order: 0 )]
+    [BooleanField( "Show Birthdate", "Should a birthdate column be displayed?", false, "", 1 )]
+    [BooleanField("Show Performance", "Displays how long the search took.", false, "", 2 )]
     public partial class PersonSearch : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -213,6 +214,8 @@ namespace RockWeb.Blocks.Crm
 
         private void BindGrid()
         {
+            var birthDateCol = gPeople.ColumnsOfType<DateField>().First( c => c.DataField == "BirthDate" );
+            birthDateCol.Visible = GetAttributeValue( "ShowBirthdate" ).AsBoolean();
 
             string type = PageParameter( "SearchType" );
             string term = PageParameter( "SearchTerm" );
@@ -312,12 +315,12 @@ namespace RockWeb.Blocks.Crm
                 {
                     if ( type.ToLower() == "name" )
                     {
-                        var similiarNames = personService.GetSimiliarNames( term,
+                        var similarNames = personService.GetSimilarNames( term,
                             personList.Select( p => p.Id ).ToList(), true );
-                        if ( similiarNames.Any() )
+                        if ( similarNames.Any() )
                         {
                             var hyperlinks = new List<string>();
-                            foreach ( string name in similiarNames.Distinct() )
+                            foreach ( string name in similarNames.Distinct() )
                             {
                                 var pageRef = CurrentPageReference;
                                 pageRef.Parameters["SearchTerm"] = name;
@@ -406,10 +409,10 @@ namespace RockWeb.Blocks.Crm
                     var recordType = DefinedValueCache.Read( RecordTypeValueId.Value );
                     if ( recordType != null )
                     {
-                        return Person.GetPhotoUrl( this.PhotoId, this.Age, this.Gender, recordType.Guid );
+                        return Person.GetPersonPhotoUrl( this.Id, this.PhotoId, this.Age, this.Gender, recordType.Guid, 200, 200 );
                     }
                 }
-                return Person.GetPhotoUrl( this.PhotoId, this.Age, this.Gender );
+                return Person.GetPersonPhotoUrl( this.Id, this.PhotoId, this.Age, this.Gender, null, 200, 200 );
             }
             private set { }
         }

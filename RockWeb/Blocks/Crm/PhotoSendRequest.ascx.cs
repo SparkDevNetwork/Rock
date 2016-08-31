@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -77,6 +77,10 @@ namespace RockWeb.Blocks.Crm
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            nbError.Visible = false;
+            nbTestResult.Visible = false;
+            nbConfirmMessage.Visible = false;
 
             if ( !Page.IsPostBack )
             {
@@ -357,89 +361,97 @@ namespace RockWeb.Blocks.Crm
             var communicationService = new CommunicationService(rockContext);
             var recipientService = new CommunicationRecipientService(rockContext);
 
-            GetTemplateData();
-
-            Rock.Model.Communication communication = new Rock.Model.Communication();
-            communication.Status = CommunicationStatus.Transient;
-            communication.SenderPersonAliasId = CurrentPersonAliasId;
-            communicationService.Add( communication );
-            communication.IsBulkCommunication = true;
-            communication.MediumEntityTypeId = EntityTypeCache.Read( "Rock.Communication.Medium.Email" ).Id;
-            communication.FutureSendDateTime = null;
-
-            // add each person as a recipient to the communication
-            if ( peopleIds != null )
+            if ( GetTemplateData() )
             {
-                foreach ( var personId in peopleIds )
+                Rock.Model.Communication communication = new Rock.Model.Communication();
+                communication.Status = CommunicationStatus.Transient;
+                communication.SenderPersonAliasId = CurrentPersonAliasId;
+                communicationService.Add( communication );
+                communication.IsBulkCommunication = true;
+                communication.MediumEntityTypeId = EntityTypeCache.Read( "Rock.Communication.Medium.Email" ).Id;
+                communication.FutureSendDateTime = null;
+
+                // add each person as a recipient to the communication
+                if ( peopleIds != null )
                 {
-                    if ( !communication.Recipients.Any( r => r.PersonAlias.PersonId == personId ) )
+                    foreach ( var personId in peopleIds )
                     {
-                        var communicationRecipient = new CommunicationRecipient();
-                        communicationRecipient.PersonAlias = new PersonAliasService( rockContext ).GetPrimaryAlias( personId );
-                        communication.Recipients.Add( communicationRecipient );
+                        if ( !communication.Recipients.Any( r => r.PersonAlias.PersonId == personId ) )
+                        {
+                            var communicationRecipient = new CommunicationRecipient();
+                            communicationRecipient.PersonAlias = new PersonAliasService( rockContext ).GetPrimaryAlias( personId );
+                            communication.Recipients.Add( communicationRecipient );
+                        }
                     }
                 }
-            }
 
-            // add the MediumData to the communication
-            communication.MediumData.Clear();
-            foreach ( var keyVal in MediumData )
-            {
-                if ( !string.IsNullOrEmpty( keyVal.Value ) )
+                // add the MediumData to the communication
+                communication.MediumData.Clear();
+                foreach ( var keyVal in MediumData )
                 {
-                    communication.MediumData.Add( keyVal.Key, keyVal.Value );
+                    if ( !string.IsNullOrEmpty( keyVal.Value ) )
+                    {
+                        communication.MediumData.Add( keyVal.Key, keyVal.Value );
+                    }
                 }
+
+                if ( communication.MediumData.ContainsKey( "Subject" ) )
+                {
+                    communication.Subject = communication.MediumData["Subject"];
+                    communication.MediumData.Remove( "Subject" );
+                }
+
+                return communication;
             }
 
-            if ( communication.MediumData.ContainsKey( "Subject" ) )
-            {
-                communication.Subject = communication.MediumData["Subject"];
-                communication.MediumData.Remove( "Subject" );
-            }
-
-            return communication;
+            return null;
         }
 
         /// <summary>
         /// Gets the template data.
         /// </summary>
         /// <exception cref="System.Exception">Missing communication template configuration.</exception>
-        private void GetTemplateData()
+        private bool GetTemplateData()
         {
             if ( string.IsNullOrWhiteSpace( GetAttributeValue( "PhotoRequestTemplate" ) ) )
             {
-                throw new Exception( "Missing communication template configuration." );
+                nbError.Title = "Configuration Error";
+                nbError.Text = "Missing communication template configuration.";
+                nbError.Visible = true;
+                return false;
             }
 
             var template = new CommunicationTemplateService( new RockContext() ).Get( GetAttributeValue( "PhotoRequestTemplate" ).AsGuid() );
-            if ( template != null )
+            if ( template == null )
             {
-                var mediumData = template.MediumData;
+                nbError.Title = "Configuration Error";
+                nbError.Text = "The communication template appears to be missing.";
+                nbError.Visible = true;
+                return false;
+            }
 
-                if ( !mediumData.ContainsKey( "Subject" ) )
-                {
-                    mediumData.Add( "Subject", template.Subject );
-                }
+            var mediumData = template.MediumData;
+            if ( !mediumData.ContainsKey( "Subject" ) )
+            {
+                mediumData.Add( "Subject", template.Subject );
+            }
 
-                foreach ( var dataItem in mediumData )
+            foreach ( var dataItem in mediumData )
+            {
+                if ( !string.IsNullOrWhiteSpace( dataItem.Value ) )
                 {
-                    if ( !string.IsNullOrWhiteSpace( dataItem.Value ) )
+                    if ( MediumData.ContainsKey( dataItem.Key ) )
                     {
-                        if ( MediumData.ContainsKey( dataItem.Key ) )
-                        {
-                            MediumData[dataItem.Key] = dataItem.Value;
-                        }
-                        else
-                        {
-                            MediumData.Add( dataItem.Key, dataItem.Value );
-                        }
+                        MediumData[dataItem.Key] = dataItem.Value;
+                    }
+                    else
+                    {
+                        MediumData.Add( dataItem.Key, dataItem.Value );
                     }
                 }
             }
-            else
-            {
-                throw new Exception( "The communication template appears to be missing." );
-            }
+
+            return true;
         }
 
         /// <summary>

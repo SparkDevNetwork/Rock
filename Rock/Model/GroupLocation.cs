@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
@@ -35,7 +36,7 @@ namespace Rock.Model
     /// </remarks>
     [Table( "GroupLocation" )]
     [DataContract]
-    public partial class GroupLocation : Model<GroupLocation>
+    public partial class GroupLocation : Model<GroupLocation>, IOrdered
     {
         #region Entity Properties
 
@@ -99,6 +100,17 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? GroupMemberPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the display order of the GroupLocation in the group location list. The lower the number the higher the 
+        /// display priority this GroupLocation has. This property is required.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the display order of the GroupLocation.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public int Order { get; set; }
 
         #endregion
 

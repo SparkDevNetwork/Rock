@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -36,6 +36,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+
 using System.Globalization;
 using System.Web;
 
@@ -50,9 +51,10 @@ namespace RockWeb.Blocks.Examples
     [Category( "Examples" )]
     [Description( "Loads the Rock Solid Church sample data into your Rock system." )]
 
-    [TextField( "XML Document URL", "The URL for the input sample data XML document.", false, "http://storage.rockrms.com/sampledata/sampledata.xml", "", 1 )]
+    [TextField( "XML Document URL", @"The URL for the input sample data XML document. You can also use a local Windows file path (e.g. C:\Rock\Documentation\sampledata_1_5_0.xml) if you want to test locally with your own fake data.  The file format is loosly defined on the <a target='blank' href='https://github.com/SparkDevNetwork/Rock/wiki/z.-Rock-Solid-Demo-Church-Specification-(sample-data)'>Rock Solid Demo Church Specification</a> wiki.", false, "http://storage.rockrms.com/sampledata/sampledata.xml", "", 1 )]
     [BooleanField( "Fabricate Attendance", "If true, then fake attendance data will be fabricated (if the right parameters are in the xml)", true, "", 2 )]
     [BooleanField( "Enable Stopwatch", "If true, a stopwatch will be used to time each of the major operations.", false, "", 3 )]
+    [BooleanField( "Enable Giving", "If true, the giving data will be loaded otherwise it will be skipped.", true, "", 4 )]
     public partial class SampleData : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -480,19 +482,26 @@ namespace RockWeb.Blocks.Examples
             var elemConnections = xdoc.Element( "data" ).Element( "connections" );
             var elemFollowing = xdoc.Element( "data" ).Element( "following" );
             var elemSecurityGroups = xdoc.Element( "data" ).Element( "securityRoles" );
+            var elemRegistrationTemplates = xdoc.Element( "data" ).Element( "registrationTemplates" );
+            var elemRegistrationInstances = xdoc.Element( "data" ).Element( "registrationInstances" );
+
             TimeSpan ts;
 
             //// First delete any sample data that might exist already 
             // using RockContext in case there are multiple saves (like Attributes)
             rockContext.WrapTransaction( () =>
             {
-                // First we'll clean up by deleting any previously created data such as
-                // families, addresses, people, photos, attendance data, etc.
                 _stopwatch.Start();
                 AppendFormat( "00:00.00 started <br/>" );
 
+                // Delete this stuff that might have people attached to it
+                DeleteRegistrationTemplates( elemRegistrationTemplates, rockContext );
+
+                // Now we'll clean up by deleting any previously created data such as
+                // families, addresses, people, photos, attendance data, etc.
                 DeleteExistingGroups( elemGroups, rockContext );
                 DeleteExistingFamilyData( elemFamilies, rockContext );
+
                 //rockContext.ChangeTracker.DetectChanges();
                 //rockContext.SaveChanges( disablePrePostProcessing: true );
                 ts = _stopwatch.Elapsed;
@@ -530,6 +539,16 @@ namespace RockWeb.Blocks.Examples
                 AddToSecurityGroups( elemSecurityGroups, rockContext );
                 ts = _stopwatch.Elapsed;
                 AppendFormat( "{0:00}:{1:00}.{2:00} people added to security roles<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+
+                // Add Registration Templates
+                AddRegistrationTemplates( elemRegistrationTemplates, rockContext );
+                ts = _stopwatch.Elapsed;
+                AppendFormat( "{0:00}:{1:00}.{2:00} registration templates added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+
+                // Add Registration Instances
+                AddRegistrationInstances( elemRegistrationInstances, rockContext );
+                ts = _stopwatch.Elapsed;
+                AppendFormat( "{0:00}:{1:00}.{2:00} registration instances added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
 
                 rockContext.ChangeTracker.DetectChanges();
                 rockContext.SaveChanges( disablePrePostProcessing: true );
@@ -588,7 +607,7 @@ namespace RockWeb.Blocks.Examples
         {
             var x = string.Format( format, args );
             _sb.Append( x );
-            _hubContext.Clients.All.receiveNotification( x );
+            _hubContext.Clients.All.receiveNotification( "sampleDataImport", x );
         }
 
         /// <summary>
@@ -601,6 +620,445 @@ namespace RockWeb.Blocks.Examples
                 //var person = pair.Value as Person;
                 var transaction = new Rock.Transactions.SaveMetaphoneTransaction( person );
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+            }
+        }
+        
+        /// <summary>
+        /// Adds any registration templates given in the XML file.
+        /// </summary>
+        /// <param name="elemFamilies"></param>
+        /// <param name="rockContext"></param>
+        private void AddRegistrationTemplates( XElement elemRegistrationTemplates, RockContext rockContext )
+        {
+            if ( elemRegistrationTemplates == null )
+            {
+                return;
+            }
+
+            // Get attribute values from RegistrationTemplateDetail block
+            // Get instance of the attribute.
+            string defaultConfirmationEmail = string.Empty;
+            string defaultReminderEmail = string.Empty;
+            string defaultSuccessText = string.Empty;
+            string defaultPaymentReminderEmail = string.Empty;
+
+            //CodeEditorFieldAttribute MyAttribute = (CodeEditorFieldAttribute)System.Attribute.GetCustomAttribute( typeof( RockWeb.Blocks.Event.RegistrationTemplateDetail ), typeof( CodeEditorFieldAttribute ) );
+            var blockAttributes = System.Attribute.GetCustomAttributes( typeof( RockWeb.Blocks.Event.RegistrationTemplateDetail ), typeof( CodeEditorFieldAttribute ) );
+            foreach ( CodeEditorFieldAttribute blockAttribute in blockAttributes )
+            {
+                switch ( blockAttribute.Name )
+                {
+                    case "Default Confirmation Email":
+                        defaultConfirmationEmail = blockAttribute.DefaultValue;
+                        break;
+
+                    case "Default Reminder Email":
+                        defaultReminderEmail = blockAttribute.DefaultValue;
+                        break;
+
+                    case "Default Success Text":
+                        defaultSuccessText = blockAttribute.DefaultValue;
+                        break;
+
+                    case "Default Payment Reminder Email":
+                        defaultPaymentReminderEmail = blockAttribute.DefaultValue;
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+
+            RegistrationTemplateService registrationTemplateService = new RegistrationTemplateService( rockContext );
+
+            // Add a template for each...
+            foreach ( var element in elemRegistrationTemplates.Elements( "registrationTemplate" ) )
+            {
+                // skip any illegally formatted items
+                if ( element.Attribute( "guid" ) == null )
+                {
+                    continue;
+                }
+
+                int categoryId = CategoryCache.Read( element.Attribute( "categoryGuid" ).Value.Trim().AsGuid() ).Id;
+
+                // Find the group type and 
+                var groupType = GroupTypeCache.Read( element.Attribute( "groupTypeGuid" ).Value.Trim().AsGuid() );
+
+                RegistrantsSameFamily registrantsSameFamily;
+                if ( element.Attribute( "registrantsInSameFamily" ) != null )
+                {
+                    Enum.TryParse( element.Attribute( "registrantsInSameFamily" ).Value.Trim(), out registrantsSameFamily );
+                }
+                else
+                {
+                    registrantsSameFamily = RegistrantsSameFamily.Ask;
+                }
+
+                bool setCostOnInstance = true;
+                if ( element.Attribute( "setCostOn" ).Value.Trim() == "template" )
+                {
+                    setCostOnInstance = false;
+                }
+
+                RegistrationNotify notify = RegistrationNotify.None;
+                RegistrationNotify matchNotify;
+                foreach ( string item in element.Attribute( "notify" ).Value.SplitDelimitedValues( whitespace: false ) )
+                {
+                    if ( Enum.TryParse( item.Replace( " ", string.Empty ), out matchNotify ) )
+                    {
+                        notify = notify | matchNotify;
+                    }
+                }
+
+                // Now find the matching financial gateway
+                FinancialGatewayService financialGatewayService = new FinancialGatewayService( rockContext );
+                string gatewayName = element.Attribute( "financialGateway" ) != null ? element.Attribute( "financialGateway" ).Value : "Test Gateway";
+                var financialGateway = financialGatewayService.Queryable()
+                    .Where( g => g.Name == gatewayName )
+                    .FirstOrDefault();
+
+                RegistrationTemplate registrationTemplate = new RegistrationTemplate()
+                {
+                    Guid = element.Attribute( "guid" ).Value.Trim().AsGuid(),
+                    Name = element.Attribute( "name" ).Value.Trim(),
+                    IsActive = true,
+                    CategoryId = categoryId,
+                    GroupTypeId = groupType.Id,
+                    GroupMemberRoleId = groupType.DefaultGroupRoleId,
+                    GroupMemberStatus = GroupMemberStatus.Active,
+                    Notify = notify,
+                    AddPersonNote = element.Attribute( "addPersonNote" ) != null ? element.Attribute( "addPersonNote" ).Value.AsBoolean() : false,
+                    LoginRequired = element.Attribute( "loginRequired" ) != null ? element.Attribute( "loginRequired" ).Value.AsBoolean() : false,
+                    AllowExternalRegistrationUpdates = element.Attribute( "allowExternalUpdatesToSavedRegistrations" ) != null ? element.Attribute( "allowExternalUpdatesToSavedRegistrations" ).Value.AsBoolean() : false,
+                    AllowGroupPlacement = element.Attribute( "allowGroupPlacement" ) != null ? element.Attribute( "allowGroupPlacement" ).Value.AsBoolean() : false,
+                    AllowMultipleRegistrants = element.Attribute( "allowMultipleRegistrants" ) != null ? element.Attribute( "allowMultipleRegistrants" ).Value.AsBoolean() : false,
+                    MaxRegistrants = element.Attribute( "maxRegistrants" ).Value.AsInteger(),
+                    RegistrantsSameFamily = registrantsSameFamily,
+                    SetCostOnInstance = setCostOnInstance,
+                    FinancialGatewayId = financialGateway.Id,
+                    BatchNamePrefix = element.Attribute( "batchNamePrefix" ) != null ? element.Attribute( "batchNamePrefix" ).Value.Trim() : string.Empty,
+                    Cost = element.Attribute( "cost" ).Value.AsDecimal(),
+                    MinimumInitialPayment = element.Attribute( "minInitialPayment" ).Value.AsDecimal(),
+                    RegistrationTerm = element.Attribute( "registrationTerm" ) != null ? element.Attribute( "registrationTerm" ).Value.Trim() : "Registration",
+                    RegistrantTerm = element.Attribute( "registrantTerm" ) != null ? element.Attribute( "registrantTerm" ).Value.Trim() : "Registrant",
+                    FeeTerm = element.Attribute( "feeTerm" ) != null ? element.Attribute( "feeTerm" ).Value.Trim() : "Additional Options",
+                    DiscountCodeTerm = element.Attribute( "discountCodeTerm" ) != null ? element.Attribute( "discountCodeTerm" ).Value.Trim() : "Discount Code",
+                    ConfirmationFromName = "{{ RegistrationInstance.ContactPersonAlias.Person.FullName }}",
+                    ConfirmationFromEmail = "{{ RegistrationInstance.ContactEmail }}",
+                    ConfirmationSubject = "{{ RegistrationInstance.Name }} Confirmation",
+                    ConfirmationEmailTemplate = defaultConfirmationEmail,
+                    ReminderFromName = "{{ RegistrationInstance.ContactPersonAlias.Person.FullName }}",
+                    ReminderFromEmail = "{{ RegistrationInstance.ContactEmail }}",
+                    ReminderSubject = "{{ RegistrationInstance.Name }} Reminder",
+                    ReminderEmailTemplate = defaultReminderEmail,
+                    SuccessTitle = "Congratulations {{ Registration.FirstName }}",
+                    SuccessText = defaultSuccessText,
+                    PaymentReminderEmailTemplate = defaultPaymentReminderEmail,
+                    PaymentReminderFromEmail = "{{ RegistrationInstance.ContactEmail }}",
+                    PaymentReminderFromName = "{{ RegistrationInstance.ContactPersonAlias.Person.FullName }}",
+                    PaymentReminderSubject = "{{ RegistrationInstance.Name }} Payment Reminder",
+                    PaymentReminderTimeSpan = element.Attribute( "paymentReminderTimeSpan" ) != null ? element.Attribute( "paymentReminderTimeSpan" ).Value.AsInteger() : 0,
+                    CreatedDateTime = RockDateTime.Now,
+                    ModifiedDateTime = RockDateTime.Now,
+                };
+
+                registrationTemplateService.Add( registrationTemplate );
+
+                rockContext.SaveChanges();
+                var x = registrationTemplate.Id;
+
+                string name = element.Attribute( "name" ).Value.Trim();
+                bool allowExternalUpdatesToSavedRegistrations = element.Attribute( "allowExternalUpdatesToSavedRegistrations" ).Value.AsBoolean();
+                bool addPersonNote = element.Attribute( "addPersonNote" ).Value.AsBoolean();
+                bool loginRequired = element.Attribute( "loginRequired" ).Value.AsBoolean();
+                Guid guid = element.Attribute( "guid" ).Value.Trim().AsGuid();
+
+                // Find any Form elements and add them to the template
+                int formOrder = 0;
+                var registrationAttributeQualifierColumn = "RegistrationTemplateId";
+                int? registrationRegistrantEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.RegistrationRegistrant ) ).Id;
+                if ( element.Elements( "forms" ).Count() > 0 )
+                {
+                    foreach ( var formElement in element.Elements( "forms" ).Elements( "form" ) )
+                    {
+                        formOrder++;
+                        var form = new RegistrationTemplateForm();
+                        form.Guid = formElement.Attribute( "guid" ).Value.Trim().AsGuid();
+                        registrationTemplate.Forms.Add( form );
+                        form.Name = formElement.Attribute( "name" ).Value.Trim();
+                        form.Order = formOrder;
+
+                        int ffOrder = 0;
+                        if ( formElement.Elements( "formFields" ).Count() > 0 )
+                        {
+                            foreach ( var formFieldElement in formElement.Elements( "formFields" ).Elements( "field" ) )
+                            {
+                                ffOrder++;
+                                var formField = new RegistrationTemplateFormField();
+                                formField.Guid = Guid.NewGuid();
+                                formField.CreatedDateTime = RockDateTime.Now;
+
+                                form.Fields.Add( formField );
+
+                                switch ( formFieldElement.Attribute( "source" ).Value.Trim().ToLowerInvariant() )
+                                {
+                                    case "person field":
+                                        formField.FieldSource = RegistrationFieldSource.PersonField;
+                                        break;
+                                    case "person attribute":
+                                        formField.FieldSource = RegistrationFieldSource.PersonAttribute;
+                                        break;
+                                    case "group member attribute":
+                                        formField.FieldSource = RegistrationFieldSource.GroupMemberAttribute;
+                                        break;
+                                    case "registration attribute":
+                                        formField.FieldSource = RegistrationFieldSource.RegistrationAttribute;
+
+                                        //var qualifierValue = RegistrationTemplate.Id.ToString();
+                                        var attrState = new Rock.Model.Attribute();
+
+                                        attrState.Guid = formFieldElement.Attribute( "guid" ).Value.AsGuid();
+                                        attrState.Name = formFieldElement.Attribute( "name" ).Value.Trim();
+                                        attrState.Key = attrState.Name.RemoveSpecialCharacters().Replace( " ", string.Empty );
+                                        var type = formFieldElement.Attribute( "type" ).Value.Trim();
+                                        var fieldType = FieldTypeCache.All().Where( f => f.Name == type ).FirstOrDefault();
+                                        attrState.FieldTypeId = fieldType.Id;
+                                        var attribute = Helper.SaveAttributeEdits( attrState, registrationRegistrantEntityTypeId, registrationAttributeQualifierColumn, registrationTemplate.Id.ToString(), rockContext );
+                                        //rockContext.ChangeTracker.DetectChanges();
+                                        rockContext.SaveChanges( disablePrePostProcessing: true );
+                                        formField.Attribute = attribute;
+
+                                        break;
+                                    default:
+                                        throw new NotSupportedException( string.Format( "unknown form field source: {0}", formFieldElement.Attribute( "source" ).Value ) );
+                                }
+
+                                formField.AttributeId = null;
+                                if ( !formField.AttributeId.HasValue &&
+                                    formField.FieldSource == RegistrationFieldSource.RegistrationAttribute &&
+                                    formField.Attribute != null )
+                                {
+                                    var attr = AttributeCache.Read( formField.Attribute.Guid, rockContext );
+                                    if ( attr != null )
+                                    {
+                                        formField.AttributeId = attr.Id;
+                                    }
+                                }
+
+                                RegistrationPersonFieldType registrationPersonFieldType;
+                                if ( formField.FieldSource == RegistrationFieldSource.PersonField && formFieldElement.Attribute( "name" ) != null &&
+                                    Enum.TryParse( formFieldElement.Attribute( "name" ).Value.Replace( " ", string.Empty ).Trim(), out registrationPersonFieldType ) )
+                                {
+                                    formField.PersonFieldType = registrationPersonFieldType;
+                                }
+
+                                formField.IsInternal = formFieldElement.Attribute( "isInternal" ) != null ? formFieldElement.Attribute( "isInternal" ).Value.AsBoolean() : false;
+                                formField.IsSharedValue = formFieldElement.Attribute( "isCommon" ) != null ? formFieldElement.Attribute( "isCommon" ).Value.AsBoolean() : false;
+                                formField.ShowCurrentValue = formFieldElement.Attribute( "showCurrentValue" ) != null ? formFieldElement.Attribute( "showCurrentValue" ).Value.AsBoolean() : false;
+                                formField.PreText = formFieldElement.Attribute( "preText" ) != null ? formFieldElement.Attribute( "preText" ).Value : string.Empty;
+                                formField.PostText = formFieldElement.Attribute( "postText" ) != null ? formFieldElement.Attribute( "postText" ).Value : string.Empty;
+                                formField.IsGridField = formFieldElement.Attribute( "showOnGrid" ) != null ? formFieldElement.Attribute( "showOnGrid" ).Value.AsBoolean() : false;
+                                formField.IsRequired = formFieldElement.Attribute( "isRequired" ) != null ? formFieldElement.Attribute( "isRequired" ).Value.AsBoolean() : false;
+                                formField.Order = ffOrder;
+                                formField.CreatedDateTime = RockDateTime.Now;
+                            }
+                        }
+                    }
+                }
+
+                // Discounts
+                int discountOrder = 0;
+                if ( element.Elements( "discounts" ) != null )
+                {
+                    foreach ( var discountElement in element.Elements( "discounts" ).Elements( "discount" ) )
+                    {
+                        discountOrder++;
+                        var discount = new RegistrationTemplateDiscount();
+                        discount.Guid = Guid.NewGuid();
+                        registrationTemplate.Discounts.Add( discount );
+
+                        discount.Code = discountElement.Attribute( "code" ).Value;
+
+                        switch ( discountElement.Attribute( "type" ).Value.Trim().ToLowerInvariant() )
+                        {
+                            case "percentage":
+                                discount.DiscountPercentage = discountElement.Attribute( "value" ).Value.Trim().AsDecimal() * 0.01m;
+                                discount.DiscountAmount = 0.0m;
+                                break;
+                            case "amount":
+                                discount.DiscountPercentage = 0.0m;
+                                discount.DiscountAmount = discountElement.Attribute( "value" ).Value.Trim().AsDecimal();
+                                break;
+                            default:
+                                throw new NotSupportedException( string.Format( "unknown discount type: {0}", discountElement.Attribute( "type" ).Value ) );
+                        }
+                        discount.Order = discountOrder;
+                    }
+                }
+
+                // Fees
+                int feeOrder = 0;
+                if ( element.Elements( "fees" ) != null )
+                {
+                    foreach ( var feeElement in element.Elements( "fees" ).Elements( "fee" ) )
+                    {
+                        feeOrder++;
+                        var fee = new RegistrationTemplateFee();
+                        fee.Guid = Guid.NewGuid();
+                        registrationTemplate.Fees.Add( fee );
+
+
+                        switch ( feeElement.Attribute( "type" ).Value.Trim().ToLowerInvariant() )
+                        {
+                            case "multiple":
+                                fee.FeeType = RegistrationFeeType.Multiple;
+                                fee.CostValue = FormatMultipleFeeCosts( feeElement.Elements( "option" ) );
+                                break;
+                            case "single":
+                                fee.FeeType = RegistrationFeeType.Single;
+                                fee.CostValue = feeElement.Attribute( "cost" ).Value.Trim();
+                                break;
+                            default:
+                                throw new NotSupportedException( string.Format( "unknown fee type: {0}", feeElement.Attribute( "type" ).Value ) );
+                        }
+
+                        fee.Name = feeElement.Attribute( "name" ).Value.Trim();
+                        fee.DiscountApplies = feeElement.Attribute( "discountApplies" ).Value.AsBoolean();
+                        fee.AllowMultiple = feeElement.Attribute( "enableQuantity" ).Value.AsBoolean();
+                        fee.Order = feeOrder;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Formats the fee cost options for the CostValue field.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        private string FormatMultipleFeeCosts( IEnumerable<XElement> options )
+        {
+            var values = new List<string>();
+
+            foreach ( XElement option in options )
+            {
+                //values.Add( string.Format( "{0}^{1}", option.Attribute( "name" ).Value, option.Attribute( "cost" ).Value.AsDecimal().FormatAsCurrency() ) );
+                values.Add( string.Format( "{0}^{1}", option.Attribute( "name" ).Value, option.Attribute( "cost" ).Value ) );
+            }
+            return values.AsDelimited( "|" );
+        }
+
+        /// <summary>
+        /// Adds any registration instances given in the XML file.
+        /// </summary>
+        /// <param name="elemRegistrationInstances"></param>
+        /// <param name="rockContext"></param>
+        private void AddRegistrationInstances( XElement elemRegistrationInstances, RockContext rockContext )
+        {
+            if ( elemRegistrationInstances == null )
+            {
+                return;
+            }
+
+            foreach ( var element in elemRegistrationInstances.Elements( "registrationInstance" ) )
+            {
+                // skip any illegally formatted items
+                if ( element.Attribute( "templateGuid" ) == null )
+                {
+                    continue;
+                }
+
+                // Now find the matching registration template
+                RegistrationInstanceService registrationInstanceService = new RegistrationInstanceService( rockContext );
+
+                RegistrationTemplateService registrationTemplateService = new RegistrationTemplateService( rockContext );
+                Guid templateGuid = element.Attribute( "templateGuid" ).Value.AsGuid();
+                var registrationTemplate = registrationTemplateService.Queryable()
+                    .Where( g => g.Guid == templateGuid )
+                    .FirstOrDefault();
+
+                if ( registrationTemplate == null )
+                {
+                    throw new NotSupportedException( string.Format( "unknown registration template: {0}", templateGuid ) );
+                }
+
+                // Merge lava fields
+                // LAVA additionalReminderDetails
+                Dictionary<string, object> mergeObjects = new Dictionary<string, object>();
+                DateTime? registrationStartsDate = null;
+                DateTime? registrationEndsDate = null;
+                DateTime? sendReminderDate = null;
+                var additionalReminderDetails = string.Empty;
+                var additionalConfirmationDetails = string.Empty;
+
+                if ( element.Attribute( "registrationStarts" ) != null )
+                {
+                    var y = element.Attribute( "registrationStarts" ).Value.ResolveMergeFields( mergeObjects );
+                    registrationStartsDate = DateTime.Parse( y );
+                }
+
+                if ( element.Attribute( "registrationEnds" ) != null )
+                {
+                    registrationEndsDate = DateTime.Parse( element.Attribute( "registrationEnds" ).Value.ResolveMergeFields( mergeObjects ) );
+                }
+
+                if ( element.Attribute( "sendReminderDate" ) != null )
+                {
+                    sendReminderDate = DateTime.Parse( element.Attribute( "sendReminderDate" ).Value.ResolveMergeFields( mergeObjects ) );
+                }
+
+                if ( element.Attribute( "additionalReminderDetails" ) != null )
+                {
+                    additionalReminderDetails = element.Attribute( "additionalReminderDetails" ).Value;
+                    additionalReminderDetails = additionalReminderDetails.ResolveMergeFields( mergeObjects );
+                }
+
+                if ( element.Attribute( "additionalConfirmationDetails" ) != null )
+                {
+                    additionalConfirmationDetails = element.Attribute( "additionalConfirmationDetails" ).Value;
+                    additionalConfirmationDetails = additionalConfirmationDetails.ResolveMergeFields( mergeObjects );
+                }
+
+                // Get the contact info
+                int? contactPersonAliasId = null;
+                if ( element.Attribute( "contactPersonGuid" ) != null )
+                {
+                    var guid = element.Attribute( "contactPersonGuid" ).Value.AsGuid();
+                    if ( _peopleAliasDictionary.ContainsKey( guid ) )
+                    {
+                        contactPersonAliasId = _peopleAliasDictionary[element.Attribute( "contactPersonGuid" ).Value.AsGuid()];
+                    }
+                }
+
+                // Find the matching account
+                FinancialAccountService financialGatewayService = new FinancialAccountService( rockContext );
+                string accountName = element.Attribute( "account" ) != null ? element.Attribute( "account" ).Value : string.Empty;
+                var account = financialGatewayService.Queryable()
+                    .Where( g => g.Name == accountName )
+                    .FirstOrDefault();
+
+                RegistrationInstance registrationInstance = new RegistrationInstance()
+                {
+                    Guid = ( element.Attribute( "guid" ) != null ) ? element.Attribute( "guid" ).Value.Trim().AsGuid() : Guid.NewGuid(),
+                    Name = ( element.Attribute( "name" ) != null ) ? element.Attribute( "name" ).Value.Trim() : "New " + registrationTemplate.Name,
+                    IsActive = true,
+                    RegistrationTemplateId = registrationTemplate.Id,
+                    StartDateTime = registrationStartsDate,
+                    EndDateTime = registrationEndsDate,
+                    MaxAttendees = element.Attribute( "maxAttendees" ) != null ? element.Attribute( "maxAttendees" ).Value.AsInteger() : 0,
+                    SendReminderDateTime = sendReminderDate,
+                    ContactPersonAliasId = contactPersonAliasId,
+                    ContactPhone = element.Attribute( "contactPhone" ) != null ? element.Attribute( "contactPhone" ).Value : string.Empty,
+                    ContactEmail = element.Attribute( "contactEmail" ) != null ? element.Attribute( "contactEmail" ).Value : string.Empty,
+                    AccountId = ( account != null ) ? (int?)account.Id : null,
+                    AdditionalReminderDetails = HttpUtility.HtmlDecode( additionalReminderDetails ),
+                    AdditionalConfirmationDetails = HttpUtility.HtmlDecode( additionalConfirmationDetails ),
+                    CreatedDateTime = RockDateTime.Now,
+                    ModifiedDateTime = RockDateTime.Now,
+                };
+
+                registrationInstanceService.Add( registrationInstance );
             }
         }
 
@@ -1026,14 +1484,24 @@ namespace RockWeb.Blocks.Examples
             foreach ( var elemFamily in elemFamilies.Elements( "family" ) )
             {
                 // add the families giving data
-                AddFamilyGiving( elemFamily.Element( "giving" ), elemFamily.Attribute( "name" ).Value, rockContext );
+                if ( GetAttributeValue( "EnableGiving" ).AsBoolean() )
+                {
+                    // Support multiple giving elements per family
+                    foreach ( var elementGiving in elemFamily.Elements( "giving" ) )
+                    {
+                        AddFamilyGiving( elementGiving, elemFamily.Attribute( "name" ).Value, rockContext );
+                    }
+                }
             }
 
-            // Now add the batches to the service to be persisted
-            var financialBatchService = new FinancialBatchService( rockContext );
-            foreach ( var financialBatch in _contributionBatches )
+            if ( GetAttributeValue( "EnableGiving" ).AsBoolean() )
             {
-                financialBatchService.Add( financialBatch.Value );
+                // Now add the batches to the service to be persisted
+                var financialBatchService = new FinancialBatchService( rockContext );
+                foreach ( var financialBatch in _contributionBatches )
+                {
+                    financialBatchService.Add( financialBatch.Value );
+                }
             }
             rockContext.ChangeTracker.DetectChanges();
             rockContext.SaveChanges( disablePrePostProcessing: true );
@@ -1267,7 +1735,7 @@ namespace RockWeb.Blocks.Examples
                 Id = 0,
                 IsSystem = false,
                 Value = stringValue,
-                Description = "",
+                Description = string.Empty,
                 CreatedDateTime = RockDateTime.Now,
                 DefinedTypeId = definedType.Id
             };
@@ -1689,6 +2157,58 @@ namespace RockWeb.Blocks.Examples
         }
 
         /// <summary>
+        /// Deletes the registration templates.
+        /// </summary>
+        /// <param name="elemRegistrationTemplate">The elem registration template.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void DeleteRegistrationTemplates( XElement elemRegistrationTemplates, RockContext rockContext )
+        {
+            if ( elemRegistrationTemplates == null )
+            {
+                return;
+            }
+
+            var service = new RegistrationTemplateService( rockContext );
+
+            foreach ( var elemRegistrationTemplate in elemRegistrationTemplates.Elements( "registrationTemplate" ) )
+            {
+                Guid guid = elemRegistrationTemplate.Attribute( "guid" ).Value.Trim().AsGuid();
+                var registrationTemplate = service.Get( guid );
+
+                rockContext.WrapTransaction( () =>
+                {
+                    if ( registrationTemplate != null )
+                    {
+                        if ( registrationTemplate.Instances != null )
+                        {
+                            AttributeService attributeService = new AttributeService( rockContext );
+                            if ( registrationTemplate.Forms != null )
+                            {
+                                foreach ( var id in registrationTemplate.Forms.SelectMany( f => f.Fields ).Where( ff => ff.FieldSource == RegistrationFieldSource.RegistrationAttribute ).Select( f => f.AttributeId ) )
+                                {
+                                    if ( id != null )
+                                    {
+                                        Rock.Model.Attribute attribute = attributeService.Get( id ?? -1 );
+                                        if ( attribute != null )
+                                        {
+                                            attributeService.Delete( attribute );
+                                        }
+                                    }
+                                }
+                            }
+                            var registrations = registrationTemplate.Instances.SelectMany( i => i.Registrations );
+                            new RegistrationService( rockContext ).DeleteRange( registrations );
+                            new RegistrationInstanceService( rockContext ).DeleteRange( registrationTemplate.Instances );
+                        }
+
+                        service.Delete( registrationTemplate );
+                        rockContext.SaveChanges();
+                    }
+                } );
+            }
+        }
+
+        /// <summary>
         /// Adds the family giving records.
         /// <param name="elemGiving">The giving element.</param>
         /// </summary>
@@ -1707,7 +2227,11 @@ namespace RockWeb.Blocks.Examples
             DateTime startingDate = DateTime.Parse( elemGiving.Attribute( "startGiving" ).Value.Trim(), new CultureInfo( "en-US" ) );
             DateTime endDate = RockDateTime.Now;
 
-            if ( elemGiving.Attribute( "endingGivingWeeksAgo" ) != null )
+            if ( elemGiving.Attribute( "endGiving" ) != null )
+            {
+                DateTime.TryParse( elemGiving.Attribute( "endGiving" ).Value.Trim(), out endDate );
+            }
+            else if ( elemGiving.Attribute( "endingGivingWeeksAgo" ) != null )
             {
                 int endingWeeksAgo = 0;
                 int.TryParse( elemGiving.Attribute( "endingGivingWeeksAgo" ).Value.Trim(), out endingWeeksAgo );
@@ -1875,8 +2399,7 @@ namespace RockWeb.Blocks.Examples
                     FinancialTransactionDetail transactionDetail = new FinancialTransactionDetail {
                         AccountId = item.Key,
                         Amount = item.Value,
-                        Guid = Guid.NewGuid(),
-                        IsNonCash = false,
+                        Guid = Guid.NewGuid()
                     };
 
                     financialTransaction.TransactionDetails.Add( transactionDetail );
@@ -2110,6 +2633,9 @@ namespace RockWeb.Blocks.Examples
                 if ( person == null )
                 {
                     person = new Person();
+                    person.CreatedByPersonAliasId = CurrentPersonAliasId;
+                    person.CreatedDateTime = RockDateTime.Now;
+                    
                     person.Guid = guid;
                     person.FirstName = personElem.Attribute( "firstName" ).Value.Trim();
                     if ( personElem.Attribute( "suffix") != null )

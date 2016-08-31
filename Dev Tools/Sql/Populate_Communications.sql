@@ -1,5 +1,10 @@
 set nocount on
 
+----------------------------------------------
+-- README
+-- Adds 250,000 sample communications
+----------------------------------------------
+
 declare
   @recipientPersonAliasId int,
   @senderPersonAliasId int,
@@ -176,5 +181,4 @@ while @communicationCounter < @maxCommunicationCount
 commit transaction
 
 end;
-
 

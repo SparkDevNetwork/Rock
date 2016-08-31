@@ -1,11 +1,11 @@
-// <copyright>
-// Copyright 2013 by the Spark Development Network
+﻿// <copyright>
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -93,7 +93,7 @@ namespace Rock.Migrations
     SET @EntityTypeId  = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Person' )
 	IF @EntityTypeId IS NOT NULL
 	BEGIN
-		Set @NoteTypeGuid = ( SELECT TOP 1 [Guid] FROM [NoteType] WHERE [EntityTypeId] = @EntityTypeId ORDER BY [Order] )
+		Set @NoteTypeGuid = ( SELECT TOP 1 [Guid] FROM [NoteType] WHERE [EntityTypeId] = @EntityTypeId ORDER BY [Order], [Id] DESC )
 		IF @NoteTypeGuid IS NOT NULL
 		BEGIN
 			UPDATE AV SET [Value] = '66a1b9d7-7efa-40f3-9415-e54437977d60'

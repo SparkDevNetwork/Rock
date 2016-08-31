@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -76,8 +76,7 @@ namespace Rock.Utility
         }
 
         /// <summary>
-        /// Gets a value indicating whether this 
-        /// <see cref="T:Newtonsoft.Json.JsonConverter" /> can read JSON.
+        /// Gets a value indicating whether this <see cref="T:Newtonsoft.Json.JsonConverter" /> can read JSON.
         /// </summary>
         /// <value>
         /// <c>true</c> if this <see cref="T:Newtonsoft.Json.JsonConverter" /> can read JSON; otherwise, <c>false</c>.
@@ -87,21 +86,6 @@ namespace Rock.Utility
             get
             {
                 return false;
-            }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this 
-        /// <see cref="T:Newtonsoft.Json.JsonConverter" /> can write JSON.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if this <see cref="T:Newtonsoft.Json.JsonConverter" /> can write JSON; otherwise, <c>false</c>.
-        /// </value>
-        public override bool CanWrite
-        {
-            get
-            {
-                return true;
             }
         }
 

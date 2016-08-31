@@ -80,6 +80,7 @@
                         <div class="panel-heading">
                             <h1 class="panel-title"><i class="fa fa-list-alt"></i> <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
                         </div>
+                        <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
                         <div class="panel-body">
                             <p class="description">
                                 <asp:Literal ID="lReportDescription" runat="server"></asp:Literal>
@@ -90,11 +91,11 @@
                             <div class="actions">
                                 <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
                                 <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
-                                <asp:LinkButton ID="btnCopy" runat="server" Text="Copy" CssClass="btn btn-link" OnClick="btnCopy_Click" />
                                 <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
                                 <div class="pull-right">
                                     <asp:LinkButton ID="lbDataView" runat="server" Text="Data View" CssClass="btn btn-link" OnClick="lbDataView_Click" />
-                                    <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security pull-right" />
+                                    <asp:LinkButton ID="btnCopy" runat="server" Tooltip="Copy Report" CssClass="btn btn-default btn-sm fa fa-clone" OnClick="btnCopy_Click" />
+                                    <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
                                 </div>
                             </div>
                         </div>

@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -531,8 +531,8 @@ namespace RockWeb.Blocks.Administration
                 rGrid.DataBind();
 
                 var parentRules = new List<MyAuthRule>();
-                AddParentRules( authService, itemRules, parentRules, iSecured.ParentAuthorityPre, CurrentAction );
-                AddParentRules( authService, itemRules, parentRules, iSecured.ParentAuthority, CurrentAction );
+                AddParentRules( authService, itemRules, parentRules, iSecured.ParentAuthorityPre, CurrentAction, false );
+                AddParentRules( authService, itemRules, parentRules, iSecured.ParentAuthority, CurrentAction, true );
                 rGridParentRules.DataSource = parentRules;
                 rGridParentRules.DataBind();
             }
@@ -546,7 +546,8 @@ namespace RockWeb.Blocks.Administration
         /// <param name="parentRules">The parent rules.</param>
         /// <param name="parent">The parent.</param>
         /// <param name="action">The action.</param>
-        private void AddParentRules( AuthService authService, List<AuthRule> itemRules, List<MyAuthRule> parentRules, ISecured parent, string action )
+        /// <param name="recurse">if set to <c>true</c> [recurse].</param>
+        private void AddParentRules( AuthService authService, List<AuthRule> itemRules, List<MyAuthRule> parentRules, ISecured parent, string action, bool recurse )
         {
             if ( parent != null )
             {
@@ -570,7 +571,10 @@ namespace RockWeb.Blocks.Administration
                     }
                 }
 
-                AddParentRules( authService, itemRules, parentRules, parent.ParentAuthority, action );
+                if ( recurse )
+                {
+                    AddParentRules( authService, itemRules, parentRules, parent.ParentAuthority, action, true );
+                }
             }
         }
 

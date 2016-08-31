@@ -7,11 +7,12 @@
             <asp:HiddenField ID="hfMetricId" runat="server" />
             <asp:HiddenField ID="hfMetricCategoryId" runat="server" />
             <asp:HiddenField ID="hfMetricValueId" runat="server" />
-            <asp:HiddenField ID="hfSingleValueFieldTypeId" runat="server" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-signal"></i> <asp:Literal ID="lActionTitle" runat="server" /></h1>
+                <h1 class="panel-title"><i class="fa fa-signal"></i>
+                    <asp:Literal ID="lActionTitle" runat="server" /></h1>
             </div>
+            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
 
                 <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
@@ -25,13 +26,27 @@
                         <div class="col-md-6">
                             <Rock:RockDropDownList ID="ddlMetricValueType" runat="server" Label="Type" />
                             <Rock:DatePicker ID="dpMetricValueDateTime" runat="server" Label="Value Date" />
+
+                        </div>
+                        <div class="col-md-6">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <Rock:NotificationBox ID="nbValueRequired" runat="server" NotificationBoxType="Warning" Visible="false" />
+                        </div>
+                        <asp:PlaceHolder ID="phMetricValuePartitions" runat="server" />
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
                             <Rock:NumberBox ID="tbYValue" runat="server" Label="Value" NumberType="Double" />
 
                             <%-- Hide X Value for now until we implement XValue (In most cases, the Metric.Xaxis is ignored and MetricValueDateTime is used as the X-Axis --%>
                             <Rock:DataTextBox ID="tbXValue" runat="server" SourceTypeName="Rock.Model.MetricValue, Rock" PropertyName="XValue" Visible="false" />
                         </div>
                         <div class="col-md-6">
-                            <asp:PlaceHolder ID="phEntityTypeEntityIdValue" runat="server" />
                         </div>
                     </div>
 
@@ -48,7 +63,7 @@
                     <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" AccessKey="c" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                 </div>
 
-                </div>
+            </div>
 
         </asp:Panel>
     </ContentTemplate>

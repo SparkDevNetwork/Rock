@@ -1,4 +1,4 @@
-﻿/*
+/*
   Used to manage styles related to reusable components / widgets.
 
   1. Pickers - used to pick complex data types
@@ -38,46 +38,50 @@
   35. Follow button
   36. Range Editors
   37. Custom Buttons
-  xx. Misc
+  38. Color Picker
+  39. HTML Editor (summernote)
+  40. Person Directory
 */
 
 // 1. Pickers
 // -------------------------
 
 .picker {
-  position: relative;
-  width: 250px; // needed when floated right to keep the picker from shifting when the (x) appears to allow delete
   .clearfix();
+  @media @sm {
+    position: relative;
+    width: 250px; // needed when floated right to keep the picker from shifting when the (x) appears to allow delete
+  }
 
   .picker-mode-options {
     margin-bottom: 12px;
   }
 
   .picker-label {
+    display: inline-block;
+    float: left;
+    width: 225px;
     padding: @padding-base-vertical @padding-base-horizontal;
     font-size: @font-size-base;
     color: @input-color;
     background-color: @input-group-addon-bg;
     border: 1px solid @input-group-addon-border-color;
     border-radius: @border-radius-base;
-    display: inline-block;
-    width: 225px;
-    float: left;
 
     i {
-      margin-right: 6px;
       float: left;
       margin-top: 2px;
+      margin-right: 6px;
     }
 
     span {
       float: left;
-      margin-right: 6px;
       width: 140px;
+      margin-right: 6px;
       overflow: hidden;
+      line-height: 18px;
       text-overflow: ellipsis;
       white-space: nowrap;
-      line-height: 18px;
     }
 
     .fa.fa-caret-down {
@@ -117,10 +121,13 @@
     h4:first-child {
       margin-top: 0;
     }
+      @media (max-width: @screen-xs-max) {
+        position: static;
+        max-width: 100%;
+      }
   }
 
   &.picker-menu-right {
-
     .picker-menu {
       right: 0;
       left: auto;
@@ -128,25 +135,24 @@
   }
 
   .picker-actions {
-    background-color: @picker-action-bg;
     padding: 10px;
+    margin: 10px -10px -10px -10px;
+    background-color: @picker-action-bg;
     border-top: 1px solid darken(@picker-action-bg, 10%);
     border-radius: 0 0 @border-radius-base @border-radius-base;
-    margin: 10px -10px -10px -10px;
   }
-
   // details used for pickers like person picker to show the details of the selected item
   .picker-select-item-details {
     margin-left: 20px;
 
     .person-image {
-      float: left;
-      border:1px solid @photo-border;
-      float:left;
-      margin-right: 7.5px;
       display: inline-block;
+      float: left;
+      float: left;
       width: 70px;
       height: 70px;
+      margin-right: 7.5px;
+      border: 1px solid @photo-border;
     }
 
     .contents {
@@ -166,7 +172,6 @@
   }
 
   &.picker-person {
-
     .picker-select {
       padding: 0;
       list-style: none;
@@ -177,7 +182,8 @@
     }
   }
 
-  &.picker-novalue { // used for pickers that do not retain values to remove the extra spacing needed for the 'x'
+  &.picker-novalue {
+    // used for pickers that do not retain values to remove the extra spacing needed for the 'x'
     .picker-label {
       width: 100%;
     }
@@ -188,8 +194,7 @@
   }
 }
 
-#dialog .scroll-container-picker
-{
+#dialog .scroll-container-picker {
   width: 360px;
 
   .viewport {
@@ -200,94 +205,92 @@
 
 // date time picker
 .date-time-picker {
-    margin-bottom: 11px;
+  margin-bottom: 11px;
 
-    .input-group {
-        margin-bottom: 4px;
-    }
+  .input-group {
+    margin-bottom: 4px;
+  }
 }
 
 // campuses picker
 
-.campuses-picker  {
-    .clearfix();
+.campuses-picker {
+  .clearfix();
 
-    .checkbox {
-        float: left;
-        margin-top: 0;
-        margin-right: 24px;
-    }
+  .checkbox {
+    float: left;
+    margin-top: 0;
+    margin-right: 24px;
+  }
 }
 
 
 .campuses-picker .campuses-picker-vertical .checkbox {
-    float: none;
-    margin-top: inherit;
-    margin-right: 0;
+  float: none;
+  margin-top: inherit;
+  margin-right: 0;
 }
 
 
 // 2. Number Increment
 // -------------------------
 .numberincrement {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+       -o-user-select: none;
+          user-select: none;
 
-    -webkit-user-select: none;    
-    -moz-user-select: none;
-    -ms-user-select: none;
-    -o-user-select: none;
-    user-select: none;
+  .numberincrement-up,
+  .numberincrement-down {
+    padding: 6px 12px;
+    color: @input-color;
+    cursor: pointer;
+    background-color: @input-group-addon-bg;
+    border: 1px solid @input-group-addon-border-color;
 
+    &.disabled {
+      color: lighten(@input-color, 20%);
+      cursor: default;
+    }
+  }
+
+  .numberincrement-down {
+    border-radius: @border-radius-base 0 0 @border-radius-base;
+  }
+
+  .numberincrement-up {
+    border-radius: 0 @border-radius-base @border-radius-base 0;
+  }
+
+  .numberincrement-value {
+    padding: 6px 18px;
+    border-color: @input-group-addon-border-color;
+    border-style: solid;
+    border-width: 1px 0;
+  }
+  // adjustments for different sizes
+  &.input-sm {
     .numberincrement-up,
     .numberincrement-down {
-        background-color: @input-group-addon-bg;
-        padding: 6px 12px;
-        border: 1px solid @input-group-addon-border-color;
-        color: @input-color;
-        cursor: pointer;
-
-        &.disabled {
-            color: lighten(@input-color, 20%);
-            cursor: default;
-        }
-    }
-
-    .numberincrement-down {
-        border-radius: @border-radius-base 0 0 @border-radius-base;
-    }
-
-    .numberincrement-up {
-        border-radius: 0 @border-radius-base @border-radius-base 0;
+      padding: 5px 8px;
     }
 
     .numberincrement-value {
-        padding: 6px 18px;
-        border-color: @input-group-addon-border-color;
-        border-width: 1px 0;
-        border-style: solid;
+      padding: 5px 12px;
+    }
+  }
+
+  &.input-lg {
+    .numberincrement-up,
+    .numberincrement-down {
+      padding: 12px 20px;
     }
 
-    // adjustments for different sizes    
-    &.input-sm {
-        .numberincrement-up,
-        .numberincrement-down {
-            padding: 5px 8px;
-        }
-
-        .numberincrement-value {
-            padding: 5px 12px;
-        }
+    .numberincrement-value {
+      padding: 12px 28px;
     }
-
-    &.input-lg {
-        .numberincrement-up,
-        .numberincrement-down {
-            padding: 12px 20px;
-        }
-
-        .numberincrement-value {
-            padding: 12px 28px;
-        }
-    }
+  }
 }
 
 
@@ -296,73 +299,70 @@
 // -------------------------
 ul.rocktree,
 ul.rocktree ul {
-  list-style-type: none;
+  padding: 0;
   margin-bottom: @spacing-lg-px;
-  padding: 0px;
+  list-style-type: none;
 }
 
 ul.rocktree ul {
-  margin: 0px 0px 0px @spacing-md-px;
+  margin: 0 0 0 @spacing-md-px;
 }
 
 .rocktree {
-
   .rocktree-item {
-
-    &.is-inactive {
-        color: lighten(@text-color, 20%);
-        opacity: 1;
-    }
-
-    &:not(.is-inactive){
-        color: @text-color;
-    }
-
     white-space: nowrap;
+    &.is-inactive {
+      color: lighten(@text-color, 20%);
+      opacity: 1;
+    }
+
+    &:not(.is-inactive) {
+      color: @text-color;
+    }
 
     & > i {
-      cursor: pointer;
       padding: 4px;
+      cursor: pointer;
     }
   }
 
   li {
-    margin: 0px;
+    margin: 0;
   }
 
   span,
   a {
-    margin: 1px;
     display: inline-block;
+    margin: 1px;
   }
 
   .rocktree-name:hover,
   span:hover,
   span:hover a {
-    background: @tree-rollover-bg;
     color: @tree-rollover-color;
+    background: @tree-rollover-bg;
   }
 
   .selected,
   .selected a {
-    background: @tree-selected-bg;
     color: @tree-selected-color;
+    background: @tree-selected-bg;
   }
 
   .rocktree-name {
     padding: 2px 6px;
-    border-radius: 3px;
     cursor: pointer;
+    border-radius: 3px;
   }
 
   .rocktree-loading {
     margin-left: 10px;
-    color: @text-color !important;
     font-size: 12px;
+    color: @text-color !important;
 
-     i {
+    i {
       margin-right: 5px;
-     }
+    }
   }
 
   .rocktree-leaf {
@@ -372,12 +372,10 @@ ul.rocktree ul {
 
 // treeview wrapper
 .treeview {
-
-  .treeview-frame {
-      padding-left: 0;
-  }
-
   margin-bottom: @spacing-md-px;
+  .treeview-frame {
+    padding-left: 0;
+  }
 
   .treeview-actions {
     margin-bottom: @spacing-sm-px;
@@ -385,10 +383,6 @@ ul.rocktree ul {
     .btn {
       margin-bottom: 4px;
     }
-  }
-
-  .treeview-scroll {
-
   }
 }
 
@@ -402,22 +396,21 @@ ul.rocktree ul {
   list-style: none;
 
   li {
-
     padding-left: @spacing-md-px;
 
     i.fa-circle {
-      font-size: 9px;
-      color: #d0cfcf;
       margin-right: @spacing-sm-px;
       margin-left: -@spacing-md-px;
+      font-size: 9px;
+      color: #d0cfcf;
     }
 
     .actions {
       opacity: 0;
       -webkit-transition: opacity .5s ease-out;
-      -moz-transition: opacity .5s ease-out;
-      -o-transition: opacity .5s ease-out;
-      transition: opacity .5s ease-out;
+         -moz-transition: opacity .5s ease-out;
+           -o-transition: opacity .5s ease-out;
+              transition: opacity .5s ease-out;
     }
 
     &:hover {
@@ -441,9 +434,9 @@ ul.rocktree ul {
   & > .rollover-item {
     opacity: 0;
     -webkit-transition: opacity .5s ease-out;
-    -moz-transition: opacity .5s ease-out;
-    -o-transition: opacity .5s ease-out;
-    transition: opacity .5s ease-out;
+       -moz-transition: opacity .5s ease-out;
+         -o-transition: opacity .5s ease-out;
+            transition: opacity .5s ease-out;
   }
 
   &:hover {
@@ -463,55 +456,54 @@ ul.rocktree ul {
 // -------------------------
 
 .block-title {
-    margin: 0;
+  margin: 0;
 }
 
 .list-as-blocks {
-
   h3 {
+    margin: 6px 0;
     margin-top: 0;
     font-size: 14px;
-    margin: 6px 0;
   }
 
   ul {
     padding: 0;
-    list-style: none;
     margin-top: 16px;
+    list-style: none;
 
     li {
-      border-radius: @border-radius-base;
-      border: 1px solid @listasblocks-border-color;
-      float: left;
-      margin: 0 1.25% @spacing-md-px;
-      width: 47.5%;
-      overflow: hidden;
       position: relative;
+      float: left;
+      width: 47.5%;
+      margin: 0 1.25% @spacing-md-px;
+      overflow: hidden;
       overflow: visible;
       text-align: center;
+      border: 1px solid @listasblocks-border-color;
+      border-radius: @border-radius-base;
 
       a {
-        background-color: @listasblocks-bg;
         display: block;
-        color: @listasblocks-color;
         height: 90px;
         padding: @spacing-md-px;
+        color: @listasblocks-color;
+        background-color: @listasblocks-bg;
         border-radius: @border-radius-base;
         -webkit-transition: background-color 200ms linear;
-        -moz-transition: background-color 200ms linear;
-        -o-transition: background-color 200ms linear;
-        -ms-transition: background-color 200ms linear;
-        transition: background-color 200ms linear;
+           -moz-transition: background-color 200ms linear;
+            -ms-transition: background-color 200ms linear;
+             -o-transition: background-color 200ms linear;
+                transition: background-color 200ms linear;
 
         i {
-            font-size: 26px;
-            color: lighten(@listasblocks-color, 10%);
-            margin-top: 6px;
+          margin-top: 6px;
+          font-size: 26px;
+          color: lighten(@listasblocks-color, 10%);
         }
 
         &:hover {
-          background-color: @listasblocks-rollover-bg;
           color: @listasblocks-rollover-text-color;
+          background-color: @listasblocks-rollover-bg;
           border-color: @listasblocks-rollover-border-color;
 
           i {
@@ -525,16 +517,16 @@ ul.rocktree ul {
           right: -6px;
 
           .label {
-            border-radius: 36px;
             padding: 2px 6px;
+            border-radius: 36px;
           }
         }
       }
 
       &.active {
         a {
-          background-color: @listasblocks-active-bg;
           color: @listasblocks-active-color;
+          background-color: @listasblocks-active-bg;
           border-color: @listasblocks-active-border-color;
 
           i {
@@ -542,44 +534,56 @@ ul.rocktree ul {
           }
         }
       }
+    }
+  }
 
+  .block-status a {
+    height: 105px;
+    padding: 8px 15px;
 
+    .status-list {
+      position: absolute;
+      right: 0;
+      bottom: 5px;
+      left: 0;
     }
   }
 }
 
-@media @sm-only { // tablet portrait and larger
+@media @sm-only {
+  // tablet portrait and larger
   .list-as-blocks {
     ul {
       li {
-        margin: 0 1% @spacing-md-px;
         width: 32%;
+        margin: 0 1% @spacing-md-px;
 
         &:nth-child(3n) {
-            margin-right: 0;
+          margin-right: 0;
         }
 
         &:nth-child(3n+1) {
-            margin-left: 0;
+          margin-left: 0;
         }
       }
     }
   }
 }
 
-@media @md { // tablet portrait and larger
+@media @md {
+  // tablet portrait and larger
   .list-as-blocks {
     ul {
       li {
-        margin: 0 1% @spacing-md-px;
         width: 18.4%;
+        margin: 0 1% @spacing-md-px;
 
         &:nth-child(5n) {
-            margin-right: 0;
+          margin-right: 0;
         }
 
         &:nth-child(5n+1) {
-            margin-left: 0;
+          margin-left: 0;
         }
       }
     }
@@ -590,198 +594,185 @@ ul.rocktree ul {
 // -------------------------
 
 .nav > li.pill-help {
-    a {
-        color: @nav-pills-link-color;
+  a {
+    color: @nav-pills-link-color;
 
-        &:hover,
-        &:focus {
-            background-color: transparent;
-            color: @nav-pills-link-color;
-        }
+    &:hover,
+    &:focus {
+      color: @nav-pills-link-color;
+      background-color: transparent;
     }
+  }
 }
 
 .well-pillwrap {
-    background-color: @nav-pills-container-bg;
-    border-color: @nav-pills-container-border;
+  background-color: @nav-pills-container-bg;
+  border-color: @nav-pills-container-border;
 }
 
 // 8. Tags
 // ------------------------
 
-div.tagsinput
-{
-  width:100%;
-  overflow-y: auto;
+div.tagsinput {
   float: left;
+  width: 100%;
+  overflow-y: auto;
 }
 
 .taglist {
   text-align: center;
 
   .tag {
+    position: relative;
     display: inline-block;
     height: 22px;
-    line-height: 18px;
-    position: relative;
-    font-size: 13px;
+    padding: 1px 10px 0 12px;
     margin-bottom: @spacing-sm-px;
     margin-left: 20px;
-    padding: 1px 10px 0 12px;
-    background: @tag-bg;
+    font-size: 13px;
+    line-height: 18px;
     color: @tag-text-color;
     text-decoration: none;
-    border-bottom-right-radius: @tag-border-radius;
+    background: @tag-bg;
     border-top-right-radius: @tag-border-radius;
+    border-bottom-right-radius: @tag-border-radius;
 
     &:first-child {
-        margin-left: 10px;
+      margin-left: 10px;
     }
 
     span {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 120px;
       display: block;
       float: left;
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     a {
-      float: left;
       display: block;
+      float: left;
     }
 
     small {
       font-size: 11px;
     }
 
-    &:before { /* tag point */
-      content: "";
-      float: left;
+    &:before {
       position: absolute;
       top: 0;
       left: -10px; // chrome looks better with -11px but IE has line if so
+      float: left;
       width: 0;
       height: 0;
+      /* tag point */
+      content: "";
       border-color: transparent @tag-bg transparent transparent;
       border-style: solid;
       border-width: 11px 11px 11px 0;
     }
 
-    &:after { /* tag dot */
-      content: "";
+    &:after {
       position: absolute;
       top: 8px;
       left: 0;
       float: left;
       width: 5px;
       height: 5px;
-      border-radius: 2px;
+      /* tag dot */
+      content: "";
       background: @tag-dot-color;
+      border-radius: 2px;
       box-shadow: -1px -1px 2px @tag-bg;
     }
   }
 }
 
 div.tagsinput {
-    div[id$=addTag] {
-     
-        @media @sm {
-            float: left;
-            margin-left: 12px;
-        }
+  div[id$=addTag] {
+    @media @sm {
+      float: left;
+      margin-left: 12px;
     }
-}
-
-div.tagsinput span.tag.personal
-{
-  background: @tag-bg-alt;
-}
-
-div.tagsinput span.tag.personal:before
-{
-  border-color: transparent @tag-bg-alt transparent transparent;
-}
-
-div.tagsinput span.tag a
-{
-  font-weight: bold;
-  color: @tag-text-color;
-  text-decoration:none;
-  font-size: 11px;
-  opacity: 0;
-  -moz-transition: opacity 0.3s ease 0s, color 0.3s ease 0s, background 0.3s ease 0s;
-  -webkit-transition: opacity 0.3s ease 0s, color 0.3s ease 0s, background 0.3s ease 0s;
-}
-
-div.tagsinput span.tag:hover a
-{
-  opacity: 1;
-}
-
-div.tagsinput input
-{
-  width:80px;
-  margin:0px;
-  font-family: helvetica;
-  font-size: 13px;
-  border:1px solid transparent;
-  padding: 0px;
-  background: transparent;
-  color: #8f8f8f !important; /* needed as script adds element value */
-  outline: 0px;
-  box-shadow: none;
-  margin: -2px 0 0 10px;
-  border-radius: @border-radius-base;
-  padding: 2px;
-  display: block;
-  clear: both;
-  margin: 0 auto;
-
-  &:hover,
-  &:focus {
-    background-color: rgba(0,0,0,.05);
   }
 
-  div {
-    display:block;
-    float: left;
+  span.tag.personal {
+    background: @tag-bg-alt;
+    &:before {
+      border-color: transparent @tag-bg-alt transparent transparent;
+    }
+  }
+
+  span.tag a {
+    font-size: 11px;
+    font-weight: bold;
+    color: @tag-text-color;
+    text-decoration: none;
+    opacity: 0;
+    -webkit-transition: opacity .3s ease 0s, color .3s ease 0s, background .3s ease 0s;
+       -moz-transition: opacity .3s ease 0s, color .3s ease 0s, background .3s ease 0s;
+  }
+
+  span.tag:hover a {
+    opacity: 1;
+  }
+
+  input {
+    display: block;
+    width: 80px;
+    padding: 0;
+    padding: 2px;
+    margin: 0;
+    margin: -2px 0 0 10px;
+    margin: 0 auto;
+    clear: both;
+    font-family: helvetica;
+    font-size: 13px;
+    color: #8f8f8f !important; /* needed as script adds element value */
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: @border-radius-base;
+    outline: 0;
+    box-shadow: none;
+
+    &:hover,
+    &:focus {
+      background-color: rgba(0,0,0,.05);
+    }
+
+    div {
+      display: block;
+      float: left;
+    }
+  }
+
+  .tags_clear {
+    width: 100%;
+    height: 0;
+    clear: both;
   }
 }
 
-div.tagsinput
-
-.tags_clear
-{
-  clear: both;
-  width: 100%;
-  height: 0px;
-}
-
-.not_valid
-{
-  background: #FBD8DB !important;
-  color: #90111A !important;
+.not_valid {
+  color: #90111a !important;
+  background: #fbd8db !important;
 }
 
 .tag-wrap {
-
   .ui-autocomplete {
     position: absolute;
-    left: 0px;
     top: 4px;
+    left: 0;
     z-index: 90;
-    list-style: none;
+    z-index: 9999 !important;
+    min-width: 200px;
     padding: 12px;
+    list-style: none;
     background-color: @autocomplete-bg;
     border: 1px solid @autocomplete-border;
-    min-width: 200px;
     border-radius: 0 0 @border-radius-base @border-radius-base;
-    z-index: 9999 !important;
-    -webkit-box-shadow: 0 5px 10px rgba(0,0,0,.2);
-    -moz-box-shadow: 0 5px 10px rgba(0,0,0,.2);
-    box-shadow: 0 5px 10px rgba(0,0,0,.2);
+    .box-shadow(0 5px 10px rgba(0,0,0,.2));
 
     li {
       margin-bottom: 4px;
@@ -791,11 +782,11 @@ div.tagsinput
       }
 
       a {
+        display: block;
+        padding: 4px;
         color: @autocomplete-text;
         text-decoration: none;
         cursor: pointer;
-        padding: 4px;
-        display: block;
 
         &:hover {
           background: @autocomplete-rollover-bg;
@@ -803,14 +794,11 @@ div.tagsinput
         }
       }
     }
-
-
   }
 }
 
 .tag-letterlist {
-
-   color: lighten(@text-color, 20%);
+  color: lighten(@text-color, 20%);
 
   li {
     margin-right: 12px;
@@ -823,7 +811,6 @@ div.tagsinput
 
 /* Medium devices (desktops, 992px and up) */
 @media (min-width: @screen-sm-min) {
-
   .taglist {
     text-align: left;
 
@@ -840,8 +827,8 @@ div.tagsinput
 // 9.
 // ------------------------
 .photoframe {
-  border: 4px solid @photo-border;
   display: inline-block;
+  border: 4px solid @photo-border;
 
   &.photoframe-sm {
     border-width: 2px;
@@ -849,20 +836,34 @@ div.tagsinput
 }
 
 
-
 // 10. Smart Search
 // ------------------------
 
 .smartsearch {
+  position: relative;
   width: 290px;
+  padding: 2px 6px;
   margin-top: 6px;
   font-size: 12px;
+  color: @smartsearch-text-color;
   background-color: @smartsearch-bg;
   border: 1px solid @smartsearch-border-color;
   border-radius: @border-radius-base;
-  padding: 2px 6px;
-  position: relative;
-  color: @smartsearch-text-color;
+
+  input::-moz-placeholder,
+  input::-webkit-input-placeholder {
+    color: darken(@smartsearch-input-text-color, 25%);
+  }
+
+    .nav > li > a {
+      padding: 4px 15px;
+    }
+
+      input::selection,
+      input::-moz-selection {
+        color: @smartsearch-input-selection-text-color;
+        background: @smartsearch-input-selection-background;
+      }
 
   &:focus {
     border-color: #595959;
@@ -878,25 +879,25 @@ div.tagsinput
   }
 
   i {
-    font-size: 16px;
-    margin-top: 6px;
-    float: left;
-    opacity: .6;
     position: absolute;
+    float: left;
+    margin-top: 6px;
+    font-size: 16px;
+    opacity: .6;
   }
 
   input {
-    border: 0;
-    background: transparent;
-    color: @smartsearch-input-text-color;
-    border-radius: 0;
     width: 150px;
     margin: 0;
     font-size: 14px;
+    color: @smartsearch-input-text-color;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
 
     &:focus {
-      box-shadow: 0 0 0 0;
       outline: 0; // get rid of orange box in chrome
+      box-shadow: 0 0 0 0;
     }
   }
 
@@ -906,24 +907,23 @@ div.tagsinput
 
   .tt-dropdown-menu {
     min-width: 290px;
+    margin-top: 2px;
     margin-left: -6px;
     border: 0;
-    margin-top: 2px;
   }
 
   input.searchinput {
+    width: 100%;
     padding: 4px 4px 4px 25px;
     color: @smartsearch-input-text-color;
-    width: 100%;
     border: 0 !important;
     box-shadow: none !important;
   }
 
   .dropdown {
-
     .navbar-link {
-      text-align: right;
       color: @smartsearch-text-color;
+      text-align: right;
 
       span {
         padding-right: 4px;
@@ -941,36 +941,13 @@ div.tagsinput
       }
     }
 
-    .dropdown-menu { // smart search type menu
-      font-size: 12px;
+    .dropdown-menu {
       right: 0;
       left: auto;
+      // smart search type menu
+      font-size: 12px;
     }
   }
-
-}
-
-.smartsearch input:-moz-placeholder {
-  color: darken(@smartsearch-input-text-color, 25%);
-}
-
-
-.smartsearch input::-webkit-input-placeholder {
-  color: darken(@smartsearch-input-text-color, 25%);
-}
-
-.smartsearch .nav > li > a {
-  padding: 4px 15px;
-}
-
-.smartsearch input::selection {
-  background: @smartsearch-input-selection-background; /* Safari */
-  color: @smartsearch-input-selection-text-color;
-}
-
-.smartsearch input::-moz-selection {
-  background: @smartsearch-input-selection-background; /* Firefox */
-  color: @smartsearch-input-selection-text-color;
 }
 
 // 11. Actions
@@ -983,16 +960,24 @@ fieldset .actions {
 // 13. Code Editor
 // -------------------------
 .code-editor {
-   position: relative;
+  position: relative;
+}
+
+// styles for ace when instead of summer note
+.note-editor {
+  .ace_editor {
+    margin: 0;
+    border-radius: 0;
+  }
 }
 
 // 14. Labels
 // -------------------------
 
 .label {
-    a {
-        color: #fff; // allow for links in labels
-    }
+  a {
+    color: #fff; // allow for links in labels
+  }
 }
 
 .label-campus {
@@ -1023,6 +1008,9 @@ fieldset .actions {
   background-color: @label-type-bg;
 }
 
+.label-tree {
+  background-color: @tree-rollover-bg;
+}
 
 // 15. Datepicker
 // -------------------------
@@ -1031,45 +1019,71 @@ fieldset .actions {
   padding: 10px;
 
   &.datepicker-dropdown {
+    &:before {
+      position: absolute;
+      display: inline-block;
+      content: '';
+      border-top: 0;
+      border-right: 7px solid transparent;
+      border-bottom: 7px solid #ccc;
+      border-bottom-color: rgba(0,0,0,.2);
+      border-left: 7px solid transparent;
+    }
+
+    &:after {
+      position: absolute;
+      display: inline-block;
+      content: '';
+      border-top: 0;
+      border-right: 6px solid transparent;
+      border-bottom: 6px solid #fff;
+      border-left: 6px solid transparent;
+    }
+
+    &.datepicker-orient-left {
       &:before {
-			content: '';
-			display: inline-block;
-			border-left:   7px solid transparent;
-			border-right:  7px solid transparent;
-			border-bottom: 7px solid #ccc;
-			border-top:    0;
-			border-bottom-color: rgba(0,0,0,.2);
-			position: absolute;
-		}
-		&:after {
-			content: '';
-			display: inline-block;
-			border-left:   6px solid transparent;
-			border-right:  6px solid transparent;
-			border-bottom: 6px solid #fff;
-			border-top:    0;
-			position: absolute;
-		}
-		&.datepicker-orient-left:before   { left: 6px; }
-		&.datepicker-orient-left:after    { left: 7px; }
-		&.datepicker-orient-right:before  { right: 6px; }
-		&.datepicker-orient-right:after   { right: 7px; }
-		&.datepicker-orient-top:before    { top: -7px; }
-		&.datepicker-orient-top:after     { top: -6px; }
-		&.datepicker-orient-bottom:before {
-			bottom: -7px;
-			border-bottom: 0;
-			border-top:    7px solid #999;
-		}
-		&.datepicker-orient-bottom:after {
-			bottom: -6px;
-			border-bottom: 0;
-			border-top:    6px solid #fff;
-		}
+        left: 6px;
+      }
+      &:after {
+        left: 7px;
+      }
+    }
+
+    &.datepicker-orient-right {
+      &:before {
+        right: 6px;
+      }
+
+      &:after {
+        right: 7px;
+      }
+    }
+
+    &.datepicker-orient-top {
+      &:before {
+        top: -7px;
+      }
+
+      &:after {
+        top: -6px;
+      }
+    }
+
+    &.datepicker-orient-bottom {
+      &:before {
+        bottom: -7px;
+        border-top: 7px solid #999;
+        border-bottom: 0;
+      }
+      &:after {
+        bottom: -6px;
+        border-top: 6px solid #fff;
+        border-bottom: 0;
+      }
+    }
   }
 
   table {
-
     background-color: transparent;
 
     thead {
@@ -1084,8 +1098,8 @@ fieldset .actions {
 
     td.active,
     td.today {
-      background-color: @datepicker-highlight-bg;
       color: @datepicker-highlight-color;
+      background-color: @datepicker-highlight-bg;
     }
 
     td.day {
@@ -1102,8 +1116,8 @@ fieldset .actions {
     }
 
     td span.month {
-      margin-left: 2px;
       padding: 2px;
+      margin-left: 2px;
       cursor: pointer;
 
       &.active {
@@ -1111,8 +1125,8 @@ fieldset .actions {
       }
 
       &:hover {
-        background-color: @datepicker-highlight-bg;
         color: @datepicker-highlight-color;
+        background-color: @datepicker-highlight-bg;
       }
 
       &:first-child {
@@ -1121,8 +1135,8 @@ fieldset .actions {
     }
 
     td span.year {
-      margin-left: 4px;
       padding: 2px;
+      margin-left: 4px;
       cursor: pointer;
 
       &.active {
@@ -1130,8 +1144,8 @@ fieldset .actions {
       }
 
       &:hover {
-        background-color: @datepicker-highlight-bg;
         color: @datepicker-highlight-color;
+        background-color: @datepicker-highlight-bg;
         border-radius: @border-radius-small;
       }
 
@@ -1145,7 +1159,7 @@ fieldset .actions {
 // 16. Time Picker
 // -------------------------
 
-.timepicker-input  {
+.timepicker-input {
   .clearfix();
 
   .input-group {
@@ -1154,15 +1168,14 @@ fieldset .actions {
 
   & i.fa-times {
     float: left;
-    margin-top: 4px;
     padding: 6px;
+    margin-top: 4px;
     cursor: pointer;
-
     opacity: 0;
     -webkit-transition: opacity .2s ease-out;
-    -moz-transition: opacity .2s ease-out;
-    -o-transition: opacity .2s ease-out;
-    transition: opacity .2s ease-out;
+       -moz-transition: opacity .2s ease-out;
+         -o-transition: opacity .2s ease-out;
+            transition: opacity .2s ease-out;
   }
 
   &:hover i.fa-times {
@@ -1180,16 +1193,17 @@ fieldset .actions {
   &.pull-right {
     .bootstrap-timepicker-widget {
       &.dropdown-menu {
-        left: auto;
         right: 0;
+        left: auto;
 
         &:before {
-          left: auto;
           right: 12px;
-        }
-        &:after {
           left: auto;
+        }
+
+        &:after {
           right: 13px;
+          left: auto;
         }
       }
     }
@@ -1197,38 +1211,41 @@ fieldset .actions {
 
   .add-on {
     cursor: pointer;
+
     i {
-       display: inline-block;
-       width: 16px;
-       height: 16px;
+      display: inline-block;
+      width: 16px;
+      height: 16px;
     }
   }
 }
+
 .bootstrap-timepicker-widget {
   &.dropdown-menu {
     padding: 2px 3px 2px 2px;
+
     &.open {
       display: inline-block;
     }
+
     &:before {
-      border-bottom: 7px solid rgba(0, 0, 0, 0.2);
-      border-left: 7px solid transparent;
-      border-right: 7px solid transparent;
-      content: "";
-      display: inline-block;
-      left: 9px;
       position: absolute;
       top: -7px;
-    }
-    &:after {
-      border-bottom: 6px solid #FFFFFF;
-      border-left: 6px solid transparent;
-      border-right: 6px solid transparent;
-      content: "";
+      left: 9px;
       display: inline-block;
-      left: 10px;
+      content: "";
+      border: 7px solid transparent;
+      border-bottom-color: rgba(0, 0, 0, .2);
+    }
+
+    &:after {
       position: absolute;
       top: -6px;
+      left: 10px;
+      display: inline-block;
+      content: "";
+      border: 6px solid transparent;
+      border-bottom-color: #fff;
     }
   }
 
@@ -1238,14 +1255,14 @@ fieldset .actions {
 
   table {
     width: 100%;
-    background-color: transparent;
     margin: 0;
+    background-color: transparent;
 
     td {
-      text-align: center;
       height: 30px;
-      margin: 0;
       padding: 2px;
+      margin: 0;
+      text-align: center;
 
       &:not(.separator) {
         min-width: 30px;
@@ -1254,39 +1271,42 @@ fieldset .actions {
       span {
         width: 100%;
       }
+
       a {
-        border: 1px transparent solid;
-        width: 100%;
         display: inline-block;
-        margin: 0;
+        width: 100%;
         padding: 8px 0;
-        outline: 0;
+        margin: 0;
         color: #333;
+        border: 1px transparent solid;
+        outline: 0;
 
         &:hover {
           text-decoration: none;
           background-color: #eee;
-          -webkit-border-radius: 4px;
-          -moz-border-radius: 4px;
-          border-radius: 4px;
           border-color: #ddd;
+                  border-radius: 4px;
+
+          -webkit-border-radius: 4px;
+             -moz-border-radius: 4px;
         }
 
         i {
           margin-top: 2px;
         }
       }
+
       input {
         width: 45px;
+        padding: @padding-base-vertical @padding-base-horizontal;
         margin: 0;
+        font-size: 12px;
         text-align: center;
+        border: 1px solid @input-border;
         border-radius: @border-radius-base;
-        box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+
         .box-shadow(inset 0 1px 1px rgba(0,0,0,.075));
         .transition(~"border-color ease-in-out .15s, box-shadow ease-in-out .15s");
-        border: 1px solid @input-border;
-        padding: @padding-base-vertical @padding-base-horizontal;
-        font-size: 12px;
       }
     }
   }
@@ -1317,14 +1337,13 @@ fieldset .actions {
 // -------------------------
 
 .imageupload-group {
-
+  position: relative;
+  display: table-cell;
+  padding: 2px;
   margin-bottom: @spacing-md-px;
+  cursor: pointer;
   border: 1px solid @photo-border;
   border-radius: @border-radius-base;
-  padding: 2px;
-  display: table-cell;
-  position: relative;
-  cursor: pointer;
 
   .imageupload-thumbnail {
     position: relative;
@@ -1332,171 +1351,174 @@ fieldset .actions {
     .imageupload-thumbnail-image {
       width: 100%;
       height: 100%;
-      background-size: cover;
       background-position: 50%;
+      background-size: cover;
     }
 
     .imageupload-remove {
       position: absolute;
-      bottom: 0;
       right: 0;
+      bottom: 0;
 
       a {
+        display: block;
         padding: 2px 6px;
-        border-top-left-radius: @border-radius-base;
-        background-color: @btn-danger-bg;
         color: @btn-danger-color;
         cursor: pointer;
-        display: block;
+        background-color: @btn-danger-bg;
+        border-top-left-radius: @border-radius-base;
       }
     }
   }
 
   .imageupload-dropzone {
-    margin-top: 2px;
+    position: relative;
+    width: 100%;
     height: 30px;
+    padding-top: 8px;
+    margin-top: 2px;
+    line-height: 12px;
+    text-align: center;
+    cursor: pointer;
+    background-color: @input-group-addon-bg;
     border: 1px solid @input-border;
     border-radius: 0 0 @border-radius-base @border-radius-base;
-    background-color: @input-group-addon-bg;
-    text-align: center;
-    padding-top: 8px;
-    position: relative;
-    line-height: 12px;
-    width: 100%;
-    cursor: pointer;
 
-    ::-webkit-file-upload-button { cursor:pointer; }
-
-    input {
-      opacity: 0;
-      height: 100%;
-      width: 100%;
-      position: absolute;
-      left: 0;
-      top: 0;
+    ::-webkit-file-upload-button {
       cursor: pointer;
     }
 
-    span {
-      font-size: 13px;
-      color: @input-color;
+    input {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
-
-      &:before {
-        .fa-icon();
-        content: @fa-var-upload;
-        padding-right: .25em;
-      }
+      height: 100%;
+      cursor: pointer;
+      opacity: 0;
     }
 
+    span {
+      width: 100%;
+      font-size: 13px;
+      color: @input-color;
+
+      &:before {
+        padding-right: .25em;
+        content: @fa-var-upload;
+
+        .fa-icon();
+      }
+    }
   }
 
   .upload-progress {
     position: absolute;
-    z-index: 2;
+    top: 30px;
     left: 35px;
-    margin-left: -18px;
-    top: 8px;
-    margin-top: -37px;
-    opacity: 0.3;
+    z-index: 2;
+    opacity: .3;
   }
-
 }
 
 .fileupload-group {
+  position: relative;
   display: table-cell;
+  padding: 2px;
   margin-bottom: @spacing-md-px;
+  cursor: pointer;
   border: 1px solid @input-border;
   border-radius: @border-radius-base;
-  padding: 2px;
-  position: relative;
-  cursor: pointer;
 
   .fileupload-thumbnail {
     position: relative;
 
     .file-link {
+      display: block;
       width: 100px;
       height: 50px;
-      border-radius: (@border-radius-base - 1);
-      font-size: 10px;
-      background-color: @input-group-addon-bg;
-      color: @input-color;
-      display: block;
       padding-top: 2px;
       overflow: hidden;
+      font-size: 10px;
+      color: @input-color;
+      text-align: center;
       text-overflow: ellipsis;
       white-space: nowrap;
-      text-align: center;
+      background-color: @input-group-addon-bg;
+      border-radius: (@border-radius-base - 1);
 
       &:after {
-        content: '\f016';
-        font-family: FontAwesome;
-        font-size: 28px;
-        color: darken( @input-group-addon-bg, 15%);
-        -webkit-font-smoothing: antialiased;
-        margin-left: 42px;
         position: absolute;
         top: 50%;
         left: 50%;
         margin-top: -20px;
+        margin-left: 42px;
         margin-left: -12px;
+        font-family: FontAwesome;
+        font-size: 28px;
+        color: darken( @input-group-addon-bg, 15%);
+        content: '\f016';
+
+        -webkit-font-smoothing: antialiased;
       }
 
       &.file-exists:after {
-        content: '\f15c';
-        color: darken( @input-group-addon-bg, 15%);
         margin-top: -10px;
+        color: darken( @input-group-addon-bg, 15%);
+        content: '\f15c';
       }
     }
   }
 
   .fileupload-remove {
     position: absolute;
-    bottom: 0;
     right: 0;
+    bottom: 0;
 
     a {
+      display: block;
       padding: 2px 6px;
-      border-top-left-radius: @border-radius-base;
-      background-color: @btn-danger-bg;
       color: @btn-danger-color;
       cursor: pointer;
-      display: block;
+      background-color: @btn-danger-bg;
+      border-top-left-radius: @border-radius-base;
     }
   }
 
   .fileupload-dropzone,
   .fileupload-button {
-    height: 30px;
-    background-color: @input-group-addon-bg;
-    text-align: center;
-    padding-top: 8px;
     position: relative;
+    height: 30px;
+    padding-top: 8px;
     line-height: 12px;
+    text-align: center;
+    background-color: @input-group-addon-bg;
 
-    ::-webkit-file-upload-button { cursor:pointer; }
-
-    input {
-      opacity: 0;
-      height: 100%;
-      width: 100%;
-      position: absolute;
-      left: 0;
-      top: 0;
+    ::-webkit-file-upload-button {
       cursor: pointer;
     }
 
+    input {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+      opacity: 0;
+    }
+
     span {
-      font-size: 13px;
-      color: @input-color;
       width: 100%;
       padding: 0 .5em;
+      font-size: 13px;
+      color: @input-color;
 
       &:before {
-        .fa-icon();
-        content: @fa-var-upload;
         padding-right: .25em;
+        content: @fa-var-upload;
+
+        .fa-icon();
       }
     }
   }
@@ -1507,15 +1529,22 @@ fieldset .actions {
   }
 
   .fileupload-button {
+    padding: 6px 12px;
+    background-color: @brand-primary;
+    border: 1px solid @btn-primary-border;
     border-radius: @border-radius-base;
+
+    span {
+      color: #fff;
+    }
   }
 
   .upload-progress {
     position: absolute;
-    z-index: 2;
-    left: 35px;
     top: 8px;
-    opacity: 0.3;
+    left: 35px;
+    z-index: 2;
+    opacity: .3;
   }
 }
 
@@ -1526,107 +1555,114 @@ fieldset .actions {
 
 .updateprogress-status {
   position: fixed;
-  padding: 15px 10px;
-  left: 50%;
   top: 40%;
-  opacity: 1;
+  left: 50%;
+  z-index: (@zindex-modal-background + 100);
+  padding: 15px 10px;
+  margin-left: -30px;
   background-color: @spinner-bg;
   border-radius: 120px;
-  z-index: (@zindex-modal-background + 100);
-  box-shadow: 5px 5px 12px 3px rgba(0,0,0,0.1);
-  margin-left: -30px;
+  box-shadow: 5px 5px 12px 3px rgba(0,0,0,.1);
+  opacity: 1;
 
   .spinner {
     width: 40px;
     height: 30px;
-    text-align: center;
     font-size: 10px;
+    text-align: center;
   }
 
   .spinner > div {
-    background-color: @spinner-color;
-    height: 100%;
-    width: 5px;
     display: inline-block;
-
+    width: 5px;
+    height: 100%;
+    background-color: @spinner-color;
     -webkit-animation: stretchdelay 1.2s infinite ease-in-out;
-    animation: stretchdelay 1.2s infinite ease-in-out;
+            animation: stretchdelay 1.2s infinite ease-in-out;
   }
 
   .spinner .rect2 {
     -webkit-animation-delay: -1.1s;
-    animation-delay: -1.1s;
+            animation-delay: -1.1s;
   }
 
   .spinner .rect3 {
     -webkit-animation-delay: -1.0s;
-    animation-delay: -1.0s;
+            animation-delay: -1.0s;
   }
 
   .spinner .rect4 {
-    -webkit-animation-delay: -0.9s;
-    animation-delay: -0.9s;
+    -webkit-animation-delay: -.9s;
+            animation-delay: -.9s;
   }
 
   .spinner .rect5 {
-    -webkit-animation-delay: -0.8s;
-    animation-delay: -0.8s;
+    -webkit-animation-delay: -.8s;
+            animation-delay: -.8s;
   }
 
   @-webkit-keyframes stretchdelay {
-    0%, 40%, 100% { -webkit-transform: scaleY(0.4) }
-    20% { -webkit-transform: scaleY(1.0) }
+    0%, 40%, 100% {
+      -webkit-transform: scaleY(.4);
+    }
+
+    20% {
+      -webkit-transform: scaleY(1.0);
+    }
   }
 
   @keyframes stretchdelay {
     0%, 40%, 100% {
-    transform: scaleY(0.4);
-    -webkit-transform: scaleY(0.4);
-    }  20% {
-    transform: scaleY(1.0);
-    -webkit-transform: scaleY(1.0);
+      -webkit-transform: scaleY(.4);
+              transform: scaleY(.4);
+    }
+
+    20% {
+      -webkit-transform: scaleY(1.0);
+              transform: scaleY(1.0);
     }
   }
 }
 
 @media @md {
-    .updateprogress-status {
-      padding: 30px 20px;
-      margin-left: -60px;
+  .updateprogress-status {
+    padding: 30px 20px;
+    margin-left: -60px;
 
-      .spinner {
-        width: 80px;
-        height: 60px;
+    .spinner {
+      width: 80px;
+      height: 60px;
 
-        > div {
-          width: 10px;
-        }
+      > div {
+        width: 10px;
       }
     }
+  }
 }
 
 // 19. Group List
 // -------------------------
 
 .groupmembers {
-  list-style: none;
-  margin: 6px 0;
   padding: 0;
+  margin: 6px 0;
+  list-style: none;
 
   .member {
     float: left;
+    min-width: 160px;
+    min-height: 90px;
     margin-right: @spacing-md-px;
     margin-bottom: @spacing-md-px;
-    min-width: 160px;
     border-radius: @border-radius-base;
 
     .person-image {
-      border: 1px solid @photo-border;
-      float: left;
-      margin-right: 7.5px;
       display: inline-block;
+      float: left;
       width: 60px;
       height: 60px;
+      margin-right: 7.5px;
+      border: 1px solid @photo-border;
     }
 
     .member-information {
@@ -1634,17 +1670,17 @@ fieldset .actions {
     }
 
     h4 {
+      margin: 0;
+      overflow: hidden;
       font-size: 16px;
       font-weight: @font-weight-semibold;
       text-overflow: ellipsis;
-      overflow: hidden;
-      margin: 0;
     }
 
     small {
       display: block;
-      line-height: 16px;
       margin: 0;
+      line-height: 16px;
     }
 
     .btn {
@@ -1664,31 +1700,31 @@ fieldset .actions {
   }
 
   i {
-    font-size: 84px;
     margin: 12px 0;
+    font-size: 84px;
   }
 
   &.well-message-info {
-    background-color: @state-info-bg;
     color: @state-info-text;
+    background-color: @state-info-bg;
     border-color: @state-info-border;
   }
 
   &.well-message-success {
-    background-color: @state-success-bg;
     color: @state-success-text;
+    background-color: @state-success-bg;
     border-color: @state-success-border;
   }
 
   &.well-message-danger {
-    background-color: @state-danger-bg;
     color: @state-danger-text;
+    background-color: @state-danger-bg;
     border-color: @state-danger-border;
   }
 
   &.well-message-warning {
-    background-color: @state-warning-bg;
     color: @state-warning-text;
+    background-color: @state-warning-bg;
     border-color: @state-warning-border;
   }
 }
@@ -1713,23 +1749,21 @@ fieldset .actions {
 // -------------------------
 
 ul.rocklist {
-  list-style-type: none;
   padding: 0;
+  list-style-type: none;
   list-style-type: none;
 
   .rocklist-item {
-    white-space: nowrap;
+    position: relative;
+    float: left;
+    width: 140px;
     padding: 6px;
     margin: 0 12px 12px 0;
-    border-radius: @border-radius-base;
-    width: 140px;
-    float: left;
-    position: relative;
     text-align: center;
+    white-space: nowrap;
+    border-radius: @border-radius-base;
 
-    img {
 
-    }
 
     .actions {
       position: absolute;
@@ -1738,25 +1772,25 @@ ul.rocklist {
     }
 
     i {
-      cursor: pointer;
       padding: 4px;
+      cursor: pointer;
     }
 
     .file-name {
+      display: block;
+      overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      overflow: hidden;
-      display: block;
     }
 
     &:hover {
-      background: @tree-rollover-bg;
       color: @tree-rollover-color;
+      background: @tree-rollover-bg;
     }
 
     &.selected {
-      background: @tree-rollover-bg;
       color: @tree-rollover-color;
+      background: @tree-rollover-bg;
     }
   }
 }
@@ -1773,16 +1807,14 @@ ul.rocklist {
 .tt-dropdown-menu {
   min-width: 200px;
   padding: 12px;
+  color: @autocomplete-text;
   background-color: @autocomplete-bg;
+  -webkit-background-clip: padding-box;
+     -moz-background-clip: padding;
+          background-clip: padding-box;
   border: 1px solid @autocomplete-border;
   border-radius: 0 0 @border-radius-base @border-radius-base;
-  color: @autocomplete-text;
-  -webkit-box-shadow: 0 5px 10px rgba(0,0,0,.2);
-   -moz-box-shadow: 0 5px 10px rgba(0,0,0,.2);
-      box-shadow: 0 5px 10px rgba(0,0,0,.2);
-  -webkit-background-clip: padding-box;
-   -moz-background-clip: padding;
-      background-clip: padding-box;
+  .box-shadow(0 5px 10px rgba(0,0,0,.2));
 }
 
 .tt-suggestion {
@@ -1800,8 +1832,8 @@ ul.rocklist {
 
 .tt-suggestion.tt-is-under-cursor {
   color: lighten(@autocomplete-text, 30%);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff0088cc', endColorstr='#ff0077b3', GradientType=0);
   background-repeat: repeat-x;
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff0088cc', endColorstr='#ff0077b3', GradientType=0)
 }
 
 .tt-suggestion.tt-is-under-cursor a {
@@ -1815,8 +1847,8 @@ ul.rocklist {
 // 24. Image Cropper
 // -------------------------
 .image-editor-photo {
-  width: 150px;
   position: relative;
+  width: 150px;
 
   .image-container {
     width: 150px;
@@ -1828,19 +1860,19 @@ ul.rocklist {
     position: absolute;
     top: 110px;
     right: 0;
-    background-color: @imageeditor-bg;
-    color: @imageeditor-color;
     padding: 6px 12px;
+    color: @imageeditor-color;
+    background-color: @imageeditor-bg;
     border-radius: @border-radius-base 0 0 @border-radius-base;
     opacity: 0;
-    transition: opacity .25s ease-in-out;
-    -moz-transition: opacity .25s ease-in-out;
     -webkit-transition: opacity .25s ease-in-out;
+       -moz-transition: opacity .25s ease-in-out;
+            transition: opacity .25s ease-in-out;
 
     a {
+      margin-left: 12px;
       color: #fff;
       text-decoration: none;
-      margin-left: 12px;
       cursor: pointer;
 
       &:hover {
@@ -1850,17 +1882,17 @@ ul.rocklist {
   }
 
   .js-upload-progress {
-    position:absolute;
+    position: absolute;
     top: 55px;
     left: 55px;
     color: @input-color;
-    opacity: 0.5;
+    opacity: .5;
   }
 }
 
 .image-editor-fileinput {
-  visibility: hidden;
   height: 0;
+  visibility: hidden;
 }
 
 .image-editor-group.imageupload-group {
@@ -1868,8 +1900,8 @@ ul.rocklist {
 }
 
 .image-editor-crop-container {
-  height:480px;
-  width:480px;
+  width: 480px;
+  height: 480px;
 }
 
 
@@ -1929,11 +1961,9 @@ ul.rocklist {
 // -------------------------
 
 .key-value-rows {
-
   .controls-row {
     margin-bottom: 6px;
   }
-
 }
 
 // 29. Context Setter
@@ -1949,13 +1979,13 @@ ul.list-group-panel, .panel-collapse {
   margin: 0;
 
   .list-group {
-      margin-bottom: 0;
+    margin-bottom: 0;
   }
 
   .list-group-item {
-    border-radius: 0;
     border: 0;
     border-top: 1px solid @list-group-border;
+    border-radius: 0;
 
     &:first-child {
       border: 0;
@@ -1973,12 +2003,18 @@ ul.list-group-panel, .panel-collapse {
 // 32. Photo Round
 // -------------------------
 .photo-round {
-  background-size: cover;
   background-repeat: no-repeat;
+  background-size: cover;
 
   &.photo-round-sm {
-    height: 35px;
     width: 35px;
+    height: 35px;
+    border-radius: 17.5px;
+  }
+
+  &.photo-round-xs {
+    width: 20px;
+    height: 20px;
     border-radius: 17.5px;
   }
 }
@@ -1988,166 +2024,276 @@ ul.list-group-panel, .panel-collapse {
 // -------------------------
 
 .wizard {
-    background-color: @wizard-bg;
-    padding: 8px 0;
-    .clearfix();
-    margin: -15px;
-    margin-bottom: 24px;
-    margin-top: -16px;
+  padding: 8px 0;
+  margin: -15px;
+  margin-top: -16px;
+  margin-bottom: 24px;
+  background-color: @wizard-bg;
 
-    @media only screen and (max-width : 480px){
-        display: none;
-	}
+  .clearfix();
+
+  @media only screen and (max-width : 480px) {
+    display: none;
+  }
 }
 
 .wizard-item-icon {
-    background-color: @wizard-item-icon-bg;
-    border-radius: 24px;
-    padding: 6px 8px;
-    color: @wizard-item-icon-color;
-    text-align: center;
-    display: inline-block;
-    margin: 0 auto;
+  display: inline-block;
+  padding: 6px 8px;
+  margin: 0 auto;
+  color: @wizard-item-icon-color;
+  text-align: center;
+  background-color: @wizard-item-icon-bg;
+  border-radius: 24px;
 }
 
 .wizard-item-label {
-    font-weight: @font-weight-light;
-    font-size: 12px;
-    color: @wizard-item-label-color;
+  font-size: 12px;
+  font-weight: @font-weight-light;
+  color: @wizard-item-label-color;
 }
 
 .wizard-item {
-    min-width: 100px;
-    text-align: center;
-    float: left;
-    position: relative;
-    z-index: 1;
+  position: relative;
+  z-index: 1;
+  float: left;
+  min-width: 100px;
+  text-align: center;
+
+  @media @md {
+    min-width: 175px;
+  }
+
+  &:before {
+    position: absolute; /* positioning must be absolute here, and relative positioning must be applied to the parent */
+    top: 30%;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: -1;
+    margin: 0 auto; /* this centers the line to the full width specified */
+    content: "";
+    border-top: 4px solid @wizard-item-bar-color;
+  }
+
+  &.active {
+    &:before {
+      border-top: 4px solid @wizard-item-bar-complete-color;
+    }
+
+    .wizard-item-icon {
+      color: @wizard-item-icon-active-color;
+      background-color: @wizard-item-icon-active-bg;
+    }
+
+    .wizard-item-label {
+      color: @wizard-item-label-active-color;
+    }
+  }
+
+  &.complete {
+    &:before {
+      border-top: 4px solid @wizard-item-bar-complete-color;
+    }
+
+    .wizard-item-icon {
+      color: @wizard-item-icon-complete-color;
+      background-color: @wizard-item-icon-complete-bg;
+    }
+
+    .wizard-item-label {
+      color: @wizard-item-label-complete-color;
+    }
+  }
+
+  &:first-child:before {
+    left: 55px;
 
     @media @md {
-        min-width: 175px;
+      left: 100px;
     }
+  }
 
-    &:before {
-        border-top: 4px solid @wizard-item-bar-color;
-        content:"";
-        margin: 0 auto; /* this centers the line to the full width specified */
-        position: absolute; /* positioning must be absolute here, and relative positioning must be applied to the parent */
-        top: 30%; 
-        left: 0; 
-        right: 0;
-        bottom: 0;
-        z-index: -1;
+  &:last-child:before {
+    right: 55px;
+
+    @media @md {
+      right: 100px;
     }
-
-    &.active {
-        
-        &:before {
-            border-top: 4px solid @wizard-item-bar-complete-color;
-        }
-        
-        .wizard-item-icon {
-            background-color: @wizard-item-icon-active-bg;
-            color: @wizard-item-icon-active-color;
-        }
-        .wizard-item-label {
-            color: @wizard-item-label-active-color;
-        }
-    }
-
-    &.complete {
-        
-        &:before {
-            border-top: 4px solid @wizard-item-bar-complete-color;
-        }
-        
-        .wizard-item-icon {
-            background-color: @wizard-item-icon-complete-bg;
-            color: @wizard-item-icon-complete-color;
-        }
-        .wizard-item-label {
-            color: @wizard-item-label-complete-color;
-        }
-    }
-
-    &:first-child:before {
-        left: 55px;
-
-        @media @md {
-            left: 100px;
-        }
-    }
-
-    &:last-child:before {
-        right: 55px;
-
-        @media @md {
-            right: 100px;
-        }
-    }
+  }
 }
 
 
 // 34. Checkbox
 // -------------------------
- .rock-checkbox-icon {
-     cursor: pointer;
- }
+.rock-checkbox-icon {
+  cursor: pointer;
+}
 
 
- // 35. Follow
+// 35. Follow
 // -------------------------
 
 .panel .panel-heading.panel-follow {
-    position: relative;
-    padding-right: 40px;
+  position: relative;
+  padding-right: 40px;
 }
 
 .panel-follow-status {
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: 35px;
-    text-align: center;
-    padding-top: 10px;
-    opacity: .4;
-    color: @text-color;
-    transition: 1s;
-    border-left: 1px solid @header-bg;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 35px;
+  padding-top: 10px;
+  color: @text-color;
+  text-align: center;
+  cursor: pointer;
+  border-left: 1px solid @header-bg;
+  opacity: .4;
+  transition: 1s;
+
+  &:before {
+    font-family: FontAwesome;
+    content: @fa-var-star-o;
+  }
+
+  &.following {
+    color: #fff;
+    background-color: @panel-following-active-bg;
+    opacity: 1;
 
     &:before {
-        font-family: FontAwesome;
-        content: @fa-var-star-o;
+      content: @fa-var-star;
     }
-
-    &.following {
-        opacity: 1;
-        background-color: @panel-following-active-bg;
-        color: #fff;
-
-        &:before {
-            content: @fa-var-star;
-        }
-    }
+  }
 }
 
 // 36. Range Editors
 // -------------------------
 .number-range-editor {
-    .form-control-group .form-control {
-        margin-bottom: 6px;
-    }
+  .form-control-group .form-control {
+    margin-bottom: 6px;
+  }
 }
 
 .date-range-picker {
-    .input-group {
-        margin-bottom: 6px;
-    }
+  .input-group {
+    margin-bottom: 6px;
+  }
 }
 
 // 37. Custom Buttons
 // -------------------------
 
 .btn-copy-to-clipboard:focus {
-    outline: 0;
+  outline: 0;
+}
+
+// 38. Color Picker
+// -------------------------
+@import (less) "./bootstrap-colorpicker/colorpicker.less";
+@imgPath: "../../../Assets/Images/bootstrap-colorpicker/";
+
+// 39. HTML Editor
+// -------------------------
+
+.note-editor.panel-default {
+  border-color: @panel-border;
+}
+
+.note-editor.panel-default > .panel-heading {
+  background-color: @panel-bg;
+}
+
+.htmleditor-filebrowser {
+  .modal-title {
+    padding: 5px 15px;
+    margin: 0 -15px 24px;
+    margin-top: 0;
+    color: @modal-header-text-color;
+    background-color: @modal-header-bg;
+  }
+
+  .modal-footer {
+    padding: 8px 24px;
+    margin-right: -15px;
+    margin-left: -15px;
+    color: @modal-footer-text-color;
+    background-color: @modal-footer-bg;
+  }
+}
+
+.picker-folders,
+.picker-files {
+  @media (min-width: @screen-xs-min) {
+    float: left;
+  }
+
+  .scroll-container-vertical {
+    width: auto;
+
+    .viewport {
+      width: auto;
+    }
+  }
+}
+
+.picker-folders {
+  @media (min-width: @screen-xs-min) {
+    width: 40%;
+  }
+
+  .actions {
+    margin-bottom: @spacing-md-px;
+  }
+
+  @media (max-width: @screen-xs-max) {
+    .scroll-container-vertical .viewport {
+      height: 100px;
+    }
+  }
+}
+
+.picker-files {
+  @media (min-width: @screen-xs-min) {
+    width: 60%;
+  }
+
+  .fileupload-group {
+    display: inline-block;
+    width: 100%;
+    padding: 0;
+    border: none;
+
+    .fileupload-button {
+      display: inline-block;
+      float: right;
+    }
+  }
+
+  img.file-browser-image {
+    width: 50px;
+    height: 50px;
+  }
+}
+
+iframe.file-browser {
+  border: 0;
+}
+
+// 40. Person Directory
+// -------------------------
+
+.directory-letters {
+  li {
+    width: 3.8455%;
+    min-width: 20px;
+  }
+}
+
+.directory-grid {
+  & > div.row:nth-child(odd) {
+    background-color: @grid-row-odd-bg;
+  }
 }

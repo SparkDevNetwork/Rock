@@ -5,13 +5,13 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 // <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -56,6 +56,9 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public int? GroupCapacity { get; set; }
+
+        /// <summary />
         public int GroupTypeId { get; set; }
 
         /// <summary />
@@ -86,6 +89,9 @@ namespace Rock.Client
 
         /// <summary />
         public int? ParentGroupId { get; set; }
+
+        /// <summary />
+        public int? RequiredSignatureDocumentTemplateId { get; set; }
 
         /// <summary />
         public int? ScheduleId { get; set; }
@@ -136,6 +142,7 @@ namespace Rock.Client
             this.ExitSystemEmailId = source.ExitSystemEmailId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.GroupCapacity = source.GroupCapacity;
             this.GroupTypeId = source.GroupTypeId;
             this.IsActive = source.IsActive;
             this.IsPublic = source.IsPublic;
@@ -146,6 +153,7 @@ namespace Rock.Client
             this.Name = source.Name;
             this.Order = source.Order;
             this.ParentGroupId = source.ParentGroupId;
+            this.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
             this.ScheduleId = source.ScheduleId;
             this.SyncDataViewId = source.SyncDataViewId;
             this.WelcomeSystemEmailId = source.WelcomeSystemEmailId;
@@ -177,13 +185,13 @@ namespace Rock.Client
         public ICollection<GroupRequirement> GroupRequirements { get; set; }
 
         /// <summary />
-        public ICollection<Group> Groups { get; set; }
-
-        /// <summary />
         public GroupType GroupType { get; set; }
 
         /// <summary />
         public ICollection<GroupMember> Members { get; set; }
+
+        /// <summary />
+        public SignatureDocumentTemplate RequiredSignatureDocumentTemplate { get; set; }
 
         /// <summary />
         public Schedule Schedule { get; set; }

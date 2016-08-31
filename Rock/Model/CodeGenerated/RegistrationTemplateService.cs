@@ -5,13 +5,13 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 // <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -89,8 +89,10 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.AddPersonNote = source.AddPersonNote;
+            target.AllowExternalRegistrationUpdates = source.AllowExternalRegistrationUpdates;
             target.AllowGroupPlacement = source.AllowGroupPlacement;
             target.AllowMultipleRegistrants = source.AllowMultipleRegistrants;
+            target.BatchNamePrefix = source.BatchNamePrefix;
             target.CategoryId = source.CategoryId;
             target.ConfirmationEmailTemplate = source.ConfirmationEmailTemplate;
             target.ConfirmationFromEmail = source.ConfirmationFromEmail;
@@ -111,14 +113,23 @@ namespace Rock.Model
             target.MinimumInitialPayment = source.MinimumInitialPayment;
             target.Name = source.Name;
             target.Notify = source.Notify;
+            target.PaymentReminderEmailTemplate = source.PaymentReminderEmailTemplate;
+            target.PaymentReminderFromEmail = source.PaymentReminderFromEmail;
+            target.PaymentReminderFromName = source.PaymentReminderFromName;
+            target.PaymentReminderSubject = source.PaymentReminderSubject;
+            target.PaymentReminderTimeSpan = source.PaymentReminderTimeSpan;
             target.RegistrantsSameFamily = source.RegistrantsSameFamily;
             target.RegistrantTerm = source.RegistrantTerm;
             target.RegistrationTerm = source.RegistrationTerm;
+            target.RegistrationWorkflowTypeId = source.RegistrationWorkflowTypeId;
             target.ReminderEmailTemplate = source.ReminderEmailTemplate;
             target.ReminderFromEmail = source.ReminderFromEmail;
             target.ReminderFromName = source.ReminderFromName;
             target.ReminderSubject = source.ReminderSubject;
             target.RequestEntryName = source.RequestEntryName;
+            target.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
+            target.SetCostOnInstance = source.SetCostOnInstance;
+            target.SignatureDocumentAction = source.SignatureDocumentAction;
             target.SuccessText = source.SuccessText;
             target.SuccessTitle = source.SuccessTitle;
             target.CreatedDateTime = source.CreatedDateTime;

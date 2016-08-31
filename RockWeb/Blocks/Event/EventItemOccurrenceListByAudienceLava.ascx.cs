@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -36,20 +36,21 @@ namespace RockWeb.Blocks.Event
     /// <summary>
     /// Template block for developers to use to start a new block.
     /// </summary>
-    [DisplayName( "Calendar Item Occurrence List By Audience Lava" )]
+    [DisplayName( "Event Item Occurrence List By Audience Lava" )]
     [Category( "Event" )]
     [Description( "Block that takes a audience and displays calendar item occurrences for it using Lava." )]
     
     [TextField("List Title", "The title to make available in the lava.", false, "Upcoming Events", order: 0)]
     [DefinedValueField(Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE, "Audience", "The audience to show calendar items for.", order: 0)]
     [EventCalendarField("Calendar", "Filters the events by a specific calendar.", false, order: 1)]
-    [CampusesField("Campuses", "List of which campuses to show occurrences for. This setting will be ignored in the 'Use Campus Context' is enabled.", order:2)]
+    [CampusesField("Campuses", "List of which campuses to show occurrences for. This setting will be ignored in the 'Use Campus Context' is enabled.", required: false, order:2, includeInactive:true)]
     [BooleanField("Use Campus Context", "Determine if the campus should be read from the campus context of the page.", order: 3)]
     [SlidingDateRangeField("Date Range", "Optional date range to filter the occurrences on.", false, enabledSlidingDateRangeTypes: "Next,Upcoming,Current", order:4)]
     [IntegerField("Max Occurrences", "The maximum number of occurrences to show.", false, 100, order: 5)]
-    [LinkedPage( "Registration Page", "The page to use for registrations.", order: 6 )]
-    [CodeEditorField( "Lava Template", "The lava template to use for the results", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue: "{% include '~~/Assets/Lava/EventItemOccurrenceListByAudience.lava' %}", order: 7 )]
-    [BooleanField("Enable Debug", "Show the lava merge fields.", order: 8)]
+    [LinkedPage( "Event Detail Page", "The page to use for showing event details.", order: 6 )]
+    [LinkedPage( "Registration Page", "The page to use for registrations.", order: 7 )]
+    [CodeEditorField( "Lava Template", "The lava template to use for the results", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue: "{% include '~~/Assets/Lava/EventItemOccurrenceListByAudience.lava' %}", order: 8 )]
+    [BooleanField("Enable Debug", "Show the lava merge fields.", order: 9)]
     public partial class EventItemOccurrenceListByAudienceLava : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -168,7 +169,7 @@ namespace RockWeb.Blocks.Event
                 else
                 {
                     // default show all future
-                    itemOccurrences.RemoveAll( o => o.GetStartTimes( RockDateTime.Now, DateTime.MaxValue ).Count() == 0 );
+                    itemOccurrences.RemoveAll( o => o.GetStartTimes( RockDateTime.Now, DateTime.Now.AddDays( 365 ) ).Count() == 0 );
                 }
 
                 // limit results
@@ -177,7 +178,29 @@ namespace RockWeb.Blocks.Event
                 
                 // make lava merge fields
                 var mergeFields = new Dictionary<string, object>();
+
+                var contextObjects = new Dictionary<string, object>();
+                foreach (var contextEntityType in RockPage.GetContextEntityTypes())
+                {
+                    var contextEntity = RockPage.GetCurrentContext(contextEntityType);
+                    if (contextEntity != null && contextEntity is DotLiquid.ILiquidizable)
+                    {
+                        var type = Type.GetType(contextEntityType.AssemblyName ?? contextEntityType.Name);
+                        if (type != null)
+                        {
+                            contextObjects.Add(type.Name, contextEntity);
+                        }
+                    }
+
+                }
+
+                if (contextObjects.Any())
+                {
+                    mergeFields.Add("Context", contextObjects);
+                }
+
                 mergeFields.Add( "ListTitle", GetAttributeValue("ListTitle") );
+                mergeFields.Add( "EventDetailPage", LinkedPageUrl( "EventDetailPage", null ) );
                 mergeFields.Add( "RegistrationPage", LinkedPageUrl( "RegistrationPage", null ) );
                 mergeFields.Add( "EventItemOccurrences", itemOccurrences );
                
@@ -193,6 +216,7 @@ namespace RockWeb.Blocks.Event
                                         <li>List Title - The title to pass to lava.
                                         <li>EventItemOccurrences - A list of EventItemOccurrences. View the EvenItemOccurrence model for these properties.</li>
                                         <li>RegistrationPage  - String that contains the relative path to the registration page.</li>
+                                        <li>EventDetailPage  - String that contains the relative path to the event detail page.</li>
                                         <li>Global Attribute  - Access to the Global Attributes.</li>
                                     </ul>
                                     </div>";

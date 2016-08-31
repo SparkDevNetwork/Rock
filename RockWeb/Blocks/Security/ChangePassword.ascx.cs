@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,7 +17,7 @@
 using System;
 using System.ComponentModel;
 using System.Web.UI;
-
+using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -59,6 +59,13 @@ namespace RockWeb.Blocks.Security
             {
                 if ( !Page.IsPostBack )
                 {
+                    if ( PageParameter( "ChangeRequired" ).AsBoolean() )
+                    {
+                        nbMessage.NotificationBoxType = NotificationBoxType.Info;
+                        nbMessage.Text = "Please change your password before continuing.";
+                        nbMessage.Visible = true;
+                    }
+
                     var component = Rock.Security.AuthenticationContainer.GetComponent( CurrentUser.EntityType.Name );
                     if ( !component.SupportsChangePassword )
                     {
@@ -97,6 +104,13 @@ namespace RockWeb.Blocks.Security
                         if ( component.ChangePassword( userLogin, tbOldPassword.Text, tbPassword.Text, out warningMessage ) )
                         {
                             rockContext.SaveChanges();
+
+                            if ( !string.IsNullOrWhiteSpace( PageParameter( "ReturnUrl" ) ) )
+                            {
+                                string redirectUrl = Server.UrlDecode( PageParameter( "ReturnUrl" ) );
+                                Response.Redirect( redirectUrl );
+                                Context.ApplicationInstance.CompleteRequest();
+                            }
 
                             DisplayMessage( GetAttributeValue( "SuccessCaption" ) , NotificationBoxType.Success );
                             pnlChangePassword.Visible = false;

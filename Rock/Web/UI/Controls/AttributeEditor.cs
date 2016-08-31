@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -486,6 +486,11 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
+            EnsureChildControls();
+
+            _ddlFieldType.DataSource = FieldTypeCache.All();
+            _ddlFieldType.DataBind();
+
             base.OnInit( e );
         }
 
@@ -591,15 +596,9 @@ namespace Rock.Web.UI.Controls
                 _ddlFieldType.Label = "Field Type";
                 _ddlFieldType.AutoPostBack = true;
                 _ddlFieldType.SelectedIndexChanged += _ddlFieldType_SelectedIndexChanged;
+                _ddlFieldType.DataValueField = "Id";
+                _ddlFieldType.DataTextField = "Name";
                 Controls.Add( _ddlFieldType );
-
-                if ( !Page.IsPostBack )
-                {
-                    _ddlFieldType.DataValueField = "Id";
-                    _ddlFieldType.DataTextField = "Name";
-                    _ddlFieldType.DataSource = FieldTypeCache.All();
-                    _ddlFieldType.DataBind();
-                }
 
                 _phQualifiers = new PlaceHolder();
                 _phQualifiers.ID = "phQualifiers";
@@ -625,8 +624,6 @@ namespace Rock.Web.UI.Controls
                 _btnCancel.CausesValidation = false;
                 _btnCancel.Click += btnCancel_Click;
                 Controls.Add( _btnCancel );
-
-                _tbName.Attributes["onblur"] = string.Format( "populateAttributeKey('{0}','{1}')", _tbName.ClientID, _tbKey.ClientID );
 
                 _controlsLoaded = true;
             }
@@ -706,6 +703,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         protected override void Render( HtmlTextWriter writer )
         {
+            _tbName.Attributes["onblur"] = string.Format( "populateAttributeKey('{0}','{1}')", _tbName.ClientID, _tbKey.ClientID );
+
             writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );
 
             writer.RenderBeginTag( HtmlTextWriterTag.Legend );
@@ -995,11 +994,13 @@ namespace Rock.Web.UI.Controls
                 }
 
                 // default control id needs to be unique to field type because some field types will transform
-                // field (i.e. ckeditor) and switching field types will not reset that
+                // field (i.e. htmleditor) and switching field types will not reset that
                 var defaultControl = field.EditControl( Qualifiers, string.Format( "defaultValue_{0}", fieldTypeId.Value ) );
                 if ( defaultControl != null )
                 {
-                    if (recreate)
+                    _phDefaultValue.Controls.Add( defaultControl );
+
+                    if ( recreate)
                     {
                         field.SetEditValue( defaultControl, Qualifiers, DefaultValue );
                     }
@@ -1011,7 +1012,6 @@ namespace Rock.Web.UI.Controls
                         rockControl.Label = "Default Value";
                     }
 
-                    _phDefaultValue.Controls.Add( defaultControl );
                 }
             }
         }

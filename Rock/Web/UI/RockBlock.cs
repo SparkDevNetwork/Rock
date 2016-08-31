@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -489,7 +489,14 @@ namespace Rock.Web.UI
             }
             
             base.OnLoad( e );
-            SetValidationGroup( this.Controls, BlockValidationGroup );
+
+            if ( this.BlockCache == null ||
+                this.BlockCache.Page == null || 
+                this.BlockCache.Page.Layout == null || 
+                this.BlockCache.Page.Layout.FileName != "Dialog" )
+            {
+                SetValidationGroup( this.Controls, BlockValidationGroup );
+            }
         }
 
         #endregion
@@ -657,6 +664,16 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// If this Attribute is a reference to a PageRoute, this will return the Route, otherwise it will return the normal URL
+        /// </summary>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <returns></returns>
+        public string LinkedPageRoute( string attributeKey  )
+        {
+            return new PageReference( GetAttributeValue( attributeKey ) ).Route;
+        }
+
+        /// <summary>
         /// Navigate to a linked <see cref="Rock.Model.Page"/>.
         /// </summary>
         /// <param name="attributeKey">A <see cref="System.String"/> representing the name of the linked <see cref="Rock.Model.Page"/> attribute key.</param>
@@ -698,6 +715,22 @@ namespace Rock.Web.UI
             }
 
             return NavigateToLinkedPage( attributeKey, queryParams );
+        }
+
+        /// <summary>
+        /// Navigates to current page.
+        /// </summary>
+        /// <param name="queryString">The query string.</param>
+        /// <returns></returns>
+        public bool NavigateToCurrentPage( Dictionary<string, string> queryString = null )
+        {
+            var pageCache = PageCache.Read( RockPage.PageId );
+            if ( pageCache != null )
+            {
+                return NavigateToPage( pageCache.Guid, queryString );
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -944,6 +977,15 @@ namespace Rock.Web.UI
             }
         }
 
+        /// <summary>
+        /// Gets the ip address.
+        /// </summary>
+        /// <returns></returns>
+        public string GetClientIpAddress()
+        {
+            return RockPage.GetClientIpAddress();
+        }
+
         #region User Preferences
 
         /// <summary>
@@ -1003,6 +1045,56 @@ namespace Rock.Web.UI
 
         #endregion
 
+        #region User Preferences for a specific block
+
+        /// <summary>
+        /// Gets the prefix for a user preference key that includes the block id so that it specific to the this block
+        /// </summary>
+        /// <value>
+        /// The block user preference prefix.
+        /// </value>
+        private string BlockUserPreferencePrefix
+        {
+            get
+            {
+                return string.Format( "block-{0}-", this.BlockId );
+            }
+        }
+
+        /// <summary>
+        /// Returns the user preference value for the current user and block for a given key
+        /// </summary>
+        /// <param name="key">A <see cref="System.String" /> representing the key to the user preference.</param>
+        /// <returns>A <see cref="System.String" /> representing the user preference value. If a match for the key is not found, 
+        /// an empty string will be returned.</returns>
+        public string GetBlockUserPreference( string key )
+        {
+            return RockPage.GetUserPreference( BlockUserPreferencePrefix + key );
+        }
+
+        /// <summary>
+        /// Sets a user preference for the current user and block with the specified key and value, and optionally save value to database
+        /// </summary>
+        /// <param name="key">A <see cref="System.String" /> that represents the key value that identifies the
+        /// user preference.</param>
+        /// <param name="value">A <see cref="System.String" /> that represents the value of the user preference.</param>
+        /// <param name="saveValue">if set to <c>true</c> [save value].</param>
+        public void SetBlockUserPreference( string key, string value, bool saveValue = true )
+        {
+            RockPage.SetUserPreference( BlockUserPreferencePrefix + key, value, saveValue );
+        }
+
+        /// <summary>
+        /// Deletes a user preference value for the current user and block with the specified key
+        /// </summary>
+        /// <param name="key">A <see cref="System.String"/> representing the name of the key.</param>
+        public void DeleteBlockUserPreference( string key )
+        {
+            RockPage.DeleteUserPreference( BlockUserPreferencePrefix + key );
+        }
+
+        #endregion
+
         /// <summary>
         /// Adds icons to the configuration area of a <see cref="Rock.Model.Block"/> instance.  Can be overridden to
         /// add additional icons
@@ -1052,7 +1144,7 @@ namespace Rock.Web.UI
                 {
                     // Move
                     HtmlGenericControl aMoveBlock = new HtmlGenericControl( "a" );
-                    aMoveBlock.Attributes.Add( "class", "block-move block-move" );
+                    aMoveBlock.Attributes.Add( "class", "block-move" );
                     aMoveBlock.Attributes.Add( "href", BlockCache.Id.ToString() );
                     aMoveBlock.Attributes.Add( "data-zone", BlockCache.Zone );
                     aMoveBlock.Attributes.Add( "data-zone-location", BlockCache.BlockLocation.ToString() );

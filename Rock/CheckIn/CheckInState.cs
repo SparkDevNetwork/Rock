@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -35,6 +35,56 @@ namespace Rock.CheckIn
         /// </value>
         [DataMember]
         public int DeviceId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the checkin type identifier.
+        /// </summary>
+        /// <value>
+        /// The checkin type identifier.
+        /// </value>
+        [DataMember]
+        public int? CheckinTypeId
+        {
+            get { return _checkinTypeId; }
+            set
+            {
+                _checkinTypeId = value;
+                _checkinType = null;
+            }
+        }
+        private int? _checkinTypeId;
+
+        /// <summary>
+        /// Gets the type of the current check in.
+        /// </summary>
+        /// <value>
+        /// The type of the current check in.
+        /// </value>
+        public CheckinType CheckInType
+        {
+            get
+            {
+                if ( _checkinType != null )
+                {
+                    return _checkinType;
+                }
+
+                if ( CheckinTypeId.HasValue )
+                {
+                    _checkinType = new CheckinType( CheckinTypeId.Value );
+                    return _checkinType;
+                }
+
+                return null;
+            }
+
+            set
+            {
+                _checkinType = value;
+            }
+        }
+
+        private CheckinType _checkinType;
 
         /// <summary>
         /// Gets or sets a value indicating whether [manager logged in].
@@ -81,10 +131,12 @@ namespace Rock.CheckIn
         /// Initializes a new instance of the <see cref="CheckInState" /> class.
         /// </summary>
         /// <param name="deviceId">The device id.</param>
+        /// <param name="checkinTypeId">The checkin type identifier.</param>
         /// <param name="configuredGroupTypes">The configured group types.</param>
-        public CheckInState( int deviceId, List<int> configuredGroupTypes )
+        public CheckInState( int deviceId, int? checkinTypeId, List<int> configuredGroupTypes )
         {
             DeviceId = deviceId;
+            CheckinTypeId = checkinTypeId;
             ConfiguredGroupTypes = configuredGroupTypes;
             CheckIn = new CheckInStatus();
         }

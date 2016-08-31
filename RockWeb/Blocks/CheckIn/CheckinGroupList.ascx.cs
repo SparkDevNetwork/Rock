@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -38,16 +38,20 @@ namespace RockWeb.Blocks.Checkin
     /// </summary>
     [DisplayName( "Check-in Group List" )]
     [Category( "Check-in" )]
-    [Description( "Lists checkin areas and their groups based off a parent checkin configuration group type." )]
-    [GroupTypeField( "Check-in Type", required: false, key: "GroupTypeTemplate", groupTypePurposeValueGuid: Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE )]
+    [Description( "Lists group types and their groups based off group types from query string." )]
+
     [LinkedPage("Group Detail Page", "Link to the group details page", false)]
+    [BooleanField( "Allow Campus Filter", "Should block add an option to allow filtering attendance counts and percentage by campus?", false, "", 2 )]
     public partial class CheckinGroupList : Rock.Web.UI.RockBlock
     {
         #region Fields
 
         // used for private variables
-        StringBuilder _content = new StringBuilder();
         RockContext _rockContext = null;
+        List<int> _addedGroupTypeIds = new List<int>();
+        List<int> _addedGroupIds = new List<int>();
+        private bool _allowCampusFilter = false;
+
         #endregion
 
         #region Properties
@@ -73,6 +77,15 @@ namespace RockWeb.Blocks.Checkin
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             _rockContext = new RockContext();
+
+            _allowCampusFilter = GetAttributeValue( "AllowCampusFilter" ).AsBoolean();
+            bddlCampus.Visible = _allowCampusFilter;
+            if ( _allowCampusFilter )
+            {
+                bddlCampus.DataSource = CampusCache.All();
+                bddlCampus.DataBind();
+                bddlCampus.Items.Insert( 0, new ListItem( "All Campuses", "0" ) );
+            }
         }
 
         /// <summary>
@@ -85,11 +98,19 @@ namespace RockWeb.Blocks.Checkin
 
             if ( !Page.IsPostBack )
             {
+                if ( _allowCampusFilter )
+                {
+                    var campus = CampusCache.Read( GetBlockUserPreference( "Campus" ).AsInteger() );
+                    if ( campus != null )
+                    {
+                        bddlCampus.Title = campus.Name;
+                        bddlCampus.SetValue( campus.Id );
+                    }
+                }
+
                 ShowContent();
             }
         }
-
-
 
         #endregion
 
@@ -104,6 +125,20 @@ namespace RockWeb.Blocks.Checkin
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
+            ShowContent();
+        }
+
+        /// <summary>
+        /// Handles the SelectionChanged event of the bddlCampus control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void bddlCampus_SelectionChanged( object sender, EventArgs e )
+        {
+            SetBlockUserPreference( "Campus", bddlCampus.SelectedValue );
+            var campus = CampusCache.Read( bddlCampus.SelectedValueAsInt() ?? 0 );
+            bddlCampus.Title = campus != null ? campus.Name : "All Campuses";
+
             ShowContent();
         }
 
@@ -154,89 +189,120 @@ namespace RockWeb.Blocks.Checkin
 
         private void ShowContent()
         {
-            Guid configurationTemplateGuid = Guid.Empty;
-            
-            if ( Request["GroupTypeId"] != null )
-            {
-                var groupType = Rock.Web.Cache.GroupTypeCache.Read( Int32.Parse( Request["GroupTypeId"] ) );
-                configurationTemplateGuid = groupType.Guid;
-            }
-            else if(Request["GroupId"] != null) {
-                // get the root group type of this group
-                int groupId = Int32.Parse( Request["GroupId"] );
 
+            var groupTypeIds = new List<int>();
+            
+            if ( !string.IsNullOrWhiteSpace( Request["GroupTypeIds"] ))
+            {
+                groupTypeIds = Request["GroupTypeIds"].SplitDelimitedValues().AsIntegerList();
+            }
+
+            else if( !string.IsNullOrWhiteSpace( Request["GroupId"] ) )
+            {
+                // get the root group type of this group
+                int groupId = Request["GroupId"].AsInteger();
                 var rootGroupType = GetRootGroupType( groupId );
                 if ( rootGroupType != null )
                 {
-                    configurationTemplateGuid = rootGroupType.Guid;
-                }
-            }
-            else
-            {
-                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "Check-inType" ) ) )
-                {
-                    configurationTemplateGuid = new Guid( GetAttributeValue( "Check-inType" ) );
+                    groupTypeIds.Add( rootGroupType.Id );
                 }
             }
 
-            if ( configurationTemplateGuid == Guid.Empty )
+            if ( !groupTypeIds.Any() )
             {
-                lWarnings.Text = "<div class='alert alert-warning'>No check-in configuration template configured.</div>";
+                lWarnings.Text = "<div class='alert alert-warning'>No group types or groups selected.</div>";
             }
             else
             {
-                BuildHeirarchy( configurationTemplateGuid );
-                lContent.Text = _content.ToString();
+                _addedGroupTypeIds = new List<int>();
+                _addedGroupIds = new List<int>();
+                int? campusId = bddlCampus.SelectedValueAsInt();
+
+                lContent.Text = BuildHeirarchy( groupTypeIds, campusId );
             } 
         }
 
-        private void BuildHeirarchy( Guid parentGroupTypeGuid )
+        private string BuildHeirarchy( List<int> groupTypeIds, int? campusId )
         {
             GroupTypeService groupTypeService = new GroupTypeService( _rockContext );
 
-            var groupTypes = groupTypeService.Queryable( "Groups, ChildGroupTypes" ).AsNoTracking()
-                            .Where( t => t.ParentGroupTypes.Select( p => p.Guid ).Contains( parentGroupTypeGuid ) && t.Guid != parentGroupTypeGuid ).ToList();
+            var groupTypes = groupTypeService
+                .Queryable().AsNoTracking()
+                .Where( t => groupTypeIds.Contains( t.Id ) )
+                .OrderBy( t => t.Order )
+                .ThenBy( t => t.Name )
+                .ToList();
+
+            var content = new StringBuilder();
 
             foreach ( var groupType in groupTypes )
             {
-                if (groupType.GroupTypePurposeValueId == null || groupType.Groups.Count > 0) {
-                    _content.Append( "<ul>" );
-                    _content.Append( string.Format( "<li><strong>{0}</strong></li>", groupType.Name ) );
-                    if ( groupType.ChildGroupTypes.Count > 0 )
-                    {
-                        BuildHeirarchy( groupType.Guid );
-                    }
-
-                    _content.Append( "<ul>" );
-                    foreach ( var group in groupType.Groups )
-                    {
-                        if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "GroupDetailPage" ) ) )
-                        {
-                            var groupPageParams = new Dictionary<string, string>();
-                            if ( Request["GroupTypeId"] != null )
-                            {
-                                groupPageParams.Add( "GroupTypeId", Request["GroupTypeId"] );
-                            }
-                            groupPageParams.Add( "GroupId", group.Id.ToString() );
-                            _content.Append( string.Format( "<li><a href='{0}'>{1}</a></li>", LinkedPageUrl( "GroupDetailPage", groupPageParams ), group.Name ) );
-                        }
-                        else
-                        {
-                            _content.Append( string.Format( "<li>{0}</li>", group.Name ) );
-                        }
-                    }
-                    _content.Append( "</ul>" );
-
-                    _content.Append( "</ul>" );
-                }
-                else
+                if ( !_addedGroupTypeIds.Contains( groupType.Id ) )
                 {
-                    BuildHeirarchy( groupType.Guid );
+                    _addedGroupTypeIds.Add( groupType.Id );
+
+                    if ( groupType.GroupTypePurposeValueId == null || groupType.Groups.Count > 0 )
+                    {
+                        string groupTypeContent = string.Empty;
+
+                        if ( groupType.ChildGroupTypes.Count > 0 )
+                        {
+                            groupTypeContent = BuildHeirarchy( groupType.ChildGroupTypes.Select( t => t.Id ).ToList(), campusId );
+                        }
+
+                        var groupContent = new StringBuilder();
+
+                        foreach ( var group in groupType.Groups )
+                        {
+                            if ( !_addedGroupIds.Contains( group.Id ) &&
+                                ( !campusId.HasValue || !group.CampusId.HasValue || campusId.Value == group.CampusId.Value ) )
+                            {
+                                _addedGroupIds.Add( group.Id );
+
+                                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "GroupDetailPage" ) ) )
+                                {
+                                    var groupPageParams = new Dictionary<string, string>();
+                                    if ( Request["GroupTypeIds"] != null )
+                                    {
+                                        groupPageParams.Add( "GroupTypeIds", Request["GroupTypeIds"] );
+                                    }
+                                    groupPageParams.Add( "GroupId", group.Id.ToString() );
+                                    groupContent.Append( string.Format( "<li><a href='{0}'>{1}</a></li>", LinkedPageUrl( "GroupDetailPage", groupPageParams ), group.Name ) );
+                                }
+                                else
+                                {
+                                    groupContent.Append( string.Format( "<li>{0}</li>", group.Name ) );
+                                }
+                            }
+                        }
+
+                        if ( !string.IsNullOrWhiteSpace(groupTypeContent) || groupContent.Length > 0 )
+                        {
+                            content.Append( "<ul>" );
+                            content.Append( string.Format( "<li><strong>{0}</strong></li>", groupType.Name ) );
+                            content.Append( groupTypeContent );
+
+                            if ( groupContent.Length > 0 )
+                            {
+                                content.Append( "<ul>" );
+                                content.Append( groupContent.ToString() );
+                                content.Append( "</ul>" );
+                            }
+
+                            content.Append( "</ul>" );
+                        }
+                    }
+                    else
+                    {
+                        if ( groupType.ChildGroupTypes.Count > 0 )
+                        {
+                            BuildHeirarchy( groupType.ChildGroupTypes.Select( t => t.Id ).ToList(), campusId );
+                        }
+                    }
                 }
-            
             }
 
-            
+            return content.ToString();
         }
 
         #endregion

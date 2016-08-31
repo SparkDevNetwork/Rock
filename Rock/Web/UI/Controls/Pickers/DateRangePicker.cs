@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -93,6 +93,34 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the warning text.
+        /// </summary>
+        /// <value>
+        /// The warning text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The warning block." )
+        ]
+        public string Warning
+        {
+            get
+            {
+                return WarningBlock != null ? WarningBlock.Text : string.Empty;
+            }
+
+            set
+            {
+                if ( WarningBlock != null )
+                {
+                    WarningBlock.Text = value;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
         /// </summary>
         /// <value>
@@ -155,6 +183,14 @@ namespace Rock.Web.UI.Controls
         public HelpBlock HelpBlock { get; set; }
 
         /// <summary>
+        /// Gets or sets the warning block.
+        /// </summary>
+        /// <value>
+        /// The warning block.
+        /// </value>
+        public WarningBlock WarningBlock { get; set; }
+
+        /// <summary>
         /// Gets or sets the required field validator.
         /// </summary>
         /// <value>
@@ -172,20 +208,20 @@ namespace Rock.Web.UI.Controls
         {
             RequiredFieldValidator = new HiddenFieldValidator();
             HelpBlock = new HelpBlock();
+            WarningBlock = new WarningBlock();
         }
 
         #region Controls
 
         /// <summary>
-        /// The lower value 
+        /// The lower value
         /// </summary>
         private DatePicker _tbLowerValue;
 
         /// <summary>
-        /// The upper value 
+        /// The upper value
         /// </summary>
         private DatePicker _tbUpperValue;
-
 
         /// <summary>
         /// Gets or sets the class that should be applied to the div that wraps the two date pickers
@@ -222,7 +258,6 @@ namespace Rock.Web.UI.Controls
             // a little javascript to make the daterange picker behave similar to the bootstrap-datepicker demo site's date range picker
             var scriptFormat = @"
 $('#{0}').datepicker({{ format: '{2}', todayHighlight: true }}).on('changeDate', function (ev) {{
-        
     if (ev.date.valueOf() > $('#{1}').data('datepicker').dates[0]) {{
         var newDate = new Date(ev.date)
         newDate.setDate(newDate.getDate() + 1);
@@ -231,7 +266,7 @@ $('#{0}').datepicker({{ format: '{2}', todayHighlight: true }}).on('changeDate',
         // disable date selection in the EndDatePicker that are earlier than the startDate
         $('#{1}').datepicker('setStartDate', ev.date);
     }}
-    
+
     if (event && event.type == 'click') {{
         // close the start date picker and set focus to the end date
         $('#{0}').data('datepicker').hide();
@@ -307,7 +342,7 @@ $('#{3}').find('.input-group-upper .input-group-addon').on('click', function () 
             writer.AddAttribute( "id", this.ClientID );
             foreach ( var styleKey in this.Style.Keys )
             {
-                string styleName = (string)styleKey;
+                string styleName = ( string ) styleKey;
                 writer.AddStyleAttribute( styleName, this.Style[styleName] );
             }
 
@@ -462,6 +497,31 @@ $('#{3}').find('.input-group-upper .input-group-addon').on('click', function () 
         }
 
         /// <summary>
+        /// Tries to parse the upper and lower DateTime from the delimited string
+        /// </summary>
+        /// <param name="delimited">The delimited value</param>
+        /// <param name="lower">The lower value</param>
+        /// <param name="upper">The upper value</param>
+        public static bool TryParse( string delimited, out DateTime lower, out DateTime upper )
+        {
+            if ( !string.IsNullOrWhiteSpace( delimited ) && delimited.Contains( "," ) )
+            {
+                var dates = delimited.Split( ',' );
+
+                if ( dates.Length == 2 )
+                {
+                    var success1 = DateTime.TryParse( dates[0], out lower );
+                    var success2 = DateTime.TryParse( dates[1], out upper );
+                    return success1 && success2;
+                }
+            }
+
+            lower = new DateTime();
+            upper = new DateTime();
+            return false;
+        }
+
+        /// <summary>
         /// Formats the delimited values for display purposes
         /// </summary>
         /// <param name="value">The value.</param>
@@ -495,8 +555,8 @@ $('#{3}').find('.input-group-upper .input-group-addon').on('click', function () 
                     return new DateRange( dates[0].AsDateTime(), dates[1].AsDateTime() );
                 }
             }
-            
-            return new DateRange(null, null);
+
+            return new DateRange( null, null );
         }
     }
 }

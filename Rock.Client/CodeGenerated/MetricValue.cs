@@ -5,13 +5,13 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 // <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -35,9 +35,6 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public int? EntityId { get; set; }
-
-        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -59,9 +56,6 @@ namespace Rock.Client
 
         /// <summary />
         public string Note { get; set; }
-
-        /// <summary />
-        public int Order { get; set; }
 
         /// <summary />
         public string XValue { get; set; }
@@ -102,7 +96,6 @@ namespace Rock.Client
         public void CopyPropertiesFrom( MetricValue source )
         {
             this.Id = source.Id;
-            this.EntityId = source.EntityId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.MetricId = source.MetricId;
@@ -110,7 +103,6 @@ namespace Rock.Client
             this.MetricValueType = source.MetricValueType;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Note = source.Note;
-            this.Order = source.Order;
             this.XValue = source.XValue;
             this.YValue = source.YValue;
             this.CreatedDateTime = source.CreatedDateTime;
@@ -132,7 +124,13 @@ namespace Rock.Client
         public long DateTimeStamp { get; set; }
 
         /// <summary />
-        public string SeriesId { get; set; }
+        public string MetricValuePartitionEntityIds { get; set; }
+
+        /// <summary />
+        public ICollection<MetricValuePartition> MetricValuePartitions { get; set; }
+
+        /// <summary />
+        public string SeriesName { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

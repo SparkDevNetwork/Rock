@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -32,15 +32,43 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
+using Newtonsoft.Json.Linq;
+
 namespace RockWeb.Blocks.Groups
 {
     [DisplayName( "Group Member Detail" )]
     [Category( "Groups" )]
     [Description( "Displays the details of the given group member for editing role, status, etc." )]
     [LinkedPage( "Registration Page", "Page used for viewing the registration(s) associated with a particular group member", false, "", "", 0 )]
+
+    [BooleanField( "Show 'Move to another group' button", "Set to false to hide the 'Move to another group' button", true, "", 1, "ShowMoveToOtherGroup" )]
     public partial class GroupMemberDetail : RockBlock, IDetailBlock
     {
         #region Control Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += GroupMemberDetail_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upDetail );
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the GroupMemberDetail control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <exception cref="NotImplementedException"></exception>
+        protected void GroupMemberDetail_BlockUpdated( object sender, EventArgs e )
+        {
+            SetBlockOptions();
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -54,6 +82,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( !Page.IsPostBack )
             {
+                SetBlockOptions();
                 ShowDetail( PageParameter( "GroupMemberId" ).AsInteger(), PageParameter( "GroupId" ).AsIntegerOrNull() );
             }
             else
@@ -66,6 +95,15 @@ namespace RockWeb.Blocks.Groups
                     Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, false, BlockValidationGroup );
                 }
             }
+        }
+
+        /// <summary>
+        /// Sets the block options.
+        /// </summary>
+        public void SetBlockOptions()
+        {
+            bool showMoveToOtherGroup = this.GetAttributeValue( "ShowMoveToOtherGroup" ).AsBooleanOrNull() ?? true;
+            btnShowMoveDialog.Visible = showMoveToOtherGroup;
         }
 
         /// <summary>
@@ -154,26 +192,43 @@ namespace RockWeb.Blocks.Groups
             {
                 var rockContext = new RockContext();
 
-                GroupMemberService groupMemberService = new GroupMemberService( rockContext );
-                GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
-                GroupMember groupMember;
+                // Verify valid group
+                var groupService = new GroupService( rockContext );
+                var group = groupService.Get( hfGroupId.ValueAsInt() );
+                if ( group == null )
+                {
+                    nbErrorMessage.Title = "Please select a Role";
+                    return;
+                }
 
-                int groupMemberId = int.Parse( hfGroupMemberId.Value );
-
-                GroupTypeRole role = new GroupTypeRoleService( rockContext ).Get( ddlGroupRole.SelectedValueAsInt() ?? 0 );
+                // Check to see if a person was selected
+                int? personId = ppGroupMemberPerson.PersonId;
+                int? personAliasId = ppGroupMemberPerson.PersonAliasId;
+                if ( !personId.HasValue || !personAliasId.HasValue )
+                {
+                    nbErrorMessage.Title = "Please select a Person";
+                    return;
+                }
 
                 // check to see if the user selected a role
+                var role = new GroupTypeRoleService( rockContext ).Get( ddlGroupRole.SelectedValueAsInt() ?? 0 );
                 if ( role == null )
                 {
                     nbErrorMessage.Title = "Please select a Role";
                     return;
                 }
 
+                var groupMemberService = new GroupMemberService( rockContext );
+                var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
+                GroupMember groupMember;
+
+                int groupMemberId = int.Parse( hfGroupMemberId.Value );
+
                 // if adding a new group member 
                 if ( groupMemberId.Equals( 0 ) )
                 {
                     groupMember = new GroupMember { Id = 0 };
-                    groupMember.GroupId = hfGroupId.ValueAsInt();
+                    groupMember.GroupId = group.Id;
                 }
                 else
                 {
@@ -181,7 +236,7 @@ namespace RockWeb.Blocks.Groups
                     groupMember = groupMemberService.Get( groupMemberId );
                 }
 
-                groupMember.PersonId = ppGroupMemberPerson.PersonId.Value;
+                groupMember.PersonId = personId.Value;
                 groupMember.GroupRoleId = role.Id;
                 groupMember.Note = tbNote.Text;
                 groupMember.GroupMemberStatus = rblStatus.SelectedValueAsEnum<GroupMemberStatus>();
@@ -225,6 +280,62 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
+                if ( group.RequiredSignatureDocumentTemplate != null )
+                {
+                    var person = new PersonService( rockContext ).Get( personId.Value );
+
+                    var documentService = new SignatureDocumentService( rockContext );
+                    var binaryFileService = new BinaryFileService( rockContext );
+                    SignatureDocument document = null;
+
+                    int? signatureDocumentId = hfSignedDocumentId.Value.AsIntegerOrNull();
+                    int? binaryFileId = fuSignedDocument.BinaryFileId;
+                    if ( signatureDocumentId.HasValue )
+                    {
+                        document = documentService.Get( signatureDocumentId.Value );
+                    }
+
+                    if ( document == null && binaryFileId.HasValue )
+                    {
+                        document = new SignatureDocument();
+                        document.SignatureDocumentTemplateId = group.RequiredSignatureDocumentTemplate.Id;
+                        document.AppliesToPersonAliasId = personAliasId.Value;
+                        document.AssignedToPersonAliasId = personAliasId.Value;
+                        document.Name = string.Format( "{0}_{1}",
+                            group.Name.RemoveSpecialCharacters(),
+                            ( person != null ? person.FullName.RemoveSpecialCharacters() : string.Empty ) );
+                        document.Status = SignatureDocumentStatus.Signed;
+                        document.LastStatusDate = RockDateTime.Now;
+                        documentService.Add( document );
+                    }
+
+                    if ( document != null )
+                    {
+                        int? origBinaryFileId = document.BinaryFileId;
+                        document.BinaryFileId = binaryFileId;
+
+                        if ( origBinaryFileId.HasValue && origBinaryFileId.Value != document.BinaryFileId )
+                        {
+                            // if a new the binaryFile was uploaded, mark the old one as Temporary so that it gets cleaned up
+                            var oldBinaryFile = binaryFileService.Get( origBinaryFileId.Value );
+                            if ( oldBinaryFile != null && !oldBinaryFile.IsTemporary )
+                            {
+                                oldBinaryFile.IsTemporary = true;
+                            }
+                        }
+
+                        // ensure the IsTemporary is set to false on binaryFile associated with this document
+                        if ( document.BinaryFileId.HasValue )
+                        {
+                            var binaryFile = binaryFileService.Get( document.BinaryFileId.Value );
+                            if ( binaryFile != null && binaryFile.IsTemporary )
+                            {
+                                binaryFile.IsTemporary = false;
+                            }
+                        }
+                    }
+                }
+
                 groupMember.LoadAttributes();
 
                 Rock.Attribute.Helper.GetEditValues( phAttributes, groupMember );
@@ -234,7 +345,7 @@ namespace RockWeb.Blocks.Groups
                     return;
                 }
 
-                // if the groupMember IsValue is false, and the UI controls didn't report any errors, it is probably because the custom rules of GroupMember didn't pass.
+                // if the groupMember IsValid is false, and the UI controls didn't report any errors, it is probably because the custom rules of GroupMember didn't pass.
                 // So, make sure a message is displayed in the validation summary
                 cvGroupMember.IsValid = groupMember.IsValid;
 
@@ -258,11 +369,9 @@ namespace RockWeb.Blocks.Groups
 
                 groupMember.CalculateRequirements( rockContext, true );
 
-                Group group = new GroupService( rockContext ).Get( groupMember.GroupId );
                 if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
                 {
                     Rock.Security.Role.Flush( group.Id );
-                    Rock.Security.Authorization.Flush();
                 }
             }
         }
@@ -290,6 +399,36 @@ namespace RockWeb.Blocks.Groups
                 Dictionary<string, string> qryString = new Dictionary<string, string>();
                 qryString["GroupId"] = groupMember.GroupId.ToString();
                 NavigateToParentPage( qryString );
+            }
+        }
+
+        protected void lbResendDocumentRequest_Click( object sender, EventArgs e )
+        {
+            int groupMemberId = PageParameter( "GroupMemberId" ).AsInteger();
+            if ( groupMemberId > 0 )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var groupMember = new GroupMemberService( rockContext ).Get( groupMemberId );
+                    if ( groupMember != null && groupMember.Group != null )
+                    {
+                        var sendErrorMessages = new List<string>();
+
+                        string documentName = string.Format( "{0}_{1}", groupMember.Group.Name.RemoveSpecialCharacters(), groupMember.Person.FullName.RemoveSpecialCharacters() );
+                        if ( new SignatureDocumentTemplateService( rockContext ).SendDocument(
+                            groupMember.Group.RequiredSignatureDocumentTemplate, groupMember.Person, groupMember.Person, documentName, groupMember.Person.Email, out sendErrorMessages ) )
+                        {
+                            rockContext.SaveChanges();
+                            maSignatureRequestSent.Show( "A Signature Request Has Been Sent.", Rock.Web.UI.Controls.ModalAlertType.Information );
+                            ShowRequiredDocumentStatus( rockContext, groupMember, groupMember.Group );
+                        }
+                        else
+                        {
+                            string errorMessage = string.Format( "Unable to send a signature request: <ul><li>{0}</li></ul>", sendErrorMessages.AsDelimited( "</li><li>" ) );
+                            maSignatureRequestSent.Show( errorMessage, Rock.Web.UI.Controls.ModalAlertType.Alert );
+                        }
+                    }
+                }
             }
         }
 
@@ -333,6 +472,7 @@ namespace RockWeb.Blocks.Groups
             if ( !groupMemberId.Equals( 0 ) )
             {
                 groupMember = new GroupMemberService( rockContext ).Get( groupMemberId );
+                pdAuditDetails.SetEntity( groupMember, ResolveRockUrl( "~" ) );
             }
             else
             {
@@ -345,6 +485,8 @@ namespace RockWeb.Blocks.Groups
                     groupMember.GroupRoleId = groupMember.Group.GroupType.DefaultGroupRoleId ?? 0;
                     groupMember.GroupMemberStatus = GroupMemberStatus.Active;
                     groupMember.DateTimeAdded = RockDateTime.Now;
+                    // hide the panel drawer that show created and last modified dates
+                    pdAuditDetails.Visible = false;
                 }
             }
 
@@ -434,7 +576,15 @@ namespace RockWeb.Blocks.Groups
 
             btnSave.Visible = !readOnly;
 
+            if ( readOnly || groupMember.Id == 0) 
+            {
+                // hide the ShowMoveDialog if this is readOnly or if this is a new group member (can't move a group member that doesn't exist yet)
+                btnShowMoveDialog.Visible = false;
+            }
+            
             LoadDropDowns();
+
+            ShowRequiredDocumentStatus( rockContext, groupMember, group );
 
             ppGroupMemberPerson.SetValue( groupMember.Person );
             ppGroupMemberPerson.Enabled = !readOnly;
@@ -479,6 +629,39 @@ namespace RockWeb.Blocks.Groups
                 rcwLinkedRegistrations.Visible = false;
             }
 
+            if ( groupMember.Group.RequiredSignatureDocumentTemplate != null )
+            {
+                fuSignedDocument.Label = groupMember.Group.RequiredSignatureDocumentTemplate.Name;
+                if ( groupMember.Group.RequiredSignatureDocumentTemplate.BinaryFileType != null )
+                {
+                    fuSignedDocument.BinaryFileTypeGuid = groupMember.Group.RequiredSignatureDocumentTemplate.BinaryFileType.Guid;
+                }
+
+                var signatureDocument = new SignatureDocumentService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( d =>
+                        d.SignatureDocumentTemplateId == groupMember.Group.RequiredSignatureDocumentTemplateId.Value &&
+                        d.AppliesToPersonAlias != null &&
+                        d.AppliesToPersonAlias.PersonId == groupMember.PersonId &&
+                        d.LastStatusDate.HasValue &&
+                        d.Status == SignatureDocumentStatus.Signed &&
+                        d.BinaryFile != null )
+                    .OrderByDescending( d => d.LastStatusDate.Value )
+                    .FirstOrDefault();
+
+                if ( signatureDocument != null )
+                {
+                    hfSignedDocumentId.Value = signatureDocument.Id.ToString();
+                    fuSignedDocument.BinaryFileId = signatureDocument.BinaryFileId;
+                }
+
+                fuSignedDocument.Visible = true;
+            }
+            else
+            {
+                fuSignedDocument.Visible = false;
+            }
+
             groupMember.LoadAttributes();
             phAttributes.Controls.Clear();
 
@@ -500,6 +683,44 @@ namespace RockWeb.Blocks.Groups
             btnReCheckRequirements.Visible = groupHasRequirements;
 
             ShowGroupRequirementsStatuses();
+        }
+
+        private void ShowRequiredDocumentStatus( RockContext rockContext, GroupMember groupMember, Group group )
+        {
+            if ( groupMember.Person != null && group.RequiredSignatureDocumentTemplate != null )
+            {
+                var documents = new SignatureDocumentService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( d =>
+                        d.SignatureDocumentTemplateId == group.RequiredSignatureDocumentTemplate.Id &&
+                        d.AppliesToPersonAlias.PersonId == groupMember.Person.Id )
+                    .ToList();
+                if ( !documents.Any( d => d.Status == SignatureDocumentStatus.Signed ) )
+                {
+                    var lastSent = documents.Any( d => d.Status == SignatureDocumentStatus.Sent ) ?
+                        documents.Where( d => d.Status == SignatureDocumentStatus.Sent ).Max( d => d.LastInviteDate ) : (DateTime?)null;
+                    pnlRequiredSignatureDocument.Visible = true;
+
+                    if ( lastSent.HasValue )
+                    {
+                        lbResendDocumentRequest.Text = "Resend Signature Request";
+                        lRequiredSignatureDocumentMessage.Text =string.Format("A signed {0} document has not yet been received for {1}. The last request was sent {2}.", group.RequiredSignatureDocumentTemplate.Name, groupMember.Person.NickName, lastSent.Value.ToElapsedString() );
+                    }
+                    else
+                    {
+                        lbResendDocumentRequest.Text = "Send Signature Request";
+                        lRequiredSignatureDocumentMessage.Text = string.Format("The required {0} document has not yet been sent to {1} for signing.", group.RequiredSignatureDocumentTemplate.Name, groupMember.Person.NickName );
+                    }
+                }
+                else
+                {
+                    pnlRequiredSignatureDocument.Visible = false;
+                }
+            }
+            else
+            {
+                pnlRequiredSignatureDocument.Visible = false;
+            }
         }
 
         /// <summary>
@@ -732,12 +953,15 @@ namespace RockWeb.Blocks.Groups
         {
             var rockContext = new RockContext();
             var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
-            lCurrentGroup.Text = groupMember.Group.Name;
-            gpMoveGroupMember.SetValue( null );
-            grpMoveGroupMember.Visible = false;
-            nbMoveGroupMemberWarning.Visible = false;
-            mdMoveGroupMember.Visible = true;
-            mdMoveGroupMember.Show();
+            if ( groupMember != null )
+            {
+                lCurrentGroup.Text = groupMember.Group.Name;
+                gpMoveGroupMember.SetValue( null );
+                grpMoveGroupMember.Visible = false;
+                nbMoveGroupMemberWarning.Visible = false;
+                mdMoveGroupMember.Visible = true;
+                mdMoveGroupMember.Show();
+            }
         }
 
         /// <summary>
@@ -868,5 +1092,6 @@ namespace RockWeb.Blocks.Groups
                 grpMoveGroupMember.Visible = false;
             }
         }
+
     }
 }

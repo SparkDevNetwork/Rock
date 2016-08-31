@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,12 +20,12 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -34,9 +34,9 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Attendance List" )]
     [Category( "Groups" )]
     [Description( "Lists all the scheduled occurrences for a given group." )]
-
     [LinkedPage( "Detail Page", "", true, "", "", 0 )]
     [BooleanField( "Allow Add", "Should block support adding new attendance dates outside of the group's configured schedule and group type's exclusion dates?", true, "", 1 )]
+    [BooleanField( "Allow Campus Filter", "Should block add an option to allow filtering attendance counts and percentage by campus?", false, "", 2 )]
     public partial class GroupAttendanceList : RockBlock
     {
         #region Private Variables
@@ -44,6 +44,7 @@ namespace RockWeb.Blocks.Groups
         private RockContext _rockContext = null;
         private Group _group = null;
         private bool _canView = false;
+        private bool _allowCampusFilter = false;
 
         #endregion
 
@@ -80,6 +81,15 @@ namespace RockWeb.Blocks.Groups
                 gOccurrences.Actions.ShowAdd = canEditBlock && GetAttributeValue( "AllowAdd" ).AsBoolean();
                 gOccurrences.IsDeleteEnabled = canEditBlock;
             }
+
+            _allowCampusFilter = GetAttributeValue( "AllowCampusFilter" ).AsBoolean();
+            bddlCampus.Visible = _allowCampusFilter;
+            if ( _allowCampusFilter )
+            {
+                bddlCampus.DataSource = CampusCache.All();
+                bddlCampus.DataBind();
+                bddlCampus.Items.Insert( 0, new ListItem( "All Campuses", "0" ) );
+            }
         }
 
         /// <summary>
@@ -94,6 +104,15 @@ namespace RockWeb.Blocks.Groups
 
             if ( !Page.IsPostBack && _canView )
             {
+                if ( _allowCampusFilter )
+                {
+                    var campus = CampusCache.Read( GetBlockUserPreference( "Campus" ).AsInteger() );
+                    if ( campus != null )
+                    {
+                        bddlCampus.Title = campus.Name;
+                        bddlCampus.SetValue( campus.Id );
+                    }
+                }
                 BindFilter();
                 BindGrid();
             }
@@ -102,6 +121,19 @@ namespace RockWeb.Blocks.Groups
         #endregion
 
         #region Events
+
+        /// <summary>
+        /// Handles the SelectionChanged event of the bddlCampus control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void bddlCampus_SelectionChanged( object sender, EventArgs e )
+        {
+            SetBlockUserPreference( "Campus", bddlCampus.SelectedValue );
+            var campus = CampusCache.Read( bddlCampus.SelectedValueAsInt() ?? 0 );
+            bddlCampus.Title = campus != null ? campus.Name : "All Campuses";
+            BindGrid();
+        }
 
         /// <summary>
         /// Handles the ApplyFilterClick event of the rFilter control.
@@ -170,7 +202,12 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
-        void gOccurrences_RowDataBound( object sender, GridViewRowEventArgs e )
+        /// <summary>
+        /// Handles the RowDataBound event of the gOccurrences control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gOccurrences_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             if ( e.Row.RowType == System.Web.UI.WebControls.DataControlRowType.DataRow )
             {
@@ -197,7 +234,7 @@ namespace RockWeb.Blocks.Groups
         {
             // The iCalendar date format is returned as UTC kind date, so we need to manually format it instead of using 'o'
             string occurrenceDate = ( (DateTime)e.RowKeyValues["Date"] ).ToString( "yyyy-MM-ddTHH:mm:ss" );
-            var qryParams = new Dictionary<string, string> { 
+            var qryParams = new Dictionary<string, string> {
                 { "GroupId", _group.Id.ToString() },
                 { "Date", occurrenceDate },
             };
@@ -214,6 +251,12 @@ namespace RockWeb.Blocks.Groups
                 qryParams.Add( "ScheduleId", scheduleId.Value.ToString() );
             }
 
+            var groupTypeIds = PageParameter( "GroupTypeIds" );
+            if ( !string.IsNullOrWhiteSpace( groupTypeIds ) )
+            {
+                qryParams.Add( "GroupTypeIds", groupTypeIds );
+            }
+
             NavigateToLinkedPage( "DetailPage", qryParams );
         }
 
@@ -225,8 +268,8 @@ namespace RockWeb.Blocks.Groups
         /// <exception cref="System.NotImplementedException"></exception>
         protected void gOccurrences_Add( object sender, EventArgs e )
         {
-            var qryParams = new Dictionary<string, string> { 
-                { "GroupId", _group.Id.ToString() } 
+            var qryParams = new Dictionary<string, string> {
+                { "GroupId", _group.Id.ToString() }
             };
 
             if ( ddlSchedule.Visible && ddlSchedule.SelectedValue != "0" )
@@ -243,9 +286,14 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
+            var groupTypeIds = PageParameter( "GroupTypeIds" );
+            if ( !string.IsNullOrWhiteSpace( groupTypeIds ) )
+            {
+                qryParams.Add( "GroupTypeIds", groupTypeIds );
+            }
+
             NavigateToLinkedPage( "DetailPage", qryParams );
         }
-
 
         /// <summary>
         /// Handles the Delete event of the gOccurrences control.
@@ -268,35 +316,48 @@ namespace RockWeb.Blocks.Groups
                             a.GroupId == _group.Id &&
                             a.StartDateTime >= startDate &&
                             a.StartDateTime < endDate );
-                    
+
                     int? scheduleId = e.RowKeyValues["ScheduleId"] as int?;
                     if ( scheduleId.HasValue )
                     {
-                        qry = qry.Where( a => 
+                        qry = qry.Where( a =>
                             a.ScheduleId.HasValue &&
                             a.ScheduleId.Value == scheduleId.Value );
+                    }
+                    else
+                    {
+                        qry = qry.Where( a => !a.ScheduleId.HasValue );
                     }
 
                     int? locationId = e.RowKeyValues["LocationId"] as int?;
                     if ( locationId.HasValue )
                     {
-                        qry = qry.Where( a => 
+                        qry = qry.Where( a =>
                             a.LocationId.HasValue &&
                             a.LocationId.Value == locationId.Value );
                     }
+                    else
+                    {
+                        qry = qry.Where( a => !a.LocationId.HasValue );
+                    }
 
-                    foreach( var attendance in qry )
+                    foreach ( var attendance in qry )
                     {
                         attendanceService.Delete( attendance );
                     }
 
                     rockContext.SaveChanges();
+
+                    if ( locationId.HasValue )
+                    {
+                        Rock.CheckIn.KioskLocationAttendance.Flush( locationId.Value );
+                    }
                 }
             }
 
             BindGrid();
         }
-        
+
         /// <summary>
         /// Handles the GridRebind event of the gOccurrences control.
         /// </summary>
@@ -315,20 +376,20 @@ namespace RockWeb.Blocks.Groups
         /// <summary>
         /// Binds the filter.
         /// </summary>
-        private void BindFilter()
+        protected void BindFilter()
         {
             string dateRangePreference = rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Date Range" ) );
             if ( string.IsNullOrWhiteSpace( dateRangePreference ) )
             {
-                // set the dateRangePreference to force rFilter_DisplayFilterValue to show our default one year limit
+                // set the dateRangePreference to force rFilter_DisplayFilterValue to show our default three month limit
                 dateRangePreference = ",";
                 rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Date Range" ), "Date Range", dateRangePreference );
             }
 
             var dateRange = DateRangePicker.CalculateDateRangeFromDelimitedValues( dateRangePreference );
 
-            // if there is no start date, default to a year ago to minimize the chance of loading too much data
-            drpDates.LowerValue = dateRange.Start ?? RockDateTime.Today.AddYears( -1 );
+            // if there is no start date, default to three months ago to minimize the chance of loading too much data
+            drpDates.LowerValue = dateRange.Start ?? RockDateTime.Today.AddMonths( -3 );
             drpDates.UpperValue = dateRange.End;
 
             if ( _group != null )
@@ -441,7 +502,9 @@ namespace RockWeb.Blocks.Groups
                     scheduleIds.Add( ddlSchedule.SelectedValueAsInt() ?? 0 );
                 }
 
-                var qry = new ScheduleService( _rockContext ).GetGroupOccurrences( _group, fromDateTime, toDateTime, locationIds, scheduleIds, true ).AsQueryable();
+                var qry = new ScheduleService( _rockContext )
+                    .GetGroupOccurrences( _group, fromDateTime, toDateTime, locationIds, scheduleIds, true, bddlCampus.SelectedValueAsInt() )
+                    .AsQueryable();
 
                 SortProperty sortProperty = gOccurrences.SortProperty;
                 List<ScheduleOccurrence> occurrences = null;
@@ -475,6 +538,5 @@ namespace RockWeb.Blocks.Groups
         }
 
         #endregion
-
-}
+    }
 }

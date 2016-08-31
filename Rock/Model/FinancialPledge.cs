@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -43,6 +43,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? PersonAliasId { get; set; }
+
+        /// <summary>
+        /// If a person belongs to one or more groups a particular type (i.e. Family), this field 
+        /// is used to distinguish which group the pledge should be associated with.
+        /// </summary>
+        /// <value>
+        /// The group identifier.
+        /// </value>
+        [DataMember]
+        public int? GroupId { get; set;}
 
         /// <summary>
         /// Gets or sets the AccountId of the <see cref="Rock.Model.FinancialAccount"/> that the pledge is directed toward.
@@ -107,7 +117,17 @@ namespace Rock.Model
         /// <value>
         /// The person alias.
         /// </value>
+        [LavaInclude]
         public virtual PersonAlias PersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group.
+        /// </summary>
+        /// <value>
+        /// The group.
+        /// </value>
+        [LavaInclude]
+        public virtual Group Group { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.FinancialAccount"/> or account that the pledge is being directed toward.
@@ -115,6 +135,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.FinancialAccount"/> or account that the pledge is being directed toward.
         /// </value>
+        [LavaInclude]
         public virtual FinancialAccount Account { get; set; }
 
         /// <summary>
@@ -159,6 +180,7 @@ namespace Rock.Model
         public FinancialPledgeConfiguration()
         {
             this.HasOptional( p => p.PersonAlias ).WithMany().HasForeignKey( p => p.PersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.Group ).WithMany().HasForeignKey( p => p.GroupId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Account ).WithMany().HasForeignKey( p => p.AccountId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.PledgeFrequencyValue ).WithMany().HasForeignKey( p => p.PledgeFrequencyValueId ).WillCascadeOnDelete( false );
         }

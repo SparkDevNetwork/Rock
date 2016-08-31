@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,11 +30,11 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.Core
 {
     /// <summary>
-    /// Block that can be used to set the default group context for the site
+    /// Block that can be used to set the default group context for the site or page
     /// </summary>
     [DisplayName( "Group Context Setter" )]
     [Category( "Core" )]
-    [Description( "Block that can be used to set the default group context for the site." )]
+    [Description( "Block that can be used to set the default group context for the site or page." )]
     [GroupTypeGroupField( "Group Filter", "Select group type and root group to filter groups by root group. Leave root group blank to filter by group type.", "Root Group", order: 0 )]
     [CustomRadioListField( "Context Scope", "The scope of context to set", "Site,Page", true, "Site", order: 1 )]
     [TextField( "No Group Text", "The text to show when there is no group in the context.", true, "Select Group", order: 2 )]
@@ -156,21 +156,20 @@ namespace RockWeb.Blocks.Core
 
                 lCurrentSelection.Text = currentGroup != null ? currentGroup.ToString() : GetAttributeValue( "NoGroupText" );
 
-                var groupList = qryGroups.OrderBy( a => a.Order )
-                    .ThenBy( a => a.Name ).ToList()
+                var groupList = qryGroups.OrderBy( a => a.Name ).ToList()
                     .Select( a => new GroupItem() { Name = a.Name, Id = a.Id } )
                     .ToList();
 
                 // check if the group can be unselected
                 if ( !string.IsNullOrEmpty( GetAttributeValue( "ClearSelectionText" ) ) )
                 {
-                    var blankCampus = new GroupItem
+                    var blankGroup = new GroupItem
                     {
                         Name = GetAttributeValue( "ClearSelectionText" ),
                         Id = Rock.Constants.All.Id
                     };
 
-                    groupList.Insert( 0, blankCampus );
+                    groupList.Insert( 0, blankGroup );
                 }
 
                 rptGroups.DataSource = groupList;
@@ -190,7 +189,7 @@ namespace RockWeb.Blocks.Core
             var group = new GroupService( new RockContext() ).Get( groupId );
             if ( group == null )
             {
-                // clear the current campus context
+                // clear the current group context
                 group = new Group()
                 {
                     Name = GetAttributeValue( "NoGroupText" ),

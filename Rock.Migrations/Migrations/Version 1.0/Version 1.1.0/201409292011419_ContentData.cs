@@ -1,11 +1,11 @@
-// <copyright>
-// Copyright 2013 by the Spark Development Network
+ï»¿// <copyright>
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -86,7 +86,7 @@ namespace Rock.Migrations
             <a href=""{{ LinkedPages.DetailPage }}?Item={{ item.Id }}"">{{ item.Image }}</a>
             <h2 class=""announcement-title"">{{ item.Title }}</h2>
             <p class=""announcement-text"">{{ item.SummaryText }}</p>
-            <p><a class=""view-details btn btn-default"" href=""{{ LinkedPages.DetailPage }}?Item={{ item.Id }}"" role=""button"">View details »</a></p>
+            <p><a class=""view-details btn btn-default"" href=""{{ LinkedPages.DetailPage }}?Item={{ item.Id }}"" role=""button"">View details ï¿½</a></p>
         </div>
         {% capture breakNow %}{{ forloop.index | Modulo:3 }}{% endcapture %}
         {% if breakNow == 0 -%}

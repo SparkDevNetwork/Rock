@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 using RestSharp;
 using System.Configuration;
 using System.IO;
+using System.Web;
 
 
 namespace Rock.Store
@@ -64,7 +65,10 @@ namespace Rock.Store
             // setup REST call
             var client = new RestClient( _rockStoreUrl );
             client.Timeout = _clientTimeout;
-            string requestUrl = string.Format("api/Store/RetrieveOrganizations/{0}/{1}", username, password);
+
+            string encodedUserName = HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( username ) ) );
+            string encodedPassword = HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( password ) ) );
+            string requestUrl = string.Format( "api/Store/RetrieveOrganizations/{0}/{1}", encodedUserName, encodedPassword );
             var request = new RestRequest( requestUrl, Method.GET );
 
             // deserialize to list of packages

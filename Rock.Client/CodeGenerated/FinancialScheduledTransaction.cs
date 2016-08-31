@@ -5,13 +5,13 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 // <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -79,6 +79,9 @@ namespace Rock.Client
         public int? NumberOfPayments { get; set; }
 
         /// <summary />
+        public int? SourceTypeValueId { get; set; }
+
+        /// <summary />
         public DateTime StartDate { get; set; }
 
         /// <summary />
@@ -86,6 +89,9 @@ namespace Rock.Client
 
         /// <summary />
         public int TransactionFrequencyValueId { get; set; }
+
+        /// <summary />
+        public int? TransactionTypeValueId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -134,9 +140,11 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.NextPaymentDate = source.NextPaymentDate;
             this.NumberOfPayments = source.NumberOfPayments;
+            this.SourceTypeValueId = source.SourceTypeValueId;
             this.StartDate = source.StartDate;
             this.TransactionCode = source.TransactionCode;
             this.TransactionFrequencyValueId = source.TransactionFrequencyValueId;
+            this.TransactionTypeValueId = source.TransactionTypeValueId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -162,10 +170,16 @@ namespace Rock.Client
         public ICollection<FinancialScheduledTransactionDetail> ScheduledTransactionDetails { get; set; }
 
         /// <summary />
+        public DefinedValue SourceTypeValue { get; set; }
+
+        /// <summary />
         public DefinedValue TransactionFrequencyValue { get; set; }
 
         /// <summary />
         public ICollection<FinancialTransaction> Transactions { get; set; }
+
+        /// <summary />
+        public DefinedValue TransactionTypeValue { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

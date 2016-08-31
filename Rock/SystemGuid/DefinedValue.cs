@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -101,6 +101,11 @@ namespace Rock.SystemGuid
         /// ACH
         /// </summary>
         public const string CURRENCY_TYPE_ACH = "DABEE8FD-AEDF-43E1-8547-4C97FA14D9B6";
+
+        /// <summary>
+        /// ACH
+        /// </summary>
+        public const string CURRENCY_TYPE_NONCASH = "7950FF66-80EE-E8AB-4A77-4A13EDEB7513";
 
         #endregion
 
@@ -321,6 +326,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PERSON_RECORD_STATUS_REASON_DECEASED = "05D35BC4-5816-4210-965F-1BF44F35A16A";
 
+        /// <summary>
+        /// Inactive record status reason of No Activity 
+        /// </summary>
+        public const string PERSON_RECORD_STATUS_REASON_NO_ACTIVITY = "64014FE6-943D-4ACF-8014-FED9F9169AE8";
+
         #endregion
 
         #region Person Record Type
@@ -416,6 +426,23 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string DEFAULT_RSS_CHANNEL = "D6149581-9EFC-40D8-BD38-E92C0717BEDA";
 
+        #endregion
+
+        #region Benevolence
+        /// <summary>
+        /// Benevolence Pending
+        /// </summary>
+        public const string BENEVOLENCE_PENDING = "67B24629-62A9-436A-A98C-30A454642153";
+
+        /// <summary>
+        /// Benevolence Approved
+        /// </summary>
+        public const string BENEVOLENCE_APPROVED = "18D3A2DA-F2BA-49AE-83EB-7E60DCD18A3B";
+
+        /// <summary>
+        /// Benevolence Denied
+        /// </summary>
+        public const string BENEVOLENCE_DENIED = "3720671E-DA48-405F-A6D5-5E2D47436F9A";
         #endregion
 
     }

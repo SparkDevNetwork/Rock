@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Configuration;
 using System.Data.Entity;
 using System.Data.SqlClient;
@@ -24,16 +23,20 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Caching;
 using System.Web.Http;
 using System.Web.Optimization;
 using System.Web.Routing;
+
 using DotLiquid;
+
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
+
 using Rock;
 using Rock.Communication;
 using Rock.Data;
@@ -42,6 +45,7 @@ using Rock.Model;
 using Rock.Plugin;
 using Rock.Transactions;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace RockWeb
 {
@@ -81,7 +85,37 @@ namespace RockWeb
         {
             Response.Headers.Remove( "Server" );
             Response.Headers.Remove( "X-AspNet-Version" );
-            Response.AddHeader( "X-Frame-Options", "SAMEORIGIN" );
+
+            bool useFrameDomains = false;
+            string allowedDomains = string.Empty;
+
+            int? siteId = ( Context.Items["Rock:SiteId"] ?? "" ).ToString().AsIntegerOrNull();
+            try
+            {
+                if ( siteId.HasValue )
+                {
+                    var site = SiteCache.Read( siteId.Value );
+                    if ( site != null && ! String.IsNullOrWhiteSpace( site.AllowedFrameDomains ) )
+                    {
+                        useFrameDomains = true;
+                        allowedDomains = site.AllowedFrameDomains;
+                    }
+                }
+            }
+            catch
+            { }
+
+            if ( useFrameDomains )
+            {
+                // string concat is 5x faster than String.Format in this senario
+                Response.AddHeader( "Content-Security-Policy", "frame-ancestors " + allowedDomains );
+            }
+            else
+            {
+                Response.AddHeader( "X-Frame-Options", "SAMEORIGIN" );
+                Response.AddHeader( "Content-Security-Policy", "frame-ancestors 'self'" );
+            }
+            
         }
 
         /// <summary>
@@ -103,6 +137,13 @@ namespace RockWeb
 
                 // Clear all cache
                 RockMemoryCache.Clear();
+
+                // If not migrating, set up view cache to speed up startup (Not supported when running migrations).
+                var fileInfo = new FileInfo( Server.MapPath( "~/App_Data/Run.Migration" ) );
+                if ( !fileInfo.Exists )
+                {
+                    RockInteractiveViews.SetViewFactory( Server.MapPath( "~/App_Data/RockModelViews.xml" ) );
+                }
 
                 // Get a db context
                 using ( var rockContext = new RockContext() )
@@ -201,6 +242,9 @@ namespace RockWeb
                         sched.Start();
                     }
 
+                    // set the encryption protocols that are permissible for external SSL connections
+                    System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls | System.Net.SecurityProtocolType.Tls11 | System.Net.SecurityProtocolType.Tls12;
+
                     // Force the static Liquid class to get instantiated so that the standard filters are loaded prior 
                     // to the custom RockFilter.  This is to allow the custom 'Date' filter to replace the standard 
                     // Date filter.
@@ -214,7 +258,35 @@ namespace RockWeb
                     Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
                     Template.FileSystem = new RockWeb.LavaFileSystem();
                     Template.RegisterSafeType( typeof( Enum ), o => o.ToString() );
+                    Template.RegisterSafeType( typeof( DBNull ), o => null );
                     Template.RegisterFilter( typeof( Rock.Lava.RockFilters ) );
+
+                    // register lava entity blocks
+                    var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+                    foreach ( var assembly in assemblies )
+                    {
+                        try
+                        {
+                            var customCommands = assembly.GetTypes().Where( x => x.BaseType == typeof( Rock.Lava.Blocks.RockLavaBlockBase ) );
+
+                            foreach ( var command in customCommands )
+                            {
+                                if (command.Name == "RockEntity" )
+                                {
+                                    Rock.Lava.Blocks.RockEntity.RegisterEntityCommands();
+                                }
+                                else
+                                {
+                                    MethodInfo method = typeof( Template ).GetMethod( "RegisterTag" );
+                                    MethodInfo genericMethod = method.MakeGenericMethod( command );
+                                    object[] parametersArray = new object[] { command.Name.ToLower() };
+                                    genericMethod.Invoke( this, parametersArray );
+                                }
+                            }
+                        }
+                        catch { }
+                    }
 
                     // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
                     AddCallBack();
@@ -243,6 +315,21 @@ namespace RockWeb
                 SetError66();
                 throw ( new Exception( "Error occurred during application startup", ex ) );
             }
+
+            // Update attributes for new workflow actions
+            new Thread( () =>
+            {
+                Rock.Workflow.ActionContainer.Instance.UpdateAttributes();
+            } ).Start();
+            
+            // compile less files
+            new Thread( () =>
+            {
+                Thread.CurrentThread.IsBackground = true;
+                RockTheme.CompileAll();
+                
+            } ).Start();
+            
         }
 
         /// <summary>
@@ -641,15 +728,20 @@ namespace RockWeb
 
             PageRouteService pageRouteService = new PageRouteService( rockContext );
 
-            //Add ingore rule for asp.net ScriptManager files. 
+            // Add ingore rule for asp.net ScriptManager files. 
             routes.Ignore("{resource}.axd/{*pathInfo}");
 
-
-            // find each page that has defined a custom routes.
-            foreach ( PageRoute pageRoute in pageRouteService.Queryable() )
+            // Add page routes
+            foreach ( var route in pageRouteService 
+                .Queryable().AsNoTracking()
+                .GroupBy( r => r.Route )
+                .Select( s => new {
+                    Name = s.Key,
+                    Pages = s.Select( pr => new Rock.Web.PageAndRouteId { PageId = pr.PageId, RouteId = pr.Id } ).ToList() 
+                } )
+                .ToList() )
             {
-                // Create the custom route and save the page id in the DataTokens collection
-                routes.AddPageRoute( pageRoute );
+                routes.AddPageRoute( route.Name, route.Pages );
             }
 
             // Add a default page route
@@ -772,76 +864,121 @@ namespace RockWeb
 
             try
             {
-                string siteName = "Rock";
-                if ( siteId.HasValue )
-                {
-                    var site = SiteCache.Read( siteId.Value );
-                    if ( site != null )
-                    {
-                        siteName = site.Name;
-                    }
-                }
+                bool sendNotification = true;
 
-                // setup merge codes for email
-                var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
-                mergeObjects.Add( "ExceptionDetails", string.Format( "An error occurred{0} on the {1} site on page: <br>{2}<p>{3}</p>",
-                    person != null ? " for " + person.FullName : "", siteName, Context.Request.Url.OriginalString, FormatException( ex, "" ) ) );
-
-                try
-                {
-                    mergeObjects.Add( "Exception", Hash.FromAnonymousObject( ex ) );
-                }
-                catch
-                {
-                    // ignore
-                }
-
-                mergeObjects.Add( "Person", person );
-
-                // get email addresses to send to
                 var globalAttributesCache = GlobalAttributesCache.Read();
-                string emailAddressesList = globalAttributesCache.GetValue( "EmailExceptionsList" );
 
-                if ( !string.IsNullOrWhiteSpace( emailAddressesList ) )
+                string filterSettings = globalAttributesCache.GetValue( "EmailExceptionsFilter" );
+                if ( !string.IsNullOrWhiteSpace( filterSettings ) )
                 {
-                    string[] emailAddresses = emailAddressesList.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+                    // Get the current request's list of server variables
+                    var serverVarList = Context.Request.ServerVariables;
 
-                    var recipients = new List<RecipientData>();
-                    foreach ( string emailAddress in emailAddresses )
+                    string[] nameValues = filterSettings.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+                    foreach ( string nameValue in nameValues )
                     {
-                        recipients.Add( new RecipientData( emailAddress, mergeObjects ) );
-                    }
-
-                    if ( recipients.Any() )
-                    {
-                        bool sendNotification = true;
-
-                        string filterSettings = globalAttributesCache.GetValue( "EmailExceptionsFilter" );
-                        var serverVarList = Context.Request.ServerVariables;
-
-                        if ( !string.IsNullOrWhiteSpace( filterSettings ) && serverVarList.Count > 0 )
+                        string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
                         {
-                            string[] nameValues = filterSettings.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-                            foreach ( string nameValue in nameValues )
+                            if ( nameAndValue.Length == 2 )
                             {
-                                string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+                                switch ( nameAndValue[0].ToLower() )
                                 {
-                                    if ( nameAndValue.Length == 2 )
-                                    {
-                                        var serverValue = serverVarList[nameAndValue[0]];
-                                        if ( serverValue != null && serverValue.ToUpper().Contains( nameAndValue[1].ToUpper().Trim() ) )
+                                    case "type":
                                         {
-                                            sendNotification = false;
+                                            if ( ex.GetType().Name.ToLower().Contains( nameAndValue[1].ToLower() ) )
+                                            {
+                                                sendNotification = false;
+                                            }
                                             break;
                                         }
-                                    }
+                                    case "source":
+                                        {
+                                            if ( ex.Source.ToLower().Contains( nameAndValue[1].ToLower() ) )
+                                            {
+                                                sendNotification = false;
+                                            }
+                                            break;
+                                        }
+                                    case "message":
+                                        {
+                                            if ( ex.Message.ToLower().Contains( nameAndValue[1].ToLower() ) )
+                                            {
+                                                sendNotification = false;
+                                            }
+                                            break;
+                                        }
+                                    case "stacktrace":
+                                        {
+                                            if ( ex.StackTrace.ToLower().Contains( nameAndValue[1].ToLower() ) )
+                                            {
+                                                sendNotification = false;
+                                            }
+                                            break;
+                                        }
+                                    default:
+                                        {
+                                            var serverValue = serverVarList[nameAndValue[0]];
+                                            if ( serverValue != null && serverValue.ToUpper().Contains( nameAndValue[1].ToUpper().Trim() ) )
+                                            {
+                                                sendNotification = false;
+                                            }
+                                            break;
+                                        }
                                 }
                             }
                         }
 
-                        if ( sendNotification )
+                        if ( !sendNotification )
                         {
-                            Email.Send( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid(), recipients, string.Empty, string.Empty, false );
+                            break;
+                        }
+                    }
+                }
+
+                if ( sendNotification )
+                {
+                    // get email addresses to send to
+                    string emailAddressesList = globalAttributesCache.GetValue( "EmailExceptionsList" );
+                    if ( !string.IsNullOrWhiteSpace( emailAddressesList ) )
+                    {
+                        string[] emailAddresses = emailAddressesList.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+                        if ( emailAddresses.Length > 0 )
+                        {
+                            string siteName = "Rock";
+                            if ( siteId.HasValue )
+                            {
+                                var site = SiteCache.Read( siteId.Value );
+                                if ( site != null )
+                                {
+                                    siteName = site.Name;
+                                }
+                            }
+
+                            // setup merge codes for email
+                            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+                            mergeFields.Add( "ExceptionDetails", string.Format( "An error occurred{0} on the {1} site on page: <br>{2}<p>{3}</p>",
+                                person != null ? " for " + person.FullName : "", siteName, Context.Request.Url.OriginalString, FormatException( ex, "" ) ) );
+
+                            try
+                            {
+                                mergeFields.Add( "Exception", Hash.FromAnonymousObject( ex ) );
+                            }
+                            catch
+                            {
+                                // ignore
+                            }
+
+                            mergeFields.Add( "Person", person );
+                            var recipients = new List<RecipientData>();
+                            foreach ( string emailAddress in emailAddresses )
+                            {
+                                recipients.Add( new RecipientData( emailAddress, mergeFields ) );
+                            }
+
+                            if ( recipients.Any() )
+                            {
+                                Email.Send( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid(), recipients, string.Empty, string.Empty, false );
+                            }
                         }
                     }
                 }

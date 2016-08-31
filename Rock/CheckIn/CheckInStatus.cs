@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Web.Cache;
@@ -83,6 +84,55 @@ namespace Rock.CheckIn
             : base()
         {
             Families = new List<CheckInFamily>();
+        }
+
+        /// <summary>
+        /// Gets the families.
+        /// </summary>
+        /// <param name="selectedOnly">if set to <c>true</c> [selected only].</param>
+        /// <returns></returns>
+        public List<CheckInFamily> GetFamilies( bool selectedOnly )
+        {
+            if ( selectedOnly )
+            {
+                return Families.Where( f => f.Selected ).ToList();
+            }
+
+            return Families;
+        }
+
+        /// <summary>
+        /// Gets the current family.
+        /// </summary>
+        /// <value>
+        /// The current family.
+        /// </value>
+        public CheckInFamily CurrentFamily
+        {
+            get
+            {
+                return this.Families.FirstOrDefault( f => f.Selected );
+            }
+        }
+
+        /// <summary>
+        /// Gets the current person.
+        /// </summary>
+        /// <value>
+        /// The current person.
+        /// </value>
+        public CheckInPerson CurrentPerson
+        {
+            get
+            {
+                var family = CurrentFamily;
+                if ( family != null )
+                {
+                    return family.CurrentPerson;
+                }
+
+                return null;
+            }
         }
 
     }

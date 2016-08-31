@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Linq;
@@ -88,7 +89,24 @@ namespace Rock.Model
         /// <param name="campusIds">The campus ids. Include the keyword 'null' in the list to include CampusId is null</param>
         /// <param name="dataViewId">The data view identifier.</param>
         /// <returns></returns>
-        public IEnumerable<IChartData> GetChartData( ChartGroupBy groupBy = ChartGroupBy.Week, AttendanceGraphBy graphBy = AttendanceGraphBy.Total, DateTime? startDate = null, DateTime? endDate = null, string groupIds = null, string campusIds = null, int? dataViewId = null )
+        public IEnumerable<IChartData> GetChartData( ChartGroupBy groupBy, AttendanceGraphBy graphBy, DateTime? startDate, DateTime? endDate, string groupIds, string campusIds, int? dataViewId )
+        {
+            return GetChartData( groupBy, graphBy, startDate, endDate, groupIds, campusIds, dataViewId, null );
+        }
+
+        /// <summary>
+        /// Gets the chart data.
+        /// </summary>
+        /// <param name="groupBy">The group by.</param>
+        /// <param name="graphBy">The graph by.</param>
+        /// <param name="startDate">The start date.</param>
+        /// <param name="endDate">The end date.</param>
+        /// <param name="groupIds">The group ids.</param>
+        /// <param name="campusIds">The campus ids. Include the keyword 'null' in the list to include CampusId is null</param>
+        /// <param name="scheduleIds">The schedule ids.</param>
+        /// <param name="dataViewId">The data view identifier.</param>
+        /// <returns></returns>
+        public IEnumerable<IChartData> GetChartData( ChartGroupBy groupBy = ChartGroupBy.Week, AttendanceGraphBy graphBy = AttendanceGraphBy.Total, DateTime? startDate = null, DateTime? endDate = null, string groupIds = null, string campusIds = null, int? dataViewId = null, string scheduleIds = null )
         {
             var qryAttendance = Queryable().AsNoTracking()
                 .Where( a =>
@@ -135,8 +153,8 @@ namespace Rock.Model
                 qryAttendance = qryAttendance.Where( a => a.GroupId.HasValue && groupIdList.Contains( a.GroupId.Value ) );
             }
 
-            //// If campuses were included, filter attendances by those that have selected campuses
-            //// if 'null' is one of the campuses, treat that as a 'CampusId is Null'
+            // If campuses were included, filter attendances by those that have selected campuses
+            // if 'null' is one of the campuses, treat that as a 'CampusId is Null'
             var includeNullCampus = ( campusIds ?? "" ).Split( ',' ).ToList().Any( a => a.Equals( "null", StringComparison.OrdinalIgnoreCase ) );
             var campusIdList = ( campusIds ?? "" ).Split( ',' ).AsIntegerList();
 
@@ -162,6 +180,13 @@ namespace Rock.Model
                 qryAttendance = qryAttendance.Where( a => !a.CampusId.HasValue );
             }
 
+            // If schedules were included, filter attendances by those that have selected schedules
+            var scheduleIdList = ( scheduleIds ?? "" ).Split( ',' ).AsIntegerList();
+            scheduleIdList.Remove( 0 );
+            if ( scheduleIdList.Any() )
+            {
+                qryAttendance = qryAttendance.Where( a => a.ScheduleId.HasValue && scheduleIdList.Contains( a.ScheduleId.Value ) );
+            }
 
             var qryAttendanceWithSummaryDateTime = qryAttendance.GetAttendanceWithSummaryDateTime( groupBy );
 
@@ -200,7 +225,7 @@ namespace Rock.Model
                 {
                     DateTimeStamp = a.Key.SummaryDateTime.ToJavascriptMilliseconds(),
                     DateTime = a.Key.SummaryDateTime,
-                    SeriesId = "Total",
+                    SeriesName = "Total",
                     YValue = a.Count
                 } ).ToList();
             }
@@ -212,7 +237,7 @@ namespace Rock.Model
                 {
                     DateTimeStamp = a.Key.SummaryDateTime.ToJavascriptMilliseconds(),
                     DateTime = a.Key.SummaryDateTime,
-                    SeriesId = a.Key.Series.Name,
+                    SeriesName = a.Key.Series.Name,
                     YValue = a.Count
                 } ).ToList();
             }
@@ -224,7 +249,7 @@ namespace Rock.Model
                 {
                     DateTimeStamp = a.Key.SummaryDateTime.ToJavascriptMilliseconds(),
                     DateTime = a.Key.SummaryDateTime,
-                    SeriesId = a.Key.Series.Name,
+                    SeriesName = a.Key.Series.Name,
                     YValue = a.Count
                 } ).ToList();
             }
@@ -236,7 +261,7 @@ namespace Rock.Model
                 {
                     DateTimeStamp = a.Key.SummaryDateTime.ToJavascriptMilliseconds(),
                     DateTime = a.Key.SummaryDateTime,
-                    SeriesId = a.Key.Series.Name,
+                    SeriesName = a.Key.Series.Name,
                     YValue = a.Count
                 } ).ToList();
             }
@@ -248,12 +273,156 @@ namespace Rock.Model
                 {
                     DateTimeStamp = a.Key.SummaryDateTime.ToJavascriptMilliseconds(),
                     DateTime = a.Key.SummaryDateTime,
-                    SeriesId = a.Key.Series.Name,
+                    SeriesName = a.Key.Series.Name,
                     YValue = a.Count
                 } ).ToList();
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Gets the attendance analytics attendee dates.
+        /// </summary>
+        /// <param name="groupIds">The group ids.</param>
+        /// <param name="start">The start.</param>
+        /// <param name="end">The end.</param>
+        /// <param name="campusIds">The campus ids.</param>
+        /// <param name="includeNullCampusIds">The include null campus ids.</param>
+        /// <param name="scheduleIds">The schedule ids.</param>
+        /// <returns></returns>
+        public static DataSet GetAttendanceAnalyticsAttendeeDates( List<int> groupIds, DateTime? start, DateTime? end,
+            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds )
+        {
+            var parameters = GetAttendanceAnalyticsParameters( null, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds );
+            return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_AttendeeDates", System.Data.CommandType.StoredProcedure, parameters, 300 );
+        }
+
+        /// <summary>
+        /// Gets the attendance analytics attendee first dates.
+        /// </summary>
+        /// <param name="GroupTypeIds">The group type ids.</param>
+        /// <param name="groupIds">The group ids.</param>
+        /// <param name="start">The start.</param>
+        /// <param name="end">The end.</param>
+        /// <param name="campusIds">The campus ids.</param>
+        /// <param name="includeNullCampusIds">The include null campus ids.</param>
+        /// <param name="scheduleIds">The schedule ids.</param>
+        /// <returns></returns>
+        public static DataSet GetAttendanceAnalyticsAttendeeFirstDates( List<int> GroupTypeIds, List<int> groupIds, DateTime? start, DateTime? end,
+            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds )
+        {
+            var parameters = GetAttendanceAnalyticsParameters( GroupTypeIds, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds );
+            return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_AttendeeFirstDates", System.Data.CommandType.StoredProcedure, parameters, 300 );
+        }
+
+        /// <summary>
+        /// Gets the attendance analytics attendee last attendance.
+        /// </summary>
+        /// <param name="groupIds">The group ids.</param>
+        /// <param name="start">The start.</param>
+        /// <param name="end">The end.</param>
+        /// <param name="campusIds">The campus ids.</param>
+        /// <param name="includeNullCampusIds">The include null campus ids.</param>
+        /// <param name="scheduleIds">The schedule ids.</param>
+        /// <returns></returns>
+        public static DataSet GetAttendanceAnalyticsAttendeeLastAttendance( List<int> groupIds, DateTime? start, DateTime? end,
+            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds )
+        {
+            var parameters = GetAttendanceAnalyticsParameters( null, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds );
+            return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance", System.Data.CommandType.StoredProcedure, parameters, 300 );
+        }
+
+        /// <summary>
+        /// Gets the attendance analytics attendees.
+        /// </summary>
+        /// <param name="groupIds">The group ids.</param>
+        /// <param name="start">The start.</param>
+        /// <param name="end">The end.</param>
+        /// <param name="campusIds">The campus ids.</param>
+        /// <param name="includeNullCampusIds">The include null campus ids.</param>
+        /// <param name="scheduleIds">The schedule ids.</param>
+        /// <param name="IncludeParentsWithChild">The include parents with child.</param>
+        /// <param name="IncludeChildrenWithParents">The include children with parents.</param>
+        /// <returns></returns>
+        public static DataSet GetAttendanceAnalyticsAttendees( List<int> groupIds, DateTime? start, DateTime? end,
+            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds, bool? IncludeParentsWithChild, bool? IncludeChildrenWithParents )
+        {
+            var parameters = GetAttendanceAnalyticsParameters( null, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds, IncludeParentsWithChild, IncludeChildrenWithParents );
+            return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_Attendees", System.Data.CommandType.StoredProcedure, parameters, 300 );
+        }
+
+        /// <summary>
+        /// Gets the attendance analytics non attendees.
+        /// </summary>
+        /// <param name="GroupTypeIds">The group type ids.</param>
+        /// <param name="groupIds">The group ids.</param>
+        /// <param name="start">The start.</param>
+        /// <param name="end">The end.</param>
+        /// <param name="campusIds">The campus ids.</param>
+        /// <param name="includeNullCampusIds">The include null campus ids.</param>
+        /// <param name="scheduleIds">The schedule ids.</param>
+        /// <param name="IncludeParentsWithChild">The include parents with child.</param>
+        /// <param name="IncludeChildrenWithParents">The include children with parents.</param>
+        /// <returns></returns>
+        public static DataSet GetAttendanceAnalyticsNonAttendees( List<int> GroupTypeIds, List<int> groupIds, DateTime? start, DateTime? end,
+            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds, bool? IncludeParentsWithChild, bool? IncludeChildrenWithParents )
+        {
+            var parameters = GetAttendanceAnalyticsParameters( GroupTypeIds, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds, IncludeParentsWithChild, IncludeChildrenWithParents );
+            return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_NonAttendees", System.Data.CommandType.StoredProcedure, parameters, 300 );
+        }
+
+        private static Dictionary<string, object> GetAttendanceAnalyticsParameters( List<int> GroupTypeIds, List<int> groupIds, DateTime? start, DateTime? end,
+            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds, bool? IncludeParentsWithChild = null, bool? IncludeChildrenWithParents = null )
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+
+            if ( GroupTypeIds != null && GroupTypeIds.Any() )
+            {
+                parameters.Add( "GroupTypeIds", GroupTypeIds.AsDelimited( "," ) );
+            }
+
+            if ( groupIds != null && groupIds.Any() )
+            {
+                parameters.Add( "GroupIds", groupIds.AsDelimited( "," ) );
+            }
+
+            if ( start.HasValue )
+            {
+                parameters.Add( "StartDate", start.Value );
+            }
+
+            if ( end.HasValue )
+            {
+                parameters.Add( "EndDate", end.Value );
+            }
+
+            if ( campusIds != null )
+            {
+                parameters.Add( "CampusIds", campusIds.AsDelimited( "," ) );
+            }
+
+            if ( includeNullCampusIds.HasValue )
+            {
+                parameters.Add( "includeNullCampusIds", includeNullCampusIds.Value );
+            }
+
+            if ( scheduleIds != null )
+            {
+                parameters.Add( "ScheduleIds", scheduleIds.AsDelimited( "," ) );
+            }
+
+            if ( IncludeParentsWithChild.HasValue )
+            {
+                parameters.Add( "IncludeParentsWithChild", IncludeParentsWithChild.Value );
+            }
+
+            if ( IncludeChildrenWithParents.HasValue )
+            {
+                parameters.Add( "IncludeChildrenWithParents", IncludeChildrenWithParents.Value );
+            }
+
+            return parameters;
         }
 
         /// <summary>

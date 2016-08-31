@@ -1,11 +1,11 @@
-// <copyright>
-// Copyright 2013 by the Spark Development Network
+ï»¿// <copyright>
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -663,6 +663,16 @@ namespace Rock.Web.UI
                     slDebugTimings.AppendFormat( "GetCurrentPerson [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
                     stopwatchInitEvents.Restart();
                 }
+
+                // check that they aren't required to change their password
+                if ( user.IsPasswordChangeRequired == true && Site.ChangePasswordPageReference != null )
+                {
+                    // don't redirect if this is the change password page
+                    if ( Site.ChangePasswordPageReference.PageId != this.PageId )
+                    {
+                        Site.RedirectToChangePasswordPage( true, true );
+                    }
+                }
             }
 
             // If a PageInstance exists
@@ -680,7 +690,7 @@ namespace Rock.Web.UI
 
                 // check if page should have been loaded via ssl
                 Page.Trace.Warn( "Checking for SSL request" );
-                if ( !Request.IsSecureConnection && _pageCache.RequiresEncryption )
+                if ( !Request.IsSecureConnection && (_pageCache.RequiresEncryption || Site.RequiresEncryption) )
                 {
                     string redirectUrl = Request.Url.ToString().Replace( "http:", "https:" );
                     Response.Redirect( redirectUrl, false );
@@ -825,7 +835,9 @@ namespace Rock.Web.UI
 
                     // Create a javascript object to store information about the current page for client side scripts to use
                     Page.Trace.Warn( "Creating JS objects" );
-                    string script = string.Format( @"
+                    if ( !ClientScript.IsStartupScriptRegistered( "rock-js-object" ) )
+                    {
+                        string script = string.Format( @"
     Rock.settings.initialize({{ 
         siteId: {0},
         layoutId: {1},
@@ -833,8 +845,10 @@ namespace Rock.Web.UI
         layout: '{3}',
         baseUrl: '{4}' 
     }});",
-                        _pageCache.Layout.SiteId, _pageCache.LayoutId, _pageCache.Id, _pageCache.Layout.FileName, ResolveUrl( "~" ) );
-                    ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "rock-js-object", script, true );
+                            _pageCache.Layout.SiteId, _pageCache.LayoutId, _pageCache.Id, _pageCache.Layout.FileName, ResolveUrl( "~" ) );
+
+                        ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-js-object", script, true );
+                    }
 
                     AddTriggerPanel();
 
@@ -1126,11 +1140,39 @@ namespace Rock.Web.UI
                         Response.Cache.SetExpires( RockDateTime.Now.AddSeconds( _pageCache.OutputCacheDuration ) );
                         Response.Cache.SetValidUntilExpires( true );
                     }
+
+                    // create a page view transaction if enabled
+                    if ( !Page.IsPostBack && _pageCache != null )
+                    {
+                        if ( _pageCache.Layout.Site.EnablePageViews )
+                        {
+                            PageViewTransaction transaction = new PageViewTransaction();
+                            transaction.DateViewed = RockDateTime.Now;
+                            transaction.PageId = _pageCache.Id;
+                            transaction.SiteId = _pageCache.Layout.Site.Id;
+                            if ( CurrentPersonAlias != null )
+                            {
+                                transaction.PersonAliasId = CurrentPersonAlias.Id;
+                            }
+
+                            transaction.IPAddress = GetClientIpAddress();
+                            transaction.UserAgent = Request.UserAgent ?? "";
+                            transaction.Url = Request.Url.ToString();
+                            transaction.PageTitle = _pageCache.PageTitle;
+                            var sessionId = Session["RockSessionID"];
+                            if ( sessionId != null )
+                            {
+                                transaction.SessionId = sessionId.ToString();
+                            }
+
+                            RockQueue.TransactionQueue.Enqueue( transaction );
+                        }
+                    }
                 }
 
                 stopwatchInitEvents.Restart();
 
-                string pageTitle = BrowserTitle;
+                string pageTitle = BrowserTitle ?? string.Empty;
                 string siteTitle = _pageCache.Layout.Site.Name;
                 string seperator = pageTitle.Trim() != string.Empty && siteTitle.Trim() != string.Empty ? " | " : "";
 
@@ -1152,9 +1194,19 @@ namespace Rock.Web.UI
                     AddMetaTag( this.Page, metaTag );
                 }
 
+                if (!string.IsNullOrWhiteSpace( _pageCache.Layout.Site.PageHeaderContent ))
+                {
+                    Page.Header.Controls.Add( new LiteralControl( _pageCache.Layout.Site.PageHeaderContent ) );
+                }
+
                 if ( !string.IsNullOrWhiteSpace( _pageCache.HeaderContent ) )
                 {
                     Page.Header.Controls.Add( new LiteralControl( _pageCache.HeaderContent ) );
+                }
+
+                if ( !_pageCache.AllowIndexing || !_pageCache.Layout.Site.AllowIndexing )
+                {
+                    Page.Header.Controls.Add( new LiteralControl( "<meta name=\"robots\" content=\"noindex, nofollow\"/>" ) );
                 }
                 
                 if ( showDebugTimings )
@@ -1182,7 +1234,7 @@ namespace Rock.Web.UI
         {
             var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
             string keyParameter = string.IsNullOrWhiteSpace( googleAPIKey ) ? "" : string.Format( "key={0}&", googleAPIKey );
-            string scriptUrl = string.Format( "https://maps.googleapis.com/maps/api/js?{0}sensor=false&libraries=drawing,visualization", keyParameter );
+            string scriptUrl = string.Format( "https://maps.googleapis.com/maps/api/js?{0}libraries=drawing,visualization,geometry", keyParameter );
 
             // first, add it to the page to handle cases where the api is needed on first page load
             if ( this.Page != null && this.Page.Header != null )
@@ -1200,8 +1252,11 @@ namespace Rock.Web.UI
             }
 
             // also, do this in cases where the api is added on a postback, and the above didn't end up getting rendered
-            string script = string.Format( @"Rock.controls.util.loadGoogleMapsApi('{0}');", scriptUrl );
-            ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "googleMapsApiScript", script, true );
+            if ( !ClientScript.IsStartupScriptRegistered( "googleMapsApiScript" ) )
+            {
+                string script = string.Format( @"Rock.controls.util.loadGoogleMapsApi('{0}');", scriptUrl );
+                ClientScript.RegisterStartupScript( this.Page.GetType(), "googleMapsApiScript", script, true );
+            }
         }
 
         /// <summary>
@@ -1215,34 +1270,6 @@ namespace Rock.Web.UI
             base.OnLoad( e );
 
             Page.Header.DataBind();
-
-            // create a page view transaction if enabled
-            if ( !Page.IsPostBack && _pageCache != null )
-            {
-                if ( _pageCache.Layout.Site.EnablePageViews )
-                {
-                    PageViewTransaction transaction = new PageViewTransaction();
-                    transaction.DateViewed = RockDateTime.Now;
-                    transaction.PageId = _pageCache.Id;
-                    transaction.SiteId = _pageCache.Layout.Site.Id;
-                    if ( CurrentPersonAlias != null )
-                    {
-                        transaction.PersonAliasId = CurrentPersonAlias.Id;
-                    }
-
-                    transaction.IPAddress = Request.UserHostAddress;
-                    transaction.UserAgent = Request.UserAgent ?? "";
-                    transaction.Url = Request.Url.ToString();
-                    transaction.PageTitle = _pageCache.PageTitle;
-                    var sessionId = Session["RockSessionID"];
-                    if ( sessionId != null )
-                    {
-                        transaction.SessionId = sessionId.ToString();
-                    }
-
-                    RockQueue.TransactionQueue.Enqueue( transaction );
-                }
-            }
 
             try
             {
@@ -1290,7 +1317,18 @@ namespace Rock.Web.UI
                 }
 
                 phLoadStats.Controls.Add( new LiteralControl( string.Format(
-                    "<span>Page Load Time: {0:N2}s </span><span class='margin-l-lg'>Cache Hit Rate: {1:P2} </span>", tsDuration.TotalSeconds, hitPercent ) ) );
+                    "<span>Page Load Time: {0:N2}s </span><span class='margin-l-lg'>Cache Hit Rate: {1:P2} </span> <span class='margin-l-lg js-view-state-stats'></span> <span class='margin-l-lg js-html-size-stats'></span>", tsDuration.TotalSeconds, hitPercent ) ) );
+
+                if ( !ClientScript.IsStartupScriptRegistered( "rock-js-view-state-size" ) )
+                {
+                    string script = @"
+Sys.Application.add_load(function () {
+    $('.js-view-state-stats').html('ViewState Size: ' + ($('#__VIEWSTATE').val().length / 1024).toFixed(0) + ' KB');
+    $('.js-html-size-stats').html('Html Size: ' + ($('html').html().length / 1024).toFixed(0) + ' KB');
+});
+";
+                    ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-js-view-state-size", script, true );
+                }
             }
         }
 
@@ -1510,7 +1548,12 @@ namespace Rock.Web.UI
         public string ResolveRockUrlIncludeRoot( string url )
         {
             string virtualPath = this.ResolveRockUrl( url );
-            return string.Format( "{0}://{1}{2}", Context.Request.Url.Scheme, Context.Request.Url.Authority, virtualPath );
+            if ( Context.Request != null && Context.Request.Url != null )
+            {
+                return string.Format( "{0}://{1}{2}", Context.Request.Url.Scheme, Context.Request.Url.Authority, virtualPath );
+            }
+
+            return GlobalAttributesCache.Read().GetValue("PublicApplicationRoot").EnsureTrailingForwardslash() + virtualPath.RemoveLeadingForwardslash();
         }
 
         /// <summary>
@@ -1843,6 +1886,7 @@ namespace Rock.Web.UI
             modalBlockMove.Title = "Move Block";
             modalBlockMove.OnOkScript = "Rock.admin.pageAdmin.saveBlockMove();";
             this.Form.Controls.Add( modalBlockMove );
+            modalBlockMove.Visible = true;
 
             HtmlGenericControl fsZoneSelect = new HtmlGenericControl( "fieldset" );
             fsZoneSelect.ClientIDMode = ClientIDMode.Static;
@@ -2010,7 +2054,10 @@ namespace Rock.Web.UI
 
             foreach ( string param in Request.QueryString.Keys )
             {
-                parameters.Add( param, Request.QueryString[param] );
+                if ( param != null )
+                {
+                    parameters.Add( param, Request.QueryString[param] );
+                }
             }
 
             return parameters;
@@ -2257,7 +2304,7 @@ namespace Rock.Web.UI
                 if ( AddScriptTags )
                 {
                     l.Text = string.Format( @"
-    <script type=""text/javascript"">       
+    <script type=""text/javascript""> 
 {0}
     </script>
 
@@ -2270,6 +2317,67 @@ namespace Rock.Web.UI
 
                 header.Controls.Add( l );
             }
+        }
+
+        /// <summary>
+        /// Gets the client's ip address.
+        /// </summary>
+        /// <returns></returns>
+        public static string GetClientIpAddress()
+        {
+            string ipAddress = HttpContext.Current.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
+
+            if ( String.IsNullOrWhiteSpace( ipAddress ) )
+            {
+                ipAddress = HttpContext.Current.Request.ServerVariables["REMOTE_ADDR"];
+            }
+
+            if ( string.IsNullOrWhiteSpace( ipAddress ) )
+            {
+                ipAddress = HttpContext.Current.Request.UserHostAddress;
+            }
+
+            if ( string.IsNullOrWhiteSpace( ipAddress ) || ipAddress.Trim() == "::1" )
+            {
+                ipAddress = string.Empty;
+            }
+
+            if ( string.IsNullOrWhiteSpace( ipAddress ) )
+            {
+                string stringHostName = System.Net.Dns.GetHostName();
+                if ( !string.IsNullOrWhiteSpace( stringHostName ) )
+                {
+                    var ipHostEntries = System.Net.Dns.GetHostEntry( stringHostName );
+                    if ( ipHostEntries != null )
+                    {
+                        try
+                        {
+                            var arrIpAddress = ipHostEntries.AddressList.FirstOrDefault( i => !i.IsIPv6LinkLocal );
+                            if ( arrIpAddress != null )
+                            {
+                                ipAddress = arrIpAddress.ToString();
+                            }
+                        }
+                        catch
+                        {
+                            try
+                            {
+                                var arrIpAddress = System.Net.Dns.GetHostAddresses( stringHostName ).FirstOrDefault( i => !i.IsIPv6LinkLocal );
+                                if ( arrIpAddress != null )
+                                {
+                                    ipAddress = arrIpAddress.ToString();
+                                }
+                            }
+                            catch
+                            {
+                                ipAddress = "127.0.0.1";
+                            }
+                        }
+                    }
+                }
+            }
+
+            return ipAddress;
         }
 
         #region User Preferences

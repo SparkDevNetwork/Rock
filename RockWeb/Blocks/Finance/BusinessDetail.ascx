@@ -8,6 +8,7 @@
                 <div class="panel-heading">
                     <h1 class="panel-title"><i class="fa fa-briefcase"></i> <asp:Literal ID="lTitle" runat="server" /></h1>
                 </div>
+                <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
                 <div class="panel-body">
 
                      <div id="pnlEditDetails" runat="server">
@@ -26,7 +27,7 @@
 
                                 <Rock:DataTextBox ID="tbBusinessName" runat="server" Label="Name" SourceTypeName="Rock.Model.Person, Rock" PropertyName="FirstName" ValidationGroup="businessDetail" />
                             
-                                <Rock:AddressControl ID="acAddress" runat="server" UseStateAbbreviation="false" UseCountryAbbreviation="false" />
+                                <Rock:AddressControl ID="acAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" />
 
                                 <div class="row">
                                     <div class="col-sm-6">
@@ -35,7 +36,7 @@
                                     <div class="col-sm-6">
                                         <div class="row">
                                             <div class="col-xs-6">
-                                                <Rock:RockCheckBox ID="cbSms" runat="server" Text="Sms" Label="&nbsp;" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' />
+                                                <Rock:RockCheckBox ID="cbSms" runat="server" Text="SMS" Label="&nbsp;" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' />
                                             </div>
                                             <div class="col-xs-6">
                                                 <Rock:RockCheckBox ID="cbUnlisted" runat="server" Text="Unlisted" Label="&nbsp;" Checked='<%# (bool)Eval("IsUnlisted") %>' />
@@ -104,9 +105,7 @@
                 <Content>
                     <asp:HiddenField ID="hfModalOpen" runat="server" />
                     <asp:ValidationSummary ID="valSummaryAddContact" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="AddContact"/>
-                    <div class="row col-md-12">
-                        <Rock:PersonPicker ID="ppContact" runat="server" Label="Contact" Required="true" ValidationGroup="AddContact" />
-                    </div>
+                    <Rock:PersonPicker ID="ppContact" runat="server" Label="Contact" Required="true" ValidationGroup="AddContact" />
                 </Content>
             </Rock:ModalDialog>
         </asp:Panel>

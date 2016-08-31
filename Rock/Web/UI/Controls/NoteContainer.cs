@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -694,12 +694,16 @@ namespace Rock.Web.UI.Controls
                 _noteNew.CreatedByPhotoId = currentPerson.PhotoId;
                 _noteNew.CreatedByGender = currentPerson.Gender;
                 _noteNew.CreatedByName = currentPerson.FullName;
+                _noteNew.CreatedByPersonId = currentPerson.Id;
+                _noteNew.CreatedByAge = currentPerson.Age;
             }
             else
             {
                 _noteNew.CreatedByPhotoId = null;
                 _noteNew.CreatedByGender = Gender.Male;
                 _noteNew.CreatedByName = string.Empty;
+                _noteNew.CreatedByPersonId = null;
+                _noteNew.CreatedByAge = null;
             }
 
             _noteNew.EntityId = EntityId;
@@ -716,12 +720,12 @@ namespace Rock.Web.UI.Controls
 
                     if ( SortDirection == ListSortDirection.Descending )
                     {
-                        qry = qry.OrderByDescending( n => n.IsAlert )
+                        qry = qry.OrderByDescending( n => n.IsAlert == true )
                             .ThenByDescending( n => n.CreatedDateTime );
                     }
                     else
                     {
-                        qry = qry.OrderByDescending( n => n.IsAlert )
+                        qry = qry.OrderByDescending( n => n.IsAlert == true )
                             .ThenBy( n => n.CreatedDateTime );
                     }
 
@@ -745,7 +749,7 @@ namespace Rock.Web.UI.Controls
                             noteEditor.ID = string.Format( "note_{0}", note.Guid.ToString().Replace( "-", "_" ) );
                             noteEditor.Note = note;
                             noteEditor.IsPrivate = note.IsPrivateNote;
-                            noteEditor.CanEdit = NoteTypeCache.Read( note.NoteTypeId ).UserSelectable && note.IsAuthorized( Authorization.ADMINISTRATE, currentPerson );
+                            noteEditor.CanEdit = note.IsAuthorized( Authorization.ADMINISTRATE, currentPerson );
                             noteEditor.SaveButtonClick += note_Updated;
                             noteEditor.DeleteButtonClick += note_Updated;
                             Controls.Add( noteEditor );

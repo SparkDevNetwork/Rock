@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,6 +17,7 @@
 using System;
 using System.Text.RegularExpressions;
 using System.Web;
+using CommonMark;
 using HtmlAgilityPack;
 
 namespace Rock
@@ -95,6 +96,16 @@ namespace Rock
         }
 
         /// <summary>
+        /// URLs the encode.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string UrlEncode( this string str )
+        {
+            return Uri.EscapeDataString( str );
+        }
+
+        /// <summary>
         /// Sanitizes the HTML by removing tags.  If strict is true, all html tags will be removed, if false, only a blacklist of specific XSS dangerous tags and attribute values are removed.
         /// </summary>
         /// <param name="html">The HTML.</param>
@@ -144,7 +155,42 @@ namespace Rock
         /// <returns>true if valid email, false otherwise</returns>
         public static bool IsValidEmail( this string email )
         {
-            return Regex.IsMatch( email, @"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+" );
+            Match match = Regex.Match( email, @"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+" );
+            if ( !match.Success || match.Index != 0 )
+            {
+                return false;
+            }
+            return match.Length == email.Length;
+        }
+
+        /// <summary>
+        /// Convert strings within the text that appear to be http/ftp/https links into clickable html links
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <returns></returns>
+        public static string Linkify( this string text )
+        {
+            // from http://stackoverflow.com/a/4750468
+            var result = Regex.Replace( text,
+                @"((http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?)",
+                "<a target='_blank' href='$1'>$1</a>" );
+
+            return result;
+        }
+
+        /// <summary>
+        /// Uses the CommonMark Markdown library to convert Markdown into HTML
+        /// </summary>
+        /// <param name="markdown">The markdown.</param>
+        /// <param name="renderSoftLineBreaksAsLineBreaks">if set to <c>true</c> [render soft line breaks as line breaks].</param>
+        /// <returns></returns>
+        public static string ConvertMarkdownToHtml( this string markdown, bool renderSoftLineBreaksAsLineBreaks = false )
+        {
+            // convert any Markdown into HTML
+            var settings = CommonMark.CommonMarkSettings.Default.Clone();
+            settings.RenderSoftLineBreaksAsLineBreaks = renderSoftLineBreaksAsLineBreaks;
+
+            return CommonMark.CommonMarkConverter.Convert( markdown, settings );
         }
     }
 }

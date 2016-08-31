@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -316,7 +316,7 @@ namespace RockWeb.Blocks.Event
                     History.EvaluateChange( changes, "First Name", registration.FirstName, tbFirstName.Text );
                     registration.FirstName = tbFirstName.Text;
 
-                    History.EvaluateChange( changes, "Last Name", registration.FirstName, tbLastName.Text );
+                    History.EvaluateChange( changes, "Last Name", registration.LastName, tbLastName.Text );
                     registration.LastName = tbLastName.Text;
 
                     History.EvaluateChange( changes, "Confirmation Email", registration.ConfirmationEmail, ebConfirmationEmail.Text );
@@ -499,32 +499,47 @@ namespace RockWeb.Blocks.Event
                 // add current registration instance name
                 lCurrentRegistrationInstance.Text = Registration.RegistrationInstance.Name;
 
-                // list other registration instances
-                using ( var rockContext = new RockContext() )
-                {
-                    var otherRegistrationInstances = new RegistrationInstanceService( rockContext ).Queryable()
-                            .Where( i =>
-                                i.RegistrationTemplateId == Registration.RegistrationInstance.RegistrationTemplateId
-                                && i.IsActive == true
-                                && i.Id != Registration.RegistrationInstanceId
-                                && (i.EndDateTime >= RockDateTime.Now || i.EndDateTime == null) )
-                            .Select( i => new
-                            {
-                                Value = i.Id,
-                                Text = i.Name
-                            } )
-                            .ToList();
-                    ddlNewRegistrationInstance.DataValueField = "Value";
-                    ddlNewRegistrationInstance.DataTextField = "Text";
-                    ddlNewRegistrationInstance.DataSource = otherRegistrationInstances;
-                    ddlNewRegistrationInstance.DataBind();
+                BindOtherInstances();
 
-                    ddlNewRegistrationInstance.Items.Insert( 0, new ListItem( String.Empty, String.Empty ) );
-                    ddlNewRegistrationInstance.SelectedIndex = 0;
-
-                }
                 mdMoveRegistration.Show();
             }
+        }
+
+        protected void cbShowAll_CheckedChanged( object sender, EventArgs e )
+        {
+            BindOtherInstances();
+        }
+
+
+        protected void ddlNewRegistrationInstance_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            ddlMoveGroup.Items.Clear();
+
+            int? instanceId = ddlNewRegistrationInstance.SelectedValueAsInt();
+            if ( instanceId.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var instance = new RegistrationInstanceService( rockContext ).Get( instanceId.Value );
+                    if ( instance != null )
+                    {
+                        var groups = instance.Linkages
+                            .Where( l => l.Group != null )
+                            .Select( l => new
+                            {
+                                Value = l.Group.Id,
+                                Text = l.Group.Name
+                            } )
+                            .ToList();
+
+                        ddlMoveGroup.DataSource = groups;
+                        ddlMoveGroup.DataBind();
+                        ddlMoveGroup.Items.Insert( 0, new ListItem( String.Empty, String.Empty ) );
+                    }
+                }
+            }
+
+            ddlMoveGroup.Visible = ddlMoveGroup.Items.Count > 0;
         }
 
         protected void btnMoveRegistration_Click( object sender, EventArgs e )
@@ -533,17 +548,97 @@ namespace RockWeb.Blocks.Event
             using ( var rockContext = new RockContext() )
             {
                 var registrationService = new RegistrationService( rockContext );
+                var groupMemberService = new GroupMemberService( rockContext );
 
                 var registration = registrationService.Get( Registration.Id );
                 registration.RegistrationInstanceId = ddlNewRegistrationInstance.SelectedValue.AsInteger();
-                rockContext.SaveChanges();
+
+                // Move registrants to new group
+                int? groupId = ddlMoveGroup.SelectedValueAsInt();
+                if ( groupId.HasValue )
+                {
+                    registration.GroupId = groupId;
+                    rockContext.SaveChanges();
+
+                    var group = new GroupService( rockContext ).Get( groupId.Value );
+                    if ( group != null )
+                    {
+                        int? groupRoleId = null;
+                        var template = registration.RegistrationInstance.RegistrationTemplate;
+                        if ( group.GroupTypeId == template.GroupTypeId && template.GroupMemberRoleId.HasValue )
+                        {
+                            groupRoleId = template.GroupMemberRoleId.Value;
+                        }
+                        if ( !groupRoleId.HasValue )
+                        {
+                            groupRoleId = group.GroupType.DefaultGroupRoleId;
+                        }
+                        if ( !groupRoleId.HasValue )
+                        {
+                            groupRoleId = group.GroupType.Roles.OrderBy( r => r.Order ).Select( r => r.Id ).FirstOrDefault();
+                        }
+
+                        if ( groupRoleId.HasValue )
+                        {
+                            foreach ( var registrant in registration.Registrants.Where( r => r.PersonAlias != null ) )
+                            {
+                                var newGroupMembers = groupMemberService.GetByGroupIdAndPersonId( groupId.Value, registrant.PersonAlias.PersonId );
+                                if ( !newGroupMembers.Any() )
+                                {
+                                    // Get any existing group member attribute values
+                                    var existingAttributeValues = new Dictionary<string, string>();
+                                    if ( registrant.GroupMemberId.HasValue )
+                                    {
+                                        var existingGroupMember = groupMemberService.Get( registrant.GroupMemberId.Value );
+                                        if ( existingGroupMember != null )
+                                        {
+                                            existingGroupMember.LoadAttributes( rockContext );
+                                            foreach ( var attributeValue in existingGroupMember.AttributeValues )
+                                            {
+                                                existingAttributeValues.Add( attributeValue.Key, attributeValue.Value.Value );
+                                            }
+                                        }
+
+                                        registrant.GroupMember = null;
+                                        groupMemberService.Delete( existingGroupMember );
+                                    }
+
+
+                                    var newGroupMember = new GroupMember();
+                                    groupMemberService.Add( newGroupMember );
+                                    newGroupMember.Group = group;
+                                    newGroupMember.PersonId = registrant.PersonAlias.PersonId;
+                                    newGroupMember.GroupRoleId = groupRoleId.Value;
+                                    rockContext.SaveChanges();
+
+                                    newGroupMember = groupMemberService.Get( newGroupMember.Id );
+                                    newGroupMember.LoadAttributes();
+
+                                    foreach( var attr in newGroupMember.Attributes )
+                                    {
+                                        if ( existingAttributeValues.ContainsKey( attr.Key ) )
+                                        {
+                                            newGroupMember.SetAttributeValue( attr.Key, existingAttributeValues[attr.Key] );
+                                        }
+                                    }
+                                    newGroupMember.SaveAttributeValues( rockContext );
+
+                                    registrant.GroupMember = newGroupMember;
+                                    rockContext.SaveChanges();
+
+                                }
+                            }
+                        }
+                    }
+                }
 
                 // Reload registration
                 Registration = GetRegistration( Registration.Id );
 
                 lWizardInstanceName.Text = Registration.RegistrationInstance.Name;
+                ShowReadonlyDetails( Registration );
             }
-            
+
             mdMoveRegistration.Hide();
         }
 
@@ -615,6 +710,19 @@ namespace RockWeb.Blocks.Event
                 confirmation.ThemeRoot = themeRoot;
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( confirmation );
 
+                var changes = new List<string>();
+                changes.Add( "Resent Confirmation" );
+                using ( var rockContext = new RockContext() )
+                {
+                    HistoryService.SaveChanges(
+                        rockContext,
+                        typeof( Registration ),
+                        Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
+                        RegistrationId.Value,
+                        changes
+                    );
+                }
+
                 nbConfirmationQueued.Visible = true;
             }
         }
@@ -631,6 +739,15 @@ namespace RockWeb.Blocks.Event
         {
             if ( Registration != null )
             {
+                if ( Registration.PersonAlias != null && Registration.PersonAlias.Person != null )
+                {
+                    ppPayee.SetValue( Registration.PersonAlias.Person );
+                }
+                else
+                {
+                    ppPayee.SetValue( null );
+                }
+
                 using ( var rockContext = new RockContext() )
                 {
                     ddlCurrencyType.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid(), rockContext ), true );
@@ -675,12 +792,22 @@ namespace RockWeb.Blocks.Event
                     if ( Registration.PersonAlias != null && Registration.PersonAlias.Person != null )
                     {
                         var person = Registration.PersonAlias.Person;
+
+                        ppPayee.SetValue( person );
                         txtCardFirstName.Text = person.FirstName;
                         txtCardLastName.Text = person.LastName;
                         txtCardName.Text = person.FullName;
 
                         var location = person.GetHomeLocation();
                         acBillingAddress.SetValues( location );
+                    }
+                    else
+                    {
+                        ppPayee.SetValue( null );
+                        txtCardFirstName.Text = string.Empty;
+                        txtCardLastName.Text = string.Empty;
+                        txtCardName.Text = string.Empty;
+                        acBillingAddress.SetValues( null );
                     }
 
                     pnlCosts.Visible = false;
@@ -695,16 +822,23 @@ namespace RockWeb.Blocks.Event
 
         protected void lbSubmitPayment_Click( object sender, EventArgs e )
         {
+            int? personAliasId = ppPayee.PersonAliasId;
+
             decimal pmtAmount = cbPaymentAmount.Text.AsDecimal();
             if ( Registration != null && Registration.BalanceDue >= pmtAmount && pmtAmount > 0 )
             {
+                if ( !personAliasId.HasValue && Registration.PersonAliasId.HasValue )
+                {
+                    personAliasId = Registration.PersonAliasId;
+                }
+
                 try
                 {
                     var rockContext = new RockContext();
                     rockContext.WrapTransaction( () =>
                     {
                         string errorMessage = string.Empty;
-                        if ( !ProcessPayment( phCCDetails.Visible, rockContext, Registration, pmtAmount, out errorMessage ) )
+                        if ( !ProcessPayment( phCCDetails.Visible, rockContext, Registration, personAliasId, pmtAmount, out errorMessage ) )
                         {
                             throw new Exception( errorMessage );
                         }
@@ -834,6 +968,74 @@ namespace RockWeb.Blocks.Event
                     }
                 }
             }
+        }
+
+        private void lbResendDocumentRequest_Click( object sender, EventArgs e )
+        {
+            var lb = sender as LinkButton;
+            if ( lb != null )
+            {
+                int? registrantId = lb.ID.Substring( 24 ).AsIntegerOrNull();
+                if ( registrantId.HasValue )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var registrant = new RegistrationRegistrantService( rockContext ).Get( registrantId.Value );
+                        if ( registrant != null && 
+                            registrant.PersonAlias != null &&
+                            registrant.PersonAlias.Person != null &&
+                            Registration != null && 
+                            Registration.RegistrationInstance != null &&
+                            Registration.RegistrationInstance.RegistrationTemplate != null )
+                        {
+                            var assignedTo = registrant.PersonAlias.Person;
+                            string email = Registration.ConfirmationEmail;
+                            if ( string.IsNullOrWhiteSpace( email ) && Registration.PersonAlias != null && Registration.PersonAlias.Person != null )
+                            {
+                                email = Registration.PersonAlias.Person.Email;
+                            }
+
+                            Guid? adultRole = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
+                            var registrantIsAdult = adultRole.HasValue && new GroupMemberService( rockContext )
+                                .Queryable().AsNoTracking()
+                                .Any( m =>
+                                    m.PersonId == registrant.PersonId &&
+                                    m.GroupRole.Guid.Equals( adultRole.Value ) );
+                            if ( !registrantIsAdult && Registration.PersonAlias != null && Registration.PersonAlias.Person != null )
+                            {
+                                assignedTo = Registration.PersonAlias.Person;
+                            }
+                            else
+                            {
+                                if ( !string.IsNullOrWhiteSpace( registrant.PersonAlias.Person.Email ) )
+                                {
+                                    email = registrant.PersonAlias.Person.Email;
+                                }
+                            }
+
+                            var sendErrorMessages = new List<string>();
+                            if ( new SignatureDocumentTemplateService( rockContext ).SendDocument(
+                                Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplate,
+                                registrant.PersonAlias.Person, 
+                                assignedTo,
+                                Registration.RegistrationInstance.Name,
+                                email,
+                                out sendErrorMessages ) )
+                            {
+                                rockContext.SaveChanges();
+                                maSignatureRequestSent.Show( "A Signature Request Has Been Sent.", Rock.Web.UI.Controls.ModalAlertType.Information );
+                            }
+                            else
+                            {
+                                string errorMessage = string.Format( "Unable to send a signature request: <ul><li>{0}</li></ul>", sendErrorMessages.AsDelimited( "</li><li>" ) );
+                                maSignatureRequestSent.Show( errorMessage, Rock.Web.UI.Controls.ModalAlertType.Alert );
+                            }
+                        }
+                    }
+                }
+            }
+
+            ShowReadonlyDetails( GetRegistration( RegistrationId ) );
         }
 
         void lbEditRegistrant_Click( object sender, EventArgs e )
@@ -998,7 +1200,7 @@ namespace RockWeb.Blocks.Event
                 rockContext = rockContext ?? new RockContext();
 
                 var registration = new RegistrationService( rockContext )
-                    .Queryable( "RegistrationInstance.RegistrationTemplate.Forms.Fields,PersonAlias.Person,Group,Registrants.Fees" ).AsNoTracking()
+                    .Queryable( "RegistrationInstance.RegistrationTemplate.Forms.Fields,PersonAlias.Person,Group,Registrants.Fees" )
                     .Where( r => r.Id == registrationId.Value )
                     .FirstOrDefault();
 
@@ -1197,8 +1399,35 @@ namespace RockWeb.Blocks.Event
             RegistrantsState = new List<RegistrantInfo>();
             registration.Registrants.ToList().ForEach( r => RegistrantsState.Add( new RegistrantInfo( r, rockContext ) ) );
 
+            if ( registration.RegistrationInstance != null && 
+                registration.RegistrationInstance.RegistrationTemplate != null &&
+                registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue )
+            {
+                var personIds = RegistrantsState.Select( r => r.PersonId ).ToList();
+                var documents = new SignatureDocumentService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( d =>
+                        d.SignatureDocumentTemplateId == registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value &&
+                        d.Status == SignatureDocumentStatus.Signed &&
+                        d.BinaryFileId.HasValue &&
+                        d.AppliesToPersonAlias != null && personIds.Contains( d.AppliesToPersonAlias.PersonId ) )
+                    .OrderByDescending( d => d.LastStatusDate )
+                    .ToList();
+
+                foreach( var registrantInfo in RegistrantsState )
+                {
+                    var document = documents.Where( d => d.AppliesToPersonAlias.PersonId == registrantInfo.PersonId ).FirstOrDefault();
+                    registrantInfo.SignatureDocumentId = document != null ? document.BinaryFileId : (int?)null;
+                    registrantInfo.SignatureDocumentLastSent = document != null ? document.LastInviteDate : (DateTime?)null;
+                }
+            }
+
             PercentageDiscountExists = registration.DiscountPercentage > 0.0m;
             BuildFeeTable( registration );
+
+            pnlPaymentDetails.Visible = false;
+            pnlPaymentInfo.Visible = false;
+            
             BuildRegistrationControls( true );
 
             bool anyPayments = registration.Payments.Any();
@@ -1291,16 +1520,21 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// Processes the payment.
         /// </summary>
+        /// <param name="submitToGateway">if set to <c>true</c> [submit to gateway].</param>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="registration">The registration.</param>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="amount">The amount.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        private bool ProcessPayment( bool submitToGateway, RockContext rockContext, Registration registration, decimal amount, out string errorMessage )
+        private bool ProcessPayment( bool submitToGateway, RockContext rockContext, Registration registration, int? personAliasId, decimal amount, out string errorMessage )
         {
             FinancialTransaction transaction = null;
 
             var txnChanges = new List<string>();
             txnChanges.Add( "Created Transaction" );
+
+            var registrationChanges = new List<string>();
 
             DefinedValueCache dvCurrencyType = null;
             DefinedValueCache dvCredCardType = null;
@@ -1356,6 +1590,8 @@ namespace RockWeb.Blocks.Event
 
                     dvCurrencyType = paymentInfo.CurrencyTypeValue;
                     dvCredCardType = paymentInfo.CreditCardTypeValue;
+
+                    registrationChanges.Add( string.Format( "Processed payment of {0}.", amount.FormatAsCurrency() ) );
                 }
             }
             else
@@ -1366,15 +1602,17 @@ namespace RockWeb.Blocks.Event
                 transaction.FinancialPaymentDetail.CurrencyTypeValueId = ddlCurrencyType.SelectedValueAsInt();
                 transaction.FinancialPaymentDetail.CreditCardTypeValueId = ddlCreditCardType.SelectedValueAsInt();
                 transaction.TransactionCode = tbTransactionCode.Text;
-            }
 
-            transaction.Summary = tbSummary.Text;
+                registrationChanges.Add( string.Format( "Manually added payment of {0}.", amount.FormatAsCurrency() ) );
+            }
 
             if ( transaction != null )
             {
+                transaction.Summary = tbSummary.Text;
+                
                 History.EvaluateChange( txnChanges, "Transaction Code", string.Empty, transaction.TransactionCode );
 
-                transaction.AuthorizedPersonAliasId = registration.PersonAliasId;
+                transaction.AuthorizedPersonAliasId = personAliasId;
 
                 transaction.TransactionDateTime = RockDateTime.Now;
                 History.EvaluateChange( txnChanges, "Date/Time", null, transaction.TransactionDateTime );
@@ -1410,9 +1648,20 @@ namespace RockWeb.Blocks.Event
 
                 var batchService = new FinancialBatchService( rockContext );
 
+                // determine batch prefix
+                string batchPrefix = string.Empty;
+                if ( !string.IsNullOrWhiteSpace( RegistrationTemplateState.BatchNamePrefix ) )
+                {
+                    batchPrefix = RegistrationTemplateState.BatchNamePrefix;
+                }
+                else
+                {
+                    batchPrefix = GetAttributeValue( "BatchNamePrefix" );
+                }
+
                 // Get the batch
                 var batch = batchService.Get(
-                    GetAttributeValue( "BatchNamePrefix" ),
+                    batchPrefix,
                     dvCurrencyType,
                     dvCredCardType,
                     transaction.TransactionDateTime.Value,
@@ -1457,6 +1706,14 @@ namespace RockWeb.Blocks.Event
                     transaction.Id
                 );
 
+                HistoryService.SaveChanges(
+                    rockContext,
+                    typeof( Registration ),
+                    Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
+                    registration.Id,
+                    registrationChanges
+                );
+                    
                 return true;
             }
             else
@@ -1556,6 +1813,46 @@ namespace RockWeb.Blocks.Event
             else
             {
                 return formattedDetails;
+            }
+        }
+
+        #endregion
+
+        #region Registration Detail Methods
+
+        private void BindOtherInstances()
+        {
+            int? currentValue = ddlNewRegistrationInstance.SelectedValueAsInt();
+
+            // list other registration instances
+            using ( var rockContext = new RockContext() )
+            {
+                var otherRegistrationInstances = new RegistrationInstanceService( rockContext ).Queryable()
+                        .Where( i =>
+                            i.RegistrationTemplateId == Registration.RegistrationInstance.RegistrationTemplateId
+                            && i.Id != Registration.RegistrationInstanceId );
+
+                if ( !cbShowAll.Checked )
+                {
+                    otherRegistrationInstances = otherRegistrationInstances
+                        .Where( i =>
+                            i.IsActive == true
+                            && ( i.EndDateTime >= RockDateTime.Now || i.EndDateTime == null ) );
+                }
+
+                var instances = otherRegistrationInstances
+                        .Select( i => new
+                            {
+                                Value = i.Id,
+                                Text = i.Name
+                            } )
+                        .ToList();
+
+                ddlNewRegistrationInstance.DataSource = instances;
+                ddlNewRegistrationInstance.DataBind();
+
+                ddlNewRegistrationInstance.Items.Insert( 0, new ListItem( String.Empty, String.Empty ) );
+                ddlNewRegistrationInstance.SetValue( currentValue );
             }
         }
 
@@ -1748,17 +2045,67 @@ namespace RockWeb.Blocks.Event
             divBody.AddCssClass( "panel-body" );
             divPanel.Controls.Add( divBody );
 
+            SignatureDocumentTemplate documentTemplate = null;
+
+            if ( Registration != null &&
+                Registration.RegistrationInstance != null &&
+                Registration.RegistrationInstance.RegistrationTemplate != null &&
+                Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplate != null )
+            {
+                documentTemplate = Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplate;
+            }
+
+            if ( documentTemplate != null && !registrant.SignatureDocumentId.HasValue )
+            {
+                var template = Registration.RegistrationInstance.RegistrationTemplate;
+                var divSigAlert = new HtmlGenericControl( "div" );
+                divSigAlert.AddCssClass( "alert alert-warning" );
+                divBody.Controls.Add( divSigAlert );
+
+                StringBuilder sb = new StringBuilder();
+                sb.Append( "<div class='row'><div class='col-md-9'>" );
+
+                sb.AppendFormat(
+                    "There is not a signed {0} for {1}",
+                    template.RequiredSignatureDocumentTemplate.Name,
+                    registrant.GetFirstName( template ) );
+
+                if ( registrant.SignatureDocumentLastSent.HasValue )
+                {
+                    sb.AppendFormat(
+                        " (a request was sent {0})",
+                        registrant.SignatureDocumentLastSent.Value.ToElapsedString() );
+                }
+                sb.Append( ".</div>" );
+
+                divSigAlert.Controls.Add( new LiteralControl( sb.ToString() ) );
+
+                var divSigAction = new HtmlGenericControl( "div" );
+                divSigAction.AddCssClass( "col-md-3 text-right" );
+                divSigAlert.Controls.Add( divSigAction );
+
+                var lbResendDocumentRequest = new LinkButton();
+                lbResendDocumentRequest.CausesValidation = false;
+                lbResendDocumentRequest.ID = string.Format( "lbResendDocumentRequest_{0}", registrant.Id );
+                lbResendDocumentRequest.Text = registrant.SignatureDocumentLastSent.HasValue ? "Resend Signature Request" : "Send Signature Request";
+                lbResendDocumentRequest.CssClass = "btn btn-warning btn-sm";
+                lbResendDocumentRequest.Click += lbResendDocumentRequest_Click;
+                divSigAction.Controls.Add( lbResendDocumentRequest );
+
+                divSigAlert.Controls.Add( new LiteralControl( "</div>" ) );
+            }
+
             var divRow = new HtmlGenericControl( "div" );
             divRow.AddCssClass( "row" );
             divBody.Controls.Add( divRow );
 
-            var divFields = new HtmlGenericControl( "div" );
-            divFields.AddCssClass( "col-md-6");
-            divRow.Controls.Add( divFields );
+            var divLeftColumn = new HtmlGenericControl( "div" );
+            divLeftColumn.AddCssClass( "col-md-6");
+            divRow.Controls.Add( divLeftColumn );
 
-            var divFees = new HtmlGenericControl( "div" );
-            divFees.AddCssClass( "col-md-6");
-            divRow.Controls.Add( divFees );
+            var divRightColumn = new HtmlGenericControl( "div" );
+            divRightColumn.AddCssClass( "col-md-6");
+            divRow.Controls.Add( divRightColumn );
 
             if ( RegistrationTemplateState != null &&
                 RegistrationTemplateState.GroupTypeId.HasValue &&
@@ -1770,7 +2117,7 @@ namespace RockWeb.Blocks.Event
                 {
                     var rcwGroupMember = new RockControlWrapper();
                     rcwGroupMember.ID = string.Format( "rcwGroupMember_{0}", registrant.Id );
-                    divFields.Controls.Add( rcwGroupMember );
+                    divLeftColumn.Controls.Add( rcwGroupMember );
                     rcwGroupMember.Label = "Group";
 
                     var pGroupMember = new HtmlGenericControl( "p" );
@@ -1804,14 +2151,14 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
-            foreach( var form in RegistrationTemplateState.Forms )
+            foreach( var form in RegistrationTemplateState.Forms.OrderBy( f => f.Order ) )
             {
-                foreach( var field in form.Fields )
+                foreach( var field in form.Fields.OrderBy( f => f.Order ) )
                 {
                     var fieldControl = BuildRegistrantFieldControl( field, registrant, setValues );
                     if ( fieldControl != null )
                     {
-                        divFields.Controls.Add( fieldControl );
+                        divLeftColumn.Controls.Add( fieldControl );
                     }
                 }
             }
@@ -1822,7 +2169,7 @@ namespace RockWeb.Blocks.Event
                 rlCost.ID = string.Format( "rlCost_{0}", registrant.Id );
                 rlCost.Label = "Cost";
                 rlCost.Text = registrant.Cost.FormatAsCurrency();
-                divFees.Controls.Add( rlCost );
+                divRightColumn.Controls.Add( rlCost );
             }
 
             foreach ( var fee in registrant.FeeValues )
@@ -1835,12 +2182,21 @@ namespace RockWeb.Blocks.Event
                         var feeControl = BuildRegistrantFeeControl( templateFee, feeInfo, registrant, setValues );
                         if ( feeControl != null )
                         {
-                            divFees.Controls.Add( feeControl );
+                            divRightColumn.Controls.Add( feeControl );
                         }
                     }
                 }
             }
 
+            if ( documentTemplate != null && registrant.SignatureDocumentId.HasValue )
+            {
+                var rlDocumentLink = new RockLiteral();
+                rlDocumentLink.ID = string.Format( "rlDocumentLink_{0}", registrant.Id );
+                rlDocumentLink.Label = documentTemplate.Name;
+                rlDocumentLink.Text = string.Format( "<a href='{0}?id={1}' target='_blank'>View Document</a>",
+                    ResolveRockUrl( "~/GetFile.ashx" ), registrant.SignatureDocumentId.Value );
+                divRightColumn.Controls.Add( rlDocumentLink );
+            }
 
             var divActions = new HtmlGenericControl( "Div" );
             divActions.AddCssClass( "actions" );
@@ -1908,7 +2264,7 @@ namespace RockWeb.Blocks.Event
             object fieldValue = null;
             if ( registrant != null && registrant.FieldValues != null && registrant.FieldValues.ContainsKey( field.Id ) )
             {
-                fieldValue = registrant.FieldValues[field.Id];
+                fieldValue = registrant.FieldValues[field.Id].FieldValue;
             }
 
             if ( fieldValue != null )
@@ -1931,7 +2287,7 @@ namespace RockWeb.Blocks.Event
 
                         case RegistrationPersonFieldType.Address:
                             {
-                                var location = fieldValue.ToString().FromJsonOrNull<Location>();
+                                var location = fieldValue.ToString();
                                 rlField.Text = location != null ? location.ToString() : string.Empty;
                                 break;
                             }
@@ -1946,6 +2302,13 @@ namespace RockWeb.Blocks.Event
                             {
                                 var birthDate = fieldValue as DateTime?;
                                 rlField.Text = birthDate != null ? birthDate.Value.ToShortDateString() : string.Empty;
+                                break;
+                            }
+
+                        case RegistrationPersonFieldType.Grade:
+                            {
+                                int? graduationYear = fieldValue.ToString().AsIntegerOrNull();
+                                rlField.Text = Person.GradeFormattedFromGraduationYear( graduationYear );
                                 break;
                             }
 
@@ -2001,5 +2364,6 @@ namespace RockWeb.Blocks.Event
         #endregion
 
         #endregion
+
     }
 }

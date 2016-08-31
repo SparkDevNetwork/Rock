@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -85,7 +85,7 @@ namespace Rock.Web.Cache
         public string Value { get; set; }
 
         /// <summary>
-        /// Gets the field type value.
+        /// Gets the value using the most appropriate datatype
         /// </summary>
         /// <value>
         /// The field type value.
@@ -99,6 +99,26 @@ namespace Rock.Web.Cache
                 {
                     return attribute.FieldType.Field.ValueAsFieldType( null, Value, attribute.QualifierValues );
                 }
+                return Value;
+            }
+        }
+
+        /// <summary>
+        /// Get the value that should be used for sorting, using the most appropriate datatype
+        /// </summary>
+        /// <value>
+        /// The field type value.
+        /// </value>
+        public object SortValue
+        {
+            get
+            {
+                var attribute = AttributeCache.Read( this.AttributeId );
+                if ( attribute != null )
+                {
+                    return attribute.FieldType.Field.SortValue( null, Value, attribute.QualifierValues );
+                }
+
                 return Value;
             }
         }
@@ -169,6 +189,17 @@ namespace Rock.Web.Cache
                 }
                 return Value;
             }
+        }
+
+        /// <summary>
+        /// Returns the Formatted Value of this Attribute Value
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.ValueFormatted;
         }
 
         #endregion

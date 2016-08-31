@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -105,21 +105,9 @@ namespace Rock.PersonProfile
         /// <summary>
         /// Initializes a new instance of the <see cref="BadgeComponent" /> class.
         /// </summary>
-        public BadgeComponent()
+        public BadgeComponent() : base( false )
         {
             // Override default constructor of Component that loads attributes (needs to be done by each instance)
-        }
-
-        /// <summary>
-        /// Loads the attributes.
-        /// </summary>
-        /// <exception cref="System.Exception">Person Badge attributes are saved specific to the current badge, which requires that the current badge is included in order to load or retrieve values.  Use the LoadAttributes( PersonBadge badge ) method instead.</exception>
-        [Obsolete( "Use LoadAttributes( PersonBadge badge ) instead", true )]
-        public void LoadAttributes()
-        {
-            // Compiler should generate error if referencing this method, so exception should never be thrown
-            // but method is needed to "override" the extension method for IHasAttributes objects
-            throw new Exception( "Person Badge attributes are saved specific to the current badge, which requires that the current badge is included in order to load or retrieve values.  Use the LoadAttributes( PersonBadge badge ) method instead." );
         }
 
         /// <summary>

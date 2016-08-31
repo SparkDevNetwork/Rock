@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -36,15 +36,15 @@ namespace RockWeb.Blocks.Core
 
     [LinkedPage( "Detail Page" )]
     [EntityTypeField( "Entity Type", "Display categories associated with this type of entity" )]
-    [TextField( "Entity Type Friendly Name", "The text to show for the entity type name. Leave blank to get it from the specified Entity Type" )]
+    [TextField( "Entity Type Friendly Name", "The text to show for the entity type name. Leave blank to get it from the specified Entity Type", false )]
     [TextField( "Entity Type Qualifier Property", "", false )]
     [TextField( "Entity type Qualifier Value", "", false )]
     [BooleanField( "Show Unnamed Entity Items", "Set to false to hide any EntityType items that have a blank name.", true )]
     [TextField( "Page Parameter Key", "The page parameter to look for" )]
     [TextField("Default Icon CSS Class", "The icon CSS class to use when the treeview displays items that do not have an IconCSSClass property", false, "fa fa-list-ol" )]
 
-    [CategoryField( "Root Category", "Select the root category to use as a starting point for the tree view.", false, Category = "CustomSetting" )]
-    [CategoryField( "Exclude Categories", "Select any category that you need to exclude from the tree view", true, Category = "CustomSetting" )]
+    [CategoryField( "Root Category", "Select the root category to use as a starting point for the tree view.", false, required:false, category: "CustomSetting" )]
+    [CategoryField( "Exclude Categories", "Select any category that you need to exclude from the tree view", true, required:false, category: "CustomSetting" )]
     public partial class CategoryTreeView : RockBlockCustomSettings
     {
         public const string CategoryNodePrefix = "C";

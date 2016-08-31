@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -85,6 +85,23 @@ namespace RockWeb.Blocks.Core
 
                 if ( _block.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                 {
+                    var blockType = BlockTypeCache.Read( _block.BlockTypeId );
+                    if ( blockType != null && !blockType.IsInstancePropertiesVerified )
+                    {
+                        System.Web.UI.Control control = Page.LoadControl( blockType.Path );
+                        if ( control is RockBlock )
+                        {
+                            using ( var rockContext = new RockContext() )
+                            {
+                                var rockBlock = control as RockBlock;
+                                int? blockEntityTypeId = EntityTypeCache.Read( typeof( Block ) ).Id;
+                                Rock.Attribute.Helper.UpdateAttributes( rockBlock.GetType(), blockEntityTypeId, "BlockTypeId", blockType.Id.ToString(), rockContext );
+                            }
+
+                            blockType.IsInstancePropertiesVerified = true;
+                        }
+                    }
+
                     phAttributes.Controls.Clear();
                     phAdvancedAttributes.Controls.Clear();
 

@@ -1,11 +1,11 @@
-// <copyright>
-// Copyright 2013 by the Spark Development Network
+ï»¿// <copyright>
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -143,8 +143,8 @@ namespace Rock.Migrations
             DeleteDefinedValue( "B1CE8ECA-6584-45DC-A022-40490FC753E8" );
             DeleteDefinedValue( "B3FAB89D-4EAD-4ED8-AD7F-06E150E4CD6B" );
             AddDefinedValue( "4BF34677-37E9-4E71-BD03-252B66C9373D", "Setup Location Service", @"
-<p>Your attendees’ addresses are very valuable, so it’s important that they are formatted correctly and validated 
-through the USPS database. Also, in order for these addresses to be used with the latest mapping technologies it’s 
+<p>Your attendeesï¿½ addresses are very valuable, so itï¿½s important that they are formatted correctly and validated 
+through the USPS database. Also, in order for these addresses to be used with the latest mapping technologies itï¿½s 
 important that they also be converted into latitude and longitude points through a process called geocoding. Fortunately, 
 Rock makes both of these tasks simple (and free...)</p>
 

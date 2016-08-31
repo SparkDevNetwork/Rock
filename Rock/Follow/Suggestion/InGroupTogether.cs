@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -41,6 +41,7 @@ namespace Rock.Follow.Suggestion
     [SecurityRoleField("Security Role (optional)", "A specific group to evaluate (Make sure to select group with same group type as above).", false, order:2, key:"SecurityRole")]
     [GroupRoleField( null, "Follower Group Type (optional)", "If specified, only people with this role will be be notified (Make sure to select same group type as above).", false, order:3, key:"FollowerGroupType" )]
     [GroupRoleField( null, "Followed Group Type (optional)", "If specified, only people with this role will be suggested to the follower (Make sure to select same group type as above).", false, order:4, key:"FollowedGroupType" )]
+    [BooleanField("Auto-Follow", "Determines if new people added to the group should be auto-followed.", false, IsRequired = true, Key = "AutoFollow")]
     public class InGroupTogether : SuggestionComponent
     {
         #region Suggestion Component Implementation
@@ -65,6 +66,9 @@ namespace Rock.Follow.Suggestion
         public override List<PersonEntitySuggestion> GetSuggestions( FollowingSuggestionType followingSuggestionType, List<int> followerPersonIds )
         {
             var suggestions = new List<PersonEntitySuggestion>();
+            var personAliasEntityType = EntityTypeCache.Read( typeof( Rock.Model.PersonAlias ) );
+
+            bool isAutoFollow = GetAttributeValue( followingSuggestionType, "AutoFollow" ).AsBoolean();
 
             // Get the grouptype guid
             Guid? groupTypeGuid = GetAttributeValue( followingSuggestionType, "GroupType" ).AsGuidOrNull();
@@ -166,8 +170,35 @@ namespace Rock.Follow.Suggestion
                             // If the person has a valid personalias id
                             if ( personAliasIds.ContainsKey( followedPersonId ) )
                             {
-                                // add them to the list of suggestions
-                                suggestions.Add( new PersonEntitySuggestion( followedGroup.PersonId, personAliasIds[followedPersonId] ) );
+                                if ( !isAutoFollow )
+                                {
+                                    // add them to the list of suggestions
+                                    suggestions.Add( new PersonEntitySuggestion( followedGroup.PersonId, personAliasIds[followedPersonId] ) );
+                                }
+                                else
+                                {
+                                    // auto-add the follow
+                                    
+                                    var followingService = new FollowingService( rockContext );
+
+                                    int followerPersonAliasId = personAliasIds[followedGroup.PersonId];
+                                    int followeePersonAliasId = personAliasIds[followedPersonId];
+
+                                    // if person is not already following the person
+                                    bool isFollowing = followingService.Queryable().Where( f =>
+                                                            f.EntityTypeId == personAliasEntityType.Id
+                                                            && f.EntityId == followeePersonAliasId
+                                                            && f.PersonAliasId == followerPersonAliasId ).Any();
+                                    if ( !isFollowing )
+                                    {
+                                        var following = new Following();
+                                        following.EntityTypeId = personAliasEntityType.Id;
+                                        following.EntityId = personAliasIds[followedPersonId];
+                                        following.PersonAliasId = personAliasIds[followedGroup.PersonId];
+                                        followingService.Add( following );
+                                        rockContext.SaveChanges();
+                                    }
+                                }
                             }
                         }
 

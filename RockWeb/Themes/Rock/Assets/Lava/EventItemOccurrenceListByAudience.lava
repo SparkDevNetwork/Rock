@@ -1,12 +1,21 @@
-<div class="panel panel-block">
-  <div class="panel-heading">
-    <h3 class="panel-title">{{ ListTitle }}</h3>
-  </div>
-  <div class="list-group">
+<div class="module">
+  <header class="clearfix">
+    <img src="/Themes/NewCovenant_v1/Assets/Images/icon_calendar.png" />
+    <h1>Upcoming Events</h1>
+  </header>
+
+  <ul class="list-unstyled">
     {% for occurrence in EventItemOccurrences %}
-      <a class="list-group-item" href="{{ RegistrationPage }}?RegistrationInstanceId={{ occurrence.Linkages | Select: 'RegistrationInstanceId' }}">
-         {{ occurrence.EventItem.Name }} {{ occurrence.Schedule.iCalendarContent | DatesFromICal | First | Date: 'dddd, MMM d / h:mmtt'  }} <span class="text-muted">{{ occurrence.Campus.Name }}</span>
-      </a>
+    <li>
+      {% if occurrence.EventItem.DetailsUrl != '' %}
+      <a href="{{ occurrence.EventItem.DetailsUrl }}">
+        {% else %}
+        <a href="{{ EventDetailPage }}?EventOccurrenceId={{ occurrence.Id }}">
+          {% endif %}
+          {{ occurrence.EventItem.Name }} <small>({{ occurrence.Schedule.iCalendarContent | DatesFromICal | First | Date: 'M/d '  }})</small>
+        </a>
+
+      </li>
     {% endfor %}
-  </div>
+  </ul>
 </div>

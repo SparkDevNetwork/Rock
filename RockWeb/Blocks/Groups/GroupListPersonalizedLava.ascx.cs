@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -37,14 +37,14 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Lists all group that the person is a member of using a Lava template." )]
 
-    [LinkedPage( "Detail Page", "", true, "", "", 0 )]
+    [LinkedPage( "Detail Page", "", false, "", "", 0 )]
     [GroupTypesField( "Include Group Types", "The group types to display in the list.  If none are selected, all group types will be included.", false, "", "", 4 )]
     [GroupTypesField( "Exclude Group Types", "The group types to exclude from the list (only valid if including all groups).", false, "", "", 5 )]
     [CodeEditorField( "Lava Template", "The lava template to use to format the group list.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupListSidebar.lava' %}", "", 6 )]
     [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 7 )]
     public partial class GroupListPersonalizedLava : RockBlock
     {
-        
+       
         #region Control Methods
 
         /// <summary>
@@ -108,16 +108,27 @@ namespace RockWeb.Blocks.Groups
                 qry = qry.Where( t => !excludeGroupTypeGuids.Contains( t.Group.GroupType.Guid ) );
             }
 
-            var groups = qry.Select( m => new GroupInvolvementSummary  { Group = m.Group, Role = m.GroupRole.Name, IsLeader = m.GroupRole.IsLeader, GroupType = m.Group.GroupType.Name } ).ToList();
+            var groups = new List<GroupInvolvementSummary>();
 
-            var mergeFields = new Dictionary<string, object>();
+            foreach ( var groupMember in qry.ToList() )
+            {
+                if ( groupMember.Group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                {
+                    groups.Add( new GroupInvolvementSummary
+                    {
+                        Group = groupMember.Group,
+                        Role = groupMember.GroupRole.Name,
+                        IsLeader = groupMember.GroupRole.IsLeader,
+                        GroupType = groupMember.Group.GroupType.Name
+                    } );
+                }
+            }
+
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "Groups", groups );
-            mergeFields.Add( "CurrentPerson", CurrentPerson );
-            var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
 
             Dictionary<string, object> linkedPages = new Dictionary<string, object>();
-            linkedPages.Add( "DetailPage", LinkedPageUrl( "DetailPage", null ) );
+            linkedPages.Add( "DetailPage", LinkedPageRoute( "DetailPage" ) );
             mergeFields.Add( "LinkedPages", linkedPages );
 
             string template = GetAttributeValue( "LavaTemplate" );

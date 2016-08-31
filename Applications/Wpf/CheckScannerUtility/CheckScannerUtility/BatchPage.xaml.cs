@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -359,7 +359,7 @@ namespace Rock.Apps.CheckScannerUtility
             RockConfig rockConfig = RockConfig.Load();
             RockRestClient client = new RockRestClient( rockConfig.RockBaseUrl );
             client.Login( rockConfig.Username, rockConfig.Password );
-            List<Campus> campusList = client.GetData<List<Campus>>( "api/Campus" );
+            List<Campus> campusList = client.GetData<List<Campus>>( "api/Campuses" );
 
             cbCampus.SelectedValuePath = "Id";
             cbCampus.DisplayMemberPath = "Name";
@@ -829,7 +829,7 @@ namespace Rock.Apps.CheckScannerUtility
             lblBatchNameReadOnly.Content = selectedBatch.Name;
             lblBatchIdReadOnly.Content = string.Format( "Batch Id: {0}", selectedBatch.Id );
 
-            lblBatchCampusReadOnly.Content = selectedBatch.CampusId.HasValue ? client.GetData<Campus>( string.Format( "api/Campus/{0}", selectedBatch.CampusId ?? 0 ) ).Name : string.Empty;
+            lblBatchCampusReadOnly.Content = selectedBatch.CampusId.HasValue ? client.GetData<Campus>( string.Format( "api/Campuses/{0}", selectedBatch.CampusId ?? 0 ) ).Name : string.Empty;
             lblBatchDateReadOnly.Content = selectedBatch.BatchStartDateTime.Value.ToString( "d" );
             var createdByPerson = client.GetData<Person>( string.Format( "api/People/GetByPersonAliasId/{0}", selectedBatch.CreatedByPersonAliasId ?? 0 ) );
             if ( createdByPerson != null )

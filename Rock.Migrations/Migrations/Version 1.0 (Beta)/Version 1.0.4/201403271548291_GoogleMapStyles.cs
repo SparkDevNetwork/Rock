@@ -1,11 +1,11 @@
-// <copyright>
-// Copyright 2013 by the Spark Development Network
+ï»¿// <copyright>
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -35,7 +35,7 @@ namespace Rock.Migrations
             AddDefinedType( "Global", "Map Styles", "Defines a listing of various map styles to be used as configuration for the various blocks that render maps. Check-out http://snazzymaps.com/ for inspiration.", "4EF89471-C049-49ED-AB50-677F689A4E4E" );
 
             AddDefinedValue( "4EF89471-C049-49ED-AB50-677F689A4E4E", "Rock", "The default styling for Rock maps.", "FDC5D6BA-A818-4A06-96B1-9EF31B4087AC" );
-            AddDefinedValue( "4EF89471-C049-49ED-AB50-677F689A4E4E", "Subtle Grayscale", @"Created by: Paulo Ávila
+            AddDefinedValue( "4EF89471-C049-49ED-AB50-677F689A4E4E", "Subtle Grayscale", @"Created by: Paulo ï¿½vila
 A nice, simple grayscale version of the map with color extremes that are never too harsh on the eyes. Originally created for http://barvinssurvins.fr/situer.
 
 http://snazzymaps.com/style/15/subtle-grayscale", "B1B95FDC-BB41-429F-A5D0-04D4D8284E2C" );

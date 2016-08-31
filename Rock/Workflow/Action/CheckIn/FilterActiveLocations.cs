@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,6 +21,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.CheckIn;
 using Rock.Data;
 
 namespace Rock.Workflow.Action.CheckIn
@@ -28,6 +29,7 @@ namespace Rock.Workflow.Action.CheckIn
     /// <summary>
     /// Removes (or excludes) any locations that are not active
     /// </summary>
+    [ActionCategory( "Check-In" )]
     [Description( "Removes (or excludes) any locations that are not active" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Active Locations" )]
@@ -49,7 +51,7 @@ namespace Rock.Workflow.Action.CheckIn
             var checkInState = GetCheckInState( entity, out errorMessages );
             if ( checkInState != null )
             {
-                var family = checkInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
+                var family = checkInState.CheckIn.CurrentFamily;
                 if ( family != null )
                 {
                     var remove = GetAttributeValue( action, "Remove" ).AsBoolean();
@@ -62,7 +64,7 @@ namespace Rock.Workflow.Action.CheckIn
                             {
                                 foreach ( var location in group.Locations.ToList() )
                                 {
-                                    if ( !location.Location.IsActive )
+                                    if ( !location.IsActiveAndNotFull )
                                     {
                                         if ( remove )
                                         {
@@ -84,5 +86,6 @@ namespace Rock.Workflow.Action.CheckIn
 
             return false;
         }
+
     }
 }

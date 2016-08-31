@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Event
 
     [CodeEditorField( "Lava Template", "Lava template to use to display content", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/RegistrationListSidebar.lava' %}", "", 2, "LavaTemplate" )]
     [IntegerField( "Max Results", "The maximum number of results to display.", false, 5, order: 3 )]
-    [SlidingDateRangeField( "Date Range", "Date range to limit by.", false, "", enabledSlidingDateRangeTypes: "Last,Previous,Current", order: 7 )]
+    [SlidingDateRangeField( "Date Range", "Date range to limit by.", false, "", enabledSlidingDateRangeTypes: "Previous, Last, Current, Next, Upcoming, DateRange", order: 7 )]
     [BooleanField("Limit to registrations where money is still owed", "", true, "", 8, "LimitToOwed")]
     [BooleanField( "Enable Debug", "Show merge data to help you see what's available to you.", order: 9 )]
     public partial class RegistrationListLava : Rock.Web.UI.RockBlock
@@ -102,7 +102,10 @@ namespace RockWeb.Blocks.Event
             var qryRegistrations = registrationService.Queryable();
 
             // only show Active registrations
-            qryRegistrations = qryRegistrations.Where( a => a.RegistrationInstance.IsActive == true );
+            qryRegistrations = qryRegistrations
+                .Where( a => 
+                    a.RegistrationInstance.IsActive == true &&
+                    !a.IsTemporary );
 
             // limit to the current person
             int currentPersonId = this.CurrentPersonId ?? 0;
@@ -143,8 +146,7 @@ namespace RockWeb.Blocks.Event
                 registrationList = registrationList.Take( maxResults.Value ).ToList();
             }
 
-            var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            mergeFields.Add( "CurrentPerson", CurrentPerson );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "Registrations", registrationList );
 
             string template = GetAttributeValue( "LavaTemplate" );

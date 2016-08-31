@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -42,6 +42,14 @@ namespace Rock.Web.UI.Controls
         private Panel _contentPanel;
 
         private Panel _footerPanel;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ModalDialog"/> class.
+        /// </summary>
+        public ModalDialog() : base()
+        {
+            this.Visible = false;
+        }
 
         /// <summary>
         /// Gets the server save link.
@@ -196,7 +204,39 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
-                _cancelLink.Visible= value;
+                _cancelLink.Visible = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [close link visible].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [close link visible]; otherwise, <c>false</c>.
+        /// </value>
+        public bool CloseLinkVisible
+        {
+            get
+            {
+                EnsureChildControls();
+                return _closeLink.Visible;
+            }
+            set
+            {
+                EnsureChildControls();
+                _closeLink.Visible = value;
+            }
+        }
+
+        /// <summary>
+        /// Header panel control
+        /// </summary>
+        public Panel Header
+        {
+            get
+            {
+                EnsureChildControls();
+                return _headerPanel;
             }
         }
 
@@ -221,6 +261,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Footer panel control
+        /// </summary>
+        public Panel Footer
+        {
+            get
+            {
+                EnsureChildControls();
+                return _footerPanel;
+            }
+        }
+
+        /// <summary>
         /// Hides this instance.
         /// </summary>
         public void Hide()
@@ -231,6 +283,9 @@ namespace Rock.Web.UI.Controls
             // make sure the close script gets fired, even if the modal isn't rendered
             string hideScript = string.Format("Rock.controls.modal.closeModalDialog($('#{0}'));", _dialogPanel.ClientID);
             ScriptManager.RegisterStartupScript( this, this.GetType(), "modaldialog-hide-" + this.ClientID, hideScript, true );
+
+            this.Visible = false;
+
         }
 
         /// <summary>
@@ -238,6 +293,8 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public void Show()
         {
+            this.Visible = true;
+
             EnsureChildControls();
             _hfModalVisible.Value = "1";
         }

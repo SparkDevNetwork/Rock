@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -47,30 +47,6 @@ namespace Rock.CheckIn
         public int? CampusId { get; set; }
 
         /// <summary>
-        /// Gets or sets the campu identifier.
-        /// </summary>
-        /// <value>
-        /// The campu identifier.
-        /// </value>
-        [DataMember]
-        [Obsolete( "Use CampusId property instead" )]
-        public int? CampuId
-        {
-            get { return CampusId; }
-            set { CampusId = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the current count.
-        /// </summary>
-        /// <value>
-        /// The current count.
-        /// </value>
-        [DataMember]
-        [Obsolete( "Not Used. This will be removed post McKinley." )]
-        public int CurrentCount { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [excluded by filter].
         /// </summary>
         /// <value>
@@ -98,6 +74,24 @@ namespace Rock.CheckIn
         public bool Selected { get; set; }
 
         /// <summary>
+        /// Gets or sets the available for schedule.
+        /// </summary>
+        /// <value>
+        /// The available for schedule.
+        /// </value>
+        [DataMember]
+        public List<int> AvailableForSchedule { get; set; }
+
+        /// <summary>
+        /// Gets or sets the selected for schedule.
+        /// </summary>
+        /// <value>
+        /// The selected for schedule.
+        /// </value>
+        [DataMember]
+        public List<int> SelectedForSchedule { get; set; }
+
+        /// <summary>
         /// Gets or sets the last time person checked into any of the groups for this location and group type
         /// </summary>
         /// <value>
@@ -116,12 +110,43 @@ namespace Rock.CheckIn
         public List<CheckInSchedule> Schedules { get; set; }
 
         /// <summary>
+        /// Gets a value indicating whether [active and not full].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [active and not full]; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsActiveAndNotFull
+        {
+            get
+            {
+                if ( Location != null )
+                {
+                    if ( Location.IsActive )
+                    {
+                        if ( Location.FirmRoomThreshold.HasValue &&
+                            Location.FirmRoomThreshold.Value <= KioskLocationAttendance.Read( Location.Id ).CurrentCount )
+                        {
+                            return false;
+                        }
+                        else
+                        {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+        }
+        
+        /// <summary>
         /// Initializes a new instance of the <see cref="CheckInLocation" /> class.
         /// </summary>
         public CheckInLocation()
             : base()
         {
             Schedules = new List<CheckInSchedule>();
+            SelectedForSchedule = new List<int>();
+            AvailableForSchedule = new List<int>();
         }
 
         /// <summary>
@@ -134,6 +159,44 @@ namespace Rock.CheckIn
             {
                 schedule.ExcludedByFilter = false;
             }
+        }
+
+        /// <summary>
+        /// Returns the locations valid schedules
+        /// </summary>
+        /// <param name="schedule">The schedule.</param>
+        /// <returns></returns>
+        public List<CheckInSchedule> ValidSchedules( CheckInSchedule schedule )
+        {
+            if ( schedule != null )
+            {
+                return Schedules
+                    .Where( s =>
+                        s.Schedule.Id == schedule.Schedule.Id &&
+                        !s.ExcludedByFilter )
+                    .ToList();
+            }
+            else
+            {
+                return Schedules
+                    .Where( s => !s.ExcludedByFilter )
+                    .ToList();
+            }
+        }
+
+        /// <summary>
+        /// Gets the schedules.
+        /// </summary>
+        /// <param name="selectedOnly">if set to <c>true</c> [selected only].</param>
+        /// <returns></returns>
+        public List<CheckInSchedule> GetSchedules( bool selectedOnly )
+        {
+            if ( selectedOnly )
+            {
+                return Schedules.Where( s => s.Selected || SelectedForSchedule.Contains( s.Schedule.Id ) ).ToList();
+            }
+
+            return Schedules;
         }
 
         /// <summary>
@@ -193,7 +256,7 @@ namespace Rock.CheckIn
                 switch ( key.ToStringSafe() )
                 {
                     case "LastCheckIn": return LastCheckIn;
-                    case "Schedules": return Schedules.Where( s => s.Selected ).ToList();
+                    case "Schedules": return GetSchedules( true );
                     default: return Location[key];
                 }
             }

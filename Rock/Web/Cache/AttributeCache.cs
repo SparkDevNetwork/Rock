@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -49,7 +49,7 @@ namespace Rock.Web.Cache
     {
         #region constructors
 
-        private AttributeCache()
+        internal AttributeCache()
         {
         }
 
@@ -178,7 +178,7 @@ namespace Rock.Web.Cache
         public string DefaultValue { get; set; }
 
         /// <summary>
-        /// Gets the default type of the value as.
+        /// Gets the default value as the most appropriate datatype
         /// </summary>
         /// <value>
         /// The default type of the value as.
@@ -188,6 +188,20 @@ namespace Rock.Web.Cache
             get
             {
                 return FieldType.Field.ValueAsFieldType( null, DefaultValue, QualifierValues );
+            }
+        }
+
+        /// <summary>
+        /// Gets the default value to use for sorting as the most appropriate datatype
+        /// </summary>
+        /// <value>
+        /// The default type of the value as.
+        /// </value>
+        public object DefaultSortValue
+        {
+            get
+            {
+                return FieldType.Field.SortValue( null, DefaultValue, QualifierValues );
             }
         }
 
@@ -215,7 +229,6 @@ namespace Rock.Web.Cache
         /// <value>
         /// The type of the field.
         /// </value>
-        [DataMember]
         public FieldTypeCache FieldType
         {
             get { return FieldTypeCache.Read( FieldTypeId ); }
@@ -337,8 +350,9 @@ namespace Rock.Web.Cache
         /// <param name="required">The required.</param>
         /// <param name="labelText">The label text.</param>
         /// <param name="helpText">The help text.</param>
+        /// <param name="warningText">The warning text.</param>
         /// <returns></returns>
-        public Control AddControl( ControlCollection controls, string value, string validationGroup, bool setValue, bool setId, bool? required = null, string labelText = null, string helpText = null )
+        public Control AddControl( ControlCollection controls, string value, string validationGroup, bool setValue, bool setId, bool? required = null, string labelText = null, string helpText = null, string warningText = null )
         {
             if ( labelText == null )
             {
@@ -362,19 +376,21 @@ namespace Rock.Web.Cache
                 var rockControl = attributeControl as IRockControl;
                 if ( rockControl != null )
                 {
-                    controls.Add( attributeControl );
-
                     rockControl.Label = labelText;
                     rockControl.Help = helpText;
+                    rockControl.Warning = warningText;
                     rockControl.Required = required.HasValue ? required.Value : this.IsRequired;
                     rockControl.ValidationGroup = validationGroup;
+
+                    controls.Add( attributeControl );
                 }
                 else
                 {
                     bool renderLabel = !string.IsNullOrEmpty( labelText );
                     bool renderHelp = !string.IsNullOrWhiteSpace( helpText );
+                    bool renderWarning = !string.IsNullOrWhiteSpace( warningText );
 
-                    if ( renderLabel || renderHelp )
+                    if ( renderLabel || renderHelp || renderWarning )
                     {
                         HtmlGenericControl div = new HtmlGenericControl( "div" );
                         controls.Add( div );
@@ -404,6 +420,14 @@ namespace Rock.Web.Cache
                             div.Controls.Add( helpBlock );
                             helpBlock.ClientIDMode = ClientIDMode.AutoID;
                             helpBlock.Text = helpText;
+                        }
+
+                        if ( renderWarning )
+                        {
+                            var warningBlock = new Rock.Web.UI.Controls.WarningBlock();
+                            div.Controls.Add( warningBlock );
+                            warningBlock.ClientIDMode = ClientIDMode.AutoID;
+                            warningBlock.Text = warningText;
                         }
 
                         div.Controls.Add( attributeControl );
@@ -763,6 +787,22 @@ namespace Rock.Web.Cache
         /// Flushes the entity attributes.
         /// </summary>
         public static void FlushEntityAttributes()
+        {
+            var rockMemoryCache = RockMemoryCache.Default;
+            if ( rockMemoryCache.IsRedisClusterEnabled && rockMemoryCache.IsRedisConnected )
+            { 
+                rockMemoryCache.SendRedisCommand( "REMOVE_ENTITY_ATTRIBUTES" );
+            }
+            else
+            {
+                RemoveEntityAttributes();
+            }
+        }
+
+        /// <summary>
+        /// Removes the entity attributes.
+        /// </summary>
+        internal static void RemoveEntityAttributes()
         {
             lock ( _lock )
             {

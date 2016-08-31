@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -423,7 +423,8 @@ namespace RockWeb.Blocks.Communication
                         {
                             PersonAliasId = r.PersonAliasId,
                             Status = CommunicationRecipientStatus.Pending,
-                            StatusNote = string.Empty
+                            StatusNote = string.Empty,
+                            AdditionalMergeValuesJson = r.AdditionalMergeValuesJson
                         } ) );
 
                     service.Add( newCommunication );
@@ -454,9 +455,9 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void ShowDetail( Rock.Model.Communication communication )
         {
-
             ShowStatus( communication );
             lTitle.Text = ( communication.Subject ?? "Communication" ).FormatAsHtmlTitle();
+            pdAuditDetails.SetEntity( communication, ResolveRockUrl( "~" ) );
 
             SetPersonDateValue( lCreatedBy, communication.CreatedByPersonAlias, communication.CreatedDateTime, "Created By" );
             SetPersonDateValue( lApprovedBy, communication.ReviewerPersonAlias, communication.ReviewedDateTime, "Approved By" );
@@ -481,6 +482,11 @@ namespace RockWeb.Blocks.Communication
                         lDetails.Text = medium.GetMessageDetails( communication );
                     }
                 } 
+            }
+
+            if ( communication.MediumData != null && communication.MediumData.ContainsKey( "UrlReferrer" ) )
+            {
+                lDetails.Text += string.Format( "<small>Originated from <a href='{0}'>this page</a></small>", communication.MediumData["UrlReferrer"] );
             }
 
             BindRecipients();
@@ -654,7 +660,7 @@ namespace RockWeb.Blocks.Communication
                     case CommunicationStatus.Draft:
                     case CommunicationStatus.Denied:
                         {
-                            // This block isn't used for transient, draft or denied communicaitons
+                            // This block isn't used for transient, draft or denied communications
                             break;
                         }
                     case CommunicationStatus.PendingApproval:

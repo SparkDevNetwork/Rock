@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,7 +29,8 @@ namespace Rock.Workflow.Action.CheckIn
     /// <summary>
     /// Loads the group types allowed for each person in a family
     /// </summary>
-    [Description("Loads the group types allowed for each person in a family")]
+    [ActionCategory( "Check-In" )]
+    [Description( "Loads the group types allowed for each person in a family" )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Load Group Types" )]
     public class LoadGroupTypes : CheckInActionComponent
@@ -48,13 +49,13 @@ namespace Rock.Workflow.Action.CheckIn
             var checkInState = GetCheckInState( entity, out errorMessages );
             if ( checkInState != null )
             {
-                foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ).ToList() )
+                foreach ( var family in checkInState.CheckIn.GetFamilies( true ) )
                 {
                     foreach ( var person in family.People )
                     {
-                        foreach ( var kioskGroupType in checkInState.Kiosk.FilteredGroupTypes( checkInState.ConfiguredGroupTypes ) )
+                        foreach ( var kioskGroupType in checkInState.Kiosk.ActiveGroupTypes( checkInState.ConfiguredGroupTypes ) )
                         {
-                            if ( kioskGroupType.KioskGroups.SelectMany( g => g.KioskLocations ).Any( l => l.Location.IsActive ) )
+                            if ( kioskGroupType.KioskGroups.SelectMany( g => g.KioskLocations ).Any( l => l.IsCheckInActive && l.IsActiveAndNotFull ) )
                             {
                                 if ( !person.GroupTypes.Any( g => g.GroupType.Id == kioskGroupType.GroupType.Id ) )
                                 {

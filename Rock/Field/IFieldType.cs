@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -86,13 +86,31 @@ namespace Rock.Field
         string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false );
 
         /// <summary>
-        /// Values the type of as field.
+        /// Returns the value using the most appropriate datatype
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
         /// <param name="value">The value.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
         object ValueAsFieldType( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues );
+
+        /// <summary>
+        /// Returns the value that should be used for sorting, using the most appropriate datatype
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        object SortValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues );
+
+        /// <summary>
+        /// Setting to determine whether the value from this control is sensitive.  This is used for determining
+        /// whether or not the value of this attribute is logged when changed.
+        /// </summary>
+        /// <returns>
+        ///   <c>false</c> By default, any field is not sensitive.
+        /// </returns>
+        bool IsSensitive();
 
         #endregion
 
@@ -148,16 +166,6 @@ namespace Rock.Field
         Control FilterControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode );
 
         /// <summary>
-        /// Creates the control needed to filter (query) values using this field type using a FilterMode of AdvancedFilter
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <returns></returns>
-        [Obsolete]
-        Control FilterControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required );
-
-        /// <summary>
         /// Determines whether this filter type has a FilterControl
         /// </summary>
         /// <returns></returns>
@@ -173,13 +181,18 @@ namespace Rock.Field
         List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, FilterMode filterMode );
 
         /// <summary>
-        /// Gets the filter values.
+        /// Gets the filter compare value.
         /// </summary>
-        /// <param name="filterControl">The filter control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="control">The control.</param>
+        /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
-        [Obsolete]
-        List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues );
+        string GetFilterCompareValue( Control control, FilterMode filterMode );
+
+        /// <summary>
+        /// Gets the equal to compare value (types that don't support an equalto comparison (i.e. singleselect) should return null
+        /// </summary>
+        /// <returns></returns>
+        string GetEqualToCompareValue();
 
         /// <summary>
         /// Sets the filter value.

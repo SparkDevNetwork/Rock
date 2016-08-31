@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -79,6 +79,14 @@ namespace Rock.Data
         PersonAlias ModifiedByPersonAlias { get; set; }
 
         /// <summary>
+        /// Gets or sets the custom sort value.
+        /// </summary>
+        /// <value>
+        /// The custom sort value.
+        /// </value>
+        object CustomSortValue { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the ModifiedByPersonAliasId value has already been 
         /// updated to reflect who/when model was updated. If this value is false (default) the framework will update 
         /// the value with the current user when the model is saved. Set this value to true if this automatic
@@ -93,5 +101,19 @@ namespace Rock.Data
         /// Method that will be called on an entity immediately before the item is saved
         /// </summary>
         void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry );
+
+        /// <summary>
+        /// Gets the Created By audit HTML details.
+        /// </summary>
+        /// <param name="rootUrl">The root URL.</param>
+        /// <returns>An HTML fragment with details about who created the model and when it was created.</returns>
+        string GetCreatedAuditHtml( string rootUrl );
+
+        /// <summary>
+        /// Gets the Last Modified By audit HTML details.
+        /// </summary>
+        /// <param name="rootUrl">The root URL.</param>
+        /// <returns>An HTML fragment with details about who modified the model and when it was modified.</returns>
+        string GetModifiedAuditHtml( string rootUrl );
     }
 }

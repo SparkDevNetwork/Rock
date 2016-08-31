@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Core
     [TextField( "Current Item Template", "Lava template for the current item. The only merge field is {{ ScheduleName }}.", true, "{{ ScheduleName }}", order: 2 )]
     [TextField( "Dropdown Item Template", "Lava template for items in the dropdown. The only merge field is {{ ScheduleName }}.", true, "{{ ScheduleName }}", order: 2 )]
     [TextField( "No Schedule Text", "The text to show when there is no schedule in the context.", true, "Select Schedule", order: 3 )]
-    [TextField( "Clear Selection Text", "The text displayed when a schedule can be unselected. This will not display when the text is empty.", true, "", order: 4 )]
+    [TextField( "Clear Selection Text", "The text displayed when a schedule can be unselected. This will not display when the text is empty.", false, "", order: 4 )]
     [BooleanField( "Display Query Strings", "Select to always display query strings. Default behavior will only display the query string when it's passed to the page.", false, "", order: 5 )]
     public partial class ScheduleContextSetter : Rock.Web.UI.RockBlock
     {
@@ -121,6 +121,7 @@ namespace RockWeb.Blocks.Core
                 schedules.AddRange( new ScheduleService( new RockContext() ).Queryable()
                     .Where( a => selectedScheduleList.Contains( a.Guid ) )
                     .Select( a => new ScheduleItem { Name = a.Name, Id = a.Id } )
+                    .OrderBy( s => s.Name )
                     .ToList()
                 );
             }

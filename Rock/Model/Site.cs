@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -124,6 +124,24 @@ namespace Rock.Model
         public int? LoginPageRouteId { get; set; }
 
         /// <summary>
+        /// Gets or sets the change password page identifier.
+        /// </summary>
+        /// <value>
+        /// The change password page identifier.
+        /// </value>
+        [DataMember]
+        public int? ChangePasswordPageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the change password page route identifier.
+        /// </summary>
+        /// <value>
+        /// The change password page route identifier.
+        /// </value>
+        [DataMember]
+        public int? ChangePasswordPageRouteId { get; set; }
+
+        /// <summary>
         /// Gets or sets the Id of the Site's registration <see cref="Rock.Model.Page"/>
         /// </summary>
         /// <remarks>
@@ -234,6 +252,18 @@ namespace Rock.Model
         public string ExternalUrl { get; set; }
 
         /// <summary>
+        /// The Allowed Frame Domains designates which external domains/sites are allowed to embed iframes of this site.
+        /// It controls what is put into the Content-Security-Policy HTTP response header.
+        /// This is in accordance with the Content Security Policy described here http://w3c.github.io/webappsec-csp/#csp-header
+        /// and here https://www.owasp.org/index.php/Content_Security_Policy_Cheat_Sheet
+        /// </summary>
+        /// <value>
+        /// A space delimited list of domains.
+        /// </value>
+        [DataMember]
+        public string AllowedFrameDomains { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [redirect tablets].
         /// </summary>
         /// <value>
@@ -267,30 +297,36 @@ namespace Rock.Model
         public int? PageViewRetentionPeriodDays { get; set; }
 
         /// <summary>
-        /// Gets or sets the Site's Facebook AppId for utilizing the Facebook SDK.
+        /// Gets or sets the content of the page header.
         /// </summary>
-        /// <remarks>
-        /// Each site that utilizes the Facebook SDK requires a different AppId. More info is available at http://developer.facebook.com
-        /// </remarks>
         /// <value>
-        /// Facebook App Id.
+        /// The content of the page header.
         /// </value>
-        [MaxLength( 25 )]
         [DataMember]
-        [Obsolete( "Attribute value of Facebook Authentication provider are used instead." )]
-        public string FacebookAppId { get; set; }
+        public string PageHeaderContent { get; set; }
 
         /// <summary>
-        /// Gets or sets the site's App Secret for the Facebook API
+        /// Gets or sets a value indicating whether [allow indexing].
         /// </summary>
         /// <value>
-        /// Facebook App Secret.
+        ///   <c>true</c> if [allow indexing]; otherwise, <c>false</c>.
         /// </value>
-        [MaxLength( 50 )]
         [DataMember]
-        [Obsolete( "Attribute value of Facebook Authentication provider are used instead." )]
-        public string FacebookAppSecret { get; set; }
+        public bool AllowIndexing {
+            get { return _allowIndexing; }
+            set { _allowIndexing = value; }
+        }
+        private bool _allowIndexing = true;
 
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [requires encryption].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [requires encryption]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool RequiresEncryption { get; set; }
         #endregion
 
         #region Virtual Properties
@@ -348,6 +384,23 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual PageRoute LoginPageRoute { get; set; }
+
+        /// <summary>
+        /// Gets or sets the change password page.
+        /// </summary>
+        /// <value>
+        /// The change password page.
+        /// </value>
+        public virtual Page ChangePasswordPage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the change password page route.
+        /// </summary>
+        /// <value>
+        /// The change password page route.
+        /// </value>
+        [DataMember]
+        public virtual PageRoute ChangePasswordPageRoute { get; set; }
 
         /// <summary>
         /// Gets or sets the registration <see cref="Rock.Model.Page"/> page for the site.
@@ -462,6 +515,8 @@ namespace Rock.Model
             this.HasOptional( p => p.DefaultPageRoute ).WithMany().HasForeignKey( p => p.DefaultPageRouteId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.LoginPage ).WithMany().HasForeignKey( p => p.LoginPageId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.LoginPageRoute ).WithMany().HasForeignKey( p => p.LoginPageRouteId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ChangePasswordPage ).WithMany().HasForeignKey( p => p.ChangePasswordPageId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ChangePasswordPageRoute ).WithMany().HasForeignKey( p => p.ChangePasswordPageRouteId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RegistrationPage ).WithMany().HasForeignKey( p => p.RegistrationPageId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RegistrationPageRoute ).WithMany().HasForeignKey( p => p.RegistrationPageRouteId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.PageNotFoundPage ).WithMany().HasForeignKey( p => p.PageNotFoundPageId ).WillCascadeOnDelete( false );

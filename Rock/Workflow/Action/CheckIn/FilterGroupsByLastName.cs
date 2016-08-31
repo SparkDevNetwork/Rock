@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,6 +28,7 @@ namespace Rock.Workflow.Action.CheckIn
     /// <summary>
     /// Removes (or excludes) the groups for each selected family member that are not specific to their last name.
     /// </summary>
+    [ActionCategory( "Check-In" )]
     [Description( "Removes (or excludes) the groups for each selected family member that are not specific to their last name." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Groups By LastName" )]
@@ -63,11 +64,11 @@ namespace Rock.Workflow.Action.CheckIn
                     {
                         foreach ( var group in groupType.Groups.ToList() )
                         {
-                            string lastNameBeginLetterRange = group.Group.GetAttributeValue( "LastNameBeginLetterRange" ).Trim();
-                            string lastNameEndLetterRange = group.Group.GetAttributeValue( "LastNameEndLetterRange" ).Trim();
+                            string lastNameBeginLetterRange = group.Group.GetAttributeValue( "LastNameBeginLetterRange" );
+                            string lastNameEndLetterRange = group.Group.GetAttributeValue( "LastNameEndLetterRange" );
 
-                            char rangeStart = ( lastNameBeginLetterRange == "" ) ? 'A' : char.Parse( lastNameBeginLetterRange.ToUpper() );
-                            char rangeEnd = ( lastNameEndLetterRange == "" ) ? 'Z' : char.Parse( lastNameEndLetterRange.ToUpper() );
+                            char rangeStart = ( string.IsNullOrWhiteSpace( lastNameBeginLetterRange ) ) ? 'A' : char.Parse( lastNameBeginLetterRange.Trim().ToUpper() );
+                            char rangeEnd = ( string.IsNullOrWhiteSpace( lastNameEndLetterRange ) ) ? 'Z' : char.Parse( lastNameEndLetterRange.Trim().ToUpper() );
 
                             // If the last name is not in range, remove the group
                             if ( !( lastInitial >= rangeStart && lastInitial <= rangeEnd ) )

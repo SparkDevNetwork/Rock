@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,6 +24,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Rock.Data;
 
 namespace Rock.Model
@@ -64,7 +65,7 @@ namespace Rock.Model
         /// This property will be  <c>CommunicationRecipientStatus.Pending</c> when Rock is waiting to send the <see cref="Rock.Model.Communication"/> to the recipient;
         /// <c>CommunicationRecipientStatus.Success</c> when Rock has successfully sent the <see cref="Rock.Model.Communication"/> to the recipient;
         /// <c>CommunicationRecipientStatus.Failed</c> when the attempt to send the <see cref="Rock.Model.Communication"/> failed.
-        /// <c>CommunicaitonRecipientStatus.Cancelled</c> when the attempt to send the <see cref="Rock.Model.Communication"/> was canceled.
+        /// <c>CommunicationRecipientStatus.Cancelled</c> when the attempt to send the <see cref="Rock.Model.Communication"/> was canceled.
         /// </value>
         [DataMember]
         public CommunicationRecipientStatus Status { get; set; }
@@ -142,7 +143,13 @@ namespace Rock.Model
 
             set
             {
-                AdditionalMergeValues = value.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+                AdditionalMergeValues = value.FromJsonOrNull<Dictionary<string, object>>() ?? new Dictionary<string, object>();
+
+                // Convert any objects to a dictionary so that they can be used by Lava
+                var objectKeys = AdditionalMergeValues
+                    .Where( m => m.Value != null && m.Value.GetType() == typeof( JObject ) )
+                    .Select( m => m.Key ).ToList();
+                objectKeys.ForEach( k => AdditionalMergeValues[k] = ( (JObject)AdditionalMergeValues[k] ).ToDictionary() );
             }
         }
 
@@ -188,12 +195,12 @@ namespace Rock.Model
         ///  A <see cref="System.Collections.Generic.Dictionary{String,String}"/> of <see cref="System.String"/> objects containing additional merge values for the <see cref="Rock.Model.Communication"/>
         /// </value>
         [DataMember]
-        public virtual Dictionary<string, string> AdditionalMergeValues
+        public virtual Dictionary<string, object> AdditionalMergeValues
         {
             get { return _additionalMergeValues; }
             set { _additionalMergeValues = value; }
         }
-        private Dictionary<string, string> _additionalMergeValues = new Dictionary<string, string>();
+        private Dictionary<string, object> _additionalMergeValues = new Dictionary<string, object>();
 
         /// <summary>
         /// Gets a list of activities.

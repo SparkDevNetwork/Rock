@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,7 +34,7 @@ namespace RockWeb.Blocks.Groups
 {
     [DisplayName( "Group List" )]
     [Category( "Groups" )]
-    [Description( "Lists all groups for the configured group types." )]
+    [Description( "Lists all groups for the configured group types. Query string parameters: <ul><li>GroupTypeId - Filters to a specific group type.</li></ui>" )]
 
     [LinkedPage( "Detail Page", "", true, "", "", 0 )]
     [GroupTypesField( "Include Group Types", "The group types to display in the list.  If none are selected, all group types will be included.", false, "", "", 1 )]
@@ -373,6 +373,17 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
+            // filter to a specific group type if provided in the query string
+            if (!string.IsNullOrWhiteSpace( RockPage.PageParameter( "GroupTypeId" ) )){
+                int? groupTypeId = RockPage.PageParameter( "GroupTypeId" ).AsIntegerOrNull();
+
+                if ( groupTypeId.HasValue )
+                {
+                    groupTypeIds.Clear();
+                    groupTypeIds.Add( groupTypeId.Value );
+                }
+            }
+
             var rockContext = new RockContext();
             var groupService = new GroupService( rockContext );
 
@@ -513,7 +524,7 @@ namespace RockWeb.Blocks.Groups
             // hide the group type column if there's only one type; must come after DataBind()
             if ( _groupTypesCount == 1 )
             {
-                this.gGroups.Columns[1].Visible = false;
+                this.gGroups.Columns[2].Visible = false;
             }
         }
 

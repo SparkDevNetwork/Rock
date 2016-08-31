@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -33,6 +33,7 @@ namespace Rock.Web.UI.Controls
         {
             rockControl.RequiredFieldValidator = new RequiredFieldValidator();
             rockControl.HelpBlock = new HelpBlock();
+            rockControl.WarningBlock = new WarningBlock();
         }
 
         /// <summary> 
@@ -57,6 +58,12 @@ namespace Rock.Web.UI.Controls
                 rockControl.HelpBlock.ID = rockControl.ID + "_hb";
                 controls.Add( rockControl.HelpBlock );
             }
+
+            if ( rockControl.WarningBlock != null )
+            {
+                rockControl.WarningBlock.ID = rockControl.ID + "_wb";
+                controls.Add( rockControl.WarningBlock );
+            }
         }
 
         /// <summary>
@@ -69,6 +76,7 @@ namespace Rock.Web.UI.Controls
         {
             bool renderLabel = ( !string.IsNullOrEmpty( rockControl.Label ) );
             bool renderHelp = ( rockControl.HelpBlock != null && !string.IsNullOrWhiteSpace( rockControl.Help ) );
+            bool renderWarning = ( rockControl.WarningBlock != null && !string.IsNullOrWhiteSpace( rockControl.Warning ) );
 
             if ( renderLabel )
             {
@@ -105,8 +113,8 @@ namespace Rock.Web.UI.Controls
 
                 if ( rockControl is WebControl )
                 {
-                    // if the control has a Display Style, make sure the Label and Help also get the same Display style
-                    // For example, you might have rockControl.Style["Display"] = "none", so you probably want the label and help to also get not displayed
+                    // if the control has a Display Style, make sure the Label, Help, and Warning also get the same Display style
+                    // For example, you might have rockControl.Style["Display"] = "none", so you probably want the label, help, and warning to also get not displayed
                     var rockControlDisplayStyle = ( rockControl as WebControl ).Style[HtmlTextWriterStyle.Display];
                     if ( rockControlDisplayStyle != null )
                     {
@@ -114,6 +122,11 @@ namespace Rock.Web.UI.Controls
                         if (rockControl.HelpBlock != null)
                         {
                             rockControl.HelpBlock.Style[HtmlTextWriterStyle.Display] = rockControlDisplayStyle;
+                        }
+
+                        if ( rockControl.WarningBlock != null )
+                        {
+                            rockControl.WarningBlock.Style[HtmlTextWriterStyle.Display] = rockControlDisplayStyle;
                         }
                     }
                 }
@@ -126,14 +139,37 @@ namespace Rock.Web.UI.Controls
                     rockControl.HelpBlock.RenderControl( writer );
                 }
 
+                if ( renderWarning )
+                {
+                    rockControl.WarningBlock.RenderControl( writer );
+                }
+
                 writer.RenderEndTag();
+
+                if ( rockControl is IRockControlAdditionalRendering )
+                {
+                    ( (IRockControlAdditionalRendering)rockControl ).RenderAfterLabel( writer );
+                }
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-wrapper" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
             }
 
             rockControl.RenderBaseControl( writer );
 
+            if ( renderLabel )
+            {
+                writer.RenderEndTag();
+            }
+
             if ( !renderLabel && renderHelp )
             {
                 rockControl.HelpBlock.RenderControl( writer );
+            }
+
+            if ( !renderLabel && renderWarning )
+            {
+                rockControl.WarningBlock.RenderControl( writer );
             }
 
             if ( rockControl.RequiredFieldValidator != null )
@@ -175,6 +211,11 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();  // label
 
                 control.RenderControl( writer );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-wrapper" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                control.RenderControl( writer );
+                writer.RenderEndTag();
 
                 writer.RenderEndTag();  // form-group
             }

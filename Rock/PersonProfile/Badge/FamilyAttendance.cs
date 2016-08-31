@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -54,14 +54,14 @@ namespace Rock.PersonProfile.Badge
             int minBarHeight = GetAttributeValue(badge, "MinimumBarHeight").AsIntegerOrNull() ?? 2;
             int monthsToDisplay = GetAttributeValue(badge, "MonthsToDisplay").AsIntegerOrNull() ?? 24;
             
-            string annimateClass = string.Empty;
+            string animateClass = string.Empty;
 
             if (GetAttributeValue(badge, "AnimateBars") == null || GetAttributeValue(badge, "AnimateBars").AsBoolean())
             {
-                annimateClass = " annimate";
+                animateClass = " animate";
             }
 
-            writer.Write(String.Format( "<div class='badge badge-attendance{0} badge-id-{1}' data-toggle='tooltip' data-original-title='Family attendance for the last 24 months. Each bar is a month.'>", annimateClass, badge.Id));
+            writer.Write(String.Format( "<div class='badge badge-attendance{0} badge-id-{1}' data-toggle='tooltip' data-original-title='Family attendance for the last 24 months. Each bar is a month.'>", animateClass, badge.Id));
 
             writer.Write("</div>");
 

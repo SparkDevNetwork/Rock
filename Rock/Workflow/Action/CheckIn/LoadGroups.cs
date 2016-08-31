@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,6 +30,7 @@ namespace Rock.Workflow.Action.CheckIn
     /// <summary>
     /// Loads the groups available for each location.
     /// </summary>
+    [ActionCategory( "Check-In" )]
     [Description( "Loads the groups available for each selected (or optionally all) location(s)" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Load Groups" )]
@@ -52,16 +53,19 @@ namespace Rock.Workflow.Action.CheckIn
             {
                 bool loadAll = GetAttributeValue( action, "LoadAll" ).AsBoolean();
 
-                foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ).ToList() )
+                foreach ( var family in checkInState.CheckIn.GetFamilies( true ) )
                 {
-                    foreach ( var person in family.People.Where( p => p.Selected || loadAll ).ToList() )
+                    foreach ( var person in family.GetPeople( !loadAll ) )
                     {
-                        foreach ( var groupType in person.GroupTypes.Where( g => g.Selected || loadAll ).ToList() )
+                        foreach ( var groupType in person.GetGroupTypes( !loadAll ) )
                         {
-                            var kioskGroupType = checkInState.Kiosk.FilteredGroupTypes( checkInState.ConfiguredGroupTypes ).Where( g => g.GroupType.Id == groupType.GroupType.Id ).FirstOrDefault();
+                            var kioskGroupType = checkInState.Kiosk.ActiveGroupTypes( checkInState.ConfiguredGroupTypes )
+                                .Where( g => g.GroupType.Id == groupType.GroupType.Id )
+                                .FirstOrDefault();
+
                             if ( kioskGroupType != null )
                             {
-                                foreach ( var kioskGroup in kioskGroupType.KioskGroups )
+                                foreach ( var kioskGroup in kioskGroupType.KioskGroups.Where( g => g.IsCheckInActive ) )
                                 {
                                     bool validGroup = true;
                                     if ( groupType.GroupType.AttendanceRule == AttendanceRule.AlreadyBelongs )
@@ -69,6 +73,7 @@ namespace Rock.Workflow.Action.CheckIn
                                         validGroup = new GroupMemberService( rockContext ).Queryable()
                                             .Any( m =>
                                                 m.GroupId == kioskGroup.Group.Id &&
+                                                m.GroupMemberStatus == GroupMemberStatus.Active &&
                                                 m.PersonId == person.Person.Id );
                                     }
 

@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,10 +28,10 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Report Filter control
     /// </summary>
-    [ToolboxData( "<{0}:NewFamilyMembers runat=server></{0}:NewFamilyMembers>" )]
-    public class NewFamilyMembers : CompositeControl, INamingContainer
+    [ToolboxData( "<{0}:NewGroupMembers runat=server></{0}:NewGroupMembers>" )]
+    public class NewGroupMembers : CompositeControl, INamingContainer
     {
-        private LinkButton _lbAddFamilyMember;
+        private LinkButton _lbAddGroupMember;
 
         /// <summary>
         /// Gets or sets a value indicating whether [require gender].
@@ -58,25 +58,37 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the family member rows.
+        /// Gets or sets a value indicating whether [show grade].
         /// </summary>
         /// <value>
-        /// The family member rows.
+        ///   <c>true</c> if [show grade]; otherwise, <c>false</c>.
         /// </value>
-        public List<NewFamilyMembersRow> FamilyMemberRows
+        public bool ShowGrade
+        {
+            get { return ViewState["ShowGrade"] as bool? ?? false; }
+            set { ViewState["ShowGrade"] = value; }
+        }
+
+        /// <summary>
+        /// Gets the group member rows.
+        /// </summary>
+        /// <value>
+        /// The group member rows.
+        /// </value>
+        public List<NewGroupMembersRow> GroupMemberRows
         {
             get
             {
-                var rows = new List<NewFamilyMembersRow>();
+                var rows = new List<NewGroupMembersRow>();
 
                 foreach ( Control control in Controls )
                 {
-                    if ( control is NewFamilyMembersRow )
+                    if ( control is NewGroupMembersRow )
                     {
-                        var newFamilyMemberRow = control as NewFamilyMembersRow;
-                        if ( newFamilyMemberRow != null )
+                        var newGroupMemberRow = control as NewGroupMembersRow;
+                        if ( newGroupMemberRow != null )
                         {
-                            rows.Add( newFamilyMemberRow );
+                            rows.Add( newGroupMemberRow );
                         }
                     }
                 }
@@ -92,28 +104,32 @@ namespace Rock.Web.UI.Controls
         {
             Controls.Clear();
 
-            _lbAddFamilyMember = new LinkButton();
-            Controls.Add( _lbAddFamilyMember );
-            _lbAddFamilyMember.ID = this.ID + "_btnAddFamilyMember";
-            _lbAddFamilyMember.Click += lbAddFamilyMember_Click;
-            _lbAddFamilyMember.AddCssClass( "add btn btn-sm btn-action" );
-            _lbAddFamilyMember.CausesValidation = false;
+            _lbAddGroupMember = new LinkButton();
+            Controls.Add( _lbAddGroupMember );
+            _lbAddGroupMember.ID = this.ID + "_btnAddGroupMember";
+            _lbAddGroupMember.Click += lbAddGroupMember_Click;
+            _lbAddGroupMember.AddCssClass( "add btn btn-xs btn-action" );
+            _lbAddGroupMember.CausesValidation = false;
 
             var iAddFilter = new HtmlGenericControl( "i" );
-            iAddFilter.AddCssClass("fa fa-plus-circle");
-            _lbAddFamilyMember.Controls.Add( iAddFilter );
+            iAddFilter.AddCssClass("fa fa-user");
+            _lbAddGroupMember.Controls.Add( iAddFilter );
+
+            var spanAddFilter = new HtmlGenericControl("span");
+            spanAddFilter.InnerHtml = " Add Person";
+            _lbAddGroupMember.Controls.Add( spanAddFilter );
         }
 
         /// <summary>
-        /// Handles the Click event of the lbAddFamilyMember control.
+        /// Handles the Click event of the lbAddGroupMember control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbAddFamilyMember_Click( object sender, EventArgs e )
+        protected void lbAddGroupMember_Click( object sender, EventArgs e )
         {
-            if ( AddFamilyMemberClick != null )
+            if ( AddGroupMemberClick != null )
             {
-                AddFamilyMemberClick( this, e );
+                AddGroupMemberClick( this, e );
             }
         }
 
@@ -125,7 +141,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "table table-familymembers" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "table table-groupmembers" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Table );
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Thead );
@@ -166,13 +182,16 @@ namespace Rock.Web.UI.Controls
                 writer.Write( "Birthdate" );
                 writer.RenderEndTag();
 
-                if ( RequireGrade )
+                if ( ShowGrade )
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "required" );
+                    if ( RequireGrade )
+                    {
+                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "required" );
+                    }
+                    writer.RenderBeginTag( HtmlTextWriterTag.Th );
+                    writer.Write( GlobalAttributesCache.Read().GetValue( "core.GradeLabel" ) );
+                    writer.RenderEndTag();
                 }
-                writer.RenderBeginTag( HtmlTextWriterTag.Th );
-                writer.Write( GlobalAttributesCache.Read().GetValue( "core.GradeLabel" ) );
-                writer.RenderEndTag();
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Th );
                 writer.Write( "" );
@@ -185,7 +204,7 @@ namespace Rock.Web.UI.Controls
 
                 foreach ( Control control in Controls )
                 {
-                    if ( control is NewFamilyMembersRow )
+                    if ( control is NewGroupMembersRow )
                     {
                         control.RenderControl( writer );
                     }
@@ -201,7 +220,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
-                _lbAddFamilyMember.RenderControl( writer );
+                _lbAddGroupMember.RenderControl( writer );
                 writer.RenderEndTag();
 
                 writer.RenderEndTag();  // tr
@@ -218,7 +237,7 @@ namespace Rock.Web.UI.Controls
         {
             for (int i = Controls.Count - 1; i >= 0; i--)
             {
-                if (Controls[i] is NewFamilyMembersRow )
+                if (Controls[i] is NewGroupMembersRow )
                 {
                     Controls.RemoveAt( i );
                 }
@@ -226,9 +245,9 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Occurs when [add family member click].
+        /// Occurs when [add group member click].
         /// </summary>
-        public event EventHandler AddFamilyMemberClick;
+        public event EventHandler AddGroupMemberClick;
         
     }
 }

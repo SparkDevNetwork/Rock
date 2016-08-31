@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -304,17 +304,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             var role = new GroupTypeRoleService( rockContext ).Get( ownerRoleGuid );
                             if ( role != null && role.GroupTypeId.HasValue )
                             {
-                                var groupMember = new GroupMember();
-                                groupMember.PersonId = Person.Id;
-                                groupMember.GroupRoleId = role.Id;
-
+                                var groupService = new GroupService( rockContext );
                                 group = new Group();
                                 group.Name = role.GroupType.Name;
                                 group.GroupTypeId = role.GroupTypeId.Value;
-                                group.Members.Add( groupMember );
-
-                                var groupService = new GroupService( rockContext );
                                 groupService.Add( group );
+                                rockContext.SaveChanges();
+
+                                var groupMember = new GroupMember();
+                                groupMember.PersonId = Person.Id;
+                                groupMember.GroupRoleId = role.Id;
+                                groupMember.GroupId = group.Id;
+                                group.Members.Add( groupMember );
                                 rockContext.SaveChanges();
 
                                 group = groupService.Get( group.Id );

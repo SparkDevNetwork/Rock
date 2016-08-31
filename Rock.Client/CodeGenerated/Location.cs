@@ -5,13 +5,13 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 // <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -38,6 +38,9 @@ namespace Rock.Client
         public string AssessorParcelId { get; set; }
 
         /// <summary />
+        public string Barcode { get; set; }
+
+        /// <summary />
         public string City { get; set; }
 
         /// <summary />
@@ -45,6 +48,9 @@ namespace Rock.Client
 
         /// <summary />
         public string County { get; set; }
+
+        /// <summary />
+        public int? FirmRoomThreshold { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -98,6 +104,9 @@ namespace Rock.Client
 
         /// <summary />
         public int? PrinterDeviceId { get; set; }
+
+        /// <summary />
+        public int? SoftRoomThreshold { get; set; }
 
         /// <summary />
         public DateTime? StandardizeAttemptedDateTime { get; set; }
@@ -154,9 +163,11 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.AssessorParcelId = source.AssessorParcelId;
+            this.Barcode = source.Barcode;
             this.City = source.City;
             this.Country = source.Country;
             this.County = source.County;
+            this.FirmRoomThreshold = source.FirmRoomThreshold;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GeocodeAttemptedDateTime = source.GeocodeAttemptedDateTime;
@@ -174,6 +185,7 @@ namespace Rock.Client
             this.ParentLocationId = source.ParentLocationId;
             this.PostalCode = source.PostalCode;
             this.PrinterDeviceId = source.PrinterDeviceId;
+            this.SoftRoomThreshold = source.SoftRoomThreshold;
             this.StandardizeAttemptedDateTime = source.StandardizeAttemptedDateTime;
             this.StandardizeAttemptedResult = source.StandardizeAttemptedResult;
             this.StandardizeAttemptedServiceType = source.StandardizeAttemptedServiceType;
@@ -199,7 +211,9 @@ namespace Rock.Client
         /// <summary />
         public ICollection<Location> ChildLocations { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// If returned from an endpoint that calculates distance, this will be the result distance (in miles)
+        /// </summary>
         public double Distance { get; set; }
 
         /// <summary />

@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,6 +27,7 @@ namespace Rock.Workflow.Action.CheckIn
     /// <summary>
     /// Removes any group that does not have any locations.  If group contains locations, but they are all excluded by filter, will also mark the group as excluded by filter.
     /// </summary>
+    [ActionCategory( "Check-In" )]
     [Description( "Removes any group that does not have any locations.  If group contains locations, but they are all excluded by filter, will also mark the group as excluded by filter." )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Remove Empty Groups" )]

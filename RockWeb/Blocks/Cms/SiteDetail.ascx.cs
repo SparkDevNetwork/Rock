@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,6 +26,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -94,6 +95,31 @@ namespace RockWeb.Blocks.Cms
             btnDelete.Visible = true;
             btnEdit.Visible = true;
             pnlDeleteConfirm.Visible = false;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCompileTheme control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnCompileTheme_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            SiteService siteService = new SiteService( rockContext );
+            Site site = siteService.Get( hfSiteId.Value.AsInteger() );
+
+            string messages = string.Empty;
+            var theme = new RockTheme( site.Theme );
+            bool success = theme.Compile( out messages );
+
+            if ( success )
+            {
+                mdThemeCompile.Show( "Theme was successfully compiled.", ModalAlertType.Information );
+            }
+            else
+            {
+                mdThemeCompile.Show( string.Format("An error occurred compiling the theme {0}. Message: {1}.", site.Theme, messages), ModalAlertType.Warning );
+            }
         }
 
         /// <summary>
@@ -211,6 +237,8 @@ namespace RockWeb.Blocks.Cms
                 site.DefaultPageRouteId = ppDefaultPage.PageRouteId;
                 site.LoginPageId = ppLoginPage.PageId;
                 site.LoginPageRouteId = ppLoginPage.PageRouteId;
+                site.ChangePasswordPageId = ppChangePasswordPage.PageId;
+                site.ChangePasswordPageRouteId = ppChangePasswordPage.PageRouteId;
                 site.CommunicationPageId = ppCommunicationPage.PageId;
                 site.CommunicationPageRouteId = ppCommunicationPage.PageRouteId;
                 site.RegistrationPageId = ppRegistrationPage.PageId;
@@ -219,12 +247,17 @@ namespace RockWeb.Blocks.Cms
                 site.PageNotFoundPageRouteId = ppPageNotFoundPage.PageRouteId;
                 site.ErrorPage = tbErrorPage.Text;
                 site.GoogleAnalyticsCode = tbGoogleAnalytics.Text;
+                site.RequiresEncryption = cbRequireEncryption.Checked;
                 site.EnableMobileRedirect = cbEnableMobileRedirect.Checked;
                 site.MobilePageId = ppMobilePage.PageId;
                 site.ExternalUrl = tbExternalURL.Text;
+                site.AllowedFrameDomains = tbAllowedFrameDomains.Text;
                 site.RedirectTablets = cbRedirectTablets.Checked;
                 site.EnablePageViews = cbEnablePageViews.Checked;
                 site.PageViewRetentionPeriodDays = nbPageViewRetentionPeriodDays.Text.AsIntegerOrNull();
+
+                site.AllowIndexing = cbAllowIndexing.Checked;
+                site.PageHeaderContent = cePageHeaderContent.Text;
 
                 var currentDomains = tbSiteDomains.Text.SplitDelimitedValues().ToList<string>();
                 site.SiteDomains = site.SiteDomains ?? new List<SiteDomain>();
@@ -395,6 +428,7 @@ namespace RockWeb.Blocks.Cms
             if ( !siteId.Equals( 0 ) )
             {
                 site = new SiteService( new RockContext() ).Get( siteId );
+                pdAuditDetails.SetEntity( site, ResolveRockUrl( "~" ) );
             }
 
             if ( site == null )
@@ -402,10 +436,22 @@ namespace RockWeb.Blocks.Cms
                 site = new Site { Id = 0 };
                 site.SiteDomains = new List<SiteDomain>();
                 site.Theme = RockPage.Layout.Site.Theme;
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
+            }
+
+            // set theme compile button
+            if ( ! new RockTheme(site.Theme ).AllowsCompile) 
+            {
+                btnCompileTheme.Enabled = false;
+                btnCompileTheme.Text = "Theme Doesn't Support Compiling";
             }
 
             pnlDetails.Visible = true;
             hfSiteId.Value = site.Id.ToString();
+
+            cePageHeaderContent.Text = site.PageHeaderContent;
+            cbAllowIndexing.Checked = site.AllowIndexing;
 
             bool readOnly = false;
 
@@ -490,6 +536,15 @@ namespace RockWeb.Blocks.Cms
                 ppLoginPage.SetValue( site.LoginPage );
             }
 
+            if ( site.ChangePasswordPageRoute != null )
+            {
+                ppChangePasswordPage.SetValue( site.ChangePasswordPageRoute );
+            }
+            else
+            {
+                ppChangePasswordPage.SetValue( site.ChangePasswordPage );
+            }
+
             if ( site.CommunicationPageRoute != null )
             {
                 ppCommunicationPage.SetValue( site.CommunicationPageRoute );
@@ -521,10 +576,12 @@ namespace RockWeb.Blocks.Cms
 
             tbSiteDomains.Text = string.Join( "\n", site.SiteDomains.Select( dom => dom.Domain ).ToArray() );
             tbGoogleAnalytics.Text = site.GoogleAnalyticsCode;
+            cbRequireEncryption.Checked = site.RequiresEncryption;
 
             cbEnableMobileRedirect.Checked = site.EnableMobileRedirect;
             ppMobilePage.SetValue( site.MobilePage );
             tbExternalURL.Text = site.ExternalUrl;
+            tbAllowedFrameDomains.Text = site.AllowedFrameDomains;
             cbRedirectTablets.Checked = site.RedirectTablets;
             cbEnablePageViews.Checked = site.EnablePageViews;
             nbPageViewRetentionPeriodDays.Text = site.PageViewRetentionPeriodDays.ToString();
@@ -577,5 +634,7 @@ namespace RockWeb.Blocks.Cms
         }
 
         #endregion
+
+        
     }
 }

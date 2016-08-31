@@ -2,11 +2,11 @@
 // <copyright>
 // Copyright 2013 by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -147,11 +147,30 @@ public class Twilio : IHttpHandler
     private void WriteToLog( string message )
     {
         string logFile = HttpContext.Current.Server.MapPath( "~/App_Data/Logs/TwilioLog.txt" );
-        using ( System.IO.FileStream fs = new System.IO.FileStream( logFile, System.IO.FileMode.Append, System.IO.FileAccess.Write ) )
-        using ( System.IO.StreamWriter sw = new System.IO.StreamWriter( fs ) )
+
+        // Write to the log, but if an ioexception occurs wait a couple seconds and then try again (up to 3 times).
+        var maxRetry = 3;
+        for ( int retry = 0; retry < maxRetry; retry++ )
         {
-            sw.WriteLine( string.Format( "{0} - {1}", RockDateTime.Now.ToString(), message ) );
+            try
+            {
+                using ( System.IO.FileStream fs = new System.IO.FileStream( logFile, System.IO.FileMode.Append, System.IO.FileAccess.Write ) )
+                {
+                    using ( System.IO.StreamWriter sw = new System.IO.StreamWriter( fs ) )
+                    {
+                        sw.WriteLine( string.Format( "{0} - {1}", RockDateTime.Now.ToString(), message ) );
+                    }
+                }
+            }
+            catch ( System.IO.IOException )
+            {
+                if ( retry < maxRetry - 1 )
+                {
+                    System.Threading.Thread.Sleep( 2000 );
+                }
+            }
         }
+               
     }
     
     

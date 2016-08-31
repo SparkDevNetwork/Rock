@@ -5,13 +5,13 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 // <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,7 +29,19 @@ namespace Rock.Client.SystemGuid
     /// </summary>
     public class Attribute
     {
+        public const string GLOBAL_EMAIL_LINK_PREFERENCE = "F1BECEF9-1047-E89F-4CC8-8F856750E5D0";
+        public const string GLOBAL_ENABLED_LAVA_COMMANDS = "933CFB7D-C9E1-BDAE-40AD-231002A91626";
         public const string PERSON_ALLERGY = "DBD192C9-0AA1-46EC-92AB-A3DA8E056D31";
+        public const string PERSON_ERA_CURRENTLY_AN_ERA = "CE5739C5-2156-E2AB-48E5-1337C38B935E";
+        public const string PERSON_ERA_END_DATE = "4711D67E-7526-9582-4A8E-1CD7BBE1B3A2";
+        public const string PERSON_ERA_FIRST_CHECKIN = "AB12B3B0-55B8-D6A5-4C1F-DB9CCB2C4342";
+        public const string PERSON_ERA_FIRST_GAVE = "EE5EC76A-D4B9-56B5-4B48-29627D945F10";
+        public const string PERSON_ERA_LAST_CHECKIN = "5F4C6462-018E-D19C-4AB0-9843CB21C57E";
+        public const string PERSON_ERA_LAST_GAVE = "02F64263-E290-399E-4487-FC236F4DE81F";
+        public const string PERSON_ERA_START_DATE = "A106610C-A7A1-469E-4097-9DE6400FDFC2";
+        public const string PERSON_ERA_TIMES_CHECKEDIN_16 = "45A1E978-DC5B-CFA1-4AF4-EA098A24C914";
+        public const string PERSON_ERA_TIMES_GIVEN_52 = "57700E8F-ED11-D787-415A-04DDF411BB10";
+        public const string PERSON_ERA_TIMES_GIVEN_6 = "AC11EF53-AE55-79A0-4CAD-43721750E988";
         public const string PERSON_FACEBOOK = "2B8A03D3-B7DC-4DA3-A31E-826D655435D5";
         public const string PERSON_INSTAGRAM = "8796567C-4047-43C1-AF32-2FDBE030BEAC";
         public const string PERSON_TWITTER = "12E9C8A7-03E4-472D-9E20-9EC8F3453B2F";
@@ -39,14 +51,17 @@ namespace Rock.Client.SystemGuid
     /// </summary>
     public class BinaryFiletype
     {
+        public const string BENEVOLENCE_REQUEST_DOCUMENTS = "2599DDBE-40E1-158E-4436-AACA6C00556E";
         public const string CHECKIN_LABEL = "DE0E5C50-234B-474C-940C-C571F385E65F";
         public const string CONTENT_CHANNEL_ITEM_IMAGE = "8DBF874C-F3C2-4848-8137-C963C431EB0B";
         public const string CONTRIBUTION_IMAGE = "6D18A9C4-34AB-444A-B95B-C644019465AC";
         public const string DEFAULT = "C1142570-8CD6-4A20-83B1-ACB47C1CD377";
+        public const string DIGITALLY_SIGNED_DOCUMENTS = "40871411-4E2D-45C2-9E21-D9FCBA5FC340";
         public const string LOCATION_IMAGE = "DAB74416-3272-4411-BA69-70944B549A4B";
         public const string MEDIA_FILE = "6CBEA3B0-E983-40C1-9712-BD3FA2466EAE";
         public const string MERGE_TEMPLATE = "BD63EC0C-2DF8-4C55-97E3-616870C67C59";
         public const string PERSON_IMAGE = "03BD8476-8A9F-4078-B628-5B538F967AFC";
+        public const string SIGNED_DOCUMENT_FILE_TYPE = "8C9C5A97-005A-46E5-AF7B-AC2F359B738A";
     }
 
     /// <summary>
@@ -66,10 +81,13 @@ namespace Rock.Client.SystemGuid
         public const string HISTORY_FINANCIAL_TRANSACTION = "477EE3BE-C68F-48BD-B218-FAFC99AF56B3";
         public const string HISTORY_PERSON = "6F09163D-7DDD-4E1E-8D18-D7CAA04451A7";
         public const string HISTORY_PERSON_ACTIVITY = "0836845E-5ED8-4ABE-8787-3B61EF2F0FA5";
+        public const string HISTORY_PERSON_ANALYTICS = "C1524D2E-3E8F-3D83-45F8-526B749D79F0";
         public const string HISTORY_PERSON_COMMUNICATIONS = "F291034B-7581-48F3-B522-E31B8534D529";
         public const string HISTORY_PERSON_DEMOGRAPHIC_CHANGES = "51D3EC5A-D079-45ED-909E-B0AB2FD06835";
         public const string HISTORY_PERSON_FAMILY_CHANGES = "5C4CCE5A-D7D0-492F-A241-96E13A3F7DF8";
         public const string HISTORY_PERSON_GROUP_MEMBERSHIP = "325278A4-FACA-4F38-A405-9C090B3BAA34";
+        public const string HISTORY_PERSON_REGISTRATION = "DA9C0CC7-7B31-4E1E-BBA5-50405B2D9EFE";
+        public const string PERSON_ATTRIBUTES_ERA = "266A1EA8-425C-7BB0-4191-C2E234D60086";
         public const string PERSON_ATTRIBUTES_SOCIAL = "DD8F467D-B83C-444F-B04C-C681167046A1";
         public const string PERSONAL_MERGE_TEMPLATE = "A9F2F544-660B-4176-ACAD-88898416A66E";
         public const string SCHEDULE_METRICS = "5A794741-5444-43F0-90D7-48E47276D426";
@@ -112,6 +130,7 @@ namespace Rock.Client.SystemGuid
         public const string FINANCIAL_TRANSACTION_TYPE = "FFF62A4B-5D88-4DEB-AF8F-8E6178E41FE5";
         public const string GROUP_LOCATION_TYPE = "2E68D37C-FB7B-4AA5-9E09-3785D52156CB";
         public const string GROUPTYPE_PURPOSE = "B23F1E45-BC26-4E82-BEB3-9B191FE5CCC3";
+        public const string LINKLIST_DEFAULT_LIST = "7E7969BD-945C-4472-8A80-889EF5833776";
         public const string LOCATION_ADDRESS_STATE = "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB";
         public const string LOCATION_COUNTRIES = "D7979EA1-44E9-46E2-BF37-DDAF7F741378";
         public const string LOCATION_TYPE = "3285DCEF-FAA4-43B9-9338-983F4A384ABA";
@@ -128,6 +147,7 @@ namespace Rock.Client.SystemGuid
         public const string PERSON_REVIEW_REASON = "7680C445-AD69-4E5D-94F0-CBAA96DB0FF8";
         public const string PERSON_SUFFIX = "16f85b3c-b3e8-434c-9094-f3d41f87a740";
         public const string PERSON_TITLE = "4784cd23-518b-43ee-9b97-225bf6e07846";
+        public const string PROTECT_MY_MINISTRY_MVR_JURISDICTION_CODES = "2F8821E8-05B9-4CD5-9FA4-303662AAC85D";
         public const string PROTECT_MY_MINISTRY_PACKAGES = "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF";
         public const string REST_API_ALLOWED_DOMAINS = "DF7C8DF7-49F9-4858-9E5D-20842AF65AD8";
         public const string SCHOOL_GRADES = "24E5A79F-1E62-467A-AD5D-0D10A2328B4D";
@@ -138,6 +158,9 @@ namespace Rock.Client.SystemGuid
     /// </summary>
     public class DefinedValue
     {
+        public const string BENEVOLENCE_APPROVED = "18D3A2DA-F2BA-49AE-83EB-7E60DCD18A3B";
+        public const string BENEVOLENCE_DENIED = "3720671E-DA48-405F-A6D5-5E2D47436F9A";
+        public const string BENEVOLENCE_PENDING = "67B24629-62A9-436A-A98C-30A454642153";
         public const string CHART_STYLE_FLOT = "B45DA8E1-B9A6-46FD-9A2B-E8440D7D6AAC";
         public const string CHART_STYLE_ROCK = "2ABB2EA0-B551-476C-8F6B-478CD08C2227";
         public const string CHECKIN_SEARCH_TYPE_NAME = "071D6DAA-3063-463A-B8A1-7D9A1BE1BB31";
@@ -185,6 +208,7 @@ namespace Rock.Client.SystemGuid
         public const string PERSON_RECORD_STATUS_INACTIVE = "1DAD99D5-41A9-4865-8366-F269902B80A4";
         public const string PERSON_RECORD_STATUS_PENDING = "283999EC-7346-42E3-B807-BCE9B2BABB49";
         public const string PERSON_RECORD_STATUS_REASON_DECEASED = "05D35BC4-5816-4210-965F-1BF44F35A16A";
+        public const string PERSON_RECORD_STATUS_REASON_NO_ACTIVITY = "64014FE6-943D-4ACF-8014-FED9F9169AE8";
         public const string PERSON_RECORD_TYPE_BUSINESS = "BF64ADD3-E70A-44CE-9C4B-E76BBED37550";
         public const string PERSON_RECORD_TYPE_PERSON = "36CF10D6-C695-413D-8E7C-4546EFEF385E";
         public const string PERSON_RECORD_TYPE_RESTUSER = "E2261A84-831D-4234-9BE0-4D628BBE751E";
@@ -206,6 +230,7 @@ namespace Rock.Client.SystemGuid
     public class EntityType
     {
         public const string AUTHENTICATION_DATABASE = "4E9B798F-BB68-4C0E-9707-0928D15AB020";
+        public const string BENEVOLENCE_REQUEST = "CF0CE5C1-9286-4310-9B50-10D040F8EBD2";
         public const string BLOCK = "D89555CA-9AE4-4D62-8AF1-E5E463C1EF65";
         public const string COMMUNICATION_MEDIUM_EMAIL = "5A653EBE-6803-44B4-85D2-FB7B8146D55D";
         public const string COMMUNICATION_MEDIUM_SMS = "4BC02764-512A-4A10-ACDE-586F71D8A8BD";
@@ -226,6 +251,7 @@ namespace Rock.Client.SystemGuid
         public const string MERGE_TEMPLATE = "CD1DB988-6891-4B0F-8D1B-B0A311A3BC3E";
         public const string METRICCATEGORY = "3D35C859-DF37-433F-A20A-0FFD0FCB9862";
         public const string NOTE = "53DC1E78-14A5-44DE-903F-6A2CB02164E7";
+        public const string PAGE = "E104DCDF-247C-4CED-A119-8CC51632761F";
         public const string PERSON = "72657ED8-D16E-492E-AC12-144C5E7567E7";
         public const string PERSON_ALIAS = "90F5E87B-F0D5-4617-8AE9-EB57E673F36F";
         public const string PROTECT_MY_MINISTRY_PROVIDER = "C16856F4-3C6B-4AFB-A0B8-88A303508206";
@@ -287,6 +313,7 @@ namespace Rock.Client.SystemGuid
         public const string INTEGER = "A75DFC58-7A1B-4799-BF31-451B2BBE38FF";
         public const string INTEGER_RANGE = "9D5F21E0-DEA0-4E8E-BA42-71151F6A8ED4";
         public const string KEY_VALUE_LIST = "73B02051-0D38-4AD9-BF81-A2D477DE4F70";
+        public const string LAVA_COMMANDS = "4BD9088F-5CC6-89B1-45FC-A2AAFFC7CC0D";
         public const string LOCATION = "B0B9EFE3-F09F-4604-AD1B-76B298A85D83";
         public const string MEMO = "C28C7BF3-A552-4D77-9408-DEDCF760CED0";
         public const string METRIC_CATEGORIES = "F5334A8E-B7E2-415C-A6EC-A6D8FA5341C4";
@@ -297,6 +324,7 @@ namespace Rock.Client.SystemGuid
         public const string PERSON = "E4EAB7B2-0B76-429B-AFE4-AD86D7428C70";
         public const string PERSON_BADGES = "3F1AE891-7DC8-46D2-865D-11543B34FB60";
         public const string REMOTE_AUTHS = "ECA90666-E7A0-4406-8559-0153DCB908FD";
+        public const string SCHEDULE = "E9C12C59-98EA-4977-8318-647435BE9A9C";
         public const string SCHEDULES = "EC6A5CAF-F6A2-47A4-9CBA-6E1C53D7E59B";
         public const string SECURITY_ROLE = "7BD25DC9-F34A-478D-BEF9-0C787F5D39B8";
         public const string SINGLE_SELECT = "7525C4CB-EE6B-41D4-9B64-A08048D5A5C0";
@@ -383,6 +411,7 @@ namespace Rock.Client.SystemGuid
         public const string GROUPTYPE_SERVING_TEAM = "2C42B2D4-1C5F-4AD5-A9AD-08631B872AC4";
         public const string GROUPTYPE_SMALL_GROUP = "50FCFB30-F51A-49DF-86F4-2B176EA1820B";
         public const string GROUPTYPE_SMALL_GROUP_SECTION = "FAB75EC6-0402-456A-BE34-252097DE4F20";
+        public const string GROUPTYPE_WEEKLY_SERVICE_CHECKIN_AREA = "FEDD389A-616F-4A53-906C-63D8255631C5";
     }
 
     /// <summary>
@@ -442,8 +471,6 @@ namespace Rock.Client.SystemGuid
         public const string CHECK_IN_ROOT = "CDF2C599-D341-42FD-B7DC-CD402EA96050";
         public const string CHECK_IN_TYPE = "62C70118-0A6F-432A-9D84-A5296655CB9E";
         public const string CHILDPAGES = "D58F205E-E9CC-4BD9-BC79-F3DA86F6E346";
-        public const string CKEDITOR_ROCKFILEBROWSER_PLUGIN_FRAME = "4A4995CA-24F6-4D33-B861-A24274F53AA6";
-        public const string CKEDITOR_ROCKMERGEFIELD_PLUGIN_FRAME = "1FC09F0D-72F2-44E6-9D16-2884F9AF33DD";
         public const string CMS_CONFIGURATION = "B4A24AB7-9369-4055-883F-4F4892C39AE3";
         public const string COMMUNICATION = "60002BC0-790A-4052-8F8D-B08C2C5D261C";
         public const string COMMUNICATION_HISTORY = "CADB44F2-2453-4DB5-AB11-DADA5162AB79";
@@ -532,6 +559,8 @@ namespace Rock.Client.SystemGuid
         public const string HISTORY = "BC8E5377-0F6C-457A-9CF0-0F0A0AB2A418";
         public const string HISTORY_CATEGORIES = "95ACFF8C-B9EE-41C6-BAC0-D117D6E1FADC";
         public const string HTML_CONTENT_APPROVAL = "9DF95EFF-88B4-401A-8F5F-E3B8DB02A308";
+        public const string HTMLEDITOR_ROCKFILEBROWSER_PLUGIN_FRAME = "4A4995CA-24F6-4D33-B861-A24274F53AA6";
+        public const string HTMLEDITOR_ROCKMERGEFIELD_PLUGIN_FRAME = "1FC09F0D-72F2-44E6-9D16-2884F9AF33DD";
         public const string INTERNAL_HOMEPAGE = "20F97A93-7949-4C2A-8A5E-C756FE8585CA";
         public const string ITEM_DETAIL = "56F1DC05-3D7D-49B6-9A30-5CF271C687F4";
         public const string JOBS_ADMINISTRATION = "C58ADA1A-6322-4998-8FED-C3565DE87EFA";
@@ -586,8 +615,6 @@ namespace Rock.Client.SystemGuid
         public const string PHOTO_UPLOAD = "8559A9F1-C6A4-4945-B393-74F6706A8FA2";
         public const string PLEDGE_DETAIL = "EF7AA296-CA69-49BC-A28B-901A8AAA9466";
         public const string PLEDGE_LIST = "1570D2AF-4FE2-4FC7-BED9-F20EBCBE9867";
-        public const string PLUGIN_MANAGER = "B13FCF9A-FAE5-4E53-AF7C-32DF9CA5AAE3";
-        public const string PLUGIN_SETTINGS = "1AFDA740-8119-45B8-AF4D-58856D469BE5";
         public const string POWER_TOOLS = "7F1F4130-CB98-473B-9DE1-7A886D2283ED";
         public const string PRAYER_CATEGORIES = "FA2A1171-9308-41C7-948C-C9EBEA5BD668";
         public const string PRAYER_MANAGE = "1A3437C8-D4CB-4329-A366-8D6A4CBF79BF";
@@ -682,6 +709,7 @@ namespace Rock.Client.SystemGuid
     public class SystemEmail
     {
         public const string CONFIG_EXCEPTION_NOTIFICATION = "75CB0A4A-B1C5-4958-ADEB-8621BD231520";
+        public const string DIGITAL_SIGNATURE_INVITE = "791F2DE4-5A59-60AE-4F2F-FDC3EBC4FFA9";
         public const string FINANCE_PLEDGE_CONFIRMATION = "73E8D035-61BB-495A-A87F-39007B98834C";
         public const string GROUP_ATTENDANCE_REMINDER = "ED567FDE-A3B4-4827-899D-C2740DF3E5DA";
         public const string REGISTRATION_CONFIRMATION = "7B0F4F06-69BD-4CB4-BD04-8DA3779D5259";

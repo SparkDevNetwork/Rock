@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Web.UI;
+using Newtonsoft.Json.Linq;
 using Rock;
 using Rock.Data;
 using Rock.MergeTemplates;
@@ -160,13 +161,12 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            var globalMergeFields = GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
-            globalMergeFields.Add( "CurrentPerson", this.CurrentPerson );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             BinaryFile outputBinaryFileDoc = null;
 
             try
             {
-                outputBinaryFileDoc = mergeTemplateType.CreateDocument( mergeTemplate, mergeObjectsList, globalMergeFields );
+                outputBinaryFileDoc = mergeTemplateType.CreateDocument( mergeTemplate, mergeObjectsList, mergeFields );
 
                 if ( mergeTemplateType.Exceptions != null && mergeTemplateType.Exceptions.Any() )
                 {
@@ -309,7 +309,7 @@ namespace RockWeb.Blocks.Core
                             primaryGroupPerson.AdditionalLavaFields = primaryGroupPerson.AdditionalLavaFields ?? new Dictionary<string, object>();
                             if ( groupMember != null )
                             {
-                                primaryGroupPerson.AdditionalLavaFields.Add( "GroupMember", groupMember );
+                                primaryGroupPerson.AdditionalLavaFields.AddOrIgnore( "GroupMember", groupMember );
                             }
                         }
 
@@ -409,6 +409,21 @@ namespace RockWeb.Blocks.Core
                         IEntity mergeEntity = ( mergeObject as IEntity );
                         mergeEntity.AdditionalLavaFields = mergeEntity.AdditionalLavaFields ?? new Dictionary<string, object>();
                         object mergeValueObject = additionalMergeValue.Value;
+
+                        // if the mergeValueObject is a JArray (JSON Object), convert it into an ExpandoObject or List<ExpandoObject> so that Lava will work on it
+                        if ( mergeValueObject is JArray)
+                        {
+                            var jsonOfObject = mergeValueObject.ToJson();
+                            try
+                            {
+                                mergeValueObject = Rock.Lava.RockFilters.FromJSON( jsonOfObject );
+                            }
+                            catch ( Exception ex )
+                            {
+                                LogException( new Exception("MergeTemplateEntry couldn't do a FromJSON", ex) );
+                            }
+                        }
+
                         mergeEntity.AdditionalLavaFields.AddOrIgnore( additionalMergeValue.Key, mergeValueObject );
                     }
                     else if ( mergeObject is IDictionary<string, object> )
@@ -508,8 +523,8 @@ namespace RockWeb.Blocks.Core
         {
             var rockContext = new RockContext();
             List<object> mergeObjectsList = GetMergeObjectList( rockContext, 1 );
-            var globalMergeFields = GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
-            globalMergeFields.Add( "CurrentPerson", this.CurrentPerson );
+
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
             MergeTemplate mergeTemplate = new MergeTemplateService( rockContext ).Get( mtPicker.SelectedValue.AsInteger() );
             MergeTemplateType mergeTemplateType = null;
@@ -521,11 +536,11 @@ namespace RockWeb.Blocks.Core
             if ( mergeTemplateType != null )
             {
                 // have the mergeTemplateType generate the help text
-                lShowMergeFields.Text = mergeTemplateType.GetLavaDebugInfo( mergeObjectsList, globalMergeFields );
+                lShowMergeFields.Text = mergeTemplateType.GetLavaDebugInfo( mergeObjectsList, mergeFields );
             }
             else
             {
-                lShowMergeFields.Text = MergeTemplateType.GetDefaultLavaDebugInfo( mergeObjectsList, globalMergeFields );
+                lShowMergeFields.Text = MergeTemplateType.GetDefaultLavaDebugInfo( mergeObjectsList, mergeFields );
             }
         }
 

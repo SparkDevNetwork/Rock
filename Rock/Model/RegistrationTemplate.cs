@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -46,6 +46,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [IncludeForReporting]
         public string Name { get; set; }
 
         /// <summary>
@@ -55,6 +56,7 @@ namespace Rock.Model
         /// The category identifier.
         /// </value>
         [DataMember]
+        [IncludeForReporting]
         public int? CategoryId { get; set; }
 
         /// <summary>
@@ -212,6 +214,15 @@ namespace Rock.Model
         public string ReminderEmailTemplate { get; set; }
 
         /// <summary>
+        /// Gets or sets the set cost on instance.
+        /// </summary>
+        /// <value>
+        /// The set cost on instance.
+        /// </value>
+        [DataMember]
+        public bool? SetCostOnInstance { get; set; }
+
+        /// <summary>
         /// Gets or sets the cost.
         /// </summary>
         /// <value>
@@ -338,6 +349,104 @@ namespace Rock.Model
         [DataMember]
         public bool AllowGroupPlacement { get;set; }
 
+        /// <summary>
+        /// Gets or sets the name of the payment reminder from.
+        /// </summary>
+        /// <value>
+        /// The name of the payment reminder from.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string PaymentReminderFromName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the payment reminder from email.
+        /// </summary>
+        /// <value>
+        /// The payment reminder from email.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string PaymentReminderFromEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the payment reminder subject.
+        /// </summary>
+        /// <value>
+        /// The payment reminder subject.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string PaymentReminderSubject { get; set; }
+
+        /// <summary>
+        /// Gets or sets the payment reminder email template.
+        /// </summary>
+        /// <value>
+        /// The payment reminder email template.
+        /// </value>
+        [DataMember]
+        public string PaymentReminderEmailTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the payment reminder time span in days.
+        /// </summary>
+        /// <value>
+        /// The payment reminder time span in days.
+        /// </value>
+        [DataMember]
+        public int? PaymentReminderTimeSpan { get; set; }
+
+        /// <summary>
+        /// Gets or sets the batch name prefix.
+        /// </summary>
+        /// <value>
+        /// The batch name prefix.
+        /// </value>
+        [DataMember]
+        public string BatchNamePrefix { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to allow external registration updates (should a person be able to update their regisitration on-line after submitting it).
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [allow external registration updates]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowExternalRegistrationUpdates
+        {
+            get { return _allowExternalRegistrationUpdates; }
+            set { _allowExternalRegistrationUpdates = value; }
+        }
+        private bool _allowExternalRegistrationUpdates = true;
+
+        /// <summary>
+        /// Optional workflow type to launch at end of registration
+        /// </summary>
+        /// <value>
+        /// The workflow type id.
+        /// </value>        
+        [DataMember]
+        public int? RegistrationWorkflowTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the required signature document type identifier.
+        /// </summary>
+        /// <value>
+        /// The required signature document type identifier.
+        /// </value>
+        [DataMember]
+        public int? RequiredSignatureDocumentTemplateId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the signature documentaction.
+        /// </summary>
+        /// <value>
+        /// The signature documentaction.
+        /// </value>
+        [DataMember]
+        public SignatureDocumentAction SignatureDocumentAction { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -366,6 +475,24 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual FinancialGateway FinancialGateway { get; set; }
+
+        /// <summary>
+        /// Gets or sets the workflow type to launch at end of registration.
+        /// </summary>
+        /// <value>
+        /// The Workflow Type.
+        /// </value>
+        [DataMember]
+        public virtual WorkflowType RegistrationWorkflowType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the required signature document.
+        /// </summary>
+        /// <value>
+        /// The type of the required signature document.
+        /// </value>
+        [DataMember]
+        public virtual SignatureDocumentTemplate RequiredSignatureDocumentTemplate { get; set; }
 
         /// <summary>
         /// Gets or sets the discounts.
@@ -456,6 +583,8 @@ namespace Rock.Model
             this.HasOptional( t => t.Category ).WithMany().HasForeignKey( t => t.CategoryId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.GroupType ).WithMany().HasForeignKey( t => t.GroupTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.FinancialGateway ).WithMany().HasForeignKey( t => t.FinancialGatewayId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.RegistrationWorkflowType ).WithMany().HasForeignKey( t => t.RegistrationWorkflowTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.RequiredSignatureDocumentTemplate ).WithMany().HasForeignKey( t => t.RequiredSignatureDocumentTemplateId ).WillCascadeOnDelete( false );
         }
     }
 
@@ -514,6 +643,24 @@ namespace Rock.Model
         /// All
         /// </summary>
         All = RegistrationContact | GroupFollowers | GroupLeaders
+    }
+
+
+    /// <summary>
+    /// How signature document should be presented to registrant
+    /// </summary>
+    public enum SignatureDocumentAction
+    {
+        /// <summary>
+        /// Email document
+        /// </summary>
+        Email = 0,
+
+        /// <summary>
+        /// Embed document in registration
+        /// </summary>
+        Embed = 1,
+
     }
 
     #endregion

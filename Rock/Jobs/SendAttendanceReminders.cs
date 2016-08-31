@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -54,6 +54,7 @@ namespace Rock.Jobs
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
             var groupType = GroupTypeCache.Read( dataMap.GetString( "GroupType" ).AsGuid() );
+            int attendanceRemindersSent = 0;
             if ( groupType.TakesAttendance && groupType.SendAttendanceReminder )
             {
 
@@ -161,12 +162,10 @@ namespace Rock.Jobs
                 foreach ( var occurrence in attendanceService
                     .Queryable().AsNoTracking()
                     .Where( a =>
-                        a.Group != null &&
-                        a.ScheduleId.HasValue &&
-                        a.Group.GroupTypeId == groupType.Id &&
-                        a.Group.IsActive &&
-                        a.StartDateTime > startDate &&
-                        a.StartDateTime < endDate )
+                        a.StartDateTime >= startDate &&
+                        a.StartDateTime < endDate &&
+                        occurrences.Keys.Contains( a.GroupId.Value ) &&
+                        a.ScheduleId.HasValue )
                     .Select( a => new
                     {
                         GroupId = a.GroupId.Value,
@@ -175,10 +174,7 @@ namespace Rock.Jobs
                     .Distinct()
                     .ToList() )
                 {
-                    if ( occurrences.ContainsKey( occurrence.GroupId ) )
-                    {
-                        occurrences[occurrence.GroupId].RemoveAll( d => d == occurrence.StartDateTime );
-                    }
+                    occurrences[occurrence.GroupId].RemoveAll( d => d.Date == occurrence.StartDateTime.Date );
                 }
 
                 // Get the groups that have occurrences
@@ -200,7 +196,7 @@ namespace Rock.Jobs
                 {
                     foreach ( var group in occurrences.Where( o => o.Key == leader.GroupId ) )
                     {
-                        var mergeObjects = GlobalAttributesCache.GetMergeFields( leader.Person );
+                        var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields(  null, leader.Person );
                         mergeObjects.Add( "Person", leader.Person );
                         mergeObjects.Add( "Group", leader.Group );
                         mergeObjects.Add( "Occurrence", group.Value.Max() );
@@ -209,10 +205,13 @@ namespace Rock.Jobs
                         recipients.Add( new RecipientData( leader.Person.Email, mergeObjects ) );
 
                         Email.Send( dataMap.GetString( "SystemEmail" ).AsGuid(), recipients );
+                        attendanceRemindersSent++;
 
                     }
                 }
             }
+
+            context.Result = string.Format( "{0} attendance reminders sent", attendanceRemindersSent );
         }
     }
 }

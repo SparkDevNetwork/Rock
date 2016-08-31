@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -46,6 +46,8 @@ namespace RockWeb.Blocks.Finance
     [ContextAware]
     public partial class ScheduledTransactionList : Rock.Web.UI.RockBlock
     {
+        private bool _isExporting = false;
+
         #region Properties
 
         /// <summary>
@@ -198,9 +200,9 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void gList_GridRebind( object sender, EventArgs e )
+        private void gList_GridRebind( object sender, GridRebindEventArgs e )
         {
-            BindGrid();
+            BindGrid( e.IsExporting );
         }
 
         #endregion
@@ -243,7 +245,7 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Binds the grid.
         /// </summary>
-        private void BindGrid()
+        private void BindGrid( bool isExporting = false )
         {
             int? personId = null;
             int? givingGroupId = null;
@@ -358,8 +360,12 @@ namespace RockWeb.Blocks.Finance
                         .ThenByDescending( t => t.StartDate );
                 }
 
+                _isExporting = isExporting;
+
                 gList.SetLinqDataSource<FinancialScheduledTransaction>( qry );
                 gList.DataBind();
+
+                _isExporting = false;
             }
         }
 
@@ -379,14 +385,13 @@ namespace RockWeb.Blocks.Finance
                     .ToList();
                 if ( summary.Any() )
                 {
-                    if ( gList.AllowPaging )
+                    if ( _isExporting )
                     {
-                        return "<small>" + summary.AsDelimited( "<br/>" ) + "</small>";
+                        return summary.AsDelimited( Environment.NewLine );
                     }
                     else
                     {
-                        // Allow paging is turned off when exporting to excel. In this case, do not add the html
-                        return summary.AsDelimited( Environment.NewLine );
+                        return "<small>" + summary.AsDelimited( "<br/>" ) + "</small>";
                     }
                 }
             }

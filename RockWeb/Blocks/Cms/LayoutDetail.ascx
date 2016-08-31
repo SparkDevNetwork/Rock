@@ -11,6 +11,7 @@
         <div class="panel-heading">
             <h1 class="panel-title"><i class="fa fa-th"></i> <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
         </div>
+        <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
         <div class="panel-body">
             <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="LayoutDetail" />
 
@@ -62,7 +63,7 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" Text="Edit" CssClass="btn btn-primary btn-sm" CausesValidation="false" OnClick="btnEdit_Click" />
+                        <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="btnEdit_Click" />
     <%--                    <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link btn-sm" CausesValidation="false" OnClick="btnDelete_Click" />--%>
                     </div>

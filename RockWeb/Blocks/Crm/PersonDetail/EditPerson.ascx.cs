@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,7 +30,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 /*******************************************************************************************************************************
- * NOTE: The Security/AccountEdit.ascx block has very similiar functionality.  If updating this block, make sure to check
+ * NOTE: The Security/AccountEdit.ascx block has very similar functionality.  If updating this block, make sure to check
  * that block also.  It may need the same updates.
  *******************************************************************************************************************************/
 
@@ -64,9 +64,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( Person != null )
             {
                 var personService = new PersonService( new RockContext() );
-                foreach ( var family in personService.GetFamilies( Person.Id ).Select( a => new { a.Name, a.Id } ) )
+                foreach ( var family in personService.GetFamilies( Person.Id ).Select( a => new { a.Name, a.Id, a.Members } ) )
                 {
-                    ddlGivingGroup.Items.Add( new ListItem( family.Name, family.Id.ToString() ) );
+                    string familyNameWithFirstNames = GetFamilyNameWithFirstNames( family.Name, family.Members );
+                    ddlGivingGroup.Items.Add( new ListItem( familyNameWithFirstNames, family.Id.ToString() ) );
                 }
             }
 
@@ -85,6 +86,31 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             grdPreviousNames.Actions.ShowAdd = true;
             grdPreviousNames.Actions.AddClick += grdPreviousNames_AddClick;
+        }
+
+        /// <summary>
+        /// Gets the family name with first names.
+        /// </summary>
+        /// <param name="familyName">Name of the family.</param>
+        /// <param name="familyMembers">The family members.</param>
+        /// <returns></returns>
+        private string GetFamilyNameWithFirstNames( string familyName, ICollection<GroupMember> familyMembers )
+        {
+            var adultFirstNames = familyMembers.Where( a => a.GroupRole.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).OrderBy( a => a.Person.Gender ).ThenBy( a => a.Person.NickName ).Select( a => a.Person.NickName ?? a.Person.FirstName ).ToList();
+            var otherFirstNames = familyMembers.Where( a => a.GroupRole.Guid != Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).OrderBy( a => a.Person.Gender ).ThenBy( a => a.Person.NickName ).Select( a => a.Person.NickName ?? a.Person.FirstName ).ToList();
+            var firstNames = new List<string>();
+            firstNames.AddRange( adultFirstNames );
+            firstNames.AddRange( otherFirstNames );
+            string familyNameWithFirstNames;
+            if ( firstNames.Any() )
+            {
+                familyNameWithFirstNames = string.Format( "{0} ({1})", familyName, firstNames.AsDelimited( ", ", " and " ) );
+            }
+            else
+            {
+                familyNameWithFirstNames = string.Format( "{0} (no family members)", familyName );
+            }
+            return familyNameWithFirstNames;
         }
 
         /// <summary>
@@ -375,7 +401,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     int? newGivingGroupId = ddlGivingGroup.SelectedValueAsId();
                     if ( person.GivingGroupId != newGivingGroupId )
                     {
-                        string oldGivingGroupName = person.GivingGroup != null ? person.GivingGroup.Name : string.Empty;
+                        string oldGivingGroupName = string.Empty;
+                        if ( Person.GivingGroup != null )
+                        {
+                            oldGivingGroupName = GetFamilyNameWithFirstNames( Person.GivingGroup.Name, Person.GivingGroup.Members );
+                        }
+                        
                         string newGivingGroupName = newGivingGroupId.HasValue ? ddlGivingGroup.Items.FindByValue( newGivingGroupId.Value.ToString() ).Text : string.Empty;
                         History.EvaluateChange( changes, "Giving Group", oldGivingGroupName, newGivingGroupName );
                     }
@@ -496,7 +527,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             lTitle.Text = string.Format( "Edit: {0}", Person.FullName ).FormatAsHtmlTitle();
 
             imgPhoto.BinaryFileId = Person.PhotoId;
-            imgPhoto.NoPictureUrl = Person.GetPhotoUrl( null, Person.Age, Person.Gender );
+            imgPhoto.NoPictureUrl = Person.GetPersonPhotoUrl( Person, 400, 400 );
 
             ddlTitle.SelectedValue = Person.TitleValueId.HasValue ? Person.TitleValueId.Value.ToString() : string.Empty;
             tbFirstName.Text = Person.FirstName;

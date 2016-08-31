@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -293,6 +293,8 @@ namespace RockWeb.Blocks.WorkFlow
                 }
                 if ( _workflow != null )
                 {
+                    hlblWorkflowId.Text = _workflow.WorkflowId;
+
                     _workflow.LoadAttributes();
                     foreach ( var activity in _workflow.Activities )
                     {
@@ -478,24 +480,30 @@ namespace RockWeb.Blocks.WorkFlow
 
         private void BuildForm( bool setValues )
         {
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+            mergeFields.Add( "Action", _action );
+            mergeFields.Add( "Activity", _activity );
+            mergeFields.Add( "Workflow", _workflow );
+
             var form = _actionType.WorkflowForm;
 
             if ( setValues )
             {
-                var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
-                mergeFields.Add( "Action", _action );
-                mergeFields.Add( "Activity", _activity );
-                mergeFields.Add( "Workflow", _workflow );
-                if ( CurrentPerson != null )
-                {
-                    mergeFields.Add( "CurrentPerson", CurrentPerson );
-                }
-
                 lheadingText.Text = form.Header.ResolveMergeFields( mergeFields );
                 lFootingText.Text = form.Footer.ResolveMergeFields( mergeFields );
             }
 
+            if ( _workflow != null && _workflow.CreatedDateTime.HasValue )
+            {
+                hlblDateAdded.Text = String.Format( "Added: {0}", _workflow.CreatedDateTime.Value.ToShortDateString() );
+            }
+            else
+            {
+                hlblDateAdded.Visible = false;
+            }
+
             phAttributes.Controls.Clear();
+
             foreach ( var formAttribute in form.FormAttributes.OrderBy( a => a.Order ) )
             {
                 if ( formAttribute.IsVisible )
@@ -510,7 +518,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                     if ( !string.IsNullOrWhiteSpace( formAttribute.PreHtml))
                     {
-                        phAttributes.Controls.Add( new LiteralControl( formAttribute.PreHtml ) );
+                        phAttributes.Controls.Add( new LiteralControl( formAttribute.PreHtml.ResolveMergeFields(mergeFields) ) );
                     }
 
                     if ( formAttribute.IsReadOnly )
@@ -561,7 +569,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                     if ( !string.IsNullOrWhiteSpace( formAttribute.PostHtml ) )
                     {
-                        phAttributes.Controls.Add( new LiteralControl( formAttribute.PostHtml ) );
+                        phAttributes.Controls.Add( new LiteralControl( formAttribute.PostHtml.ResolveMergeFields( mergeFields) ) );
                     }
 
                 }
@@ -677,15 +685,10 @@ namespace RockWeb.Blocks.WorkFlow
                 _activity != null &&
                 _action != null )
             {
-
-                var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                 mergeFields.Add( "Action", _action );
                 mergeFields.Add( "Activity", _activity );
                 mergeFields.Add( "Workflow", _workflow );
-                if ( CurrentPerson != null )
-                {
-                    mergeFields.Add( "CurrentPerson", CurrentPerson );
-                } 
                 
                 Guid activityTypeGuid = Guid.Empty;
                 string responseText = "Your information has been submitted successfully.";
@@ -775,7 +778,7 @@ namespace RockWeb.Blocks.WorkFlow
                 else
                 {
                     ShowMessage( NotificationBoxType.Danger, "Workflow Processing Error(s):", 
-                        "<ul><li>" + errorMessages.AsDelimited( "</li><li>" ) + "</li></ul>" );
+                        "<ul><li>" + errorMessages.AsDelimited( "</li><li>", null, true ) + "</li></ul>" );
                 }
                 if ( _workflow.Id != 0 )
                 {

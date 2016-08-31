@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -40,20 +40,21 @@ namespace RockWeb.Blocks.Security
     [Category( "Security" )]
     [Description( "Prompts user for login credentials." )]
 
-    [LinkedPage( "New Account Page", "Page to navigate to when user selects 'Create New Account' (if blank will use 'NewAccountPage' page route)", true, "", "", 0 )]
-    [LinkedPage( "Help Page", "Page to navigate to when user selects 'Help' option (if blank will use 'ForgotUserName' page route)", true, "", "", 1 )]
+    [LinkedPage( "New Account Page", "Page to navigate to when user selects 'Create New Account' (if blank will use 'NewAccountPage' page route)", false, "", "", 0 )]
+    [LinkedPage( "Help Page", "Page to navigate to when user selects 'Help' option (if blank will use 'ForgotUserName' page route)", false, "", "", 1 )]
     [CodeEditorField( "Confirm Caption", "The text (HTML) to display when a user's account needs to be confirmed.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"
 Thank-you for logging in, however, we need to confirm the email associated with this account belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue.
 ", "", 2 )]
-    [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)", true, "", "", 3 )]
+    [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)", false, "", "", 3 )]
     [SystemEmailField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "", 4 )]
     [CodeEditorField( "Locked Out Caption", "The text (HTML) to display when a user's account has been locked.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"
-Sorry, your account has been locked.  Please contact our office at {{ GlobalAttribute.OrganizationPhone }} or email {{ GlobalAttribute.OrganizationEmail }} to resolve this.  Thank-you. 
+Sorry, your account has been locked.  Please contact our office at {{ 'Global' | Attribute:'OrganizationPhone' }} or email {{ 'Global' | Attribute:'OrganizationEmail' }} to resolve this.  Thank-you. 
 ", "", 5 )]
-    [BooleanField("Hide New Account Option", "Should 'New Account' option be hidden?  For site's that require user to be in a role (Internal Rock Site for example), users shouldn't be able to create their own accont.", false, "", 6, "HideNewAccount" )]
-    [RemoteAuthsField("Remote Authorization Types", "Which of the active remote authorization types should be displayed as an option for user to use for authentication.", false, "", "", 7)]
-    [CodeEditorField( "Prompt Message", "Optional text (HTML) to display above username and password fields.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"", "", 8 )]
-    [LinkedPage( "Redirect Page", "Page to redirect user to upon successful login. The 'returnurl' query string will always override this setting for database authenticated logins. Redirect Page Setting will override third-party authentication 'returnurl'.", false, "", "", 9 )]
+    [BooleanField("Hide New Account Option", "Should 'New Account' option be hidden?  For site's that require user to be in a role (Internal Rock Site for example), users shouldn't be able to create their own account.", false, "", 6, "HideNewAccount" )]
+    [TextField( "New Account Text", "The text to show on the New Account button.", false, "Register", "", 7, "NewAccountButtonText" )]
+    [RemoteAuthsField("Remote Authorization Types", "Which of the active remote authorization types should be displayed as an option for user to use for authentication.", false, "", "", 8)]
+    [CodeEditorField( "Prompt Message", "Optional text (HTML) to display above username and password fields.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"", "", 9 )]
+    [LinkedPage( "Redirect Page", "Page to redirect user to upon successful login. The 'returnurl' query string will always override this setting for database authenticated logins. Redirect Page Setting will override third-party authentication 'returnurl'.", false, "", "", 10 )]
     public partial class Login : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -67,6 +68,7 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
             base.OnInit( e );
 
             btnNewAccount.Visible = !GetAttributeValue( "HideNewAccount" ).AsBoolean();
+            btnNewAccount.Text = this.GetAttributeValue( "NewAccountButtonText" ) ?? "Register";
 
             phExternalLogins.Controls.Clear();
 
@@ -113,7 +115,7 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
 
                     LinkButton lbLogin = new LinkButton();
                     phExternalLogins.Controls.Add( lbLogin );
-                    lbLogin.AddCssClass( "btn btn-authenication " + loginTypeName.ToLower() );
+                    lbLogin.AddCssClass( "btn btn-authentication " + loginTypeName.ToLower() );
                     lbLogin.ID = "lb" + loginTypeName + "Login";
                     lbLogin.Click += lbLogin_Click;
                     lbLogin.CausesValidation = false;
@@ -152,6 +154,7 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
             if ( !Page.IsPostBack )
             {
                 lPromptMessage.Text = GetAttributeValue( "PromptMessage" );
+                tbUserName.Focus();
             }
 
             pnlMessage.Visible = false;
@@ -187,12 +190,12 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
                                 LoginUser( tbUserName.Text, returnUrl, cbRememberMe.Checked );
                             }
                             else
-                            { 
-                                var globalMergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields(null);
+                            {
+                                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
                                 if ( userLogin.IsLockedOut ?? false )
                                 {
-                                    lLockedOutCaption.Text = GetAttributeValue( "LockedOutCaption" ).ResolveMergeFields( globalMergeFields );
+                                    lLockedOutCaption.Text = GetAttributeValue( "LockedOutCaption" ).ResolveMergeFields( mergeFields );
 
                                     pnlLogin.Visible = false;
                                     pnlLockedOut.Visible = true;
@@ -201,7 +204,7 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
                                 {
                                     SendConfirmation( userLogin );
 
-                                    lConfirmCaption.Text = GetAttributeValue( "ConfirmCaption" ).ResolveMergeFields( globalMergeFields );
+                                    lConfirmCaption.Text = GetAttributeValue( "ConfirmCaption" ).ResolveMergeFields( mergeFields );
 
                                     pnlLogin.Visible = false;
                                     pnlConfirmation.Visible = true;
@@ -376,15 +379,15 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
                 url = ResolveRockUrl( "~/ConfirmAccount" );
             }
 
-            var mergeObjects = GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+            mergeFields.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
 
             var personDictionary = userLogin.Person.ToLiquid() as Dictionary<string, object>;
-            mergeObjects.Add( "Person", personDictionary );
-            mergeObjects.Add( "User", userLogin );
+            mergeFields.Add( "Person", personDictionary );
+            mergeFields.Add( "User", userLogin );
 
             var recipients = new List<RecipientData>();
-            recipients.Add( new RecipientData( userLogin.Person.Email, mergeObjects ) );
+            recipients.Add( new RecipientData( userLogin.Person.Email, mergeFields ) );
 
             Email.Send( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ), false );
         }

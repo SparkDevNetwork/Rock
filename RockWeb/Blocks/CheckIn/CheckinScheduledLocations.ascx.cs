@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -140,19 +140,28 @@ namespace RockWeb.Blocks.CheckIn
             var groupTypeService = new GroupTypeService( rockContext );
             var groupService = new GroupService( rockContext );
 
-            IEnumerable<GroupTypePath> groupPaths = new List<GroupTypePath>();
             var groupLocationQry = groupLocationService.Queryable();
 
-            List<int> currentAndDescendantGroupTypeIds = new List<int>();
-            var currentGroupTypeIds = this.CurrentGroupTypeIds.ToList();
-            currentAndDescendantGroupTypeIds.AddRange( currentGroupTypeIds );
-            foreach ( var templateGroupType in groupTypeService.Queryable().Where( a => currentGroupTypeIds.Contains( a.Id ) ) )
+            var templateGroupPaths = new Dictionary<int, List<GroupTypePath>>();
+            var currentAndDescendantGroupTypeIds = new List<int>();
+            foreach ( var groupType in groupTypeService.Queryable().Where( a => this.CurrentGroupTypeIds.Contains( a.Id ) ) )
             {
-                foreach ( var childGroupType in groupTypeService.GetChildGroupTypes( templateGroupType.Id ) )
+                foreach( var parentGroupType in groupType.ParentGroupTypes )
                 {
-                    currentAndDescendantGroupTypeIds.Add( childGroupType.Id );
-                    currentAndDescendantGroupTypeIds.AddRange( groupTypeService.GetAllAssociatedDescendents( childGroupType.Id ).Select( a => a.Id ).ToList() );
+                    if ( !templateGroupPaths.ContainsKey( parentGroupType.Id ) )
+                    {
+                        templateGroupPaths.Add( parentGroupType.Id, groupTypeService.GetAllAssociatedDescendentsPath( parentGroupType.Id ).ToList() );
+                    }
                 }
+
+                currentAndDescendantGroupTypeIds.Add( groupType.Id );
+                currentAndDescendantGroupTypeIds.AddRange( groupTypeService.GetAllAssociatedDescendents( groupType.Id ).Select( a => a.Id ).ToList() );
+            }
+
+            var groupPaths = new List<GroupTypePath>();
+            foreach ( var path in templateGroupPaths )
+            {
+                groupPaths.AddRange( path.Value );
             }
 
             groupLocationQry = groupLocationQry.Where( a => currentAndDescendantGroupTypeIds.Contains( a.Group.GroupTypeId ) );

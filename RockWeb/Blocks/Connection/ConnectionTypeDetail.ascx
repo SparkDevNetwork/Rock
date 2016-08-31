@@ -22,6 +22,7 @@
                     <asp:Literal ID="lIcon" runat="server" />
                     <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
             </div>
+            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                 <Rock:NotificationBox ID="nbRequired" runat="server" NotificationBoxType="Danger" Text="A default connection status and at least one activity are required." Visible="false" />
@@ -58,10 +59,12 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="IconCssClass" ValidateRequestMode="Disabled"/>
+                            <Rock:NumberBox ID="nbDaysUntilRequestIdle" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="DaysUntilRequestIdle" Label="Days Until Request Considered Idle" ValidateRequestMode="Disabled" NumberType="Integer" MinimumValue="0"/>
                         </div>
                         <div class="col-md-6">
                             <Rock:RockCheckBox ID="cbFutureFollowUp" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="EnableFutureFollowUp" Label="Enable Future Follow-up" />
                             <Rock:RockCheckBox ID="cbFullActivityList" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="EnableFullActivityList" Label="Enable Full Activity List" />
+                            <Rock:RockCheckBox ID="cbRequiresPlacementGroup" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="RequiresPlacementGroupToConnect" Label="Requires Placement Group To Connect" />
                         </div>
                     </div>
 
@@ -175,8 +178,18 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlTriggerType" runat="server" Label="Launch Workflow When" DataTextField="Name" DataValueField="Id" 
-                            OnSelectedIndexChanged="ddlTriggerType_SelectedIndexChanged" AutoPostBack="true" Required="true" ValidationGroup="ConnectionWorkflow" />
+                        <Rock:RockDropDownList ID="ddlTriggerType" runat="server" Label="Launch Workflow When" 
+                            OnSelectedIndexChanged="ddlTriggerType_SelectedIndexChanged" AutoPostBack="true" Required="true" ValidationGroup="ConnectionWorkflow" >
+                            <asp:ListItem Value="0" Text="Request Started" />
+                            <asp:ListItem Value="8" Text="Request Assigned" />
+                            <asp:ListItem Value="7" Text="Request Transferred" />
+                            <asp:ListItem Value="1" Text="Request Connected" />
+                            <asp:ListItem Value="5" Text="Placement Group Assigned" />
+                            <asp:ListItem Value="2" Text="Status Changed" />
+                            <asp:ListItem Value="3" Text="State Changed" />
+                            <asp:ListItem Value="4" Text="Activity Added" />
+                            <asp:ListItem Value="6" Text="Manual" />
+                        </Rock:RockDropDownList>
                     </div>
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlWorkflowType" runat="server" Label="Workflow Type" DataTextField="Name" DataValueField="Id" 

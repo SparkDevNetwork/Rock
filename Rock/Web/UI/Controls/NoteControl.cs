@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -71,12 +71,16 @@ namespace Rock.Web.UI.Controls
                     this.CreatedByName = value.CreatedByPersonAlias.Person.FullName;
                     this.CreatedByPhotoId = value.CreatedByPersonAlias.Person.PhotoId;
                     this.CreatedByGender = value.CreatedByPersonAlias.Person.Gender;
+                    this.CreatedByPersonId = value.CreatedByPersonAlias.Person.Id;
+                    this.CreatedByAge = value.CreatedByPersonAlias.Person.Age;
                 }
                 else
                 {
                     this.CreatedByName = string.Empty;
                     this.CreatedByPhotoId = null;
                     this.CreatedByGender = Gender.Male;
+                    this.CreatedByPersonId = null;
+                    this.CreatedByAge = null;
                 }
 
                 this.CreatedDateTime = value.CreatedDateTime;
@@ -226,6 +230,30 @@ namespace Rock.Web.UI.Controls
         {
             get { return ViewState["CreatedByPhotoId"] as int?; }
             set { ViewState["CreatedByPhotoId"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the created by person identifier.
+        /// </summary>
+        /// <value>
+        /// The created by person identifier.
+        /// </value>
+        public int? CreatedByPersonId
+        {
+            get { return ViewState["CreatedByPersonId"] as int?; }
+            set { ViewState["CreatedByPersonId"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the created by age.
+        /// </summary>
+        /// <value>
+        /// The created by age.
+        /// </value>
+        public int? CreatedByAge
+        {
+            get { return ViewState["CreatedByAge"] as int?; }
+            set { ViewState["CreatedByAge"] = value; }
         }
 
         /// <summary>
@@ -541,6 +569,7 @@ namespace Rock.Web.UI.Controls
 
             _tbNote.ID = this.ID + "_tbNewNote";
             _tbNote.TextMode = TextBoxMode.MultiLine;
+            _tbNote.ValidateRequestMode = ValidateRequestMode.Disabled;
             Controls.Add(_tbNote);
 
             _cbAlert.ID = this.ID + "_cbAlert";
@@ -616,7 +645,7 @@ namespace Rock.Web.UI.Controls
 
             if ( DisplayType == NoteDisplayType.Full && UsePersonIcon )
             {
-                writer.Write( Person.GetPhotoImageTag( CreatedByPhotoId, CreatedByGender, 50, 50 ) );
+                writer.Write( Person.GetPersonPhotoImageTag( CreatedByPersonId, CreatedByPhotoId, null, CreatedByGender, null, 50, 50) );
             }
 
             writer.AddAttribute(HtmlTextWriterAttribute.Class, "noteentry-control");
@@ -695,7 +724,7 @@ namespace Rock.Web.UI.Controls
                 {
                     if ( UsePersonIcon )
                     {
-                        writer.Write( Person.GetPhotoImageTag( CreatedByPhotoId, CreatedByGender, 50, 50 ) );
+                        writer.Write( Person.GetPersonPhotoImageTag( CreatedByPersonId, CreatedByPhotoId, CreatedByAge, CreatedByGender, null, 50, 50) );
                     }
                     else
                     {
@@ -707,6 +736,15 @@ namespace Rock.Web.UI.Controls
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "details" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                // first, encode the text to ensure html tags get encoded
+                string renderedText = Text.EncodeHtml();
+
+                // convert any http, etc text into clickable links (do this before applying Markdown)
+                renderedText = renderedText.Linkify();
+                
+                // convert any markdown into HTML, and convert into crlf into <br />
+                renderedText = renderedText.ConvertMarkdownToHtml( true );
 
                 if ( DisplayType == NoteDisplayType.Full )
                 {
@@ -728,11 +766,11 @@ namespace Rock.Web.UI.Controls
                     }
                     writer.RenderEndTag();
 
-                    writer.Write( Text.EncodeHtml().ConvertCrLfToHtmlBr() );
+                    writer.Write( renderedText );
                 }
                 else
                 {
-                    writer.Write( Text.EncodeHtml().ConvertCrLfToHtmlBr() );
+                    writer.Write( renderedText );
                     writer.Write( " - " );
                     if ( !string.IsNullOrWhiteSpace( CreatedByName ) )
                     {
@@ -816,7 +854,10 @@ namespace Rock.Web.UI.Controls
                 }
 
                 note.NoteTypeId = NoteTypeId.Value;
-                note.Caption = IsPrivate ? "You - Personal Note" : string.Empty;
+                if ( string.IsNullOrWhiteSpace( note.Caption ) )
+                {
+                    note.Caption = IsPrivate ? "You - Personal Note" : string.Empty;
+                }
                 note.Text = Text;
                 note.IsAlert = IsAlert;
                 note.IsPrivateNote = IsPrivate;

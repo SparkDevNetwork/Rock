@@ -125,7 +125,7 @@ END
 -- Event Notification Job
 DECLARE @JobId int
 INSERT INTO [ServiceJob] ( [IsSystem], [IsActive], [Name], [Description], [Assembly], [Class], [CronExpression], [Guid], [NotificationStatus] )
-VALUES ( 0, 1, 'Send Following Event Notification', 'Calculates and sends any following event notices to those that are following the entities that have an event that occurred.',
+VALUES ( 0, 0, 'Send Following Event Notification', 'Calculates and sends any following event notices to those that are following the entities that have an event that occurred.',
     '', 'Rock.Jobs.SendFollowingEvents','0 0 7 ? * MON-FRI *','893A745F-8642-4095-9E91-F8C54547DEF0', 3 )
 SET @JobId = SCOPE_IDENTITY()
 
@@ -139,7 +139,7 @@ VALUES ( 0, @AttributeId, @JobId, '2c112948-ff4c-46e7-981a-0257681eadf4', NEWID(
 
 -- Suggestion Notification Job
 INSERT INTO [ServiceJob] ( [IsSystem], [IsActive], [Name], [Description], [Assembly], [Class], [CronExpression], [Guid], [NotificationStatus] )
-VALUES ( 0, 1, 'Send Following Suggestion Notification', 'Calculates and sends any following suggestions to those people that are eligible for following.',
+VALUES ( 0, 0, 'Send Following Suggestion Notification', 'Calculates and sends any following suggestions to those people that are eligible for following.',
     '', 'Rock.Jobs.SendFollowingSuggestions','0 0 15 ? * MON-FRI *','9C955693-B19C-4A90-9407-7A38450D75FC', 3 )
 SET @JobId = SCOPE_IDENTITY()
 

@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,7 +16,7 @@
 //
 using System;
 using System.Linq;
-
+using System.Text.RegularExpressions;
 using Rock.Data;
 using Rock.Model;
 
@@ -113,33 +113,52 @@ namespace Rock.Transactions
                 PageViewSessionService pageViewSessionService = new PageViewSessionService( rockContext );
 
                 var userAgent = ( this.UserAgent ?? string.Empty ).Trim();
+                if ( userAgent.Length > 450 )
+                {
+                    userAgent = userAgent.Substring( 0, 450 ); // trim super long useragents to fit in pageViewUserAgent.UserAgent
+                }
+
+                // get user agent info
+                var clientType = PageViewUserAgent.GetClientType( userAgent );
+
+                Parser uaParser = Parser.GetDefault();
+                ClientInfo client = uaParser.Parse( userAgent );
+                var clientOs = client.OS.ToString();
+                var clientBrowser = client.UserAgent.ToString();
 
                 // lookup the pageViewUserAgent, and create it if it doesn't exist
-                int? pageViewUserAgentId = pageViewUserAgentService.Queryable().Where( a => a.UserAgent == userAgent ).Select( a => (int?)a.Id ).FirstOrDefault();
-                if ( !pageViewUserAgentId.HasValue )
+                var pageViewUserAgent = pageViewUserAgentService.Queryable().Where( a => a.UserAgent == userAgent ).FirstOrDefault();
+                if ( pageViewUserAgent == null )
                 {
-                    var pageViewUserAgent = new PageViewUserAgent();
+                    pageViewUserAgent = new PageViewUserAgent();
                     pageViewUserAgent.UserAgent = userAgent;
-                    pageViewUserAgent.ClientType = PageViewUserAgent.GetClientType( userAgent );
+                    pageViewUserAgent.ClientType = clientType;
 
-                    Parser uaParser = Parser.GetDefault();
-                    ClientInfo client = uaParser.Parse( userAgent );
-                    pageViewUserAgent.OperatingSystem = client.OS.ToString();
-                    pageViewUserAgent.Browser = client.UserAgent.ToString();
+                    pageViewUserAgent.OperatingSystem = clientOs;
+                    pageViewUserAgent.Browser = clientBrowser;
 
                     pageViewUserAgentService.Add( pageViewUserAgent );
                     rockContext.SaveChanges();
-
-                    pageViewUserAgentId = pageViewUserAgent.Id;
+                }
+                else
+                {
+                    // check if the user agent properties need to be updated
+                    if ( clientType != pageViewUserAgent.ClientType || clientOs != pageViewUserAgent.OperatingSystem || clientBrowser != pageViewUserAgent.Browser )
+                    {
+                        pageViewUserAgent.ClientType = clientType;
+                        pageViewUserAgent.OperatingSystem = clientOs;
+                        pageViewUserAgent.Browser = clientBrowser;
+                        rockContext.SaveChanges();
+                    }
                 }
 
                 // lookup PageViewSession, and create it if it doesn't exist
                 Guid sessionId = this.SessionId.AsGuid();
-                int? pageViewSessionId = pageViewSessionService.Queryable().Where( a => a.PageViewUserAgentId == pageViewUserAgentId && a.SessionId == sessionId && a.IpAddress == this.IPAddress ).Select( a => (int?)a.Id ).FirstOrDefault();
+                int? pageViewSessionId = pageViewSessionService.Queryable().Where( a => a.PageViewUserAgentId == pageViewUserAgent.Id && a.SessionId == sessionId && a.IpAddress == this.IPAddress ).Select( a => (int?)a.Id ).FirstOrDefault();
                 if ( !pageViewSessionId.HasValue )
                 {
                     var pageViewSession = new PageViewSession();
-                    pageViewSession.PageViewUserAgentId = pageViewUserAgentId.Value;
+                    pageViewSession.PageViewUserAgentId = pageViewUserAgent.Id;
                     pageViewSession.SessionId = sessionId;
                     pageViewSession.IpAddress = this.IPAddress;
                     pageViewSessionService.Add( pageViewSession );
@@ -150,9 +169,13 @@ namespace Rock.Transactions
                 PageView pageView = new PageView();
                 pageViewService.Add( pageView );
 
+                // obfuscate rock magic token
+                Regex rgx = new Regex( @"rckipid=([^&]*)" );
+                string cleanUrl = rgx.Replace( this.Url, "rckipid=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
+
                 pageView.PageId = this.PageId;
                 pageView.SiteId = this.SiteId;
-                pageView.Url = this.Url;
+                pageView.Url = cleanUrl;
                 pageView.DateTimeViewed = this.DateViewed;
                 pageView.PersonAliasId = this.PersonAliasId;
                 pageView.PageTitle = this.PageTitle;

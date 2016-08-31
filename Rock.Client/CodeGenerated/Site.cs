@@ -5,13 +5,13 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 // <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -33,6 +33,18 @@ namespace Rock.Client
     {
         /// <summary />
         public int Id { get; set; }
+
+        /// <summary />
+        public string AllowedFrameDomains { get; set; }
+
+        /// <summary />
+        public bool AllowIndexing { get; set; }
+
+        /// <summary />
+        public int? ChangePasswordPageId { get; set; }
+
+        /// <summary />
+        public int? ChangePasswordPageRouteId { get; set; }
 
         /// <summary />
         public int? CommunicationPageId { get; set; }
@@ -96,6 +108,9 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
+        public string PageHeaderContent { get; set; }
+
+        /// <summary />
         public int? PageNotFoundPageId { get; set; }
 
         /// <summary />
@@ -112,6 +127,9 @@ namespace Rock.Client
 
         /// <summary />
         public int? RegistrationPageRouteId { get; set; }
+
+        /// <summary />
+        public bool RequiresEncryption { get; set; }
 
         /// <summary />
         public string Theme { get; set; }
@@ -149,6 +167,10 @@ namespace Rock.Client
         public void CopyPropertiesFrom( Site source )
         {
             this.Id = source.Id;
+            this.AllowedFrameDomains = source.AllowedFrameDomains;
+            this.AllowIndexing = source.AllowIndexing;
+            this.ChangePasswordPageId = source.ChangePasswordPageId;
+            this.ChangePasswordPageRouteId = source.ChangePasswordPageRouteId;
             this.CommunicationPageId = source.CommunicationPageId;
             this.CommunicationPageRouteId = source.CommunicationPageRouteId;
             this.DefaultPageId = source.DefaultPageId;
@@ -167,12 +189,14 @@ namespace Rock.Client
             this.MobilePageId = source.MobilePageId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
+            this.PageHeaderContent = source.PageHeaderContent;
             this.PageNotFoundPageId = source.PageNotFoundPageId;
             this.PageNotFoundPageRouteId = source.PageNotFoundPageRouteId;
             this.PageViewRetentionPeriodDays = source.PageViewRetentionPeriodDays;
             this.RedirectTablets = source.RedirectTablets;
             this.RegistrationPageId = source.RegistrationPageId;
             this.RegistrationPageRouteId = source.RegistrationPageRouteId;
+            this.RequiresEncryption = source.RequiresEncryption;
             this.Theme = source.Theme;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
@@ -189,6 +213,9 @@ namespace Rock.Client
     /// </summary>
     public partial class Site : SiteEntity
     {
+        /// <summary />
+        public PageRoute ChangePasswordPageRoute { get; set; }
+
         /// <summary />
         public Page CommunicationPage { get; set; }
 

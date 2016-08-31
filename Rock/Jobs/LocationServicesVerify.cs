@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -68,23 +68,35 @@ namespace Rock.Jobs
             var rockContext = new Rock.Data.RockContext();
             LocationService locationService = new LocationService(rockContext);
             var addresses = locationService.Queryable()
-                                .Where( l => (
-                                    (l.IsGeoPointLocked == null || l.IsGeoPointLocked == false) // don't ever try locked address
-                                    && (l.IsActive == true && l.Street1 != null && l.PostalCode != null) // or incomplete addresses
-                                    && (
-                                        (l.GeocodedDateTime == null && (l.GeocodeAttemptedDateTime == null || l.GeocodeAttemptedDateTime < retryDate)) // has not been attempted to be geocoded since retry date
-                                        ||
-                                        (l.StandardizedDateTime == null && (l.StandardizeAttemptedDateTime == null || l.StandardizeAttemptedDateTime < retryDate)) // has not been attempted to be standardize since retry date
-                                    )
-                                ))
-                                .Take( maxRecords ).ToList();
+                .Where( l => 
+                    (
+                        ( l.IsGeoPointLocked == null || l.IsGeoPointLocked == false ) &&// don't ever try locked address
+                        l.IsActive == true && 
+                        l.Street1 != null &&
+                        l.Street1 != "" &&
+                        l.City != null && 
+                        l.City != "" &&
+                        (
+                            ( l.GeocodedDateTime == null && ( l.GeocodeAttemptedDateTime == null || l.GeocodeAttemptedDateTime < retryDate ) ) || // has not been attempted to be geocoded since retry date
+                            ( l.StandardizedDateTime == null && ( l.StandardizeAttemptedDateTime == null || l.StandardizeAttemptedDateTime < retryDate ) ) // has not been attempted to be standardize since retry date
+                        )
+                    ) )
+                .Take( maxRecords ).ToList();
 
+            int attempts = 0;
+            int successes = 0;
             foreach ( var address in addresses )
             {
-                locationService.Verify( address, false ); // currently not reverifying 
+                attempts++;
+                if ( locationService.Verify( address, true ) ) 
+                {
+                    successes++;
+                }
                 rockContext.SaveChanges();
                 System.Threading.Thread.Sleep( throttlePeriod );
             }
+
+            context.Result = string.Format( "{0:N0} address verifications attempted; {1:N0} successfully verified", attempts, successes );
 
         }
 

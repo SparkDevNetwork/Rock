@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 using DotLiquid;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock
 {
@@ -59,7 +60,9 @@ namespace Rock
             if ( !( lavaObject is IDictionary<string, object> ) || !( (IDictionary<string, object>)lavaObject ).Keys.Contains( "GlobalAttribute" ) )
             {
                 var globalAttributes = new Dictionary<string, object>();
-                globalAttributes.Add( "GlobalAttribute", Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null ) );
+
+                // Lava Help Text does special stuff for GlobalAttribute, but it still needs the list of possible Global Attribute MergeFields to generate the help text
+                globalAttributes.Add( "GlobalAttribute", GlobalAttributesCache.GetLegacyMergeFields( null ) );
                 lavaDebugPanel.Append( formatLavaDebugInfo( globalAttributes.LiquidizeChildren( 0, rockContext ) ) );
             }
 
@@ -76,13 +79,14 @@ namespace Rock
         /// <param name="myObject">an object.</param>
         /// <param name="levelsDeep">The levels deep.</param>
         /// <param name="rockContext">The rock context.</param>
+        /// <param name="entityHistory">The entity history.</param>
         /// <param name="parentElement">The parent element.</param>
         /// <returns></returns>
-        private static object LiquidizeChildren( this object myObject, int levelsDeep = 0, RockContext rockContext = null, string parentElement = "" )
+        private static object LiquidizeChildren( this object myObject, int levelsDeep = 0, RockContext rockContext = null, Dictionary<int, List<int>> entityHistory = null, string parentElement = "" )
         {
             // Add protection for stack-overflow if property attributes are not set correctly resulting in child/parent objects being evaluated in loop
             levelsDeep++;
-            if ( levelsDeep > 10 )
+            if ( levelsDeep > 6)
             {
                 return string.Empty;
             }
@@ -118,6 +122,29 @@ namespace Rock
                 entityType = entityType.BaseType;
             }
 
+            // If this is an IEntity, check to see if it's already been liquidized in prev heirarchy. If so, just return string indicating "--See Previous Entry--"
+            if ( myObject is IEntity )
+            {
+                var entity = myObject as IEntity;
+                var entityTypeCache = EntityTypeCache.Read( entityType, false, rockContext );
+                if ( entity != null && entityTypeCache != null )
+                {
+                    if ( entityHistory == null )
+                    {
+                        entityHistory = new Dictionary<int, List<int>>();
+                    }
+                    entityHistory.AddOrIgnore( entityTypeCache.Id, new List<int>() );
+                    if ( entityHistory[entityTypeCache.Id].Contains( entity.Id ) )
+                    {
+                        return "--See Previous Entry--";
+                    }
+                    else
+                    {
+                        entityHistory[entityTypeCache.Id].Add( entity.Id );
+                    }
+                }
+            }
+
             // If the object is a Liquid Drop object, return a list of all of the object's properties
             if ( myObject is Drop )
             {
@@ -132,7 +159,7 @@ namespace Rock
                     {
                         try
                         {
-                            result.Add( propInfo.Name, propInfo.GetValue( myObject, null ).LiquidizeChildren( levelsDeep, rockContext ) );
+                            result.Add( propInfo.Name, propInfo.GetValue( myObject, null ).LiquidizeChildren( levelsDeep, rockContext, entityHistory ) );
                         }
                         catch ( Exception ex )
                         {
@@ -158,7 +185,7 @@ namespace Rock
                         {
                             try
                             {
-                                result.Add( propInfo.Name, propInfo.GetValue( myObject, null ).LiquidizeChildren( levelsDeep, rockContext, parentElement + "." + propName ) );
+                                result.Add( propInfo.Name, propInfo.GetValue( myObject, null ).LiquidizeChildren( levelsDeep, rockContext, entityHistory, parentElement + "." + propName ) );
                             }
                             catch ( Exception ex )
                             {
@@ -192,7 +219,7 @@ namespace Rock
                             object propValue = liquidObject[key];
                             if ( propValue != null )
                             {
-                                result.Add( key, propValue.LiquidizeChildren( levelsDeep, rockContext, parentElement + "." + key ) );
+                                result.Add( key, propValue.LiquidizeChildren( levelsDeep, rockContext, entityHistory, parentElement + "." + key ) );
                             }
                             else
                             {
@@ -241,7 +268,7 @@ namespace Rock
                 {
                     try
                     {
-                        result.Add( keyValue.Key, keyValue.Value.LiquidizeChildren( levelsDeep, rockContext, keyValue.Key ) );
+                        result.Add( keyValue.Key, keyValue.Value.LiquidizeChildren( levelsDeep, rockContext, entityHistory, keyValue.Key ) );
                     }
                     catch ( Exception ex )
                     {
@@ -261,7 +288,7 @@ namespace Rock
                 {
                     try
                     {
-                        result.Add( keyValue.Key, keyValue.Value.LiquidizeChildren( levelsDeep, rockContext, keyValue.Key ) );
+                        result.Add( keyValue.Key, keyValue.Value.LiquidizeChildren( levelsDeep, rockContext, entityHistory, keyValue.Key ) );
                     }
                     catch ( Exception ex )
                     {
@@ -289,13 +316,22 @@ namespace Rock
             {
                 var result = new List<object>();
 
+                // Only show first two items in an enumerable list
+                int iEnumCount = 1;
                 foreach ( var value in ( (IEnumerable)myObject ) )
                 {
+                    if ( iEnumCount > 2 )
+                    {
+                        result.Add( "..." );
+                        break;
+                    }
+                    iEnumCount++;
                     try
                     {
-                        result.Add( value.LiquidizeChildren( levelsDeep, rockContext, parentElement ) );
+                        result.Add( value.LiquidizeChildren( levelsDeep, rockContext, entityHistory, parentElement ) );
                     }
                     catch { }
+
                 }
 
                 return result;
@@ -417,6 +453,20 @@ namespace Rock
         /// <returns></returns>
         public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects, Person currentPersonOverride )
         {
+            var enabledCommands = GlobalAttributesCache.Read().GetValue( "DefaultEnabledLavaCommands" );
+            return content.ResolveMergeFields( mergeObjects, currentPersonOverride, enabledCommands );
+        }
+
+        /// <summary>
+        /// Resolves the merge fields.
+        /// </summary>
+        /// <param name="content">The content.</param>
+        /// <param name="mergeObjects">The merge objects.</param>
+        /// <param name="currentPersonOverride">The current person override.</param>
+        /// <param name="enabledLavaCommands">The enabled lava commands.</param>
+        /// <returns></returns>
+        public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects, Person currentPersonOverride, string enabledLavaCommands )
+        {
             try
             {
                 if ( !content.HasMergeFields() )
@@ -425,6 +475,7 @@ namespace Rock
                 }
 
                 Template template = Template.Parse( content );
+                template.InstanceAssigns.Add( "EnabledCommands", enabledLavaCommands );
                 template.InstanceAssigns.Add( "CurrentPerson", currentPersonOverride );
                 return template.Render( Hash.FromDictionary( mergeObjects ) );
             }
@@ -464,6 +515,21 @@ namespace Rock
         /// <returns></returns>
         public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects, bool encodeStrings = false, bool throwExceptionOnErrors = false )
         {
+            var enabledCommands = GlobalAttributesCache.Read().GetValue( "DefaultEnabledLavaCommands" );
+            return content.ResolveMergeFields( mergeObjects, enabledCommands, encodeStrings, throwExceptionOnErrors );
+        }
+
+        /// <summary>
+        /// Resolves the merge fields.
+        /// </summary>
+        /// <param name="content">The content.</param>
+        /// <param name="mergeObjects">The merge objects.</param>
+        /// <param name="enabledLavaCommands">The enabled lava commands.</param>
+        /// <param name="encodeStrings">if set to <c>true</c> [encode strings].</param>
+        /// <param name="throwExceptionOnErrors">if set to <c>true</c> [throw exception on errors].</param>
+        /// <returns></returns>
+        public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects, string enabledLavaCommands, bool encodeStrings = false, bool throwExceptionOnErrors = false )
+        {
             try
             {
                 if ( !content.HasMergeFields() )
@@ -471,8 +537,17 @@ namespace Rock
                     return content ?? string.Empty;
                 }
 
+                if ( GlobalAttributesCache.Read().LavaSupportLevel == Lava.LavaSupportLevel.LegacyWithWarning && mergeObjects.ContainsKey( "GlobalAttribute" ) )
+                {
+                    if ( hasLegacyGlobalAttributeLavaMergeFields.IsMatch( content ) )
+                    {
+                        Rock.Model.ExceptionLogService.LogException( new Rock.Lava.LegacyLavaSyntaxDetectedException( "GlobalAttribute", "" ), System.Web.HttpContext.Current );
+                    }
+                }
+
                 Template template = Template.Parse( content );
-                
+                template.InstanceAssigns.Add( "EnabledCommands", enabledLavaCommands );
+
                 if ( encodeStrings )
                 {
                     // if encodeStrings = true, we want any string values to be XML Encoded ( 
@@ -513,6 +588,16 @@ namespace Rock
         }
 
         /// <summary>
+        /// Compiled RegEx for detecting if a string has Lava merge fields
+        /// </summary>
+        private static Regex hasLavaMergeFields = new Regex( @".*\{.+\}.*", RegexOptions.Compiled );
+
+        /// <summary>
+        /// Compiled RegEx for detecting if a string uses the Legacy "GlobalAttribute." syntax
+        /// </summary>
+        private static Regex hasLegacyGlobalAttributeLavaMergeFields = new Regex( @".*\{.+GlobalAttribute.+\}.*", RegexOptions.Compiled );
+
+        /// <summary>
         /// Determines whether the string potentially has merge fields in it.
         /// NOTE: Might return true even though it doesn't really have merge fields, but something like looks like it. For example '{56408602-5E41-4D66-98C7-BD361CD93AED}'
         /// </summary>
@@ -524,7 +609,7 @@ namespace Rock
                 return false;
 
             // If there's no merge codes, just return the content
-            if ( !Regex.IsMatch( content, @".*\{.+\}.*" ) )
+            if (!hasLavaMergeFields.IsMatch( content ))
                 return false;
 
             return true;

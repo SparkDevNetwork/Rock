@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
+using System.Web;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -49,8 +50,36 @@ namespace RockWeb.Blocks.Cms
             RockContext rockContext = new RockContext();
             PageService pageService = new PageService( rockContext );
 
+            var allPages = pageService.Queryable( "PageContexts, PageRoutes" );
+
+            foreach ( var page in allPages )
+            {
+                PageCache.Read( page );
+            }
+
+            foreach ( var block in new BlockService(rockContext).Queryable() )
+            {
+                BlockCache.Read( block );
+            }
+
+            foreach ( var blockType in new BlockTypeService( rockContext ).Queryable() )
+            {
+                BlockTypeCache.Read( blockType );
+            }
+
             if ( Page.IsPostBack )
             {
+                if ( Request.Form["__EVENTTARGET"] == "CopyPage" )
+                {
+                    // Fire event
+                    int? intPageId = Request.Form["__EVENTARGUMENT"].AsIntegerOrNull();
+                    if ( intPageId.HasValue )
+                    {
+                        pageService.CopyPage( intPageId.Value, CurrentPersonAliasId );
+                        NavigateToCurrentPage();
+                    }
+                }
+
                 foreach ( string expandedId in hfExpandedIds.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                 {
                     int id = 0;
@@ -86,7 +115,7 @@ namespace RockWeb.Blocks.Cms
             var sb = new StringBuilder();
 
             sb.AppendLine( "<ul id=\"treeview\">" );
-            var allPages = pageService.Queryable( "Pages, Blocks" );
+            
             string rootPage = GetAttributeValue("RootPage");
             if ( ! string.IsNullOrEmpty( rootPage ) )
             {
@@ -137,15 +166,20 @@ namespace RockWeb.Blocks.Cms
                     authRoles.Select( a => "<span class=\"badge badge-" + (a.AllowOrDeny == 'A' ? "success" : "danger")  + "\">" + a.DisplayName + "</span>"  ).ToList().AsDelimited( " " ) );
             }
 
+            int pageEntityTypeId = EntityTypeCache.Read( "Rock.Model.Page" ).Id;
+
             sb.AppendFormat(
-                "<li data-expanded='{4}' data-model='Page' data-id='p{0}'><span><i class=\"fa fa-file-o\">&nbsp;</i>{6}<a href='{1}'>{2}</a><span class='js-auth-roles hidden'>{5}</span></span>{3}", 
-                page.Id, 
-                new PageReference( page.Id ).BuildUrl(), 
-                isSelected ? "<strong>" + page.InternalName + "</strong>" : page.InternalName, 
-                Environment.NewLine, 
-                isExpanded.ToString().ToLower(),
-                authHtml, 
-                CreatePageConfigIcon(page));
+                "<li data-expanded='{4}' data-model='Page' data-id='p{0}'><span><span class='rollover-container'><i class=\"fa fa-file-o\">&nbsp;</i><a href='{1}'>{2}</a> {6} {7}<span class='js-auth-roles hidden'>{5}</span></span></span>{3}", 
+                page.Id, // 0
+                new PageReference( page.Id ).BuildUrl(), // 1
+                isSelected ? "<strong>" + page.InternalName + "</strong>" : page.InternalName, // 2
+                Environment.NewLine, // 3
+                isExpanded.ToString().ToLower(), // 4
+                authHtml, // 5
+                CreatePageCopyIcon( page ), // 6
+                CreatePageConfigIcon( page ), // 7
+                CreateSecurityIcon( pageEntityTypeId, page.Id, page.InternalName ) // 8
+            );
 
             var childPages = page.GetPages( rockContext );
             if ( childPages.Any() || page.Blocks.Any() )
@@ -166,7 +200,15 @@ namespace RockWeb.Blocks.Cms
                         blockName = blockName + " (" + blockCacheName + ")";
                     }
 
-                    sb.AppendFormat( "<li data-expanded='false' data-model='Block' data-id='b{0}'><span>{1}{2}</span></li>{3}", block.Id, CreateConfigIcon( block ), blockName, Environment.NewLine );
+                    int blockEntityTypeId = EntityTypeCache.Read( "Rock.Model.Block" ).Id;
+
+                    sb.AppendFormat( "<li data-expanded='false' data-model='Block' data-id='b{0}'><span><span class='rollover-container'> <i class='fa fa-th-large'>&nbsp;</i> {2} {1} {4}</span></span></li>{3}", 
+                        block.Id, // 0
+                        CreateConfigIcon( block ), // 1
+                        blockName,  // 2
+                        Environment.NewLine, //3
+                        CreateSecurityIcon( blockEntityTypeId, block.Id, block.Name ) // 4
+                    );
                 }
 
                 sb.AppendLine( "</ul>" );
@@ -175,6 +217,18 @@ namespace RockWeb.Blocks.Cms
             sb.AppendLine( "</li>" );
 
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Creates the copy icon.
+        /// </summary>
+        /// <param name="block">The block.</param>
+        /// <returns></returns>
+        protected string CreatePageCopyIcon( PageCache page )
+        {
+            return string.Format(
+                "&nbsp;<span class='rollover-item' onclick=\"javascript: __doPostBack('CopyPage', '{0}'); event.stopImmediatePropagation();\" title=\"Clone Page and Descendants\"><i class=\"fa fa-clone\"></i>&nbsp;</span>",
+                page.Id );
         }
 
         /// <summary>
@@ -187,8 +241,14 @@ namespace RockWeb.Blocks.Cms
             var blockPropertyUrl = ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", block.Id ) );
 
             return string.Format(
-                "<i class=\"fa fa-th-large\">&nbsp;</i> <a class='btn-minimal' href=\"javascript: Rock.controls.modal.show($(this), '{0}')\" title=\"Block Properties\"><i class=\"fa fa-cog\"></i>&nbsp;</a>",
+                "<a class='rollover-item' href=\"javascript: Rock.controls.modal.show($(this), '{0}')\" title=\"Block Properties\"><i class=\"fa fa-cog\"></i>&nbsp;</a>",
                 blockPropertyUrl );
+        }
+
+        protected string CreateSecurityIcon(int entityTypeId, int entityId, string title )
+        {
+            string url = this.Page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done", entityTypeId, entityId, HttpUtility.JavaScriptStringEncode( title ) ) );
+            return string.Format( "<span class='rollover-item' onclick=\"javascript: Rock.controls.modal.show($(this), '{0}'); event.stopImmediatePropagation();\" title=\"Security\"><i class=\"fa fa-lock\">&nbsp;</i></span>", url );
         }
 
         /// <summary>
@@ -201,7 +261,7 @@ namespace RockWeb.Blocks.Cms
             var pagePropertyUrl = ResolveUrl( string.Format( "~/PageProperties/{0}?t=Page Properties", page.Id ) );
 
             return string.Format(
-                "&nbsp;<span class='btn-minimal' onclick=\"javascript: Rock.controls.modal.show($(this), '{0}'); event.stopImmediatePropagation();\" title=\"Page Properties\"><i class=\"fa fa-cog\"></i>&nbsp;</span>",
+                "&nbsp;<span class='rollover-item' onclick=\"javascript: Rock.controls.modal.show($(this), '{0}'); event.stopImmediatePropagation();\" title=\"Page Properties\"><i class=\"fa fa-cog\"></i>&nbsp;</span>",
                 pagePropertyUrl );
         }
     }

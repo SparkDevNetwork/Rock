@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -47,8 +47,8 @@ namespace RockWeb.Blocks.Event
     [LinkedPage( "Details Page", "Detail page for events", order: 2 )]
 
     [CustomRadioListField( "Campus Filter Display Mode", "", "1^Hidden, 2^Plain, 3^Panel Open, 4^Panel Closed", true, "1", order: 3 )]
-    [CustomRadioListField( "Category Filter Display Mode", "", "1^Hidden, 2^Plain, 3^Panel Open, 4^Panel Closed", true, "1", order: 4 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE, "Filter Categories", "Determines which categories should be displayed in the filter.", false, true, order: 5 )]
+    [CustomRadioListField( "Audience Filter Display Mode", "", "1^Hidden, 2^Plain, 3^Panel Open, 4^Panel Closed", true, "1", key: "CategoryFilterDisplayMode", order: 4 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE, "Filter Audiences", "Determines which audiences should be displayed in the filter.", false, true, key: "FilterCategories", order: 5 )]
     [BooleanField( "Show Date Range Filter", "Determines whether the date range filters are shown", false, order: 6 )]
 
     [BooleanField( "Show Small Calendar", "Determines whether the calendar widget is shown", true, order: 7 )]
@@ -57,9 +57,9 @@ namespace RockWeb.Blocks.Event
     [BooleanField( "Show Month View", "Determines whether the month view option is shown", true, order: 10 )]
 
     [BooleanField( "Enable Campus Context", "If the page has a campus context it's value will be used as a filter", order: 11 )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display the list of events.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~/Themes/Stark/Assets/Lava/ExternalCalendar.lava' %}", "", 12 )]
+    [CodeEditorField( "Lava Template", "Lava template to use to display the list of events.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/Calendar.lava' %}", "", 12 )]
 
-    [DayOfWeekField( "Start of Week Day", "Determines what day is the start of day", true, DayOfWeek.Sunday, order: 13 )]
+    [DayOfWeekField( "Start of Week Day", "Determines what day is the start of a week.", true, DayOfWeek.Sunday, order: 13 )]
 
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 14 )]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the calendar name.", false, order: 15 )]
@@ -82,6 +82,7 @@ namespace RockWeb.Blocks.Event
         #region Properties
 
         private String ViewMode { get; set; }
+        private DateTime? SelectedDate { get; set; }
         private DateTime? FilterStartDate { get; set; }
         private DateTime? FilterEndDate { get; set; }
         private List<DateTime> CalendarEventDates { get; set; }
@@ -99,6 +100,7 @@ namespace RockWeb.Blocks.Event
             base.LoadViewState( savedState );
 
             ViewMode = ViewState["ViewMode"] as String;
+            SelectedDate = ViewState["SelectedDate"] as DateTime?;
             FilterStartDate = ViewState["FilterStartDate"] as DateTime?;
             FilterEndDate = ViewState["FilterEndDate"] as DateTime?;
             CalendarEventDates = ViewState["CalendarEventDates"] as List<DateTime>;
@@ -165,6 +167,7 @@ namespace RockWeb.Blocks.Event
         protected override object SaveViewState()
         {
             ViewState["ViewMode"]  = ViewMode;
+            ViewState["SelectedDate"] = SelectedDate;
             ViewState["FilterStartDate"] = FilterStartDate;
             ViewState["FilterEndDate"] = FilterEndDate;
             ViewState["CalendarEventDates"] = CalendarEventDates;
@@ -218,6 +221,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void calEventCalendar_SelectionChanged( object sender, EventArgs e )
         {
+            SelectedDate = calEventCalendar.SelectedDate;
             ResetCalendarSelection();
             BindData();
         }
@@ -243,7 +247,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="MonthChangedEventArgs"/> instance containing the event data.</param>
         protected void calEventCalendar_VisibleMonthChanged( object sender, MonthChangedEventArgs e )
         {
-            calEventCalendar.SelectedDate = e.NewDate;
+            SelectedDate = e.NewDate;
             ResetCalendarSelection();
             BindData();
         }
@@ -308,7 +312,8 @@ namespace RockWeb.Blocks.Event
                     .Queryable( "EventItem, EventItem.EventItemAudiences,Schedule" )
                     .Where( m =>
                         m.EventItem.EventCalendarItems.Any( i => i.EventCalendarId == _calendarId ) &&
-                        m.EventItem.IsActive );
+                        m.EventItem.IsActive &&
+                        m.EventItem.IsApproved );
 
             // Filter by campus
             List<int> campusIds =  cblCampus.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value.AsInteger() ).ToList();
@@ -359,7 +364,19 @@ namespace RockWeb.Blocks.Event
                 var eventItemOccurrence = occurrenceDates.EventItemOccurrence;
                 foreach ( var datetime in occurrenceDates.Dates )
                 {
-                    CalendarEventDates.Add( datetime.Date );
+                    if ( eventItemOccurrence.Schedule.EffectiveEndDate.HasValue && ( eventItemOccurrence.Schedule.EffectiveStartDate != eventItemOccurrence.Schedule.EffectiveEndDate ) )
+                    {
+                        var multiDate = eventItemOccurrence.Schedule.EffectiveStartDate;
+                        while ( multiDate.HasValue && ( multiDate.Value < eventItemOccurrence.Schedule.EffectiveEndDate.Value ))
+                        {
+                            CalendarEventDates.Add( multiDate.Value.Date );
+                            multiDate = multiDate.Value.AddDays( 1 );
+                        }
+                    }
+                    else
+                    {
+                        CalendarEventDates.Add( datetime.Date );
+                    }
 
                     if ( datetime >= beginDate && datetime < endDate )
                     {
@@ -370,14 +387,23 @@ namespace RockWeb.Blocks.Event
                             DateTime = datetime,
                             Date = datetime.ToShortDateString(),
                             Time = datetime.ToShortTimeString(),
+                            Campus = eventItemOccurrence.Campus != null ? eventItemOccurrence.Campus.Name : "All Campuses",
                             Location = eventItemOccurrence.Campus != null ? eventItemOccurrence.Campus.Name : "All Campuses",
+                            LocationDescription = eventItemOccurrence.Location,
                             Description = eventItemOccurrence.EventItem.Description,
                             Summary = eventItemOccurrence.EventItem.Summary,
+                            OccurrenceNote = eventItemOccurrence.Note.SanitizeHtml(),
                             DetailPage = String.IsNullOrWhiteSpace( eventItemOccurrence.EventItem.DetailsUrl ) ? null : eventItemOccurrence.EventItem.DetailsUrl
                         } );
                     }
                 }
             }
+
+            var eventSummaries = eventOccurrenceSummaries
+                .OrderBy( e => e.DateTime )
+                .GroupBy( e => e.Name )
+                .Select( e => e.ToList() )
+                .ToList();
 
             eventOccurrenceSummaries = eventOccurrenceSummaries
                 .OrderBy( e => e.DateTime )
@@ -387,6 +413,7 @@ namespace RockWeb.Blocks.Event
             var mergeFields = new Dictionary<string, object>();
             mergeFields.Add( "TimeFrame", ViewMode );
             mergeFields.Add( "DetailsPage", LinkedPageUrl( "DetailsPage", null ) );
+            mergeFields.Add( "EventItems", eventSummaries );
             mergeFields.Add( "EventItemOccurrences", eventOccurrenceSummaries );
             mergeFields.Add( "CurrentPerson", CurrentPerson );
 
@@ -504,6 +531,10 @@ namespace RockWeb.Blocks.Event
         private void ResetCalendarSelection()
         {
             // Even though selection will be a single date due to calendar's selection mode, set the appropriate days
+            if ( SelectedDate != null )
+            {
+                calEventCalendar.SelectedDate = SelectedDate.Value;
+            }
             var selectedDate = calEventCalendar.SelectedDate;
             FilterStartDate = selectedDate;
             FilterEndDate = selectedDate;
@@ -561,7 +592,7 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// A class to store event item occurrence data for liquid
         /// </summary>
-        [DotLiquid.LiquidType( "EventItemOccurrence", "DateTime", "Name", "Date", "Time", "Location", "Description", "Summary", "DetailPage" )]
+        [DotLiquid.LiquidType( "EventItemOccurrence", "DateTime", "Name", "Date", "Time", "Campus", "Location", "LocationDescription", "Description", "Summary", "OccurrenceNote", "DetailPage" )]
         public class EventOccurrenceSummary
         {
             public EventItemOccurrence EventItemOccurrence { get; set; }
@@ -569,9 +600,12 @@ namespace RockWeb.Blocks.Event
             public String Name { get; set; }
             public String Date { get; set; }
             public String Time { get; set; }
+            public String Campus { get; set; }
             public String Location { get; set; }
+            public String LocationDescription { get; set; }
             public String Summary { get; set; }
             public String Description { get; set; }
+            public String OccurrenceNote { get; set; }
             public String DetailPage { get; set; }
         }
 

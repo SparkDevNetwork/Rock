@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,9 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
-
 using Rock.Model;
 
 namespace Rock.CheckIn
@@ -53,6 +54,63 @@ namespace Rock.CheckIn
         /// </value>
         [DataMember]
         public List<KioskSchedule> KioskSchedules { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether check in is active
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsCheckInActive
+        {
+            get
+            {
+                return KioskSchedules != null && KioskSchedules.Any( s => s.IsCheckInActive );
+            }
+        }
+
+        /// <summary>
+        /// Gets the next active date time.
+        /// </summary>
+        /// <value>
+        /// The next active date time.
+        /// </value>
+        public DateTime? NextActiveDateTime
+        {
+            get
+            {
+                return KioskSchedules.Min( s => (DateTime?)s.NextActiveDateTime );
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether [active and not full].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [active and not full]; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsActiveAndNotFull
+        {
+            get
+            {
+                if ( Location != null )
+                {
+                    if ( Location.IsActive )
+                    {
+                        if ( Location.FirmRoomThreshold.HasValue &&
+                            Location.FirmRoomThreshold.Value <= KioskLocationAttendance.Read( Location.Id ).CurrentCount )
+                        {
+                            return false;
+                        }
+                        else
+                        {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KioskLocation" /> class.

@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,6 +21,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Reporting.DataTransform.Person
 {
@@ -88,13 +89,13 @@ namespace Rock.Reporting.DataTransform.Person
         /// <returns></returns>
         private Expression BuildExpression( IService serviceInstance, IQueryable<int> idQuery, ParameterExpression parameterExpression )
         {
-            Guid adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
-            Guid childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
+            int adultRoleId = GroupTypeCache.GetFamilyGroupType().Roles.Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Select( a => a.Id ).FirstOrDefault();
+            int childRoleId = GroupTypeCache.GetFamilyGroupType().Roles.Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Select( a => a.Id ).FirstOrDefault();
 
             var qry = new PersonService( (RockContext)serviceInstance.Context ).Queryable()
-                .Where( p => p.Members.Where( a => a.GroupRole.Guid == childGuid )
+                .Where( p => p.Members.Where( a => a.GroupRoleId  == childRoleId )
                     .Any( a => a.Group.Members
-                    .Any( c => c.GroupRole.Guid == adultGuid && idQuery.Contains( c.PersonId ) ) ) );
+                    .Any( c => c.GroupRoleId == adultRoleId && idQuery.Contains( c.PersonId ) ) ) );
 
             return FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );
         }

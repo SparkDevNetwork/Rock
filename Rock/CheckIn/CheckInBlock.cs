@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,6 +21,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web;
 using Rock.Web.UI;
 
 namespace Rock.CheckIn
@@ -28,11 +29,11 @@ namespace Rock.CheckIn
     /// <summary>
     /// A RockBlock specific to check-in
     /// </summary>
-    [LinkedPage( "Home Page" )]
-    [LinkedPage( "Next Page" )]
-    [LinkedPage( "Previous Page" )]
-    [WorkflowTypeField( "Workflow Type", "The workflow type to activate for check-in" )]
-    [TextField( "Workflow Activity", "The name of the workflow activity to run on selection.", false, "" )]
+    [WorkflowTypeField( "Workflow Type", "The workflow type to activate for check-in", false, false, "", "", 0 )]
+    [TextField( "Workflow Activity", "The name of the workflow activity to run on selection.", false, "", "", 1 )]
+    [LinkedPage( "Home Page", "", false, "", "", 2 )]
+    [LinkedPage( "Previous Page", "", false, "", "", 3 )]
+    [LinkedPage( "Next Page", "", false, "", "", 4 )]
     public abstract class CheckInBlock : RockBlock
     {
 
@@ -45,6 +46,60 @@ namespace Rock.CheckIn
         /// The current kiosk id
         /// </summary>
         protected int? CurrentKioskId { get; set; }
+
+        /// <summary>
+        /// The current primary checkin-type id
+        /// </summary>
+        protected int? CurrentCheckinTypeId
+        {
+            get { return _currentCheckinTypeId; }
+            set
+            {
+                _currentCheckinTypeId = value;
+                _currentCheckinType = null;
+            }
+        }
+        private int? _currentCheckinTypeId;
+
+        /// <summary>
+        /// Gets the type of the current check in.
+        /// </summary>
+        /// <value>
+        /// The type of the current check in.
+        /// </value>
+        protected CheckinType CurrentCheckInType
+        {
+            get
+            {
+                if ( _currentCheckinType != null )
+                {
+                    return _currentCheckinType;
+                }
+
+                if ( CurrentCheckinTypeId.HasValue )
+                {
+                    _currentCheckinType = new CheckinType( CurrentCheckinTypeId.Value );
+                    return _currentCheckinType;
+                }
+
+                return null;
+            }
+        }
+        private CheckinType _currentCheckinType;
+
+        /// <summary>
+        /// Gets a value indicating whether check-in is currently in override mode
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is override; otherwise, <c>false</c>.
+        /// </value>
+        protected bool IsOverride
+        {
+            get
+            {
+                return Request["Override"] != null && Request["Override"].AsBoolean();
+            }
+        }
 
         /// <summary>
         /// The current group type ids
@@ -126,6 +181,37 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Gets the person schedule sub title.
+        /// </summary>
+        /// <returns></returns>
+        protected string GetPersonScheduleSubTitle()
+        {
+            if ( CurrentCheckInState != null )
+            {
+                var person = CurrentCheckInState.CheckIn.CurrentPerson;
+                if ( person != null )
+                {
+                    var schedule = person.CurrentSchedule;
+                    if ( schedule != null )
+                    {
+                        // If check-in is not configured to automatically select same options for each service
+                        // or option was not available (i.e. not first service ) then show name/service
+                        if ( !CurrentCheckInState.CheckInType.UseSameOptions ||
+                            ( schedule.Schedule.Id != person.SelectedSchedules.First().Schedule.Id ) )
+                        {
+                            return string.Format( "{0} @ {1}", person, schedule );
+                        }
+                    }
+
+                    return person.ToString();
+
+                }
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
         /// Returns the locations for this Kiosk for the configured group types
         /// </summary>
         /// <value>
@@ -192,14 +278,10 @@ namespace Rock.CheckIn
                         {
                             CurrentWorkflow = Rock.Model.Workflow.Activate( workflowType, CurrentCheckInState.Kiosk.Device.Name, rockContext );
                             
-                            if (Request["Override"] != null)
+                            if ( IsOverride )
                             {
-                                if ( Request["Override"].ToString() == "True" )
-                                {
-                                    CurrentWorkflow.SetAttributeValue( "Override", "True" );
-                                }
+                                CurrentWorkflow.SetAttributeValue( "Override", "True" );
                             }
-                            
                         }
 
                         var activityType = workflowType.ActivityTypes.Where( a => a.Name == activityName ).FirstOrDefault();
@@ -248,6 +330,15 @@ namespace Rock.CheckIn
                 Session.Remove( "CheckInKioskId" );
             }
 
+            if ( CurrentCheckinTypeId.HasValue )
+            {
+                Session["CheckinTypeId"] = CurrentCheckinTypeId.Value;
+            }
+            else
+            {
+                Session.Remove( "CheckinTypeId" );
+            }
+
             if ( CurrentGroupTypeIds != null )
             {
                 Session["CheckInGroupTypeIds"] = CurrentGroupTypeIds;
@@ -284,13 +375,25 @@ namespace Rock.CheckIn
         /// <returns>a list of errors encountered during processing the activity</returns>
         protected virtual List<string> ProcessSelection( Rock.Web.UI.Controls.ModalAlert modalAlert )
         {
+            return ProcessSelection( modalAlert, false );
+        }
+
+        /// <summary>
+        /// Processes the selection, save state and navigates to the next page if no errors
+        /// are encountered during processing the activity.
+        /// </summary>
+        /// <param name="modalAlert">The modal alert control to show if errors occur.</param>
+        /// <returns>a list of errors encountered during processing the activity</returns>
+        /// <param name="validateSelectionRequired">if set to <c>true</c> will check that block on next page has a selection required before redirecting.</param>
+        protected virtual List<string> ProcessSelection( Rock.Web.UI.Controls.ModalAlert modalAlert, bool validateSelectionRequired )
+        {
             var errors = new List<string>();
 
             string workflowActivity = GetAttributeValue( "WorkflowActivity" );
             if ( string.IsNullOrEmpty( workflowActivity ) || ProcessActivity( workflowActivity, out errors ) )
             {
                 SaveState();
-                NavigateToNextPage();
+                NavigateToNextPage( validateSelectionRequired );
             }
             else
             {
@@ -312,6 +415,21 @@ namespace Rock.CheckIn
         /// <returns></returns>
         protected virtual bool ProcessSelection( Rock.Web.UI.Controls.ModalAlert modalAlert, Func<bool> doNotProceedCondition, string conditionMessage )
         {
+            return ProcessSelection( modalAlert, doNotProceedCondition, conditionMessage, false );
+        }
+
+        /// <summary>
+        /// Processes the selection, save state and navigates to the next page if no errors
+        /// are encountered during processing the activity.
+        /// </summary>
+        /// <param name="modalAlert">The modal alert control to show if errors occur.</param>
+        /// <param name="doNotProceedCondition">A condition that must be met after processing
+        /// the activity in order to save state and continue to the next page.</param>
+        /// <param name="conditionMessage">The message to display in the modal if the condition fails.</param>
+        /// <param name="validateSelectionRequired">if set to <c>true</c> will check that block on next page has a selection required before redirecting.</param>
+        /// <returns></returns>
+        protected virtual bool ProcessSelection( Rock.Web.UI.Controls.ModalAlert modalAlert, Func<bool> doNotProceedCondition, string conditionMessage, bool validateSelectionRequired )
+        {
             var errors = new List<string>();
 
             string workflowActivity = GetAttributeValue( "WorkflowActivity" );
@@ -325,7 +443,7 @@ namespace Rock.CheckIn
                 else
                 {
                     SaveState();
-                    NavigateToNextPage();
+                    NavigateToNextPage( validateSelectionRequired );
                     return true;
                 }
             }
@@ -342,14 +460,23 @@ namespace Rock.CheckIn
         /// </summary>
         protected virtual void GoBack()
         {
+            GoBack( false );
+        }
+
+        /// <summary>
+        /// Goes the back.
+        /// </summary>
+        /// <param name="validateSelectionRequired">if set to <c>true</c> will check that block on prev page has a selection required before redirecting.</param>
+        protected virtual void GoBack( bool validateSelectionRequired )
+        {
             SaveState();
-            NavigateToPreviousPage();
+            NavigateToPreviousPage( validateSelectionRequired );
         }
 
         /// <summary>
         /// Cancels the check-in.
         /// </summary>
-        protected void CancelCheckin()
+        protected virtual void CancelCheckin()
         {
             NavigateToHomePage();
         }
@@ -357,7 +484,7 @@ namespace Rock.CheckIn
         /// <summary>
         /// Navigates to the check-in home page.
         /// </summary>
-        protected void NavigateToHomePage()
+        protected virtual void NavigateToHomePage()
         {
             NavigateToLinkedPage( "HomePage" );
         }
@@ -365,29 +492,171 @@ namespace Rock.CheckIn
         /// <summary>
         /// Navigates to next page.
         /// </summary>
-        protected void NavigateToNextPage()
+        protected virtual void NavigateToNextPage()
         {
-            NavigateToLinkedPage( "NextPage" );
+            NavigateToNextPage( null, false );
         }
 
         /// <summary>
         /// Navigates to next page.
         /// </summary>
-        protected void NavigateToNextPage( Dictionary<string, string> queryParams )
+        /// <param name="validateSelectionRequired">if set to <c>true</c> will check that block on next page has a selection required before redirecting.</param>
+        protected virtual void NavigateToNextPage( bool validateSelectionRequired )
         {
-            NavigateToLinkedPage( "NextPage", queryParams );
+            NavigateToNextPage( null, validateSelectionRequired );
+        }
+
+        /// <summary>
+        /// Navigates to next page.
+        /// </summary>
+        /// <param name="queryParams">The query parameters.</param>
+        protected virtual void NavigateToNextPage( Dictionary<string, string> queryParams )
+        {
+            NavigateToNextPage( queryParams, false );
+        }
+
+        /// <summary>
+        /// Navigates to next page.
+        /// </summary>
+        /// <param name="queryParams">The query parameters.</param>
+        /// <param name="validateSelectionRequired">if set to <c>true</c> will check that block on next page has a selection required before redirecting.</param>
+        protected virtual void NavigateToNextPage( Dictionary<string, string> queryParams, bool validateSelectionRequired )
+        {
+            queryParams = CheckForOverride( queryParams );
+
+            if ( validateSelectionRequired )
+            {
+                var nextBlock = GetCheckInBlock( "NextPage" );
+                if ( nextBlock != null && nextBlock.RequiresSelection( false ) )
+                {
+                    NavigateToLinkedPage( "NextPage", queryParams );
+                }
+            }
+            else
+            {
+                NavigateToLinkedPage( "NextPage", queryParams );
+            }
         }
 
         /// <summary>
         /// Navigates to previous page.
         /// </summary>
-        protected void NavigateToPreviousPage()
+        protected virtual void NavigateToPreviousPage()
+        {
+            NavigateToPreviousPage( false );
+        }
+
+        /// <summary>
+        /// Navigates to previous page.
+        /// </summary>
+        /// <param name="validateSelectionRequired">if set to <c>true</c> will check that block on previous page has a selection required before redirecting.</param>
+        protected virtual void NavigateToPreviousPage( bool validateSelectionRequired )
         {
             var queryParams = new Dictionary<string, string>();
             queryParams.Add( "back", "true" );
-            NavigateToLinkedPage( "PreviousPage", queryParams );
+
+            queryParams = CheckForOverride( queryParams );
+
+            NavigateToPreviousPage( queryParams, validateSelectionRequired );
         }
 
+        /// <summary>
+        /// Navigates to previous page.
+        /// </summary>
+        /// <param name="queryParams">The query parameters.</param>
+        protected virtual void NavigateToPreviousPage( Dictionary<string, string> queryParams )
+        {
+            NavigateToPreviousPage( queryParams, false );
+        }
+
+        /// <summary>
+        /// Navigates to previous page.
+        /// </summary>
+        /// <param name="queryParams">The query parameters.</param>
+        /// <param name="validateSelectionRequired">if set to <c>true</c> will check that block on previous page has a selection required before redirecting.</param>
+        protected virtual void NavigateToPreviousPage( Dictionary<string, string> queryParams, bool validateSelectionRequired )
+        {
+            if ( validateSelectionRequired )
+            {
+                var nextBlock = GetCheckInBlock( "PreviousPage" );
+                if ( nextBlock != null && nextBlock.RequiresSelection( true ) )
+                {
+                    NavigateToLinkedPage( "PreviousPage", queryParams );
+                }
+            }
+            else
+            {
+                NavigateToLinkedPage( "PreviousPage", queryParams );
+            }
+        }
+
+        /// <summary>
+        /// Checks if the override option is currently being used.
+        /// </summary>
+        /// <param name="queryParams">The query parameters.</param>
+        protected Dictionary<string, string> CheckForOverride( Dictionary<string, string> queryParams = null )
+        {
+            if ( IsOverride )
+            {
+                if ( queryParams == null )
+                {
+                    queryParams = new Dictionary<string, string>();
+                }
+                queryParams.AddOrReplace( "Override", "True" );
+            }
+            return queryParams;
+        }
+
+        /// <summary>
+        /// Determines if the block requires that a selection be made. This is used to determine if user should
+        /// be redirected to this block or not.
+        /// </summary>
+        /// <param name="backingUp">if set to <c>true</c> [backing up].</param>
+        /// <returns></returns>
+        public virtual bool RequiresSelection( bool backingUp )
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Loads a check-in block to determine if it will require a selection or not. This is used to find the
+        /// next page/block that does require a selection so that user can be redirected once to that block, 
+        /// rather than just continuesly redirected to next/prev page blocks and possibly exceeding the maximum
+        /// number of redirects.
+        /// </summary>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <returns></returns>
+        protected CheckInBlock GetCheckInBlock( string attributeKey )
+        {
+            var pageReference = new PageReference( GetAttributeValue( attributeKey ) );
+            if ( pageReference.PageId > 0 )
+            {
+                var page = Rock.Web.Cache.PageCache.Read( pageReference.PageId );
+                if ( page != null )
+                {
+                    foreach( var block in page.Blocks.OrderBy( b => b.Order ) )
+                    { 
+                        var control = TemplateControl.LoadControl( block.BlockType.Path );
+                        if ( control != null )
+                        {
+                            var checkinBlock = control as CheckInBlock;
+                            if ( checkinBlock != null )
+                            {
+                                checkinBlock.SetBlock( page, block, true, true );
+                                checkinBlock.GetState();
+                                return checkinBlock;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the state.
+        /// </summary>
         private void GetState()
         {
             if ( Session["CurrentTheme"] != null )
@@ -398,6 +667,11 @@ namespace Rock.CheckIn
             if ( Session["CheckInKioskId"] != null )
             {
                 CurrentKioskId = (int)Session["CheckInKioskId"];
+            }
+
+            if ( Session["CheckinTypeId"] != null )
+            {
+                CurrentCheckinTypeId = (int)Session["CheckinTypeId"];
             }
 
             if ( Session["CheckInGroupTypeIds"] != null )
@@ -417,8 +691,9 @@ namespace Rock.CheckIn
 
             if ( CurrentCheckInState == null && CurrentKioskId.HasValue )
             {
-                CurrentCheckInState = new CheckInState( CurrentKioskId.Value, CurrentGroupTypeIds );
+                CurrentCheckInState = new CheckInState( CurrentKioskId.Value, CurrentCheckinTypeId, CurrentGroupTypeIds );
             }
         }
+
     }
 }

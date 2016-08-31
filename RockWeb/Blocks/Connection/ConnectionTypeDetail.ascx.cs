@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -347,8 +348,10 @@ namespace RockWeb.Blocks.Connection
                     connectionType.Name = tbName.Text;
                     connectionType.Description = tbDescription.Text;
                     connectionType.IconCssClass = tbIconCssClass.Text;
+                    connectionType.DaysUntilRequestIdle = nbDaysUntilRequestIdle.Text.AsInteger();
                     connectionType.EnableFutureFollowup = cbFutureFollowUp.Checked;
                     connectionType.EnableFullActivityList = cbFullActivityList.Checked;
+                    connectionType.RequiresPlacementGroupToConnect = cbRequiresPlacementGroup.Checked;
 
                     foreach ( var connectionActivityTypeState in ActivityTypesState )
                     {
@@ -544,7 +547,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         protected void gAttributes_GridReorder( object sender, GridReorderEventArgs e )
         {
-            ReOrderAttributes( AttributesState );
+            SortAttributes( AttributesState, e.OldIndex, e.NewIndex );
             BindAttributesGrid();
         }
 
@@ -625,6 +628,38 @@ namespace RockWeb.Blocks.Connection
                          } )
                          .ToList();
             gAttributes.DataBind();
+        }
+
+        /// <summary>
+        /// Reorders the attribute list.
+        /// </summary>
+        /// <param name="itemList">The item list.</param>
+        /// <param name="oldIndex">The old index.</param>
+        /// <param name="newIndex">The new index.</param>
+        private void SortAttributes( List<Attribute> attributeList, int oldIndex, int newIndex )
+        {
+            var movedItem = attributeList.Where( a => a.Order == oldIndex ).FirstOrDefault();
+            if ( movedItem != null )
+            {
+                if ( newIndex < oldIndex )
+                {
+                    // Moved up
+                    foreach ( var otherItem in attributeList.Where( a => a.Order < oldIndex && a.Order >= newIndex ) )
+                    {
+                        otherItem.Order = otherItem.Order + 1;
+                    }
+                }
+                else
+                {
+                    // Moved Down
+                    foreach ( var otherItem in attributeList.Where( a => a.Order > oldIndex && a.Order <= newIndex ) )
+                    {
+                        otherItem.Order = otherItem.Order - 1;
+                    }
+                }
+
+                movedItem.Order = newIndex;
+            }
         }
 
         /// <summary>
@@ -1034,7 +1069,6 @@ namespace RockWeb.Blocks.Connection
             ConnectionWorkflow connectionWorkflow = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( connectionWorkflowGuid ) );
             if ( connectionWorkflow != null )
             {
-                ddlTriggerType.BindToEnum<ConnectionWorkflowTriggerType>();
                 ddlWorkflowType.Items.Clear();
                 ddlWorkflowType.Items.Add( new ListItem( string.Empty, string.Empty ) );
 
@@ -1059,7 +1093,6 @@ namespace RockWeb.Blocks.Connection
             }
             else
             {
-                ddlTriggerType.BindToEnum<ConnectionWorkflowTriggerType>();
                 ddlWorkflowType.Items.Clear();
                 ddlWorkflowType.Items.Add( new ListItem( string.Empty, string.Empty ) );
 
@@ -1111,83 +1144,77 @@ namespace RockWeb.Blocks.Connection
                 switch ( connectionWorkflowTriggerType )
                 {
                     case ConnectionWorkflowTriggerType.RequestStarted:
-                        ddlPrimaryQualifier.Visible = false;
-                        ddlPrimaryQualifier.Items.Clear();
-                        ddlSecondaryQualifier.Visible = false;
-                        ddlSecondaryQualifier.Items.Clear();
-                        break;
-
+                    case ConnectionWorkflowTriggerType.RequestAssigned:
+                    case ConnectionWorkflowTriggerType.RequestTransferred:
                     case ConnectionWorkflowTriggerType.RequestConnected:
-                        ddlPrimaryQualifier.Visible = false;
-                        ddlPrimaryQualifier.Items.Clear();
-                        ddlSecondaryQualifier.Visible = false;
-                        ddlSecondaryQualifier.Items.Clear();
-                        break;
-
+                    case ConnectionWorkflowTriggerType.PlacementGroupAssigned:
                     case ConnectionWorkflowTriggerType.Manual:
-                        ddlPrimaryQualifier.Visible = false;
-                        ddlPrimaryQualifier.Items.Clear();
-                        ddlSecondaryQualifier.Visible = false;
-                        ddlSecondaryQualifier.Items.Clear();
-                        break;
+                        {
+                            ddlPrimaryQualifier.Visible = false;
+                            ddlPrimaryQualifier.Items.Clear();
+                            ddlSecondaryQualifier.Visible = false;
+                            ddlSecondaryQualifier.Items.Clear();
+                            break;
+                        }
 
                     case ConnectionWorkflowTriggerType.StateChanged:
-                        ddlPrimaryQualifier.Label = "From";
-                        ddlPrimaryQualifier.Visible = true;
-                        ddlPrimaryQualifier.BindToEnum<ConnectionState>();
-                        ddlPrimaryQualifier.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
-                        ddlSecondaryQualifier.Label = "To";
-                        ddlSecondaryQualifier.Visible = true;
-                        ddlSecondaryQualifier.BindToEnum<ConnectionState>();
-                        ddlSecondaryQualifier.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
-                        if ( !cbFutureFollowUp.Checked )
                         {
-                            ddlPrimaryQualifier.Items.RemoveAt( 3 );
-                            ddlSecondaryQualifier.Items.RemoveAt( 3 );
+                            ddlPrimaryQualifier.Label = "From";
+                            ddlPrimaryQualifier.Visible = true;
+                            ddlPrimaryQualifier.BindToEnum<ConnectionState>();
+                            ddlPrimaryQualifier.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
+                            ddlSecondaryQualifier.Label = "To";
+                            ddlSecondaryQualifier.Visible = true;
+                            ddlSecondaryQualifier.BindToEnum<ConnectionState>();
+                            ddlSecondaryQualifier.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
+                            if ( !cbFutureFollowUp.Checked )
+                            {
+                                ddlPrimaryQualifier.Items.RemoveAt( 3 );
+                                ddlSecondaryQualifier.Items.RemoveAt( 3 );
+                            }
+                            break;
                         }
-                        break;
 
                     case ConnectionWorkflowTriggerType.StatusChanged:
-                        var statusList = new ConnectionStatusService( rockContext ).Queryable().Where( s => s.ConnectionTypeId == connectionTypeId || s.ConnectionTypeId == null ).ToList();
-                        ddlPrimaryQualifier.Label = "From";
-                        ddlPrimaryQualifier.Visible = true;
-                        ddlPrimaryQualifier.Items.Clear();
-                        ddlPrimaryQualifier.Items.Add( new ListItem( string.Empty, string.Empty ) );
-                        foreach ( var status in statusList )
                         {
-                            ddlPrimaryQualifier.Items.Add( new ListItem( status.Name, status.Id.ToString().ToUpper() ) );
+                            var statusList = new ConnectionStatusService( rockContext ).Queryable().Where( s => s.ConnectionTypeId == connectionTypeId || s.ConnectionTypeId == null ).ToList();
+                            ddlPrimaryQualifier.Label = "From";
+                            ddlPrimaryQualifier.Visible = true;
+                            ddlPrimaryQualifier.Items.Clear();
+                            ddlPrimaryQualifier.Items.Add( new ListItem( string.Empty, string.Empty ) );
+                            foreach ( var status in statusList )
+                            {
+                                ddlPrimaryQualifier.Items.Add( new ListItem( status.Name, status.Id.ToString().ToUpper() ) );
+                            }
+                            ddlSecondaryQualifier.Label = "To";
+                            ddlSecondaryQualifier.Visible = true;
+                            ddlSecondaryQualifier.Items.Clear();
+                            ddlSecondaryQualifier.Items.Add( new ListItem( string.Empty, string.Empty ) );
+                            foreach ( var status in statusList )
+                            {
+                                ddlSecondaryQualifier.Items.Add( new ListItem( status.Name, status.Id.ToString().ToUpper() ) );
+                            }
+                            break;
                         }
-                        ddlSecondaryQualifier.Label = "To";
-                        ddlSecondaryQualifier.Visible = true;
-                        ddlSecondaryQualifier.Items.Clear();
-                        ddlSecondaryQualifier.Items.Add( new ListItem( string.Empty, string.Empty ) );
-                        foreach ( var status in statusList )
-                        {
-                            ddlSecondaryQualifier.Items.Add( new ListItem( status.Name, status.Id.ToString().ToUpper() ) );
-                        }
-                        break;
 
                     case ConnectionWorkflowTriggerType.ActivityAdded:
-                        var activityList = new ConnectionActivityTypeService( rockContext ).Queryable().Where( a => a.ConnectionTypeId == connectionTypeId || a.ConnectionTypeId == null ).ToList();
-                        ddlPrimaryQualifier.Label = "Activity Type";
-                        ddlPrimaryQualifier.Visible = true;
-                        ddlPrimaryQualifier.Items.Clear();
-                        ddlPrimaryQualifier.Items.Add( new ListItem( string.Empty, string.Empty ) );
-                        foreach ( var activity in activityList )
                         {
-                            ddlPrimaryQualifier.Items.Add( new ListItem( activity.Name, activity.Id.ToString().ToUpper() ) );
+                            var activityList = new ConnectionActivityTypeService( rockContext )
+                                .Queryable().AsNoTracking()
+                                .Where( a => a.ConnectionTypeId == connectionTypeId )
+                                .ToList();
+                            ddlPrimaryQualifier.Label = "Activity Type";
+                            ddlPrimaryQualifier.Visible = true;
+                            ddlPrimaryQualifier.Items.Clear();
+                            ddlPrimaryQualifier.Items.Add( new ListItem( string.Empty, string.Empty ) );
+                            foreach ( var activity in activityList )
+                            {
+                                ddlPrimaryQualifier.Items.Add( new ListItem( activity.Name, activity.Id.ToString().ToUpper() ) );
+                            }
+                            ddlSecondaryQualifier.Visible = false;
+                            ddlSecondaryQualifier.Items.Clear();
+                            break;
                         }
-                        ddlSecondaryQualifier.Visible = false;
-                        ddlSecondaryQualifier.Items.Clear();
-                        break;
-
-                    case ConnectionWorkflowTriggerType.PlacementGroupAssigned:
-                        ddlPrimaryQualifier.Visible = false;
-                        ddlPrimaryQualifier.Items.Clear();
-                        ddlSecondaryQualifier.Visible = false;
-                        ddlSecondaryQualifier.Items.Clear();
-                        break;
-
                 }
 
                 if ( connectionWorkflow != null )
@@ -1261,11 +1288,14 @@ namespace RockWeb.Blocks.Connection
                 if ( !connectionTypeId.Equals( 0 ) )
                 {
                     connectionType = GetConnectionType( connectionTypeId, rockContext );
+                    pdAuditDetails.SetEntity( connectionType, ResolveRockUrl( "~" ) );
                 }
 
                 if ( connectionType == null )
                 {
                     connectionType = new ConnectionType { Id = 0 };
+                    // hide the panel drawer that show created and last modified dates
+                    pdAuditDetails.Visible = false;
                 }
 
                 // Admin rights are needed to edit a connection type ( Edit rights only allow adding/removing items )
@@ -1325,6 +1355,7 @@ namespace RockWeb.Blocks.Connection
             if ( connectionType.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( ConnectionType.FriendlyTypeName ).FormatAsHtmlTitle();
+                connectionType.DaysUntilRequestIdle = 14;
             }
             else
             {
@@ -1337,6 +1368,8 @@ namespace RockWeb.Blocks.Connection
             tbName.Text = connectionType.Name;
             tbDescription.Text = connectionType.Description;
             tbIconCssClass.Text = connectionType.IconCssClass;
+            nbDaysUntilRequestIdle.Text = connectionType.DaysUntilRequestIdle.ToString();
+            cbRequiresPlacementGroup.Checked = connectionType.RequiresPlacementGroupToConnect;
             cbFullActivityList.Checked = connectionType.EnableFullActivityList;
             cbFutureFollowUp.Checked = connectionType.EnableFutureFollowup;
 

@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -86,13 +86,16 @@ namespace RockWeb.Blocks.Security
                 url = ResolveRockUrl( "~/ConfirmAccount" );
             }
 
-            var mergeObjects = GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+            mergeFields.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
             var results = new List<IDictionary<string, object>>();
 
             var rockContext = new RockContext();
             var personService = new PersonService( rockContext );
             var userLoginService = new UserLoginService( rockContext );
+
+            bool hasAccountWithPasswordResetAbility = false;
+            List<string> accountTypes = new List<string>();
 
             foreach ( Person person in personService.GetByEmail( tbEmail.Text )
                 .Where( p => p.Users.Any()))
@@ -106,7 +109,10 @@ namespace RockWeb.Blocks.Security
                         if ( !component.RequiresRemoteAuthentication )
                         {
                             users.Add( user );
+                            hasAccountWithPasswordResetAbility = true;
                         }
+
+                        accountTypes.Add( user.EntityType.FriendlyName );
                     }
                 }
 
@@ -116,16 +122,28 @@ namespace RockWeb.Blocks.Security
                 results.Add( resultsDictionary );
             }
 
-            if ( results.Count > 0 )
+            if ( results.Count > 0 && hasAccountWithPasswordResetAbility )
             {
-                mergeObjects.Add( "Results", results.ToArray() );
+                mergeFields.Add( "Results", results.ToArray() );
                 var recipients = new List<RecipientData>();
-                recipients.Add( new RecipientData( tbEmail.Text, mergeObjects ) );
+                recipients.Add( new RecipientData( tbEmail.Text, mergeFields ) );
 
                 Email.Send( GetAttributeValue( "EmailTemplate" ).AsGuid(), recipients, ResolveRockUrlIncludeRoot( "~/" ), ResolveRockUrlIncludeRoot( "~~/" ), false );
 
                 pnlEntry.Visible = false;
                 pnlSuccess.Visible = true;
+            }
+            else if (results.Count > 0 )
+            {
+                // the person has user accounts but none of them are allowed to have their passwords reset (Facebook/Google/etc)
+                
+                lWarning.Text = string.Format( @"<p>We were able to find the following accounts for this email, but 
+                                                none of them are able to be reset from this website.</p> <p>Accounts:<br /> {0}</p>
+                                                <p>To create a new account with a username and password please see our <a href='{1}'>New Account</a>
+                                                page.</p>"
+                                    , string.Join( ",", accountTypes )
+                                    , ResolveRockUrl( "~/NewAccount" ) );
+                pnlWarning.Visible = true;
             }
             else
             {

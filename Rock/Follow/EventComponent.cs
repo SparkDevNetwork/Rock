@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -49,21 +49,9 @@ namespace Rock.Follow
         /// <summary>
         /// Initializes a new instance of the <see cref="EventComponent" /> class.
         /// </summary>
-        public EventComponent()
+        public EventComponent() : base( false )
         {
-            // Override default constructor of Component that loads attributes (not needed for event components, needs to be done by each following event)
-        }
-
-        /// <summary>
-        /// Loads the attributes.
-        /// </summary>
-        /// <exception cref="System.Exception">Event Component attributes are saved specific to the following event, which requires that the current following event is included in order to load or retrieve values. Use the LoadAttributes( FollowingEvent followingEvent ) method instead.</exception>
-        [Obsolete( "Use LoadAttributes( FollowingEvent followingEvent ) instead", true )]
-        public void LoadAttributes()
-        {
-            // Compiler should generate error if referencing this method, so exception should never be thrown
-            // but method is needed to "override" the extension method for IHasAttributes objects
-            throw new Exception( "Event Component attributes are saved specific to the following event, which requires that the current following event is included in order to load or retrieve values. Use the LoadAttributes( FollowingEvent followingEvent ) method instead." );
+            // Override default constructor if Component that loads attributes (not needed for event components, needs to be done by each following event)
         }
 
         /// <summary>

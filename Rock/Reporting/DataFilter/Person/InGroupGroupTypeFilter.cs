@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
@@ -253,19 +254,23 @@ function() {
         /// <returns></returns>
         public override string GetSelection( Type entityType, Control[] controls )
         {
-            int groupTypeId = ( controls[0] as GroupTypePicker ).SelectedValueAsId() ?? 0;
+            var groupTypePicker = ( controls[0] as GroupTypePicker );
+            var cblRoles = ( controls[1] as RockCheckBoxList );
+            var ddlMemberStatus = ( controls[2] as RockDropDownList );
+
+            int groupTypeId = groupTypePicker.SelectedValueAsId() ?? 0;
             Guid? groupTypeGuid = null;
-            var groupType = new GroupTypeService( new RockContext() ).Get( groupTypeId );
+            var groupType = Rock.Web.Cache.GroupTypeCache.Read( groupTypeId );
             if ( groupType != null )
             {
                 groupTypeGuid = groupType.Guid;
             }
 
-            var guidCommaList = ( controls[1] as RockCheckBoxList ).SelectedValues.AsDelimited( "," );
+            var rolesGuidCommaList = cblRoles.SelectedValues.AsDelimited( "," );
 
-            var memberStatusValue = ( controls[2] as RockDropDownList ).SelectedValue;
+            var memberStatusValue = ddlMemberStatus.SelectedValue;
 
-            return groupTypeGuid.ToString() + "|" + guidCommaList + "|" + memberStatusValue;
+            return groupTypeGuid.ToString() + "|" + rolesGuidCommaList + "|" + memberStatusValue;
         }
 
         /// <summary>
@@ -325,7 +330,7 @@ function() {
                 int groupTypeId = 0;
 
                 Guid groupTypeGuid = selectionValues[0].AsGuid();
-                var groupType = new GroupTypeService( (RockContext)serviceInstance.Context ).Get( groupTypeGuid );
+                var groupType = GroupTypeCache.Read( groupTypeGuid );
                 if ( groupType != null )
                 {
                     groupTypeId = groupType.Id;
@@ -336,7 +341,8 @@ function() {
                 var groupRoleGuids = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( n => n.AsGuid() ).ToList();
                 if ( groupRoleGuids.Count() > 0 )
                 {
-                    groupMemberServiceQry = groupMemberServiceQry.Where( xx => groupRoleGuids.Contains( xx.GroupRole.Guid ) );
+                    var groupRoleIds = new GroupTypeRoleService( (RockContext)serviceInstance.Context ).Queryable().Where( a => groupRoleGuids.Contains( a.Guid ) ).Select( a => a.Id ).ToList();
+                    groupMemberServiceQry = groupMemberServiceQry.Where( xx => groupRoleIds.Contains( xx.GroupRoleId ) );
                 }
 
                 GroupMemberStatus? groupMemberStatus = null;
