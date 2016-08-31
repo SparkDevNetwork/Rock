@@ -63,6 +63,20 @@
 // Rock Hacks (should probably be changed in core)
 // -------------------------
 
+// Mobile fixes
+.picker-person .picker-menu.dropdown-menu {
+  position: relative;
+  @media @sm {
+    position: absolute;
+  }
+}
+#cms-admin-footer {
+  position: relative;
+  @media @sm {
+    position: fixed;
+  }
+}
+
 legend {
   display: block;
   width: 100%;
