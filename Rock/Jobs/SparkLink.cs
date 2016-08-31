@@ -71,7 +71,7 @@ namespace Rock.Jobs
 
                 var sparkLinkRequestJson = JsonConvert.SerializeObject( sparkLinkRequest );
 
-                var client = new RestClient( "http://rockrms.com/api/SparkLink/update" );
+                var client = new RestClient( "https://www.rockrms.com/api/SparkLink/update" );
                 //var client = new RestClient( "http://localhost:57822/api/SparkLink/update" );
                 var request = new RestRequest( Method.POST );
                 request.AddParameter( "application/json", sparkLinkRequestJson, ParameterType.RequestBody );
@@ -86,7 +86,7 @@ namespace Rock.Jobs
 
                 if ( sparkLinkRequest.VersionIds.Any() )
                 {
-                    client = new RestClient( "http://rockrms.com/api/Packages/VersionNotifications" );
+                    client = new RestClient( "https://www.rockrms.com/api/Packages/VersionNotifications" );
                     //client = new RestClient( "http://localhost:57822/api/Packages/VersionNotifications" );
                     request = new RestRequest( Method.GET );
                     request.AddParameter( "application/json", sparkLinkRequestJson, ParameterType.RequestBody );
