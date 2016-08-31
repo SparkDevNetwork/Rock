@@ -143,8 +143,8 @@ namespace Rock.Migrations
             DeleteDefinedValue( "B1CE8ECA-6584-45DC-A022-40490FC753E8" );
             DeleteDefinedValue( "B3FAB89D-4EAD-4ED8-AD7F-06E150E4CD6B" );
             AddDefinedValue( "4BF34677-37E9-4E71-BD03-252B66C9373D", "Setup Location Service", @"
-<p>Your attendees� addresses are very valuable, so it�s important that they are formatted correctly and validated 
-through the USPS database. Also, in order for these addresses to be used with the latest mapping technologies it�s 
+<p>Your attendees' addresses are very valuable, so it's important that they are formatted correctly and validated 
+through the USPS database. Also, in order for these addresses to be used with the latest mapping technologies it's 
 important that they also be converted into latitude and longitude points through a process called geocoding. Fortunately, 
 Rock makes both of these tasks simple (and free...)</p>
 
