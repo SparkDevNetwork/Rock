@@ -52,9 +52,9 @@
 <h2 class="page-header">This Week <small>Weekend of {{ viewedItem.StartDateTime | Date:'M/d/yyyy' }}</small></h2>
 <p>{{ viewedItem | Attribute:'Summary' }}</p>
 <p>{{ viewedItem.Content }}</p>
-<p>Main Point: {{ viewedItem | Attribute: 'MainPoint' }}</p>
-<p>Memory Verses: {{ viewedItem | Attribute: 'MemoryVerses' }}</p>
-<p>Bible Verses: {{ viewedItem | Attribute: 'BibleVerses' }}</p>
+<p><b>Main Point:</b> {{ viewedItem | Attribute: 'MainPoint' }}</p>
+<p><b>Memory Verses:</b> {{ viewedItem | Attribute: 'MemoryVerses' }}</p>
+<p><b>Bible Verses:</b> {{ viewedItem | Attribute: 'BibleVerses' }}</p>
 
 {% assign introVid = viewedItem | Attribute: 'IntroVideo' %}
 {% assign messageVid = viewedItem | Attribute: 'MessageVideo' %}

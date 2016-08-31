@@ -52,8 +52,8 @@
 <h2 class="page-header">This Week <small>Weekend of {{ viewedItem.StartDateTime | Date:'M/d/yyyy' }}</small></h2>
 <p>{{ viewedItem | Attribute:'Summary' }}</p>
 <p>{{ viewedItem.Content }}</p>
-<p> BIG Question: {{ viewedItem | Attribute: 'TheBIGQuestion' }}</p>
-<p> Bible Verses: {{ viewedItem | Attribute: 'BibleVerses' }}</p>
+<p> <b>BIG Question:</b> {{ viewedItem | Attribute: 'TheBIGQuestion' }}</p>
+<p> <b>Bible Verses:</b> {{ viewedItem | Attribute: 'BibleVerses' }}</p>
 
 {% assign message = viewedItem | Attribute: 'LinktoMessage' %}
 
